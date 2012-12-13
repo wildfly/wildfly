@@ -21,9 +21,7 @@
 */
 package org.jboss.as.core.model.test.systemproperty;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import junit.framework.Assert;
 
@@ -33,8 +31,8 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
 import org.jboss.as.core.model.test.ModelInitializer;
-import org.jboss.as.core.model.test.ModelWriteSanitizer;
 import org.jboss.as.core.model.test.TestModelType;
+import org.jboss.as.core.model.test.util.StandardServerGroupInitializers;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
 
@@ -57,7 +55,7 @@ public class DomainServerGroupSystemPropertyTestCase extends AbstractSystemPrope
     protected KernelServicesBuilder createKernelServicesBuilder(boolean xml) {
         KernelServicesBuilder builder = createKernelServicesBuilder(TestModelType.DOMAIN);
         if (xml) {
-            builder.setModelInitializer(XML_MODEL_INITIALIZER, XML_MODEL_WRITE_SANITIZER);
+            builder.setModelInitializer(StandardServerGroupInitializers.XML_MODEL_INITIALIZER, StandardServerGroupInitializers.XML_MODEL_WRITE_SANITIZER);
         }
         return builder;
     }
@@ -82,23 +80,6 @@ public class DomainServerGroupSystemPropertyTestCase extends AbstractSystemPrope
         public void populateModel(Resource rootResource) {
             Resource host = Resource.Factory.create();
             rootResource.registerChild(PARENT.getElement(0), host);
-        }
-    };
-
-    static final ModelInitializer XML_MODEL_INITIALIZER = new ModelInitializer() {
-        public void populateModel(Resource rootResource) {
-            rootResource.registerChild(PathElement.pathElement(PROFILE, "test"), Resource.Factory.create());
-            rootResource.registerChild(PathElement.pathElement(SOCKET_BINDING_GROUP, "test-sockets"), Resource.Factory.create());
-        }
-    };
-
-    static final ModelWriteSanitizer XML_MODEL_WRITE_SANITIZER = new ModelWriteSanitizer() {
-        @Override
-        public ModelNode sanitize(ModelNode model) {
-            //Remove the profile and socket-binding-group removed by the initializer so the xml does not include a profile
-            model.remove(PROFILE);
-            model.remove(SOCKET_BINDING_GROUP);
-            return model;
         }
     };
 }

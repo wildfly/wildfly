@@ -22,9 +22,10 @@
 
 package org.jboss.as.host.controller.ignored;
 
-import java.util.LinkedHashSet;
+import static org.jboss.as.host.controller.ignored.IgnoredDomainTypeResourceDefinition.NAMES;
+import static org.jboss.as.host.controller.ignored.IgnoredDomainTypeResourceDefinition.WILDCARD;
 
-import static org.jboss.as.host.controller.ignored.IgnoredDomainTypeResourceDefinition.*;
+import java.util.LinkedHashSet;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.PlaceholderResource;

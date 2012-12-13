@@ -21,7 +21,13 @@
 */
 package org.jboss.as.model.test;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -30,6 +36,7 @@ import java.util.regex.Pattern;
 
 import org.sonatype.aether.collection.DependencyCollectionException;
 import org.sonatype.aether.resolution.DependencyResolutionException;
+import org.xnio.IoUtils;
 
 /**
  *
@@ -88,12 +95,46 @@ public class ChildFirstClassLoaderBuilder {
         return this;
     }
 
+    public ChildFirstClassLoaderBuilder createFromFile(File inputFile) {
+        try {
+            final ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(new FileInputStream(inputFile)));
+            try {
+                classloaderURLs = (List<URL>)in.readObject();
+            } finally {
+                IoUtils.safeClose(in);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return this;
+    }
+
     public ClassLoader build() {
+        return build(null);
+    }
+
+    public ClassLoader build(File outputFile) {
+        if (outputFile != null) {
+            outputSetupToFile(outputFile);
+        }
         ClassLoader parent = this.getClass().getClassLoader() != null ? this.getClass().getClassLoader() : null;
         return new ChildFirstClassLoader(parent, parentFirst, childFirst, classloaderURLs.toArray(new URL[classloaderURLs.size()]));
     }
 
     private Pattern compilePattern(String pattern) {
         return Pattern.compile(pattern.replace(".", "\\.").replace("*", ".*"));
+    }
+
+    private void outputSetupToFile(File outputFile) {
+        try {
+            final ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(outputFile)));
+            try {
+                out.writeObject(classloaderURLs);
+            } finally {
+                IoUtils.safeClose(out);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -19,22 +19,31 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.core.model.bridge.local;
+package org.jboss.as.core.model.test.deploymentoverlay;
 
-import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.core.model.test.LegacyModelInitializerEntry;
-import org.jboss.as.host.controller.ignored.IgnoreDomainResourceTypeResource;
-import org.jboss.dmr.ModelNode;
+import junit.framework.Assert;
+
+import org.jboss.as.core.model.test.AbstractCoreModelTest;
+import org.jboss.as.core.model.test.KernelServices;
+import org.jboss.as.core.model.test.TestModelType;
+import org.jboss.as.model.test.ModelTestUtils;
+import org.junit.Test;
 
 /**
- * This interface will only be loaded up by the app classloader.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public interface ClassLoaderObjectConverter {
-    Object convertModelNodeToChildCl(ModelNode object);
-    ModelNode convertModelNodeFromChildCl(Object object);
-    Object convertModelVersionToChildCl(ModelVersion modelVersion);
-    Object convertLegacyModelInitializerEntryToChildCl(LegacyModelInitializerEntry initializer);
-    Object convertIgnoreDomainTypeResourceToChildCl(IgnoreDomainResourceTypeResource resource);
+public class StandaloneDeploymentOverlayTestCase extends AbstractCoreModelTest {
+
+    @Test
+    public void testDomainOverlays() throws Exception {
+        KernelServices kernelServices = createKernelServicesBuilder(TestModelType.STANDALONE)
+            .setXmlResource("standalone.xml")
+            .createContentRepositoryContent("12345678901234567890")
+            .build();
+        Assert.assertTrue(kernelServices.isSuccessfulBoot());
+
+        String marshalled = kernelServices.getPersistedSubsystemXml();
+        ModelTestUtils.compareXml(ModelTestUtils.readResource(this.getClass(), "standalone.xml"), marshalled);
+    }
 }

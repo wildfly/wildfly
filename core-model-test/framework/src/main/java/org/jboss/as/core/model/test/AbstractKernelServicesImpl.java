@@ -62,7 +62,7 @@ public abstract class AbstractKernelServicesImpl extends ModelTestKernelServices
     }
 
     public static AbstractKernelServicesImpl create(ProcessType processType, RunningModeControl runningModeControl, boolean validateOperations,
-            List<ModelNode> bootOperations, ModelTestParser testParser, ModelVersion legacyModelVersion, TestModelType type, ModelInitializer modelInitializer, ExtensionRegistry extensionRegistry) throws Exception {
+            List<ModelNode> bootOperations, ModelTestParser testParser, ModelVersion legacyModelVersion, TestModelType type, ModelInitializer modelInitializer, ExtensionRegistry extensionRegistry, List<String> contentRepositoryHashes) throws Exception {
 
         //TODO initialize the path manager service like we do for subsystems?
 
@@ -72,7 +72,18 @@ public abstract class AbstractKernelServicesImpl extends ModelTestKernelServices
 
         //Initialize the content repository
         File repositoryFile = new File("target/deployment-repository");
-        deleteFile(repositoryFile);
+        if (contentRepositoryHashes != null) {
+            deleteFile(repositoryFile);
+            repositoryFile.mkdir();
+            for (String hash : contentRepositoryHashes) {
+                File file = new File(repositoryFile, hash.substring(0, 2));
+                file.mkdir();
+                file = new File(file, hash.substring(2, hash.length()));
+                file.mkdir();
+                file = new File(file, "content");
+                file.createNewFile();
+            }
+        }
         ContentRepository.Factory.addService(target, repositoryFile);
 
         //Initialize the controller
@@ -101,7 +112,7 @@ public abstract class AbstractKernelServicesImpl extends ModelTestKernelServices
                 new MainKernelServicesImpl(container, svc, persister, svc.getRootRegistration(),
                         new OperationValidator(svc.getRootRegistration()), legacyModelVersion, svc.isSuccessfulBoot(), svc.getBootError(), extensionRegistry) :
                             new LegacyKernelServicesImpl(container, svc, persister, svc.getRootRegistration(),
-                                    new OperationValidator(svc.getRootRegistration()), legacyModelVersion, svc.isSuccessfulBoot(), svc.getBootError(), extensionRegistry);
+                                    new OperationValidator(svc.getRootRegistration()), legacyModelVersion, svc.isSuccessfulBoot(), svc.getBootError(), extensionRegistry, ContentRepository.Factory.create(repositoryFile));
 
         return kernelServices;
     }
@@ -119,6 +130,8 @@ public abstract class AbstractKernelServicesImpl extends ModelTestKernelServices
     public abstract TransformedOperation transformOperation(ModelVersion modelVersion, ModelNode operation) throws OperationFailedException;
 
     public abstract ModelNode readTransformedModel(ModelVersion modelVersion);
+
+    public abstract ModelNode callReadMasterDomainModelHandler(ModelVersion modelVersion);
 
     public abstract ModelNode executeOperation(final ModelVersion modelVersion, final TransformedOperation op);
 

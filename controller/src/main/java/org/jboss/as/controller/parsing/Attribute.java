@@ -94,7 +94,6 @@ public enum Attribute {
     PROTOCOL("protocol"),
     RECURSIVE("recursive"),
     REF("ref"),
-    REGULAR_EXPRESSION("regular-expression"),
     RELATIVE_TO("relative-to"),
     RUNTIME_NAME("runtime-name"),
     SEARCH_CREDENTIAL("search-credential"),

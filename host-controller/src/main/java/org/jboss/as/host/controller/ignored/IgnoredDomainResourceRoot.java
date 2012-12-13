@@ -23,8 +23,7 @@
 package org.jboss.as.host.controller.ignored;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED_RESOURCE_TYPE;
 
 import java.util.Collections;
 import java.util.HashSet;

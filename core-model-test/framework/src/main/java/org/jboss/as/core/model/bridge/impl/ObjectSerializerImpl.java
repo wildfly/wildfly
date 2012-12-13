@@ -31,6 +31,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.core.model.bridge.shared.ObjectSerializer;
 import org.jboss.as.core.model.test.LegacyModelInitializerEntry;
+import org.jboss.as.host.controller.ignored.IgnoreDomainResourceTypeResource;
 import org.jboss.dmr.ModelNode;
 import org.xnio.IoUtils;
 
@@ -112,6 +113,28 @@ public class ObjectSerializerImpl implements ObjectSerializer {
             model = node.get(MODEL_NODE);
         }
         return new LegacyModelInitializerEntry(parentAddress, relativeResourceAddress, model);
+    }
+
+    @Override
+    public byte[] serializeIgnoreDomainTypeResource(Object object) throws IOException {
+        //Happens in the app classloader
+        IgnoreDomainResourceTypeResource entry = (IgnoreDomainResourceTypeResource)object;
+        ModelNode model = entry.getModel().clone();
+        model.get("type").set(entry.getName());
+        return serializeModelNode(model);
+    }
+
+    @Override
+    public Object deserializeIgnoreDomainTypeResource(byte[] object) throws IOException {
+        //Happens in the child classloader
+        ModelNode model = (ModelNode)deserializeModelNode(object);
+        String type = model.require("type").asString();
+        ModelNode names = model.get("names");
+        Boolean wildcard = null;
+        if (model.hasDefined("wildcard")) {
+            wildcard = model.get("wildcard").asBoolean();
+        }
+        return new IgnoreDomainResourceTypeResource(type, names, wildcard);
     }
 
 }

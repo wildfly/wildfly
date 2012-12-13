@@ -21,13 +21,9 @@
 */
 package org.jboss.as.core.model.test;
 
-import java.net.MalformedURLException;
-
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.dmr.ModelNode;
-import org.sonatype.aether.collection.DependencyCollectionException;
-import org.sonatype.aether.resolution.DependencyResolutionException;
 
 /**
  *
@@ -39,7 +35,10 @@ public interface LegacyKernelServicesInitializer {
 
     LegacyKernelServicesInitializer initializerCreateModelResource(PathAddress parentAddress, PathElement relativeResourceAddress, ModelNode model);
 
-    LegacyKernelServicesInitializer setTestControllerVersion(TestControllerVersion version) throws MalformedURLException, DependencyCollectionException, DependencyResolutionException;
+    /**
+     * If called, will not use boot operations rather ship across the model via ApplyRemoteMasterDomainHandler
+     */
+    LegacyKernelServicesInitializer setDontUseBootOperations();
 
     /**
      * The default is to validate the operations sent in to the model controller. Turn it off call this method
@@ -47,6 +46,7 @@ public interface LegacyKernelServicesInitializer {
      * @return this builder
      */
     LegacyKernelServicesInitializer setDontValidateOperations();
+
 
     public enum TestControllerVersion {
         MASTER ("org.jboss.as:jboss-as-host-controller:" + VERSION, null),

@@ -191,6 +191,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
                         processState.setRunning();
                     }
                 } catch (Throwable t) {
+                    t.printStackTrace();
                     container.shutdown();
                     if (t instanceof StackOverflowError) {
                         ROOT_LOGGER.errorBootingContainer(t, bootStackSize, BOOT_STACK_SIZE_PROPERTY);

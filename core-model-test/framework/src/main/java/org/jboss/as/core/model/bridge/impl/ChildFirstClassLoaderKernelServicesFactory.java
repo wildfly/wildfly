@@ -60,7 +60,7 @@ public class ChildFirstClassLoaderKernelServicesFactory {
 
         RunningModeControl runningModeControl = new HostRunningModeControl(RunningMode.ADMIN_ONLY, RestartMode.HC_ONLY);
         ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.HOST_CONTROLLER, runningModeControl);
-        return AbstractKernelServicesImpl.create(ProcessType.HOST_CONTROLLER, runningModeControl, validateOperations, bootOperations, testParser, legacyModelVersion, type, modelInitializer, extensionRegistry);
+        return AbstractKernelServicesImpl.create(ProcessType.HOST_CONTROLLER, runningModeControl, validateOperations, bootOperations, testParser, legacyModelVersion, type, modelInitializer, extensionRegistry, null);
     }
 
     private static class LegacyModelInitializer implements ModelInitializer {
