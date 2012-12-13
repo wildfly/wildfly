@@ -34,6 +34,9 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.security.ProtectionDomain;
 import java.security.cert.Certificate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.Callable;
 
 import javax.naming.CompositeName;
@@ -52,11 +55,18 @@ public class SecurityHelper {
     public static Object testActionPermission(final JndiPermission.Action action, final NamingContext namingContext,
         final String name, final Object... params) throws Exception {
 
+        return testActionPermission(action, Collections.<JndiPermission>emptyList(), namingContext, name, params);
+    }
+
+    public static Object testActionPermission(final JndiPermission.Action action, 
+        final Collection<JndiPermission> additionalRequiredPerms, final NamingContext namingContext, final String name, 
+        final Object... params) throws Exception {
+        
         Exception positiveTestCaseException = null;
 
         try {
             //positive test case
-            return testActionWithPermission(action, namingContext, name, params);
+            return testActionWithPermission(action, additionalRequiredPerms, namingContext, name, params);
         } catch (Exception e) {
             positiveTestCaseException = e;
             //this is just to satisfy the compiler... the finally clause should always throw an exception in this case
@@ -64,7 +74,7 @@ public class SecurityHelper {
         } finally {
             //negative test case
             try {
-                testActionWithoutPermission(action, namingContext, name, params);
+                testActionWithoutPermission(action, additionalRequiredPerms, namingContext, name, params);
             } catch (Exception e) {
                 if (positiveTestCaseException == null) {
                     throw e;
@@ -86,35 +96,44 @@ public class SecurityHelper {
                 throw positiveTestCaseException;
             }
         }
+        
     }
-
-    public static Object testActionWithPermission(final JndiPermission.Action action, final NamingContext namingContext,
-        final String name, final Object... params) throws Exception {
+    
+    public static Object testActionWithPermission(final JndiPermission.Action action, 
+        final Collection<JndiPermission> additionalRequiredPerms, final NamingContext namingContext, final String name, 
+        final Object... params) throws Exception {
 
         final CompositeName n = name == null ? new CompositeName() : new CompositeName(name);
         final String sn = name == null ? "" : name;
 
+        ArrayList<JndiPermission> allPerms = new ArrayList<JndiPermission>(additionalRequiredPerms);
+        allPerms.add(new JndiPermission(sn, action));
+        
         return runWithSecurityManager(new Callable<Object>() {
             @Override
             public Object call() throws Exception {
                 return performAction(action, namingContext, n, params);
             }
-        }, getSecurityContextForJNDILookup(new JndiPermission(sn, action)));
+        }, getSecurityContextForJNDILookup(allPerms));
     }
 
-    public static void testActionWithoutPermission(final JndiPermission.Action action, final NamingContext namingContext,
-        final String name, final Object... params) throws Exception {
+    public static void testActionWithoutPermission(final JndiPermission.Action action, 
+        final Collection<JndiPermission> additionalRequiredPerms, final NamingContext namingContext, final String name, 
+        final Object... params) throws Exception {
 
         final CompositeName n = name == null ? new CompositeName() : new CompositeName(name);
         final String sn = name == null ? "" : name;
 
+        ArrayList<JndiPermission> allPerms = new ArrayList<JndiPermission>(additionalRequiredPerms);
+        allPerms.add(new JndiPermission(sn, not(action)));
+        
         try {
             runWithSecurityManager(new Callable<Object>() {
                 @Override
                 public Object call() throws Exception {
                     return performAction(action, namingContext, n, params);
                 }
-            }, getSecurityContextForJNDILookup(new JndiPermission(sn, not(action))));
+            }, getSecurityContextForJNDILookup(allPerms));
 
             fail("Naming operation " + action + " should not have been permitted");
         } catch (SecurityException e) {
@@ -208,7 +227,7 @@ public class SecurityHelper {
         }
     }
 
-    public static AccessControlContext getSecurityContextForJNDILookup(JndiPermission... jndiPermissions) {
+    private static AccessControlContext getSecurityContextForJNDILookup(Collection<JndiPermission> jndiPermissions) {
         CodeSource src = new CodeSource(null, (Certificate[]) null);
 
         Permissions perms = new Permissions();

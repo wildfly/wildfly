@@ -456,28 +456,4 @@ public interface NamingMessages {
      */
     @Message(id = 11873, value = "Binding add operation for Object Factory With Environment not supported in Naming Subsystem model version %s")
     String failedToTransformObjectFactoryWithEnvironmentNameBindingAddOperation(String modelVersion);
-
-    /**
-     * An unexpected checked exception was thrown when doing a lookup on a naming context during a privileged action.
-     * @param cause the cause of failure
-     * @return
-     */
-    @Message(id = 11874, value = "Unexpected exception thrown while doing privileged lookup")
-    IllegalStateException unexpectedExceptionDuringPrivilegedLookup(@Cause Throwable cause);
-
-    /**
-     * An unexpected checked exception was thrown when doing a list on a naming context during a privileged action.
-     * @param cause the cause of failure
-     * @return
-     */
-    @Message(id = 11875, value = "Unexpected exception thrown while doing privileged list")
-    IllegalStateException unexpectedExceptionDuringPrivilegedList(@Cause Throwable cause);
-
-    /**
-     * An unexpected checked exception was thrown when doing a listBindings on a naming context during a privileged action.
-     * @param cause the cause of failure
-     * @return
-     */
-    @Message(id = 11876, value = "Unexpected exception thrown while doing privileged listBindings")
-    IllegalStateException unexpectedExceptionDuringPrivilegedListBindings(@Cause Throwable cause);
 }
