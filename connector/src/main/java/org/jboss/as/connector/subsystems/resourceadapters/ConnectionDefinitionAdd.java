@@ -22,6 +22,7 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 import static org.jboss.as.connector.subsystems.resourceadapters.CommonAttributes.CONNECTION_DEFINITIONS_NODE_ATTRIBUTE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -87,7 +88,7 @@ public class ConnectionDefinitionAdd extends AbstractAddStepHandler {
             serviceControllers.add(controller);
 
         } catch (ValidateException e) {
-            throw new OperationFailedException(e, operation);
+            throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToCreate("ConnectionDefinition", operation, e.getLocalizedMessage())));
         }
     }
 
