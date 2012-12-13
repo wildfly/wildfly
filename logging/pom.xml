@@ -70,8 +70,8 @@
                         -javaagent:${org.jboss.byteman:byteman:jar}=port:9091,boot:${org.jboss.byteman:byteman:jar}</argLine>
                     <systemPropertyVariables>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-                        <jboss.server.log.dir>${project.build.directory}/logs</jboss.server.log.dir>
-                        <jboss.server.config.dir>${project.build.directory}/config</jboss.server.config.dir>
+                        <jboss.server.log.dir>${project.build.directory}${file.separator}logs</jboss.server.log.dir>
+                        <jboss.server.config.dir>${project.build.directory}${file.separator}config</jboss.server.config.dir>
                         <org.jboss.byteman.contrib.bmunit.agent.inhibit>true</org.jboss.byteman.contrib.bmunit.agent.inhibit>
                         <org.jboss.byteman.contrib.bmunit.agent.port>9091</org.jboss.byteman.contrib.bmunit.agent.port>
                     </systemPropertyVariables>

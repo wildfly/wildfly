@@ -237,4 +237,55 @@ final class LoggerConfigurationImpl extends AbstractBasicConfiguration<Logger, L
         });
         return true;
     }
+
+    @Override
+    ConfigAction<Void> getRemoveAction() {
+        final String name = getName();
+        final Logger refLogger = refs.get(name);
+        final Filter filter;
+        final Handler[] handlers;
+        final Level level;
+        final boolean useParentHandlers;
+        if (refLogger == null) {
+            filter = null;
+            handlers = null;
+            level = null;
+            useParentHandlers = true;
+        } else {
+            filter = refLogger.getFilter();
+            handlers = refLogger.getHandlers();
+            level = refLogger.getLevel();
+            useParentHandlers = refLogger.getUseParentHandlers();
+        }
+        return new ConfigAction<Void>() {
+            public Void validate() throws IllegalArgumentException {
+                return null;
+            }
+
+            public void applyPreCreate(final Void param) {
+                refs.remove(name);
+            }
+
+            public void applyPostCreate(final Void param) {
+                if (refLogger != null) {
+                    refLogger.setFilter(null);
+                    refLogger.clearHandlers();
+                    refLogger.setLevel(null);
+                    refLogger.setUseParentHandlers(true);
+                }
+            }
+
+            @SuppressWarnings({"unchecked"})
+            public void rollback() {
+                if (refLogger != null) {
+                    refLogger.setFilter(filter);
+                    if (handlers != null) refLogger.setHandlers(handlers);
+                    refLogger.setLevel(level);
+                    refLogger.setUseParentHandlers(useParentHandlers);
+                    configs.put(name, LoggerConfigurationImpl.this);
+                }
+                clearRemoved();
+            }
+        };
+    }
 }

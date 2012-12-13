@@ -38,6 +38,7 @@ import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.LogContext;
 import org.jboss.logmanager.Logger;
+import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -65,6 +66,17 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
         logDir = LoggingTestEnvironment.get().getLogDir();
         for (File file : logDir.listFiles()) {
             file.delete();
+        }
+    }
+
+    @After
+    @Override
+    public void clearLogContext() {
+        super.clearLogContext();
+        final LoggingProfileContextSelector contextSelector = LoggingProfileContextSelector.getInstance();
+        if (contextSelector.exists(PROFILE)) {
+            clearLogContext(contextSelector.get(PROFILE));
+            contextSelector.remove(PROFILE);
         }
     }
 
