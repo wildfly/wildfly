@@ -131,8 +131,8 @@ public class MavenDeployHandler extends DeployHandler {
             throw new CommandFormatException("Cannot parse " + f.getAbsolutePath(), e);
         }
 
-        if (!"war".equals(packaging) && !"ejb".equals(packaging)) {
-            throw new CommandFormatException("The mavendeploy command can only deploy war or ejb's.");
+        if (!"war".equals(packaging) && !"ejb".equals(packaging) && !"ear".equals(packaging)) {
+            throw new CommandFormatException("The mavendeploy command can only deploy war, ear or ejb's.");
         }
 
         int exitValue = -1;
