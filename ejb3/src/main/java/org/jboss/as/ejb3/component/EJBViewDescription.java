@@ -66,6 +66,8 @@ public class EJBViewDescription extends ViewDescription {
                 configuration.putPrivateData(MethodIntf.class, getMethodIntf());
             }
         });
+        // add a view configurator for setting up application specific container interceptors for the EJB view
+        getConfigurators().add(EJBContainerInterceptorsViewConfigurator.INSTANCE);
     }
 
     public MethodIntf getMethodIntf() {
