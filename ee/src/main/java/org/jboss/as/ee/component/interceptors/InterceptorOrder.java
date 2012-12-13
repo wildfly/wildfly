@@ -135,6 +135,9 @@ public class InterceptorOrder {
         public static final int EJB_EXCEPTION_LOGGING_INTERCEPTOR = 0x210;
         public static final int SHUTDOWN_INTERCEPTOR = 0x220;
         public static final int INVALID_METHOD_EXCEPTION = 0x230;
+        // Allows users to specify user application specific "container interceptors" which run before the
+        // other JBoss specific container interceptors like the security interceptor
+        public static final int USER_APP_SPECIFIC_CONTAINER_INTERCEPTORS = 0x249;
         public static final int SECURITY_CONTEXT = 0x250;
         public static final int EJB_SECURITY_AUTHORIZATION_INTERCEPTOR = 0x300;
         // after security we take note of the invocation

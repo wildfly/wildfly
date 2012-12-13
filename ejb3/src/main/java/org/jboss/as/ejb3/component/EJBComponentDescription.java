@@ -32,6 +32,7 @@ import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ee.component.ComponentStartService;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.DependencyConfigurator;
+import org.jboss.as.ee.component.InterceptorDescription;
 import org.jboss.as.ee.component.NamespaceConfigurator;
 import org.jboss.as.ee.component.NamespaceViewConfigurator;
 import org.jboss.as.ee.component.TCCLInterceptor;
@@ -69,6 +70,7 @@ import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 import org.jboss.msc.service.Service;
@@ -202,6 +204,41 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      * The shutdown interceptor factory
      */
     private final ShutDownInterceptorFactory shutDownInterceptorFactory = new ShutDownInterceptorFactory();
+
+    /**
+     * The default container interceptors
+     */
+    private List<InterceptorDescription> defaultContainerInterceptors = new ArrayList<InterceptorDescription>();
+
+    /**
+     * Whether or not to exclude the default container interceptors for the EJB
+     */
+    private boolean excludeDefaultContainerInterceptors;
+
+    /**
+     * Container interceptors applicable for all methods of the EJB
+     */
+    private List<InterceptorDescription> classLevelContainerInterceptors = new ArrayList<InterceptorDescription>();
+
+    /**
+     * Container interceptors applicable per method of the EJB
+     */
+    private Map<MethodIdentifier, List<InterceptorDescription>> methodLevelContainerInterceptors = new HashMap<MethodIdentifier, List<InterceptorDescription>>();
+
+    /**
+     * Whether or not to exclude the default container interceptors applicable for the method of the EJB
+     */
+    private Map<MethodIdentifier, Boolean> excludeDefaultContainerInterceptorsForMethod = new HashMap<MethodIdentifier, Boolean>();
+
+    /**
+     * Whether or not to exclude the class level container interceptors applicable for the method of the EJB
+     */
+    private Map<MethodIdentifier, Boolean> excludeClassLevelContainerInterceptorsForMethod = new HashMap<MethodIdentifier, Boolean>();
+
+    /**
+     * Combination of class and method level container interceptors
+     */
+    private Set<InterceptorDescription> allContainerInterceptors;
 
     /**
      * Construct a new instance.
@@ -804,6 +841,73 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     public ShutDownInterceptorFactory getShutDownInterceptorFactory() {
         return shutDownInterceptorFactory;
+    }
+
+    public void setDefaultContainerInterceptors(final List<InterceptorDescription> defaultInterceptors) {
+        this.defaultContainerInterceptors = defaultInterceptors;
+    }
+
+    public List<InterceptorDescription> getDefaultContainerInterceptors() {
+        return this.defaultContainerInterceptors;
+    }
+
+    public void setClassLevelContainerInterceptors(final List<InterceptorDescription> containerInterceptors) {
+        this.classLevelContainerInterceptors = containerInterceptors;
+    }
+
+    public List<InterceptorDescription> getClassLevelContainerInterceptors() {
+        return this.classLevelContainerInterceptors;
+    }
+
+    public void setExcludeDefaultContainerInterceptors(boolean excludeDefaultContainerInterceptors) {
+        this.excludeDefaultContainerInterceptors = excludeDefaultContainerInterceptors;
+    }
+
+    public boolean isExcludeDefaultContainerInterceptors() {
+        return this.excludeDefaultContainerInterceptors;
+    }
+
+    public void excludeDefaultContainerInterceptors(final MethodIdentifier methodIdentifier) {
+        this.excludeDefaultContainerInterceptorsForMethod.put(methodIdentifier, true);
+    }
+
+    public boolean isExcludeDefaultContainerInterceptors(final MethodIdentifier methodIdentifier) {
+        return this.excludeDefaultContainerInterceptorsForMethod.get(methodIdentifier) != null;
+    }
+
+    public void excludeClassLevelContainerInterceptors(final MethodIdentifier methodIdentifier) {
+        this.excludeClassLevelContainerInterceptorsForMethod.put(methodIdentifier, true);
+    }
+
+    public boolean isExcludeClassLevelContainerInterceptors(final MethodIdentifier methodIdentifier) {
+        return this.excludeClassLevelContainerInterceptorsForMethod.get(methodIdentifier) != null;
+    }
+
+    public Map<MethodIdentifier, List<InterceptorDescription>> getMethodLevelContainerInterceptors() {
+        return this.methodLevelContainerInterceptors;
+    }
+
+    public void setMethodContainerInterceptors(final MethodIdentifier methodIdentifier, final List<InterceptorDescription> containerInterceptors) {
+        this.methodLevelContainerInterceptors.put(methodIdentifier, containerInterceptors);
+    }
+
+
+    /**
+     * Returns a combined map of class and method level container interceptors
+     *
+     */
+    public Set<InterceptorDescription> getAllContainerInterceptors() {
+        if (this.allContainerInterceptors == null) {
+            this.allContainerInterceptors = new HashSet<InterceptorDescription>();
+            this.allContainerInterceptors.addAll(this.classLevelContainerInterceptors);
+            if (!this.excludeDefaultContainerInterceptors) {
+                this.allContainerInterceptors.addAll(this.defaultContainerInterceptors);
+            }
+            for (List<InterceptorDescription> interceptors : this.methodLevelContainerInterceptors.values()) {
+                this.allContainerInterceptors.addAll(interceptors);
+            }
+        }
+        return this.allContainerInterceptors;
     }
 
     @Override

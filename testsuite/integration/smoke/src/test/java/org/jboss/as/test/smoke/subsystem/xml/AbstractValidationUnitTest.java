@@ -71,6 +71,7 @@ public class AbstractValidationUnitTest {
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb3-2_0.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb3-spec-2_0.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-cache_1_0.xsd");
+        EXCLUDED_SCHEMA_FILES.add("jboss-ejb-container-interceptors_1_0.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-iiop_1_0.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-pool_1_0.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-resource-adapter-binding_1_0.xsd");
