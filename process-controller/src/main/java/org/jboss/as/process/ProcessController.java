@@ -32,6 +32,7 @@ import java.io.PrintStream;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,11 +56,14 @@ public final class ProcessController {
     private final Object lock = new Object();
 
     private final ProtocolServer server;
-    private final Map<String, ManagedProcess> processes = new HashMap<String, ManagedProcess>();
+    // Synchronized map so we can safely check its size without holding the monitor for field 'lock' */
+    private final Map<String, ManagedProcess> processes = Collections.synchronizedMap(new HashMap<String, ManagedProcess>());
     private final Map<Key, ManagedProcess> processesByKey = new HashMap<Key, ManagedProcess>();
     private final Set<Connection> managedConnections = new CopyOnWriteArraySet<Connection>();
 
-    private boolean shutdown;
+    private volatile boolean shutdown;
+
+
 
     private final PrintStream stdout;
     private final PrintStream stderr;
@@ -360,6 +364,15 @@ public final class ProcessController {
                 }
             }
         }
+    }
+
+    /**
+     * Gets the current number of processes, or zero if a shutdown is in progress.
+     *
+     * @return the current number of processes, or zero if a shutdown is in progress
+     */
+    int getOngoingProcessCount() {
+        return shutdown ? 0 : processes.size();
     }
 
     public ProtocolServer getServer() {
