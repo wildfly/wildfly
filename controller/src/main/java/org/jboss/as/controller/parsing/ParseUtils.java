@@ -69,7 +69,8 @@ public final class ParseUtils {
 
         if (element == null) {
             return element;
-        } else if (expectedNamespace.equals(Namespace.forUri(reader.getNamespaceURI()))) {
+        } else if (element != Element.UNKNOWN
+                && expectedNamespace.equals(Namespace.forUri(reader.getNamespaceURI()))) {
             return element;
         }
 
