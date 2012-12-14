@@ -109,7 +109,7 @@
         <version.javax.validation>1.0.0.GA</version.javax.validation>
         <version.jaxen>1.1.3</version.jaxen>
         <version.jboss.jaxbintros>1.0.2.GA</version.jboss.jaxbintros>
-        <version.aesh>0.26</version.aesh>
+        <version.aesh>0.27</version.aesh>
         <version.jansi>1.8</version.jansi>
         <version.joda-time>1.6.2</version.joda-time>
         <version.junit>4.10</version.junit>
