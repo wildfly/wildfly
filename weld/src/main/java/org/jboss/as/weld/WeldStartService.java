@@ -21,6 +21,9 @@
  */
 package org.jboss.as.weld;
 
+import java.util.List;
+
+import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -40,9 +43,11 @@ public class WeldStartService implements Service<WeldStartService> {
 
     private final InjectedValue<WeldBootstrapService> bootstrap = new InjectedValue<WeldBootstrapService>();
 
+    private final List<SetupAction> setupActions;
     private final ClassLoader classLoader;
 
-    public WeldStartService(final ClassLoader classLoader) {
+    public WeldStartService(final List<SetupAction> setupActions, final ClassLoader classLoader) {
+        this.setupActions = setupActions;
         this.classLoader = classLoader;
     }
 
@@ -50,12 +55,23 @@ public class WeldStartService implements Service<WeldStartService> {
     public void start(final StartContext context) throws StartException {
         ClassLoader oldTccl = SecurityActions.getContextClassLoader();
         try {
+            for (SetupAction action : setupActions) {
+                action.setup(null);
+            }
             SecurityActions.setContextClassLoader(classLoader);
             bootstrap.getValue().getBootstrap().startInitialization();
             bootstrap.getValue().getBootstrap().deployBeans();
             bootstrap.getValue().getBootstrap().validateBeans();
             bootstrap.getValue().getBootstrap().endInitialization();
         } finally {
+
+            for (SetupAction action : setupActions) {
+                try {
+                    action.teardown(null);
+                } catch (Exception e) {
+                    WeldLogger.DEPLOYMENT_LOGGER.exceptionClearingThreadState(e);
+                }
+            }
             SecurityActions.setContextClassLoader(oldTccl);
         }
     }

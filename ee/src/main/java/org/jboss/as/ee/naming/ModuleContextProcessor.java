@@ -22,10 +22,6 @@
 
 package org.jboss.as.ee.naming;
 
-import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
-import static org.jboss.as.ee.naming.Attachments.MODULE_CONTEXT_CONFIG;
-import static org.jboss.as.server.deployment.Attachments.SETUP_ACTIONS;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -45,6 +41,10 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.Values;
+
+import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
+import static org.jboss.as.ee.naming.Attachments.MODULE_CONTEXT_CONFIG;
+import static org.jboss.as.server.deployment.Attachments.SETUP_ACTIONS;
 
 /**
  * Deployment processor that deploys a naming context for the current module.
@@ -103,6 +103,7 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
         final JavaNamespaceSetup setupAction = new JavaNamespaceSetup(selector, deploymentUnit.getServiceName());
         deploymentUnit.addToAttachmentList(SETUP_ACTIONS, setupAction);
         deploymentUnit.addToAttachmentList(org.jboss.as.ee.component.Attachments.WEB_SETUP_ACTIONS, setupAction);
+        deploymentUnit.putAttachment(Attachments.JAVA_NAMESPACE_SETUP_ACTION, setupAction);
     }
 
     public void undeploy(DeploymentUnit context) {

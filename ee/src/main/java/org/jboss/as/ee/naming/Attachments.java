@@ -33,4 +33,7 @@ import org.jboss.msc.service.ServiceName;
 public class Attachments {
     public static final AttachmentKey<ServiceName> APPLICATION_CONTEXT_CONFIG = AttachmentKey.create(ServiceName.class);
     public static final AttachmentKey<ServiceName> MODULE_CONTEXT_CONFIG = AttachmentKey.create(ServiceName.class);
+
+    public static final AttachmentKey<JavaNamespaceSetup> JAVA_NAMESPACE_SETUP_ACTION = AttachmentKey.create(JavaNamespaceSetup.class);
+
 }
