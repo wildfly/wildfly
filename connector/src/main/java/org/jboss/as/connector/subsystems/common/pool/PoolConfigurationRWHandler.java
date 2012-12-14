@@ -22,6 +22,23 @@
 
 package org.jboss.as.connector.subsystems.common.pool;
 
+import org.jboss.as.connector.util.ConnectorServices;
+import org.jboss.as.controller.AbstractWriteAttributeHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.dmr.ModelNode;
+import org.jboss.jca.core.api.connectionmanager.pool.PoolConfiguration;
+import org.jboss.jca.core.api.management.Connector;
+import org.jboss.jca.core.api.management.DataSource;
+import org.jboss.jca.core.api.management.ManagementRepository;
+import org.jboss.msc.service.ServiceController;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
@@ -29,35 +46,13 @@ import static org.jboss.as.connector.subsystems.common.pool.Constants.BLOCKING_T
 import static org.jboss.as.connector.subsystems.common.pool.Constants.IDLETIMEOUTMINUTES;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.MAX_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.MIN_POOL_SIZE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_ATTRIBUTES;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import org.jboss.as.connector.util.ConnectorServices;
-import org.jboss.as.controller.AbstractWriteAttributeHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.operations.validation.EnumValidator;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-import org.jboss.jca.common.api.metadata.common.FlushStrategy;
-import org.jboss.jca.core.api.connectionmanager.pool.PoolConfiguration;
-import org.jboss.jca.core.api.management.Connector;
-import org.jboss.jca.core.api.management.DataSource;
-import org.jboss.jca.core.api.management.ManagementRepository;
-import org.jboss.msc.service.ServiceController;
 
 /**
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
@@ -89,46 +84,15 @@ public class PoolConfigurationRWHandler {
 
     public abstract static class PoolConfigurationWriteHandler extends AbstractWriteAttributeHandler<List<PoolConfiguration>> {
 
-        static final ModelTypeValidator intValidator = new ModelTypeValidator(ModelType.INT);
-        static final ModelTypeValidator longValidator = new ModelTypeValidator(ModelType.LONG);
-        static final ModelTypeValidator boolValidator = new ModelTypeValidator(ModelType.BOOLEAN);
-
-        private static ParameterValidator getValidator(String attributeName) throws OperationFailedException {
-
-            if (MAX_POOL_SIZE.getName().equals(attributeName)) {
-                return intValidator;
-            } else if ( MIN_POOL_SIZE.getName().equals(attributeName)) {
-                return intValidator;
-            } else if ( BLOCKING_TIMEOUT_WAIT_MILLIS.getName().equals(attributeName)) {
-                return longValidator;
-            } else if ( IDLETIMEOUTMINUTES.getName().equals(attributeName)) {
-                return longValidator;
-            } else if ( BACKGROUNDVALIDATION.getName().equals(attributeName)) {
-                return boolValidator;
-            } else if ( BACKGROUNDVALIDATIONMILLIS.getName().equals(attributeName)) {
-                return longValidator;
-            } else if ( POOL_PREFILL.getName().equals(attributeName)) {
-                return boolValidator;
-            } else if ( POOL_USE_STRICT_MIN.getName().equals(attributeName)) {
-                return boolValidator;
-            } else if ( USE_FAST_FAIL.getName().equals(attributeName)) {
-                return boolValidator;
-            } else if (POOL_FLUSH_STRATEGY.getName().equals(attributeName)) {
-                return new EnumValidator(FlushStrategy.class, true, true);
-            } else {
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidParameterName(attributeName)));
-            }
-
-        }
 
         protected PoolConfigurationWriteHandler() {
-            super();
+            super(POOL_ATTRIBUTES);
         }
 
         @Override
         protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation,
-               final String parameterName, final ModelNode newValue,
-               final ModelNode currentValue, final HandbackHolder<List<PoolConfiguration>> handbackHolder) throws OperationFailedException {
+                                               final String parameterName, final ModelNode newValue,
+                                               final ModelNode currentValue, final HandbackHolder<List<PoolConfiguration>> handbackHolder) throws OperationFailedException {
 
             final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             final String jndiName = address.getLastElement().getValue();
@@ -147,9 +111,9 @@ public class PoolConfigurationRWHandler {
                 }
             }
 
-            return ( IDLETIMEOUTMINUTES.getName().equals(parameterName) ||  BACKGROUNDVALIDATION.getName().equals(parameterName)
-                    ||  BACKGROUNDVALIDATIONMILLIS.getName().equals(parameterName)
-                    ||  POOL_PREFILL.getName().equals(parameterName) || POOL_FLUSH_STRATEGY.getName().equals(parameterName));
+            return (IDLETIMEOUTMINUTES.getName().equals(parameterName) || BACKGROUNDVALIDATION.getName().equals(parameterName)
+                    || BACKGROUNDVALIDATIONMILLIS.getName().equals(parameterName)
+                    || POOL_PREFILL.getName().equals(parameterName) || POOL_FLUSH_STRATEGY.getName().equals(parameterName));
 
         }
 
@@ -162,31 +126,22 @@ public class PoolConfigurationRWHandler {
             }
         }
 
-        @Override
-        protected void validateUnresolvedValue(String attributeName, ModelNode unresolvedValue) throws OperationFailedException {
-            getValidator(attributeName).validateParameter(VALUE, unresolvedValue);
-        }
-
-        @Override
-        protected void validateResolvedValue(String attributeName, ModelNode resolvedValue) throws OperationFailedException {
-            getValidator(attributeName).validateResolvedParameter(VALUE, resolvedValue);
-        }
 
         private void updatePoolConfigs(List<PoolConfiguration> poolConfigs, String parameterName, ModelNode newValue) {
             for (PoolConfiguration pc : poolConfigs) {
                 if (MAX_POOL_SIZE.getName().equals(parameterName)) {
                     pc.setMaxSize(newValue.asInt());
                 }
-                if ( MIN_POOL_SIZE.getName().equals(parameterName)) {
+                if (MIN_POOL_SIZE.getName().equals(parameterName)) {
                     pc.setMinSize(newValue.asInt());
                 }
-                if ( BLOCKING_TIMEOUT_WAIT_MILLIS.getName().equals(parameterName)) {
+                if (BLOCKING_TIMEOUT_WAIT_MILLIS.getName().equals(parameterName)) {
                     pc.setBlockingTimeout(newValue.asLong());
                 }
-                if ( POOL_USE_STRICT_MIN.getName().equals(parameterName)) {
+                if (POOL_USE_STRICT_MIN.getName().equals(parameterName)) {
                     pc.setStrictMin(newValue.asBoolean());
                 }
-                if ( USE_FAST_FAIL.getName().equals(parameterName)) {
+                if (USE_FAST_FAIL.getName().equals(parameterName)) {
                     pc.setUseFastFail(newValue.asBoolean());
                 }
             }
@@ -215,7 +170,6 @@ public class PoolConfigurationRWHandler {
             result.trimToSize();
             return result;
         }
-
 
 
     }

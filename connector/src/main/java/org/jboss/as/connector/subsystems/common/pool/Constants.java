@@ -87,4 +87,7 @@ public class Constants {
             .setAllowExpression(true)
             .setValidator(new EnumValidator<FlushStrategy>(FlushStrategy.class, true, true))
             .build();
+
+    public static final SimpleAttributeDefinition[] POOL_ATTRIBUTES = {BLOCKING_TIMEOUT_WAIT_MILLIS, IDLETIMEOUTMINUTES, BACKGROUNDVALIDATIONMILLIS,
+            BACKGROUNDVALIDATION, USE_FAST_FAIL, MAX_POOL_SIZE, MIN_POOL_SIZE, POOL_PREFILL, POOL_USE_STRICT_MIN, POOL_FLUSH_STRATEGY};
 }
