@@ -21,18 +21,34 @@
 */
 package org.jboss.as.test.integration.domain.mixed;
 
-import org.jboss.as.test.integration.domain.mixed.Version.AsVersion;
-import org.junit.BeforeClass;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-@Version(AsVersion.V_7_1_2_Final)
-public class SimpleMixedDomain_7_1_2_Final_TestCase extends SimpleMixedDomainTest {
+@Retention(RetentionPolicy.RUNTIME)
+@Target(value=ElementType.TYPE)
+public @interface Version {
 
-    @BeforeClass
-    public static void beforeClass() {
-        beforeClass(SimpleMixedDomain_7_1_2_Final_TestCase.class);
+    AsVersion value();
+
+    enum AsVersion {
+        V_7_1_2_Final("7.1.2.Final"),
+        V_7_1_3_Final("7.1.3.Final");
+
+        String version;
+
+        AsVersion(String version){
+            this.version = version;
+        }
+
+        public String getVersion() {
+            return version;
+        }
     }
+
 }
