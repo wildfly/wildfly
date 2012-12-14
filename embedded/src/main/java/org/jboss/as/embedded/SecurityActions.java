@@ -22,8 +22,11 @@
 
 package org.jboss.as.embedded;
 
+import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.Map;
 import java.util.Properties;
 
@@ -88,6 +91,7 @@ class SecurityActions {
             return System.getProperties();
         } else {
             return AccessController.doPrivileged(new PrivilegedAction<Properties>() {
+                @Override
                 public Properties run() {
                     return System.getProperties();
                 }
@@ -100,10 +104,70 @@ class SecurityActions {
             return System.getenv();
         } else {
             return AccessController.doPrivileged(new PrivilegedAction<Map<String, String>>() {
+                @Override
                 public Map<String, String> run() {
                     return System.getenv();
                 }
             });
+        }
+    }
+
+    static ClassLoader getContextClassLoader() {
+
+        if (System.getSecurityManager() == null) {
+            return Thread.currentThread().getContextClassLoader();
+        } else {
+            return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+
+                @Override
+                public ClassLoader run() {
+                    return Thread.currentThread().getContextClassLoader();
+                }
+            });
+        }
+    }
+
+    static void setContextClassLoader(final ClassLoader tccl) {
+
+        if (System.getSecurityManager() == null) {
+            Thread.currentThread().setContextClassLoader(tccl);
+        } else {
+            AccessController.doPrivileged(new PrivilegedAction<Void>() {
+
+                @Override
+                public Void run() {
+                    Thread.currentThread().setContextClassLoader(tccl);
+                    return null;
+                }
+            });
+        }
+    }
+
+    static void setAccessible(final Method method) throws SecurityException {
+        if (method == null) {
+            throw new IllegalArgumentException("method must be specified");
+        }
+        if (System.getSecurityManager() == null) {
+            method.setAccessible(true);
+        } else {
+            try {
+                AccessController.doPrivileged(new PrivilegedExceptionAction<Void>() {
+
+                    @Override
+                    public Void run() throws Exception {
+                        method.setAccessible(true);
+                        return null;
+                    }
+                });
+            } catch (final PrivilegedActionException pae) {
+                final Throwable cause = pae.getCause();
+                if (cause instanceof SecurityException) {
+                    throw (SecurityException) cause;
+                } else {
+                    throw new RuntimeException("Unexpected exception encountered settingg accessibility of " + method
+                            + " to true", cause);
+                }
+            }
         }
     }
 }

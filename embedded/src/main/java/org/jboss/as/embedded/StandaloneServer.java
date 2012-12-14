@@ -28,6 +28,8 @@ import java.util.concurrent.ExecutionException;
 import javax.naming.Context;
 
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * The standalone server interface.
@@ -36,9 +38,14 @@ import org.jboss.as.controller.client.ModelControllerClient;
  * @since 17-Nov-2010
  */
 public interface StandaloneServer {
+
     // TODO: use a DeploymentPlan
     @Deprecated
     void deploy(File file) throws IOException, ExecutionException, InterruptedException;
+
+    // TODO: use a DeploymentPlan
+    @Deprecated
+    void undeploy(File file) throws ExecutionException, InterruptedException;
 
     /**
      * Retrieve a naming context for looking up references to session beans executing in
@@ -54,7 +61,5 @@ public interface StandaloneServer {
 
     void stop();
 
-    // TODO: use a DeploymentPlan
-    @Deprecated
-    void undeploy(File file) throws ExecutionException, InterruptedException;
+    ServiceController<?> getService(ServiceName serviceName);
 }

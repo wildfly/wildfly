@@ -67,6 +67,8 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.Value;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
@@ -224,6 +226,11 @@ public class EmbeddedStandAloneServerFactory {
                 execute(serverDeploymentManager.newDeploymentPlan()
                         .undeploy(file.getName()).andRemoveUndeployed()
                         .build());
+            }
+
+            @Override
+            public ServiceController<?> getService(ServiceName serviceName) {
+                return serviceContainer != null ? serviceContainer.getService(serviceName) : null;
             }
         };
         return standaloneServer;
