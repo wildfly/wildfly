@@ -21,6 +21,7 @@
 */
 package org.jboss.as.test.integration.domain.mixed.util;
 
+import org.jboss.as.test.integration.domain.mixed.Version;
 import org.junit.AfterClass;
 
 /**
@@ -29,6 +30,11 @@ import org.junit.AfterClass;
  */
 public abstract class AbstractMixedDomainTest {
     private static volatile MixedDomainTestSupport support;
+    private static volatile Version.AsVersion version;
+
+    protected Version.AsVersion getVersion() {
+        return version;
+    }
 
     protected MixedDomainTestSupport getSupport() {
         return support;
@@ -59,8 +65,13 @@ public abstract class AbstractMixedDomainTest {
      * @param testClass the test/suite class
      * @param version the version to test
      */
-    public synchronized static void beforeClass(Class<?> testClass, String version) {
-        start(testClass.getSimpleName(), version);
+    public synchronized static void beforeClass(Class<?> testClass) {
+        Version version = testClass.getAnnotation(Version.class);
+        if (version == null) {
+            throw new IllegalArgumentException("No @Version");
+        }
+        AbstractMixedDomainTest.version = version.value();
+        start(testClass.getSimpleName(), version.value().getVersion());
     }
 
     @AfterClass

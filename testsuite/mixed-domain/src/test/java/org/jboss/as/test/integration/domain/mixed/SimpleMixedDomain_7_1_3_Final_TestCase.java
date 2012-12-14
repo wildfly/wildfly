@@ -21,16 +21,18 @@
 */
 package org.jboss.as.test.integration.domain.mixed;
 
+import org.jboss.as.test.integration.domain.mixed.Version.AsVersion;
 import org.junit.BeforeClass;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
+@Version(AsVersion.V_7_1_3_Final)
 public class SimpleMixedDomain_7_1_3_Final_TestCase extends SimpleMixedDomainTest {
 
     @BeforeClass
     public static void beforeClass() {
-        beforeClass(SimpleMixedDomain_7_1_3_Final_TestCase.class, "7.1.2.Final");
+        beforeClass(SimpleMixedDomain_7_1_3_Final_TestCase.class);
     }
 }
