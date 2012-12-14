@@ -22,7 +22,6 @@
 package org.jboss.as.remoting;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -32,6 +31,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.remoting.SaslPolicyResource.FORWARD_SECRECY;
+import static org.jboss.as.remoting.SaslPolicyResource.NO_ACTIVE;
+import static org.jboss.as.remoting.SaslPolicyResource.NO_ANONYMOUS;
+import static org.jboss.as.remoting.SaslPolicyResource.NO_DICTIONARY;
+import static org.jboss.as.remoting.SaslPolicyResource.NO_PLAIN_TEXT;
+import static org.jboss.as.remoting.SaslPolicyResource.PASS_CREDENTIALS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -39,7 +44,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -92,7 +99,111 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
         assertTrue(legacyServices.isSuccessfulBoot());
 
         checkSubsystemModelTransformation(mainServices, version_1_1);
+        checkRejectWorkerThreadAttributes(mainServices, version_1_1);
+        checkRejectSASLAttribute(mainServices, version_1_1, CommonAttributes.REUSE_SESSION, "${reuse.session:true}");
+        checkRejectSASLAttribute(mainServices, version_1_1, CommonAttributes.SERVER_AUTH, "${server.auth:true}");
+        checkRejectSASLProperty(mainServices, version_1_1);
+        checkRejectSASLPolicyAttributes(mainServices, version_1_1);
+        checkRejectConnectorProperty(mainServices, version_1_1);
+        checkRejectRemoteOutboundConnectionUsername(mainServices, version_1_1);
+        checkRejectOutboundConnectionProperty(mainServices, version_1_1, CommonAttributes.REMOTE_OUTBOUND_CONNECTION, "remote-conn1");
+        checkRejectOutboundConnectionProperty(mainServices, version_1_1, CommonAttributes.LOCAL_OUTBOUND_CONNECTION, "local-conn1");
+        checkRejectOutboundConnectionProperty(mainServices, version_1_1, CommonAttributes.OUTBOUND_CONNECTION, "generic-conn1");
+    }
 
+    private void checkRejectOutboundConnectionProperty(KernelServices mainServices, ModelVersion version, String type, String name) throws OperationFailedException {
+        ModelNode operation = new ModelNode();
+        operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+        ModelNode address = new ModelNode();
+        address.add(SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME);
+        address.add(type, name);
+        address.add(CommonAttributes.PROPERTY, "org.xnio.Options.SSL_ENABLED");
+        operation.get(OP_ADDR).set(address);
+        operation.get(NAME).set(CommonAttributes.VALUE);
+        operation.get(VALUE).set("${myprop:true}");
+
+        checkReject(operation, mainServices, version);
+    }
+
+    private void checkRejectSASLAttribute(KernelServices mainServices, ModelVersion version, String name, String value) throws OperationFailedException {
+        ModelNode operation = new ModelNode();
+        operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+        ModelNode address = new ModelNode();
+        address.add(SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME);
+        address.add(CommonAttributes.CONNECTOR, "remoting-connector");
+        address.add(CommonAttributes.SECURITY, CommonAttributes.SASL);
+        operation.get(OP_ADDR).set(address);
+        operation.get(NAME).set(name);
+        operation.get(VALUE).set(value);
+
+        checkReject(operation, mainServices, version);
+    }
+
+    private void checkRejectSASLProperty(KernelServices mainServices, ModelVersion version) throws OperationFailedException {
+        ModelNode operation = new ModelNode();
+        operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+        ModelNode address = new ModelNode();
+        address.add(SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME);
+        address.add(CommonAttributes.CONNECTOR, "remoting-connector");
+        address.add(CommonAttributes.SECURITY, CommonAttributes.SASL);
+        address.add(CommonAttributes.PROPERTY, "sasl1");
+        operation.get(OP_ADDR).set(address);
+        operation.get(NAME).set(CommonAttributes.VALUE);
+        operation.get(VALUE).set("${sasl.prop:sasl one}");
+
+        checkReject(operation, mainServices, version);
+    }
+
+    private void checkRejectSASLPolicyAttributes(KernelServices mainServices, ModelVersion version) throws OperationFailedException {
+        for (AttributeDefinition attr: new AttributeDefinition[] {NO_ACTIVE, NO_ANONYMOUS, NO_DICTIONARY, FORWARD_SECRECY,
+                NO_PLAIN_TEXT, PASS_CREDENTIALS}) {
+            checkRejectSASLPolicyAttribute(mainServices, version, attr);
+        }
+    }
+
+    private void checkRejectSASLPolicyAttribute(KernelServices mainServices, ModelVersion version, AttributeDefinition attr) throws OperationFailedException {
+        ModelNode operation = new ModelNode();
+        operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+        ModelNode address = new ModelNode();
+        address.add(SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME);
+        address.add(CommonAttributes.CONNECTOR, "remoting-connector");
+        address.add(CommonAttributes.SECURITY, CommonAttributes.SASL);
+        address.add(CommonAttributes.SASL_POLICY, CommonAttributes.POLICY);
+        operation.get(OP_ADDR).set(address);
+        operation.get(NAME).set(attr.getName());
+        operation.get(VALUE).set("${mypolicy:false}");
+
+        checkReject(operation, mainServices, version);
+    }
+
+    private void checkRejectConnectorProperty(KernelServices mainServices, ModelVersion version) throws OperationFailedException {
+        ModelNode operation = new ModelNode();
+        operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+        ModelNode address = new ModelNode();
+        address.add(SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME);
+        address.add(CommonAttributes.CONNECTOR, "remoting-connector");
+        address.add(CommonAttributes.PROPERTY, "c1");
+        operation.get(OP_ADDR).set(address);
+        operation.get(NAME).set(CommonAttributes.VALUE);
+        operation.get(VALUE).set("${connector.prop:connector one}");
+
+        checkReject(operation, mainServices, version);
+    }
+
+    private void checkRejectRemoteOutboundConnectionUsername(KernelServices mainServices, ModelVersion version) throws OperationFailedException {
+        ModelNode operation = new ModelNode();
+        operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+        ModelNode address = new ModelNode();
+        address.add(SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME);
+        address.add(CommonAttributes.REMOTE_OUTBOUND_CONNECTION, "remote-conn1");
+        operation.get(OP_ADDR).set(address);
+        operation.get(NAME).set(CommonAttributes.USERNAME);
+        operation.get(VALUE).set("${remoting.user:myuser}");
+
+        checkReject(operation, mainServices, version);
+    }
+
+    private void checkRejectWorkerThreadAttributes(KernelServices mainServices, ModelVersion version) throws OperationFailedException {
         ModelNode operation = new ModelNode();
         operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
         ModelNode address = new ModelNode();
@@ -100,6 +211,11 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
         operation.get(OP_ADDR).set(address);
         operation.get(NAME).set("worker-read-threads");
         operation.get(VALUE).set("${worker.read.threads:5}");
+
+        checkReject(operation, mainServices, version);
+    }
+
+    private void checkReject(ModelNode operation, KernelServices mainServices, ModelVersion version) throws OperationFailedException {
 
         ModelNode mainResult = mainServices.executeOperation(operation);
         assertEquals(mainResult.toJSONString(true), SUCCESS, mainResult.get(OUTCOME).asString());
@@ -114,8 +230,8 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
         ignoreResult.get(OUTCOME).set(IGNORED);
         ignoreResult.protect();
 
-        final OperationTransformer.TransformedOperation op = mainServices.transformOperation(version_1_1, operation);
-        final ModelNode result = mainServices.executeOperation(version_1_1, op);
+        final OperationTransformer.TransformedOperation op = mainServices.transformOperation(version, operation);
+        final ModelNode result = mainServices.executeOperation(version, op);
         assertEquals("should reject the expression", FAILED, result.get(OUTCOME).asString());
     }
 

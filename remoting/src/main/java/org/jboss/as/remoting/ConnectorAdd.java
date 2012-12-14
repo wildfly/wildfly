@@ -71,7 +71,7 @@ public class ConnectorAdd extends AbstractAddStepHandler {
     }
 
     void launchServices(OperationContext context, String connectorName, ModelNode fullModel, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        OptionMap optionMap = ConnectorResource.getFullOptions(fullModel);
+        OptionMap optionMap = ConnectorResource.getFullOptions(context, fullModel);
 
         final ServiceTarget target = context.getServiceTarget();
 

@@ -155,6 +155,23 @@ public class RemotingExtension implements Extension {
         final TransformersSubRegistration subsystem = registration.registerModelTransformers(VERSION_1_1, rejectExpression);
         subsystem.registerOperationTransformer(ADD, rejectExpression);
         subsystem.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, rejectExpression.getWriteAttributeTransformer());
+
+        TransformersSubRegistration connector = subsystem.registerSubResource(ConnectorResource.PATH);
+        PropertyResourceTransformers.registerTransformers(connector);
+        SaslResourceTransformers.registerTransformers(connector);
+
+        TransformersSubRegistration remoteOutboundConnection = subsystem.registerSubResource(RemoteOutboundConnectionResourceDefinition.ADDRESS);
+        RejectExpressionValuesTransformer rejectUserNameExpression = new RejectExpressionValuesTransformer(RemoteOutboundConnectionResourceDefinition.USERNAME);
+        remoteOutboundConnection.registerOperationTransformer(ADD, rejectUserNameExpression);
+        remoteOutboundConnection.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, rejectUserNameExpression.getWriteAttributeTransformer());
+
+        PropertyResourceTransformers.registerTransformers(remoteOutboundConnection);
+
+        TransformersSubRegistration localOutboundConnection = subsystem.registerSubResource(LocalOutboundConnectionResourceDefinition.ADDRESS);
+        PropertyResourceTransformers.registerTransformers(localOutboundConnection);
+
+        TransformersSubRegistration outboundConnection = subsystem.registerSubResource(GenericOutboundConnectionResourceDefinition.ADDRESS);
+        PropertyResourceTransformers.registerTransformers(outboundConnection);
     }
 
     /**

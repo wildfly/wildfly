@@ -1,6 +1,6 @@
 /*
 * JBoss, Home of Professional Open Source.
-* Copyright 2011, Red Hat Middleware LLC, and individual contributors
+* Copyright 2012, Red Hat Middleware LLC, and individual contributors
 * as indicated by the @author tags. See the copyright.txt file in the
 * distribution for a full listing of individual contributors.
 *
@@ -19,28 +19,32 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
+
 package org.jboss.as.remoting;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
-class NamedValueAttributeDefinition extends SimpleAttributeDefinition {
-    final Attribute attribute;
-    public NamedValueAttributeDefinition(final String name, final Attribute attribute, final ModelNode defaultValue, final ModelType type, final boolean allowNull) {
-        super(name, defaultValue, type, allowNull);
-        this.attribute = attribute;
+/**
+ * <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012 Red Hat, inc
+ */
+public class WrappedAttributeMarshaller extends AttributeMarshaller {
+
+    private final Attribute xmlAttribute;
+
+    WrappedAttributeMarshaller(Attribute xmlAttribute) {
+        this.xmlAttribute = xmlAttribute;
     }
 
     @Override
-    public void marshallAsElement(ModelNode resourceModel, final boolean marshalDefault, XMLStreamWriter writer)
-            throws XMLStreamException {
-        if (isMarshallable(resourceModel)) {
-            writer.writeEmptyElement(getXmlName());
-            writer.writeAttribute(attribute.getLocalName(), resourceModel.get(getName()).asString());
+    public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+        if (isMarshallable(attribute, resourceModel)) {
+            writer.writeEmptyElement(attribute.getXmlName());
+            writer.writeAttribute(xmlAttribute.getLocalName(), resourceModel.get(attribute.getName()).asString());
         }
     }
 }

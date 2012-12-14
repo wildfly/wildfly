@@ -91,7 +91,7 @@ class GenericOutboundConnectionAdd extends AbstractOutboundConnectionAddHandler 
 
         final PathAddress pathAddress = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String connectionName = pathAddress.getLastElement().getValue();
-        final OptionMap connectionCreationOptions = ConnectorResource.getOptions(fullModel.get(CommonAttributes.PROPERTY));
+        final OptionMap connectionCreationOptions = ConnectorResource.getOptions(context, fullModel.get(CommonAttributes.PROPERTY));
 
 
         //final OptionMap connectionCreationOptions = getConnectionCreationOptions(outboundConnection);
