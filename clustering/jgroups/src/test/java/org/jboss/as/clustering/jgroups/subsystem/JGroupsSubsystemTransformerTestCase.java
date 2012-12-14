@@ -21,57 +21,34 @@
 */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
+import junit.framework.Assert;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.jboss.dmr.ModelNode;
 import org.junit.Ignore;
 import org.junit.Test;
 
 /**
+ * Test cases for transformers used in the JGroups subsystem.
+ *
  * @author <a href="tomaz.cerar@redhat.com">Tomaz Cerar</a>
+ * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
 
-public class JGroupsSubsystemTransformerTestCase extends AbstractSubsystemBaseTest {
+public class JGroupsSubsystemTransformerTestCase extends OperationTestCaseBase {
 
-
-    public JGroupsSubsystemTransformerTestCase() {
-        super(JGroupsExtension.SUBSYSTEM_NAME, new JGroupsExtension());
-    }
-
-    @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("jgroups-transformer_1_1.xml");
-    }
-
-    @Override
-    protected Set<PathAddress> getIgnoredChildResourcesForRemovalTest() {
-        // create a collection of resources in the test which are not removed by a "remove" command
-        // i.e. all resources of form /subsystem=jgroups/stack=maximal/protocol=*
-
-        String[] protocolList = {"MPING", "MERGE2", "FD_SOCK", "FD", "VERIFY_SUSPECT", "BARRIER",
-                "pbcast.NAKACK", "UNICAST2", "pbcast.STABLE", "pbcast.GMS", "UFC", "MFC", "FRAG2",
-                "pbcast.STATE_TRANSFER", "pbcast.FLUSH"};
-        PathAddress subsystem = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME));
-        PathAddress stack = subsystem.append(PathElement.pathElement(ModelKeys.STACK, "maximal"));
-        List<PathAddress> addresses = new ArrayList<PathAddress>();
-        for (String protocol : protocolList) {
-            PathAddress ignoredChild = stack.append(PathElement.pathElement(ModelKeys.PROTOCOL, protocol));
-            ;
-            addresses.add(ignoredChild);
-        }
-        return new HashSet<PathAddress>(addresses);
+        return readResource("jgroups-transformer_1_1.xml") ;
     }
 
     /**
@@ -88,7 +65,7 @@ public class JGroupsSubsystemTransformerTestCase extends AbstractSubsystemBaseTe
     @Ignore
     @Test
     public void testTransformer_1_1_0() throws Exception {
-        ModelVersion version = ModelVersion.create(1, 1);
+        ModelVersion version = ModelVersion.create(1, 1, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXml(getSubsystemXml());
         builder.createLegacyKernelServicesBuilder(null, version)
@@ -98,4 +75,51 @@ public class JGroupsSubsystemTransformerTestCase extends AbstractSubsystemBaseTe
 
         checkSubsystemModelTransformation(mainServices, version);
     }
+
+    /**
+     * Tests rejection of expressions in 1.1.0 model.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testRejectExpressions_1_1_0() throws Exception {
+        // create builder for current subsystem version
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXml(getSubsystemXml());
+
+        // create builder for legacy subsystem version
+        ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
+        builder.createLegacyKernelServicesBuilder(null, version_1_1_0)
+            .addMavenResourceURL("org.jboss.as:jboss-as-clustering-jgroups:7.1.2.Final");
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(version_1_1_0);
+        Assert.assertNotNull(legacyServices);
+
+        // build an ADD command to add a transport property using expression value
+        ModelNode operation = getTransportPropertyAddOperation("maximal", "bundler_type", "${the_bundler_type:new}");
+
+        // perform operation on the 1.1.1 model
+        ModelNode mainResult = mainServices.executeOperation(operation);
+        assertEquals(mainResult.toJSONString(true), SUCCESS, mainResult.get(OUTCOME).asString());
+
+        // perform transformed operation on the 1.1.0 model
+        OperationTransformer.TransformedOperation transformedOperation = mainServices.transformOperation(version_1_1_0, operation);
+        final ModelNode result = mainServices.executeOperation(version_1_1_0, transformedOperation);
+        Assert.assertEquals("should reject the expression", FAILED, result.get(OUTCOME).asString());
+
+        // build an ADD command to add a protocol property using expression value
+        ModelNode operation1 = getProtocolPropertyAddOperation("maximal", "MPING", "timeout", "${the_timeout:1000}");
+
+        // perform operation on the 1.1.1 model
+        ModelNode mainResult1 = mainServices.executeOperation(operation1);
+        assertEquals(mainResult1.toJSONString(true), SUCCESS, mainResult1.get(OUTCOME).asString());
+
+        // perform operation on the 1.1.0 model
+        OperationTransformer.TransformedOperation transformedOperation1 = mainServices.transformOperation(version_1_1_0, operation1);
+        final ModelNode result1 = mainServices.executeOperation(version_1_1_0, transformedOperation1);
+        Assert.assertEquals("should reject the expression", FAILED, result1.get(OUTCOME).asString());
+
+    }
+
 }

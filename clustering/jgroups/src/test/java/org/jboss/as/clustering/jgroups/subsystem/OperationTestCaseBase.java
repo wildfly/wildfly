@@ -183,6 +183,18 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return writeOp ;
     }
 
+    protected static ModelNode getTransportPropertyAddOperation(String stackName, String propertyName, String propertyValue) {
+        // create the address of the subsystem
+        PathAddress transportPropertyAddress = getTransportPropertyAddress(stackName, propertyName);
+        ModelNode addOp = new ModelNode() ;
+        addOp.get(OP).set(ADD);
+        addOp.get(OP_ADDR).set(transportPropertyAddress.toModelNode());
+        // required attributes
+        addOp.get(NAME).set(ModelKeys.VALUE);
+        addOp.get(VALUE).set(propertyValue);
+        return addOp ;
+    }
+
     protected static ModelNode getTransportPropertyReadOperation(String stackName, String propertyName) {
         // create the address of the subsystem
         PathAddress transportPropertyAddress = getTransportPropertyAddress(stackName, propertyName);
@@ -254,12 +266,24 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return writeOp ;
     }
 
+    protected static ModelNode getProtocolPropertyAddOperation(String stackName, String protocolName, String propertyName, String propertyValue) {
+        // create the address of the subsystem
+        PathAddress protocolPropertyAddress = getProtocolPropertyAddress(stackName, protocolName, propertyName);
+        ModelNode addOp = new ModelNode() ;
+        addOp.get(OP).set(ADD);
+        addOp.get(OP_ADDR).set(protocolPropertyAddress.toModelNode());
+        // required attributes
+        addOp.get(NAME).set(ModelKeys.VALUE);
+        addOp.get(VALUE).set(propertyValue);
+        return addOp ;
+    }
+
     protected static ModelNode getProtocolPropertyReadOperation(String stackName, String protocolName, String propertyName) {
         // create the address of the subsystem
-        PathAddress transportPropertyAddress = getProtocolPropertyAddress(stackName, protocolName, propertyName);
+        PathAddress protocolPropertyAddress = getProtocolPropertyAddress(stackName, protocolName, propertyName);
         ModelNode readOp = new ModelNode() ;
         readOp.get(OP).set(READ_ATTRIBUTE_OPERATION);
-        readOp.get(OP_ADDR).set(transportPropertyAddress.toModelNode());
+        readOp.get(OP_ADDR).set(protocolPropertyAddress.toModelNode());
         // required attributes
         readOp.get(NAME).set(ModelKeys.VALUE);
         return readOp ;
@@ -267,10 +291,10 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
 
     protected static ModelNode getProtocolPropertyWriteOperation(String stackName, String protocolName, String propertyName, String propertyValue) {
         // create the address of the subsystem
-        PathAddress transportPropertyAddress = getProtocolPropertyAddress(stackName, protocolName, propertyName);
+        PathAddress protocolPropertyAddress = getProtocolPropertyAddress(stackName, protocolName, propertyName);
         ModelNode writeOp = new ModelNode() ;
         writeOp.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-        writeOp.get(OP_ADDR).set(transportPropertyAddress.toModelNode());
+        writeOp.get(OP_ADDR).set(protocolPropertyAddress.toModelNode());
         // required attributes
         writeOp.get(NAME).set(ModelKeys.VALUE);
         writeOp.get(VALUE).set(propertyValue);

@@ -47,6 +47,14 @@ public class InfinispanSubsystemTransformer_1_3 extends AbstractSubsystemTransfo
         return model;
     }
 
+    /**
+     * Transform the cache into the earlier management api version, in which indexing properties,
+     * segments and virtual nodes were not defined.
+     *
+     * @param model
+     * @param containerName
+     * @param cacheType
+     */
     private void transformCache(final ModelNode model, final String containerName, final String cacheType) {
         if (!(model.get(ModelKeys.CACHE_CONTAINER).has(containerName) && model.get(ModelKeys.CACHE_CONTAINER, containerName).has(cacheType))) {
             return;
