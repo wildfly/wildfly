@@ -29,45 +29,49 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Executors;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.Util;
+import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
-import org.jboss.as.cli.impl.CommaSeparatedCompleter;
-import org.jboss.as.cli.impl.FileSystemPathArgument;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
+import org.jboss.as.cli.util.StrictSizeTable;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
+import org.jboss.vfs.TempFileProvider;
+import org.jboss.vfs.VFS;
 import org.jboss.vfs.spi.MountHandle;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class DeployHandler extends DeploymentHandler {
+public class DeployHandler extends BatchModeCommandHandler {
 
-    private final ArgumentWithoutValue force;
-    private final ArgumentWithoutValue l;
-    private final ArgumentWithoutValue path;
-    private final ArgumentWithoutValue name;
-    private final ArgumentWithoutValue rtName;
-    private final ArgumentWithValue serverGroups;
-    private final ArgumentWithoutValue allServerGroups;
-    private final ArgumentWithoutValue disabled;
-    private final ArgumentWithoutValue unmanaged;
-    private final ArgumentWithValue script;
+    protected final ArgumentWithoutValue force;
+    protected final ArgumentWithoutValue l;
+    protected final ArgumentWithoutValue path;
+    protected final ArgumentWithoutValue name;
+    protected final ArgumentWithoutValue rtName;
+    protected final ArgumentWithValue serverGroups;
+    protected final ArgumentWithoutValue allServerGroups;
+    protected final ArgumentWithoutValue disabled;
+    protected final ArgumentWithoutValue unmanaged;
+    protected final ArgumentWithValue script;
+
+    protected static final String CLI_ARCHIVE_SUFFIX = ".cli";
 
     public DeployHandler(CommandContext ctx) {
         super(ctx, "deploy", true);
@@ -80,7 +84,19 @@ public class DeployHandler extends DeploymentHandler {
         l.setExclusive(true);
 
         final FilenameTabCompleter pathCompleter = Util.isWindows() ? new WindowsFilenameTabCompleter(ctx) : new DefaultFilenameTabCompleter(ctx);
-        path = new FileSystemPathArgument(this, pathCompleter, 0, "--path");
+        path = new ArgumentWithValue(this, pathCompleter, 0, "--path") {
+            @Override
+            public String getValue(ParsedCommandLine args) {
+                String value = super.getValue(args);
+                if(value != null) {
+                    if(value.length() >= 0 && value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"') {
+                        value = value.substring(1, value.length() - 1);
+                    }
+                    value = pathCompleter.translatePath(value);
+                }
+                return value;
+            }
+        };
         path.addCantAppearAfter(l);
 
         force = new ArgumentWithoutValue(this, "--force", "-f");
@@ -151,10 +167,46 @@ public class DeployHandler extends DeploymentHandler {
         allServerGroups.addCantAppearAfter(force);
         force.addCantAppearAfter(allServerGroups);
 
-        serverGroups = new ArgumentWithValue(this, new CommaSeparatedCompleter() {
+        serverGroups = new ArgumentWithValue(this, new CommandLineCompleter() {
             @Override
-            protected Collection<String> getAllCandidates(CommandContext ctx) {
-                return Util.getServerGroups(ctx.getModelControllerClient());
+            public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
+                List<String> allGroups = Util.getServerGroups(ctx.getModelControllerClient());
+                if(buffer.isEmpty()) {
+                    candidates.addAll(allGroups);
+                    Collections.sort(candidates);
+                    return 0;
+                }
+
+                final String[] groups = buffer.split(",+");
+
+                final String chunk;
+                final int lastGroupIndex;
+                if(buffer.charAt(buffer.length() - 1) == ',') {
+                    lastGroupIndex = groups.length;
+                    chunk = null;
+                } else {
+                    lastGroupIndex = groups.length - 1;
+                    chunk = groups[groups.length - 1];
+                }
+
+                for(int i = 0; i < lastGroupIndex; ++i) {
+                    allGroups.remove(groups[i]);
+                }
+
+                final int result;
+                if(chunk == null) {
+                    candidates.addAll(allGroups);
+                    result = buffer.length();
+                } else {
+                    for(String group : allGroups) {
+                        if(group.startsWith(chunk)) {
+                            candidates.add(group);
+                        }
+                    }
+                    result = buffer.lastIndexOf(',') + 1;
+                }
+                Collections.sort(candidates);
+                return result;
             }}, "--server-groups") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
@@ -187,7 +239,7 @@ public class DeployHandler extends DeploymentHandler {
     }
 
     @Override
-    protected void doHandle(CommandContext ctx) throws CommandLineException {
+    protected void doHandle(CommandContext ctx) throws CommandFormatException {
 
         final ModelControllerClient client = ctx.getModelControllerClient();
 
@@ -213,16 +265,15 @@ public class DeployHandler extends DeploymentHandler {
         } else {
             f = null;
         }
+        doDepoyFile(ctx, client, args, unmanaged, f);
+    }
 
+    protected void doDepoyFile(CommandContext ctx, final ModelControllerClient client, ParsedCommandLine args, final boolean unmanaged, final File f) throws CommandFormatException {
         if (isCliArchive(f)) {
-            final ModelNode request = buildRequestWOValidation(ctx);
+            final ModelNode request = buildRequest(ctx);
             if(request == null) {
                 throw new CommandFormatException("Operation request wasn't built.");
             }
-
-            // if script had no server-side commands, just return
-            if (!request.get("steps").isDefined()) return;
-
             try {
                 final ModelNode result = client.execute(request);
                 if(Util.isSuccess(result)) {
@@ -364,7 +415,7 @@ public class DeployHandler extends DeploymentHandler {
                 throw new CommandFormatException(Util.getFailureDescription(result));
             }
         } catch (IOException e) {
-            throw new CommandFormatException("Failed to deploy", e);
+            throw new CommandFormatException("Failed to deploy: " + e.getLocalizedMessage(), e);
         }
     }
 
@@ -425,8 +476,6 @@ public class DeployHandler extends DeploymentHandler {
             }
 
             if(Util.isDeploymentInRepository(name, client)) {
-                // in batch mode these kind of checks might be inaccurate
-                // because the previous commands and operations are not taken into account
                 return buildDeploymentReplace(f, name, runtimeName);
             } else {
                 // add deployment to the repository (enabled in standalone, disabled in domain (i.e. not associated with any sg))
@@ -449,7 +498,7 @@ public class DeployHandler extends DeploymentHandler {
                 throw new OperationFormatException(this.disabled.getFullName() + " can't be used in combination with a CLI archive.");
             }
 
-            if(!ctx.isBatchMode() && Util.isDeploymentInRepository(name, client)) {
+            if(Util.isDeploymentInRepository(name, client)) {
                 throw new OperationFormatException("'" + name + "' already exists in the deployment repository (use " +
                     this.force.getFullName() + " to replace the existing content in the repository).");
             }
@@ -486,9 +535,8 @@ public class DeployHandler extends DeploymentHandler {
                     throw new CommandFormatException("ERROR: script '" + script + "' not found.");
                 }
 
-                BufferedReader reader = null;
                 try {
-                    reader = new BufferedReader(new FileReader(scriptFile));
+                    BufferedReader reader = new BufferedReader(new FileReader(scriptFile));
                     String line = reader.readLine();
                     while (!ctx.isTerminated() && line != null) {
                         ctx.handle(line);
@@ -500,13 +548,6 @@ public class DeployHandler extends DeploymentHandler {
                     throw new CommandFormatException("Failed to read the next command from " + scriptFile.getName() + ": " + e.getMessage(), e);
                 } catch (CommandLineException e) {
                     throw new CommandFormatException(e.getMessage(), e);
-                } finally {
-                    if(reader != null) {
-                        try {
-                            reader.close();
-                        } catch (IOException e) {
-                        }
-                    }
                 }
 
                 return ctx.getBatchManager().getActiveBatch().toRequest();
@@ -570,12 +611,12 @@ public class DeployHandler extends DeploymentHandler {
 
         final ModelNode addRequest;
         if(f != null) {
-            if(!ctx.isBatchMode() && Util.isDeploymentInRepository(name, client)) {
+            if(Util.isDeploymentInRepository(name, client)) {
                 throw new OperationFormatException("'" + name + "' already exists in the deployment repository (use " +
                     this.force.getFullName() + " to replace the existing content in the repository).");
             }
             addRequest = this.buildDeploymentAdd(f, name, runtimeName, unmanaged);
-        } else if(!ctx.isBatchMode() && !Util.isDeploymentInRepository(name, client)) {
+        } else if(!Util.isDeploymentInRepository(name, client)) {
             throw new OperationFormatException("'" + name + "' is not found among the registered deployments.");
         } else {
             addRequest = null;
@@ -634,9 +675,7 @@ public class DeployHandler extends DeploymentHandler {
                 OperationBuilder op = new OperationBuilder(request);
                 op.addFileAsAttachment(f);
                 request.get(Util.CONTENT).get(0).get(Util.INPUT_STREAM_INDEX).set(0);
-                Operation operation = op.build();
-                result = ctx.getModelControllerClient().execute(operation);
-                operation.close();
+                result = ctx.getModelControllerClient().execute(op.build());
             } else {
                 result = ctx.getModelControllerClient().execute(request);
             }
@@ -693,5 +732,102 @@ public class DeployHandler extends DeploymentHandler {
             StreamUtils.safeClose(is);
         }
         return bytes;
+    }
+
+    protected void listDeployments(CommandContext ctx, boolean l) throws CommandFormatException {
+        if(!l) {
+            printList(ctx, Util.getDeployments(ctx.getModelControllerClient()), l);
+            return;
+        }
+        final ModelControllerClient client = ctx.getModelControllerClient();
+        final List<String> names = Util.getDeployments(client);
+        if(names.isEmpty()) {
+            return;
+        }
+
+        final StrictSizeTable table = new StrictSizeTable(names.size());
+        final List<Property> descriptions = getDeploymentDescriptions(ctx, names).asPropertyList();
+        for(Property prop : descriptions) {
+            final ModelNode step = prop.getValue();
+            if(step.hasDefined(Util.RESULT)) {
+                final ModelNode result = step.get(Util.RESULT);
+                table.addCell(Util.NAME, result.get(Util.NAME).asString());
+                table.addCell(Util.RUNTIME_NAME, result.get(Util.RUNTIME_NAME).asString());
+                if(result.has(Util.ENABLED)) {
+                    table.addCell(Util.ENABLED, result.get(Util.ENABLED).asString());
+                }
+                if(result.has(Util.STATUS)) {
+                    table.addCell(Util.STATUS, result.get(Util.STATUS).asString());
+                }
+            }
+            if(!table.isAtLastRow()) {
+                table.nextRow();
+            }
+        }
+        throw new CommandFormatException(table.toString());
+    }
+
+    protected ModelNode getDeploymentDescriptions(CommandContext ctx, List<String> names) throws CommandFormatException {
+        final ModelNode composite = new ModelNode();
+        composite.get(Util.OPERATION).set(Util.COMPOSITE);
+        composite.get(Util.ADDRESS).setEmptyList();
+        final ModelNode steps = composite.get(Util.STEPS);
+        for(String name : names) {
+            final ModelNode deploymentResource = buildReadDeploymentResourceRequest(name);
+            if(deploymentResource != null) {
+                steps.add(deploymentResource);
+            }// else it's illegal state
+        }
+        ModelNode result;
+        try {
+            result = ctx.getModelControllerClient().execute(composite);
+        } catch (IOException e) {
+            throw new CommandFormatException("Failed to execute operation request.", e);
+        }
+        if (!result.hasDefined(Util.RESULT)) {
+            return null;
+        }
+        return result.get(Util.RESULT);
+    }
+
+    protected ModelNode buildReadDeploymentResourceRequest(String name) {
+        ModelNode request = new ModelNode();
+        ModelNode address = request.get(Util.ADDRESS);
+        address.add(Util.DEPLOYMENT, name);
+        request.get(Util.OPERATION).set(Util.READ_RESOURCE);
+        request.get(Util.INCLUDE_RUNTIME).set(true);
+        return request;
+    }
+
+    private MountHandle extractArchive(File archive) throws IOException {
+        return ((MountHandle)VFS.mountZipExpanded(archive, VFS.getChild("cli"),
+                TempFileProvider.create("cli", Executors.newSingleThreadScheduledExecutor())));
+    }
+
+    private String activateNewBatch(CommandContext ctx) {
+        String currentBatch = null;
+        BatchManager batchManager = ctx.getBatchManager();
+        if (batchManager.isBatchActive()) {
+            currentBatch = "batch" + System.currentTimeMillis();
+            batchManager.holdbackActiveBatch(currentBatch);
+        }
+        batchManager.activateNewBatch();
+        return currentBatch;
+    }
+
+    private void discardBatch(CommandContext ctx, String holdbackBatch) {
+        BatchManager batchManager = ctx.getBatchManager();
+        batchManager.discardActiveBatch();
+        if (holdbackBatch != null) {
+            batchManager.activateHeldbackBatch(holdbackBatch);
+        }
+    }
+
+    private boolean isCliArchive(File f) {
+        if (f == null || !f.getName().endsWith(CLI_ARCHIVE_SUFFIX)) {
+            return false;
+        } else {
+            return true;
+        }
     }
 }
