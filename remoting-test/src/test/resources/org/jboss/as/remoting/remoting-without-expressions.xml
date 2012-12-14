@@ -1,0 +1,10 @@
+<subsystem xmlns="urn:jboss:domain:remoting:1.1">
+   <worker-thread-pool
+	    read-threads="5"
+	    task-core-threads="6"
+	    task-keepalive="7"
+	    task-limit="8"
+	    task-max-threads="9"
+	    write-threads="10"
+	 />
+</subsystem>
