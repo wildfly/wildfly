@@ -91,8 +91,8 @@ public class MavenDeployHandler extends DeployHandler {
         if (goalsStr == null) {
             goalsStr = "install";
         } else {
-            goalsStr = goalsStr.replaceAll("\"", "");
-            goalsStr = goalsStr.replaceAll(",", " ");
+            goalsStr = goalsStr.replace("\"", "");
+            goalsStr = goalsStr.replace(',', ' ');
         }
 
         String packaging = null;
@@ -142,7 +142,7 @@ public class MavenDeployHandler extends DeployHandler {
             String line = null;
             BufferedReader in = new BufferedReader(new InputStreamReader(mavenProc.getInputStream()));
             while ((line = in.readLine()) != null) {
-                System.out.println(line);
+                ctx.printLine(line);
             }
             in.close();
             exitValue = mavenProc.waitFor();
