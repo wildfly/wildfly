@@ -106,4 +106,8 @@ public interface WeldLogger extends BasicLogger {
     @LogMessage(level = Logger.Level.WARN)
     @Message(value = "Deployment %s contains CDI annotations but beans.xml was not found.", id = 16012)
     void cdiAnnotationsButNoBeansXML(DeploymentUnit deploymentUnit);
+
+    @LogMessage(level = Logger.Level.ERROR)
+    @Message(value = "Exception tearing down thread state", id = 16013)
+    void exceptionClearingThreadState(@Cause Exception e);
 }
