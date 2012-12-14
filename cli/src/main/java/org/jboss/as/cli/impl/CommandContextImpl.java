@@ -93,6 +93,7 @@ import org.jboss.as.cli.handlers.GenericTypeOperationHandler;
 import org.jboss.as.cli.handlers.HelpHandler;
 import org.jboss.as.cli.handlers.HistoryHandler;
 import org.jboss.as.cli.handlers.LsHandler;
+import org.jboss.as.cli.handlers.MavenDeployHandler;
 import org.jboss.as.cli.handlers.OperationRequestHandler;
 import org.jboss.as.cli.handlers.PrefixHandler;
 import org.jboss.as.cli.handlers.PrintWorkingNodeHandler;
@@ -344,6 +345,7 @@ class CommandContextImpl implements CommandContext {
 
         // deployment
         cmdRegistry.registerHandler(new DeployHandler(this), "deploy");
+        cmdRegistry.registerHandler(new MavenDeployHandler(this), "mavendeploy");
         cmdRegistry.registerHandler(new UndeployHandler(this), "undeploy");
         cmdRegistry.registerHandler(new DeploymentInfoHandler(this), "deployment-info");
         cmdRegistry.registerHandler(new DeploymentOverlayHandler(this), "deployment-overlay");
