@@ -305,6 +305,8 @@ final class ManagedProcess {
                 // ignore
             }
             boolean respawn = false;
+            boolean slowRespawn = false;
+            boolean unlimitedRespawn = false;
             int respawnCount = 0;
             synchronized (lock) {
 
@@ -315,14 +317,26 @@ final class ManagedProcess {
                 if (shutdown) {
                     processController.removeProcess(processName);
                 } else if (isPrivileged() && exitCode == ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE) {
-                    // Host Controller abort
-                    processController.removeProcess(processName);
-                    new Thread(new Runnable() {
-                        public void run() {
-                            processController.shutdown();
-                            System.exit(0);
-                        }
-                    }).start();
+                    // Host Controller abort. See if there are other running processes the HC
+                    // needs to manage. If so we must restart the HC.
+                    if (processController.getOngoingProcessCount() > 1) {
+                        respawn = true;
+                        respawnCount = ManagedProcess.this.incrementAndGetRespawnCount();
+                        unlimitedRespawn = true;
+                        // We already have servers, so this isn't an abort in the early stages of the
+                        // initial HC boot. Likely it's due to a problem in a reload, which will require
+                        // some sort of user intervention to resolve. So there is no point in immediately
+                        // respawning and spamming the logs.
+                        slowRespawn = true;
+                    } else {
+                        processController.removeProcess(processName);
+                        new Thread(new Runnable() {
+                            public void run() {
+                                processController.shutdown();
+                                System.exit(0);
+                            }
+                        }).start();
+                    }
                 } else if (isPrivileged() && exitCode == ExitCodes.RESTART_PROCESS_FROM_STARTUP_SCRIPT) {
                     // Host Controller restart via exit code picked up by script
                     processController.removeProcess(processName);
@@ -337,12 +351,17 @@ final class ManagedProcess {
                     if(! stopRequested) {
                         respawn = true;
                         respawnCount = ManagedProcess.this.incrementAndGetRespawnCount();
+                        if (isPrivileged() && processController.getOngoingProcessCount() > 1) {
+                            // This is an HC with live servers to manage, so never give up on
+                            // restarting
+                            unlimitedRespawn = true;
+                        }
                     }
                 }
                 stopRequested = false;
             }
             if(respawn) {
-                respawnPolicy.respawn(respawnCount, ManagedProcess.this);
+                respawnPolicy.respawn(respawnCount, ManagedProcess.this, slowRespawn, unlimitedRespawn);
             }
         }
     }

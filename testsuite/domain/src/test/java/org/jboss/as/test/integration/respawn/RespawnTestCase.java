@@ -89,6 +89,8 @@ public class RespawnTestCase {
 
     static ProcessController processController;
     static ProcessUtil processUtil;
+    static File domainConfigDir;
+    static File hostXml;
 
     @BeforeClass
     public static void createProcessController() throws IOException, URISyntaxException, NoSuchAlgorithmException {
@@ -97,7 +99,7 @@ public class RespawnTestCase {
         final File domains = new File("target" + File.separator + "domains" + File.separator + testName);
         final File masterDir = new File(domains, "master");
         final String masterDirPath = masterDir.getAbsolutePath();
-        final File domainConfigDir = new File(masterDir, "configuration");
+        domainConfigDir = new File(masterDir, "configuration");
         // TODO this should not be necessary
         domainConfigDir.mkdirs();
 
@@ -117,7 +119,7 @@ public class RespawnTestCase {
         Assert.assertNotNull(url);
         File domainXml = new File(url.toURI());
         url = tccl.getResource("host-configs/respawn-master.xml");
-        File hostXml = new File(url.toURI());
+        hostXml = new File(url.toURI());
 
         Assert.assertTrue(domainXml.exists());
         Assert.assertTrue(hostXml.exists());
@@ -281,6 +283,57 @@ public class RespawnTestCase {
         Assert.assertEquals(original.size(), reloaded.size());
     }
 
+    @Test
+    public void testHCReloadAbortPreservesServers() throws Exception {
+        List<RunningProcess> original = waitForAllProcesses();
+
+        try {
+            // Replace host.xml with an invalid doc
+            File toBreak = new File(domainConfigDir, hostXml.getName());
+            PrintWriter pw = null;
+            try {
+                pw = new PrintWriter(toBreak);
+                pw.println("<host/>");
+            } finally {
+                if (pw != null) {
+                    pw.close();
+                }
+            }
+
+            // Execute reload w/ restart-servers=false, admin-only=false
+            // The reload should abort the HC due to bad xml
+            executeReloadOperation(false, false);
+
+            long deadline = System.currentTimeMillis() + 30000;
+            boolean origHCGone;
+            do {
+                // Check that the originalHC process doesn't exist and
+                // both original servers still exist. The originalHC still existing
+                // is not a failure condition until we hit the deadline
+                origHCGone = true;
+                Set<RunningProcess> updated = new HashSet<RunningProcess>(waitForProcesses(SERVER_ONE, SERVER_TWO));
+                for (RunningProcess process : original) {
+                    if (!process.getProcess().equals(HOST_CONTROLLER)) {
+                        Assert.assertTrue(process.getProcess() + " is missing", updated.contains(process));
+                    } else {
+                        origHCGone = !updated.contains(process);
+                    }
+                }
+                if (!origHCGone) {
+                    Thread.sleep(100);
+                }
+            } while (!origHCGone && System.currentTimeMillis() < deadline);
+
+            if (!origHCGone) {
+                Assert.fail("Original HC process did not terminate within 30 seconds");
+            }
+
+        } finally {
+            copyFile(hostXml, domainConfigDir);
+            waitForAllProcesses();
+        }
+    }
+
 
     private RunningProcess findProcess(List<RunningProcess> processes, String name) {
         RunningProcess proc = null;
@@ -393,11 +446,15 @@ public class RespawnTestCase {
 
 
     private List<RunningProcess> waitForAllProcesses() throws Exception {
+        return waitForProcesses(HOST_CONTROLLER, SERVER_ONE, SERVER_TWO);
+    }
+
+    private List<RunningProcess> waitForProcesses(String... requiredNames) throws Exception {
         final long time = System.currentTimeMillis() + TIMEOUT;
         List<RunningProcess> runningProcesses;
         do {
             runningProcesses = processUtil.getRunningProcesses();
-            if (processUtil.containsProcesses(runningProcesses, HOST_CONTROLLER, SERVER_ONE, SERVER_TWO)){
+            if (processUtil.containsProcesses(runningProcesses, requiredNames)){
                 return runningProcesses;
             }
             Thread.sleep(200);
@@ -645,6 +702,16 @@ public class RespawnTestCase {
 
         public String getProcess() {
             return process;
+        }
+
+        @Override
+        public int hashCode() {
+            return processId.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof RunningProcess && ((RunningProcess) obj).processId.equals(processId);
         }
 
         @Override

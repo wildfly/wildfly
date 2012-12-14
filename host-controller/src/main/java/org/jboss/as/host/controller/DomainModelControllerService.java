@@ -435,7 +435,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
                             System.exit(ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE);
                         }
                     } else if (currentRunningMode != RunningMode.ADMIN_ONLY) {
-                            //We could not connect to the host
+                            // Invalid configuration; no way to get the domain config
                             ROOT_LOGGER.noDomainControllerConfigurationProvided(currentRunningMode,
                                     CommandLineConstants.ADMIN_ONLY, RunningMode.ADMIN_ONLY);
                             System.exit(ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE);
