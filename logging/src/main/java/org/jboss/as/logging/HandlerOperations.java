@@ -23,6 +23,7 @@
 package org.jboss.as.logging;
 
 import static org.jboss.as.logging.CommonAttributes.CLASS;
+import static org.jboss.as.logging.CommonAttributes.ENABLED;
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FILE;
 import static org.jboss.as.logging.CommonAttributes.FILTER;
@@ -54,6 +55,7 @@ import org.jboss.as.logging.LoggingOperations.LoggingUpdateOperationStepHandler;
 import org.jboss.as.logging.LoggingOperations.LoggingWriteAttributeHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.logmanager.LogContext;
 import org.jboss.logmanager.Logger;
 import org.jboss.logmanager.Logger.AttachmentKey;
 import org.jboss.logmanager.config.FormatterConfiguration;
@@ -408,7 +410,14 @@ final class HandlerOperations {
     private static void handleProperty(final AttributeDefinition attribute, final OperationContext context, final ModelNode model,
                                        final LogContextConfiguration logContextConfiguration, final HandlerConfiguration configuration, final boolean resolveValue)
             throws OperationFailedException {
-        if (attribute.getName().equals(ENCODING.getName())) {
+        if (attribute.getName().equals(ENABLED.getName())) {
+            final boolean value = ((resolveValue ? ENABLED.resolveModelAttribute(context, model).asBoolean() : model.asBoolean()));
+            if (value) {
+                enableHandler(logContextConfiguration, configuration.getName());
+            } else {
+                disableHandler(logContextConfiguration, configuration.getName());
+            }
+        } else if (attribute.getName().equals(ENCODING.getName())) {
             final String resolvedValue = (resolveValue ? ENCODING.resolvePropertyValue(context, model) : model.asString());
             configuration.setEncoding(resolvedValue);
         } else if (attribute.getName().equals(FORMATTER.getName())) {
@@ -470,7 +479,16 @@ final class HandlerOperations {
                                       final LogContextConfiguration logContextConfiguration, final HandlerConfiguration configuration)
             throws OperationFailedException {
         final boolean result;
-        if (attribute.getName().equals(ENCODING.getName())) {
+        if (attribute.getName().equals(ENABLED.getName())) {
+            final boolean resolvedValue = ENABLED.resolveModelAttribute(context, model).asBoolean();
+            final boolean currentValue;
+            if (configuration.hasProperty(ENABLED.getPropertyName())) {
+                currentValue = Boolean.parseBoolean(configuration.getPropertyValueString(ENABLED.getPropertyName()));
+            } else {
+                currentValue = isDisabledHandler(logContextConfiguration.getLogContext(), configuration.getName());
+            }
+            result = resolvedValue == currentValue;
+        } else if (attribute.getName().equals(ENCODING.getName())) {
             final String resolvedValue = ENCODING.resolvePropertyValue(context, model);
             final String currentValue = configuration.getEncoding();
             result = (resolvedValue == null ? currentValue == null : resolvedValue.equals(currentValue));
@@ -520,6 +538,17 @@ final class HandlerOperations {
             }
         }
         return result;
+    }
+
+
+    /**
+     * Checks to see if a handler is disabled
+     *
+     * @param handlerName   the name of the handler to enable.
+     */
+    static boolean isDisabledHandler(final LogContext logContext, final String handlerName) {
+        final Map<String, String> disableHandlers = logContext.getAttachment(CommonAttributes.ROOT_LOGGER_NAME, DISABLED_HANDLERS_KEY);
+        return disableHandlers != null && disableHandlers.containsKey(handlerName);
     }
 
 

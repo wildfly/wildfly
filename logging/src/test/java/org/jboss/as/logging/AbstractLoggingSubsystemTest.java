@@ -305,7 +305,14 @@ public abstract class AbstractLoggingSubsystemTest extends AbstractSubsystemBase
                 String modelStringValue = modelValue.asString();
                 final String configValue;
                 // Special properties
-                if (modelPropertyName.equals(CommonAttributes.ENCODING.getName())) {
+                if (modelPropertyName.equals(CommonAttributes.ENABLED.getName())) {
+                    final String propertyName = CommonAttributes.ENABLED.getPropertyName();
+                    if (configPropertyNames.contains(propertyName)) {
+                        configValue = handlerConfig.getPropertyValueString(propertyName);
+                    } else {
+                        continue;
+                    }
+                } else if (modelPropertyName.equals(CommonAttributes.ENCODING.getName())) {
                     configValue = handlerConfig.getEncoding();
                 } else if (modelPropertyName.equals(CommonAttributes.FORMATTER.getName())) {
                     final String formatterName = handlerConfig.getFormatterName();

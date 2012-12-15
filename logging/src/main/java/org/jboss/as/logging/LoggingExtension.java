@@ -142,22 +142,36 @@ public class LoggingExtension implements Extension {
         registerTransformersSubModels(registration, loggingProfileReg, RootLoggerResourceDefinition.ROOT_LOGGER_PATH, new LoggingResourceTransformer(CommonAttributes.NAME, CommonAttributes.FILTER_SPEC),
                 ModelDescriptionConstants.ADD, RootLoggerResourceDefinition.ROOT_LOGGER_ADD_OPERATION_NAME, ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION,
                 CommonAttributes.ADD_HANDLER_OPERATION_NAME, CommonAttributes.REMOVE_HANDLER_OPERATION_NAME);
+
         registerTransformersSubModels(registration, loggingProfileReg, LoggerResourceDefinition.LOGGER_PATH, new LoggingResourceTransformer(CommonAttributes.CATEGORY, CommonAttributes.FILTER_SPEC),
                 ModelDescriptionConstants.ADD, ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION,
                 CommonAttributes.ADD_HANDLER_OPERATION_NAME, CommonAttributes.REMOVE_HANDLER_OPERATION_NAME);
-        registerTransformersSubModels(registration, loggingProfileReg, AsyncHandlerResourceDefinition.ASYNC_HANDLER_PATH, new LoggingResourceTransformer(CommonAttributes.NAME, CommonAttributes.FILTER_SPEC),
+
+        registerTransformersSubModels(registration, loggingProfileReg, AsyncHandlerResourceDefinition.ASYNC_HANDLER_PATH,
+                new LoggingResourceTransformer(CommonAttributes.NAME, CommonAttributes.FILTER_SPEC, CommonAttributes.ENABLED),
                 ModelDescriptionConstants.ADD, ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, AbstractHandlerDefinition.UPDATE_OPERATION_NAME,
                 CommonAttributes.ADD_HANDLER_OPERATION_NAME, CommonAttributes.REMOVE_HANDLER_OPERATION_NAME);
-        registerTransformersSubModels(registration, loggingProfileReg, ConsoleHandlerResourceDefinition.CONSOLE_HANDLER_PATH, new LoggingResourceTransformer(CommonAttributes.NAME, CommonAttributes.FILTER_SPEC),
+
+        registerTransformersSubModels(registration, loggingProfileReg, ConsoleHandlerResourceDefinition.CONSOLE_HANDLER_PATH,
+                new LoggingResourceTransformer(CommonAttributes.NAME, CommonAttributes.FILTER_SPEC, CommonAttributes.ENABLED),
                 ModelDescriptionConstants.ADD, ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, AbstractHandlerDefinition.UPDATE_OPERATION_NAME);
-        registerTransformersSubModels(registration, loggingProfileReg, FileHandlerResourceDefinition.FILE_HANDLER_PATH, new LoggingResourceTransformer(CommonAttributes.NAME, CommonAttributes.FILTER_SPEC),
+
+        registerTransformersSubModels(registration, loggingProfileReg, FileHandlerResourceDefinition.FILE_HANDLER_PATH,
+                new LoggingResourceTransformer(CommonAttributes.NAME, CommonAttributes.FILTER_SPEC, CommonAttributes.ENABLED),
                 ModelDescriptionConstants.ADD, ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, AbstractHandlerDefinition.UPDATE_OPERATION_NAME);
-        registerTransformersSubModels(registration, loggingProfileReg, PeriodicHandlerResourceDefinition.PERIODIC_HANDLER_PATH, new LoggingResourceTransformer(CommonAttributes.NAME, CommonAttributes.FILTER_SPEC),
+
+        registerTransformersSubModels(registration, loggingProfileReg, PeriodicHandlerResourceDefinition.PERIODIC_HANDLER_PATH,
+                new LoggingResourceTransformer(CommonAttributes.NAME, CommonAttributes.FILTER_SPEC, CommonAttributes.ENABLED),
                 ModelDescriptionConstants.ADD, ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, AbstractHandlerDefinition.UPDATE_OPERATION_NAME);
-        registerTransformersSubModels(registration, loggingProfileReg, SizeRotatingHandlerResourceDefinition.SIZE_ROTATING_HANDLER_PATH, new LoggingResourceTransformer(CommonAttributes.NAME, CommonAttributes.FILTER_SPEC),
+
+        registerTransformersSubModels(registration, loggingProfileReg, SizeRotatingHandlerResourceDefinition.SIZE_ROTATING_HANDLER_PATH,
+                new LoggingResourceTransformer(CommonAttributes.NAME, CommonAttributes.FILTER_SPEC, CommonAttributes.ENABLED),
                 ModelDescriptionConstants.ADD, ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, AbstractHandlerDefinition.UPDATE_OPERATION_NAME);
-        registerTransformersSubModels(registration, loggingProfileReg, CustomHandlerResourceDefinition.CUSTOM_HANDLE_PATH, ResourceTransformer.DEFAULT,
+
+        registerTransformersSubModels(registration, loggingProfileReg, CustomHandlerResourceDefinition.CUSTOM_HANDLE_PATH,
+                new LoggingResourceTransformer(CommonAttributes.ENABLED),
                 ModelDescriptionConstants.ADD, ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, AbstractHandlerDefinition.UPDATE_OPERATION_NAME);
+
     }
 
     private void registerTransformersSubModels(final TransformersSubRegistration registration, final TransformersSubRegistration loggingProfileReg, final PathElement pathElement, final ResourceTransformer transformer, final String... operationNames) {
@@ -214,6 +228,15 @@ public class LoggingExtension implements Extension {
                     operation.get(ModelDescriptionConstants.NAME).set(CommonAttributes.FILTER.getName());
                     final String filterExpression = operation.get(ModelDescriptionConstants.VALUE).asString();
                     operation.get(ModelDescriptionConstants.VALUE).set(Filters.filterSpecToFilter(filterExpression));
+                } else if (attributeName.equals(CommonAttributes.ENABLED.getName())) {
+                    final boolean enabled = operation.get(ModelDescriptionConstants.VALUE).asBoolean();
+                    if (enabled) {
+                        operation.get(ModelDescriptionConstants.OP).set(AbstractHandlerDefinition.ENABLE_HANDLER.getName());
+                    } else {
+                        operation.get(ModelDescriptionConstants.OP).set(AbstractHandlerDefinition.DISABLE_HANDLER.getName());
+                    }
+                    operation.remove(ModelDescriptionConstants.NAME);
+                    operation.remove(ModelDescriptionConstants.VALUE);
                 }
             } else if (operationName.equals(ModelDescriptionConstants.ADD)) {
                 // Category or name is required for add operations
@@ -239,6 +262,8 @@ public class LoggingExtension implements Extension {
             }
             // Always remove the filter-spec
             operation.remove(CommonAttributes.FILTER_SPEC.getName());
+            // Always remove the enable attribute
+            operation.remove(CommonAttributes.ENABLED.getName());
             return operation;
         }
     }
@@ -251,6 +276,7 @@ public class LoggingExtension implements Extension {
             COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.APPEND.getName(), "logging.common");
             COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.AUTOFLUSH.getName(), "logging.common");
             COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.CLASS.getName(), "logging.custom-handler");
+            COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.ENABLED.getName(), "logging.common");
             COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.ENCODING.getName(), "logging.common");
             COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.FILE.getName(), "logging.handler");
             COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.FILTER.getName(), "logging.common");

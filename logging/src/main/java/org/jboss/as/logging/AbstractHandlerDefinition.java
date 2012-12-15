@@ -24,6 +24,7 @@ package org.jboss.as.logging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLE;
+import static org.jboss.as.logging.CommonAttributes.ENABLED;
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FILTER;
 import static org.jboss.as.logging.CommonAttributes.FILTER_SPEC;
@@ -59,6 +60,7 @@ abstract class AbstractHandlerDefinition extends SimpleResourceDefinition {
 
     static final AttributeDefinition[] DEFAULT_ATTRIBUTES = {
             LEVEL,
+            ENABLED,
             ENCODING,
             FORMATTER,
             FILTER_SPEC,
@@ -68,9 +70,13 @@ abstract class AbstractHandlerDefinition extends SimpleResourceDefinition {
             FILTER,
     };
 
-    static final SimpleOperationDefinition ENABLE_HANDLER = new SimpleOperationDefinitionBuilder(ENABLE, HANDLER_RESOLVER).build();
+    static final SimpleOperationDefinition ENABLE_HANDLER = new SimpleOperationDefinitionBuilder(ENABLE, HANDLER_RESOLVER)
+            .setDeprecated(ModelVersion.create(1, 2, 0))
+            .build();
 
-    static final SimpleOperationDefinition DISABLE_HANDLER = new SimpleOperationDefinitionBuilder(DISABLE, HANDLER_RESOLVER).build();
+    static final SimpleOperationDefinition DISABLE_HANDLER = new SimpleOperationDefinitionBuilder(DISABLE, HANDLER_RESOLVER)
+            .setDeprecated(ModelVersion.create(1, 2, 0))
+            .build();
 
     static final SimpleOperationDefinition CHANGE_LEVEL = new SimpleOperationDefinitionBuilder(CHANGE_LEVEL_OPERATION_NAME, HANDLER_RESOLVER)
             .setDeprecated(ModelVersion.create(1, 2, 0))

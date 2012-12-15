@@ -85,6 +85,10 @@ public interface CommonAttributes {
 
     String CUSTOM_HANDLER = "custom-handler";
 
+    PropertyAttributeDefinition ENABLED = PropertyAttributeDefinition.Builder.of("enabled", ModelType.STRING, true)
+            .setDefaultValue(new ModelNode(true))
+            .build();
+
     PropertyAttributeDefinition ENCODING = PropertyAttributeDefinition.Builder.of("encoding", ModelType.STRING, true)
             .setAllowExpression(true)
             .setAttributeMarshaller(ElementAttributeMarshaller.VALUE_ATTRIBUTE_MARSHALLER)
