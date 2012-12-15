@@ -67,6 +67,7 @@ final class LoggerConfigurationImpl extends AbstractBasicConfiguration<Logger, L
             }
 
             public void applyPostCreate(final ObjectProducer param) {
+                if (configuration.getHandlerRefs().containsKey(getName()))
                configuration.getHandlerRefs().get(getName()).setFilter((Filter) param.getObject());
             }
 

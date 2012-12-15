@@ -38,7 +38,7 @@
         </formatter>
     </console-handler>
 
-    <file-handler name="anotherFile">
+    <file-handler name="anotherFile" enabled="false">
         <filter-spec value="levelRange(TRACE,WARN]" />
         <file relative-to="jboss.server.log.dir" path="another.log"/>
         <append value="true"/>

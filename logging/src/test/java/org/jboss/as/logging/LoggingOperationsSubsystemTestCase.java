@@ -31,14 +31,19 @@ import java.util.Map;
 import java.util.logging.Level;
 
 import org.apache.commons.io.FileUtils;
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
+import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.LogContext;
 import org.jboss.logmanager.Logger;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -106,6 +111,44 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
     public void testAddRemoveFileHandler() throws Exception {
         testAddRemoveFileHandler(null);
         testAddRemoveFileHandler(PROFILE);
+    }
+
+    @Test
+    public void testDisableHandler() throws Exception {
+        testDisableHandler(null);
+        testDisableHandler(PROFILE);
+    }
+
+    @Test
+    public void testLegacyDisableHandler() throws Exception {
+        final String subsystemXml = getSubsystemXml();
+        final ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
+        final KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
+                .setSubsystemXml(subsystemXml);
+
+        // Note this is running in ADMIN_ONLY meaning runtime changes won't take effect. Can't confirm the
+        // handlers actually get disabled.
+        builder.createLegacyKernelServicesBuilder(LoggingTestEnvironment.getManagementInstance(), modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-logging:7.1.2.Final");
+
+        final KernelServices kernelServices = builder.build();
+        assertTrue(kernelServices.isSuccessfulBoot());
+        assertTrue(kernelServices.getLegacyServices(modelVersion).isSuccessfulBoot());
+        final ModelNode handlerAddress = createFileHandlerAddress("FILE").toModelNode();
+
+        // Disable the handler
+        TransformedOperation transformedOperation = kernelServices.transformOperation(modelVersion, Operations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, false));
+        // Validate the operation has been transformed properly
+        assertEquals(AbstractHandlerDefinition.DISABLE_HANDLER.getName(), Operations.getOperationName(transformedOperation.getTransformedOperation()));
+        // Execute the operation to confirm success
+        executeTransformOperation(kernelServices, modelVersion, Operations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, false));
+
+        // Re-enable the handler
+        // Validate the operation has been transformed properly
+        transformedOperation = kernelServices.transformOperation(modelVersion, Operations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, true));
+        assertEquals(AbstractHandlerDefinition.ENABLE_HANDLER.getName(), Operations.getOperationName(transformedOperation.getTransformedOperation()));
+        // Execute the operation to confirm success
+        executeTransformOperation(kernelServices, modelVersion, Operations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, true));
     }
 
     @Test
@@ -420,6 +463,57 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
         assertEquals(checksum, FileUtils.checksumCRC32(logFile));
     }
 
+    private void testDisableHandler(final String profileName) throws Exception {
+        final KernelServices kernelServices = boot();
+        final String fileHandlerName = "test-file-handler";
+
+        final File logFile = createLogFile();
+
+        // Add file handler
+        addFileHandler(kernelServices, profileName, fileHandlerName, org.jboss.logmanager.Level.INFO, logFile, true);
+
+        // Ensure the handler is listed
+        final ModelNode rootLoggerAddress = createRootLoggerAddress(profileName).toModelNode();
+        ModelNode op = Operations.createReadAttributeOperation(rootLoggerAddress, CommonAttributes.HANDLERS);
+        ModelNode handlerResult = executeOperation(kernelServices, op);
+        List<String> handlerList = Operations.readResultAsList(handlerResult);
+        assertTrue(String.format("Handler '%s' was not found. Result: %s", fileHandlerName, handlerResult), handlerList.contains(fileHandlerName));
+
+        // Get the logger
+        final Logger logger = getLogger(profileName);
+
+        // Log 3 lines
+        logger.info("Test message 1");
+        logger.info("Test message 2");
+        logger.info("Test message 3");
+
+        // Disable the handler
+        final ModelNode handlerAddress = createFileHandlerAddress(profileName, fileHandlerName).toModelNode();
+        executeOperation(kernelServices, Operations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, false));
+
+        // Log 3 more lines
+        logger.info("Test message 4");
+        logger.info("Test message 5");
+        logger.info("Test message 6");
+
+        // Check the file, should only contain 3 lines
+        List<String> lines = FileUtils.readLines(logFile);
+        assertEquals("Handler was not disable.", 3, lines.size());
+
+        // Re-enable the handler
+        executeOperation(kernelServices, Operations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, true));
+
+        // Log 3 more lines
+        logger.info("Test message 7");
+        logger.info("Test message 8");
+        logger.info("Test message 9");
+
+        // Check the file, should contain 6 lines
+        lines = FileUtils.readLines(logFile);
+        assertEquals("Handler was not disable.", 6, lines.size());
+
+    }
+
 
     private void addFileHandler(final KernelServices kernelServices, final String loggingProfile, final String name,
                                 final Level level, final File file, final boolean assign) throws Exception {
@@ -464,18 +558,29 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
         return result;
     }
 
+    private static ModelNode executeTransformOperation(final KernelServices kernelServices, final ModelVersion modelVersion, final ModelNode op) throws OperationFailedException {
+        TransformedOperation transformedOp = kernelServices.transformOperation(modelVersion, op);
+        ModelNode result = kernelServices.executeOperation(modelVersion, transformedOp);
+        Assert.assertTrue(result.asString(), Operations.successful(result));
+        return result;
+    }
+
     private void doLog(final String loggingProfile, final Level[] levels, final String format, final Object... params) {
-        final LogContext logContext;
-        if (loggingProfile != null) {
-            logContext = LoggingProfileContextSelector.getInstance().get(loggingProfile);
-        } else {
-            logContext = LogContext.getSystemLogContext();
-        }
-        final Logger log = logContext.getLogger(FQCN);
+        final Logger log = getLogger(loggingProfile);
         // log a message
         for (Level lvl : levels) {
             log.log(lvl, String.format(format, params));
         }
+    }
+
+    private Logger getLogger(final String profileName) {
+        final LogContext logContext;
+        if (profileName != null) {
+            logContext = LoggingProfileContextSelector.getInstance().get(profileName);
+        } else {
+            logContext = LogContext.getSystemLogContext();
+        }
+        return logContext.getLogger(FQCN);
     }
 
     private static File createLogFile() {

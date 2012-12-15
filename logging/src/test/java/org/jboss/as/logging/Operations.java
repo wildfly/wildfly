@@ -48,7 +48,7 @@ public class Operations extends ClientConstants {
     public static final String VALUE = ModelDescriptionConstants.VALUE;
     public static final String WRITE_ATTRIBUTE = ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
-    static final ModelNode UNDEFINED = new ModelNode(ModelType.UNDEFINED);
+    static final ModelNode UNDEFINED = new ModelNode();
 
     static {
         UNDEFINED.protect();
@@ -88,6 +88,28 @@ public class Operations extends ClientConstants {
             msg = String.format("An unexpected response was found. Result: %s", result);
         }
         return msg;
+    }
+
+    /**
+     * Returns the address for the operation.
+     *
+     * @param op the operation
+     *
+     * @return the operation address or an undefined model node
+     */
+    public static ModelNode getOperationAddress(final ModelNode op) {
+        return op.hasDefined(OP_ADDR) ? op.get(OP_ADDR) : UNDEFINED;
+    }
+
+    /**
+     * Returns the name of the operation.
+     *
+     * @param op the operation
+     *
+     * @return the name of the operation or {@code null} if not defined
+     */
+    public static String getOperationName(final ModelNode op) {
+        return op.hasDefined(OP) ? op.get(OP).asString() : null;
     }
 
     /**
@@ -218,6 +240,35 @@ public class Operations extends ClientConstants {
      */
     public static ModelNode createWriteAttributeOperation(final ModelNode address, final AttributeDefinition attribute, final String value) {
         return createWriteAttributeOperation(address, attribute.getName(), value);
+    }
+
+    /**
+     * Creates an operation to write an attribute value represented by the {@code attributeName} parameter.
+     *
+     * @param address   the address to create the write attribute for
+     * @param attribute the attribute to write
+     * @param value     the value to set the attribute to
+     *
+     * @return the operation
+     */
+    public static ModelNode createWriteAttributeOperation(final ModelNode address, final AttributeDefinition attribute, final boolean value) {
+        return createWriteAttributeOperation(address, attribute.getName(), value);
+    }
+
+    /**
+     * Creates an operation to write an attribute value represented by the {@code attributeName} parameter.
+     *
+     * @param address       the address to create the write attribute for
+     * @param attributeName the name of the attribute to write
+     * @param value         the value to set the attribute to
+     *
+     * @return the operation
+     */
+    public static ModelNode createWriteAttributeOperation(final ModelNode address, final String attributeName, final boolean value) {
+        ModelNode op = createOperation(WRITE_ATTRIBUTE, address);
+        op.get(NAME).set(attributeName);
+        op.get(VALUE).set(value);
+        return op;
     }
 
     /**

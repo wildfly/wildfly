@@ -39,6 +39,7 @@ enum Attribute {
     AUTOFLUSH(CommonAttributes.AUTOFLUSH),
     CATEGORY(CommonAttributes.CATEGORY),
     CLASS(CommonAttributes.CLASS),
+    ENABLED(CommonAttributes.ENABLED),
     MIN_INCLUSIVE(CommonAttributes.MIN_INCLUSIVE),
     MIN_LEVEL(CommonAttributes.MIN_LEVEL),
     MAX_BACKUP_INDEX(CommonAttributes.MAX_BACKUP_INDEX),
