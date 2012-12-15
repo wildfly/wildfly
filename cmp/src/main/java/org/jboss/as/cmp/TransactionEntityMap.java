@@ -278,7 +278,9 @@ public class TransactionEntityMap implements Service<TransactionEntityMap> {
             Thread currentThread = Thread.currentThread();
             CmpEntityBeanContext context = null;
             try {
-                for (CmpEntityBeanContext instance : instances) {
+                  int i = 0;
+                  while(i < instances.size()) {
+                    final CmpEntityBeanContext instance = instances.get(i++);
                     // any one can mark the tx rollback at any time so check
                     // before continuing to the next store
                     if (TxUtils.isRollback(tx)) {
