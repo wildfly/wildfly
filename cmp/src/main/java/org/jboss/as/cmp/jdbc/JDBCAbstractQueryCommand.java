@@ -773,7 +773,8 @@ public abstract class JDBCAbstractQueryCommand implements JDBCQueryCommand {
                 } else {
                     results = new ArrayList(size);
                     try {
-                        selectManager.getComponent().getTransactionManager().getTransaction().registerSynchronization(new Synchronization() {
+                        //selectManager.getComponent().getTransactionManager().getTransaction().registerSynchronization(new Synchronization() {
+                        selectManager.getComponent().getTransactionSynchronizationRegistry().registerInterposedSynchronization(new Synchronization() {
                             public void beforeCompletion() {
                                 closeResources();
                             }

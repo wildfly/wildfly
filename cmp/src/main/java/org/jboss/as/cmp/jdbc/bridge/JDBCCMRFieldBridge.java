@@ -1606,7 +1606,8 @@ public final class JDBCCMRFieldBridge extends JDBCAbstractCMRFieldBridge {
                     // crete the relation set and register for a tx callback
                     relationSet = new RelationSet(JDBCCMRFieldBridge.this, ctx, setHandle, false);
                     TxSynchronization sync = new TxSynchronization(FieldState.this);
-                    tx.registerSynchronization(sync);
+                    //tx.registerSynchronization(sync);
+                    ctx.getComponent().getTransactionSynchronizationRegistry().registerInterposedSynchronization(sync);
                 } else {
                     // if there is no transaction create a pre-failed list
                     relationSet = new RelationSet(JDBCCMRFieldBridge.this, ctx, new List[1], false);
@@ -1615,9 +1616,9 @@ public final class JDBCCMRFieldBridge extends JDBCAbstractCMRFieldBridge {
                 return relationSet;
             } catch (SystemException e) {
                 throw MESSAGES.errorCreatingRelationSet(e);
-            } catch (RollbackException e) {
-                throw MESSAGES.errorCreatingRelationSet(e);
-            }
+            } //catch (RollbackException e) {
+                //throw MESSAGES.errorCreatingRelationSet(e);
+            //}
         }
 
         /**
