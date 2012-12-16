@@ -61,7 +61,7 @@
         <!-- Remote domain controller configuration with a host and port -->
         <remote host="${jboss.test.host.master.address}" port="9999" security-realm="ManagementRealm">
             <ignored-resources type="extension">
-                <instance name="ignored"/>
+                <instance name="org.jboss.as.jsr77"/>
             </ignored-resources>
             <ignored-resources type="profile">
                 <instance name="ignored"/>
