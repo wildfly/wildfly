@@ -74,7 +74,7 @@ public class ManagementAccessTestCase {
     private static DomainLifecycleUtil domainMasterLifecycleUtil;
     private static DomainLifecycleUtil domainSlaveLifecycleUtil;
 
-    private static final String TEST = "test";
+    private static final String TEST = "mgmt-access-test";
     private static final ModelNode ROOT_ADDRESS = new ModelNode().setEmptyList();
     private static final ModelNode MASTER_ROOT_ADDRESS = new ModelNode().add(HOST, "master");
     private static final ModelNode SLAVE_ROOT_ADDRESS = new ModelNode().add(HOST, "slave");
