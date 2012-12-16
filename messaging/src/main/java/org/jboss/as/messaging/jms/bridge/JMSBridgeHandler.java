@@ -88,7 +88,7 @@ public class JMSBridgeHandler extends AbstractRuntimeOnlyHandler {
             final String name = operation.require(NAME).asString();
             if (STARTED.equals(name)) {
                 context.getResult().set(bridge.isStarted());
-            } else if (PAUSED.equals(name)) {
+            } else if (PAUSED.getName().equals(name)) {
                 context.getResult().set(bridge.isPaused());
             } else {
                 throw MESSAGES.unsupportedAttribute(name);
