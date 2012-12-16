@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.integration.domain.suites;
 
+import org.jboss.as.test.integration.domain.AdminOnlyModeTestCase;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfigurationParameters;
 import org.junit.AfterClass;
@@ -38,17 +39,23 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses ({
         CoreResourceManagementTestCase.class,
-        ManagementReadsTestCase.class,
+        DatasourceTestCase.class,
         DeploymentManagementTestCase.class,
         DeploymentOverlayTestCase.class,
-        ServerManagementTestCase.class,
-        ServerRestartRequiredTestCase.class,
+        DirectoryGroupingByTypeTestCase.class,
+        ExtensionManagementTestCase.class,
+        IgnoredResourcesTestCase.class,
         ManagementAccessTestCase.class,
         ManagementClientContentTestCase.class,
-        ValidateOperationOperationTestCase.class,
+        ManagementReadsTestCase.class,
+        ManagementVersionTestCase.class,
+        ModelPersistenceTestCase.class,
+        OperationTransformationTestCase.class,
         ReadEnvironmentVariablesTestCase.class,
-        ExtensionManagementTestCase.class,
-        OperationTransformationTestCase.class
+        ServerManagementTestCase.class,
+        ServerRestartRequiredTestCase.class,
+        ValidateAddressOperationTestCase.class,
+        ValidateOperationOperationTestCase.class
 })
 public class DomainTestSuite {
 
