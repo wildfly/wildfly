@@ -64,7 +64,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author Emanuel Muckenhuber
@@ -258,47 +257,6 @@ public class ServerManagementTestCase {
         }
     }
 
-    @Test
-    public void testAdminOnlyMode() throws Exception {
-
-        // restart master HC in admin only mode
-        final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
-        ModelNode op = new ModelNode();
-        op.get(OP_ADDR).add(HOST, "master");
-        op.get(OP).set("reload");
-        op.get("admin-only").set(true);
-        domainMasterLifecycleUtil.executeAwaitConnectionClosed(op);
-
-        // Try to reconnect to the hc
-        domainMasterLifecycleUtil.connect();
-
-        op = new ModelNode();
-        op.get(OP).set(READ_ATTRIBUTE_OPERATION);
-        op.get(OP_ADDR).add(HOST, "master");
-        op.get(NAME).set("running-mode");
-
-        // Validate that we are started in the --admin-only mode
-        final ModelNode result = executeForResult(masterClient, op);
-        Assert.assertEquals("ADMIN_ONLY", result.asString());
-
-        // restart back to normal mode
-        op = new ModelNode();
-        op.get(OP_ADDR).add(HOST, "master");
-        op.get(OP).set("reload");
-        op.get("admin-only").set(false);
-        domainMasterLifecycleUtil.executeAwaitConnectionClosed(op);
-
-        // Try to reconnect to the hc
-        domainMasterLifecycleUtil.connect();
-
-        // check that the servers are up
-        domainMasterLifecycleUtil.awaitServers(System.currentTimeMillis());
-
-        // Wait for the slave to reconnect
-        waitForHost(masterClient, "slave");
-        domainSlaveLifecycleUtil.awaitServers(System.currentTimeMillis());
-    }
-
     private void executeLifecycleOperation(final ModelControllerClient client, String opName) throws IOException {
         executeLifecycleOperation(client, null, opName);
     }
@@ -366,33 +324,6 @@ public class ServerManagementTestCase {
             } else if (state.equals("STOPPED") || state.equals("DISABLED")) {
                 //stop server
                 operation.get(OP).set(STOP);
-            }
-        }
-    }
-
-    private static void waitForHost(final ModelControllerClient client, final String hostName) throws Exception {
-        final ModelNode operation = new ModelNode();
-        operation.get(OP).set(READ_CHILDREN_NAMES_OPERATION);
-        operation.get(OP_ADDR).setEmptyList();
-        operation.get(CHILD_TYPE).set(HOST);
-        final ModelNode host = new ModelNode().set(hostName);
-        final long timeout = 30L;
-        final TimeUnit timeUnit = TimeUnit.SECONDS;
-        final long deadline = System.currentTimeMillis() + timeUnit.toMillis(timeout);
-        for(;;) {
-            final long remaining = deadline - System.currentTimeMillis();
-            final ModelNode result = client.execute(operation);
-            if(result.get(RESULT).asList().contains(host)) {
-                return;
-            }
-            if(remaining <= 0) {
-                Assert.fail(hostName + " did not register within 30 seconds");
-            }
-            try {
-                TimeUnit.SECONDS.sleep(1);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                Assert.fail("Interrupted while waiting for registration of host " + hostName);
             }
         }
     }
