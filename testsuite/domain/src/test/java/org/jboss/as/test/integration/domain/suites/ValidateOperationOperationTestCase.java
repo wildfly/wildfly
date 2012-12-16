@@ -60,7 +60,8 @@ public class ValidateOperationOperationTestCase extends AbstractMgmtTestBase {
 
     @BeforeClass
     public static void setup() throws UnknownHostException {
-        client = ModelControllerClient.Factory.create(DomainTestSupport.masterAddress, TestSuiteEnvironment.getServerPort());
+        DomainTestSupport testSupport = DomainTestSuite.createSupport(ValidateOperationOperationTestCase.class.getSimpleName());
+        client = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
     }
 
     @AfterClass
