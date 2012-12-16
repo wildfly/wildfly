@@ -41,7 +41,7 @@ public class DirectoryGroupingByTypeTestCase {
 
     @BeforeClass
     public static void setupDomain() throws Exception {
-        testSupport = DomainTestSuite.createSupport(CoreResourceManagementTestCase.class.getSimpleName());
+        testSupport = DomainTestSuite.createSupport(DirectoryGroupingByTypeTestCase.class.getSimpleName());
     }
 
     @AfterClass

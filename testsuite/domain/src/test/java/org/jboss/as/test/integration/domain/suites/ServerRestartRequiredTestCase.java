@@ -54,6 +54,7 @@ import java.io.IOException;
 
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
+import org.jboss.as.test.integration.domain.AdminOnlyModeTestCase;
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
@@ -90,7 +91,7 @@ public class ServerRestartRequiredTestCase {
 
     @BeforeClass
     public static void setupDomain() throws Exception {
-        testSupport = DomainTestSuite.createSupport(ServerManagementTestCase.class.getSimpleName());
+        testSupport = DomainTestSuite.createSupport(ServerRestartRequiredTestCase.class.getSimpleName());
 
         domainMasterLifecycleUtil = testSupport.getDomainMasterLifecycleUtil();
         domainSlaveLifecycleUtil = testSupport.getDomainSlaveLifecycleUtil();

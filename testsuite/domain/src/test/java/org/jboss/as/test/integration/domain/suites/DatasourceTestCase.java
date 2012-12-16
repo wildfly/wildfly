@@ -68,7 +68,7 @@ public class DatasourceTestCase {
 
     @BeforeClass
     public static void setupDomain() throws Exception {
-        testSupport = DomainTestSuite.createSupport(ManagementAccessTestCase.class.getSimpleName());
+        testSupport = DomainTestSuite.createSupport(DatasourceTestCase.class.getSimpleName());
         domainMasterLifecycleUtil = testSupport.getDomainMasterLifecycleUtil();
         domainSlaveLifecycleUtil = testSupport.getDomainSlaveLifecycleUtil();
     }
