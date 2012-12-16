@@ -185,7 +185,7 @@ public class ServerManagementTestCase {
     @Ignore("AS7-2653")
     @Test
     public void testDomainLifecycleMethods() throws Throwable {
-        Throwable t = null;
+
         final DomainClient client = domainMasterLifecycleUtil.getDomainClient();
         try {
             executeLifecycleOperation(client, START_SERVERS);
@@ -243,8 +243,6 @@ public class ServerManagementTestCase {
             waitUntilState(client, "slave", "main-three", "STOPPED");
             waitUntilState(client, "slave", "main-four", "DISABLED");
             waitUntilState(client, "slave", "other-two", "STOPPED");
-        } catch (Throwable thr) {
-            t = thr;
         } finally {
             //Set everything back to how it was:
             try {
@@ -255,13 +253,7 @@ public class ServerManagementTestCase {
                 resetServerToExpectedState(client, "slave", "main-four", "DISABLED");
                 resetServerToExpectedState(client, "slave", "other-two", "STARTED");
             } catch (Exception e) {
-                if (t == null) {
-                    throw e;
-                }
                 e.printStackTrace();
-            }
-            if (t != null) {
-                throw t;
             }
         }
     }
@@ -300,12 +292,11 @@ public class ServerManagementTestCase {
         domainMasterLifecycleUtil.connect();
 
         // check that the servers are up
-        waitUntilState(masterClient, "master", "main-one", "STARTED");
-        // waitUntilState(masterClient, "master", "other-one", "STARTED");
+        domainMasterLifecycleUtil.awaitServers(System.currentTimeMillis());
 
         // Wait for the slave to reconnect
         waitForHost(masterClient, "slave");
-        //Assert.assertTrue(checkState(masterClient, getServerConfigAddress("slave", "main-tree"), "STARTED"));
+        domainSlaveLifecycleUtil.awaitServers(System.currentTimeMillis());
     }
 
     private void executeLifecycleOperation(final ModelControllerClient client, String opName) throws IOException {
@@ -320,7 +311,7 @@ public class ServerManagementTestCase {
         } else {
             operation.get(OP_ADDR).add(SERVER_GROUP, groupName);
         }
-        final ModelNode result = validateResponse(client.execute(operation));
+        validateResponse(client.execute(operation));
     }
 
     private ModelNode executeForResult(final ModelControllerClient client, final ModelNode operation) throws IOException {
@@ -361,10 +352,7 @@ public class ServerManagementTestCase {
         childrenNamesOp.get(CHILD_TYPE).set(last.getName());
 
         final ModelNode result = executeForResult(client, childrenNamesOp);
-        if(result.asList().contains(last.getValue())) {
-            return true;
-        }
-        return false;
+        return result.asList().contains(last.getValue());
     }
 
     private void resetServerToExpectedState(final ModelControllerClient client, final String hostName, final String serverName, final String state) throws IOException {
@@ -398,13 +386,13 @@ public class ServerManagementTestCase {
                 return;
             }
             if(remaining <= 0) {
-                return;
+                Assert.fail(hostName + " did not register within 30 seconds");
             }
             try {
                 TimeUnit.SECONDS.sleep(1);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                return;
+                Assert.fail("Interrupted while waiting for registration of host " + hostName);
             }
         }
     }
