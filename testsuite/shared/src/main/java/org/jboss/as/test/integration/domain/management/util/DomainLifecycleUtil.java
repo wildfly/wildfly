@@ -215,26 +215,11 @@ public class DomainLifecycleUtil {
             wrapper.start();
             process = wrapper;
 
-            // Wait for the servers to be started
-            boolean serversAvailable = false;
             long start = System.currentTimeMillis();
-            long deadline = start + configuration.getStartupTimeoutInSeconds() * 1000;
-            // Wait a while before starting to check for the servers
+            // Wait a bit to let HC get going
             TimeUnit.SECONDS.sleep(2);
-            while (serversAvailable == false) {
-                long remaining = deadline - System.currentTimeMillis();
-                if(remaining <= 0) {
-                    break;
-                }
-                if (!serversAvailable) {
-                    TimeUnit.MILLISECONDS.sleep(250);
-                }
-                serversAvailable = areServersStarted();
-            }
-
-            if (!serversAvailable) {
-                throw new TimeoutException(String.format("Managed servers were not started within [%d] seconds", configuration.getStartupTimeoutInSeconds()));
-            }
+            // Wait for the servers to be started
+            awaitServers(start);
 
             log.info("All servers started in " + (System.currentTimeMillis() - start) + " ms");
         } catch (Exception e) {
@@ -393,6 +378,26 @@ public class DomainLifecycleUtil {
      */
     public synchronized DomainClient getDomainClient() {
         return DomainClient.Factory.create(internalGetOrCreateClient());
+    }
+
+    /** Wait for all auto-start servers for the host to reach {@link ControlledProcessState.State#RUNNING} */
+    public void awaitServers(long start) throws InterruptedException, TimeoutException {
+
+        boolean serversAvailable = false;
+        long deadline = start + configuration.getStartupTimeoutInSeconds() * 1000;
+        while (!serversAvailable) {
+            long remaining = deadline - System.currentTimeMillis();
+            if(remaining <= 0) {
+                break;
+            }
+            TimeUnit.MILLISECONDS.sleep(250);
+
+            serversAvailable = areServersStarted();
+        }
+
+        if (!serversAvailable) {
+            throw new TimeoutException(String.format("Managed servers were not started within [%d] seconds", configuration.getStartupTimeoutInSeconds()));
+        }
     }
 
     private synchronized DomainTestClient internalGetOrCreateClient() {

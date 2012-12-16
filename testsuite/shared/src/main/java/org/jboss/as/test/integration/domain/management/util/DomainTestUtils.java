@@ -295,19 +295,19 @@ public class DomainTestUtils {
      *
      * @param client the controller client
      * @param serverAddress the server address
-     * @param state the required state
+     * @param required the required state
      * @param timeout the timeout
      * @param unit the time unit
      * @throws IOException
      */
-    public static void waitUntilState(final ModelControllerClient client, final ModelNode serverAddress, final String state, final long timeout, final TimeUnit unit) throws IOException {
+    public static void waitUntilState(final ModelControllerClient client, final ModelNode serverAddress, final String required, final long timeout, final TimeUnit unit) throws IOException {
         final long deadline = System.currentTimeMillis() + unit.toMillis(timeout);
         for(;;) {
             final long remaining = deadline - System.currentTimeMillis();
             if(remaining <= 0) {
                 break;
             }
-            if (checkState(client, serverAddress, state)) {
+            if (checkState(client, serverAddress, required)) {
                 return;
             }
             try {
@@ -317,7 +317,7 @@ public class DomainTestUtils {
                 return;
             }
         }
-        final String required = getServerState(client, serverAddress);
+        final String state = getServerState(client, serverAddress);
         Assert.assertEquals(serverAddress.toString(), required, state);
     }
 
