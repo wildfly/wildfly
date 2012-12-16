@@ -53,6 +53,8 @@ public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
 
     private String hostCommandLineProperties;
 
+    private boolean adminOnly;
+
     public JBossAsManagedConfiguration(JBossAsManagedConfigurationParameters params) {
         this.jbossHome = params.getJBossHome();
         this.modulePath = params.getModuleBaseDir();
@@ -204,5 +206,13 @@ public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
 
     public void setModulePath(final String modulePath) {
         this.modulePath = modulePath;
+    }
+
+    public boolean isAdminOnly() {
+        return adminOnly;
+    }
+
+    public void setAdminOnly(boolean adminOnly) {
+        this.adminOnly = adminOnly;
     }
 }

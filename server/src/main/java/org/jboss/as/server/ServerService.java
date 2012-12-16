@@ -301,8 +301,11 @@ public final class ServerService extends AbstractControllerService {
 
 
             try {
-                // Boot but don't rollback on runtime failures
-                ok = boot(extensibleConfigurationPersister.load(), false);
+                // Boot but by default don't rollback on runtime failures
+                // TODO replace system property used by tests with something properly configurable for general use
+                // TODO search for uses of "jboss.unsupported.fail-boot-on-runtime-failure" in tests before changing this!!
+                boolean failOnRuntime = Boolean.valueOf(SecurityActions.getSystemProperty("jboss.unsupported.fail-boot-on-runtime-failure", "false"));
+                ok = boot(extensibleConfigurationPersister.load(), failOnRuntime);
                 if (ok) {
                     finishBoot();
                 }
@@ -424,5 +427,5 @@ public final class ServerService extends AbstractControllerService {
         public DescriptionProvider getDescriptionProvider(ImmutableManagementResourceRegistration resourceRegistration) {
             return delegate.getDescriptionProvider(resourceRegistration);
         }
-    };
+    }
 }
