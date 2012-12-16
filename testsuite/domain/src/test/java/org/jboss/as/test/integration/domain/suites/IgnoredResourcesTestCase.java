@@ -22,10 +22,6 @@
 
 package org.jboss.as.test.integration.domain.suites;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-
 import java.io.IOException;
 
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -33,10 +29,7 @@ import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
-import org.jboss.as.version.Version;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-import org.jboss.dmr.Property;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -78,7 +71,7 @@ public class IgnoredResourcesTestCase {
         ModelNode result = executeOperation(op, domainMasterLifecycleUtil.getDomainClient());
         boolean found = false;
         for (ModelNode profile : result.asList()) {
-            if ("ignored".equals(profile)) {
+            if ("ignored".equals(profile.asString())) {
                 found = true;
                 break;
             }
@@ -88,19 +81,19 @@ public class IgnoredResourcesTestCase {
         // Resource should not exist on slave
         result = executeOperation(op, domainSlaveLifecycleUtil.getDomainClient());
         for (ModelNode profile : result.asList()) {
-            if ("ignored".equals(profile)) {
+            if ("ignored".equals(profile.asString())) {
                 Assert.fail("found profile 'ignored'");
             }
         }
 
         // Modify the ignored profile
-        ModelNode mod = createOpNode("/profile=ignored/subsystem=naming", "add");
+        ModelNode mod = createOpNode("profile=ignored/subsystem=naming", "add");
         executeOperation(mod, domainMasterLifecycleUtil.getDomainClient());
 
         // Resource still should not exist on slave
         result = executeOperation(op, domainSlaveLifecycleUtil.getDomainClient());
         for (ModelNode profile : result.asList()) {
-            if ("ignored".equals(profile)) {
+            if ("ignored".equals(profile.asString())) {
                 Assert.fail("found profile 'ignored'");
             }
         }
@@ -116,7 +109,7 @@ public class IgnoredResourcesTestCase {
         ModelNode result = executeOperation(op, domainMasterLifecycleUtil.getDomainClient());
         boolean found = false;
         for (ModelNode profile : result.asList()) {
-            if ("ignored".equals(profile)) {
+            if ("ignored".equals(profile.asString())) {
                 found = true;
                 break;
             }
@@ -126,20 +119,20 @@ public class IgnoredResourcesTestCase {
         // Resource should not exist on slave
         result = executeOperation(op, domainSlaveLifecycleUtil.getDomainClient());
         for (ModelNode profile : result.asList()) {
-            if ("ignored".equals(profile)) {
+            if ("ignored".equals(profile.asString())) {
                 Assert.fail("found socket-binding-group 'ignored'");
             }
         }
 
         // Modify the ignored group
-        ModelNode mod = createOpNode("/socket-binding-group=ignored/socket-binding=test", "add");
+        ModelNode mod = createOpNode("socket-binding-group=ignored/socket-binding=test", "add");
         mod.get("port").set(12345);
         executeOperation(mod, domainMasterLifecycleUtil.getDomainClient());
 
         // Resource still should not exist on slave
         result = executeOperation(op, domainSlaveLifecycleUtil.getDomainClient());
         for (ModelNode profile : result.asList()) {
-            if ("ignored".equals(profile)) {
+            if ("ignored".equals(profile.asString())) {
                 Assert.fail("found socket-binding-group 'ignored'");
             }
         }
@@ -154,31 +147,29 @@ public class IgnoredResourcesTestCase {
 
         // Sanity check againt domain
         ModelNode result = executeOperation(op, domainMasterLifecycleUtil.getDomainClient());
-        boolean found = false;
         for (ModelNode profile : result.asList()) {
-            if ("org.jboss.as.jsr77".equals(profile)) {
+            if ("org.jboss.as.jsr77".equals(profile.asString())) {
                 Assert.fail("found extension 'org.jboss.as.jsr77'");
             }
         }
-        Assert.assertTrue(found);
 
         // Resource should not exist on slave
         result = executeOperation(op, domainSlaveLifecycleUtil.getDomainClient());
         for (ModelNode profile : result.asList()) {
-            if ("org.jboss.as.jsr77".equals(profile)) {
+            if ("org.jboss.as.jsr77".equals(profile.asString())) {
                 Assert.fail("found extension 'org.jboss.as.jsr77'");
             }
         }
 
         // Add the ignored extension
-        ModelNode mod = createOpNode("/extension=org.jboss.as.jsr77", "add");
+        ModelNode mod = createOpNode("extension=org.jboss.as.jsr77", "add");
         mod.get("port").set(12345);
         executeOperation(mod, domainMasterLifecycleUtil.getDomainClient());
 
         // Resource still should not exist on slave
         result = executeOperation(op, domainSlaveLifecycleUtil.getDomainClient());
         for (ModelNode profile : result.asList()) {
-            if ("org.jboss.as.jsr77".equals(profile)) {
+            if ("org.jboss.as.jsr77".equals(profile.asString())) {
                 Assert.fail("found extension 'org.jboss.as.jsr77'");
             }
         }
@@ -188,7 +179,7 @@ public class IgnoredResourcesTestCase {
     @Test
     public void testIgnoreTypeHost() throws IOException {
 
-        ModelNode op = createOpNode("/core-service=ignored-resources/ignored-resource-type=host", "add");
+        ModelNode op = createOpNode("core-service=ignored-resources/ignored-resource-type=host", "add");
         op.get("wildcard").set(true);
 
         try {
