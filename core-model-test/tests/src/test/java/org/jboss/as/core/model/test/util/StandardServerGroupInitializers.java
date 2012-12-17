@@ -30,6 +30,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.core.model.test.LegacyKernelServicesInitializer;
 import org.jboss.as.core.model.test.ModelInitializer;
 import org.jboss.as.core.model.test.ModelWriteSanitizer;
+import org.jboss.as.model.test.ModelFixer;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -59,5 +60,15 @@ public class StandardServerGroupInitializers {
             .initializerCreateModelResource(PathAddress.EMPTY_ADDRESS, PathElement.pathElement(SOCKET_BINDING_GROUP, "test-sockets"), null);
         return legacyKernelServicesInitializer;
     }
+
+    public static final ModelFixer MODEL_FIXER = new ModelFixer() {
+    
+        @Override
+        public ModelNode fixModel(ModelNode modelNode) {
+            modelNode.remove(SOCKET_BINDING_GROUP);
+            modelNode.remove(PROFILE);
+            return modelNode;
+        }
+    };
 
 }

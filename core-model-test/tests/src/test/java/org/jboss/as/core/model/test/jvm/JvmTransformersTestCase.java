@@ -21,28 +21,19 @@
 */
 package org.jboss.as.core.model.test.jvm;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
-import org.jboss.as.core.model.test.LegacyKernelServicesInitializer;
 import org.jboss.as.core.model.test.LegacyKernelServicesInitializer.TestControllerVersion;
-import org.jboss.as.core.model.test.ModelInitializer;
-import org.jboss.as.core.model.test.ModelWriteSanitizer;
 import org.jboss.as.core.model.test.TestModelType;
+import org.jboss.as.core.model.test.util.StandardServerGroupInitializers;
 import org.jboss.as.core.model.test.util.TransformersTestParameters;
-import org.jboss.as.model.test.ModelFixer;
-import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -80,11 +71,9 @@ public class JvmTransformersTestCase extends AbstractCoreModelTest {
     private void doJvmTransformer(String xmlResource, boolean legacyMustBoot) throws Exception {
         KernelServicesBuilder builder = createKernelServicesBuilder(TestModelType.DOMAIN)
                 .setXmlResource(xmlResource)
-                .setModelInitializer(XML_MODEL_INITIALIZER, XML_MODEL_WRITE_SANITIZER);
+                .setModelInitializer(StandardServerGroupInitializers.XML_MODEL_INITIALIZER, StandardServerGroupInitializers.XML_MODEL_WRITE_SANITIZER);
 
-        builder.createLegacyKernelServicesBuilder(modelVersion, testControllerVersion)
-                .initializerCreateModelResource(PathAddress.EMPTY_ADDRESS, PathElement.pathElement(PROFILE, "test"), null)
-                .initializerCreateModelResource(PathAddress.EMPTY_ADDRESS, PathElement.pathElement(SOCKET_BINDING_GROUP, "test-sockets"), new ModelNode().setEmptyObject());
+        StandardServerGroupInitializers.addServerGroupInitializers(builder.createLegacyKernelServicesBuilder(modelVersion, testControllerVersion));
 
         KernelServices mainServices = builder.build();
         assertTrue(mainServices.isSuccessfulBoot());
@@ -92,42 +81,9 @@ public class JvmTransformersTestCase extends AbstractCoreModelTest {
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
         if (legacyMustBoot) {
             assertTrue(legacyServices.isSuccessfulBoot());
-            checkCoreModelTransformation(mainServices, modelVersion, MODEL_FIXER, MODEL_FIXER);
+            checkCoreModelTransformation(mainServices, modelVersion, StandardServerGroupInitializers.MODEL_FIXER, StandardServerGroupInitializers.MODEL_FIXER);
         } else {
             assertFalse(legacyServices.isSuccessfulBoot());
         }
     }
-
-    /**
-     * add "fake" profile and socket-binding-group so that the server-group specified in the XML is valid.
-     */
-    private static final ModelInitializer XML_MODEL_INITIALIZER = new ModelInitializer() {
-        public void populateModel(Resource rootResource) {
-            rootResource.registerChild(PathElement.pathElement(PROFILE, "test"), Resource.Factory.create());
-            rootResource.registerChild(PathElement.pathElement(SOCKET_BINDING_GROUP, "test-sockets"), Resource.Factory.create());
-        }
-    };
-
-    /**
-     * Remove the resources that were added to the XML model.
-     */
-    private final ModelNode removeResources(ModelNode modelNode) {
-        modelNode.remove(SOCKET_BINDING_GROUP);
-        modelNode.remove(PROFILE);
-        return modelNode;
-    }
-
-    private final ModelFixer MODEL_FIXER = new ModelFixer() {
-        @Override
-        public ModelNode fixModel(ModelNode modelNode) {
-            return removeResources(modelNode);
-        }
-    };
-
-    private final ModelWriteSanitizer XML_MODEL_WRITE_SANITIZER = new ModelWriteSanitizer() {
-        @Override
-        public ModelNode sanitize(ModelNode modelNode) {
-            return removeResources(modelNode);
-        }
-    };
 }

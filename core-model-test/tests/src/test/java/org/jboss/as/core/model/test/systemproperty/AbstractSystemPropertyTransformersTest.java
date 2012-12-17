@@ -22,9 +22,7 @@
 package org.jboss.as.core.model.test.systemproperty;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
@@ -39,7 +37,6 @@ import org.jboss.as.core.model.test.LegacyKernelServicesInitializer.TestControll
 import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.core.model.test.util.StandardServerGroupInitializers;
 import org.jboss.as.core.model.test.util.TransformersTestParameters;
-import org.jboss.as.model.test.ModelFixer;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
@@ -84,7 +81,7 @@ public abstract class AbstractSystemPropertyTransformersTest extends AbstractCor
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
-        ModelNode legacyModel = checkCoreModelTransformation(mainServices, modelVersion, MODEL_FIXER, MODEL_FIXER);
+        ModelNode legacyModel = checkCoreModelTransformation(mainServices, modelVersion, StandardServerGroupInitializers.MODEL_FIXER, StandardServerGroupInitializers.MODEL_FIXER);
         ModelNode properties = legacyModel;
         if (serverGroup) {
             properties = legacyModel.get(SERVER_GROUP, "test");
@@ -99,16 +96,6 @@ public abstract class AbstractSystemPropertyTransformersTest extends AbstractCor
         Assert.assertEquals(expectedUndefined, properties.get("sys.prop.test.four", BOOT_TIME));
         Assert.assertFalse(properties.get("sys.prop.test.four", VALUE).isDefined());
     }
-
-    private final ModelFixer MODEL_FIXER = new ModelFixer() {
-
-        @Override
-        public ModelNode fixModel(ModelNode modelNode) {
-            modelNode.remove(SOCKET_BINDING_GROUP);
-            modelNode.remove(PROFILE);
-            return modelNode;
-        }
-    };
 
     static class SystemPropertyTransformersTestParameters extends TransformersTestParameters {
         private ModelNode expectedUndefined;
