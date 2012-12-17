@@ -39,7 +39,6 @@ import org.jboss.as.osgi.web.WebExtension;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.osgi.api.Echo;
 import org.jboss.as.test.integration.osgi.deployment.bundle.DeferredFailActivator;
-import org.jboss.as.test.integration.osgi.webapp.bundle.AnnotatedServlet;
 import org.jboss.as.test.integration.osgi.webapp.bundle.SimpleAnnotatedServlet;
 import org.jboss.as.test.integration.osgi.webapp.bundle.SimpleServlet;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
@@ -54,7 +53,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.FrameworkUtil;
@@ -153,7 +151,7 @@ public class WebAppTestCase {
         deployer.deploy(BUNDLE_G_WAR);
         try {
             String result = performCall("/bundle-g/servlet?input=Hello");
-            Assert.assertEquals("null called with: Hello", result);
+            Assert.assertEquals("bundle-g.war called with: Hello", result);
             result = performCall("/bundle-g/message.txt");
             Assert.assertEquals("Hello from Resource", result);
         } finally {
@@ -166,7 +164,7 @@ public class WebAppTestCase {
         deployer.deploy(BUNDLE_H_WAR);
         try {
             String result = performCall("/bundle-h/servlet?input=Hello");
-            Assert.assertEquals("null called with: Hello", result);
+            Assert.assertEquals("bundle-h.war called with: Hello", result);
             result = performCall("/bundle-h/message.txt");
             Assert.assertEquals("Hello from Resource", result);
         } finally {
@@ -400,7 +398,7 @@ public class WebAppTestCase {
                 builder.addImportPackages(PostConstruct.class, WebServlet.class);
                 builder.addImportPackages(Servlet.class, HttpServlet.class);
                 builder.addImportPackages(FrameworkUtil.class);
-                builder.addManifestHeader(WebExtension.WEB_CONTEXT_PATH, "/bundle-d");
+                builder.addManifestHeader(WebExtension.WEB_CONTEXTPATH, "/bundle-d");
                 return builder.openStream();
             }
         });
@@ -421,7 +419,7 @@ public class WebAppTestCase {
                 builder.addImportPackages(PostConstruct.class, WebServlet.class);
                 builder.addImportPackages(Servlet.class, HttpServlet.class);
                 builder.addImportPackages(FrameworkUtil.class);
-                builder.addManifestHeader(WebExtension.WEB_CONTEXT_PATH, "/bundle-e");
+                builder.addManifestHeader(WebExtension.WEB_CONTEXTPATH, "/bundle-e");
                 return builder.openStream();
             }
         });
@@ -442,7 +440,7 @@ public class WebAppTestCase {
                 builder.addBundleActivator(DeferredFailActivator.class);
                 builder.addImportPackages(PostConstruct.class, WebServlet.class);
                 builder.addImportPackages(Servlet.class, HttpServlet.class);
-                builder.addImportPackages(BundleActivator.class);
+                builder.addImportPackages(FrameworkUtil.class);
                 return builder.openStream();
             }
         });
@@ -452,7 +450,7 @@ public class WebAppTestCase {
     @Deployment(name = BUNDLE_G_WAR, managed = false, testable = false)
     public static Archive<?> getBundleG() {
         final JavaArchive libjar = ShrinkWrap.create(JavaArchive.class, LIB_G_JAR);
-        libjar.addClasses(AnnotatedServlet.class, Echo.class);
+        libjar.addClasses(SimpleAnnotatedServlet.class, Echo.class);
         final WebArchive archive = ShrinkWrap.create(WebArchive.class, BUNDLE_G_WAR);
         archive.addAsLibraries(libjar);
         archive.addAsWebResource(STRING_ASSET, "message.txt");
@@ -464,6 +462,7 @@ public class WebAppTestCase {
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(PostConstruct.class, WebServlet.class);
                 builder.addImportPackages(Servlet.class, HttpServlet.class);
+                builder.addImportPackages(FrameworkUtil.class);
                 builder.addBundleClasspath("WEB-INF/lib/" + LIB_G_JAR);
                 return builder.openStream();
             }
@@ -498,6 +497,7 @@ public class WebAppTestCase {
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(Servlet.class, HttpServlet.class);
+                builder.addImportPackages(FrameworkUtil.class);
                 builder.addBundleClasspath("WEB-INF/lib/" + LIB_G_JAR);
                 return builder.openStream();
             }
