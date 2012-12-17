@@ -41,6 +41,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
@@ -1164,6 +1166,12 @@ final class OperationContextImpl extends AbstractOperationContext {
             return controller.getImmediateUnavailableDependencies();
         }
 
+        public S awaitValue() throws IllegalStateException, InterruptedException {
+            return controller.awaitValue();
+        }
 
+        public S awaitValue(long time, TimeUnit unit) throws IllegalStateException, InterruptedException, TimeoutException {
+            return controller.awaitValue(time, unit);
+        }
     }
 }
