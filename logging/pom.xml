@@ -126,6 +126,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.stdio</groupId>
+            <artifactId>jboss-stdio</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.byteman</groupId>
             <artifactId>byteman</artifactId>
             <scope>test</scope>
