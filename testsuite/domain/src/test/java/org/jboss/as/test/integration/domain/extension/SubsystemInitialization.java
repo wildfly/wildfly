@@ -33,6 +33,7 @@ import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -87,6 +88,7 @@ class SubsystemInitialization {
         final AttributeDefinition string = SimpleAttributeDefinitionBuilder.create("string", ModelType.STRING).setAllowExpression(allowExpressions).build();
         registration.registerReadWriteAttribute(integer, null, new BasicAttributeWriteHandler(integer));
         registration.registerReadWriteAttribute(string, null, new BasicAttributeWriteHandler(string));
+        registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
         return new RegistrationResult() {
             @Override
