@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:infinispan:1.4">
+<subsystem xmlns="urn:jboss:domain:infinispan:1.5">
     <cache-container name="minimal" default-cache="local">
         <local-cache name="local"/>
     </cache-container>

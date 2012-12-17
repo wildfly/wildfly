@@ -42,20 +42,10 @@ public class SharedCacheResourceDefinition extends ClusteredCacheResourceDefinit
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
-        // no attributes
-    }
+    public void registerChildren(ManagementResourceRegistration registration) {
+        super.registerChildren(registration);
 
-    @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
-    }
-
-    @Override
-    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        super.registerChildren(resourceRegistration);
-
-        resourceRegistration.registerSubModel(new StateTransferResourceDefinition());
+        registration.registerSubModel(new StateTransferResourceDefinition());
+        registration.registerSubModel(new BackupSiteResource());
     }
 }

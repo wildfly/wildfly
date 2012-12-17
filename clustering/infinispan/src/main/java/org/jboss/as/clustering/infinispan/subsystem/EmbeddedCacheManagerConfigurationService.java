@@ -39,6 +39,8 @@ import org.jboss.as.clustering.infinispan.ManagedExecutorFactory;
 import org.jboss.as.clustering.infinispan.ManagedScheduledExecutorFactory;
 import org.jboss.as.clustering.infinispan.io.SimpleExternalizer;
 import org.jboss.as.clustering.jgroups.ChannelFactory;
+import org.jboss.as.clustering.jgroups.ProtocolStackConfiguration;
+import org.jboss.as.clustering.jgroups.RelayConfiguration;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
 import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.modules.ModuleIdentifier;
@@ -139,7 +141,8 @@ public class EmbeddedCacheManagerConfigurationService implements Service<Embedde
                 transportBuilder.distributedSyncTimeout(timeout.longValue());
             }
             // Topology is retrieved from the channel
-            org.jboss.as.clustering.jgroups.TransportConfiguration.Topology topology = transport.getChannelFactory().getProtocolStackConfiguration().getTransport().getTopology();
+            ProtocolStackConfiguration stack = transport.getChannelFactory().getProtocolStackConfiguration();
+            org.jboss.as.clustering.jgroups.TransportConfiguration.Topology topology = stack.getTransport().getTopology();
             if (topology != null) {
                 String site = topology.getSite();
                 if (site != null) {
@@ -159,6 +162,11 @@ public class EmbeddedCacheManagerConfigurationService implements Service<Embedde
             Executor executor = transport.getExecutor();
             if (executor != null) {
                 builder.asyncTransportExecutor().factory(new ManagedExecutorFactory(executor));
+            }
+
+            RelayConfiguration relay = stack.getRelay();
+            if (relay != null) {
+                builder.site().localSite(relay.getSiteName());
             }
         }
 

@@ -39,6 +39,8 @@ public enum Element {
     UNKNOWN((String)null),
 
     ALIAS(ModelKeys.ALIAS),
+    BACKUP(ModelKeys.BACKUP),
+    BACKUPS(ModelKeys.BACKUPS),
     BINARY_KEYED_TABLE(ModelKeys.BINARY_KEYED_TABLE),
     @Deprecated BUCKET_TABLE(ModelKeys.BUCKET_TABLE),
     CACHE_CONTAINER(ModelKeys.CACHE_CONTAINER),
@@ -65,6 +67,7 @@ public enum Element {
     STATE_TRANSFER(ModelKeys.STATE_TRANSFER),
     STORE(ModelKeys.STORE),
     STRING_KEYED_TABLE(ModelKeys.STRING_KEYED_TABLE),
+    TAKE_OFFLINE("take-offline"),
     TIMESTAMP_COLUMN(ModelKeys.TIMESTAMP_COLUMN),
     TRANSACTION(ModelKeys.TRANSACTION),
     TRANSPORT(ModelKeys.TRANSPORT),

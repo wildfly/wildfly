@@ -33,8 +33,9 @@ public enum Element {
 
     PROPERTY(ModelKeys.PROPERTY),
     PROTOCOL(ModelKeys.PROTOCOL),
+    RELAY(ModelKeys.RELAY),
+    REMOTE_SITE(ModelKeys.REMOTE_SITE),
     STACK(ModelKeys.STACK),
-    SUBSYSTEM(org.jboss.as.controller.parsing.Element.SUBSYSTEM.getLocalName()),
     TRANSPORT(ModelKeys.TRANSPORT),
     ;
 

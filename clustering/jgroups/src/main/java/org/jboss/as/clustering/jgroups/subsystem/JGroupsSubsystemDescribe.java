@@ -63,7 +63,7 @@ public class JGroupsSubsystemDescribe implements OperationStepHandler {
         result.add(JGroupsSubsystemAdd.createOperation(rootAddress.toModelNode(), subModel));
 
         if (subModel.hasDefined(ModelKeys.STACK)) {
-            for (final Property stack : subModel.get(ModelKeys.STACK).asPropertyList()) {
+            for (final Property stack: subModel.get(ModelKeys.STACK).asPropertyList()) {
                 // process one stack
                 final ModelNode stackAddress = rootAddress.toModelNode();
                 stackAddress.add(ModelKeys.STACK, stack.getName());
@@ -89,6 +89,22 @@ public class JGroupsSubsystemDescribe implements OperationStepHandler {
                         ModelNode protocolAddress = stackAddress.clone();
                         protocolAddress.add(ModelKeys.PROTOCOL, protocol.getName());
                         addProtocolPropertyCommands(protocol.getValue(), protocolAddress, result);
+                    }
+                }
+                // relay=RELAY
+                if (stack.getValue().get(ModelKeys.RELAY, ModelKeys.RELAY_NAME).isDefined()) {
+                    ModelNode relay = stack.getValue().get(ModelKeys.RELAY, ModelKeys.RELAY_NAME);
+                    ModelNode relayAddress = stackAddress.clone();
+                    relayAddress.add(ModelKeys.RELAY, ModelKeys.RELAY_NAME);
+                    result.add(createOperation(relayAddress, relay, RelayResource.ATTRIBUTES));
+                    addProtocolPropertyCommands(relay, relayAddress, result);
+                    // remote-site=*
+                    if (relay.get(ModelKeys.REMOTE_SITE).isDefined()) {
+                        for (final Property remoteSite: relay.get(ModelKeys.REMOTE_SITE).asPropertyList()) {
+                            ModelNode remoteSiteAddress = relayAddress.clone().add(ModelKeys.REMOTE_SITE, remoteSite.getName());
+                            // no optional transport:add parameters will be present, so use attributes list
+                            result.add(createOperation(remoteSiteAddress, remoteSite.getValue(), RemoteSiteResource.ATTRIBUTES));
+                        }
                     }
                 }
             }

@@ -37,16 +37,17 @@ public enum Namespace {
 
     INFINISPAN_1_0(1, 0, new InfinispanSubsystemXMLReader_1_0()),
     INFINISPAN_1_1(1, 1, new InfinispanSubsystemXMLReader_1_1()),
-    INFINISPAN_1_2(1, 2, new InfinispanSubsystemXMLReader_1_2()), // IMPORTANT: Management API version != XSD version!
-    INFINISPAN_1_3(1, 3, new InfinispanSubsystemXMLReader_1_3()), // IMPORTANT: Management API version != XSD version!
-    INFINISPAN_1_4(1, 4, new InfinispanSubsystemXMLReader_1_4()), // IMPORTANT: Management API version != XSD version!
+    INFINISPAN_1_2(1, 2, new InfinispanSubsystemXMLReader_1_2()),
+    INFINISPAN_1_3(1, 3, new InfinispanSubsystemXMLReader_1_3()),
+    INFINISPAN_1_4(1, 4, new InfinispanSubsystemXMLReader_1_4()),
+    INFINISPAN_1_5(1, 5, new InfinispanSubsystemXMLReader_1_5()),
     ;
     private static final String URN_PATTERN = "urn:jboss:domain:%s:%d.%d";
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = INFINISPAN_1_4;
+    public static final Namespace CURRENT = INFINISPAN_1_5;
 
     private final int major;
     private final int minor;

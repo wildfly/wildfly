@@ -51,11 +51,11 @@ public class InfinispanExtension implements Extension {
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
-           StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
-           for (String kp : keyPrefix) {
-               prefix.append('.').append(kp);
-           }
-            return new InfinispanResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, InfinispanExtension.class.getClassLoader());
+        StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
+        for (String kp : keyPrefix) {
+            prefix.append('.').append(kp);
+        }
+        return new InfinispanResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, InfinispanExtension.class.getClassLoader());
     }
 
     /**

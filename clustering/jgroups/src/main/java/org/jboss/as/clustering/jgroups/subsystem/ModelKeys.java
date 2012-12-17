@@ -27,6 +27,7 @@ package org.jboss.as.clustering.jgroups.subsystem;
  */
 class ModelKeys {
     static final String ADD_PROTOCOL = "add-protocol";
+    static final String CLUSTER = "cluster";
     static final String DEFAULT_EXECUTOR = "default-executor";
     static final String DEFAULT_STACK = "default-stack";
     static final String DIAGNOSTICS_SOCKET_BINDING = "diagnostics-socket-binding";
@@ -39,6 +40,10 @@ class ModelKeys {
     static final String PROTOCOL = "protocol";
     static final String PROTOCOLS = "protocols";
     static final String RACK = "rack";
+    static final String RELAY = "relay";
+    static final String RELAY_NAME = "RELAY";
+    static final String REMOTE_SITE = "remote-site";
+    static final String REMOTE_SITES = "remote-sites";
     static final String REMOVE_PROTOCOL = "remove-protocol";
     static final String SHARED = "shared";
     static final String SITE = "site";
