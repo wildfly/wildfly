@@ -83,7 +83,8 @@ public class JvmAttributes {
     public static final PropertiesAttributeDefinition ENVIRONMENT_VARIABLES = new PropertiesAttributeDefinition.Builder(JvmAttributes.JVM_ENV_VARIABLES, true)
             .setXmlName(Element.VARIABLE.getLocalName())
             .setAllowNull(true)
-            .setValidator(new StringLengthValidator(1, true))
+            .setAllowExpression(true)
+            .setValidator(new StringLengthValidator(1, true, true))
             .setWrapperElement(JvmAttributes.JVM_ENV_VARIABLES)
             .build();
 
@@ -98,9 +99,13 @@ public class JvmAttributes {
             .setAllowExpression(false)
             .build();
 
+    /**
+     * JVM options are resolved in ManagedServerBootCmdFactory before the JVM is launched.
+     */
     public static final AttributeDefinition OPTIONS = new StringListAttributeDefinition.Builder(JvmAttributes.JVM_OPTIONS)
-            .setValidator(new StringLengthValidator(1, true))
+            .setValidator(new StringLengthValidator(1, true, true))
             .setAllowNull(true)
+            .setAllowExpression(true)
             .setAttributeMarshaller(new AttributeMarshaller() {
                 @Override
                 public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
@@ -121,7 +126,7 @@ public class JvmAttributes {
 
     public static final SimpleAttributeDefinition STACK_SIZE =
             SimpleAttributeDefinitionBuilder.create(JvmAttributes.JVM_STACK, ModelType.STRING, true)
-            .setAllowExpression(false)
+            .setAllowExpression(true)
             .setXmlName(JvmAttributes.SIZE)
             .build();
 
@@ -133,25 +138,25 @@ public class JvmAttributes {
 
     public static final SimpleAttributeDefinition HEAP_SIZE =
             SimpleAttributeDefinitionBuilder.create(JvmAttributes.JVM_HEAP, ModelType.STRING, true)
-            .setAllowExpression(false)
+            .setAllowExpression(true)
             .setXmlName(JvmAttributes.SIZE)
             .build();
 
     public static final SimpleAttributeDefinition MAX_HEAP_SIZE =
             SimpleAttributeDefinitionBuilder.create(JvmAttributes.JVM_MAX_HEAP, ModelType.STRING, true)
-            .setAllowExpression(false)
+            .setAllowExpression(true)
             .setXmlName(JvmAttributes.MAX_SIZE)
             .build();
 
     public static final SimpleAttributeDefinition PERMGEN_SIZE =
             SimpleAttributeDefinitionBuilder.create(JvmAttributes.JVM_PERMGEN, ModelType.STRING, true)
-            .setAllowExpression(false)
+            .setAllowExpression(true)
             .setXmlName(JvmAttributes.SIZE)
             .build();
 
     public static final SimpleAttributeDefinition MAX_PERMGEN_SIZE =
             SimpleAttributeDefinitionBuilder.create(JvmAttributes.JVM_MAX_PERMGEN, ModelType.STRING, true)
-            .setAllowExpression(false)
+            .setAllowExpression(true)
             .setXmlName(JvmAttributes.MAX_SIZE)
             .build();
 

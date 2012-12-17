@@ -41,7 +41,8 @@ final class JVMOptionRemoveHandler implements OperationStepHandler {
     static final JVMOptionRemoveHandler INSTANCE = new JVMOptionRemoveHandler();
 
     static final SimpleAttributeDefinition JVM_OPTION = SimpleAttributeDefinitionBuilder.create(JvmAttributes.JVM_OPTION, ModelType.STRING, false)
-            .setValidator(new StringLengthValidator(1))
+            .setValidator(new StringLengthValidator(1, false, true))
+            .setAllowExpression(true)
             .build();
 
     public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, HostResolver.getResolver("jvm"))
@@ -54,6 +55,8 @@ final class JVMOptionRemoveHandler implements OperationStepHandler {
         final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
         final ModelNode model = resource.getModel();
 
+        // the attribute allow expressions but it is *not* resolved. This enables to remove a jvm option
+        // which was added with an expression. If the expression was resolved it would not be found in the JVM_OPTIONS list
         final ModelNode option = JVM_OPTION.validateOperation(operation);
         if (model.hasDefined(JvmAttributes.JVM_OPTIONS)) {
             final ModelNode values = model.get(JvmAttributes.JVM_OPTIONS).clone();
