@@ -33,9 +33,11 @@ import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.staxmapper.XMLElementReader;
@@ -60,11 +62,13 @@ public class TestExtension implements Extension {
     public void initialize(ExtensionContext context) {
         SubsystemRegistration one = context.registerSubsystem("1", 1, 1, 1);
         one.registerXMLElementWriter(parserOne);
-        one.registerSubsystemModel(new Subsystem("1"));
+        ManagementResourceRegistration mrrOne = one.registerSubsystemModel(new Subsystem("1"));
+        mrrOne.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
         SubsystemRegistration two = context.registerSubsystem("2", 2, 2, 2);
         two.registerXMLElementWriter(parserTwo);
-        two.registerSubsystemModel(new Subsystem("2"));
+        ManagementResourceRegistration mrrTwo = two.registerSubsystemModel(new Subsystem("2"));
+        mrrTwo.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
     }
 
     @Override
