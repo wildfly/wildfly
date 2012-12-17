@@ -266,7 +266,7 @@ public class WebAppSpecTestCase {
                 builder.addImportPackages(WebServlet.class);
                 builder.addImportPackages(Servlet.class, HttpServlet.class);
                 builder.addImportPackages(BundleContext.class, ServiceTracker.class);
-                builder.addManifestHeader(WebExtension.WEB_CONTEXT_PATH,  "/testcontext");
+                builder.addManifestHeader(WebExtension.WEB_CONTEXTPATH,  "/testcontext");
                 return builder.openStream();
             }
         });
@@ -287,7 +287,7 @@ public class WebAppSpecTestCase {
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(Servlet.class, HttpServlet.class);
                 builder.addImportPackages(FrameworkUtil.class);
-                builder.addManifestHeader(WebExtension.WEB_CONTEXT_PATH,  "/bundleB");
+                builder.addManifestHeader(WebExtension.WEB_CONTEXTPATH,  "/bundleB");
                 return builder.openStream();
             }
         });
@@ -307,7 +307,7 @@ public class WebAppSpecTestCase {
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(Servlet.class, HttpServlet.class);
                 builder.addImportPackages(FrameworkUtil.class);
-                builder.addManifestHeader(WebExtension.WEB_CONTEXT_PATH,  "/bundleC");
+                builder.addManifestHeader(WebExtension.WEB_CONTEXTPATH,  "/bundleC");
                 return builder.openStream();
             }
         });
@@ -347,7 +347,7 @@ public class WebAppSpecTestCase {
                 builder.addBundleActivationPolicy(Constants.ACTIVATION_LAZY);
                 builder.addImportPackages(Servlet.class, HttpServlet.class);
                 builder.addImportPackages(FrameworkUtil.class);
-                builder.addManifestHeader(WebExtension.WEB_CONTEXT_PATH,  "/bundleD");
+                builder.addManifestHeader(WebExtension.WEB_CONTEXTPATH,  "/bundleD");
                 return builder.openStream();
             }
         });
@@ -371,7 +371,7 @@ public class WebAppSpecTestCase {
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(Servlet.class, HttpServlet.class);
                 builder.addImportPackages(FrameworkUtil.class);
-                builder.addManifestHeader(WebExtension.WEB_CONTEXT_PATH,  "/bundleE");
+                builder.addManifestHeader(WebExtension.WEB_CONTEXTPATH,  "/bundleE");
                 return builder.openStream();
             }
         });
@@ -391,7 +391,7 @@ public class WebAppSpecTestCase {
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(Servlet.class, HttpServlet.class);
                 builder.addImportPackages(FrameworkUtil.class);
-                builder.addManifestHeader(WebExtension.WEB_CONTEXT_PATH,  "/bundleF");
+                builder.addManifestHeader(WebExtension.WEB_CONTEXTPATH,  "/bundleF");
                 return builder.openStream();
             }
         });
@@ -411,7 +411,7 @@ public class WebAppSpecTestCase {
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(Servlet.class, HttpServlet.class);
                 builder.addImportPackages(FrameworkUtil.class);
-                builder.addManifestHeader(WebExtension.WEB_CONTEXT_PATH,  "/bundleF");
+                builder.addManifestHeader(WebExtension.WEB_CONTEXTPATH,  "/bundleF");
                 return builder.openStream();
             }
         });
