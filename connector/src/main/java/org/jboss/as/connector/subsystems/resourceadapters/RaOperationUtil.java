@@ -26,6 +26,7 @@ import org.jboss.as.connector.deployers.ra.processors.IronJacamarDeploymentParsi
 import org.jboss.as.connector.deployers.ra.processors.ParsedRaDeploymentProcessor;
 import org.jboss.as.connector.deployers.ra.processors.RaDeploymentParsingProcessor;
 import org.jboss.as.connector.deployers.ra.processors.RaNativeProcessor;
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.metadata.xmldescriptors.IronJacamarXmlDescriptor;
 import org.jboss.as.connector.services.resourceadapters.deployment.AbstractResourceAdapterDeploymentService;
@@ -377,7 +378,10 @@ public class RaOperationUtil {
                 if (index != null) {
                     annotationIndexes.put(resourceRoot, index);
                 }
-
+                if (ironJacamarXmlDescriptor != null) {
+                    ConnectorLogger.SUBSYSTEM_RA_LOGGER.forceIJToNull();
+                    ironJacamarXmlDescriptor = null;
+                }
                 ServiceBuilder builder = ParsedRaDeploymentProcessor.process(connectorXmlDescriptor, ironJacamarXmlDescriptor, module.getClassLoader(), serviceTarget, annotationIndexes, RAR_MODULE.append(deploymentName));
                 builder.addDependency(raServiceName).setInitialMode(ServiceController.Mode.ACTIVE).install();
                 String rarName = resourceAdapter.getArchive();
