@@ -104,7 +104,7 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
             submodel.get(attributeName).set(newValue);
         }
 
-        validateUpdatedModel(context, resource);
+        validateUpdatedModel(context, operation, resource);
 
         if (requiresRuntime(context)) {
             context.addStep(new OperationStepHandler() {
@@ -113,8 +113,8 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
                     final ModelNode resolvedValue = attributeDefinition != null ? attributeDefinition.resolveModelAttribute(context, submodel) : newValue.resolve();
                     validateResolvedValue(attributeName, newValue);
                     final HandbackHolder<T> handback = new HandbackHolder<T>();
-                    final boolean restartRequired = applyUpdateToRuntime(context, operation, attributeName, resolvedValue, currentValue, handback);
-                    if (restartRequired) {
+                    final boolean reloadRequired = applyUpdateToRuntime(context, operation, attributeName, resolvedValue, currentValue, handback);
+                    if (reloadRequired) {
                         context.reloadRequired();
                     }
 
@@ -129,7 +129,7 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
                                         operation.require(ModelDescriptionConstants.OP).asString(),
                                         PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
                             }
-                            if (restartRequired) {
+                            if (reloadRequired) {
                                 context.revertReloadRequired();
                             }
                         }
@@ -154,7 +154,7 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
      *             {@link #revertUpdateToRuntime(OperationContext, ModelNode, String, ModelNode, ModelNode, Object)} if
      *             the operation needs to be rolled back
      *
-     * @return {@code true} if the server requires restart to effect the attribute
+     * @return {@code true} if the server requires reload to effect the attribute
      *         value change; {@code false} if not
      */
     protected abstract boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
@@ -205,9 +205,22 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
 
     /**
      * Hook to allow subclasses to validate the model following the application of the new attribute value.
+     * This default implementation calls {@link #validateUpdatedModel(OperationContext, Resource)}.
+     *
+     * @param context the operation context
+     * @param operation the operation
+     * @param model the updated model resource
+     * @throws OperationFailedException
+     */
+    protected void validateUpdatedModel(final OperationContext context, final ModelNode operation, final Resource model) throws OperationFailedException {
+        validateUpdatedModel(context, model);
+    }
+
+    /**
+     * Hook to allow subclasses to validate the model following the application of the new attribute value.
      * This default implementation does nothing.
      *
-     * @param context the
+     * @param context the operation context
      * @param model the updated model resource
      * @throws OperationFailedException
      */
