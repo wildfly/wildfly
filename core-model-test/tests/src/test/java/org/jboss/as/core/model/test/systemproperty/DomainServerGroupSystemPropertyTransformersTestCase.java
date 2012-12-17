@@ -34,6 +34,6 @@ import org.junit.runners.Parameterized;
 public class DomainServerGroupSystemPropertyTransformersTestCase extends AbstractSystemPropertyTransformersTest {
 
     public DomainServerGroupSystemPropertyTransformersTestCase(TransformersTestParameters params) {
-        super(params, "domain-servergroup-systemproperties.xml", true);
+        super(params, true);
     }
 }

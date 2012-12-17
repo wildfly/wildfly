@@ -28,6 +28,7 @@ import java.util.List;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.core.model.bridge.impl.ChildFirstClassLoaderKernelServicesFactory;
 import org.jboss.as.core.model.bridge.impl.ClassLoaderObjectConverterImpl;
+import org.jboss.as.core.model.bridge.impl.LegacyControllerKernelServicesProxy;
 import org.jboss.as.core.model.test.LegacyModelInitializerEntry;
 import org.jboss.dmr.ModelNode;
 

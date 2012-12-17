@@ -24,6 +24,7 @@ package org.jboss.as.domain.controller.transformers;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
@@ -85,6 +86,9 @@ class SystemPropertyTransformers {
                     transformed = transformed.clone();
                     if (!transformed.get(VALUE).isDefined()) {
                         transformed.get(VALUE).set(true);
+                        if (UNDEFINE_ATTRIBUTE_OPERATION.equals(transformed.get(OP).asString())){
+                            transformed.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+                        }
                     }
                 }
                 return new TransformedOperation(transformed, OperationResultTransformer.ORIGINAL_RESULT);
