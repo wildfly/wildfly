@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.jboss.as.test.integration.osgi.api.Echo;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 
 @SuppressWarnings("serial")
@@ -40,13 +41,15 @@ public class SimpleServlet extends HttpServlet {
         echo = new Echo() {
             @Override
             public String echo(String msg) {
-                String bundle = null;
+                String symbolicName = null;
                 try {
-                    bundle = FrameworkUtil.getBundle(SimpleServlet.class).getSymbolicName();
+                    Bundle bundle = FrameworkUtil.getBundle(SimpleServlet.class);
+                    symbolicName = bundle.getSymbolicName();
                 } catch (Throwable th) {
                     // simple war does not see the OSGi API
+                    System.err.println(th);
                 }
-                return bundle + " called with: " + msg;
+                return symbolicName + " called with: " + msg;
             }
         };
     }
