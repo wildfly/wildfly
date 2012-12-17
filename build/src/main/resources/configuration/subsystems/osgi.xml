@@ -31,6 +31,7 @@
                 <capability name="org.apache.felix.configadmin" startlevel="1" />
                 <capability name="org.jboss.as.osgi.configadmin" startlevel="1" />
                 <capability name="org.jboss.as.osgi.http" startlevel="1" />
+                <capability name="org.jboss.as.osgi.jpa" startlevel="1" />
             </capabilities>
         </replacement>
     </supplement>
