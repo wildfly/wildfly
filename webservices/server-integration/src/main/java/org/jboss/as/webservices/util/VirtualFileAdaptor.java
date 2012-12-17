@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2010, JBoss Inc., and individual contributors as indicated
+ * Copyright 2012, JBoss Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -22,6 +22,7 @@
 package org.jboss.as.webservices.util;
 
 import static org.jboss.as.webservices.WSMessages.MESSAGES;
+import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 
 import java.io.IOException;
 import java.net.URL;
@@ -52,12 +53,30 @@ public final class VirtualFileAdaptor implements UnifiedVirtualFile {
         return file;
     }
 
-    public UnifiedVirtualFile findChild(String child) throws IOException {
+    private UnifiedVirtualFile findChild(String child, boolean throwExceptionIfNotFound) throws IOException {
         final VirtualFile virtualFile = getFile();
         final VirtualFile childFile = file.getChild(child);
-        if (!childFile.exists())
-            throw MESSAGES.missingChild(child, virtualFile);
+        if (!childFile.exists()) {
+            if (throwExceptionIfNotFound) {
+                throw MESSAGES.missingChild(child, virtualFile);
+            } else {
+                if (ROOT_LOGGER.isTraceEnabled()) ROOT_LOGGER.missingChild(child, virtualFile);
+                return null;
+            }
+        }
         return new VirtualFileAdaptor(childFile);
+    }
+
+    public UnifiedVirtualFile findChild(String child) throws IOException {
+        return findChild(child, true);
+    }
+
+    public UnifiedVirtualFile findChildFailSafe(String child) {
+        try {
+            return findChild(child, false);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public URL toURL() {
