@@ -140,7 +140,7 @@ class WebContextLifecycleInterceptor extends AbstractLifecycleInterceptor implem
         if (version instanceof String)
             props.put("osgi.web.version", version);
 
-        Object contextPath = headers.get(WebExtension.WEB_CONTEXT_PATH);
+        Object contextPath = headers.get(WebExtension.WEB_CONTEXTPATH);
         if (contextPath instanceof String)
             props.put("osgi.web.contextpath", contextPath);
 

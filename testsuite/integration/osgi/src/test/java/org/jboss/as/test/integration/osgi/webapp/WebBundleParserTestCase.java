@@ -45,6 +45,6 @@ public class WebBundleParserTestCase {
         OSGiMetaData metadata = OSGiMetaDataBuilder.load(manifest);
 
         Assert.assertEquals("com.example", metadata.getBundleSymbolicName());
-        Assert.assertEquals("foo", metadata.getHeader(WebExtension.WEB_CONTEXT_PATH));
+        Assert.assertEquals("foo", metadata.getHeader(WebExtension.WEB_CONTEXTPATH));
     }
 }
