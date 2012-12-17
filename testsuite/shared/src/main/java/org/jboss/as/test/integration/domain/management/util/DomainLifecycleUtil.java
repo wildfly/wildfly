@@ -145,6 +145,18 @@ public class DomainLifecycleUtil {
             pw.close();
             fos.close();
 
+            // Put out empty application realm properties files so servers don't complain
+            File appUsersProps = new File(domainPath + "/configuration/application-users.properties");fos = new FileOutputStream(usersFile);
+            pw = new PrintWriter(appUsersProps);
+            pw.println("# Application users");
+            pw.close();
+            fos.close();
+            File appRolesProps = new File(domainPath + "/configuration/application-roles.properties");fos = new FileOutputStream(usersFile);
+            pw = new PrintWriter(appRolesProps);
+            pw.println("# Application users");
+            pw.close();
+            fos.close();
+
             List<String> cmd = new ArrayList<String>();
             cmd.add(java);
             if (additionalJavaOpts != null) {
