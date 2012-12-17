@@ -34,9 +34,12 @@ import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.jboss.byteman.contrib.bmunit.BMRule;
+import org.jboss.byteman.contrib.bmunit.BMUnitRunner;
 import org.jboss.dmr.ModelNode;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Test cases for transformers used in the JGroups subsystem.
@@ -45,6 +48,7 @@ import org.junit.Test;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
 
+@RunWith(BMUnitRunner.class)
 public class JGroupsSubsystemTransformerTestCase extends OperationTestCaseBase {
 
     protected String getSubsystemXml() throws IOException {
@@ -74,6 +78,42 @@ public class JGroupsSubsystemTransformerTestCase extends OperationTestCaseBase {
         KernelServices mainServices = builder.build();
 
         checkSubsystemModelTransformation(mainServices, version);
+    }
+
+    /**
+     * Tests resolution of property expressions during performRuntime()
+     *
+     * This test uses Byteman to inject code into AbstractAddStepHandler.performRuntime() to
+     * resolve the value of an expression and check that expression resolution is working as expected.
+     *
+     * The test is currently broken due to an outstanding class loading problem with Byteman, but it is included
+     * here for re-enabling when the issue is resolved.
+     *
+     * @throws Exception
+     */
+    @Ignore
+    @Test
+    @BMRule(name="Test support for expression resolution",
+            targetClass="^org.jboss.as.controller.AbstractAddStepHandler",
+            targetMethod="performRuntime",
+            targetLocation="AT ENTRY",
+            binding="context:OperationContext = $1; operation:ModelNode = $2; model:ModelNode = $3",
+            condition="operation.hasDefined(\"name\") AND operation.hasDefined(\"value\")",
+            action="traceln(\"resolved value = \" + org.jboss.as.clustering.jgroups.subsystem.PropertyResource.VALUE.resolveModelAttribute(context,model))")
+    public void testProtocolStackPropertyResolve() throws Exception {
+
+        // Parse and install the XML into the controller
+        String subsystemXml = getSubsystemXml() ;
+        KernelServices services = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
+
+        // set a property to have an expression and let Byteman intercept the performRuntime call
+
+        // build an ADD command to add a transport property using expression value
+        ModelNode operation = getTransportPropertyAddOperation("maximal", "bundler_type", "${the_bundler_type:new}");
+
+        // perform operation on the 1.1.1 model
+        ModelNode mainResult = services.executeOperation(operation);
+        assertEquals(mainResult.toJSONString(true), SUCCESS, mainResult.get(OUTCOME).asString());
     }
 
     /**
