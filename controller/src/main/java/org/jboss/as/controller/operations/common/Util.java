@@ -23,6 +23,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
@@ -113,6 +114,12 @@ public class Util {
         ModelNode op = createEmptyOperation(WRITE_ATTRIBUTE_OPERATION, address);
         op.get(NAME).set(attributeName);
         op.get(VALUE).set(value);
+        return op;
+    }
+
+    public static ModelNode getUndefineAttributeOperation(final PathAddress address, String attributeName) {
+        ModelNode op = createEmptyOperation(UNDEFINE_ATTRIBUTE_OPERATION, address);
+        op.get(NAME).set(attributeName);
         return op;
     }
 
