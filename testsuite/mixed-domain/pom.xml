@@ -78,8 +78,10 @@
                         <jboss.test.mixed.domain.versions>7.1.2.Final,7.1.3.Final</jboss.test.mixed.domain.versions>
                     </systemPropertyVariables>
                     <includes>
-                         <include>**/*TestCase.java</include>
+                         <!-- include>**/*TestCase.java</include -->
+                         <include>**/*TestSuite.java</include>
                     </includes>
+                    
                 </configuration>                        
             </plugin>  
         </plugins>

@@ -197,13 +197,12 @@
             <subsystem xmlns="urn:jboss:domain:naming:1.2">
                 <remote-naming/>
             </subsystem>
+            <!-- OSGi does not work on the older slaves with deployments https://issues.jboss.org/browse/AS7-6202
             <subsystem xmlns="urn:jboss:domain:osgi:1.2" activation="lazy">
                 <properties>
-                    <!-- Specifies the beginning start level of the framework -->
                     <property name="org.osgi.framework.startlevel.beginning">1</property>
                 </properties>
                 <capabilities>
-                    <!-- modules registered with the OSGi layer on startup -->
                     <capability name="javax.jws.api"/>
                     <capability name="javax.persistence.api"/>
                     <capability name="javax.servlet.api"/>
@@ -212,7 +211,6 @@
                     <capability name="javax.xml.bind.api"/>
                     <capability name="javax.xml.ws.api"/>
                     <capability name="org.slf4j"/>
-                    <!-- bundles started in startlevel 1 -->
                     <capability name="org.apache.felix.log" startlevel="1"/>
                     <capability name="org.jboss.osgi.logging" startlevel="1"/>
                     <capability name="org.apache.felix.configadmin" startlevel="1"/>
@@ -220,6 +218,7 @@
                     <capability name="org.jboss.as.osgi.http" startlevel="1"/>
                 </capabilities>
             </subsystem>
+            -->
             <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
             <subsystem xmlns="urn:jboss:domain:remoting:1.1">
                 <connector name="remoting-connector" socket-binding="remoting" security-realm="ApplicationRealm"/>
@@ -525,13 +524,12 @@
             <subsystem xmlns="urn:jboss:domain:naming:1.2">
                 <remote-naming/>
             </subsystem>
+            <!-- OSGi does not work on the older slaves with deployments https://issues.jboss.org/browse/AS7-6202
             <subsystem xmlns="urn:jboss:domain:osgi:1.2" activation="lazy">
                 <properties>
-                    <!-- Specifies the beginning start level of the framework -->
                     <property name="org.osgi.framework.startlevel.beginning">1</property>
                 </properties>
                 <capabilities>
-                    <!-- modules registered with the OSGi layer on startup -->
                     <capability name="javax.jws.api"/>
                     <capability name="javax.persistence.api"/>
                     <capability name="javax.servlet.api"/>
@@ -540,7 +538,6 @@
                     <capability name="javax.xml.bind.api"/>
                     <capability name="javax.xml.ws.api"/>
                     <capability name="org.slf4j"/>
-                    <!-- bundles started in startlevel 1 -->
                     <capability name="org.apache.felix.log" startlevel="1"/>
                     <capability name="org.jboss.osgi.logging" startlevel="1"/>
                     <capability name="org.apache.felix.configadmin" startlevel="1"/>
@@ -548,6 +545,7 @@
                     <capability name="org.jboss.as.osgi.http" startlevel="1"/>
                 </capabilities>
             </subsystem>
+            -->
             <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
             <subsystem xmlns="urn:jboss:domain:remoting:1.1">
                 <connector name="remoting-connector" socket-binding="remoting" security-realm="ApplicationRealm"/>
@@ -851,13 +849,12 @@
             <subsystem xmlns="urn:jboss:domain:naming:1.2">
                 <remote-naming/>
             </subsystem>
+            <!-- OSGi does not work on the older slaves with deployments https://issues.jboss.org/browse/AS7-6202
             <subsystem xmlns="urn:jboss:domain:osgi:1.2" activation="lazy">
                 <properties>
-                    <!-- Specifies the beginning start level of the framework -->
                     <property name="org.osgi.framework.startlevel.beginning">1</property>
                 </properties>
                 <capabilities>
-                    <!-- modules registered with the OSGi layer on startup -->
                     <capability name="javax.jws.api"/>
                     <capability name="javax.persistence.api"/>
                     <capability name="javax.servlet.api"/>
@@ -866,7 +863,6 @@
                     <capability name="javax.xml.bind.api"/>
                     <capability name="javax.xml.ws.api"/>
                     <capability name="org.slf4j"/>
-                    <!-- bundles started in startlevel 1 -->
                     <capability name="org.apache.felix.log" startlevel="1"/>
                     <capability name="org.jboss.osgi.logging" startlevel="1"/>
                     <capability name="org.apache.felix.configadmin" startlevel="1"/>
@@ -874,6 +870,7 @@
                     <capability name="org.jboss.as.osgi.http" startlevel="1"/>
                 </capabilities>
             </subsystem>
+            -->
             <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
             <subsystem xmlns="urn:jboss:domain:remoting:1.1">
                 <connector name="remoting-connector" socket-binding="remoting" security-realm="ApplicationRealm"/>
@@ -1284,13 +1281,12 @@
             <subsystem xmlns="urn:jboss:domain:naming:1.2">
                 <remote-naming/>
             </subsystem>
+            <!-- OSGi does not work on the older slaves with deployments https://issues.jboss.org/browse/AS7-6202
             <subsystem xmlns="urn:jboss:domain:osgi:1.2" activation="lazy">
                 <properties>
-                    <!-- Specifies the beginning start level of the framework -->
                     <property name="org.osgi.framework.startlevel.beginning">1</property>
                 </properties>
                 <capabilities>
-                    <!-- modules registered with the OSGi layer on startup -->
                     <capability name="javax.jws.api"/>
                     <capability name="javax.persistence.api"/>
                     <capability name="javax.servlet.api"/>
@@ -1299,7 +1295,6 @@
                     <capability name="javax.xml.bind.api"/>
                     <capability name="javax.xml.ws.api"/>
                     <capability name="org.slf4j"/>
-                    <!-- bundles started in startlevel 1 -->
                     <capability name="org.apache.felix.log" startlevel="1"/>
                     <capability name="org.jboss.osgi.logging" startlevel="1"/>
                     <capability name="org.apache.felix.configadmin" startlevel="1"/>
@@ -1307,6 +1302,7 @@
                     <capability name="org.jboss.as.osgi.http" startlevel="1"/>
                 </capabilities>
             </subsystem>
+            -->
             <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
             <subsystem xmlns="urn:jboss:domain:remoting:1.1">
                 <connector name="remoting-connector" socket-binding="remoting" security-realm="ApplicationRealm"/>
