@@ -50,9 +50,11 @@ import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.logging.stdio.LogContextStdioContextSelector;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.ContextClassLoaderLogContextSelector;
 import org.jboss.logmanager.LogContext;
+import org.jboss.stdio.StdioContext;
 
 /**
  * @author Emanuel Muckenhuber
@@ -85,6 +87,10 @@ public class LoggingExtension implements Extension {
     @Override
     public void initialize(final ExtensionContext context) {
         LogContext.setLogContextSelector(CONTEXT_SELECTOR);
+        // Install STDIO context selector
+        StdioContext.setStdioContextSelector(new LogContextStdioContextSelector(StdioContext.getStdioContext()));
+
+
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(LoggingRootResource.INSTANCE);
@@ -219,7 +225,7 @@ public class LoggingExtension implements Extension {
                 // Category or name is required for add operations
                 if (CommonAttributes.LOGGER.equals(key)) {
                     operation.get(CommonAttributes.CATEGORY.getName()).set(name);
-                } else if (!CommonAttributes.ROOT_LOGGER.equals(key) ){
+                } else if (!CommonAttributes.ROOT_LOGGER.equals(key)) {
                     // Add the name to handlers
                     operation.get(CommonAttributes.NAME.getName()).set(name);
                 }
