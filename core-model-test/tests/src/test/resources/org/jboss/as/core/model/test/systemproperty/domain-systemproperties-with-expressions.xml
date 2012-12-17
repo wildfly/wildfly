@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<domain xmlns="urn:jboss:domain:1.4">
+
+    <system-properties>
+        <property name="sys.prop.test.one" value="ONE"/>
+        <property name="sys.prop.test.two" value="${sys.prop.test.one}"/>
+    </system-properties>
+    
+</domain>        

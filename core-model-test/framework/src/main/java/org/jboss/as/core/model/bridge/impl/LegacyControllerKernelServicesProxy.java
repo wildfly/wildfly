@@ -19,7 +19,7 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.core.model.bridge.local;
+package org.jboss.as.core.model.bridge.impl;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
@@ -34,11 +34,14 @@ import java.util.List;
 
 import junit.framework.Assert;
 
+import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ModelController.OperationTransactionControl;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
+import org.jboss.as.core.model.bridge.local.ClassLoaderObjectConverter;
+import org.jboss.as.core.model.bridge.local.OperationTransactionControlProxy;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.host.controller.ignored.IgnoreDomainResourceTypeResource;
 import org.jboss.dmr.ModelNode;
@@ -61,7 +64,8 @@ public class LegacyControllerKernelServicesProxy implements KernelServices {
     private Method readWholeModel0;
     private Method readWholeModel1;
     private Method readWholeModel2;
-    private Method executeOperation;
+    private Method executeOperation1;
+    private Method executeOperation2;
     private Method validateOperations;
     private Method validateOperation;
     private Method applyMasterDomainModel;
@@ -100,8 +104,23 @@ public class LegacyControllerKernelServicesProxy implements KernelServices {
 
     @Override
     public ModelNode executeOperation(ModelNode operation, OperationTransactionControl txControl) {
-        //TODO WTF is this doing here?
-        throw new IllegalStateException("Can only be called for the main controller");
+        try {
+            if (executeOperation2 == null) {
+                executeOperation2 = childFirstClassLoaderServices.getClass().getMethod("executeOperation",
+                        childFirstClassLoader.loadClass(ModelNode.class.getName()),
+                        childFirstClassLoader.loadClass(ModelController.OperationTransactionControl.class.getName()));
+            }
+
+            Class<?> opTxControlProxyClass = childFirstClassLoader.loadClass(OperationTransactionControlProxy.class.getName());
+            Object opTxControl = opTxControlProxyClass.getConstructors()[0].newInstance(txControl);
+            return converter.convertModelNodeFromChildCl(
+                    executeOperation2.invoke(childFirstClassLoaderServices,
+                            converter.convertModelNodeToChildCl(operation),
+                            opTxControl));
+        } catch (Exception e) {
+            unwrapInvocationTargetRuntimeException(e);
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -204,13 +223,13 @@ public class LegacyControllerKernelServicesProxy implements KernelServices {
     @Override
     public ModelNode executeOperation(ModelNode operation, InputStream... inputStreams) {
         try {
-            if (executeOperation == null) {
-                executeOperation = childFirstClassLoaderServices.getClass().getMethod("executeOperation",
+            if (executeOperation1 == null) {
+                executeOperation1 = childFirstClassLoaderServices.getClass().getMethod("executeOperation",
                         childFirstClassLoader.loadClass(ModelNode.class.getName()),
                         InputStream[].class);
             }
             return converter.convertModelNodeFromChildCl(
-                    executeOperation.invoke(childFirstClassLoaderServices,
+                    executeOperation1.invoke(childFirstClassLoaderServices,
                             converter.convertModelNodeToChildCl(operation),
                             inputStreams));
         } catch (Exception e) {

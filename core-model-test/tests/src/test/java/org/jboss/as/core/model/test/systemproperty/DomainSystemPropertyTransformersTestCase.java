@@ -33,7 +33,7 @@ import org.junit.runners.Parameterized;
 public class DomainSystemPropertyTransformersTestCase extends AbstractSystemPropertyTransformersTest {
 
     public DomainSystemPropertyTransformersTestCase(TransformersTestParameters params) {
-        super(params, "domain-systemproperties.xml", false);
+        super(params, false);
     }
 
 }
