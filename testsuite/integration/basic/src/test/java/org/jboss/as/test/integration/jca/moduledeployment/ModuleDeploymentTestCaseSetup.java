@@ -21,29 +21,11 @@
    */
 package org.jboss.as.test.integration.jca.moduledeployment;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.arquillian.api.ServerSetup;
+
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
-import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
-import org.jboss.as.test.integration.management.util.MgmtOperationException;
-import org.jboss.dmr.ModelNode;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.junit.Test;
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
-import org.junit.runner.RunWith;
-import org.xnio.IoUtils;
 
-import javax.annotation.Resource;
-import javax.resource.cci.ConnectionFactory;
+import org.xnio.IoUtils;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -52,54 +34,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.junit.Assert.assertNotNull;
-
 /**
- * JBQA-6277 -IronJacamar deployments subsystem test case
+ * AS7-5768 -Support for RA module deployment
  *
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
-@RunWith(Arquillian.class)
-@ServerSetup(ModuleIJDeploymentTestCase.ModuleIJDeploymentTestCaseSetup.class)
-public class ModuleIJDeploymentTestCase extends ContainerResourceMgmtTestBase {
+public class ModuleDeploymentTestCaseSetup extends AbstractMgmtServerSetupTask{
 
-
-    static class ModuleIJDeploymentTestCaseSetup extends AbstractMgmtServerSetupTask {
-
-
-        @Override
-        public void doSetup(ManagementClient managementClient) throws Exception {
-            addModule("org/jboss/ironjacamar/ra16outij2", "ra16outij2.rar");
-            final ModelNode address = new ModelNode();
-            address.add("subsystem", "resource-adapters");
-            address.add("resource-adapter", "ra16outij2");
-            address.protect();
-
-            final ModelNode operation = new ModelNode();
-            operation.get(OP).set("add");
-            operation.get(OP_ADDR).set(address);
-            operation.get("module").set("org.jboss.ironjacamar.ra16outij2");
-            executeOperation(operation);
-
-        }
-
-        @Override
-        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-            final ModelNode address = new ModelNode();
-                    address.add("subsystem", "resource-adapters");
-                    address.add("resource-adapter", "ra16outij2");
-                    address.protect();
-
-                    final ModelNode operation = new ModelNode();
-                    operation.get(OP).set("remove");
-                    operation.get(OP_ADDR).set(address);
-                    executeOperation(operation);
-            removeModule("org/jboss/ironjacamar/ra16outij2");
-        }
-
-        public void addModule(final String moduleName, final String mainResource) throws Exception {
+       public void addModule(final String moduleName, final String mainResource) throws Exception {
                 File testModuleRoot = new File(getModulePath(), moduleName);
                 deleteRecursively(testModuleRoot);
                 createTestModule(testModuleRoot, mainResource);
@@ -139,9 +81,9 @@ public class ModuleIJDeploymentTestCase extends ContainerResourceMgmtTestBase {
 
                 url = this.getClass().getResource(mainResource);
                 if (url == null) {
-                    throw new IllegalStateException("Could not find ra16outij2.rar");
+                    throw new IllegalStateException("Could not find " + mainResource);
                 }
-                copyFile(new File(file, "ra16outij2.rar"), url.openStream());
+                copyFile(new File(file, mainResource), url.openStream());
 
             }
 
@@ -178,45 +120,21 @@ public class ModuleIJDeploymentTestCase extends ContainerResourceMgmtTestBase {
                 }
                 return moduleDir;
             }
-    }
 
+			@Override
+			public void tearDown(ManagementClient managementClient,
+					String containerId) throws Exception {
+				// TODO Auto-generated method stub
+				
+			}
 
-    /**
-     * Define the deployment
-     *
-     * @return The deployment archive
-     */
-    @Deployment
-    public static JavaArchive createDeployment() throws Exception {
-
-        String deploymentName = "basic.jar";
-
-        ResourceAdapterArchive raa =
-                ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName);
-        JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "multiple.jar");
-        ja.addClasses(ModuleIJDeploymentTestCase.class, MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class,
-                ModuleIJDeploymentTestCaseSetup.class);
-
-        ja.addPackage(AbstractMgmtTestBase.class.getPackage());
-        raa.addAsLibrary(ja);
-
-        ja.addAsManifestResource(ModuleIJDeploymentTestCase.class.getPackage(), "ironjacamar.xml", "ironjacamar.xml")
-                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli\n"), "MANIFEST.MF");
-        return ja;
-    }
-
-    @Resource(mappedName = "java:/testMe2")
-    private ConnectionFactory connectionFactory;
-
-    /**
-     * Test configuration - if all properties propagated to the model
-     *
-     * @throws Throwable Thrown if case of an error
-     */
-    @Test
-    public void testConfiguration() throws Throwable {
-        assertNotNull(connectionFactory);
-    }
+			@Override
+			protected void doSetup(ManagementClient managementClient)
+					throws Exception {
+				// TODO Auto-generated method stub
+				
+			}
+    
 
 
 }

@@ -86,7 +86,7 @@ public class RaAdd extends AbstractAddStepHandler {
         if (model.get(ARCHIVE.getName()).isDefined()) {
             RaOperationUtil.installRaServices(context, verificationHandler, name, resourceAdapter);
         } else {
-            RaOperationUtil.installRaServicesAndDeployFromModule(context, verificationHandler, archiveOrModuleName, resourceAdapter, archiveOrModuleName);
+            RaOperationUtil.installRaServicesAndDeployFromModule(context, verificationHandler, name, resourceAdapter, archiveOrModuleName);
         }
 
 

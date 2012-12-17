@@ -22,10 +22,10 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.1" name="org.jboss.ironjacamar.ra16outij2">
+<module xmlns="urn:jboss:module:1.1" name="org.jboss.ironjacamar.ra16out">
    
     <resources>
-        <resource-root path="ra16outij2.rar"/>
+        <resource-root path="ra16out.rar"/>
         <!-- Insert resources here -->
     </resources>
 

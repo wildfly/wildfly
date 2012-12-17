@@ -31,6 +31,7 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.msc.service.ServiceName;
 
+import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
@@ -200,5 +201,9 @@ public interface ConnectorLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 10415, value = "Method %s on DataSource class %s not found. Ignoring")
     void methodNotFoundOnDataSource(final String method, final Class<?> clazz);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 10416, value = "Forcing ironjacamar.xml descriptor to null")
+    void forceIJToNull();
 
 }
