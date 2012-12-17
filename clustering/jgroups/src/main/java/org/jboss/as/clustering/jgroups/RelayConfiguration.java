@@ -19,25 +19,15 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.clustering.jgroups.subsystem;
+package org.jboss.as.clustering.jgroups;
 
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import java.util.List;
 
 /**
- * Handler for read and write access to the subsystem attribute default-stack.
- *
- * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
+ * Configuration of the RELAY2 protocol.
+ * @author Paul Ferraro
  */
-public class SubsystemWriteAttributeHandler extends ReloadRequiredWriteAttributeHandler {
-
-    public static final SubsystemWriteAttributeHandler INSTANCE = new SubsystemWriteAttributeHandler();
-
-    private SubsystemWriteAttributeHandler() {
-        super(JGroupsSubsystemRootResourceDefinition.DEFAULT_STACK);
-    }
-
-    public void registerAttributes(final ManagementResourceRegistration registry) {
-        registry.registerReadWriteAttribute(JGroupsSubsystemRootResourceDefinition.DEFAULT_STACK, null, this);
-    }
+public interface RelayConfiguration extends ProtocolConfiguration {
+    String getSiteName();
+    List<RemoteSiteConfiguration> getRemoteSites();
 }

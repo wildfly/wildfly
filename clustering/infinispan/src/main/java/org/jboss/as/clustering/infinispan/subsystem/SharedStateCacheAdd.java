@@ -24,11 +24,15 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.List;
 
+import org.infinispan.configuration.cache.BackupFailurePolicy;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.SitesConfigurationBuilder;
+import org.infinispan.configuration.cache.BackupConfiguration.BackupStrategy;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 
 /**
  * @author Paul Ferraro
@@ -57,6 +61,23 @@ public abstract class SharedStateCacheAdd extends ClusteredCacheAdd {
             builder.clustering().stateTransfer().fetchInMemoryState(enabled);
             builder.clustering().stateTransfer().timeout(timeout);
             builder.clustering().stateTransfer().chunkSize(chunkSize);
+        }
+
+        if (cache.hasDefined(ModelKeys.BACKUP)) {
+            SitesConfigurationBuilder sitesBuilder = builder.sites();
+            for (Property property: cache.get(ModelKeys.BACKUP).asPropertyList()) {
+                String siteName = property.getName();
+                ModelNode site = property.getValue();
+                sitesBuilder.addBackup()
+                        .site(siteName)
+                        .backupFailurePolicy(BackupFailurePolicy.valueOf(BackupSiteResource.FAILURE_POLICY.resolveModelAttribute(context, site).asString()))
+                        .strategy(BackupStrategy.valueOf(BackupSiteResource.STRATEGY.resolveModelAttribute(context, site).asString()))
+                        .replicationTimeout(BackupSiteResource.REPLICATION_TIMEOUT.resolveModelAttribute(context, site).asLong())
+                ;
+                if (BackupSiteResource.ENABLED.resolveModelAttribute(context, site).asBoolean()) {
+                    sitesBuilder.addInUseBackupSite(siteName);
+                }
+            }
         }
     }
 }
