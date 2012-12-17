@@ -119,7 +119,7 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
             targetClass="org.jboss.as.clustering.jgroups.subsystem.ProtocolStackRemove",
             targetMethod="performRuntime",
             targetLocation="AT EXIT",
-            action="$1.setRollbackOnly()")
+            action="traceln(\"Injecting rollback fault via Byteman\");$1.setRollbackOnly()")
     public void testProtocolStackRemoveRollback() throws Exception {
 
         // Parse and install the XML into the controller
