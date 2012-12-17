@@ -268,9 +268,6 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
      * @throws javax.xml.stream.XMLStreamException if {@code writer} throws an exception
      */
     public void marshallAsAttribute(final ModelNode resourceModel, final boolean marshallDefault, final XMLStreamWriter writer) throws XMLStreamException {
-        if (isDeprecated()) {
-            ControllerLogger.DEPRECATED_LOGGER.attributeDeprecated(getName());
-        }
         attributeMarshaller.marshallAsAttribute(this,resourceModel,marshallDefault,writer);
     }
 
@@ -280,16 +277,10 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
      * This implementation marshalls the attribute value as text content of the element.
      */
     public void marshallAsElement(final ModelNode resourceModel, final boolean marshallDefault, final XMLStreamWriter writer) throws XMLStreamException {
-        if (isDeprecated()) {
-            ControllerLogger.DEPRECATED_LOGGER.attributeDeprecated(getName());
-        }
         attributeMarshaller.marshallAsElement(this,resourceModel,marshallDefault,writer);
     }
 
     private ModelNode parse(final String value) throws OperationFailedException  {
-        if (isDeprecated()) {
-            ControllerLogger.DEPRECATED_LOGGER.attributeDeprecated(getName());
-        }
         final String trimmed = value == null ? null : value.trim();
         ModelNode node;
         if (trimmed != null ) {
