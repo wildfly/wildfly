@@ -54,7 +54,7 @@ public class JcaBeanValidationDefinition extends SimpleResourceDefinition {
         super.registerAttributes(resourceRegistration);
 
         for (final BeanValidationParameters parameter : BeanValidationParameters.values()) {
-            resourceRegistration.registerReadWriteAttribute(parameter.getAttribute(), null, JcaAttributeWriteHandler.INSTANCE);
+            resourceRegistration.registerReadWriteAttribute(parameter.getAttribute(), null, JcaBeanValidationWriteHandler.INSTANCE);
         }
 
     }

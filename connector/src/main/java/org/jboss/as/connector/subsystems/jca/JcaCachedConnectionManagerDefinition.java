@@ -56,7 +56,7 @@ public class JcaCachedConnectionManagerDefinition extends SimpleResourceDefiniti
 
         for (final CcmParameters parameter : CcmParameters.values()) {
             if (parameter != CcmParameters.INSTALL) {
-                resourceRegistration.registerReadWriteAttribute(parameter.getAttribute(), null, JcaAttributeWriteHandler.INSTANCE);
+                resourceRegistration.registerReadWriteAttribute(parameter.getAttribute(), null, JcaCachedConnectionManagerWriteHandler.INSTANCE);
             } else {
                 AttributeDefinition ad = parameter.getAttribute();
                 resourceRegistration.registerReadWriteAttribute(ad, null, new ReloadRequiredWriteAttributeHandler(ad));

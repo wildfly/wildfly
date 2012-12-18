@@ -53,7 +53,7 @@ public class JcaArchiveValidationDefinition extends SimpleResourceDefinition {
         super.registerAttributes(resourceRegistration);
 
         for (final ArchiveValidationParameters parameter : ArchiveValidationParameters.values()) {
-            resourceRegistration.registerReadWriteAttribute(parameter.getAttribute(), null, JcaAttributeWriteHandler.INSTANCE);
+            resourceRegistration.registerReadWriteAttribute(parameter.getAttribute(), null, JcaArchiveValidationWriteHandler.INSTANCE);
         }
     }
 
