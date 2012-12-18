@@ -31,12 +31,9 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
@@ -49,26 +46,11 @@ import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
 */
-class EESubsystemParser10 implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
+class EESubsystemParser10 implements XMLStreamConstants, XMLElementReader<List<ModelNode>> {
 
     public static final EESubsystemParser10 INSTANCE = new EESubsystemParser10();
 
     private EESubsystemParser10() {
-
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-        context.startSubsystemElement(Namespace.EE_1_0.getUriString(), false);
-
-        ModelNode eeSubSystem = context.getModelNode();
-        EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.marshallAsElement(eeSubSystem, writer);
-        GlobalModulesDefinition.INSTANCE.marshallAsElement(eeSubSystem, writer);
-
-        writer.writeEndElement();
 
     }
 

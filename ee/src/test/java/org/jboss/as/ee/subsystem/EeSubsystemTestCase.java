@@ -37,10 +37,11 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        //TODO: This is copied from standalone.xml you may want to try more combinations
         return "<subsystem xmlns=\"urn:jboss:domain:ee:1.1\" > " +
-                "<ear-subdeployments-isolated>true</ear-subdeployments-isolated>" +
-                "<spec-descriptor-property-replacement>true</spec-descriptor-property-replacement>" +
+                "<global-modules><module name=\"org.jboss.logging\" slot=\"main\"/><module name=\"org.apache.log4j\"/></global-modules>" +
+                "<ear-subdeployments-isolated>${test-exp:true}</ear-subdeployments-isolated>" +
+                "<spec-descriptor-property-replacement>${test-exp:true}</spec-descriptor-property-replacement>" +
+                "<jboss-descriptor-property-replacement>${test-exp:true}</jboss-descriptor-property-replacement>" +
                 "</subsystem>";
     }
 

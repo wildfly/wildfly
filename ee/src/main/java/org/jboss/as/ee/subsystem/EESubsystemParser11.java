@@ -22,6 +22,15 @@
 
 package org.jboss.as.ee.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -37,15 +46,6 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  */
@@ -65,8 +65,8 @@ class EESubsystemParser11 implements XMLStreamConstants, XMLElementReader<List<M
         context.startSubsystemElement(Namespace.EE_1_1.getUriString(), false);
 
         ModelNode eeSubSystem = context.getModelNode();
-        EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.marshallAsElement(eeSubSystem, writer);
         GlobalModulesDefinition.INSTANCE.marshallAsElement(eeSubSystem, writer);
+        EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.marshallAsElement(eeSubSystem, writer);
         EeSubsystemRootResource.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT.marshallAsElement(eeSubSystem, writer);
         EeSubsystemRootResource.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT.marshallAsElement(eeSubSystem, writer);
         writer.writeEndElement();
@@ -165,12 +165,12 @@ class EESubsystemParser11 implements XMLStreamConstants, XMLElementReader<List<M
                     if (name == null) {
                         throw missingRequired(reader, Collections.singleton(NAME));
                     }
-                    if (slot == null) {
-                        slot = "main";
-                    }
+
                     final ModelNode module = new ModelNode();
                     module.get(GlobalModulesDefinition.NAME).set(name);
-                    module.get(GlobalModulesDefinition.SLOT).set(slot);
+                    if (slot != null) {
+                        module.get(GlobalModulesDefinition.SLOT).set(slot);
+                    }
                     globalModules.add(module);
                     requireNoContent(reader);
                     break;
