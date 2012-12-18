@@ -21,11 +21,9 @@
 */
 package org.jboss.as.core.model.test.systemproperty;
 
-import java.util.List;
-
+import org.jboss.as.core.model.test.util.TransformersTestParameters;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 
 /**
  *
@@ -34,14 +32,8 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(Parameterized.class)
 public class DomainSystemPropertyTransformersTestCase extends AbstractSystemPropertyTransformersTest {
 
-    public DomainSystemPropertyTransformersTestCase(AbstractSystemPropertyTransformersTest.SystemPropertyTransformersTestParameters params) {
+    public DomainSystemPropertyTransformersTestCase(TransformersTestParameters params) {
         super(params, "domain-systemproperties.xml", false);
-    }
-
-
-    @Parameters
-    public static List<Object[]> parameters(){
-        return AbstractSystemPropertyTransformersTest.createSystemPropertyTestTransformerParameters();
     }
 
 }
