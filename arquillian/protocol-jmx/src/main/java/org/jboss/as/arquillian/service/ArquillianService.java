@@ -34,6 +34,7 @@ import javax.management.MBeanServer;
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner;
 import org.jboss.arquillian.testenricher.osgi.BundleContextAssociation;
 import org.jboss.as.jmx.MBeanServerService;
+import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.Phase;
@@ -51,6 +52,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.osgi.resolver.XBundle;
 import org.osgi.framework.BundleContext;
 
 import static org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT;
@@ -217,12 +219,13 @@ public class ArquillianService implements Service<ArquillianService> {
 
         private ContextManager initializeContextManager(final ArquillianConfig config, final Map<String, Object> properties) {
             final ContextManagerBuilder builder = new ContextManagerBuilder();
-            final DeploymentUnit deployment = config.getDeploymentUnit();
-            final Module module = deployment.getAttachment(Attachments.MODULE);
-            if (module != null) {
+            final DeploymentUnit depUnit = config.getDeploymentUnit();
+            final XBundle bundle = depUnit.getAttachment(OSGiConstants.BUNDLE_KEY);
+            final Module module = depUnit.getAttachment(Attachments.MODULE);
+            if (bundle == null && module != null) {
                 builder.add(new TCCLSetupAction(module.getClassLoader()));
             }
-            builder.addAll(deployment);
+            builder.addAll(depUnit);
             ContextManager contextManager = builder.build();
             contextManager.setup(properties);
             return contextManager;

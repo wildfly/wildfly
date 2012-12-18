@@ -22,17 +22,15 @@
 
 package org.jboss.as.configadmin;
 
-import org.jboss.as.configadmin.service.ConfigAdminListener;
-import org.jboss.dmr.ModelNode;
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
+
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
-
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.INFO;
 
 /**
  /**
@@ -47,7 +45,7 @@ import static org.jboss.logging.Logger.Level.INFO;
 @MessageLogger(projectCode = "JBAS")
 public interface ConfigAdminLogger extends BasicLogger {
 
-    ConfigAdminLogger ROOT_LOGGER = Logger.getMessageLogger(ConfigAdminLogger.class, ConfigAdminLogger.class.getPackage().getName());
+    ConfigAdminLogger LOGGER = Logger.getMessageLogger(ConfigAdminLogger.class, ConfigAdminLogger.class.getPackage().getName());
 
     @LogMessage(level = INFO)
     @Message(id = 16200, value = "Activating ConfigAdmin Subsystem")
@@ -57,19 +55,27 @@ public interface ConfigAdminLogger extends BasicLogger {
     @Message(id = 16201, value = "Error in configuration listener: %s")
     void configurationListenerError(@Cause Throwable cause, ConfigAdminListener listener);
 
-    @LogMessage(level = ERROR)
-    @Message(id = 16202, value = "Cannot add configuration for pid: %s")
-    void cannotAddConfiguration(@Cause Throwable cause, String pid);
+    //@LogMessage(level = ERROR)
+    //@Message(id = 16202, value = "Cannot add configuration for pid: %s")
+    //void cannotAddConfiguration(@Cause Throwable cause, String pid);
+
+    //@LogMessage(level = ERROR)
+    //@Message(id = 16203, value = "Cannot add configuration for pid: %s -> %s")
+    //void cannotAddConfiguration(String pid, ModelNode node);
+
+    //@LogMessage(level = ERROR)
+    //@Message(id = 16204, value = "Cannot remove configuration for pid: %s")
+    //void cannotRemoveConfiguration(@Cause Throwable cause, String pid);
+
+    //@LogMessage(level = ERROR)
+    //@Message(id = 16205, value = "Cannot remove configuration for pid: %s -> %s")
+    //void cannotRemoveConfiguration(String pid, ModelNode node);
 
     @LogMessage(level = ERROR)
-    @Message(id = 16203, value = "Cannot add configuration for pid: %s -> %s")
-    void cannotAddConfiguration(String pid, ModelNode node);
+    @Message(id = 16206, value = "Cannot update configuration: %s")
+    void cannotUpdateConfiguration(@Cause Throwable cause, String pid);
 
     @LogMessage(level = ERROR)
-    @Message(id = 16204, value = "Cannot remove configuration for pid: %s")
-    void cannotRemoveConfiguration(@Cause Throwable cause, String pid);
-
-    @LogMessage(level = ERROR)
-    @Message(id = 16205, value = "Cannot remove configuration for pid: %s -> %s")
-    void cannotRemoveConfiguration(String pid, ModelNode node);
+    @Message(id = 16207, value = "Cannot restore configuration: %s")
+    void cannotRestoreConfiguration(@Cause Throwable cause, String pid);
 }

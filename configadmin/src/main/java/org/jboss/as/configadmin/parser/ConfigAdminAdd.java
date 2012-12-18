@@ -21,7 +21,7 @@
  */
 package org.jboss.as.configadmin.parser;
 
-import static org.jboss.as.configadmin.ConfigAdminLogger.ROOT_LOGGER;
+import static org.jboss.as.configadmin.ConfigAdminLogger.LOGGER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import org.jboss.as.configadmin.ConfigAdminLogger;
 import org.jboss.as.configadmin.service.ConfigAdminServiceImpl;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -70,7 +71,7 @@ class ConfigAdminAdd extends AbstractBoottimeAddStepHandler {
     protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model,
             final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) {
 
-        ROOT_LOGGER.activatingSubsystem();
+        LOGGER.activatingSubsystem();
 
         context.addStep(new OperationStepHandler() {
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -85,7 +86,7 @@ class ConfigAdminAdd extends AbstractBoottimeAddStepHandler {
         newControllers.add(ConfigAdminState.addService(serviceTarget));
 
 
-        ROOT_LOGGER.debugf("Activated ConfigAdmin Subsystem");
+        LOGGER.debugf("Activated ConfigAdmin Subsystem");
     }
 
     static DescriptionProvider DESCRIPTION = new DescriptionProvider() {

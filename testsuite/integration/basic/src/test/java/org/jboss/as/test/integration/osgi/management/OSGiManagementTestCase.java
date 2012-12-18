@@ -39,9 +39,9 @@ import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.osgi.parser.ModelConstants;
-import org.jboss.as.test.osgi.OSGiManagementOperations;
+import org.jboss.as.test.osgi.FrameworkManagement;
 import org.jboss.dmr.ModelNode;
-import org.jboss.osgi.spi.OSGiManifestBuilder;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
@@ -106,15 +106,15 @@ public class OSGiManagementTestCase {
     public void testActivationMode() throws Exception {
         boolean initialActivationState = isFrameworkActive();
 
-        assertEquals("lazy", OSGiManagementOperations.getActivationMode(getControllerClient()));
+        assertEquals("lazy", FrameworkManagement.getActivationMode(getControllerClient()));
         try {
-            assertTrue(OSGiManagementOperations.setActivationMode(getControllerClient(), "eager"));
-            assertEquals("eager", OSGiManagementOperations.getActivationMode(getControllerClient()));
+            FrameworkManagement.setActivationMode(getControllerClient(), "eager");
+            assertEquals("eager", FrameworkManagement.getActivationMode(getControllerClient()));
 
             assertEquals("This operation should not change the active status of the subsystem", initialActivationState, isFrameworkActive());
         } finally {
             // set it back
-            assertTrue(OSGiManagementOperations.setActivationMode(getControllerClient(), "lazy"));
+            FrameworkManagement.setActivationMode(getControllerClient(), "lazy");
         }
     }
 
@@ -123,11 +123,11 @@ public class OSGiManagementTestCase {
         boolean initialActivationState = isFrameworkActive();
 
         String propName = "testProp" + System.currentTimeMillis();
-        assertTrue(OSGiManagementOperations.addProperty(getControllerClient(), propName, "testing123testing"));
-        assertEquals("testing123testing", OSGiManagementOperations.readProperty(getControllerClient(), propName));
-        assertTrue(OSGiManagementOperations.listProperties(getControllerClient()).contains(propName));
-        assertTrue(OSGiManagementOperations.removeProperty(getControllerClient(), propName));
-        assertFalse(OSGiManagementOperations.listProperties(getControllerClient()).contains(propName));
+        FrameworkManagement.addProperty(getControllerClient(), propName, "testing123testing");
+        assertEquals("testing123testing", FrameworkManagement.readProperty(getControllerClient(), propName));
+        assertTrue(FrameworkManagement.listProperties(getControllerClient()).contains(propName));
+        FrameworkManagement.removeProperty(getControllerClient(), propName);
+        assertFalse(FrameworkManagement.listProperties(getControllerClient()).contains(propName));
 
         assertEquals("This operation should not change the active status of the subsystem", initialActivationState, isFrameworkActive());
     }
@@ -145,14 +145,14 @@ public class OSGiManagementTestCase {
         JavaArchive capabilityBundle = createTestBundle("capability-bundle", "1.0.1");
         capabilityBundle.as(ZipExporter.class).exportTo(bundleFile);
 
-        assertTrue(OSGiManagementOperations.addCapability(getControllerClient(), capabilityName, 1));
-        assertTrue(OSGiManagementOperations.listCapabilities(getControllerClient()).contains(capabilityName));
+        FrameworkManagement.addCapability(getControllerClient(), capabilityName, 1);
+        assertTrue(FrameworkManagement.listCapabilities(getControllerClient()).contains(capabilityName));
 
-        Long capBundleId = OSGiManagementOperations.getBundleId(getControllerClient(), "capability-bundle", Version.parseVersion("1.0.1"));
+        Long capBundleId = FrameworkManagement.getBundleId(getControllerClient(), "capability-bundle", Version.parseVersion("1.0.1"));
         assertEquals("The capability bundle should not yet be added to the system, this requires a restart", new Long(-1), capBundleId);
 
-        assertTrue(OSGiManagementOperations.removeCapability(getControllerClient(), capabilityName));
-        assertFalse(OSGiManagementOperations.listCapabilities(getControllerClient()).contains(capabilityName));
+        FrameworkManagement.removeCapability(getControllerClient(), capabilityName);
+        assertFalse(FrameworkManagement.listCapabilities(getControllerClient()).contains(capabilityName));
 
         // clean up
         bundleFile.delete();
@@ -162,7 +162,7 @@ public class OSGiManagementTestCase {
     public void testFrameworkActivation() throws Exception {
         boolean active = isFrameworkActive();
         if (!active) {
-            OSGiManagementOperations.activateFramework(getControllerClient());
+            FrameworkManagement.activateFramework(getControllerClient());
             assertTrue(isFrameworkActive());
         }
     }
@@ -173,10 +173,10 @@ public class OSGiManagementTestCase {
         // should trigger it into active mode.
 
         deployer.deploy("test-bundle");
-        Long testBundleId = OSGiManagementOperations.getBundleId(getControllerClient(), "test-bundle", Version.parseVersion("999"));
+        Long testBundleId = FrameworkManagement.getBundleId(getControllerClient(), "test-bundle", Version.parseVersion("999"));
         assertTrue(testBundleId > 0);
 
-        ModelNode resultMap = OSGiManagementOperations.getBundleInfo(getControllerClient(), testBundleId);
+        ModelNode resultMap = FrameworkManagement.getBundleInfo(getControllerClient(), testBundleId);
         assertEquals(testBundleId.toString(), resultMap.get("id").asString());
         assertEquals("INSTALLED", resultMap.get("state").asString());
         assertEquals("1", resultMap.get("startlevel").asString());
@@ -184,19 +184,19 @@ public class OSGiManagementTestCase {
         assertEquals("test-bundle", resultMap.get("symbolic-name").asString());
         assertEquals("999.0.0", resultMap.get("version").asString());
 
-        assertTrue(OSGiManagementOperations.bundleStart(getControllerClient(), testBundleId));
-        ModelNode resultMap2 = OSGiManagementOperations.getBundleInfo(getControllerClient(), testBundleId);
+        FrameworkManagement.bundleStart(getControllerClient(), testBundleId);
+        ModelNode resultMap2 = FrameworkManagement.getBundleInfo(getControllerClient(), testBundleId);
         assertEquals("ACTIVE", resultMap2.get("state").asString());
 
-        assertTrue(OSGiManagementOperations.bundleStop(getControllerClient(), testBundleId));
-        ModelNode resultMap3 = OSGiManagementOperations.getBundleInfo(getControllerClient(), testBundleId);
+        FrameworkManagement.bundleStop(getControllerClient(), testBundleId);
+        ModelNode resultMap3 = FrameworkManagement.getBundleInfo(getControllerClient(), testBundleId);
         assertEquals("RESOLVED", resultMap3.get("state").asString());
 
         deployer.deploy("test-fragment");
-        Long testFragId = OSGiManagementOperations.getBundleId(getControllerClient(), "test-fragment", Version.parseVersion("0.0.0"));
+        Long testFragId = FrameworkManagement.getBundleId(getControllerClient(), "test-fragment", Version.parseVersion("0.0.0"));
         assertTrue(testFragId > 0);
 
-        ModelNode resultMap4 = OSGiManagementOperations.getBundleInfo(getControllerClient(), testFragId);
+        ModelNode resultMap4 = FrameworkManagement.getBundleInfo(getControllerClient(), testFragId);
         assertEquals(testFragId.toString(), resultMap4.get("id").asString());
         assertEquals("fragment", resultMap4.get("type").asString());
         assertEquals("test-fragment", resultMap4.get("symbolic-name").asString());
@@ -205,9 +205,9 @@ public class OSGiManagementTestCase {
         deployer.undeploy("test-fragment");
         deployer.undeploy("test-bundle");
 
-        Long testBundleId2 = OSGiManagementOperations.getBundleId(getControllerClient(), "test-bundle", Version.parseVersion("999"));
+        Long testBundleId2 = FrameworkManagement.getBundleId(getControllerClient(), "test-bundle", Version.parseVersion("999"));
         assertEquals("Bundle should have been undeployed", new Long(-1), testBundleId2);
-        Long testFragId2 = OSGiManagementOperations.getBundleId(getControllerClient(), "test-fragment", Version.parseVersion("0.0.0"));
+        Long testFragId2 = FrameworkManagement.getBundleId(getControllerClient(), "test-fragment", Version.parseVersion("0.0.0"));
         assertEquals("Fragment should have been undeployed", new Long(-1), testFragId2);
     }
 
@@ -215,28 +215,28 @@ public class OSGiManagementTestCase {
     public void testStartLevel(@ArquillianResource Deployer deployer) throws Exception {
         ensureFrameworkActive();
 
-        int initial = OSGiManagementOperations.getFrameworkStartLevel(getControllerClient());
+        int initial = FrameworkManagement.getFrameworkStartLevel(getControllerClient());
         try {
             assertEquals(1, initial);
 
             deployer.deploy("test-bundle2");
-            Long testBundleId = OSGiManagementOperations.getBundleId(getControllerClient(), "test-bundle2", Version.parseVersion("1.2.3.something"));
+            Long testBundleId = FrameworkManagement.getBundleId(getControllerClient(), "test-bundle2", Version.parseVersion("1.2.3.something"));
             assertTrue(testBundleId > 0);
 
-            assertTrue(OSGiManagementOperations.bundleStart(getControllerClient(), testBundleId));
-            ModelNode resultMap = OSGiManagementOperations.getBundleInfo(getControllerClient(), testBundleId);
+            FrameworkManagement.bundleStart(getControllerClient(), testBundleId);
+            ModelNode resultMap = FrameworkManagement.getBundleInfo(getControllerClient(), testBundleId);
             assertEquals("ACTIVE", resultMap.get(ModelConstants.STATE).asString());
 
-            assertTrue(OSGiManagementOperations.setFrameworkStartLevel(getControllerClient(), 0));
+            FrameworkManagement.setFrameworkStartLevel(getControllerClient(), 0);
             waitForBundleState("RESOLVED", testBundleId, 10000);
         } finally {
-            assertTrue(OSGiManagementOperations.setFrameworkStartLevel(getControllerClient(), initial));
+            FrameworkManagement.setFrameworkStartLevel(getControllerClient(), initial);
         }
     }
 
     private void waitForBundleState(String state, long bundleId, int timeout) throws Exception {
         do {
-            ModelNode node = OSGiManagementOperations.getBundleInfo(getControllerClient(), bundleId);
+            ModelNode node = FrameworkManagement.getBundleInfo(getControllerClient(), bundleId);
             if (state.equals(node.get(ModelConstants.STATE).asString()))
                 return;
 
@@ -252,13 +252,13 @@ public class OSGiManagementTestCase {
     }
 
     private boolean isFrameworkActive() throws Exception {
-        return OSGiManagementOperations.listBundleIDs(getControllerClient()).size() > 0;
+        return FrameworkManagement.listBundleIDs(getControllerClient()).size() > 0;
     }
 
     private void ensureFrameworkActive() throws Exception {
         boolean active = isFrameworkActive();
         if (!active) {
-            OSGiManagementOperations.activateFramework(getControllerClient());
+            FrameworkManagement.activateFramework(getControllerClient());
             assertTrue("Framework should be active", isFrameworkActive());
         }
     }

@@ -209,6 +209,12 @@ public final class Attachments {
     public static final AttachmentKey<AbstractVaultReader> VAULT_READER_ATTACHMENT_KEY = AttachmentKey.create(AbstractVaultReader.class);
 
     //
+    // REGISTER
+    //
+
+    public static final AttachmentKey<BundleState> BUNDLE_STATE_KEY = AttachmentKey.create(BundleState.class);
+
+    //
     // DEPENDENCIES
     //
     public static final AttachmentKey<AttachmentList<ModuleDependency>> MANIFEST_DEPENDENCIES = AttachmentKey.createList(ModuleDependency.class);
@@ -297,5 +303,13 @@ public final class Attachments {
     private Attachments() {
     }
 
-
+    /**
+     * The state of an OSGi bundle deployment
+     */
+    public static enum BundleState {
+        INSTALLED,
+        RESOLVED,
+        ACTIVE,
+        UNINSTALLED
+    }
 }

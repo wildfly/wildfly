@@ -40,11 +40,12 @@ import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.configadmin.service.ConfigAdminListener;
-import org.jboss.as.configadmin.service.ConfigAdminService;
+import org.jboss.as.configadmin.ConfigAdmin;
+import org.jboss.as.configadmin.ConfigAdminListener;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.Transition;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -54,8 +55,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * A test that shows how an MSC service can be configured through the {@link ConfigAdminService}.
- *
+ * A test that shows how an MSC service can be configured through the {@link ConfigAdmin}.
+ * 
  * @author Thomas.Diesler@jboss.com
  * @since 11-Dec-2010
  */
@@ -71,19 +72,19 @@ public class ConfigAdminServiceTestCase {
     @Deployment
     public static Archive<?> deployment() {
 
-        return ShrinkWrap.create(JavaArchive.class, "configadmin.jar")
+        return ShrinkWrap
+                .create(JavaArchive.class, "configadmin.jar")
                 .addPackage(ConfiguredService.class.getPackage())
-                .addAsManifestResource(new StringAsset(
-                        "Manifest-Version: 1.0\n" +
-                        "Dependencies: org.jboss.as.configadmin,javax.inject.api\n"
-                ), "MANIFEST.MF");
+                .addAsManifestResource(
+                        new StringAsset("Manifest-Version: 1.0\n" + "Dependencies: org.jboss.as.configadmin,javax.inject.api\n"),
+                        "MANIFEST.MF");
     }
 
     @Test
     public void testConfigAdminService() throws Exception {
 
         // Verify that there is no config with this PID already
-        ConfigAdminService configAdmin = getConfigAdminService();
+        ConfigAdmin configAdmin = getConfigAdmin();
         boolean hasconfig = configAdmin.hasConfiguration(ConfiguredService.SERVICE_PID);
         assertFalse("Config null", hasconfig);
 
@@ -98,7 +99,6 @@ public class ConfigAdminServiceTestCase {
             // Verify the registered config
             Dictionary<String, String> regConfig = configAdmin.getConfiguration(ConfiguredService.SERVICE_PID);
             assertNotNull("Config not null", regConfig);
-            assertEquals("Config not null", 1, regConfig.size());
             assertEquals("bar", regConfig.get("foo"));
 
             // Verify unmodifiable dictionary
@@ -148,7 +148,7 @@ public class ConfigAdminServiceTestCase {
                 return Collections.singleton(ConfiguredService.SERVICE_PID);
             }
         };
-        ConfigAdminService configAdmin = getConfigAdminService();
+        ConfigAdmin configAdmin = getConfigAdmin();
         configAdmin.addListener(listener);
 
         latches[0].await();
@@ -176,16 +176,18 @@ public class ConfigAdminServiceTestCase {
         config.put("foo", "bar");
 
         // Register a new config for the given PID
-        ConfigAdminService configAdmin = getConfigAdminService();
+        ConfigAdmin configAdmin = getConfigAdmin();
         configAdmin.putConfiguration(ConfiguredService.SERVICE_PID, config);
         try {
             ConfiguredService.addService(serviceTarget);
             final CountDownLatch latch = new CountDownLatch(1);
             final ServiceController<ConfiguredService> controller = (ServiceController<ConfiguredService>) serviceContainer.getService(ConfiguredService.SERVICE_NAME);
-            controller.addListener(new AbstractServiceListener<ConfiguredService>(){
-                public void serviceStarted(ServiceController<? extends ConfiguredService> controller) {
-                    controller.removeListener(this);
-                    latch.countDown();
+            controller.addListener(new AbstractServiceListener<ConfiguredService>() {
+                @Override
+                public void transition(ServiceController<? extends ConfiguredService> controller, Transition transition) {
+                    if (transition == Transition.STARTING_to_UP) {
+                        latch.countDown();
+                    }
                 }
             });
             latch.await(3, TimeUnit.SECONDS);
@@ -198,11 +200,11 @@ public class ConfigAdminServiceTestCase {
     }
 
     // [TODO] Move this to @Before when Arquillian supports injected values there
-    private ConfigAdminService getConfigAdminService() {
-        ServiceController<?> controller = serviceContainer.getService(ConfigAdminService.SERVICE_NAME);
-        assertNotNull("ServiceController available: " + ConfigAdminService.SERVICE_NAME, controller);
-        ConfigAdminService configAdmin = (ConfigAdminService) controller.getValue();
-        assertNotNull("Service available: " + ConfigAdminService.SERVICE_NAME, configAdmin);
+    private ConfigAdmin getConfigAdmin() {
+        ServiceController<?> controller = serviceContainer.getService(ConfigAdmin.SERVICE_NAME);
+        assertNotNull("ServiceController available: " + ConfigAdmin.SERVICE_NAME, controller);
+        ConfigAdmin configAdmin = (ConfigAdmin) controller.getValue();
+        assertNotNull("Service available: " + ConfigAdmin.SERVICE_NAME, configAdmin);
         return configAdmin;
     }
 }

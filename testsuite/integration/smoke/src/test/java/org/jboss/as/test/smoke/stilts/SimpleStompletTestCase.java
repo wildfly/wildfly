@@ -16,33 +16,36 @@
  */
 package org.jboss.as.test.smoke.stilts;
 
-import static org.jboss.as.test.osgi.OSGiManagementOperations.bundleStart;
 import static org.jboss.as.test.smoke.stilts.bundle.SimpleStomplet.DESTINATION_QUEUE_ONE;
 
 import java.io.InputStream;
-import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentHelper;
+import org.jboss.as.test.osgi.FrameworkManagement;
 import org.jboss.as.test.smoke.stilts.bundle.SimpleStomplet;
 import org.jboss.as.test.smoke.stilts.bundle.SimpleStompletActivator;
 import org.jboss.as.test.smoke.stilts.bundle.StompletServerActivator;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.osgi.resolver.XRequirementBuilder;
-import org.jboss.osgi.spi.OSGiManifestBuilder;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
+import org.jboss.osgi.repository.XRequirementBuilder;
+import org.jboss.osgi.resolver.XRequirement;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -68,25 +71,58 @@ import org.projectodd.stilts.stomplet.Stomplet;
  */
 @RunAsClient
 @RunWith(Arquillian.class)
+@ServerSetup(SimpleStompletTestCase.StompletTestCaseServerSetup.class)
 public class SimpleStompletTestCase {
 
-    static final String STOMPLET_SERVER_PROVIDER = "stomplet-server-provider";
     static final String STOMPLET_NAME = "simple-stomplet";
-
-    @ArquillianResource
-    Deployer deployer;
-
-    @ArquillianResource
-    URL url;
 
     @ArquillianResource
     ManagementClient managementClient;
 
-    @Deployment(testable = false)
+    static class StompletTestCaseServerSetup implements ServerSetupTask {
+
+        static final String STOMPLET_SERVER_PROVIDER = "stomplet-server-provider";
+
+        @Override
+        public void setup(ManagementClient managementClient, String containerId) throws Exception {
+            ModelControllerClient client = managementClient.getControllerClient();
+            ServerDeploymentHelper server = new ServerDeploymentHelper(client);
+            InputStream input = getStompletServerProviderArchive().as(ZipExporter.class).exportAsInputStream();
+            server.deploy(STOMPLET_SERVER_PROVIDER, input);
+            FrameworkManagement.bundleStart(client, STOMPLET_SERVER_PROVIDER);
+        }
+
+        @Override
+        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
+            ServerDeploymentHelper server = new ServerDeploymentHelper(managementClient.getControllerClient());
+            server.undeploy(STOMPLET_SERVER_PROVIDER);
+        }
+
+        Archive<?> getStompletServerProviderArchive() {
+            final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, STOMPLET_SERVER_PROVIDER);
+            archive.addClasses(StompletServerActivator.class);
+            archive.setManifest(new Asset() {
+                @Override
+                public InputStream openStream() {
+                    OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                    builder.addBundleSymbolicName(archive.getName());
+                    builder.addBundleManifestVersion(2);
+                    builder.addBundleActivator(StompletServerActivator.class);
+                    builder.addImportPackages(XRequirementBuilder.class, XRequirement.class, Requirement.class, Repository.class);
+                    builder.addImportPackages(BundleActivator.class, PackageAdmin.class, ModuleIdentifier.class);
+                    return builder.openStream();
+                }
+            });
+            return archive;
+        }
+    }
+
+    @Deployment(name = STOMPLET_NAME, testable = false)
     public static Archive<?> getTestArchive() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, STOMPLET_NAME);
         archive.addClasses(SimpleStompletActivator.class, SimpleStomplet.class);
         archive.setManifest(new Asset() {
+            @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
@@ -103,20 +139,16 @@ public class SimpleStompletTestCase {
     @Test
     public void testSendWithNoTx() throws Exception {
 
-        // Provide the stomplet server
-        deployer.deploy(STOMPLET_SERVER_PROVIDER);
-        Assert.assertTrue("Bundle started", bundleStart(getControllerClient(), STOMPLET_SERVER_PROVIDER));
+        FrameworkManagement.bundleStart(getModelControllerClient(), STOMPLET_NAME);
 
-        // Find the stomplet bundle and start it
-        Assert.assertTrue("Bundle started", bundleStart(getControllerClient(), STOMPLET_NAME));
-
-        StompClient client = new StompClient("stomp://" + url.getHost());
+        StompClient client = new StompClient("stomp://" + managementClient.getMgmtAddress());
         client.connect();
 
         final Set<String> outbound = new HashSet<String>();
         final CountDownLatch outboundLatch = new CountDownLatch(2);
         SubscriptionBuilder builder = client.subscribe(DESTINATION_QUEUE_ONE);
         builder.withMessageHandler(new MessageHandler() {
+            @Override
             public void handle(StompMessage message) {
                 String content = message.getContentAsString();
                 outbound.add(content);
@@ -134,20 +166,21 @@ public class SimpleStompletTestCase {
 
         subscription.unsubscribe();
         client.disconnect();
-
-        deployer.undeploy(STOMPLET_SERVER_PROVIDER);
     }
 
     @Test
     public void testSendWithTxCommit() throws Exception {
 
-        StompClient client = new StompClient("stomp://" + url.getHost());
+        FrameworkManagement.bundleStart(getModelControllerClient(), STOMPLET_NAME);
+
+        StompClient client = new StompClient("stomp://" + managementClient.getMgmtAddress());
         client.connect();
 
         final Set<String> outbound = new HashSet<String>();
         final CountDownLatch outboundLatch = new CountDownLatch(2);
         SubscriptionBuilder builder = client.subscribe(DESTINATION_QUEUE_ONE);
         builder.withMessageHandler(new MessageHandler() {
+            @Override
             public void handle(StompMessage message) {
                 String content = message.getContentAsString();
                 outbound.add(content);
@@ -169,25 +202,7 @@ public class SimpleStompletTestCase {
         client.disconnect();
     }
 
-    private ModelControllerClient getControllerClient() {
+    private ModelControllerClient getModelControllerClient() {
         return managementClient.getControllerClient();
-    }
-
-    @Deployment(name = STOMPLET_SERVER_PROVIDER, managed = false, testable = false)
-    public static Archive<?> getStompletServerProviderArchive() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, STOMPLET_SERVER_PROVIDER);
-        archive.addClasses(StompletServerActivator.class);
-        archive.setManifest(new Asset() {
-            public InputStream openStream() {
-                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
-                builder.addBundleSymbolicName(archive.getName());
-                builder.addBundleManifestVersion(2);
-                builder.addBundleActivator(StompletServerActivator.class);
-                builder.addImportPackages(XRequirementBuilder.class, Requirement.class, Repository.class);
-                builder.addImportPackages(BundleActivator.class, PackageAdmin.class, ModuleIdentifier.class);
-                return builder.openStream();
-            }
-        });
-        return archive;
     }
 }

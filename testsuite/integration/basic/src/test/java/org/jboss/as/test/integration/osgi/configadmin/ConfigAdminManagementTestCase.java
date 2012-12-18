@@ -26,9 +26,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.util.HashMap;
+import java.util.Dictionary;
+import java.util.Hashtable;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -38,12 +38,12 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.test.configadmin.ConfigAdminManagementOperations;
+import org.jboss.as.test.configadmin.ConfigAdminManagement;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import org.jboss.as.test.integration.osgi.configadmin.bundle.TestBundleActivator;
 import org.jboss.as.test.integration.osgi.configadmin.bundle.TestBundleActivator2;
-import org.jboss.as.test.osgi.OSGiManagementOperations;
-import org.jboss.osgi.spi.OSGiManifestBuilder;
+import org.jboss.as.test.osgi.FrameworkManagement;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -110,23 +110,23 @@ public class ConfigAdminManagementTestCase extends AbstractCliTestBase {
      */
     @Test
     public void testConfigAdminWriteFromDMR() throws Exception {
-        Long bundleId = OSGiManagementOperations.getBundleId(getControllerClient(), "test-config-admin", Version.parseVersion("1.0"));
+        Long bundleId = FrameworkManagement.getBundleId(getControllerClient(), "test-config-admin", Version.parseVersion("1.0"));
         assertTrue(bundleId > 0);
 
-        assertTrue(OSGiManagementOperations.bundleStart(getControllerClient(), bundleId));
-        assertEquals("ACTIVE", OSGiManagementOperations.getBundleState(getControllerClient(), bundleId));
+        FrameworkManagement.bundleStart(getControllerClient(), bundleId);
+        assertEquals("ACTIVE", FrameworkManagement.getBundleState(getControllerClient(), bundleId));
 
         // The ManagedService will write the info it receives back to this file.
         File f = File.createTempFile("ConfigAdminManagementTest", ".tmp");
 
         try {
             String configName = TestBundleActivator.class.getName();
-            Map<String, String> entries = new HashMap<String, String>();
+            Dictionary<String, String> entries = new Hashtable<String, String>();
             entries.put("file", f.getAbsolutePath());
             entries.put("value", "initial");
-            assertTrue(ConfigAdminManagementOperations.addConfiguration(getControllerClient(), configName, entries));
+            ConfigAdminManagement.addConfiguration(getControllerClient(), configName, entries);
 
-            Map<String, String> config = ConfigAdminManagementOperations.readConfiguration(getControllerClient(), configName);
+            Map<String, String> config = ConfigAdminManagement.readConfiguration(getControllerClient(), configName);
             assertEquals(entries, config);
 
             // Check the specified file for the content specified in the configuration
@@ -134,18 +134,18 @@ public class ConfigAdminManagementTestCase extends AbstractCliTestBase {
                     "initial", readTextFile(f));
 
             entries.put("value", "updated");
-            assertTrue(ConfigAdminManagementOperations.updateConfiguration(getControllerClient(), configName, entries));
+            ConfigAdminManagement.updateConfiguration(getControllerClient(), configName, entries);
 
-            Map<String, String> config2 = ConfigAdminManagementOperations.readConfiguration(getControllerClient(), configName);
+            Map<String, String> config2 = ConfigAdminManagement.readConfiguration(getControllerClient(), configName);
             assertEquals(entries, config2);
 
             // Check the specified file for the content specified in the configuration
             assertEquals("The managed service in the deployed bundle should have received the configuration and updated the file",
                     "updated", readTextFile(f));
 
-            assertTrue(ConfigAdminManagementOperations.listConfigurations(getControllerClient()).contains(configName));
-            assertTrue(ConfigAdminManagementOperations.removeConfiguration(getControllerClient(), configName));
-            assertFalse(ConfigAdminManagementOperations.listConfigurations(getControllerClient()).contains(configName));
+            assertTrue(ConfigAdminManagement.listConfigurations(getControllerClient()).contains(configName));
+            ConfigAdminManagement.removeConfiguration(getControllerClient(), configName);
+            assertFalse(ConfigAdminManagement.listConfigurations(getControllerClient()).contains(configName));
         } finally {
             // Delete the temporary file.
             f.delete();
@@ -158,25 +158,31 @@ public class ConfigAdminManagementTestCase extends AbstractCliTestBase {
     @Test
     public void testConfigAdminWriteFromBundle() throws Exception {
         String pid = TestBundleActivator2.class.getName();
-        assertFalse("Precondition", ConfigAdminManagementOperations.listConfigurations(getControllerClient()).contains(pid));
+        assertFalse("Precondition", ConfigAdminManagement.listConfigurations(getControllerClient()).contains(pid));
 
-        long bundleId = OSGiManagementOperations.getBundleId(getControllerClient(), "test-config-admin2", new Version(0, 0, 0));
+        long bundleId = FrameworkManagement.getBundleId(getControllerClient(), "test-config-admin2", new Version(0, 0, 0));
         assertTrue(bundleId > 0);
 
-        assertTrue(OSGiManagementOperations.bundleStart(getControllerClient(), bundleId));
-        assertEquals("ACTIVE", OSGiManagementOperations.getBundleState(getControllerClient(), bundleId));
+        FrameworkManagement.bundleStart(getControllerClient(), bundleId);
+        assertEquals("ACTIVE", FrameworkManagement.getBundleState(getControllerClient(), bundleId));
 
-        Map<String, String> config = ConfigAdminManagementOperations.readConfiguration(getControllerClient(), pid);
+        // wait a little for the update to happen
+        Thread.sleep(500);
+
+        Map<String, String> config = ConfigAdminManagement.readConfiguration(getControllerClient(), pid);
         assertEquals("initial", config.get("from.bundle"));
 
-        assertTrue(OSGiManagementOperations.bundleStop(getControllerClient(), bundleId));
-        assertEquals("RESOLVED", OSGiManagementOperations.getBundleState(getControllerClient(), bundleId));
+        FrameworkManagement.bundleStop(getControllerClient(), bundleId);
+        assertEquals("RESOLVED", FrameworkManagement.getBundleState(getControllerClient(), bundleId));
 
-        Map<String, String> config2 = ConfigAdminManagementOperations.readConfiguration(getControllerClient(), pid);
+        // wait a little for the update to happen
+        Thread.sleep(500);
+
+        Map<String, String> config2 = ConfigAdminManagement.readConfiguration(getControllerClient(), pid);
         assertEquals("updated", config2.get("from.bundle"));
 
-        assertTrue(ConfigAdminManagementOperations.removeConfiguration(getControllerClient(), pid));
-        assertFalse(ConfigAdminManagementOperations.listConfigurations(getControllerClient()).contains(pid));
+        ConfigAdminManagement.removeConfiguration(getControllerClient(), pid);
+        assertFalse(ConfigAdminManagement.listConfigurations(getControllerClient()).contains(pid));
     }
 
     private ModelControllerClient getControllerClient() {

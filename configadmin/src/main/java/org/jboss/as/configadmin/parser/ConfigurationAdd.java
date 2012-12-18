@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.jboss.as.configadmin.ConfigAdmin;
+import org.jboss.as.configadmin.service.ConfigAdminInternal;
 import org.jboss.as.configadmin.service.ConfigAdminService;
 import org.jboss.as.configadmin.service.ConfigAdminServiceImpl;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -72,23 +74,24 @@ public class ConfigurationAdd extends AbstractAddStepHandler {
         ModelNode entries = operation.get(ModelConstants.ENTRIES);
         String pid = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(ModelConstants.CONFIGURATION).asString();
         Dictionary<String, String> dictionary = new Hashtable<String, String>();
-        for (String key : entries.keys()) {
-            dictionary.put(key, entries.get(key).asString());
+        if (entries.isDefined()) {
+            for (String key : entries.keys()) {
+                dictionary.put(key, entries.get(key).asString());
+            }
         }
 
-        ConfigAdminServiceImpl configAdmin = ConfigAdminExtension.getConfigAdminService(context);
+        ConfigAdminInternal configAdmin = ConfigAdminExtension.getConfigAdminService(context);
         if (configAdmin != null) {
-            configAdmin.putConfigurationFromDMR(pid, dictionary);
+            configAdmin.putConfigurationInternal(pid, dictionary);
         } else {
             synchronized (this) {
                 if (initializationService == null) {
                     initializationService = new InitializeConfigAdminService();
                     ServiceBuilder<Object> builder = context.getServiceTarget().addService(ServiceName.JBOSS.append("configadmin", "data_initialization"), initializationService);
-                    builder.addDependency(ConfigAdminService.SERVICE_NAME, ConfigAdminService.class, initializationService.injectedConfigAdminService);
+                    builder.addDependency(ConfigAdmin.SERVICE_NAME, ConfigAdmin.class, initializationService.injectedConfigAdminService);
                     builder.install();
                 }
             }
-
             initializationService.putConfiguration(pid, dictionary);
         }
     }
@@ -97,9 +100,9 @@ public class ConfigurationAdd extends AbstractAddStepHandler {
     protected void rollbackRuntime(OperationContext context, ModelNode operation, ModelNode model, List<ServiceController<?>> controllers) {
         String pid = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(ModelConstants.CONFIGURATION).asString();
 
-        ConfigAdminServiceImpl configAdmin = ConfigAdminExtension.getConfigAdminService(context);
+        ConfigAdminInternal configAdmin = ConfigAdminExtension.getConfigAdminService(context);
         if (configAdmin != null) {
-            configAdmin.removeConfigurationFromDMR(pid);
+            configAdmin.removeConfigurationInternal(pid);
         }
     }
 
@@ -123,7 +126,7 @@ public class ConfigurationAdd extends AbstractAddStepHandler {
 
     static class InitializeConfigAdminService implements Service<Object> {
         private final Map<String, Dictionary<String, String>> configs = new ConcurrentHashMap<String, Dictionary<String,String>>();
-        private final InjectedValue<ConfigAdminService> injectedConfigAdminService = new InjectedValue<ConfigAdminService>();
+        private final InjectedValue<ConfigAdmin> injectedConfigAdminService = new InjectedValue<ConfigAdmin>();
 
         @Override
         public Object getValue() throws IllegalStateException, IllegalArgumentException {
@@ -138,7 +141,7 @@ public class ConfigurationAdd extends AbstractAddStepHandler {
         public void start(StartContext context) throws StartException {
             for (Map.Entry<String, Dictionary<String, String>> entry : configs.entrySet()) {
                 ConfigAdminServiceImpl configAdminService = (ConfigAdminServiceImpl) injectedConfigAdminService.getValue();
-                configAdminService.putConfigurationFromDMR(entry.getKey(), entry.getValue());
+                configAdminService.putConfigurationInternal(entry.getKey(), entry.getValue());
             }
         }
 

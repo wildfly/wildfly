@@ -22,8 +22,6 @@
 
 package org.jboss.as.test.integration.osgi.xservice;
 
-import static org.jboss.as.test.osgi.OSGiFrameworkUtils.getDeployedBundle;
-
 import java.io.InputStream;
 
 import javax.inject.Inject;
@@ -35,15 +33,15 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.osgi.xservice.api.Echo;
 import org.jboss.as.test.integration.osgi.xservice.bundle.TargetBundleActivator;
 import org.jboss.as.test.integration.osgi.xservice.module.ClientModuleTwoActivator;
-import org.jboss.as.test.osgi.OSGiFrameworkUtils;
+import org.jboss.as.test.osgi.FrameworkUtils;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.osgi.spi.ManifestBuilder;
-import org.jboss.osgi.spi.OSGiManifestBuilder;
+import org.jboss.osgi.metadata.ManifestBuilder;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -69,7 +67,7 @@ public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCas
     @Deployment
     public static JavaArchive createdeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "xservice-module-access");
-        archive.addClasses(OSGiFrameworkUtils.class, AbstractXServiceTestCase.class);
+        archive.addClasses(FrameworkUtils.class, AbstractXServiceTestCase.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
@@ -91,6 +89,9 @@ public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCas
     @Inject
     public BundleContext context;
 
+    @Inject
+    public PackageAdmin packageAdmin;
+
     @Test
     public void moduleInvokesBundleService() throws Exception {
 
@@ -98,7 +99,7 @@ public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCas
         deployer.deploy(TARGET_BUNDLE_NAME);
         try {
             // Find the installed bundle using PackageAdmin
-            Bundle targetBundle = getDeployedBundle(context, TARGET_BUNDLE_NAME, null);
+            Bundle targetBundle = packageAdmin.getBundles(TARGET_BUNDLE_NAME, null)[0];
             targetBundle.start();
 
             // Install the client module
@@ -125,7 +126,7 @@ public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCas
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 ManifestBuilder builder = ManifestBuilder.newInstance();
-                builder.addManifestHeader("Dependencies", "org.osgi.core,org.jboss.modules,org.jboss.logging,org.jboss.osgi.framework,deployment.example-xservice-mab-target-bundle:0.0.0");
+                builder.addManifestHeader("Dependencies", "org.osgi.core,org.jboss.modules,org.jboss.logging,org.jboss.osgi.framework,deployment.example-xservice-mab-target-bundle");
                 return builder.openStream();
             }
         });

@@ -16,11 +16,11 @@
  */
 package org.jboss.as.test.smoke.osgi;
 
-import static org.jboss.as.test.osgi.OSGiManagementOperations.bundleStart;
-import static org.jboss.as.test.osgi.OSGiManagementOperations.bundleStop;
-import static org.jboss.as.test.osgi.OSGiManagementOperations.getBundleId;
-import static org.jboss.as.test.osgi.OSGiManagementOperations.getBundleInfo;
-import static org.jboss.as.test.osgi.OSGiManagementOperations.getBundleState;
+import static org.jboss.as.test.osgi.FrameworkManagement.bundleStart;
+import static org.jboss.as.test.osgi.FrameworkManagement.bundleStop;
+import static org.jboss.as.test.osgi.FrameworkManagement.getBundleId;
+import static org.jboss.as.test.osgi.FrameworkManagement.getBundleInfo;
+import static org.jboss.as.test.osgi.FrameworkManagement.getBundleState;
 
 import java.io.InputStream;
 
@@ -35,7 +35,7 @@ import org.jboss.as.osgi.parser.ModelConstants;
 import org.jboss.as.test.smoke.osgi.bundle.SimpleActivator;
 import org.jboss.as.test.smoke.osgi.bundle.SimpleService;
 import org.jboss.dmr.ModelNode;
-import org.jboss.osgi.spi.OSGiManifestBuilder;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -80,7 +80,7 @@ public class SimpleRunAsClientTestCase {
             Assert.assertNotNull("Bundle found", bundleId);
             Assert.assertEquals("INSTALLED", getBundleState(getControllerClient(), bundleId));
 
-            Assert.assertTrue("Bundle started", bundleStart(getControllerClient(), bundleId));
+            bundleStart(getControllerClient(), bundleId);
             Assert.assertEquals("ACTIVE", getBundleState(getControllerClient(), bundleId));
 
             ModelNode info = getBundleInfo(getControllerClient(), bundleId);
@@ -93,13 +93,13 @@ public class SimpleRunAsClientTestCase {
             Assert.assertEquals("bundle", info.get(ModelConstants.TYPE).asString());
             Assert.assertEquals("0.0.0", info.get(ModelConstants.VERSION).asString());
 
-            Assert.assertTrue("Bundle stopped", bundleStop(getControllerClient(), bundleId));
+            bundleStop(getControllerClient(), bundleId);
             Assert.assertEquals("RESOLVED", getBundleState(getControllerClient(), bundleId));
 
-            Assert.assertTrue("Bundle started", bundleStart(getControllerClient(), DEPLOYMENT_NAME));
+            bundleStart(getControllerClient(), DEPLOYMENT_NAME);
             Assert.assertEquals("ACTIVE", getBundleState(getControllerClient(), DEPLOYMENT_NAME));
 
-            Assert.assertTrue("Bundle stopped", bundleStop(getControllerClient(), DEPLOYMENT_NAME));
+            bundleStop(getControllerClient(), DEPLOYMENT_NAME);
             Assert.assertEquals("RESOLVED", getBundleState(getControllerClient(), DEPLOYMENT_NAME));
         } finally {
             deployer.undeploy(DEPLOYMENT_NAME);

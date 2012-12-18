@@ -24,13 +24,16 @@ package org.jboss.as.osgi.deployment;
 
 import java.util.jar.Manifest;
 
+import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.osgi.spi.BundleInfo;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
+import org.jboss.osgi.metadata.OSGiMetaData;
+import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
 
 /**
  * Processes deployments that contain a valid OSGi manifest.
@@ -45,30 +48,29 @@ public class OSGiManifestStructureProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
+        if (depUnit.hasAttachment(Attachments.OSGI_MANIFEST) || depUnit.hasAttachment(OSGiConstants.OSGI_METADATA_KEY))
+            return;
+
+        if (Boolean.TRUE.equals(depUnit.getAttachment(Attachments.IGNORE_OSGI)))
+            return;
+
+        final ResourceRoot deploymentRoot = depUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
         if (deploymentRoot == null)
             return;
 
-        // Check if we already have an OSGiManifestAttachment
-        Manifest manifest = deploymentUnit.getAttachment(Attachments.OSGI_MANIFEST);
-        if (manifest != null)
-            return;
-
-        // Skip ignored deployments
-        Boolean ignore = deploymentUnit.getAttachment(Attachments.IGNORE_OSGI);
-        if (ignore != null && ignore.booleanValue())
-            return;
-
         // Check whether this is an OSGi manifest
-        manifest = deploymentRoot.getAttachment(Attachments.MANIFEST);
-        if (BundleInfo.isValidBundleManifest(manifest)) {
-            deploymentUnit.putAttachment(Attachments.OSGI_MANIFEST, manifest);
+        Manifest manifest = deploymentRoot.getAttachment(Attachments.MANIFEST);
+        if (OSGiManifestBuilder.isValidBundleManifest(manifest)) {
+            depUnit.putAttachment(Attachments.OSGI_MANIFEST, manifest);
+            OSGiMetaData metadata = OSGiMetaDataBuilder.load(manifest);
+            depUnit.putAttachment(OSGiConstants.OSGI_METADATA_KEY, metadata);
         }
     }
 
     @Override
     public void undeploy(DeploymentUnit deploymentUnit) {
         deploymentUnit.removeAttachment(Attachments.OSGI_MANIFEST);
+        deploymentUnit.removeAttachment(OSGiConstants.OSGI_METADATA_KEY);
     }
 }

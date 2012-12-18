@@ -16,11 +16,20 @@
  */
 package org.jboss.as.test.smoke.osgi;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
+import java.io.InputStream;
+
+import javax.inject.Inject;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.osgi.StartLevelAware;
-import org.jboss.as.test.osgi.OSGiFrameworkUtils;
-import org.jboss.osgi.spi.OSGiManifestBuilder;
+import org.jboss.as.test.osgi.FrameworkUtils;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -30,15 +39,6 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.service.startlevel.StartLevel;
-
-import javax.inject.Inject;
-import java.io.InputStream;
-
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.jboss.as.test.osgi.OSGiFrameworkUtils.changeStartLevel;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 /**
  * Test framework/bundle start level
@@ -64,7 +64,7 @@ public class SimpleStartLevelTestCase {
     @StartLevelAware(startLevel = 3)
     public static JavaArchive create() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "arq465-bundle");
-        archive.addClass(OSGiFrameworkUtils.class);
+        archive.addClass(FrameworkUtils.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
@@ -94,7 +94,7 @@ public class SimpleStartLevelTestCase {
             assertEquals("Bundle start level", 3, bundleStartLevel);
 
             // Change the framework start level and wait for the changed event
-            changeStartLevel(context, 2, TIMEOUT, MILLISECONDS);
+            FrameworkUtils.changeStartLevel(context, 2, TIMEOUT, MILLISECONDS);
             assertEquals("Framework start level", 2, startLevel.getStartLevel());
 
             try {
@@ -110,7 +110,7 @@ public class SimpleStartLevelTestCase {
             assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
 
             // Change the framework start level and wait for the changed event
-            changeStartLevel(context, 3, TIMEOUT, MILLISECONDS);
+            FrameworkUtils.changeStartLevel(context, 3, TIMEOUT, MILLISECONDS);
 
             // The bundle should now be started
             assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
@@ -122,7 +122,7 @@ public class SimpleStartLevelTestCase {
             assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
         } finally {
             // Change the framework start level and wait for the changed event
-            changeStartLevel(context, frameworkStartLevel, TIMEOUT, MILLISECONDS);
+        	FrameworkUtils.changeStartLevel(context, frameworkStartLevel, TIMEOUT, MILLISECONDS);
         }
     }
 }

@@ -109,6 +109,11 @@ public enum Phase {
      */
     PARSE(null),
     /**
+     * In this phase parsing of deployment metadata is complete and the component may be registered with the subsystem.
+     * This is prior to working out the components dependency and equivalent to the OSGi INSTALL life cycle.
+     */
+    REGISTER(null),
+    /**
      * In this phase, the full structure of the deployment unit is made available and module dependencies may be assembled.
      * <p>
      * Upon entry, this phase performs the following actions:
@@ -310,6 +315,8 @@ public enum Phase {
     public static final int DEPENDENCIES_CMP                            = 0x1500;
     public static final int DEPENDENCIES_JAXR                           = 0x1600;
     public static final int DEPENDENCIES_DRIVERS                        = 0x1700;
+    public static final int DEPENDENCIES_BUNDLE                         = 0x1900;
+    public static final int DEPENDENCIES_BUNDLE_CONTEXT_BINDING         = 0x1A00;
     //these must be last, and in this specific order
     public static final int DEPENDENCIES_APPLICATION_CLIENT             = 0x2000;
     public static final int DEPENDENCIES_VISIBLE_MODULES                = 0x2100;
@@ -400,8 +407,7 @@ public enum Phase {
     public static final int INSTALL_EJB_CLIENT_CONTEXT                  = 0x0404;
     public static final int INSTALL_EJB_JACC_PROCESSING                 = 0x1105;
     public static final int INSTALL_SERVICE_ACTIVATOR                   = 0x0500;
-    public static final int INSTALL_OSGI_DEPLOYMENT                     = 0x0600;
-    public static final int INSTALL_OSGI_MODULE                         = 0x0650;
+    public static final int INSTALL_RESOLVER_MODULE                     = 0x0600;
     public static final int INSTALL_RA_NATIVE                           = 0x0800;
     public static final int INSTALL_RA_DEPLOYMENT                       = 0x0801;
     public static final int INSTALL_SERVICE_DEPLOYMENT                  = 0x0900;
@@ -418,7 +424,6 @@ public enum Phase {
     public static final int INSTALL_JSF_ANNOTATIONS                     = 0x1600;
     public static final int INSTALL_JDBC_DRIVER                         = 0x1800;
     public static final int INSTALL_TRANSACTION_BINDINGS                = 0x1900;
-    public static final int INSTALL_BUNDLE_CONTEXT_BINDING              = 0x1A00;
     public static final int INSTALL_WELD_DEPLOYMENT                     = 0x1B00;
     public static final int INSTALL_WELD_BEAN_MANAGER                   = 0x1C00;
     public static final int INSTALL_JNDI_DEPENDENCIES                   = 0x1C01;

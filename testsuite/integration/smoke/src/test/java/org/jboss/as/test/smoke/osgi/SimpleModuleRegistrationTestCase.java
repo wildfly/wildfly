@@ -17,6 +17,8 @@
 package org.jboss.as.test.smoke.osgi;
 
 import static org.junit.Assert.assertEquals;
+import static org.osgi.framework.namespace.IdentityNamespace.IDENTITY_NAMESPACE;
+import static org.osgi.framework.namespace.PackageNamespace.PACKAGE_NAMESPACE;
 
 import java.io.InputStream;
 import java.util.Collections;
@@ -27,18 +29,18 @@ import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.test.smoke.osgi.bundle.SimpleService;
 import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.osgi.framework.Services;
+import org.jboss.osgi.metadata.ManifestBuilder;
 import org.jboss.osgi.resolver.XEnvironment;
 import org.jboss.osgi.resolver.XIdentityCapability;
-import org.jboss.osgi.resolver.XPackageRequirement;
+import org.jboss.osgi.resolver.XRequirement;
 import org.jboss.osgi.resolver.XResolver;
 import org.jboss.osgi.resolver.XResource;
 import org.jboss.osgi.resolver.XResourceBuilder;
 import org.jboss.osgi.resolver.XResourceBuilderFactory;
-import org.jboss.osgi.spi.ManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -46,7 +48,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Version;
-import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Resource;
 import org.osgi.resource.Wire;
@@ -71,9 +72,10 @@ public class SimpleModuleRegistrationTestCase {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-module-reg");
         archive.addClass(SimpleService.class);
         archive.setManifest(new Asset() {
+            @Override
             public InputStream openStream() {
                 ManifestBuilder builder = ManifestBuilder.newInstance();
-                builder.addManifestHeader("Dependencies", "org.osgi.core,org.jboss.osgi.framework");
+                builder.addManifestHeader("Dependencies", "org.osgi.core,org.jboss.osgi.framework,org.jboss.as.osgi");
                 return builder.openStream();
             }
         });
@@ -85,8 +87,9 @@ public class SimpleModuleRegistrationTestCase {
 
         // Build a package requirement
         XResourceBuilder builder = XResourceBuilderFactory.create();
-        builder.addIdentityCapability("somename", null, IdentityNamespace.TYPE_UNKNOWN, null, null);
-        XPackageRequirement req = builder.addPackageRequirement(SimpleService.class.getPackage().getName(), null, null);
+        builder.addCapability(IDENTITY_NAMESPACE, "somename");
+        XRequirement req = builder.addRequirement(PACKAGE_NAMESPACE, SimpleService.class.getPackage().getName());
+        builder.getResource();
 
         // Find the providers for the requirement
         List<Capability> caps = getEnvironment().findProviders(req);
@@ -105,18 +108,18 @@ public class SimpleModuleRegistrationTestCase {
 
         // Build a resource with a package requirement
         XResourceBuilder builder = XResourceBuilderFactory.create();
-        builder.addIdentityCapability("somename", null, IdentityNamespace.TYPE_UNKNOWN, null, null);
-        builder.addPackageRequirement(SimpleService.class.getPackage().getName(), null, null);
+        builder.addCapability(IDENTITY_NAMESPACE, "somename");
+        builder.addRequirement(PACKAGE_NAMESPACE, SimpleService.class.getPackage().getName());
         Resource resource = builder.getResource();
 
         // Setup the resolve context
         XResolver resolver = getResolver();
         XEnvironment env = getEnvironment();
-        ResolveContext context = resolver.createResolverContext(env, Collections.singleton(resource), null);
+        ResolveContext context = resolver.createResolveContext(env, Collections.singleton(resource), null);
 
         // Find the providers
         Map<Resource, List<Wire>> wiremap = resolver.resolve(context);
-        assertEquals(2, wiremap.size());
+        assertEquals("One Resource: " + wiremap, 1, wiremap.size());
 
         // Verify the wires
         List<Wire> wires = wiremap.get(resource);
@@ -129,11 +132,10 @@ public class SimpleModuleRegistrationTestCase {
     }
 
     private XEnvironment getEnvironment() {
-        return (XEnvironment) container.getService(Services.ENVIRONMENT).getValue();
+        return (XEnvironment) container.getRequiredService(Services.ENVIRONMENT).getValue();
     }
 
     private XResolver getResolver() {
-        ServiceName serviceName = ServiceName.JBOSS.append("osgi", "as", "resolver");
-        return (XResolver) container.getService(serviceName).getValue();
+        return (XResolver) container.getRequiredService(OSGiConstants.RESOLVER_SERVICE_NAME).getValue();
     }
 }

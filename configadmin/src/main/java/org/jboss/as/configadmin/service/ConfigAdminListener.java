@@ -22,31 +22,13 @@
 
 package org.jboss.as.configadmin.service;
 
-import java.util.Dictionary;
-import java.util.Set;
+
 
 /**
- * A configuration listener for the {@link ConfigAdminService}.
- *
- * When a configuration listener is first registered with the {@link ConfigAdminService}
- * its configurationModified method is invoked for every PID the listener registers with.
- *
- * A <code>null</code> dictionary indicates that there is currently no configuration for the associated PID.
- *
+ * @deprecated
  * @author Thomas.Diesler@jboss.com
  * @since 11-Dec-2010
  */
-public interface ConfigAdminListener {
+public interface ConfigAdminListener extends org.jboss.as.configadmin.ConfigAdminListener {
 
-    /**
-     * Called when the {@code ConfigAdminService} receives an update for
-     * a PID that the listener has registered with.
-     */
-    void configurationModified(String pid, Dictionary<String, String> props);
-
-    /**
-     * Return the set of PIDs that this listener is interested in.
-     * A <code>null</code> return value denotes any PID.
-     */
-    Set<String> getPIDs();
 }

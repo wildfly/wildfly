@@ -88,7 +88,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         //so we can only use it for resources that are not valid to be entries in application.xml
         locations.put("javax.enterprise.inject.spi.BeanManager", "java:comp/BeanManager");
         locations.put("javax.ejb.TimerService", "java:comp/TimerService");
-        locations.put("org.osgi.framework.BundleContext", "java:comp/BundleContext");
+        locations.put("org.osgi.framework.BundleContext", "java:jboss/osgi/BundleContext");
         locations.put("org.omg.CORBA.ORB", "java:comp/ORB");
         FIXED_LOCATIONS = Collections.unmodifiableMap(locations);
 
