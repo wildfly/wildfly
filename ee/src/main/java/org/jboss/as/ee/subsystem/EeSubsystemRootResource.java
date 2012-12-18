@@ -23,10 +23,12 @@ package org.jboss.as.ee.subsystem;
 
 import java.util.EnumSet;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.DefaultResourceAddDescriptionProvider;
 import org.jboss.as.controller.descriptions.DefaultResourceRemoveDescriptionProvider;
@@ -53,14 +55,25 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 public class EeSubsystemRootResource extends SimpleResourceDefinition {
 
     public static final SimpleAttributeDefinition EAR_SUBDEPLOYMENTS_ISOLATED =
-            new SimpleAttributeDefinition(EESubsystemModel.EAR_SUBDEPLOYMENTS_ISOLATED, EESubsystemModel.EAR_SUBDEPLOYMENTS_ISOLATED,
-                    new ModelNode().set(false), ModelType.BOOLEAN, true, true, null);
+            new SimpleAttributeDefinitionBuilder(EESubsystemModel.EAR_SUBDEPLOYMENTS_ISOLATED, ModelType.BOOLEAN, true)
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(false))
+            .build();
 
-    public static final SimpleAttributeDefinition SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT = new SimpleAttributeDefinition(EESubsystemModel.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT,
-            EESubsystemModel.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT,  new ModelNode().set(true), ModelType.BOOLEAN, true, true, null);
+    public static final SimpleAttributeDefinition SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT =
+            new SimpleAttributeDefinitionBuilder(EESubsystemModel.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT, ModelType.BOOLEAN, true)
+                    .setAllowExpression(true)
+                    .setDefaultValue(new ModelNode(true))
+                    .build();
 
-    public static final SimpleAttributeDefinition JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT = new SimpleAttributeDefinition(EESubsystemModel.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT,
-            EESubsystemModel.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT,  new ModelNode().set(true), ModelType.BOOLEAN, true, true, null);
+    public static final SimpleAttributeDefinition JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT =
+            new SimpleAttributeDefinitionBuilder(EESubsystemModel.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT, ModelType.BOOLEAN, true)
+                    .setAllowExpression(true)
+                    .setDefaultValue(new ModelNode(true))
+                    .build();
+
+    static final AttributeDefinition[] ATTRIBUTES = { GlobalModulesDefinition.INSTANCE, EAR_SUBDEPLOYMENTS_ISOLATED,
+            SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT, JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT};
 
     public static final EeSubsystemRootResource INSTANCE = new EeSubsystemRootResource();
 
@@ -91,7 +104,8 @@ public class EeSubsystemRootResource extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(final ManagementResourceRegistration rootResourceRegistration) {
-        EeWriteAttributeHandler writeHandler = new EeWriteAttributeHandler(isolationProcessor, moduleDependencyProcessor, specDescriptorPropertyReplacementProcessor, jbossDescriptorPropertyReplacementProcessor);
+        EeWriteAttributeHandler writeHandler = new EeWriteAttributeHandler(isolationProcessor, moduleDependencyProcessor,
+                specDescriptorPropertyReplacementProcessor, jbossDescriptorPropertyReplacementProcessor);
         writeHandler.registerAttributes(rootResourceRegistration);
     }
 }

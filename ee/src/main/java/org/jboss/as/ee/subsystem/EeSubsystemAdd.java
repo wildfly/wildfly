@@ -25,6 +25,7 @@ package org.jboss.as.ee.subsystem;
 import java.util.List;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ProcessType;
@@ -107,10 +108,9 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
 
-        GlobalModulesDefinition.INSTANCE.validateAndSet(operation, model);
-        EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.validateAndSet(operation, model);
-        EeSubsystemRootResource.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT.validateAndSet(operation, model);
-        EeSubsystemRootResource.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT.validateAndSet(operation, model);
+        for (AttributeDefinition ad : EeSubsystemRootResource.ATTRIBUTES) {
+            ad.validateAndSet(operation, model);
+        }
     }
 
     protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model,
