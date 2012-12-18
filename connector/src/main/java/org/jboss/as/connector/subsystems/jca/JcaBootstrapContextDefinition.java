@@ -22,6 +22,7 @@
 
 package org.jboss.as.connector.subsystems.jca;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -53,7 +54,8 @@ public class JcaBootstrapContextDefinition extends SimpleResourceDefinition {
         super.registerAttributes(resourceRegistration);
 
         for (final BootstrapCtxParameters parameter : BootstrapCtxParameters.values()) {
-            resourceRegistration.registerReadWriteAttribute(parameter.getAttribute(), null, new ReloadRequiredWriteAttributeHandler());
+            AttributeDefinition ad = parameter.getAttribute();
+            resourceRegistration.registerReadWriteAttribute(ad, null, new ReloadRequiredWriteAttributeHandler(ad));
         }
 
     }
@@ -61,7 +63,7 @@ public class JcaBootstrapContextDefinition extends SimpleResourceDefinition {
 
     public static enum BootstrapCtxParameters {
         NAME(SimpleAttributeDefinitionBuilder.create("name", ModelType.STRING)
-                .setAllowExpression(true)
+                .setAllowExpression(false)
                 .setAllowNull(false)
                 .setMeasurementUnit(MeasurementUnit.NONE)
                 .setRestartAllServices()
