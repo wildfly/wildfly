@@ -42,6 +42,11 @@ public class HiLoKeyGeneratorResourceDescription extends SimpleResourceDefinitio
 
     public static final HiLoKeyGeneratorResourceDescription INSTANCE = new HiLoKeyGeneratorResourceDescription();
 
+    public static final SimpleAttributeDefinition JNDI_NAME = new SimpleAttributeDefinitionBuilder(CmpSubsystemModel.JNDI_NAME, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .build();
+
     public static final SimpleAttributeDefinition BLOCK_SIZE = new SimpleAttributeDefinitionBuilder(CmpSubsystemModel.BLOCK_SIZE, ModelType.LONG, true)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -93,10 +98,11 @@ public class HiLoKeyGeneratorResourceDescription extends SimpleResourceDefinitio
             .build();
 
     public static final Map<String, SimpleAttributeDefinition> ATTRIBUTE_MAP;
-    public static final SimpleAttributeDefinition[] ATTRIBUTES = {BLOCK_SIZE, CREATE_TABLE, CREATE_TABLE_DDL, DATA_SOURCE, DROP_TABLE, ID_COLUMN, SELECT_HI_DDL, SEQUENCE_COLUMN, SEQUENCE_NAME, TABLE_NAME};
+    public static final SimpleAttributeDefinition[] ATTRIBUTES = {JNDI_NAME, BLOCK_SIZE, CREATE_TABLE, CREATE_TABLE_DDL, DATA_SOURCE, DROP_TABLE, ID_COLUMN, SELECT_HI_DDL, SEQUENCE_COLUMN, SEQUENCE_NAME, TABLE_NAME};
 
     static {
         Map<String, SimpleAttributeDefinition> map = new LinkedHashMap<String, SimpleAttributeDefinition>();
+        map.put(JNDI_NAME.getName(), JNDI_NAME);
         map.put(BLOCK_SIZE.getName(), BLOCK_SIZE);
         map.put(CREATE_TABLE.getName(), CREATE_TABLE);
         map.put(CREATE_TABLE_DDL.getName(), CREATE_TABLE_DDL);

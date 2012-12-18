@@ -22,12 +22,6 @@
 
 package org.jboss.as.cmp.subsystem;
 
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-
-import javax.xml.stream.XMLStreamException;
-
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
@@ -36,6 +30,11 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
+import javax.xml.stream.XMLStreamException;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.cmp.subsystem.CmpSubsystemModel.HILO_KEY_GENERATOR;
@@ -138,6 +137,7 @@ public class CmpSubsystem10Parser implements XMLElementReader<List<ModelNode>>, 
 
     private ModelNode parseHilo(final XMLExtendedStreamReader reader, final ModelNode parentAddress) throws XMLStreamException {
         String name = null;
+        String jndiname = null;
         int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
@@ -146,6 +146,10 @@ public class CmpSubsystem10Parser implements XMLElementReader<List<ModelNode>>, 
             switch (attribute) {
                 case NAME: {
                     name = value;
+                    break;
+                }
+                case JNDI_NAME: {
+                    jndiname = value;
                     break;
                 }
                 default:
@@ -163,6 +167,10 @@ public class CmpSubsystem10Parser implements XMLElementReader<List<ModelNode>>, 
         address.protect();
         op.get(OP_ADDR).set(address);
         final EnumSet<Element> required = EnumSet.of(Element.DATA_SOURCE, Element.TABLE_NAME, Element.ID_COLUMN, Element.SEQUENCE_COLUMN, Element.SEQUENCE_NAME);
+
+        if (jndiname != null) {
+            HiLoKeyGeneratorResourceDescription.JNDI_NAME.parseAndSetParameter(jndiname, op, reader);
+        }
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final String value = reader.getElementText();
@@ -192,7 +200,8 @@ public class CmpSubsystem10Parser implements XMLElementReader<List<ModelNode>>, 
             if (model.hasDefined(UUID_KEY_GENERATOR)) {
                 for (Property keyGen : model.get(UUID_KEY_GENERATOR).asPropertyList()) {
                     final String name = keyGen.getName();
-                    writeUuid(writer, name);
+                    final ModelNode keyGenModel = keyGen.getValue();
+                    writeUuid(writer, name, keyGenModel);
                 }
             }
             if (model.hasDefined(HILO_KEY_GENERATOR)) {
@@ -217,9 +226,13 @@ public class CmpSubsystem10Parser implements XMLElementReader<List<ModelNode>>, 
         writer.writeEndElement();
     }
 
-    private void writeUuid(final XMLExtendedStreamWriter writer, final String name) throws XMLStreamException {
+    private void writeUuid(final XMLExtendedStreamWriter writer, final String name, final ModelNode model) throws XMLStreamException {
         writer.writeStartElement(Element.UUID.getLocalName());
         writer.writeAttribute(Attribute.NAME.getLocalName(), name);
+
+        for(SimpleAttributeDefinition attribute : HiLoKeyGeneratorResourceDescription.ATTRIBUTES) {
+            attribute.marshallAsElement(model, writer);
+        }
         writer.writeEndElement();
     }
 }

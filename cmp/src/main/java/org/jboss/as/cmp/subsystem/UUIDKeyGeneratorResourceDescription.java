@@ -22,8 +22,18 @@
 
 package org.jboss.as.cmp.subsystem;
 
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.dmr.ModelType;
+
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * @author Stuart Douglas
@@ -31,6 +41,20 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 public class UUIDKeyGeneratorResourceDescription extends SimpleResourceDefinition {
 
     public static final UUIDKeyGeneratorResourceDescription INSTANCE = new UUIDKeyGeneratorResourceDescription();
+
+    protected static final SimpleAttributeDefinition JNDI_NAME = new SimpleAttributeDefinitionBuilder(CmpSubsystemModel.JNDI_NAME, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .build();
+
+    public static final Map<String, SimpleAttributeDefinition> ATTRIBUTE_MAP;
+    public static final SimpleAttributeDefinition[] ATTRIBUTES = {JNDI_NAME};
+
+    static {
+        Map<String, SimpleAttributeDefinition> map = new LinkedHashMap<String, SimpleAttributeDefinition>();
+        map.put(JNDI_NAME.getName(), JNDI_NAME);
+        ATTRIBUTE_MAP = Collections.unmodifiableMap(map);
+    }
 
     private UUIDKeyGeneratorResourceDescription() {
         super(CmpSubsystemModel.UUID_KEY_GENERATOR_PATH,
@@ -40,6 +64,8 @@ public class UUIDKeyGeneratorResourceDescription extends SimpleResourceDefinitio
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-
+        for (AttributeDefinition attr : ATTRIBUTE_MAP.values()) {
+            resourceRegistration.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
+        }
     }
 }
