@@ -1,0 +1,8 @@
+<subsystem xmlns="urn:jboss:domain:transactions:1.2">
+    <core-environment>
+        <process-id>
+            <uuid/>
+        </process-id>
+    </core-environment>
+    <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
+</subsystem>

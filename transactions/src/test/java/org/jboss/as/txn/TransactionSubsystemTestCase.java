@@ -56,13 +56,27 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        //This is just copied from standalone.xml testing more combinations would be good
         return readResource("subsystem.xml");
     }
 
     @Override
     protected void compareXml(String configId, String original, String marshalled) throws Exception {
         super.compareXml(configId, original, marshalled, true);
+    }
+
+    @Test
+    public void testExpressions() throws Exception {
+        standardSubsystemTest("expressions.xml");
+    }
+
+    @Test
+    public void testMinimalConfig() throws Exception {
+        standardSubsystemTest("minimal.xml");
+    }
+
+    @Test
+    public void testSocketId() throws Exception {
+        standardSubsystemTest("socket-id.xml");
     }
 
     @Test

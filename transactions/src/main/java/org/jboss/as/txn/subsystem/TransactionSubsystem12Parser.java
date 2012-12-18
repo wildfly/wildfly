@@ -420,7 +420,7 @@ class TransactionSubsystem12Parser implements XMLStreamConstants, XMLElementRead
 
     private void writeProcessId(final XMLExtendedStreamWriter writer, final ModelNode value) throws XMLStreamException {
         writer.writeStartElement(Element.PROCESS_ID.getLocalName());
-        if (value.get(TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.getName()).asBoolean()) {
+        if (value.get(TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.getName()).asBoolean(false)) {
             writer.writeEmptyElement(Element.UUID.getLocalName());
         } else {
             writer.writeStartElement(Element.SOCKET.getLocalName());
