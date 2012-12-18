@@ -42,19 +42,24 @@ public class JSSEResourceDefinition extends SimpleResourceDefinition {
     public static final KeyStoreAttributeDefinition TRUSTSTORE = new KeyStoreAttributeDefinition(Constants.TRUSTSTORE);
     public static final KeyManagerAttributeDefinition KEYMANAGER = new KeyManagerAttributeDefinition(Constants.KEY_MANAGER);
     public static final KeyManagerAttributeDefinition TRUSTMANAGER = new KeyManagerAttributeDefinition(Constants.TRUST_MANAGER);
-    public static final SimpleAttributeDefinition CLIENT_ALIAS =
-            new SimpleAttributeDefinitionBuilder(Constants.CLIENT_ALIAS, ModelType.STRING, true).setAllowExpression(true).build();
-    public static final SimpleAttributeDefinition SERVER_ALIAS =
-            new SimpleAttributeDefinitionBuilder(Constants.SERVER_ALIAS, ModelType.STRING, true).setAllowExpression(true).build();
-    public static final SimpleAttributeDefinition SERVICE_AUTH_TOKEN =
-            new SimpleAttributeDefinitionBuilder(Constants.SERVICE_AUTH_TOKEN, ModelType.STRING, true).setAllowExpression(true).build();
-    public static final SimpleAttributeDefinition CLIENT_AUTH =
-            new SimpleAttributeDefinitionBuilder(Constants.CLIENT_AUTH, ModelType.BOOLEAN, true).setAllowExpression(true).build();
-    public static final SimpleAttributeDefinition PROTOCOLS =
-            new SimpleAttributeDefinitionBuilder(Constants.PROTOCOLS, ModelType.STRING, true).setAllowExpression(true).build();
-    public static final SimpleAttributeDefinition CIPHER_SUITES =
-            new SimpleAttributeDefinitionBuilder(Constants.CIPHER_SUITES, ModelType.STRING, true).setAllowExpression(true).build();
-
+    public static final SimpleAttributeDefinition CLIENT_ALIAS = new SimpleAttributeDefinitionBuilder(Constants.CLIENT_ALIAS, ModelType.STRING, true)
+            .setAllowExpression(true)
+            .build();
+    public static final SimpleAttributeDefinition SERVER_ALIAS = new SimpleAttributeDefinitionBuilder(Constants.SERVER_ALIAS, ModelType.STRING, true)
+            .setAllowExpression(true)
+            .build();
+    public static final SimpleAttributeDefinition SERVICE_AUTH_TOKEN = new SimpleAttributeDefinitionBuilder(Constants.SERVICE_AUTH_TOKEN, ModelType.STRING, true)
+            .setAllowExpression(true)
+            .build();
+    public static final SimpleAttributeDefinition CLIENT_AUTH = new SimpleAttributeDefinitionBuilder(Constants.CLIENT_AUTH, ModelType.BOOLEAN, true)
+            .setAllowExpression(true)
+            .build();
+    public static final SimpleAttributeDefinition PROTOCOLS = new SimpleAttributeDefinitionBuilder(Constants.PROTOCOLS, ModelType.STRING, true)
+            .setAllowExpression(true)
+            .build();
+    public static final SimpleAttributeDefinition CIPHER_SUITES = new SimpleAttributeDefinitionBuilder(Constants.CIPHER_SUITES, ModelType.STRING, true)
+            .setAllowExpression(true)
+            .build();
     public static final PropertiesAttributeDefinition ADDITIONAL_PROPERTIES = new PropertiesAttributeDefinition.Builder(Constants.ADDITIONAL_PROPERTIES, true)
             .setXmlName(Constants.PROPERTY)
             .build();
@@ -62,7 +67,8 @@ public class JSSEResourceDefinition extends SimpleResourceDefinition {
     private JSSEResourceDefinition() {
         super(PathElement.pathElement(Constants.JSSE, Constants.CLASSIC),
               SecurityExtension.getResourceDescriptionResolver(Constants.JSSE),
-              JSSEResourceDefinitionAdd.INSTANCE, new SecurityDomainReloadRemoveHandler());
+                JSSEResourceDefinitionAdd.INSTANCE,
+                new SecurityDomainReloadRemoveHandler());
     }
 
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {

@@ -50,6 +50,7 @@ public class MappingModuleDefinition extends SimpleResourceDefinition {
     protected static final SimpleAttributeDefinition TYPE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.TYPE, ModelType.STRING)
             .setAllowNull(false)
             .build();
+
     protected static final PropertiesAttributeDefinition MODULE_OPTIONS = new PropertiesAttributeDefinition.Builder(Constants.MODULE_OPTIONS, true)
             .setAllowExpression(true)
             .build();
@@ -57,12 +58,12 @@ public class MappingModuleDefinition extends SimpleResourceDefinition {
 
 
     MappingModuleDefinition(String key) {
-        super(PathElement.pathElement(key), SecurityExtension.getResourceDescriptionResolver(Constants.MAPPING_MODULE),
+        super(PathElement.pathElement(key),
+                SecurityExtension.getResourceDescriptionResolver(Constants.MAPPING_MODULE),
                 null,
                 new SecurityDomainReloadRemoveHandler()
         );
     }
-
 
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {

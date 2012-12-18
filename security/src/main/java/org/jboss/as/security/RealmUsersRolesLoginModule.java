@@ -25,7 +25,6 @@ package org.jboss.as.security;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginException;
@@ -36,13 +35,12 @@ import org.jboss.security.auth.spi.UsersRolesLoginModule;
 /**
  * @author Jason T. Greene
  */
-public class RealmUsersRolesLoginModule extends UsersRolesLoginModule{
+public class RealmUsersRolesLoginModule extends UsersRolesLoginModule {
     private static final String REALM_OPTION = "realm";
 
-    private static final String[] ALL_VALID_OPTIONS =
-    {
-        REALM_OPTION
-    };
+    private static final String[] ALL_VALID_OPTIONS = {
+                    REALM_OPTION
+            };
 
     private UsernamePasswordHashUtil usernamePasswordHashUtil;
     private String realm;

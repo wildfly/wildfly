@@ -34,8 +34,7 @@ public class ACLResourceDefinition extends SimpleResourceDefinition {
 
     public static final ACLResourceDefinition INSTANCE = new ACLResourceDefinition();
 
-    //@Deprecated
-    //public static final ListAttributeDefinition ACL_MODULES = new LoginModulesAttributeDefinition(Constants.ACL_MODULES, Constants.ACL_MODULE);
+    public static final ListAttributeDefinition ACL_MODULES = new LegacySupport.LoginModulesAttributeDefinition(Constants.ACL_MODULES, Constants.ACL_MODULE);
 
     private ACLResourceDefinition() {
         super(SecurityExtension.ACL_PATH,
@@ -45,13 +44,13 @@ public class ACLResourceDefinition extends SimpleResourceDefinition {
     }
 
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
-        //resourceRegistration.registerReadWriteAttribute(ACL_MODULES, null, new SecurityDomainReloadWriteHandler(ACL_MODULES));
+        resourceRegistration.registerReadWriteAttribute(ACL_MODULES, new LegacySupport.LegacyModulesAttributeReader(Constants.ACL_MODULE), new LegacySupport.LegacyModulesAttributeWriter(Constants.ACL_MODULE));
     }
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         super.registerChildren(resourceRegistration);
-        resourceRegistration.registerSubModel(new LoginModulesDefinition(Constants.LOGIN_MODULE));
+        resourceRegistration.registerSubModel(new LoginModuleResourceDefinition(Constants.LOGIN_MODULE));
     }
 
     static class ACLResourceDefinitionAdd extends SecurityDomainReloadAddHandler {
@@ -59,7 +58,6 @@ public class ACLResourceDefinition extends SimpleResourceDefinition {
 
         @Override
         protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-            //ACL_MODULES.validateAndSet(operation, model);
         }
 
     }

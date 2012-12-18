@@ -40,7 +40,7 @@ import org.jboss.dmr.ModelType;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
-public class LoginModulesDefinition extends SimpleResourceDefinition {
+public class LoginModuleResourceDefinition extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition CODE = new SimpleAttributeDefinitionBuilder(Constants.CODE, ModelType.STRING)
             .setAllowNull(false)
             .setMinSize(1)
@@ -61,9 +61,9 @@ public class LoginModulesDefinition extends SimpleResourceDefinition {
 
     static final AttributeDefinition[] ATTRIBUTES = {CODE, FLAG, MODULE, MODULE_OPTIONS};
 
-    LoginModulesDefinition(final String key) {
+    LoginModuleResourceDefinition(final String key) {
         super(PathElement.pathElement(key),
-                SecurityExtension.getResourceDescriptionResolver(Constants.LOGIN_MODULE_STACK,Constants.LOGIN_MODULE),
+                SecurityExtension.getResourceDescriptionResolver(Constants.LOGIN_MODULE_STACK, Constants.LOGIN_MODULES),
                 new LoginModuleAdd(),
                 new SecurityDomainReloadRemoveHandler()
         );

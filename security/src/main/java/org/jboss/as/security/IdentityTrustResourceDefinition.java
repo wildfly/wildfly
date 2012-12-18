@@ -35,7 +35,7 @@ public class IdentityTrustResourceDefinition extends SimpleResourceDefinition {
 
     public static final IdentityTrustResourceDefinition INSTANCE = new IdentityTrustResourceDefinition();
 
-    //public static final ListAttributeDefinition TRUST_MODULES = new LoginModulesAttributeDefinition(Constants.TRUST_MODULES, Constants.TRUST_MODULE);
+    public static final ListAttributeDefinition TRUST_MODULES = new LegacySupport.LoginModulesAttributeDefinition(Constants.TRUST_MODULES, Constants.TRUST_MODULE);
 
     private IdentityTrustResourceDefinition() {
         super(PathElement.pathElement(Constants.IDENTITY_TRUST, Constants.CLASSIC),
@@ -43,22 +43,19 @@ public class IdentityTrustResourceDefinition extends SimpleResourceDefinition {
                 new IdentityTrustResourceDefinitionAdd(), new SecurityDomainReloadRemoveHandler());
     }
 
-    /*public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadWriteAttribute(TRUST_MODULES, null, new SecurityDomainReloadWriteHandler(TRUST_MODULES));
-    }*/
+    public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerReadWriteAttribute(TRUST_MODULES, new LegacySupport.LegacyModulesAttributeReader(Constants.TRUST_MODULE), new LegacySupport.LegacyModulesAttributeWriter(Constants.TRUST_MODULE));
+    }
 
     @Override
         public void registerChildren(ManagementResourceRegistration resourceRegistration) {
             super.registerChildren(resourceRegistration);
-            resourceRegistration.registerSubModel(new LoginModulesDefinition(Constants.TRUST_MODULE));
+            resourceRegistration.registerSubModel(new LoginModuleResourceDefinition(Constants.TRUST_MODULE));
         }
 
     static class IdentityTrustResourceDefinitionAdd extends SecurityDomainReloadAddHandler {
         @Override
         protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-            //TRUST_MODULES.validateAndSet(operation, model);
         }
-
     }
-
 }

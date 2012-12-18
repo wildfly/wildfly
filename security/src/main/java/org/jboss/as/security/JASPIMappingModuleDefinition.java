@@ -25,6 +25,7 @@
 package org.jboss.as.security;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -52,8 +53,8 @@ public class JASPIMappingModuleDefinition extends MappingModuleDefinition {
 
     private static final AttributeDefinition[] ATTRIBUTES = {CODE, FLAG, LOGIN_MODULE_STACK_REF, MODULE_OPTIONS};
 
-    JASPIMappingModuleDefinition(String key) {
-        super(key);
+    JASPIMappingModuleDefinition() {
+        super(Constants.AUTH_MODULE);
     }
 
     @Override
