@@ -142,12 +142,12 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     public static final SimpleAttributeDefinition JTS = new SimpleAttributeDefinitionBuilder(CommonAttributes.JTS, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode().set(false))
             .setFlags(AttributeAccess.Flag.RESTART_JVM)  //I think the use of statics in arjunta will require a JVM restart
-            .setAllowExpression(true).build();
+            .setAllowExpression(false).build();
 
     public static final SimpleAttributeDefinition USEHORNETQSTORE = new SimpleAttributeDefinitionBuilder(CommonAttributes.USEHORNETQSTORE, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode().set(false))
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
-            .setAllowExpression(true).build();
+            .setAllowExpression(false).build();
 
     private final boolean registerRuntimeOnly;
 
