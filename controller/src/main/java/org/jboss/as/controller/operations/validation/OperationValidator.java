@@ -247,13 +247,10 @@ public class OperationValidator {
     }
 
     private void checkRange(final ModelNode operation, final ModelNode description, final String paramName, final ModelType modelType, final ModelNode describedProperty, final ModelNode value) {
-        if (!value.isDefined()) {
+        if (!value.isDefined() || value.getType() == ModelType.EXPRESSION) {
             return;
         }
         if (describedProperty.hasDefined(MIN)) {
-            if (value.getType() == ModelType.EXPRESSION) {
-                return;
-            }
             switch (modelType) {
                 case BIG_DECIMAL: {
                     final BigDecimal min;
