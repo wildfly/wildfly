@@ -27,33 +27,27 @@ import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
-import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 
 /**
  * Write Handler for jca config attribute
  *
  * @author Stefano Maestri
  */
-class JcaAttributeWriteHandler extends AbstractWriteAttributeHandler<JcaSubsystemConfiguration> {
+class JcaArchiveValidationWriteHandler extends AbstractWriteAttributeHandler<JcaSubsystemConfiguration> {
 
-    static JcaAttributeWriteHandler INSTANCE = new JcaAttributeWriteHandler();
+    static JcaArchiveValidationWriteHandler INSTANCE = new JcaArchiveValidationWriteHandler();
 
-    private JcaAttributeWriteHandler() {
+    private JcaArchiveValidationWriteHandler() {
         super(
             JcaArchiveValidationDefinition.ArchiveValidationParameters.ARCHIVE_VALIDATION_ENABLED.getAttribute(),
             JcaArchiveValidationDefinition.ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_ERROR.getAttribute(),
-            JcaArchiveValidationDefinition.ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_WARN.getAttribute(),
-            JcaBeanValidationDefinition.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute(),
-            JcaCachedConnectionManagerDefinition.CcmParameters.DEBUG.getAttribute(),
-            JcaCachedConnectionManagerDefinition.CcmParameters.ERROR.getAttribute()
+            JcaArchiveValidationDefinition.ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_WARN.getAttribute()
         );
     }
 
     @Override
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<JcaSubsystemConfiguration> jcaSubsystemConfigurationHandbackHolder) throws OperationFailedException {
-        JcaSubsystemConfiguration config = (JcaSubsystemConfiguration) context.getServiceRegistry(false).getService(ConnectorServices.CONNECTOR_CONFIG_SERVICE).getValue();
-
-        CachedConnectionManager ccm = (CachedConnectionManager) context.getServiceRegistry(false).getService(ConnectorServices.CCM_SERVICE).getValue();
+        JcaSubsystemConfiguration config = (JcaSubsystemConfiguration) context.getServiceRegistry(true).getService(ConnectorServices.CONNECTOR_CONFIG_SERVICE).getValue();
 
         if (attributeName.equals(JcaArchiveValidationDefinition.ArchiveValidationParameters.ARCHIVE_VALIDATION_ENABLED.getAttribute().getName())) {
             config.setArchiveValidation(resolvedValue.asBoolean());
@@ -61,12 +55,6 @@ class JcaAttributeWriteHandler extends AbstractWriteAttributeHandler<JcaSubsyste
             config.setArchiveValidationFailOnError(resolvedValue.asBoolean());
         } else if (attributeName.equals(JcaArchiveValidationDefinition.ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_WARN.getAttribute().getName())) {
             config.setArchiveValidationFailOnWarn(resolvedValue.asBoolean());
-        } else if (attributeName.equals(JcaBeanValidationDefinition.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().getName())) {
-            config.setBeanValidation(resolvedValue.asBoolean());
-        } else if (attributeName.equals(JcaCachedConnectionManagerDefinition.CcmParameters.DEBUG.getAttribute().getName())) {
-            ccm.setDebug(resolvedValue.asBoolean());
-        } else if (attributeName.equals(JcaCachedConnectionManagerDefinition.CcmParameters.ERROR.getAttribute().getName())) {
-            ccm.setError(resolvedValue.asBoolean());
         }
 
         return false;
@@ -75,35 +63,14 @@ class JcaAttributeWriteHandler extends AbstractWriteAttributeHandler<JcaSubsyste
 
     @Override
     protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, JcaSubsystemConfiguration handback) throws OperationFailedException {
-        JcaSubsystemConfiguration config = (JcaSubsystemConfiguration) context.getServiceRegistry(false).getService(ConnectorServices.CONNECTOR_CONFIG_SERVICE).getValue();
-
-        CachedConnectionManager ccm = (CachedConnectionManager) context.getServiceRegistry(false).getService(ConnectorServices.CCM_SERVICE).getValue();
+        JcaSubsystemConfiguration config = (JcaSubsystemConfiguration) context.getServiceRegistry(true).getService(ConnectorServices.CONNECTOR_CONFIG_SERVICE).getValue();
 
         if (attributeName.equals(JcaArchiveValidationDefinition.ArchiveValidationParameters.ARCHIVE_VALIDATION_ENABLED.getAttribute().getName())) {
             config.setArchiveValidation(valueToRestore.asBoolean());
-        }
-
-        if (attributeName.equals(JcaArchiveValidationDefinition.ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_ERROR.getAttribute().getName())) {
+        }else if (attributeName.equals(JcaArchiveValidationDefinition.ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_ERROR.getAttribute().getName())) {
             config.setArchiveValidationFailOnError(valueToRestore.asBoolean());
-        }
-        if (attributeName.equals(JcaArchiveValidationDefinition.ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_WARN.getAttribute().getName())) {
+        } else if (attributeName.equals(JcaArchiveValidationDefinition.ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_WARN.getAttribute().getName())) {
             config.setArchiveValidationFailOnWarn(valueToRestore.asBoolean());
-        }
-
-        if (attributeName.equals(JcaBeanValidationDefinition.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().getName())) {
-            config.setBeanValidation(valueToRestore.asBoolean());
-        }
-
-        if (attributeName.equals(JcaBeanValidationDefinition.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().getName())) {
-            config.setBeanValidation(valueToRestore.asBoolean());
-        }
-
-        if (attributeName.equals(JcaCachedConnectionManagerDefinition.CcmParameters.DEBUG.getAttribute().getName())) {
-            ccm.setDebug(valueToRestore.asBoolean());
-        }
-
-        if (attributeName.equals(JcaCachedConnectionManagerDefinition.CcmParameters.ERROR.getAttribute().getName())) {
-            ccm.setError(valueToRestore.asBoolean());
         }
 
     }
