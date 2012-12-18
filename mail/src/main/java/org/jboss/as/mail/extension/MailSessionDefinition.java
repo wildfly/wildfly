@@ -73,7 +73,7 @@ class MailSessionDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(final ManagementResourceRegistration rootResourceRegistration) {
         for (AttributeDefinition attr : ATTRIBUTES) {
-            rootResourceRegistration.registerReadWriteAttribute(attr, null, ReloadRequiredRemoveStepHandler.INSTANCE);
+            rootResourceRegistration.registerReadWriteAttribute(attr, null, SessionAttributeWriteHandler.INSTANCE);
         }
     }
 
