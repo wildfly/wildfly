@@ -38,13 +38,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class JMSBridgeWriteAttributeHandler extends ReloadRequiredWriteAttributeHandler {
 
-    public static final JMSBridgeWriteAttributeHandler INSTANCE = new JMSBridgeWriteAttributeHandler();
-
     private static final AttributeDefinition[] ATTRIBUTES = mergeAttributes();
-
-    private JMSBridgeWriteAttributeHandler() {
-        super(ATTRIBUTES);
-    }
 
     private static AttributeDefinition[] mergeAttributes() {
         AttributeDefinition[] merged = new AttributeDefinition[JMSBridgeDefinition.JMS_BRIDGE_ATTRIBUTES.length
@@ -57,6 +51,12 @@ public class JMSBridgeWriteAttributeHandler extends ReloadRequiredWriteAttribute
                 JMSBridgeDefinition.JMS_BRIDGE_ATTRIBUTES.length + JMSBridgeDefinition.JMS_SOURCE_ATTRIBUTES.length,
                 JMSBridgeDefinition.JMS_TARGET_ATTRIBUTES.length);
         return merged;
+    }
+
+    public static final JMSBridgeWriteAttributeHandler INSTANCE = new JMSBridgeWriteAttributeHandler();
+
+    private JMSBridgeWriteAttributeHandler() {
+        super(ATTRIBUTES);
     }
 
     @Override
