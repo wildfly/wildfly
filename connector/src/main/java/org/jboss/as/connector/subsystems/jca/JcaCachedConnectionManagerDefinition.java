@@ -22,6 +22,7 @@
 
 package org.jboss.as.connector.subsystems.jca;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -57,7 +58,8 @@ public class JcaCachedConnectionManagerDefinition extends SimpleResourceDefiniti
             if (parameter != CcmParameters.INSTALL) {
                 resourceRegistration.registerReadWriteAttribute(parameter.getAttribute(), null, JcaAttributeWriteHandler.INSTANCE);
             } else {
-                resourceRegistration.registerReadWriteAttribute(parameter.getAttribute(), null, new ReloadRequiredWriteAttributeHandler());
+                AttributeDefinition ad = parameter.getAttribute();
+                resourceRegistration.registerReadWriteAttribute(ad, null, new ReloadRequiredWriteAttributeHandler(ad));
             }
         }
 

@@ -38,6 +38,17 @@ class JcaAttributeWriteHandler extends AbstractWriteAttributeHandler<JcaSubsyste
 
     static JcaAttributeWriteHandler INSTANCE = new JcaAttributeWriteHandler();
 
+    private JcaAttributeWriteHandler() {
+        super(
+            JcaArchiveValidationDefinition.ArchiveValidationParameters.ARCHIVE_VALIDATION_ENABLED.getAttribute(),
+            JcaArchiveValidationDefinition.ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_ERROR.getAttribute(),
+            JcaArchiveValidationDefinition.ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_WARN.getAttribute(),
+            JcaBeanValidationDefinition.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute(),
+            JcaCachedConnectionManagerDefinition.CcmParameters.DEBUG.getAttribute(),
+            JcaCachedConnectionManagerDefinition.CcmParameters.ERROR.getAttribute()
+        );
+    }
+
     @Override
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<JcaSubsystemConfiguration> jcaSubsystemConfigurationHandbackHolder) throws OperationFailedException {
         JcaSubsystemConfiguration config = (JcaSubsystemConfiguration) context.getServiceRegistry(false).getService(ConnectorServices.CONNECTOR_CONFIG_SERVICE).getValue();
@@ -46,31 +57,17 @@ class JcaAttributeWriteHandler extends AbstractWriteAttributeHandler<JcaSubsyste
 
         if (attributeName.equals(JcaArchiveValidationDefinition.ArchiveValidationParameters.ARCHIVE_VALIDATION_ENABLED.getAttribute().getName())) {
             config.setArchiveValidation(resolvedValue.asBoolean());
-        }
-
-        if (attributeName.equals(JcaArchiveValidationDefinition.ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_ERROR.getAttribute().getName())) {
+        } else if (attributeName.equals(JcaArchiveValidationDefinition.ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_ERROR.getAttribute().getName())) {
             config.setArchiveValidationFailOnError(resolvedValue.asBoolean());
-        }
-        if (attributeName.equals(JcaArchiveValidationDefinition.ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_WARN.getAttribute().getName())) {
+        } else if (attributeName.equals(JcaArchiveValidationDefinition.ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_WARN.getAttribute().getName())) {
             config.setArchiveValidationFailOnWarn(resolvedValue.asBoolean());
-        }
-
-        if (attributeName.equals(JcaBeanValidationDefinition.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().getName())) {
+        } else if (attributeName.equals(JcaBeanValidationDefinition.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().getName())) {
             config.setBeanValidation(resolvedValue.asBoolean());
-        }
-
-        if (attributeName.equals(JcaBeanValidationDefinition.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().getName())) {
-                    config.setBeanValidation(resolvedValue.asBoolean());
-        }
-
-        if (attributeName.equals(JcaCachedConnectionManagerDefinition.CcmParameters.DEBUG.getAttribute().getName())) {
+        } else if (attributeName.equals(JcaCachedConnectionManagerDefinition.CcmParameters.DEBUG.getAttribute().getName())) {
             ccm.setDebug(resolvedValue.asBoolean());
-        }
-
-        if (attributeName.equals(JcaCachedConnectionManagerDefinition.CcmParameters.ERROR.getAttribute().getName())) {
+        } else if (attributeName.equals(JcaCachedConnectionManagerDefinition.CcmParameters.ERROR.getAttribute().getName())) {
             ccm.setError(resolvedValue.asBoolean());
         }
-
 
         return false;
 
