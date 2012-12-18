@@ -41,6 +41,7 @@ public class JAXRWriteAttributeHandler extends AbstractWriteAttributeHandler<Voi
     private final JAXRConfiguration config;
 
     JAXRWriteAttributeHandler(JAXRConfiguration config) {
+        super(JAXRSubsystemRootResource.ATTRIBUTES);
         this.config = config;
     }
 

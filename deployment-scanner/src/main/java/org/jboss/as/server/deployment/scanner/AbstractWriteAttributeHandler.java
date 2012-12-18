@@ -25,10 +25,10 @@ package org.jboss.as.server.deployment.scanner;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.server.deployment.scanner.DeploymentScannerMessages.MESSAGES;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.server.deployment.scanner.api.DeploymentScanner;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -40,8 +40,8 @@ import org.jboss.msc.service.ServiceController;
  */
 abstract class AbstractWriteAttributeHandler extends org.jboss.as.controller.AbstractWriteAttributeHandler<DeploymentScanner> {
 
-    AbstractWriteAttributeHandler(ParameterValidator valueValidator, ParameterValidator resolvedValueValidator) {
-        super(valueValidator, resolvedValueValidator);
+    AbstractWriteAttributeHandler(AttributeDefinition attributeDefinition) {
+        super(attributeDefinition);
     }
 
     @Override
@@ -52,11 +52,10 @@ abstract class AbstractWriteAttributeHandler extends org.jboss.as.controller.Abs
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
         final ServiceController<?> controller = context.getServiceRegistry(false).getService(DeploymentScannerService.getServiceName(name));
-        DeploymentScanner scanner = null;
         if (controller == null) {
             throw new OperationFailedException(new ModelNode().set(MESSAGES.scannerNotConfigured()));
         } else {
-            scanner = (DeploymentScanner) controller.getValue();
+            DeploymentScanner scanner = (DeploymentScanner) controller.getValue();
             updateScanner(scanner, newValue);
             handbackHolder.setHandback(scanner);
         }

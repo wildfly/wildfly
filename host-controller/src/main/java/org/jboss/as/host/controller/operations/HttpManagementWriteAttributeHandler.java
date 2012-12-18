@@ -29,6 +29,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.host.controller.HostControllerEnvironment;
+import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -42,6 +43,7 @@ public class HttpManagementWriteAttributeHandler extends AbstractWriteAttributeH
     private final HostControllerEnvironment environment;
 
     public HttpManagementWriteAttributeHandler(final LocalHostControllerInfoImpl hostControllerInfo, final HostControllerEnvironment environment) {
+        super(HttpManagementResourceDefinition.ATTRIBUTE_DEFINITIONS);
         this.hostControllerInfo = hostControllerInfo;
         this.environment = environment;
     }

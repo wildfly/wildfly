@@ -22,10 +22,8 @@
 
 package org.jboss.as.server.deployment.scanner;
 
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.server.deployment.scanner.api.DeploymentScanner;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * Toggle the 'auto-deploy-exploded' attribute on a {@code DeploymentScanner}.
@@ -37,7 +35,7 @@ class WriteAutoDeployExplodedAttributeHandler extends AbstractWriteAttributeHand
     static final WriteAutoDeployExplodedAttributeHandler INSTANCE = new WriteAutoDeployExplodedAttributeHandler();
 
     private WriteAutoDeployExplodedAttributeHandler() {
-        super(new ModelTypeValidator(ModelType.BOOLEAN, false, true), new ModelTypeValidator(ModelType.BOOLEAN, false, false));
+        super(DeploymentScannerDefinition.AUTO_DEPLOY_EXPLODED);
     }
 
     @Override

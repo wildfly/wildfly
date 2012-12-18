@@ -27,6 +27,7 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,10 +58,16 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
     private final ParameterValidator resolvedValueValidator;
     private final Map<String, AttributeDefinition> attributeDefinitions;
 
+    /** @deprecated use a variant that takes {@link AttributeDefinition} */
+    @Deprecated
+    @SuppressWarnings("deprecation")
     protected AbstractWriteAttributeHandler() {
         this(null, null);
     }
 
+    /** @deprecated use a variant that takes {@link AttributeDefinition} */
+    @Deprecated
+    @SuppressWarnings("deprecation")
     protected AbstractWriteAttributeHandler(final ParameterValidator validator) {
         this(validator, validator);
     }
@@ -75,6 +82,12 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
         this.resolvedValueValidator = null;
     }
 
+    protected AbstractWriteAttributeHandler(final Collection<AttributeDefinition> definitions) {
+        this(definitions.toArray(new AttributeDefinition[definitions.size()]));
+    }
+
+    /** @deprecated use a variant that takes {@link AttributeDefinition} */
+    @Deprecated
     protected AbstractWriteAttributeHandler(final ParameterValidator unresolvedValidator, final ParameterValidator resolvedValidator) {
 
         this.nameValidator.registerValidator(NAME, new StringLengthValidator(1));

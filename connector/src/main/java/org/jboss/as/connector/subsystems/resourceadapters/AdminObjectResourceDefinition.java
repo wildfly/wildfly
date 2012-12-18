@@ -45,12 +45,12 @@ public class AdminObjectResourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        ReloadRequiredWriteAttributeHandler writeAttributeHandler = new  ReloadRequiredWriteAttributeHandler();
+
         for (final AttributeDefinition attribute : CommonAttributes.ADMIN_OBJECTS_NODE_ATTRIBUTE) {
             if (readOnly) {
                 resourceRegistration.registerReadOnlyAttribute(attribute, null);
             } else {
-                resourceRegistration.registerReadWriteAttribute(attribute, null, writeAttributeHandler);
+                resourceRegistration.registerReadWriteAttribute(attribute, null, new  ReloadRequiredWriteAttributeHandler(attribute));
             }
         }
     }

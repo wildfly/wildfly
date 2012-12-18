@@ -22,10 +22,8 @@
 
 package org.jboss.as.server.deployment.scanner;
 
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.server.deployment.scanner.api.DeploymentScanner;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * Toggle the 'auto-deploy-xml' attribute on a {@code DeploymentScanner}.
@@ -37,7 +35,7 @@ class WriteAutoDeployXMLAttributeHandler extends AbstractWriteAttributeHandler {
     static final WriteAutoDeployXMLAttributeHandler INSTANCE = new WriteAutoDeployXMLAttributeHandler();
 
     private WriteAutoDeployXMLAttributeHandler() {
-        super(new ModelTypeValidator(ModelType.BOOLEAN, false, true), new ModelTypeValidator(ModelType.BOOLEAN, false, false));
+        super(DeploymentScannerDefinition.AUTO_DEPLOY_XML);
     }
 
     @Override
