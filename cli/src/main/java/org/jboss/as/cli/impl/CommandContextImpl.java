@@ -86,6 +86,7 @@ import org.jboss.as.cli.handlers.ClearScreenHandler;
 import org.jboss.as.cli.handlers.CommandCommandHandler;
 import org.jboss.as.cli.handlers.ConnectHandler;
 import org.jboss.as.cli.handlers.DeployHandler;
+import org.jboss.as.cli.handlers.MavenDeployHandler;
 import org.jboss.as.cli.handlers.DeploymentInfoHandler;
 import org.jboss.as.cli.handlers.DeploymentOverlayHandler;
 import org.jboss.as.cli.handlers.EchoDMRHandler;
@@ -351,6 +352,7 @@ class CommandContextImpl implements CommandContext {
 
         // deployment
         cmdRegistry.registerHandler(new DeployHandler(this), "deploy");
+        cmdRegistry.registerHandler(new MavenDeployHandler(this), "mavendeploy");
         cmdRegistry.registerHandler(new UndeployHandler(this), "undeploy");
         cmdRegistry.registerHandler(new DeploymentInfoHandler(this), "deployment-info");
         cmdRegistry.registerHandler(new DeploymentOverlayHandler(this), "deployment-overlay");
