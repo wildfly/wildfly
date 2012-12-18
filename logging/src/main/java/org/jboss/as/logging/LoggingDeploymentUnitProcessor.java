@@ -71,11 +71,9 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-
         if (deploymentUnit.hasAttachment(Attachments.MODULE) && deploymentUnit.hasAttachment(Attachments.DEPLOYMENT_ROOT)) {
-            if (!processLoggingProfiles(deploymentUnit)) {
-                // Only look for a logging configuration file if no logging profile was found
-                processDeploymentLogging(deploymentUnit);
+            if (!processDeploymentLogging(deploymentUnit)) {
+                processLoggingProfiles(deploymentUnit);
             }
         }
     }
@@ -121,11 +119,11 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
         return result;
     }
 
-    private void processDeploymentLogging(final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
-
+    private boolean processDeploymentLogging(final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
+        boolean result = false;
         if (Boolean.valueOf(SecurityActions.getSystemProperty(PER_DEPLOYMENT_LOGGING, Boolean.toString(true)))) {
             // If the log context is already attached, just skip processing
-            if (deploymentUnit.hasAttachment(LOG_CONTEXT_KEY)) return;
+            if (deploymentUnit.hasAttachment(LOG_CONTEXT_KEY)) return true;
 
             // Get the module
             final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
@@ -136,13 +134,14 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
                 final LogContext logContext = findParentLogContext(deploymentUnit);
                 if (logContext != null) {
                     LoggingExtension.CONTEXT_SELECTOR.registerLogContext(module.getClassLoader(), logContext);
-                    return;
+                    return true;
                 }
             }
 
             LoggingLogger.ROOT_LOGGER.trace("Scanning for logging configuration files.");
             final VirtualFile configFile = findConfigFile(root);
             if (configFile != null) {
+                result = true;
                 InputStream configStream = null;
                 try {
                     LoggingLogger.ROOT_LOGGER.debugf("Found logging configuration file: %s", configFile);
@@ -190,6 +189,7 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
                 }
             }
         }
+        return result;
     }
 
     /**
