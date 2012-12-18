@@ -56,7 +56,6 @@ public class ConfigurationAttributesTestCase extends AttributesTestBase {
         KNOWN_ATTRIBUTES.add("securityInvalidationInterval");
         KNOWN_ATTRIBUTES.add("liveConnectorRef");
         KNOWN_ATTRIBUTES.add("clustered");
-        KNOWN_ATTRIBUTES.add("remotingInterceptors");
 
         //where we have slightly different names between as7/HornetQ
         DODGY_NAME.put("allowFailback", "allowAutoFailBack");

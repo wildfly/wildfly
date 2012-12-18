@@ -38,6 +38,7 @@ import javax.naming.InitialContext;
 
 import org.hornetq.api.core.BroadcastEndpointFactoryConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
+import org.hornetq.api.core.JGroupsBroadcastGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.UDPBroadcastGroupConfiguration;
 import org.hornetq.core.server.HornetQServer;
@@ -47,7 +48,9 @@ import org.jboss.as.connector.services.resourceadapters.ResourceAdapterActivator
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.as.connector.util.ConnectorServices;
+import org.jboss.as.messaging.JGroupsChannelLocator;
 import org.jboss.as.messaging.MessagingLogger;
+import org.jboss.as.messaging.MessagingServices;
 import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
 import org.jboss.as.naming.ContextListManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
@@ -116,6 +119,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.SubjectFactory;
+import org.jgroups.JChannel;
 
 /**
  * A service which translates a pooled connection factory into a resource adapter driven connection pool
@@ -155,7 +159,9 @@ public class PooledConnectionFactoryService implements Service<Void> {
     public static final String DISCOVERY_LOCAL_BIND_ADDRESS = "discoveryLocalBindAddress";
     public static final String TRANSACTION_MANAGER_LOCATOR_METHOD = "transactionManagerLocatorMethod";
     public static final String TRANSACTION_MANAGER_LOCATOR_CLASS = "transactionManagerLocatorClass";
-
+    public static final String JGROUPS_CHANNEL_LOCATOR_CLASS = "jgroupsChannelLocatorClass";
+    public static final String JGROUPS_CHANNEL_NAME = "jgroupsChannelName";
+    public static final String JGROUPS_CHANNEL_REF_NAME = "jgroupsChannelRefName";
     private static final Collection<String> JMS_ACTIVATION_CONFIG_PROPERTIES = new HashSet<String>();
 
    {
@@ -179,11 +185,15 @@ public class PooledConnectionFactoryService implements Service<Void> {
     private String txSupport;
     private int minPoolSize;
     private int maxPoolSize;
+    private String hqServerName;
+    private final String jgroupsChannelName;
 
-   public PooledConnectionFactoryService(String name, List<String> connectors, String discoveryGroupName, List<PooledConnectionFactoryConfigProperties> adapterParams, List<String> jndiNames, String txSupport, int minPoolSize, int maxPoolSize) {
+    public PooledConnectionFactoryService(String name, List<String> connectors, String discoveryGroupName, String hqServerName, String jgroupsChannelName, List<PooledConnectionFactoryConfigProperties> adapterParams, List<String> jndiNames, String txSupport, int minPoolSize, int maxPoolSize) {
         this.name = name;
         this.connectors = connectors;
         this.discoveryGroupName = discoveryGroupName;
+        this.hqServerName = hqServerName;
+        this.jgroupsChannelName = jgroupsChannelName;
         this.adapterParams = adapterParams;
         this.jndiNames = jndiNames;
         this.txSupport = txSupport;
@@ -251,8 +261,12 @@ public class PooledConnectionFactoryService implements Service<Void> {
                     properties.add(simpleProperty15(GROUP_ADDRESS, STRING_TYPE, udpCfg.getGroupAddress()));
                     properties.add(simpleProperty15(GROUP_PORT, INTEGER_TYPE, "" + udpCfg.getGroupPort()));
                     properties.add(simpleProperty15(DISCOVERY_LOCAL_BIND_ADDRESS, STRING_TYPE, "" + udpCfg.getLocalBindAddress()));
-                } else {
-                    // FIXME HORNETQ-1048 HornetQ RA does not allow to set a JGroups channel
+                } else if (bgCfg instanceof JGroupsBroadcastGroupConfiguration) {
+                    JGroupsChannelLocator.container = container;
+                    properties.add(simpleProperty15(JGROUPS_CHANNEL_LOCATOR_CLASS, STRING_TYPE, JGroupsChannelLocator.class.getName()));
+                    properties.add(simpleProperty15(JGROUPS_CHANNEL_NAME, STRING_TYPE, jgroupsChannelName));
+                    properties.add(simpleProperty15(JGROUPS_CHANNEL_REF_NAME, STRING_TYPE, hqServerName + '/' + jgroupsChannelName));
+
                 }
                 properties.add(simpleProperty15(DISCOVERY_INITIAL_WAIT_TIMEOUT, LONG_TYPE, "" + discoveryGroupConfiguration.getDiscoveryInitialWaitTimeout()));
                 properties.add(simpleProperty15(REFRESH_TIMEOUT, LONG_TYPE, "" + discoveryGroupConfiguration.getRefreshTimeout()));

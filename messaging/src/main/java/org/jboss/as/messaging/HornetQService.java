@@ -35,13 +35,10 @@ import java.util.Map;
 import javax.management.MBeanServer;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
-import org.hornetq.api.core.BroadcastEndpointFactoryConfiguration;
 import org.hornetq.api.core.BroadcastGroupConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.UDPBroadcastGroupConfiguration;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
@@ -60,7 +57,6 @@ import org.jboss.msc.inject.Injector;
 import org.jboss.msc.inject.MapInjector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -103,6 +99,9 @@ class HornetQService implements Service<HornetQServer> {
     // mapping between the {broacast|discovery}-groups and the JGroups channel factory for the *stack* they use
     private Map<String, ChannelFactory> jgroupFactories = new HashMap<String, ChannelFactory>();
 
+    // broadcast-group and discovery-groups configured with JGroups must share the same channel
+    private final Map<String, JChannel> channels = new HashMap<String, JChannel>();
+
     public HornetQService(PathConfig pathConfig) {
         this.pathConfig = pathConfig;
     }
@@ -129,6 +128,10 @@ class HornetQService implements Service<HornetQServer> {
 
     InjectedValue<MBeanServer> getMBeanServer() {
         return mbeanServer;
+    }
+
+    Map<String, JChannel> getChannels() {
+        return channels;
     }
 
     public synchronized void start(final StartContext context) throws StartException {
@@ -212,8 +215,6 @@ class HornetQService implements Service<HornetQServer> {
                 }
             }
 
-            // broadcast-group and discovery-groups configured with JGroups must share the same channel
-            final Map<String, JChannel> channels = new HashMap<String, JChannel>();
 
             if(broadcastGroups != null) {
                 final List<BroadcastGroupConfiguration> newConfigs = new ArrayList<BroadcastGroupConfiguration>();

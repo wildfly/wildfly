@@ -22,6 +22,17 @@
 
 package org.jboss.as.messaging.jms;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
+import static org.jboss.as.messaging.CommonAttributes.JGROUPS_CHANNEL;
+import static org.jboss.as.messaging.CommonAttributes.JGROUPS_STACK;
+import static org.jboss.as.messaging.CommonAttributes.LOCAL;
+import static org.jboss.as.messaging.CommonAttributes.LOCAL_TX;
+import static org.jboss.as.messaging.CommonAttributes.NONE;
+import static org.jboss.as.messaging.CommonAttributes.NO_TX;
+import static org.jboss.as.messaging.CommonAttributes.XA_TX;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttribute.getDefinitions;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -34,7 +45,9 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.messaging.AlternativeAttributeCheckHandler;
+import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingDescriptions;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common;
@@ -46,15 +59,6 @@ import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
-import static org.jboss.as.messaging.CommonAttributes.LOCAL;
-import static org.jboss.as.messaging.CommonAttributes.LOCAL_TX;
-import static org.jboss.as.messaging.CommonAttributes.NONE;
-import static org.jboss.as.messaging.CommonAttributes.NO_TX;
-import static org.jboss.as.messaging.CommonAttributes.XA_TX;
-import static org.jboss.as.messaging.jms.ConnectionFactoryAttribute.getDefinitions;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
@@ -114,12 +118,20 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler implement
         List<String> connectors = getConnectors(resolvedModel);
 
         String discoveryGroupName = getDiscoveryGroup(resolvedModel);
+        String jgroupsChannelName = null;
+        if (discoveryGroupName != null) {
+            Resource dgResource = context.readResourceFromRoot(MessagingServices.getHornetQServerPathAddress(address).append(CommonAttributes.DISCOVERY_GROUP, discoveryGroupName));
+            ModelNode dgModel = dgResource.getModel();
+            jgroupsChannelName = JGROUPS_CHANNEL.resolveModelAttribute(context, dgModel).asString();
+        }
 
         List<PooledConnectionFactoryConfigProperties> adapterParams = getAdapterParams(resolvedModel, context);
 
         final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(address);
+        final PathAddress hqServiceAddress = MessagingServices.getHornetQServerPathAddress(address);
         ServiceName hornetQResourceAdapterService = JMSServices.getPooledConnectionFactoryBaseServiceName(hqServiceName).append(name);
-        PooledConnectionFactoryService resourceAdapterService = new PooledConnectionFactoryService(name, connectors, discoveryGroupName, adapterParams, jndiNames, txSupport, minPoolSize, maxPoolSize);
+
+        PooledConnectionFactoryService resourceAdapterService = new PooledConnectionFactoryService(name, connectors, discoveryGroupName, hqServiceAddress.getLastElement().getValue(), jgroupsChannelName, adapterParams, jndiNames, txSupport, minPoolSize, maxPoolSize);
 
         ServiceBuilder serviceBuilder = serviceTarget
                 .addService(hornetQResourceAdapterService, resourceAdapterService)
@@ -127,6 +139,7 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler implement
                 .addDependency(hqServiceName, HornetQServer.class, resourceAdapterService.getHornetQService())
                 .addDependency(JMSServices.getJmsManagerBaseServiceName(hqServiceName))
                 .addListener(ServiceListener.Inheritance.ALL, verificationHandler);
+
 
         newControllers.add(serviceBuilder.setInitialMode(Mode.ACTIVE).install());
     }
