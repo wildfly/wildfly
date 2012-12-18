@@ -22,16 +22,13 @@
 
 package org.jboss.as.messaging.jms.bridge;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+import static org.jboss.as.controller.OperationContext.Stage.MODEL;
 
-import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.messaging.AlternativeAttributeCheckHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -39,12 +36,14 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Jeff Mesnil (c) 2012 Red Hat Inc.
  */
-public class JMSBridgeWriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {
+public class JMSBridgeWriteAttributeHandler extends ReloadRequiredWriteAttributeHandler {
 
     public static final JMSBridgeWriteAttributeHandler INSTANCE = new JMSBridgeWriteAttributeHandler();
 
+    private static final AttributeDefinition[] ATTRIBUTES = mergeAttributes();
+
     private JMSBridgeWriteAttributeHandler() {
-        super(mergeAttributes());
+        super(ATTRIBUTES);
     }
 
     private static AttributeDefinition[] mergeAttributes() {
@@ -61,32 +60,9 @@ public class JMSBridgeWriteAttributeHandler extends AbstractWriteAttributeHandle
     }
 
     @Override
-    protected void validateUpdatedModel(OperationContext context, Resource model) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        context.addStep(new AlternativeAttributeCheckHandler(ATTRIBUTES), MODEL);
 
-        context.addStep(new OperationStepHandler() {
-            @Override
-            public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-                final String attributeName = operation.require(NAME).asString();
-                final AttributeDefinition attr = getAttributeDefinition(attributeName);
-                final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
-                if(attr.hasAlternative(resource.getModel())) {
-                    context.setRollbackOnly();
-                    throw new OperationFailedException(new ModelNode().set(MESSAGES.altAttributeAlreadyDefined(attributeName)));
-                }
-                context.stepCompleted();
-            }
-        }, OperationContext.Stage.VERIFY);
-    }
-
-    @Override
-    protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
-                                           ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
-        return true;
-    }
-
-    @Override
-    protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
-                                         ModelNode valueToRestore, ModelNode valueToRevert, Void handback) throws OperationFailedException {
-        // no-op
+        super.execute(context, operation);
     }
 }
