@@ -28,11 +28,8 @@ package org.jboss.as.security;
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  */
 public enum ModuleName {
-
     PICKETBOX("org.picketbox", "main");
-
     private final String name;
-
     private final String slot;
 
     private ModuleName(final String name, final String slot) {

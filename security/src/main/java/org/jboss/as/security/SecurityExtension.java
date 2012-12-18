@@ -56,6 +56,7 @@ public class SecurityExtension implements Extension {
 
     private static final SecuritySubsystemParser PARSER = SecuritySubsystemParser.getInstance();
     static final PathElement ACL_PATH = PathElement.pathElement(Constants.ACL, Constants.CLASSIC);
+    static final PathElement JASPI_AUTH_PATH = PathElement.pathElement(Constants.AUTHENTICATION, Constants.JASPI);
 
     static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
         return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, SecurityExtension.class.getClassLoader(), true, true);

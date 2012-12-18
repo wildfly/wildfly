@@ -35,7 +35,7 @@ public class LoginModuleStackResourceDefinition extends SimpleResourceDefinition
 
     public static final LoginModuleStackResourceDefinition INSTANCE = new LoginModuleStackResourceDefinition();
 
-//    public static final ListAttributeDefinition LOGIN_MODULES = new LoginModulesAttributeDefinition(Constants.LOGIN_MODULES, Constants.LOGIN_MODULE);
+    public static final ListAttributeDefinition LOGIN_MODULES = new LegacySupport.LoginModulesAttributeDefinition(Constants.LOGIN_MODULES, Constants.LOGIN_MODULE);
 
     private LoginModuleStackResourceDefinition() {
         super(PathElement.pathElement(Constants.LOGIN_MODULE_STACK),
@@ -43,14 +43,14 @@ public class LoginModuleStackResourceDefinition extends SimpleResourceDefinition
               LoginModuleStackResourceDefinitionAdd.INSTANCE, new SecurityDomainReloadRemoveHandler());
     }
 
-    /*public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadWriteAttribute(LOGIN_MODULES, null, new SecurityDomainReloadWriteHandler(LOGIN_MODULES));
-    }*/
+    public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerReadWriteAttribute(LOGIN_MODULES, new LegacySupport.LegacyModulesAttributeReader(Constants.LOGIN_MODULE), new LegacySupport.LegacyModulesAttributeWriter(Constants.LOGIN_MODULE));
+    }
 
     @Override
         public void registerChildren(ManagementResourceRegistration resourceRegistration) {
             super.registerChildren(resourceRegistration);
-            resourceRegistration.registerSubModel(new LoginModulesDefinition(Constants.LOGIN_MODULE));
+            resourceRegistration.registerSubModel(new LoginModuleResourceDefinition(Constants.LOGIN_MODULE));
         }
 
     static class LoginModuleStackResourceDefinitionAdd extends SecurityDomainReloadAddHandler {
@@ -58,9 +58,6 @@ public class LoginModuleStackResourceDefinition extends SimpleResourceDefinition
 
         @Override
         protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-            //LOGIN_MODULES.validateAndSet(operation, model);
         }
-
     }
-
 }

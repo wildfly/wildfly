@@ -38,7 +38,6 @@ import static org.jboss.as.security.Constants.*;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -63,6 +62,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * @author Brian Stansberry
  * @author Jason T. Greene
  * @author Anil Saldhana
+ * @author Tomaz Cerar
  */
 public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
         XMLElementWriter<SubsystemMarshallingContext>, ModulesMap {
@@ -250,7 +250,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
         if (modelNode.isDefined() && modelNode.asInt() > 0) {
             writer.writeStartElement(Element.AUTHORIZATION.getLocalName());
             //AuthorizationResourceDefinition.POLICY_MODULES.marshallAsElement(modelNode, writer);
-            writeLoginModule(writer, modelNode, Constants.POLICY_MODULE,Element.POLICY_MODULE.getLocalName());
+            writeLoginModule(writer, modelNode, Constants.POLICY_MODULE, Element.POLICY_MODULE.getLocalName());
             writer.writeEndElement();
         }
     }
@@ -269,7 +269,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             writer.writeStartElement(Element.AUDIT.getLocalName());
             // AuditResourceDefinition.PROVIDER_MODULES.marshallAsElement(modelNode, writer);
             //TODO
-            writeLoginModule(writer, modelNode, Constants.PROVIDER_MODULE,Element.PROVIDER_MODULE.getLocalName());
+            writeLoginModule(writer, modelNode, Constants.PROVIDER_MODULE, Element.PROVIDER_MODULE.getLocalName());
             writer.writeEndElement();
         }
     }
@@ -286,7 +286,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
     private void writeMapping(XMLExtendedStreamWriter writer, ModelNode modelNode) throws XMLStreamException {
         if (modelNode.isDefined() && modelNode.asInt() > 0) {
             writer.writeStartElement(Element.MAPPING.getLocalName());
-            writeLoginModule(writer,modelNode,Constants.MAPPING_MODULE,Constants.MAPPING_MODULE);
+            writeLoginModule(writer, modelNode, Constants.MAPPING_MODULE, Constants.MAPPING_MODULE);
             //MappingResourceDefinition.MAPPING_MODULES.marshallAsElement(modelNode, writer);
             writer.writeEndElement();
         }
@@ -327,8 +327,8 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
         for (Property moduleProp : modules.asPropertyList()) {
             ModelNode module = moduleProp.getValue();
             writer.writeStartElement(elementName);
-            LoginModulesDefinition.CODE.marshallAsAttribute(module, writer);
-            LoginModulesDefinition.FLAG.marshallAsAttribute(module, writer);
+            LoginModuleResourceDefinition.CODE.marshallAsAttribute(module, writer);
+            LoginModuleResourceDefinition.FLAG.marshallAsAttribute(module, writer);
             MappingModuleDefinition.TYPE.marshallAsAttribute(module, writer);
             JASPIMappingModuleDefinition.LOGIN_MODULE_STACK_REF.marshallAsAttribute(module, writer);
 
@@ -336,7 +336,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             /*writer.writeAttribute(Attribute.CODE.getLocalName(), module.get(CODE).asString());
             writer.writeAttribute(Attribute.FLAG.getLocalName(), module.get(Constants.FLAG).asString().toLowerCase(Locale.ENGLISH));*/
 
-            LoginModulesDefinition.MODULE.marshallAsAttribute(module,false,writer);
+            LoginModuleResourceDefinition.MODULE.marshallAsAttribute(module,false,writer);
             /*if (module.hasDefined(Constants.MODULE)) {
                 writer.writeAttribute(Attribute.MODULE.getLocalName(), module.get(Constants.MODULE).asString());
             }*/
@@ -675,11 +675,11 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             switch (attribute) {
                 case CODE: {
                     code = value;
-                    LoginModulesDefinition.CODE.parseAndSetParameter(value, node, reader);
+                    LoginModuleResourceDefinition.CODE.parseAndSetParameter(value, node, reader);
                     break;
                 }
                 case FLAG: {
-                    LoginModulesDefinition.FLAG.parseAndSetParameter(value, node, reader);
+                    LoginModuleResourceDefinition.FLAG.parseAndSetParameter(value, node, reader);
                     break;
                 }
                 case TYPE: {
@@ -687,7 +687,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                     break;
                 }
                 case MODULE: {
-                    LoginModulesDefinition.MODULE.parseAndSetParameter(value,node, reader);
+                    LoginModuleResourceDefinition.MODULE.parseAndSetParameter(value,node, reader);
                     break;
                 }
                 case LOGIN_MODULE_STACK_REF: {

@@ -22,6 +22,7 @@
 package org.jboss.as.security;
 
 
+import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -35,45 +36,7 @@ public class MappingResourceDefinition extends SimpleResourceDefinition {
 
     public static final MappingResourceDefinition INSTANCE = new MappingResourceDefinition();
 
-    //public static final ListAttributeDefinition MAPPING_MODULES = new MappingModulesAttributeDefinition();
-    /*
-    "attributes" => {"mapping-modules" => {
-                                "type" => LIST,
-                                "description" => "List of modules that map principal, role, and credential information",
-                                "expressions-allowed" => false,
-                                "nillable" => false,
-                                "value-type" => {
-                                    "code" => {
-                                        "description" => "Class name of the module to be instantiated.",
-                                        "type" => STRING,
-                                        "nillable" => false,
-                                        "min-length" => 1
-                                    },
-                                    "type" => {
-                                        "description" => "Type of mapping this module performs. Allowed values are principal, role, attribute or credential..",
-                                        "type" => STRING,
-                                        "nillable" => false
-                                    },
-                                    "module-options" => {
-                                        "description" => "List of module options containing a name/value pair.",
-                                        "type" => OBJECT,
-                                        "value-type" => STRING,
-                                        "nillable" => true
-                                    }
-                                }
-                            }},
-                             <mapping-module code="SimpleRoles" type="role">
-                 <module-option name="d" value="e"/>
-              </mapping-module>
-     */
-
-
-
-
-    /*private static final ObjectTypeAttributeDefinition ATTRIBUTES = new ObjectTypeAttributeDefinition.Builder("attributes", CODE, TYPE, MODULE_OPTIONS).build();
-
-    public static final ObjectListAttributeDefinition MAPPING_MODULES = new ObjectListAttributeDefinition.Builder(Constants.MAPPING_MODULES, ATTRIBUTES)
-            .build();*/
+    public static final ListAttributeDefinition MAPPING_MODULES = new LegacySupport.MappingModulesAttributeDefinition();
 
     private MappingResourceDefinition() {
         super(PathElement.pathElement(Constants.MAPPING, Constants.CLASSIC),
@@ -81,18 +44,16 @@ public class MappingResourceDefinition extends SimpleResourceDefinition {
                 LoginModuleStackResourceDefinitionAdd.INSTANCE, new SecurityDomainReloadRemoveHandler());
     }
 
-   /* public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadWriteAttribute(MAPPING_MODULES, null, new SecurityDomainReloadWriteHandler(MAPPING_MODULES));
-    }*/
+    public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerReadWriteAttribute(MAPPING_MODULES, new LegacySupport.LegacyModulesAttributeReader(Constants.MAPPING_MODULE), new LegacySupport.LegacyModulesAttributeWriter(Constants.MAPPING_MODULE));
+    }
 
     static class LoginModuleStackResourceDefinitionAdd extends SecurityDomainReloadAddHandler {
         static final LoginModuleStackResourceDefinitionAdd INSTANCE = new LoginModuleStackResourceDefinitionAdd();
 
         @Override
         protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-            //MAPPING_MODULES.validateAndSet(operation, model);
         }
-
     }
 
     @Override
@@ -101,7 +62,4 @@ public class MappingResourceDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerSubModel(new MappingModuleDefinition(Constants.MAPPING_MODULE));
     }
 
-    public static void marshallAsElement() {
-
-    }
 }
