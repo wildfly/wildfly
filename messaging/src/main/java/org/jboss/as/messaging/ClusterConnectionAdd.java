@@ -28,6 +28,7 @@ import static org.jboss.as.messaging.ClusterConnectionDefinition.DISCOVERY_GROUP
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.jboss.as.controller.AbstractAddStepHandler;

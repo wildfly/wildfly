@@ -34,12 +34,14 @@
     <dependencies>
         <module name="org.hornetq"/>
         <module name="org.jboss.as.transactions"/>
+        <module name="org.jboss.as.messaging"/>
         <module name="org.jboss.jboss-transaction-spi"/>
         <module name="org.jboss.logging"/>
         <module name="javax.api"/>
         <module name="javax.jms.api" />
         <module name="org.jboss.jts"/>
         <module name="org.jboss.netty"/>
+        <module name="org.jgroups"/>
         <module name="javax.resource.api"/>
     </dependencies>
 </module>

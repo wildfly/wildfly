@@ -30,17 +30,15 @@ public class PooledConnectionFactoryAttributesTestCase extends AttributesTestBas
         UNSUPPORTED_HORNETQ_RA_PROPERTIES.add(PooledConnectionFactoryService.TRANSACTION_MANAGER_LOCATOR_CLASS);
         UNSUPPORTED_HORNETQ_RA_PROPERTIES.add(PooledConnectionFactoryService.TRANSACTION_MANAGER_LOCATOR_METHOD);
         UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("managedConnectionFactory");
+        UNSUPPORTED_HORNETQ_RA_PROPERTIES.add(PooledConnectionFactoryService.JGROUPS_CHANNEL_LOCATOR_CLASS);
+        UNSUPPORTED_HORNETQ_RA_PROPERTIES.add(PooledConnectionFactoryService.JGROUPS_CHANNEL_REF_NAME);
+        UNSUPPORTED_HORNETQ_RA_PROPERTIES.add(PooledConnectionFactoryService.JGROUPS_CHANNEL_NAME);
+        UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("jgroupsFile");
         // these 2 props will *not* be supported since AS7 relies on vaulted passwords + expressions instead
         UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("passwordCodec");
         UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("useMaskedPassword");
 
         UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("connectionPoolName");
-
-        // FIXME HORNETQ-1048 we need to bind these properties to AS7 clustering subsystem
-        UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("jgroupsChannelName");
-        UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("jgroupsFile");
-        UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("jgroupsChannelLocatorClass");
-        UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("jgroupsChannelRefName");
 
         KNOWN_ATTRIBUTES = new TreeSet<String>();
         // these are supported but it is not found by JavaBeans introspector because of the type
