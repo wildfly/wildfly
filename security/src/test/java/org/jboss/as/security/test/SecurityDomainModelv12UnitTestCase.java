@@ -22,12 +22,17 @@
 package org.jboss.as.security.test;
 
 import java.io.IOException;
+import java.util.List;
 
-import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.security.SecurityExtension;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -54,5 +59,34 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
     @Override
     protected String getSubsystemXml() throws IOException {
         return readResource("securitysubsystemv12.xml");
+    }
+
+    @Test
+    public void testOrder() throws Exception {
+        KernelServices service = createKernelServicesBuilder(createAdditionalInitialization())
+                .setSubsystemXmlResource("securitysubsystemv12.xml")
+                .build();
+        PathAddress address = PathAddress.pathAddress().append("subsystem", "security").append("security-domain", "ordering");
+        address = address.append("authentication", "classic");
+
+        ModelNode writeOp = Util.createOperation("write-attribute", address);
+        writeOp.get("name").set("login-modules");
+        for (int i = 1; i <= 5; i++) {
+            ModelNode module = writeOp.get("value").add();
+            module.get("code").set("module-" + i);
+            module.get("flag").set("optional");
+            module.get("module-options");
+
+        }
+        service.executeOperation(writeOp);
+        ModelNode readOp = Util.createOperation("read-attribute", address);
+        readOp.get("name").set("login-modules");
+        ModelNode result = service.executeForResult(readOp);
+        List<ModelNode> modules = result.asList();
+        Assert.assertEquals("There should be exactly 5 modules but there are not", 5, modules.size());
+        for (int i = 1; i <= 5; i++) {
+            ModelNode module = modules.get(i-1);
+            Assert.assertEquals(module.get("code").asString(), "module-" + i);
+        }
     }
 }
