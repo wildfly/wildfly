@@ -329,10 +329,10 @@ public class WebJASPIAuthenticator extends AuthenticatorBase {
                 roles.add(group);
         }
 
-        // if no roles were retrieved yet, look for the roles declared in the deployment descriptor.
+        // look for the roles declared in the deployment descriptor.
         JBossWebRealm realm = (JBossWebRealm) this.getContainer().getRealm();
         Set<String> descriptorRoles = realm.getPrincipalVersusRolesMap().get(principal.getName());
-        if (roles.isEmpty() && descriptorRoles != null)
+        if (descriptorRoles != null)
             roles.addAll(descriptorRoles);
 
         // build and return the JBossGenericPrincipal.
