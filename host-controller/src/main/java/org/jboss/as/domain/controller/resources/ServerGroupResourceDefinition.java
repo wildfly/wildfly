@@ -39,6 +39,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.domain.controller.descriptions.DomainResolver;
 import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
 import org.jboss.as.domain.controller.operations.ServerGroupAddHandler;
+import org.jboss.as.domain.controller.operations.ServerGroupProfileWriteAttributeHandler;
 import org.jboss.as.domain.controller.operations.ServerGroupRemoveHandler;
 import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentReplaceHandler;
 import org.jboss.as.host.controller.model.jvm.JvmResourceDefinition;
@@ -96,6 +97,8 @@ public class ServerGroupResourceDefinition extends SimpleResourceDefinition {
         for (AttributeDefinition attr : ServerGroupResourceDefinition.ADD_ATTRIBUTES) {
             if (attr.getName().equals(MANAGEMENT_SUBSYSTEM_ENDPOINT.getName())) {
                 resourceRegistration.registerReadOnlyAttribute(MANAGEMENT_SUBSYSTEM_ENDPOINT, null);
+            } else if (attr.getName().equals(PROFILE.getName())) {
+                resourceRegistration.registerReadWriteAttribute(PROFILE, null, ServerGroupProfileWriteAttributeHandler.INSTANCE);
             } else {
                 resourceRegistration.registerReadWriteAttribute(attr, null, new ModelOnlyWriteAttributeHandler(attr));
             }
