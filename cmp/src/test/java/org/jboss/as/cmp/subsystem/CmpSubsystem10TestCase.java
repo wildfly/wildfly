@@ -34,15 +34,20 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class CmpSubsystemTestCase extends AbstractSubsystemBaseTest {
+public class CmpSubsystem10TestCase extends AbstractSubsystemBaseTest {
 
-    public CmpSubsystemTestCase() {
+    public CmpSubsystem10TestCase() {
         super(CmpExtension.SUBSYSTEM_NAME, new CmpExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return getSubsystemXml("subsystem-cmp.xml");
+        return getSubsystemXml("subsystem-cmp_1_0.xml");
+    }
+
+    @Override
+    protected void standardSubsystemTest(String configId, boolean compareXml) throws Exception {
+        super.standardSubsystemTest(configId, false);
     }
 
     protected String getSubsystemXml(final String fileName) throws IOException {

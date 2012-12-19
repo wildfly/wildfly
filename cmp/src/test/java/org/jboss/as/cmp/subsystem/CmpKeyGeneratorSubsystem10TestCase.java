@@ -56,15 +56,20 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class CmpKeyGeneratorSubsystemTestCase extends AbstractSubsystemBaseTest {
+public class CmpKeyGeneratorSubsystem10TestCase extends AbstractSubsystemBaseTest {
 
-    public CmpKeyGeneratorSubsystemTestCase() {
+    public CmpKeyGeneratorSubsystem10TestCase() {
         super(CmpExtension.SUBSYSTEM_NAME, new CmpExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return getSubsystemXml("subsystem-cmp-key-generators.xml");
+        return getSubsystemXml("subsystem-cmp-key-generators_1_0.xml");
+    }
+
+    @Override
+    protected void standardSubsystemTest(String configId, boolean compareXml) throws Exception {
+        super.standardSubsystemTest(configId, false);
     }
 
     protected String getSubsystemXml(final String fileName) throws IOException {
@@ -92,7 +97,7 @@ public class CmpKeyGeneratorSubsystemTestCase extends AbstractSubsystemBaseTest 
 
     @Test
     public void testParseSubsystem() throws Exception {
-        final List<ModelNode> operations = super.parse(getSubsystemXml("subsystem-cmp-key-generators.xml"));
+        final List<ModelNode> operations = super.parse(getSubsystemXml("subsystem-cmp-key-generators_1_0.xml"));
         assertEquals(5, operations.size());
         assertOperation(operations.get(0), ADD, PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()));
         assertOperation(operations.get(1), ADD, PathElement.pathElement(UUID_KEY_GENERATOR, "uuid1"));
