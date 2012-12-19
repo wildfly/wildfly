@@ -38,6 +38,7 @@ import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.URI;
 import java.util.ArrayList;
@@ -55,6 +56,7 @@ import java.util.concurrent.TimeUnit;
 public class ProtocolConnectionUtils {
 
     private static final String JBOSS_LOCAL_USER = "JBOSS-LOCAL-USER";
+    private static final String REMOTE_PROTOCOL = "remote";
 
     /**
      * Connect.
@@ -71,7 +73,15 @@ public class ProtocolConnectionUtils {
         final Endpoint endpoint = configuration.getEndpoint();
         final OptionMap options = getOptions(configuration);
         final CallbackHandler actualHandler = handler != null ? handler : new AnonymousCallbackHandler();
-        return endpoint.connect(configuration.getUri(), options, actualHandler, configuration.getSslContext());
+
+        String clientBindAddress = configuration.getClientBindAddress();
+        if (clientBindAddress == null) {
+            return endpoint.connect(configuration.getUri(), options, actualHandler, configuration.getSslContext());
+        } else {
+            InetSocketAddress bindAddr = new InetSocketAddress(clientBindAddress, 0);
+            InetSocketAddress destAddr = new InetSocketAddress(configuration.getUri().getHost(), configuration.getUri().getPort());
+            return endpoint.connect(REMOTE_PROTOCOL, bindAddr, destAddr, options, actualHandler, configuration.getSslContext());
+        }
     }
 
     /**

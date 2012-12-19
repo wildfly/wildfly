@@ -41,6 +41,7 @@ public class ProtocolConnectionConfiguration {
     public static final int DEFAULT_WINDOW_SIZE = 0x8000;
 
     private static final long DEFAULT_CONNECT_TIMEOUT = 5000;
+    private static final String JBOSS_CLIENT_SOCKET_BIND_ADDRESS = "jboss.management.client_socket_bind_address";
 
     private URI uri;
     private Endpoint endpoint;
@@ -49,9 +50,11 @@ public class ProtocolConnectionConfiguration {
     private CallbackHandler callbackHandler;
     private Map<String, String> saslOptions = Collections.emptyMap();
     private SSLContext sslContext;
+    private String clientBindAddress;
 
     protected ProtocolConnectionConfiguration() {
-        //
+        // TODO AS7-6223 propagate clientBindAddress configuration up to end user level and get rid of this system property
+        this.clientBindAddress = SecurityActions.getSystemProperty(JBOSS_CLIENT_SOCKET_BIND_ADDRESS);
     }
 
     protected void validate() {
@@ -122,6 +125,14 @@ public class ProtocolConnectionConfiguration {
         this.sslContext = sslContext;
     }
 
+    public String getClientBindAddress() {
+        return clientBindAddress;
+    }
+
+    public void setClientBindAddress(String clientBindAddress) {
+        this.clientBindAddress = clientBindAddress;
+    }
+
     public static ProtocolConnectionConfiguration create(final Endpoint endpoint, final URI uri) {
         return create(endpoint, uri, OptionMap.EMPTY);
     }
@@ -143,6 +154,7 @@ public class ProtocolConnectionConfiguration {
         configuration.callbackHandler = old.callbackHandler;
         configuration.saslOptions = old.saslOptions;
         configuration.sslContext = old.sslContext;
+        configuration.clientBindAddress = old.clientBindAddress;
         return configuration;
     }
 
