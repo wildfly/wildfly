@@ -195,7 +195,7 @@ public class DeploymentOverlayTestCase {
     public void testWildcardOverride() throws Exception {
 
         ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
-                + " --wildcards=deployment*.war");
+                + " --deployments=deployment*.war");
 
         ctx.handle("deploy " + war1.getAbsolutePath());
         ctx.handle("deploy " + war2.getAbsolutePath());
@@ -217,7 +217,7 @@ public class DeploymentOverlayTestCase {
         ctx.handle("deploy " + war3.getAbsolutePath());
 
         ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
-                + " --wildcards=deployment*.war --redeploy-affected");
+                + " --deployments=deployment*.war --redeploy-affected");
 
         //Thread.sleep(2000);
         String response = readResponse("deployment0");
@@ -245,7 +245,7 @@ public class DeploymentOverlayTestCase {
         response = readResponse("another");
         assertEquals("NON OVERRIDDEN", response);
 
-        ctx.handle("deployment-overlay link --name=overlay-test --wildcards=a*.war");
+        ctx.handle("deployment-overlay link --name=overlay-test --deployments=a*.war");
 
         response = readResponse("deployment0");
         assertEquals("OVERRIDDEN", response);
@@ -283,7 +283,7 @@ public class DeploymentOverlayTestCase {
         response = readResponse("another");
         assertEquals("OVERRIDDEN", response);
 
-        ctx.handle("deployment-overlay remove --name=overlay-test --wildcards=a*.war");
+        ctx.handle("deployment-overlay remove --name=overlay-test --deployments=a*.war");
 
         response = readResponse("deployment0");
         assertEquals("OVERRIDDEN", response);
@@ -330,7 +330,7 @@ public class DeploymentOverlayTestCase {
         ctx.handle("deploy " + war3.getAbsolutePath());
 
         ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath());
-        ctx.handle("deployment-overlay link --name=overlay-test --deployments=deployment0.war --wildcards=a*.war");
+        ctx.handle("deployment-overlay link --name=overlay-test --deployments=deployment0.war,a*.war");
 
         String response = readResponse("deployment0");
         assertEquals("NON OVERRIDDEN", response);

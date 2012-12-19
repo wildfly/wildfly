@@ -77,7 +77,6 @@ public class DeploymentOverlayHandler extends BatchModeCommandHandler {//Command
     private final ArgumentWithoutValue allServerGroups;
     private final ArgumentWithoutValue allRelevantServerGroups;
     private final ArgumentWithValue deployments;
-    private final ArgumentWithValue wildcards;
     private final ArgumentWithoutValue redeployAffected;
 
     private final FilenameTabCompleter pathCompleter;
@@ -274,18 +273,18 @@ public class DeploymentOverlayHandler extends BatchModeCommandHandler {//Command
                             if(groupsStr != null) {
                                 final String[] groups = groupsStr.split(",+");
                                 if(groups.length == 1) {
-                                    return filterLinks(loadLinkResources(client, overlay, groups[0]), false);
+                                    return filterLinks(loadLinkResources(client, overlay, groups[0]));
                                 } else if(groups.length > 1) {
                                     final Set<String> commonLinks = new HashSet<String>();
-                                    commonLinks.addAll(filterLinks(loadLinkResources(client, overlay, groups[0]), false));
+                                    commonLinks.addAll(filterLinks(loadLinkResources(client, overlay, groups[0])));
                                     for(int i = 1; i < groups.length; ++i) {
-                                        commonLinks.retainAll(filterLinks(loadLinkResources(client, overlay, groups[i]), false));
+                                        commonLinks.retainAll(filterLinks(loadLinkResources(client, overlay, groups[i])));
                                     }
                                     return commonLinks;
                                 }
                             }
                         } else {
-                            return filterLinks(loadLinkResources(client, overlay, null), false);
+                            return filterLinks(loadLinkResources(client, overlay, null));
                         }
                     } catch(CommandLineException e) {
                     }
@@ -314,66 +313,10 @@ public class DeploymentOverlayHandler extends BatchModeCommandHandler {//Command
         deployments.addRequiredPreceding(name);
         deployments.addCantAppearAfter(l);
 
-        wildcards = new ArgumentWithValue(this, new CommaSeparatedCompleter() {
-            @Override
-            protected Collection<String> getAllCandidates(CommandContext ctx) {
-                final String actionValue = action.getValue(ctx.getParsedCommandLine());
-                final ModelControllerClient client = ctx.getModelControllerClient();
-                if(REMOVE.equals(actionValue)) {
-                    final String overlay = name.getValue(ctx.getParsedCommandLine());
-                    if(overlay == null) {
-                        return Collections.emptyList();
-                    }
-                    try {
-                        if(ctx.isDomainMode()) {
-                            final String groupsStr = serverGroups.getValue(ctx.getParsedCommandLine());
-                            if(groupsStr != null) {
-                                final String[] groups = groupsStr.split(",+");
-                                if(groups.length == 1) {
-                                    return filterLinks(loadLinkResources(client, overlay, groups[0]), true);
-                                } else if(groups.length > 1) {
-                                    final Set<String> commonLinks = new HashSet<String>();
-                                    commonLinks.addAll(filterLinks(loadLinkResources(client, overlay, groups[0]), true));
-                                    for(int i = 1; i < groups.length; ++i) {
-                                        commonLinks.retainAll(filterLinks(loadLinkResources(client, overlay, groups[i]), true));
-                                    }
-                                    return commonLinks;
-                                }
-                            }
-                        } else {
-                            return filterLinks(loadLinkResources(client, overlay, null), true);
-                        }
-                    } catch(CommandLineException e) {
-                    }
-                    return Collections.emptyList();
-                }
-                return Util.getDeployments(client);
-            }}, "--wildcards") {
-            @Override
-            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
-                if(ctx.isDomainMode()) {
-                    if(serverGroups.isPresent(ctx.getParsedCommandLine()) || allServerGroups.isPresent(ctx.getParsedCommandLine())) {
-                        return super.canAppearNext(ctx);
-                    }
-                    return false;
-                }
-                final String actionStr = action.getValue(ctx.getParsedCommandLine());
-                if(actionStr == null) {
-                    return false;
-                }
-                if(ADD.equals(actionStr) || LINK.equals(actionStr) || REMOVE.equals(actionStr)) {
-                    return super.canAppearNext(ctx);
-                }
-                return false;
-            }
-        };
-        wildcards.addRequiredPreceding(name);
-        wildcards.addCantAppearAfter(l);
-
         redeployAffected = new ArgumentWithoutValue(this, "--redeploy-affected") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
-                if(deployments.isPresent(ctx.getParsedCommandLine()) || wildcards.isPresent(ctx.getParsedCommandLine())) {
+                if(deployments.isPresent(ctx.getParsedCommandLine())) {
                     return super.canAppearNext(ctx);
                 }
                 final String actionValue = action.getValue(ctx.getParsedCommandLine());
@@ -479,7 +422,6 @@ public class DeploymentOverlayHandler extends BatchModeCommandHandler {//Command
         assertNotPresent(allRelevantServerGroups, args);
         assertNotPresent(content, args);
         assertNotPresent(deployments, args);
-        assertNotPresent(wildcards, args);
         assertNotPresent(redeployAffected, args);
 
         final String overlay = name.getValue(args, true);
@@ -520,7 +462,6 @@ public class DeploymentOverlayHandler extends BatchModeCommandHandler {//Command
         assertNotPresent(allRelevantServerGroups, args);
         assertNotPresent(content, args);
         assertNotPresent(deployments, args);
-        assertNotPresent(wildcards, args);
         assertNotPresent(redeployAffected, args);
 
         final String name = this.name.getValue(args, true);
@@ -567,7 +508,6 @@ public class DeploymentOverlayHandler extends BatchModeCommandHandler {//Command
         assertNotPresent(allServerGroups, args);
         assertNotPresent(allRelevantServerGroups, args);
         assertNotPresent(deployments, args);
-        assertNotPresent(wildcards, args);
         assertNotPresent(content, args);
         assertNotPresent(redeployAffected, args);
 
@@ -598,14 +538,6 @@ public class DeploymentOverlayHandler extends BatchModeCommandHandler {//Command
         }
         final String contentStr = content.getValue(args);
         String deploymentStr = deployments.getValue(args);
-        final String wildcardsStr = wildcards.getValue(args);
-        if(wildcardsStr != null) {
-            if(deploymentStr == null) {
-                deploymentStr = wildcardsStr;
-            } else {
-                deploymentStr += ',' + wildcardsStr;
-            }
-        }
         final String sgStr = serverGroups.getValue(args);
         final List<String> sg;
         if(sgStr == null) {
@@ -747,7 +679,6 @@ public class DeploymentOverlayHandler extends BatchModeCommandHandler {//Command
         }
 
         final String[] deployments = getLinks(this.deployments, args);
-        final String[] wildcards = getLinks(this.wildcards, args);
 
         final ModelControllerClient client = ctx.getModelControllerClient();
 
@@ -781,7 +712,7 @@ public class DeploymentOverlayHandler extends BatchModeCommandHandler {//Command
             steps.add(op);
         }
 
-        if(deployments != null || wildcards != null) {
+        if(deployments != null) {
             if(ctx.isDomainMode()) {
                 final List<String> sg = getServerGroupsToLink(ctx);
                 for(String group : sg) {
@@ -793,24 +724,14 @@ public class DeploymentOverlayHandler extends BatchModeCommandHandler {//Command
                     address.add(Util.DEPLOYMENT_OVERLAY, name);
                     op.get(Util.OPERATION).set(Util.ADD);
                     steps.add(op);
-                    if(deployments != null) {
                         addAddRedeployLinksSteps(ctx, steps, name, group, deployments, false);
-                    }
-                    if(wildcards != null) {
-                        addAddRedeployLinksSteps(ctx, steps, name, group, wildcards, true);
-                    }
                 }
             } else {
-                if(deployments != null) {
-                    addAddRedeployLinksSteps(ctx, steps, name, null, deployments, false);
-                }
-                if(wildcards != null) {
-                    addAddRedeployLinksSteps(ctx, steps, name, null, wildcards, true);
-                }
+                addAddRedeployLinksSteps(ctx, steps, name, null, deployments, false);
             }
         } else if(ctx.isDomainMode() && (serverGroups.isPresent(args) || allServerGroups.isPresent(args))) {
-            throw new CommandFormatException("server groups are specified but neither " + this.deployments.getFullName() +
-                    " nor " + this.wildcards.getFullName() + " is.");
+            throw new CommandFormatException("server groups are specified but " + this.deployments.getFullName() +
+                    " is not.");
         }
 
         if(opBuilder == null) {
@@ -835,9 +756,8 @@ public class DeploymentOverlayHandler extends BatchModeCommandHandler {//Command
 
         final String name = this.name.getValue(args, true);
         final String[] deployments = getLinks(this.deployments, args);
-        final String[] wildcards = getLinks(this.wildcards, args);
-        if(deployments == null && wildcards == null) {
-            throw new CommandFormatException("Either " + this.deployments.getFullName() + " or " + this.wildcards.getFullName() + " is required.");
+        if(deployments == null) {
+            throw new CommandFormatException(this.deployments.getFullName() + " is required.");
         }
 
         final ModelNode composite = new ModelNode();
@@ -857,20 +777,10 @@ public class DeploymentOverlayHandler extends BatchModeCommandHandler {//Command
                     op.get(Util.OPERATION).set(Util.ADD);
                     steps.add(op);
                 }
-                if(deployments != null) {
-                    addAddRedeployLinksSteps(ctx, steps, name, group, deployments, false);
-                }
-                if(wildcards != null) {
-                    addAddRedeployLinksSteps(ctx, steps, name, group, wildcards, true);
-                }
+                addAddRedeployLinksSteps(ctx, steps, name, group, deployments, false);
             }
         } else {
-            if(deployments != null) {
-                addAddRedeployLinksSteps(ctx, steps, name, null, deployments, false);
-            }
-            if(wildcards != null) {
-                addAddRedeployLinksSteps(ctx, steps, name, null, wildcards, true);
-            }
+            addAddRedeployLinksSteps(ctx, steps, name, null, deployments, false);
         }
         return composite;
 /*        try {
@@ -1119,56 +1029,30 @@ public class DeploymentOverlayHandler extends BatchModeCommandHandler {//Command
             address.add(Util.DEPLOYMENT_OVERLAY, overlay);
             address.add(Util.DEPLOYMENT, link);
             op.get(Util.OPERATION).set(Util.ADD);
-            if(regexp) {
-                op.get(Util.REGULAR_EXPRESSION).set(true);
                 steps.add(op);
 
-                if(redeployAffected.isPresent(ctx.getParsedCommandLine())) {
-                    final List<String> matchingDeployments = Util.getMatchingDeployments(ctx.getModelControllerClient(), link, serverGroup);
-                    if(!matchingDeployments.isEmpty()) {
-                        if(serverGroup == null) {
-                            for(String deployment : matchingDeployments) {
-                                final ModelNode step = new ModelNode();
-                                final ModelNode addr = step.get(Util.ADDRESS);
-                                addr.add(Util.DEPLOYMENT, deployment);
-                                step.get(Util.OPERATION).set(Util.REDEPLOY);
-                                steps.add(step);
-                            }
-                        } else {
-                            for(String deployment : matchingDeployments) {
-                                final ModelNode step = new ModelNode();
-                                final ModelNode addr = step.get(Util.ADDRESS);
-                                addr.add(Util.SERVER_GROUP, serverGroup);
-                                addr.add(Util.DEPLOYMENT, deployment);
-                                step.get(Util.OPERATION).set(Util.REDEPLOY);
-                                steps.add(step);
-                            }
+            if (redeployAffected.isPresent(ctx.getParsedCommandLine())) {
+                final List<String> matchingDeployments = Util.getMatchingDeployments(ctx.getModelControllerClient(), link, serverGroup);
+                if (!matchingDeployments.isEmpty()) {
+                    if (serverGroup == null) {
+                        for (String deployment : matchingDeployments) {
+                            final ModelNode step = new ModelNode();
+                            final ModelNode addr = step.get(Util.ADDRESS);
+                            addr.add(Util.DEPLOYMENT, deployment);
+                            step.get(Util.OPERATION).set(Util.REDEPLOY);
+                            steps.add(step);
+                        }
+                    } else {
+                        for (String deployment : matchingDeployments) {
+                            final ModelNode step = new ModelNode();
+                            final ModelNode addr = step.get(Util.ADDRESS);
+                            addr.add(Util.SERVER_GROUP, serverGroup);
+                            addr.add(Util.DEPLOYMENT, deployment);
+                            step.get(Util.OPERATION).set(Util.REDEPLOY);
+                            steps.add(step);
                         }
                     }
                 }
-            } else if(redeployAffected.isPresent(ctx.getParsedCommandLine())) {
-                steps.add(op);
-
-                if(serverGroup == null) {
-                    if(Util.isValidPath(ctx.getModelControllerClient(), Util.DEPLOYMENT, link)) {
-                        final ModelNode step = new ModelNode();
-                        final ModelNode addr = step.get(Util.ADDRESS);
-                        addr.add(Util.DEPLOYMENT, link);
-                        step.get(Util.OPERATION).set(Util.REDEPLOY);
-                        steps.add(step);
-                    }
-                } else {
-                    if(Util.isValidPath(ctx.getModelControllerClient(), Util.SERVER_GROUP, serverGroup, Util.DEPLOYMENT, link)) {
-                        final ModelNode step = new ModelNode();
-                        final ModelNode addr = step.get(Util.ADDRESS);
-                        addr.add(Util.SERVER_GROUP, serverGroup);
-                        addr.add(Util.DEPLOYMENT, link);
-                        step.get(Util.OPERATION).set(Util.REDEPLOY);
-                        steps.add(step);
-                    }
-                }
-            } else {
-                steps.add(op);
             }
         }
     }
@@ -1245,25 +1129,13 @@ public class DeploymentOverlayHandler extends BatchModeCommandHandler {//Command
     }
 
     protected void addRedeploySteps(ModelNode steps, String serverGroup, String linkName, ModelNode link, List<String> remainingDeployments) {
-        final boolean regexp;
-        if(link.has(Util.REGULAR_EXPRESSION)) {
-            regexp = link.get(Util.REGULAR_EXPRESSION).asBoolean();
-        } else {
-            regexp = false;
-        }
-        if(regexp) {
-            final Pattern pattern = Pattern.compile(Util.wildcardToJavaRegex(linkName));
-            final Iterator<String> i = remainingDeployments.iterator();
-            while(i.hasNext()) {
-                final String deployment = i.next();
-                if(pattern.matcher(deployment).matches()) {
-                    i.remove();
-                    addRedeployStep(steps, deployment, serverGroup);
-                }
-            }
-        } else {
-            if(remainingDeployments.remove(linkName)) {
-                addRedeployStep(steps, linkName, serverGroup);
+        final Pattern pattern = Pattern.compile(Util.wildcardToJavaRegex(linkName));
+        final Iterator<String> i = remainingDeployments.iterator();
+        while (i.hasNext()) {
+            final String deployment = i.next();
+            if (pattern.matcher(deployment).matches()) {
+                i.remove();
+                addRedeployStep(steps, deployment, serverGroup);
             }
         }
     }
@@ -1274,17 +1146,12 @@ public class DeploymentOverlayHandler extends BatchModeCommandHandler {//Command
         }
     }
 
-    protected List<String> filterLinks(final ModelNode linkResources, boolean regexp) {
+    protected List<String> filterLinks(final ModelNode linkResources) {
         if(linkResources != null && !linkResources.keys().isEmpty()) {
             final List<Property> links = linkResources.asPropertyList();
             final List<String> linkNames = new ArrayList<String>(links.size());
-            for(Property link : links) {
-                final ModelNode value = link.getValue();
-                final boolean linkRegexp = value.has(Util.REGULAR_EXPRESSION) &&
-                        value.get(Util.REGULAR_EXPRESSION).asBoolean();
-                if(linkRegexp == regexp) {
-                    linkNames.add(link.getName());
-                }
+            for (Property link : links) {
+                linkNames.add(link.getName());
             }
             return linkNames;
         }

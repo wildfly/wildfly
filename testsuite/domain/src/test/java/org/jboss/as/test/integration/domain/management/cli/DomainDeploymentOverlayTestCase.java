@@ -207,7 +207,7 @@ public class DomainDeploymentOverlayTestCase {
     public void testWildcardOverride() throws Exception {
 
         ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
-                + " --wildcards=deployment*.war --server-groups=main-server-group --redeploy-affected");
+                + " --deployments=deployment*.war --server-groups=main-server-group --redeploy-affected");
 
         ctx.handle("deploy --server-groups=main-server-group " + war1.getAbsolutePath());
         ctx.handle("deploy --server-groups=main-server-group " + war2.getAbsolutePath());
@@ -229,7 +229,7 @@ public class DomainDeploymentOverlayTestCase {
         ctx.handle("deploy --server-groups=main-server-group " + war3.getAbsolutePath());
 
         ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
-                + " --wildcards=deployment*.war --server-groups=main-server-group --redeploy-affected");
+                + " --deployments=deployment*.war --server-groups=main-server-group --redeploy-affected");
 
         assertEquals("OVERRIDDEN", performHttpCall("master", "main-one", "deployment0"));
         assertEquals("OVERRIDDEN", performHttpCall("master", "main-one", "deployment1"));
@@ -256,7 +256,7 @@ public class DomainDeploymentOverlayTestCase {
         assertEquals("NON OVERRIDDEN", performHttpCall("slave", "main-three", "deployment1"));
         assertEquals("NON OVERRIDDEN", performHttpCall("slave", "main-three", "another"));
 
-        ctx.handle("deployment-overlay link --name=overlay-test --wildcards=a*.war --server-groups=main-server-group");
+        ctx.handle("deployment-overlay link --name=overlay-test --deployments=a*.war --server-groups=main-server-group");
 
         assertEquals("OVERRIDDEN", performHttpCall("master", "main-one", "deployment0"));
         assertEquals("NON OVERRIDDEN", performHttpCall("master", "main-one", "deployment1"));
@@ -294,7 +294,7 @@ public class DomainDeploymentOverlayTestCase {
         assertEquals("NON OVERRIDDEN", performHttpCall("slave", "main-three", "deployment1"));
         assertEquals("OVERRIDDEN", performHttpCall("slave", "main-three", "another"));
 
-        ctx.handle("deployment-overlay remove --name=overlay-test --wildcards=a*.war --server-groups=main-server-group");
+        ctx.handle("deployment-overlay remove --name=overlay-test --deployments=a*.war --server-groups=main-server-group");
 
         assertEquals("OVERRIDDEN", performHttpCall("master", "main-one", "deployment0"));
         assertEquals("NON OVERRIDDEN", performHttpCall("master", "main-one", "deployment1"));
@@ -333,7 +333,7 @@ public class DomainDeploymentOverlayTestCase {
         ctx.handle("deploy --server-groups=main-server-group " + war3.getAbsolutePath());
 
         ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath());
-        ctx.handle("deployment-overlay link --name=overlay-test --deployments=deployment0.war --wildcards=a*.war --server-groups=main-server-group");
+        ctx.handle("deployment-overlay link --name=overlay-test --deployments=deployment0.war,a*.war --server-groups=main-server-group");
 
         assertEquals("NON OVERRIDDEN", performHttpCall("master", "main-one", "deployment0"));
         assertEquals("NON OVERRIDDEN", performHttpCall("master", "main-one", "deployment1"));
