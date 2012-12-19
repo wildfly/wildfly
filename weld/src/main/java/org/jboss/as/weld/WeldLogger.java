@@ -22,6 +22,7 @@
 
 package org.jboss.as.weld;
 
+import java.io.IOException;
 import java.lang.reflect.Member;
 import java.net.URL;
 
@@ -110,4 +111,16 @@ public interface WeldLogger extends BasicLogger {
     @LogMessage(level = Logger.Level.ERROR)
     @Message(value = "Exception tearing down thread state", id = 16013)
     void exceptionClearingThreadState(@Cause Exception e);
+
+    @LogMessage(level = Logger.Level.ERROR)
+    @Message(value = "Error loading file %s", id = 16014)
+    void errorLoadingFile(String newPath);
+
+    @LogMessage(level = Logger.Level.ERROR)
+    @Message(value = "Could not read entries", id = 16015)
+    void couldNotReadEntries(@Cause IOException ioe);
+
+    @LogMessage(level = Logger.Level.WARN)
+    @Message(value = "URL scanner does not understand the URL protocol %s, CDI beans will not be scanned.", id = 16016)
+    void doNotUnderstandProtocol(URL url);
 }

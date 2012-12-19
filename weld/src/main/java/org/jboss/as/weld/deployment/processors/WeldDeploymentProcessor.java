@@ -141,6 +141,12 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         final EEApplicationDescription eeApplicationDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION);
 
         bdmsByIdentifier.put(module.getIdentifier(), rootBeanDeploymentModule);
+
+        for(final BeanDeploymentModule additional : deploymentUnit.getAttachmentList(WeldAttachments.VISIBLE_ADDITIONAL_BEAN_DEPLOYMENT_MODULE)) {
+            additional.addBeanDeploymentModule(rootBeanDeploymentModule);
+            rootBeanDeploymentModule.addBeanDeploymentModule(additional);
+        }
+
         moduleSpecByIdentifier.put(module.getIdentifier(), moduleSpecification);
 
         beanDeploymentArchives.addAll(rootBeanDeploymentModule.getBeanDeploymentArchives());
@@ -166,12 +172,18 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
             // add the modules bdas to the global set of bdas
             beanDeploymentArchives.addAll(bdm.getBeanDeploymentArchives());
             bdmsByIdentifier.put(subDeploymentModule.getIdentifier(), bdm);
+            List<BeanDeploymentModule> additionalModules = subDeployment.getAttachmentList(WeldAttachments.VISIBLE_ADDITIONAL_BEAN_DEPLOYMENT_MODULE);
             moduleSpecByIdentifier.put(subDeploymentModule.getIdentifier(), subDeploymentModuleSpec);
 
             //we have to do this here as the aggregate components are not available in earlier phases
             final ResourceRoot subDeploymentRoot = subDeployment.getAttachment(Attachments.DEPLOYMENT_ROOT);
             final EjbInjectionServices ejbInjectionServices = new WeldEjbInjectionServices(deploymentUnit.getServiceRegistry(), eeModuleDescription, eeApplicationDescription, subDeploymentRoot.getRoot());
             bdm.addService(EjbInjectionServices.class, ejbInjectionServices);
+            for(final BeanDeploymentModule additional : additionalModules) {
+                additional.addBeanDeploymentModule(bdm);
+                bdm.addBeanDeploymentModule(additional);bdm.addService(EjbInjectionServices.class, ejbInjectionServices);
+            }
+
         }
 
         for (Map.Entry<ModuleIdentifier, BeanDeploymentModule> entry : bdmsByIdentifier.entrySet()) {
@@ -188,6 +200,15 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
             }
         }
 
+        final EjbInjectionServices ejbInjectionServices = new WeldEjbInjectionServices(deploymentUnit.getServiceRegistry(), eeModuleDescription, eeApplicationDescription, deploymentRoot.getRoot());
+
+        rootBeanDeploymentModule.addService(EjbInjectionServices.class, ejbInjectionServices);
+
+        for(final BeanDeploymentModule additional : deploymentUnit.getAttachmentList(WeldAttachments.ADDITIONAL_BEAN_DEPLOYMENT_MODULES)) {
+            beanDeploymentArchives.addAll(additional.getBeanDeploymentArchives());
+            additional.addService(EjbInjectionServices.class, ejbInjectionServices);
+        }
+
         final List<Metadata<Extension>> extensions = deploymentUnit.getAttachmentList(WeldAttachments.PORTABLE_EXTENSIONS);
 
         final WeldDeployment deployment = new WeldDeployment(beanDeploymentArchives, extensions, module, subDeploymentLoaders);
@@ -197,10 +218,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         //TODO: we need to change weld so this is a per-BDA service
         final ValidatorFactory factory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
         weldBootstrapService.addWeldService(ValidationServices.class, new WeldValidationServices(factory));
-
-        final EjbInjectionServices ejbInjectionServices = new WeldEjbInjectionServices(deploymentUnit.getServiceRegistry(), eeModuleDescription, eeApplicationDescription, deploymentRoot.getRoot());
         weldBootstrapService.addWeldService(EjbInjectionServices.class, ejbInjectionServices);
-        rootBeanDeploymentModule.addService(EjbInjectionServices.class, ejbInjectionServices);
 
         weldBootstrapService.addWeldService(EjbServices.class, new WeldEjbServices(deploymentUnit.getServiceRegistry()));
 
