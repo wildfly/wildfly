@@ -188,7 +188,7 @@
         <version.org.jboss.osgi.framework>2.1.0.CR6</version.org.jboss.osgi.framework>
         <version.org.jboss.osgi.logging>1.0.0.Final</version.org.jboss.osgi.logging>
         <version.org.jboss.osgi.metadata>2.2.0.Final</version.org.jboss.osgi.metadata>
-        <version.org.jboss.osgi.resolver>3.0.0.Final</version.org.jboss.osgi.resolver>
+        <version.org.jboss.osgi.resolver>3.0.1.Final</version.org.jboss.osgi.resolver>
         <version.org.jboss.osgi.repository>2.1.0.Final</version.org.jboss.osgi.repository>
         <version.org.jboss.osgi.spi>3.2.0.Final</version.org.jboss.osgi.spi>
         <version.org.jboss.osgi.vfs>1.2.1.Final</version.org.jboss.osgi.vfs>
