@@ -112,7 +112,6 @@ public class JACCAuthzPropagationTestCase {
      * @throws Exception
      */
     @Test
-    @Ignore("JBPAPP6-1686")
     public void testBridge(@ArquillianResource URL webAppURL) throws Exception {
         assertAccessAllowed(webAppURL, Manage.BEAN_NAME_BRIDGE, PropagationTestServlet.METHOD_NAME_MANAGE, Manage.ROLE_ADMIN);
         assertAccessAllowed(webAppURL, Manage.BEAN_NAME_BRIDGE, PropagationTestServlet.METHOD_NAME_MANAGE, Manage.ROLE_MANAGER);
