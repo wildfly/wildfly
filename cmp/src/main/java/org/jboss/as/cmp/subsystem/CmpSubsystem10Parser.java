@@ -58,7 +58,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 public class CmpSubsystem10Parser implements XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
     static CmpSubsystem10Parser INSTANCE = new CmpSubsystem10Parser();
 
-    private CmpSubsystem10Parser() {
+    protected CmpSubsystem10Parser() {
     }
 
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> operations) throws XMLStreamException {
@@ -105,9 +105,8 @@ public class CmpSubsystem10Parser implements XMLElementReader<List<ModelNode>>, 
         }
     }
 
-    private ModelNode parseUuid(final XMLExtendedStreamReader reader, final ModelNode parentAddress) throws XMLStreamException {
+    protected ModelNode parseUuid(final XMLExtendedStreamReader reader, final ModelNode parentAddress) throws XMLStreamException {
         String name = null;
-        String jndiname = null;
         int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
@@ -116,10 +115,6 @@ public class CmpSubsystem10Parser implements XMLElementReader<List<ModelNode>>, 
             switch (attribute) {
                 case NAME: {
                     name = value;
-                    break;
-                }
-                case JNDI_NAME: {
-                    jndiname = value;
                     break;
                 }
                 default:
@@ -137,17 +132,12 @@ public class CmpSubsystem10Parser implements XMLElementReader<List<ModelNode>>, 
         address.protect();
         op.get(OP_ADDR).set(address);
 
-        if (jndiname != null) {
-            HiLoKeyGeneratorResourceDescription.JNDI_NAME.parseAndSetParameter(jndiname, op, reader);
-        }
-
         requireNoContent(reader);
         return op;
     }
 
-    private ModelNode parseHilo(final XMLExtendedStreamReader reader, final ModelNode parentAddress) throws XMLStreamException {
+    protected ModelNode parseHilo(final XMLExtendedStreamReader reader, final ModelNode parentAddress) throws XMLStreamException {
         String name = null;
-        String jndiname = null;
         int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
@@ -156,10 +146,6 @@ public class CmpSubsystem10Parser implements XMLElementReader<List<ModelNode>>, 
             switch (attribute) {
                 case NAME: {
                     name = value;
-                    break;
-                }
-                case JNDI_NAME: {
-                    jndiname = value;
                     break;
                 }
                 default:
@@ -176,12 +162,8 @@ public class CmpSubsystem10Parser implements XMLElementReader<List<ModelNode>>, 
         address.add(HILO_KEY_GENERATOR, name);
         address.protect();
         op.get(OP_ADDR).set(address);
-
-        if (jndiname != null) {
-            HiLoKeyGeneratorResourceDescription.JNDI_NAME.parseAndSetParameter(jndiname, op, reader);
-        }
-
         final EnumSet<Element> required = EnumSet.of(Element.DATA_SOURCE, Element.TABLE_NAME, Element.ID_COLUMN, Element.SEQUENCE_COLUMN, Element.SEQUENCE_NAME);
+
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final String value = reader.getElementText();
             final String tag = reader.getLocalName();
@@ -201,7 +183,7 @@ public class CmpSubsystem10Parser implements XMLElementReader<List<ModelNode>>, 
     }
 
     public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
-        context.startSubsystemElement(Namespace.CMP_1_0.getUriString(), false);
+        context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
 
         final ModelNode model = context.getModelNode();
         if (model.hasDefined(UUID_KEY_GENERATOR) || model.hasDefined(HILO_KEY_GENERATOR)) {
@@ -242,11 +224,6 @@ public class CmpSubsystem10Parser implements XMLElementReader<List<ModelNode>>, 
         writer.writeStartElement(Element.UUID.getLocalName());
         writer.writeAttribute(Attribute.NAME.getLocalName(), name);
         UUIDKeyGeneratorResourceDescription.JNDI_NAME.marshallAsAttribute(model, writer);
-
-        for(SimpleAttributeDefinition attribute : HiLoKeyGeneratorResourceDescription.ATTRIBUTES) {
-            if (!attribute.equals(UUIDKeyGeneratorResourceDescription.JNDI_NAME))
-                attribute.marshallAsElement(model, writer);
-        }
         writer.writeEndElement();
     }
 }

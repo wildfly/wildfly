@@ -30,9 +30,6 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 
 /**
  * @author John Bailey
@@ -53,7 +50,7 @@ public class CmpExtension implements Extension {
         final ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(CMPSubsystemRootResourceDescription.INSTANCE);
         subsystemRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
-        subsystem.registerXMLElementWriter(CmpSubsystem10Parser.INSTANCE);
+        subsystem.registerXMLElementWriter(CmpSubsystem11Parser.INSTANCE);
 
         subsystemRegistration.registerSubModel(UUIDKeyGeneratorResourceDescription.INSTANCE);
 
@@ -62,6 +59,7 @@ public class CmpExtension implements Extension {
 
     public void initializeParsers(final ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CMP_1_0.getUriString(), CmpSubsystem10Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CMP_1_1.getUriString(), CmpSubsystem11Parser.INSTANCE);
     }
 
 

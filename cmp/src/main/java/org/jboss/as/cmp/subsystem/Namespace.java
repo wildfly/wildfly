@@ -31,7 +31,13 @@ import java.util.Map;
 enum Namespace {
     // must be first
     UNKNOWN(null),
-    CMP_1_0("urn:jboss:domain:cmp:1.0");
+    CMP_1_0("urn:jboss:domain:cmp:1.0"),
+    CMP_1_1("urn:jboss:domain:cmp:1.1");
+
+    /**
+     * The current namespace version.
+     */
+    public static final Namespace CURRENT = CMP_1_1;
 
     private final String name;
 
