@@ -39,6 +39,7 @@ import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -195,7 +196,10 @@ public final class EndpointService implements Service<Endpoint> {
 
     public static void uninstall(final Endpoint endpoint, final DeploymentUnit unit) {
         final ServiceName serviceName = getServiceName(unit, endpoint.getShortName());
-        WSServices.getContainerRegistry().getRequiredService(serviceName).setMode(Mode.REMOVE);
+        final ServiceController<?> endpointService = WSServices.getContainerRegistry().getService(serviceName);
+        if (endpointService != null) {
+            endpointService.setMode(Mode.REMOVE);
+        }
     }
 
     private static String getDeploymentSecurityDomainName(final Endpoint ep) {
