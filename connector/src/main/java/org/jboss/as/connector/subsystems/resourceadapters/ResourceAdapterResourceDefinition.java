@@ -59,12 +59,11 @@ public class ResourceAdapterResourceDefinition extends SimpleResourceDefinition 
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        ReloadRequiredWriteAttributeHandler writeAttributeHandler = new  ReloadRequiredWriteAttributeHandler();
         for (final AttributeDefinition attribute : CommonAttributes.RESOURCE_ADAPTER_ATTRIBUTE) {
             if (readOnly) {
                 resourceRegistration.registerReadOnlyAttribute(attribute, null);
             } else {
-                resourceRegistration.registerReadWriteAttribute(attribute, null, writeAttributeHandler);
+                resourceRegistration.registerReadWriteAttribute(attribute, null, new  ReloadRequiredWriteAttributeHandler(attribute));
 
             }
         }

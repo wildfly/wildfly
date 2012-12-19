@@ -22,18 +22,11 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+import static org.jboss.as.controller.OperationContext.Stage.MODEL;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
-import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -41,42 +34,20 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DiscoveryGroupWriteAttributeHandler extends WriteAttributeHandlers.WriteAttributeOperationHandler {
+public class DiscoveryGroupWriteAttributeHandler extends ReloadRequiredWriteAttributeHandler {
 
     public static final DiscoveryGroupWriteAttributeHandler INSTANCE = new DiscoveryGroupWriteAttributeHandler();
 
-    private final Map<String, AttributeDefinition> attributes = new HashMap<String, AttributeDefinition>();
+
     private DiscoveryGroupWriteAttributeHandler() {
-        for (AttributeDefinition attr : DiscoveryGroupDefinition.ATTRIBUTES) {
-            attributes.put(attr.getName(), attr);
-        }
+        super(DiscoveryGroupDefinition.ATTRIBUTES);
     }
 
     @Override
-    protected void modelChanged(final OperationContext context, final ModelNode operation, final String attributeName,
-                                final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
-        context.addStep(new OperationStepHandler() {
-            @Override
-            public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-                final AttributeDefinition attr = attributes.get(attributeName);
-                final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
-                if(attr.hasAlternative(resource.getModel())) {
-                    context.setRollbackOnly();
-                    throw new OperationFailedException(new ModelNode().set(MESSAGES.altAttributeAlreadyDefined(attributeName)));
-                }
-                context.stepCompleted();
-            }
-        }, OperationContext.Stage.VERIFY);
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        context.addStep(new AlternativeAttributeCheckHandler(DiscoveryGroupDefinition.ATTRIBUTES), MODEL);
 
-        context.reloadRequired();
-
-        context.completeStep(OperationContext.RollbackHandler.REVERT_RELOAD_REQUIRED_ROLLBACK_HANDLER);
-    }
-
-    @Override
-    protected void validateValue(String name, ModelNode value) throws OperationFailedException {
-        AttributeDefinition attr = attributes.get(name);
-        attr.getValidator().validateParameter(name, value);
+        super.execute(context, operation);
     }
 
 }

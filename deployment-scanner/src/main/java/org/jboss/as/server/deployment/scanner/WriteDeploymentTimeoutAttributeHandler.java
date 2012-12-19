@@ -22,10 +22,8 @@
 
 package org.jboss.as.server.deployment.scanner;
 
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.server.deployment.scanner.api.DeploymentScanner;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * Update the 'deployment-timeout' attribute on a {@code DeploymentScanner}.
@@ -36,7 +34,7 @@ public class WriteDeploymentTimeoutAttributeHandler extends AbstractWriteAttribu
     static final WriteDeploymentTimeoutAttributeHandler INSTANCE = new WriteDeploymentTimeoutAttributeHandler();
 
     public WriteDeploymentTimeoutAttributeHandler() {
-        super(new ModelTypeValidator(ModelType.LONG, false, true), new ModelTypeValidator(ModelType.LONG, false, false));
+        super(DeploymentScannerDefinition.DEPLOYMENT_TIMEOUT);
     }
 
     protected void updateScanner(final DeploymentScanner scanner, final ModelNode newValue) {

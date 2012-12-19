@@ -21,6 +21,7 @@
  */
 package org.jboss.as.osgi.management;
 
+import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers.AttributeDefinitionValidatingHandler;
 import org.jboss.as.osgi.parser.OSGiRootResource;
 
@@ -29,7 +30,7 @@ import org.jboss.as.osgi.parser.OSGiRootResource;
  *
  * @author David Bosschaert
  */
-public class ActivationAttributeHandler extends AttributeDefinitionValidatingHandler {
+public class ActivationAttributeHandler extends ModelOnlyWriteAttributeHandler {
 
     public static final ActivationAttributeHandler INSTANCE = new ActivationAttributeHandler();
 

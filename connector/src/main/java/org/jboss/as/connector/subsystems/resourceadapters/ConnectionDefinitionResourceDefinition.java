@@ -63,12 +63,11 @@ public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefini
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        ReloadRequiredWriteAttributeHandler writeAttributeHandler = new  ReloadRequiredWriteAttributeHandler();
         for (final AttributeDefinition attribute : CommonAttributes.CONNECTION_DEFINITIONS_NODE_ATTRIBUTE) {
             if (readOnly) {
                 resourceRegistration.registerReadOnlyAttribute(attribute, null);
             } else {
-                resourceRegistration.registerReadWriteAttribute(attribute, null, writeAttributeHandler);
+                resourceRegistration.registerReadWriteAttribute(attribute, null, new  ReloadRequiredWriteAttributeHandler(attribute));
             }
         }
     }

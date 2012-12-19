@@ -107,8 +107,8 @@ public class DeploymentScannerDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         //resourceRegistration.registerReadOnlyAttribute(NAME, null);
-        resourceRegistration.registerReadWriteAttribute(PATH, null, new ReloadRequiredWriteAttributeHandler());
-        resourceRegistration.registerReadWriteAttribute(RELATIVE_TO, null, new ReloadRequiredWriteAttributeHandler());
+        resourceRegistration.registerReadWriteAttribute(PATH, null, new ReloadRequiredWriteAttributeHandler(PATH));
+        resourceRegistration.registerReadWriteAttribute(RELATIVE_TO, null, new ReloadRequiredWriteAttributeHandler(RELATIVE_TO));
         resourceRegistration.registerReadWriteAttribute(SCAN_ENABLED, null, WriteEnabledAttributeHandler.INSTANCE);
         resourceRegistration.registerReadWriteAttribute(SCAN_INTERVAL, null, WriteScanIntervalAttributeHandler.INSTANCE);
         resourceRegistration.registerReadWriteAttribute(AUTO_DEPLOY_ZIPPED, null, WriteAutoDeployZipAttributeHandler.INSTANCE);

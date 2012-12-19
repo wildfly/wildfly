@@ -23,12 +23,12 @@
 package org.jboss.as.web;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -205,7 +205,8 @@ public class WebSSLDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration ssl) {
-        ssl.registerReadWriteAttribute(NAME, null, new WriteAttributeHandlers.AttributeDefinitionValidatingHandler(NAME));
+        // FIXME AS7-6203 why is this read-write?
+        ssl.registerReadWriteAttribute(NAME, null, new ModelOnlyWriteAttributeHandler(NAME));
         for (AttributeDefinition attr : SSL_ATTRIBUTES) {
             ssl.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
         }

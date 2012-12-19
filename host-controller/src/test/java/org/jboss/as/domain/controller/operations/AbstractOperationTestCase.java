@@ -406,8 +406,7 @@ public abstract class AbstractOperationTestCase {
         public Resource readResourceFromRoot(PathAddress address, boolean recursive) {
             Resource resource = this.root;
             for (PathElement element : address) {
-                resource = resource.getChild(element);
-                assertNotNull(resource);
+                resource = resource.requireChild(element);
             }
             return resource;
         }
@@ -456,7 +455,7 @@ public abstract class AbstractOperationTestCase {
         }
 
         public ModelNode resolveExpressions(ModelNode node) {
-            return null;
+            return node.resolve();
         }
 
         @Override

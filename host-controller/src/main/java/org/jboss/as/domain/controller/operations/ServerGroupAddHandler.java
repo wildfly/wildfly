@@ -35,6 +35,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.domain.controller.DomainControllerMessages;
 import org.jboss.as.domain.controller.resources.ServerGroupResourceDefinition;
 import org.jboss.dmr.ModelNode;
 
@@ -57,12 +58,17 @@ public class ServerGroupAddHandler implements OperationStepHandler {
         for (AttributeDefinition attr : ServerGroupResourceDefinition.ADD_ATTRIBUTES) {
             attr.validateAndSet(operation, model);
         }
-        String profile = PROFILE.resolveModelAttribute(context, model).asString();
 
+        // Validate the profile reference.
+
+        // Future proofing: We resolve the profile in Stage.MODEL even though system properties may not be available yet
+        // solely because currently the attribute doesn't support expressions. In the future if system properties
+        // can safely be resolved in stage model, this profile attribute can be changed and this will still work.
+        String profile = PROFILE.resolveModelAttribute(context, model).asString();
         try {
             context.readResourceFromRoot(PathAddress.pathAddress(PathElement.pathElement(PROFILE.getName(), profile)));
-        } catch (NoSuchElementException e) {
-            throw new OperationFailedException(new ModelNode().set(MESSAGES.unknown(PROFILE.getName(), profile)));
+        } catch (Exception e) {
+            throw DomainControllerMessages.MESSAGES.noProfileCalled(profile);
         }
 
         if (operation.hasDefined(SOCKET_BINDING_GROUP.getName())) {

@@ -31,6 +31,7 @@ import java.util.EnumSet;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
@@ -59,7 +60,6 @@ import org.jboss.as.controller.operations.common.ValidateAddressOperationHandler
 import org.jboss.as.controller.operations.common.ValidateOperationHandler;
 import org.jboss.as.controller.operations.common.XmlMarshallingHandler;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers.StringLengthValidatingHandler;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
@@ -282,7 +282,7 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
         if (serverEnvironment != null) { // TODO eliminate test cases that result in serverEnviroment == null
             if (isDomain) {
                 resourceRegistration.registerReadOnlyAttribute(NAME, serverEnvironment.getProcessNameReadHandler());
-                resourceRegistration.registerReadWriteAttribute(PROFILE_NAME, null, new StringLengthValidatingHandler(1));
+                resourceRegistration.registerReadWriteAttribute(PROFILE_NAME, null, new ModelOnlyWriteAttributeHandler(PROFILE_NAME));
             } else {
                 resourceRegistration.registerReadWriteAttribute(NAME, serverEnvironment.getProcessNameReadHandler(), serverEnvironment.getProcessNameWriteHandler());
                 // The legacy "undefined" profile-name

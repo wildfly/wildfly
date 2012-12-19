@@ -25,12 +25,13 @@ package org.jboss.as.domain.controller.resources;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.parsing.Attribute;
@@ -38,6 +39,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.domain.controller.descriptions.DomainResolver;
 import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
 import org.jboss.as.domain.controller.operations.ServerGroupAddHandler;
+import org.jboss.as.domain.controller.operations.ServerGroupProfileWriteAttributeHandler;
 import org.jboss.as.domain.controller.operations.ServerGroupRemoveHandler;
 import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentReplaceHandler;
 import org.jboss.as.host.controller.model.jvm.JvmResourceDefinition;
@@ -52,7 +54,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * ServerGroupResourceDefinition
+ * {@link ResourceDefinition} for server group resources.
  *
  * @author Brian Stansberry (c) 2012 Red Hat Inc.
  */
@@ -95,8 +97,10 @@ public class ServerGroupResourceDefinition extends SimpleResourceDefinition {
         for (AttributeDefinition attr : ServerGroupResourceDefinition.ADD_ATTRIBUTES) {
             if (attr.getName().equals(MANAGEMENT_SUBSYSTEM_ENDPOINT.getName())) {
                 resourceRegistration.registerReadOnlyAttribute(MANAGEMENT_SUBSYSTEM_ENDPOINT, null);
+            } else if (attr.getName().equals(PROFILE.getName())) {
+                resourceRegistration.registerReadWriteAttribute(PROFILE, null, ServerGroupProfileWriteAttributeHandler.INSTANCE);
             } else {
-                resourceRegistration.registerReadWriteAttribute(attr, null, new WriteAttributeHandlers.AttributeDefinitionValidatingHandler(attr));
+                resourceRegistration.registerReadWriteAttribute(attr, null, new ModelOnlyWriteAttributeHandler(attr));
             }
         }
     }

@@ -42,10 +42,16 @@ import org.jboss.msc.service.ServiceName;
 public abstract class RestartParentWriteAttributeHandler extends AbstractWriteAttributeHandler<ModelNode> {
     private final String parentKeyName;
 
+    /** @deprecated use a variant that takes {@link AttributeDefinition} */
+    @Deprecated
+    @SuppressWarnings("deprecation")
     public RestartParentWriteAttributeHandler(String parentKeyName) {
         this.parentKeyName = parentKeyName;
     }
 
+    /** @deprecated use a variant that takes {@link AttributeDefinition} */
+    @Deprecated
+    @SuppressWarnings("deprecation")
     public RestartParentWriteAttributeHandler(String parentKeyName, ParameterValidator validator) {
         super(validator);
         this.parentKeyName = parentKeyName;
@@ -57,6 +63,9 @@ public abstract class RestartParentWriteAttributeHandler extends AbstractWriteAt
         this.parentKeyName = parentKeyName;
     }
 
+    /** @deprecated use a variant that takes {@link AttributeDefinition} */
+    @Deprecated
+    @SuppressWarnings("deprecation")
     public RestartParentWriteAttributeHandler(String parentKeyName, ParameterValidator unresolvedValidator, ParameterValidator resolvedValidator) {
         super(unresolvedValidator, resolvedValidator);
         this.parentKeyName = parentKeyName;

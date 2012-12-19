@@ -55,7 +55,7 @@ public class ActivationWriteHandlerTestCase {
         operation.get(ModelDescriptionConstants.VALUE).set(Activation.LAZY.toString().toLowerCase(Locale.ENGLISH));
         ActivationAttributeHandler.INSTANCE.execute(context, operation);
 
-        Mockito.verify(context).completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        Mockito.verify(context).stepCompleted();
 
         Assert.assertEquals(Activation.LAZY.toString().toLowerCase(), targetNode.get(ModelConstants.ACTIVATION).asString());
     }

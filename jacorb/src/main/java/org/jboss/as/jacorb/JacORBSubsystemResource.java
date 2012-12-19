@@ -28,6 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import java.util.EnumSet;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -46,7 +47,6 @@ import org.jboss.as.controller.registry.OperationEntry;
  */
 public class JacORBSubsystemResource extends SimpleResourceDefinition {
     public static final JacORBSubsystemResource INSTANCE = new JacORBSubsystemResource();
-    private static final ReloadRequiredWriteAttributeHandler ATTRIBUTE_HANDLER = new ReloadRequiredWriteAttributeHandler();
 
     private JacORBSubsystemResource() {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JacORBExtension.SUBSYSTEM_NAME),
@@ -58,8 +58,9 @@ public class JacORBSubsystemResource extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(final ManagementResourceRegistration registry) {
+        OperationStepHandler attributeHander = new ReloadRequiredWriteAttributeHandler(JacORBSubsystemDefinitions.SUBSYSTEM_ATTRIBUTES);
         for (AttributeDefinition attr : JacORBSubsystemDefinitions.SUBSYSTEM_ATTRIBUTES) {
-            registry.registerReadWriteAttribute(attr, null, ATTRIBUTE_HANDLER);
+            registry.registerReadWriteAttribute(attr, null, attributeHander);
         }
 
     }

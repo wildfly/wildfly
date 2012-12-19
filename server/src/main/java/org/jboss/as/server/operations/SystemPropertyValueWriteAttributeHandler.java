@@ -24,13 +24,12 @@ package org.jboss.as.server.operations;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.ProcessEnvironmentSystemPropertyUpdater;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -38,7 +37,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class SystemPropertyValueWriteAttributeHandler extends WriteAttributeHandlers.AttributeDefinitionValidatingHandler {
+public class SystemPropertyValueWriteAttributeHandler extends AbstractWriteAttributeHandler<SystemPropertyValueWriteAttributeHandler.SysPropValue> {
 
     private final ProcessEnvironmentSystemPropertyUpdater systemPropertyUpdater;
 
@@ -47,55 +46,57 @@ public class SystemPropertyValueWriteAttributeHandler extends WriteAttributeHand
         this.systemPropertyUpdater = systemPropertyUpdater;
     }
 
-    protected void modelChanged(final OperationContext context, final ModelNode operation, final String attributeName,
-                                final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
+    @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return systemPropertyUpdater != null;
+    }
 
+    @Override
+    protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
+                                           ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<SysPropValue> handbackHolder) throws OperationFailedException {
 
         final String name = PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement().getValue();
-        final String value = newValue.isDefined() ? newValue.asString() : null;
-        final boolean applyToRuntime = systemPropertyUpdater != null && systemPropertyUpdater.isRuntimeSystemPropertyUpdateAllowed(name, value, context.isBooting());
-        final boolean reload = !applyToRuntime && context.getProcessType().isServer();
+        String setValue = resolvedValue.isDefined() ? resolvedValue.asString() : null;
+        // This method will only be called if systemPropertyUpdater != null (see requiresRuntime())
+        final boolean applyToRuntime = systemPropertyUpdater.isRuntimeSystemPropertyUpdateAllowed(name, setValue, context.isBooting());
 
         if (applyToRuntime) {
-            context.addStep(new OperationStepHandler() {
-                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    String setValue = value == null ? null : context.resolveExpressions(newValue).asString();
-                    final String oldValue = SecurityActions.getSystemProperty(name);
-                    if (value != null) {
-                        SecurityActions.setSystemProperty(name, setValue);
-                    } else {
-                        SecurityActions.clearSystemProperty(name);
-                    }
-                    if (systemPropertyUpdater != null) {
-                        systemPropertyUpdater.systemPropertyUpdated(name, setValue);
-                    }
-                    context.completeStep(new OperationContext.RollbackHandler() {
-                        @Override
-                        public void handleRollback(OperationContext context, ModelNode operation) {
-                            if (oldValue != null) {
-                                SecurityActions.setSystemProperty(name, oldValue);
-                            } else {
-                                SecurityActions.clearSystemProperty(name);
-                            }
-                            if (systemPropertyUpdater != null) {
-                                systemPropertyUpdater.systemPropertyUpdated(name, oldValue);
-                            }
-                        }
-                    });
-                }
-            }, OperationContext.Stage.RUNTIME);
+            final String oldValue = SecurityActions.getSystemProperty(name);
+            if (setValue != null) {
+                SecurityActions.setSystemProperty(name, setValue);
+            } else {
+                SecurityActions.clearSystemProperty(name);
+            }
+            systemPropertyUpdater.systemPropertyUpdated(name, setValue);
 
-        } else if (reload) {
-            context.reloadRequired();
+            handbackHolder.setHandback(new SysPropValue(name, oldValue));
         }
 
-        context.completeStep(new OperationContext.RollbackHandler() {
-            @Override
-            public void handleRollback(OperationContext context, ModelNode operation) {
-                if (reload) {
-                    context.revertReloadRequired();
-                }
+        return !applyToRuntime;
+    }
+
+    @Override
+    protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
+                                         ModelNode valueToRestore, ModelNode valueToRevert, SysPropValue handback) throws OperationFailedException {
+        if (handback != null) {
+            if (handback.value != null) {
+                SecurityActions.setSystemProperty(handback.name, handback.value);
+            } else {
+                SecurityActions.clearSystemProperty(handback.name);
             }
-        });
+
+            systemPropertyUpdater.systemPropertyUpdated(handback.name, handback.value);
+
+        }
+    }
+
+    public static class SysPropValue {
+        private final String name;
+        private final String value;
+
+        private SysPropValue(String name, String value) {
+            this.name = name;
+            this.value = value;
+        }
     }
 }

@@ -22,11 +22,11 @@
 
 package org.jboss.as.domain.controller.resources;
 
+import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.operations.common.SocketBindingAddHandler;
 import org.jboss.as.controller.operations.common.SocketBindingRemoveHandler;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.resource.AbstractSocketBindingResourceDefinition;
 
 /**
@@ -38,23 +38,14 @@ public class SocketBindingResourceDefinition extends AbstractSocketBindingResour
 
     public static final SocketBindingResourceDefinition INSTANCE = new SocketBindingResourceDefinition();
 
-    private static final OperationStepHandler INTERFACE_HANDLER =
-            new WriteAttributeHandlers.AttributeDefinitionValidatingHandler(AbstractSocketBindingResourceDefinition.INTERFACE);
-
-    private static final OperationStepHandler PORT_HANDLER =
-            new WriteAttributeHandlers.AttributeDefinitionValidatingHandler(AbstractSocketBindingResourceDefinition.PORT);
-
-    private static final OperationStepHandler FIXED_PORT_HANDLER =
-            new WriteAttributeHandlers.AttributeDefinitionValidatingHandler(AbstractSocketBindingResourceDefinition.FIXED_PORT);
-
-    private static final OperationStepHandler MULTICAST_ADDRESS_HANDLER =
-            new WriteAttributeHandlers.AttributeDefinitionValidatingHandler(AbstractSocketBindingResourceDefinition.MULTICAST_ADDRESS);
-
-    private static final OperationStepHandler MULTICAST_PORT_HANDLER =
-            new WriteAttributeHandlers.AttributeDefinitionValidatingHandler(AbstractSocketBindingResourceDefinition.MULTICAST_PORT);
-
-    private static final OperationStepHandler CLIENT_MAPPINGS_HANDLER =
-            new WriteAttributeHandlers.AttributeDefinitionValidatingHandler(AbstractSocketBindingResourceDefinition.CLIENT_MAPPINGS);
+    private static final OperationStepHandler SHARED_HANDLER = new ModelOnlyWriteAttributeHandler(
+            AbstractSocketBindingResourceDefinition.INTERFACE,
+            AbstractSocketBindingResourceDefinition.PORT,
+            AbstractSocketBindingResourceDefinition.FIXED_PORT,
+            AbstractSocketBindingResourceDefinition.MULTICAST_ADDRESS,
+            AbstractSocketBindingResourceDefinition.MULTICAST_PORT,
+            AbstractSocketBindingResourceDefinition.CLIENT_MAPPINGS
+    );
 
     private SocketBindingResourceDefinition() {
         super(SocketBindingAddHandler.INSTANCE, SocketBindingRemoveHandler.INSTANCE);
@@ -62,31 +53,31 @@ public class SocketBindingResourceDefinition extends AbstractSocketBindingResour
 
     @Override
     protected OperationStepHandler getInterfaceWriteAttributeHandler() {
-        return INTERFACE_HANDLER;
+        return SHARED_HANDLER;
     }
 
     @Override
     protected OperationStepHandler getPortWriteAttributeHandler() {
-        return PORT_HANDLER;
+        return SHARED_HANDLER;
     }
 
     @Override
     protected OperationStepHandler getFixedPortWriteAttributeHandler() {
-        return FIXED_PORT_HANDLER;
+        return SHARED_HANDLER;
     }
 
     @Override
     protected OperationStepHandler getMulticastAddressWriteAttributeHandler() {
-        return MULTICAST_ADDRESS_HANDLER;
+        return SHARED_HANDLER;
     }
 
     @Override
     protected OperationStepHandler getMulticastPortWriteAttributeHandler() {
-        return MULTICAST_PORT_HANDLER;
+        return SHARED_HANDLER;
     }
 
     @Override
     protected OperationStepHandler getClientMappingsWriteAttributeHandler() {
-        return CLIENT_MAPPINGS_HANDLER;
+        return SHARED_HANDLER;
     }
 }

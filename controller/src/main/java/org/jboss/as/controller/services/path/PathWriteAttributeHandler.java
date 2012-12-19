@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PAT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.services.path.PathResourceDefinition.READ_ONLY;
 
+import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.Stage;
@@ -35,86 +36,107 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManager.Event;
 import org.jboss.as.controller.services.path.PathManagerService.PathEventContextImpl;
 import org.jboss.dmr.ModelNode;
 
 /**
+ * {@link OperationStepHandler} for the write-attribute operation for a path resource.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-class PathWriteAttributeHandler extends WriteAttributeHandlers.WriteAttributeOperationHandler {
+class PathWriteAttributeHandler extends AbstractWriteAttributeHandler<PathWriteAttributeHandler.PathUpdate> {
 
     private final PathManagerService pathManager;
     private final boolean services;
 
 
     PathWriteAttributeHandler(final PathManagerService pathManager, final SimpleAttributeDefinition definition, final boolean services) {
-        super(definition.getValidator());
+        super(definition);
         this.pathManager = pathManager;
         this.services = services;
     }
 
     @Override
-    protected void modelChanged(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode newValue,
-            final ModelNode currentValue) throws OperationFailedException {
-
+    protected void finishModelStage(OperationContext context, ModelNode operation, String attributeName,
+                                    ModelNode newValue, ModelNode oldValue, Resource model) throws OperationFailedException {
+        // Guard against updates to read-only paths
         final String pathName = PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement().getValue();
-        final ModelNode model = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
-        if (model.get(READ_ONLY.getName()).asBoolean(false)) {
+        if (model.getModel().get(READ_ONLY.getName()).asBoolean(false)) {
             throw ControllerMessages.MESSAGES.cannotModifyReadOnlyPath(pathName);
         }
-
         if (services) {
             final PathEntry pathEntry = pathManager.getPathEntry(pathName);
             if (pathEntry.isReadOnly()) {
                 throw MESSAGES.pathEntryIsReadOnly(operation.require(OP_ADDR).asString());
             }
+        }
+    }
 
-            context.addStep(new OperationStepHandler() {
-                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    final PathEntry backup = new PathEntry(pathEntry);
+    @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return services;
+    }
 
-                    final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-                    final PathEventContextImpl pathEventContext = pathManager.checkRestartRequired(context, pathName, Event.UPDATED);
-                    if (pathEventContext.isInstallServices()) {
-                        if (attributeName.equals(PATH)) {
-                            pathManager.changePath(pathName, newValue.asString());
-                            pathManager.changePathServices(context, pathName, newValue.asString(), verificationHandler);
-                        } else if (attributeName.equals(RELATIVE_TO)) {
-                            pathManager.changeRelativePath( pathName, newValue.isDefined() ?  newValue.asString() : null, true);
-                            pathManager.changeRelativePathServices(context, pathName, newValue.isDefined() ?  newValue.asString() : null, verificationHandler);
-                        }
-                    }
+    @Override
+    protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
+                                           ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<PathUpdate> handbackHolder) throws OperationFailedException {
+        final String pathName = PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement().getValue();
+        final PathEntry pathEntry = pathManager.getPathEntry(pathName);
+        final PathEntry backup = new PathEntry(pathEntry);
 
-                    context.addStep(verificationHandler, Stage.VERIFY);
-
-                    context.completeStep(new OperationContext.RollbackHandler() {
-                        public void handleRollback(OperationContext context, ModelNode operation) {
-                            if (pathEventContext.isInstallServices()) {
-                                if (attributeName.equals(PATH)) {
-                                    pathManager.changePath(pathName, backup.getPath());
-                                    pathManager.changePathServices(context, pathName, currentValue.asString(), null);
-                                } else if (attributeName.equals(RELATIVE_TO)) {
-                                    try {
-                                        pathManager.changeRelativePath(pathName, backup.getRelativeTo(), false);
-                                    } catch (OperationFailedException e) {
-                                        //Should not happen since false passed in for the 'check' parameter
-                                        throw new RuntimeException(e);
-                                    }
-                                    pathManager.changeRelativePathServices(context, pathName, currentValue.isDefined() ?  currentValue.asString() : null, null);
-                                }
-                            } else {
-                                pathEventContext.revert();
-                            }
-                        }
-                    });
-                }
-            }, Stage.RUNTIME);
+        final PathEventContextImpl pathEventContext = pathManager.checkRestartRequired(context, pathName, Event.UPDATED);
+        if (pathEventContext.isInstallServices()) {
+            final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
+            context.addStep(verificationHandler, Stage.VERIFY);
+            if (attributeName.equals(PATH)) {
+                String pathVal = resolvedValue.asString();
+                pathManager.changePath(pathName, pathVal);
+                pathManager.changePathServices(context, pathName, pathVal, verificationHandler);
+            } else if (attributeName.equals(RELATIVE_TO)) {
+                String relToVal = resolvedValue.isDefined() ?  resolvedValue.asString() : null;
+                pathManager.changeRelativePath( pathName, relToVal, true);
+                pathManager.changeRelativePathServices(context, pathName, relToVal, verificationHandler);
+            }
         }
 
-        context.stepCompleted();
+        handbackHolder.setHandback(new PathUpdate(backup, pathEventContext));
+
+        return false;
+    }
+
+    @Override
+    protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
+                                         ModelNode valueToRestore, ModelNode valueToRevert, PathUpdate handback) throws OperationFailedException {
+        final String pathName = PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement().getValue();
+        final PathEntry backup = handback.backup;
+        final PathEventContextImpl pathEventContext = handback.context;
+        if (pathEventContext.isInstallServices()) {
+            if (attributeName.equals(PATH)) {
+                pathManager.changePath(pathName, backup.getPath());
+                pathManager.changePathServices(context, pathName, valueToRestore.asString(), null);
+            } else if (attributeName.equals(RELATIVE_TO)) {
+                try {
+                    pathManager.changeRelativePath(pathName, backup.getRelativeTo(), false);
+                } catch (OperationFailedException e) {
+                    //Should not happen since false passed in for the 'check' parameter
+                    throw new RuntimeException(e);
+                }
+                pathManager.changeRelativePathServices(context, pathName, valueToRestore.isDefined() ?  valueToRestore.asString() : null, null);
+            }
+        } else {
+            pathEventContext.revert();
+        }
+    }
+
+    static class PathUpdate {
+        private final PathEntry backup;
+        private final PathEventContextImpl context;
+
+        private PathUpdate(PathEntry backup, PathEventContextImpl context) {
+            this.backup = backup;
+            this.context = context;
+        }
     }
 }
