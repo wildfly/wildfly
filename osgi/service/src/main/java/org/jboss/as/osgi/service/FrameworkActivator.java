@@ -23,6 +23,8 @@
 package org.jboss.as.osgi.service;
 
 
+import static org.jboss.as.osgi.OSGiLogger.LOGGER;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -90,7 +92,7 @@ public final class FrameworkActivator {
     private boolean activateInternal(Activation activation, ServiceVerificationHandler verificationHandler) {
         boolean activate = activated.compareAndSet(false, true);
         if (activate) {
-
+            LOGGER.debugf("Activating %sly", activation);
             ServiceTarget serviceTarget = builder.getServiceTarget();
             builder.installServices(FrameworkPhase.INIT, serviceTarget, verificationHandler);
             builder.installServices(FrameworkPhase.ACTIVE, serviceTarget, verificationHandler);

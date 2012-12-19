@@ -29,9 +29,14 @@
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
+        <jboss.home>${jbossas.project.dir}/build/target/jboss-as-${jboss.as.release.version}</jboss.home>
     </properties>
 
 	<dependencies>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-osgi-launcher</artifactId>
+        </dependency>
 	    <dependency>
 	        <groupId>com.sun.xml.bind</groupId>
 	        <artifactId>jaxb-impl</artifactId>
@@ -59,9 +64,9 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
-                        <executions combine.children="append">
+                        <executions>
                             <execution>
-                                <id>build-clustering.server</id>
+                                <id>build-osgi.server</id>
                                 <phase>process-test-resources</phase>
                                 <goals><goal>run</goal></goals>
                                 <configuration>
@@ -85,32 +90,47 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <executions combine.children="append">
-
-                            <!-- Disable default-test execution. -->
+                        <executions>
                             <execution>
                                 <id>default-test</id>
                                 <goals><goal>test</goal></goals>
                                 <phase>none</phase>
                             </execution>
-                            <!-- Multi node clustering tests. -->
                             <execution>
-                                <id>tests-osgi.surefire</id>
+                                <id>osgi.default</id>
                                 <phase>test</phase>
                                 <goals><goal>test</goal></goals>
                                 <configuration>
-                                    <!-- Tests to execute. -->
-                                    <includes>
-                                        <include>org/jboss/as/test/integration/osgi/**/*TestCase.java</include>
-                                    </includes>
-                                    <!-- Parameters to test cases. -->
+                                    <excludes>
+                                        <exclude>**/embedded/osgi/**/*TestCase.java</exclude>
+                                    </excludes>
                                     <systemPropertyVariables>
                                         <arquillian.launch>osgi</arquillian.launch>
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
-
+                            <execution>
+                                <id>osgi.launch</id>
+                                <phase>test</phase>
+                                <goals><goal>test</goal></goals>
+                                <configuration>
+                                    <includes>
+                                        <include>**/embedded/osgi/**/*TestCase.java</include>
+                                    </includes>
+                                    <!-- Fork every test because it will launch a separate AS instance -->
+                                    <forkMode>always</forkMode>
+                                    <systemPropertyVariables>
+                                        <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                                        <jboss.home>${basedir}/target/jbossas</jboss.home>
+                                        <module.path>${jboss.home}/modules</module.path>
+                                        <bundle.path>${jboss.home}/bundles</bundle.path>
+                                        <jboss.server.data.dir>${basedir}/target/jbossas/standalone/data</jboss.server.data.dir>
+                                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
+                                    </systemPropertyVariables>
+                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                                </configuration>
+                            </execution>
                         </executions>
                     </plugin>
                 </plugins>
