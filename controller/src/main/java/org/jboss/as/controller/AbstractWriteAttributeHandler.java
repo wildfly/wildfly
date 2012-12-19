@@ -102,7 +102,7 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
         nameValidator.validate(operation);
         final String attributeName = operation.require(NAME).asString();
         // Don't require VALUE. Let the validator decide if it's bothered by an undefined value
-        final ModelNode newValue = operation.hasDefined(VALUE) ? operation.get(VALUE) : new ModelNode();
+        ModelNode newValue = operation.hasDefined(VALUE) ? operation.get(VALUE) : new ModelNode();
         validateUnresolvedValue(attributeName, newValue);
         final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
         final ModelNode submodel = resource.getModel();
@@ -113,18 +113,20 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
             final ModelNode syntheticOp = new ModelNode();
             syntheticOp.get(attributeName).set(newValue);
             attributeDefinition.validateAndSet(syntheticOp, submodel);
+            newValue = submodel.get(attributeName);
         } else {
             submodel.get(attributeName).set(newValue);
         }
 
-        validateUpdatedModel(context, operation, resource);
+        finishModelStage(context, operation, attributeName, newValue, currentValue, resource);
 
         if (requiresRuntime(context)) {
+            final ModelNode updatedValue = newValue;
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    final ModelNode resolvedValue = attributeDefinition != null ? attributeDefinition.resolveModelAttribute(context, submodel) : newValue.resolve();
-                    validateResolvedValue(attributeName, newValue);
+                    final ModelNode resolvedValue = attributeDefinition != null ? attributeDefinition.resolveModelAttribute(context, submodel) : updatedValue.resolve();
+                    validateResolvedValue(attributeName, updatedValue);
                     final HandbackHolder<T> handback = new HandbackHolder<T>();
                     final boolean reloadRequired = applyUpdateToRuntime(context, operation, attributeName, resolvedValue, currentValue, handback);
                     if (reloadRequired) {
@@ -196,7 +198,10 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
      *
      * @param attributeName the name of the attribute being updated
      * @param unresolvedValue the unresolved value
+     *
+     * @deprecated provide an {@link AttributeDefinition} to the constructor; it will validate
      */
+    @Deprecated
     protected void validateUnresolvedValue(final String attributeName, final ModelNode unresolvedValue) throws OperationFailedException {
         if (unresolvedValueValidator != null) {
             unresolvedValueValidator.validateParameter(VALUE, unresolvedValue);
@@ -209,7 +214,9 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
      *
      * @param attributeName the name of the attribute being updated
      * @param resolvedValue the resolved value
+     * @deprecated provide an {@link AttributeDefinition} to the constructor; it will validate
      */
+    @Deprecated
     protected void validateResolvedValue(final String attributeName, final ModelNode resolvedValue) throws OperationFailedException {
         if (resolvedValueValidator != null) {
             resolvedValueValidator.validateResolvedParameter(VALUE, resolvedValue);
@@ -217,15 +224,26 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
     }
 
     /**
-     * Hook to allow subclasses to validate the model following the application of the new attribute value.
-     * This default implementation calls {@link #validateUpdatedModel(OperationContext, Resource)}.
+     * Hook to allow subclasses to do any final {@link OperationContext.Stage#MODEL} processing following the
+     * application of the new attribute value. This default implementation calls
+     * {@link #validateUpdatedModel(OperationContext, Resource)}.
+     * <p>
+     * <strong>NOTE:</strong> Implementations must not call
+     * {@link OperationContext#completeStep(OperationContext.ResultHandler)} or any of its variants. The method that
+     * calls this one handles step completion.
+     * </p>
+     *
      *
      * @param context the operation context
      * @param operation the operation
+     * @param attributeName the name of the attribute being modified
+     * @param newValue the new value for the attribute
+     * @param oldValue the previous value for the attribute
      * @param model the updated model resource
      * @throws OperationFailedException
      */
-    protected void validateUpdatedModel(final OperationContext context, final ModelNode operation, final Resource model) throws OperationFailedException {
+    protected void finishModelStage(final OperationContext context, final ModelNode operation, String attributeName,
+                                    ModelNode newValue, ModelNode oldValue, final Resource model) throws OperationFailedException {
         validateUpdatedModel(context, model);
     }
 
@@ -243,7 +261,12 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
 
 
     /**
-     * Gets whether a {@link OperationContext.Stage#RUNTIME} handler should be added.
+     * Gets whether a {@link OperationContext.Stage#RUNTIME} handler should be added. This default implementation
+     * returns true if the process is a {@link OperationContext#isNormalServer() normal server} and the process
+     * is not {@link OperationContext#isBooting() booting}. The rationale for the latter check is if the process is
+     * booting, the resource being modified will have been added as a previous step in the same context, and
+     * the Stage.RUNTIME handling for that add will see a model the reflects the changes made by this handler and
+     * will apply them to the runtime.
      *
      * @param context operation context
      * @return {@code true} if a runtime stage handler should be added; {@code false} otherwise.
@@ -252,6 +275,13 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
         return context.isNormalServer() && !context.isBooting();
     }
 
+    /**
+     * Gets the {@link AttributeDefinition} provided to the constructor (if present) whose
+     * {@link AttributeDefinition#getName() name} matches the given {@code attributeName}.
+     *
+     * @param attributeName the attribute name
+     * @return the attribute definition, or {@code null} if no matching definition is found
+     */
     protected AttributeDefinition getAttributeDefinition(final String attributeName) {
         return attributeDefinitions == null ? null : attributeDefinitions.get(attributeName);
     }
@@ -260,7 +290,7 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
      * Holder subclasses can use to pass an object between
      * {@link AbstractWriteAttributeHandler#applyUpdateToRuntime(OperationContext, ModelNode, String, ModelNode, ModelNode, HandbackHolder)}
      * and {@link AbstractWriteAttributeHandler#revertUpdateToRuntime(OperationContext, ModelNode, String, ModelNode, ModelNode, Object)}.
-     * Typically that object would encapsulate some state useful in reverting the runtime update.
+     * Typically that object would encapsulate some data useful in reverting the runtime update.
      *
      * @param <T> the type of the object being passed
      */

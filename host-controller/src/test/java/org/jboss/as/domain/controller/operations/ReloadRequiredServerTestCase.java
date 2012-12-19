@@ -255,7 +255,7 @@ public class ReloadRequiredServerTestCase extends AbstractOperationTestCase {
         operation.get(OP_ADDR).set(pa.toModelNode());
         operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
         operation.get(NAME).set(SOCKET_BINDING_PORT_OFFSET);
-        operation.get(VALUE).set(10);
+        operation.get(VALUE).set(65535);
 
         ServerRestartRequiredServerConfigWriteAttributeHandler.SOCKET_BINDING_PORT_OFFSET_INSTANCE.execute(operationContext, operation);
         Assert.assertNull(operationContext.getAttachment(ServerOperationResolver.DONT_PROPAGATE_TO_SERVERS_ATTACHMENT));
@@ -281,6 +281,25 @@ public class ReloadRequiredServerTestCase extends AbstractOperationTestCase {
         checkServerOperationResolver(operationContext, operation, pa, false);
     }
 
+
+    @Test
+    public void testChangeServerConfigSocketBindingPortNegativeValue() throws Exception {
+        PathAddress pa = PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER_CONFIG, "server-one"));
+        final MockOperationContext operationContext = getOperationContext(pa);
+
+        operationContext.root.getChild(PathElement.pathElement(HOST, "localhost")).getChild(PathElement.pathElement(SERVER_CONFIG, "server-one")).getModel().get(SOCKET_BINDING_PORT_OFFSET).set(10);
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP_ADDR).set(pa.toModelNode());
+        operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+        operation.get(NAME).set(SOCKET_BINDING_PORT_OFFSET);
+        operation.get(VALUE).set(-65535);
+
+        ServerRestartRequiredServerConfigWriteAttributeHandler.SOCKET_BINDING_PORT_OFFSET_INSTANCE.execute(operationContext, operation);
+        Assert.assertNull(operationContext.getAttachment(ServerOperationResolver.DONT_PROPAGATE_TO_SERVERS_ATTACHMENT));
+        checkServerOperationResolver(operationContext, operation, pa, true);
+    }
+
     @Test(expected=OperationFailedException.class)
     public void testChangeServerConfigSocketBindingPortOffsetBadPort() throws Exception {
         PathAddress pa = PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER_CONFIG, "server-one"));
@@ -292,7 +311,7 @@ public class ReloadRequiredServerTestCase extends AbstractOperationTestCase {
         operation.get(OP_ADDR).set(pa.toModelNode());
         operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
         operation.get(NAME).set(SOCKET_BINDING_PORT_OFFSET);
-        operation.get(VALUE).set(-1);
+        operation.get(VALUE).set(65536);
 
         ServerRestartRequiredServerConfigWriteAttributeHandler.SOCKET_BINDING_PORT_OFFSET_INSTANCE.execute(operationContext, operation);
     }

@@ -59,7 +59,8 @@ class PathWriteAttributeHandler extends AbstractWriteAttributeHandler<PathWriteA
     }
 
     @Override
-    protected void validateUpdatedModel(OperationContext context, ModelNode operation, Resource model) throws OperationFailedException {
+    protected void finishModelStage(OperationContext context, ModelNode operation, String attributeName,
+                                    ModelNode newValue, ModelNode oldValue, Resource model) throws OperationFailedException {
         // Guard against updates to read-only paths
         final String pathName = PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement().getValue();
         if (model.getModel().get(READ_ONLY.getName()).asBoolean(false)) {
