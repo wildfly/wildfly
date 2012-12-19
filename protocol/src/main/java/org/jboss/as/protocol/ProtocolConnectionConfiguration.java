@@ -23,15 +23,16 @@
 package org.jboss.as.protocol;
 
 import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
-import org.jboss.remoting3.Endpoint;
-import org.jboss.remoting3.RemotingOptions;
-import org.xnio.OptionMap;
 
-import javax.net.ssl.SSLContext;
-import javax.security.auth.callback.CallbackHandler;
 import java.net.URI;
 import java.util.Collections;
 import java.util.Map;
+
+import javax.net.ssl.SSLContext;
+import javax.security.auth.callback.CallbackHandler;
+
+import org.jboss.remoting3.Endpoint;
+import org.xnio.OptionMap;
 
 /**
  * @author Emanuel Muckenhuber
@@ -41,6 +42,7 @@ public class ProtocolConnectionConfiguration {
     public static final int DEFAULT_WINDOW_SIZE = 0x8000;
 
     private static final long DEFAULT_CONNECT_TIMEOUT = 5000;
+    private static final String JBOSS_CLIENT_SOCKET_BIND_ADDRESS = "jboss.management.client_socket_bind_address";
 
     private URI uri;
     private Endpoint endpoint;
@@ -49,9 +51,11 @@ public class ProtocolConnectionConfiguration {
     private CallbackHandler callbackHandler;
     private Map<String, String> saslOptions = Collections.emptyMap();
     private SSLContext sslContext;
+    private String clientBindAddress;
 
     protected ProtocolConnectionConfiguration() {
-        //
+        // TODO AS7-6223 propagate clientBindAddress configuration up to end user level and get rid of this system property
+        this.clientBindAddress = SecurityActions.getSystemProperty(JBOSS_CLIENT_SOCKET_BIND_ADDRESS);
     }
 
     protected void validate() {
@@ -122,6 +126,14 @@ public class ProtocolConnectionConfiguration {
         this.sslContext = sslContext;
     }
 
+    public String getClientBindAddress() {
+        return clientBindAddress;
+    }
+
+    public void setClientBindAddress(String clientBindAddress) {
+        this.clientBindAddress = clientBindAddress;
+    }
+
     public ProtocolConnectionConfiguration copy() {
         return copy(this);
     }
@@ -147,6 +159,7 @@ public class ProtocolConnectionConfiguration {
         configuration.callbackHandler = old.callbackHandler;
         configuration.saslOptions = old.saslOptions;
         configuration.sslContext = old.sslContext;
+        configuration.clientBindAddress = old.clientBindAddress;
         return configuration;
     }
 
