@@ -80,7 +80,7 @@ public class JcaWorkManagerDefinition extends SimpleResourceDefinition {
 
     public static enum WmParameters {
         NAME(SimpleAttributeDefinitionBuilder.create("name", ModelType.STRING)
-                .setAllowExpression(true)
+                .setAllowExpression(false)
                 .setAllowNull(false)
                 .setMeasurementUnit(MeasurementUnit.NONE)
                 .setRestartAllServices()
