@@ -64,7 +64,6 @@ public final class EmbeddedFrameworkFactory implements FrameworkFactory {
         Set<String> syspackages = new HashSet<String>();
         syspackages.add("org.osgi.framework");
         syspackages.add("org.osgi.resource");
-        syspackages.add("org.osgi.wiring");
         syspackages.add("org.osgi.util.tracker");
 
         addConfiguredPackages(syspackages, props, Constants.FRAMEWORK_SYSTEMPACKAGES);
@@ -105,5 +104,4 @@ public final class EmbeddedFrameworkFactory implements FrameworkFactory {
         }
         return value;
     }
-
 }

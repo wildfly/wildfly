@@ -66,9 +66,10 @@ public class EmbeddedServerFactory {
     private static final String MODULE_ID_VFS = "org.jboss.vfs";
     private static final String SYSPROP_KEY_CLASS_PATH = "java.class.path";
     private static final String SYSPROP_KEY_MODULE_PATH = "module.path";
-    private static final String SYSPROP_KEY_BUNDLE_PATH = "jboss.bundles.dir";
     private static final String SYSPROP_KEY_LOGMANAGER = "java.util.logging.manager";
     private static final String SYSPROP_KEY_JBOSS_HOME_DIR = "jboss.home.dir";
+    private static final String SYSPROP_KEY_JBOSS_MODULES_DIR = "jboss.modules.dir";
+    private static final String SYSPROP_KEY_JBOSS_BUNDLES_DIR = "jboss.bundles.dir";
     private static final String SYSPROP_VALUE_JBOSS_LOGMANAGER = "org.jboss.logmanager.LogManager";
 
     private EmbeddedServerFactory() {
@@ -154,6 +155,10 @@ public class EmbeddedServerFactory {
     private static ModuleLoader setupModuleLoader(String modulePath, String... systemPackages) {
         assert modulePath != null : "modulePath not null";
 
+        File modulesDir = new File(modulePath);
+
+        SecurityActions.setSystemProperty(SYSPROP_KEY_JBOSS_MODULES_DIR, new File(modulePath).getAbsolutePath());
+
         final String classPath = SecurityActions.getSystemProperty(SYSPROP_KEY_CLASS_PATH);
         try {
             // Set up sysprop env
@@ -182,7 +187,7 @@ public class EmbeddedServerFactory {
         final File bundlesDir = new File(bundlePath);
         assert bundlesDir.isDirectory() : "bundlesDir not a directory";
 
-        SecurityActions.setSystemProperty(SYSPROP_KEY_BUNDLE_PATH, bundlePath);
+        SecurityActions.setSystemProperty(SYSPROP_KEY_JBOSS_BUNDLES_DIR, bundlesDir.getAbsolutePath());
     }
 
     private static void setupVfsModule(final ModuleLoader moduleLoader) {
