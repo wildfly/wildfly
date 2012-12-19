@@ -26,8 +26,8 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -159,16 +159,11 @@ public class WebConnectorDefinition extends SimpleResourceDefinition {
                             //.setDefaultValue(new ModelNode(8433))
                     .build();
 
-    protected static final SimpleListAttributeDefinition VIRTUAL_SERVER =
-                new SimpleListAttributeDefinition.Builder(Constants.VIRTUAL_SERVER,
-                        new SimpleAttributeDefinitionBuilder(Constants.VIRTUAL_SERVER, ModelType.STRING, false)
-                                .setXmlName(Constants.VIRTUAL_SERVER)
-                                .setAllowNull(false)
-                                .setValidator(new StringLengthValidator(1, false))
-                                .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                                .build())
-                        .setAllowNull(true)
-                        .build();
+    protected static final StringListAttributeDefinition VIRTUAL_SERVER = new StringListAttributeDefinition.Builder(Constants.VIRTUAL_SERVER)
+            .setAllowNull(true)
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .setValidator(new StringLengthValidator(1, false))
+            .build();
 
     protected static final SimpleAttributeDefinition[] CONNECTOR_ATTRIBUTES = {
             //NAME, // name is read-only
