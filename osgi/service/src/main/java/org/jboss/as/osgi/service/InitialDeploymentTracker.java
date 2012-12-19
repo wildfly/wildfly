@@ -102,7 +102,7 @@ public class InitialDeploymentTracker extends ServiceTracker<Object> {
     @Override
     protected void serviceListenerAdded(ServiceController<? extends Object> controller) {
         ServiceName serviceName = controller.getName();
-        LOGGER.debugf("Track service: %s", serviceName);
+        LOGGER.tracef("Track service: %s", serviceName);
         expectedServices.remove(serviceName);
     }
 
@@ -114,7 +114,7 @@ public class InitialDeploymentTracker extends ServiceTracker<Object> {
     @Override
     protected void serviceStarted(ServiceController<? extends Object> controller) {
         ServiceName serviceName = controller.getName();
-        LOGGER.debugf("ServiceStarted: %s", serviceName);
+        LOGGER.tracef("ServiceStarted: %s", serviceName);
     }
 
     @Override
@@ -125,7 +125,6 @@ public class InitialDeploymentTracker extends ServiceTracker<Object> {
 
     @Override
     protected void complete() {
-        LOGGER.debugf("Initial deployments complete");
         if (listenerTarget != null) {
             listenerTarget.removeListener(this);
         }
@@ -155,8 +154,6 @@ public class InitialDeploymentTracker extends ServiceTracker<Object> {
     }
 
     private ServiceController<Object> addPhaseCompleteService(ServiceTarget serviceTarget, ServiceName serviceName) {
-        LOGGER.debugf("addPhaseCompleteService: %s", serviceName);
         return serviceTarget.addService(serviceName, new ValueService<Object>(new ImmediateValue<Object>(new Object()))).install();
     }
-
 }
