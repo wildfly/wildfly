@@ -213,9 +213,14 @@ public abstract class AttributeDefinition {
         if (operationObject.hasDefined(name) && isDeprecated()) {
             ControllerLogger.DEPRECATED_LOGGER.attributeDeprecated(getName());
         }
-        final ModelNode newValue = correctValue(operationObject.get(name), model.get(name));
-        if (!newValue.equals(operationObject.get(name))) {
-            operationObject.get(name).set(newValue);
+        // AS7-6224 -- convert expression strings to ModelType.EXPRESSION *before* correcting
+        ModelNode newValue = operationObject.get(name);
+        if (isAllowExpression() && newValue.getType() == ModelType.STRING) {
+            newValue = ParseUtils.parsePossibleExpression(newValue.asString());
+        }
+        final ModelNode correctedValue = correctValue(newValue, model.get(name));
+        if (!correctedValue.equals(operationObject.get(name))) {
+            operationObject.get(name).set(correctedValue);
         }
         ModelNode node = validateOperation(operationObject, false);
         model.get(name).set(node);
