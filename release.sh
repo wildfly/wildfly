@@ -76,7 +76,7 @@ release()
    $DIR/release-utils.sh -r
    $DIR/release-utils.sh -u -o $RELEASEVERSION -n $NEWSNAPSHOTVERSION
    git commit -a -m "Prepare for development of $NEWSNAPSHOTVERSION"
-   git push upstrem HEAD --tags
+   git push upstream HEAD --tags
    echo "***** JBoss BOMs released"
    read -p "Do you want to send release notifcations to $EAP_EMAIL_TO[y/N]? " yn
    case $yn in
