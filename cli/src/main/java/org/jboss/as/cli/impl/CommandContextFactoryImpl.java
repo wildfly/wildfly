@@ -78,11 +78,10 @@ public class CommandContextFactoryImpl extends CommandContextFactory {
     }
 
     protected void addShutdownHook(final CommandContext cmdCtx) {
-        SecurityActions.addShutdownHook(new Thread(new Runnable() {
+        CliShutdownHook.add(new CliShutdownHook.Handler(){
             @Override
-            public void run() {
+            public void shutdown() {
                 cmdCtx.terminateSession();
-            }
-        }));
-    }
+            }});
+        }
 }

@@ -1,0 +1,41 @@
+SYNOPSIS
+
+   Standalone mode:
+
+      shutdown [--restart=true|false]
+
+   Domain mode:
+   
+      shutdown --host=host_name [--restart=true|false]
+      
+DESCRIPTION
+
+    Sends the :shutdown operation request to the server/domain controller
+    and waits for the controller to close the connection.
+    
+    If there was an i/o error while sending the request or receiving
+    the response, the shutdown handler will disconnect from the controller.
+    
+    If the shutdown operation was executed successfully and the restart
+    argument wasn't specified or was set to false, the handler will put the
+    CLI client into the disconnected state.
+    
+    If the shutdown operation failed, i.e. the response received successfully
+    indicated a failure, the handler will log the failure message and
+    will not disconnect from the controller.
+    
+    NOTE: this command cannot be used in a batch because it the handler
+    is waiting for the controller to shutdown before returning the
+    control back to the client which would not possible if the
+    command was executed as a step in a composite operation.
+    So, if there is a need to shutdown the controller from a batch,
+    :shutdown operation must be used instead (and should be the last
+    operation in the batch).
+
+ARGUMENTS
+
+ --host      - is allowed and required only in the domain mode, specifies
+               the host name to shutdown;
+               
+ --restart   - optional, if true, once shutdown the controller will be
+               restarted again; if not present, false is assumed.
