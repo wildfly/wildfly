@@ -473,9 +473,6 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                 }
                 case TARGET: {
                     final String target = readStringAttributeElement(reader, "name");
-                    if (!(target.equals("System.out") || target.equals("System.err"))) {
-                        throw new XMLStreamException(MESSAGES.invalidTargetName(EnumSet.allOf(Target.class)), reader.getLocation());
-                    }
                     TARGET.parseAndSetParameter(target, node, reader);
                     break;
                 }
