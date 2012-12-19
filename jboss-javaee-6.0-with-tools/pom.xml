@@ -30,15 +30,15 @@
 
     <dependencyManagement>
 
-        <dependencies>       
-            <!-- JBoss distributes a complete set of Java EE 6 APIs including
-                a Bill of Materials (BOM). A BOM specifies the versions of a "stack" (or
-                a collection) of artifacts. We use this here so that we always get the correct
-                versions of artifacts. Here we use the jboss-javaee-6.0 stack (you can
-                read this as the JBoss stack of the Java EE 6 APIs), and we use
-                version 3.0.0.Final which is the latest release of the stack. You can actually
-                use this stack with any version of JBoss AS that implements Java EE 6, not
-                just JBoss AS 7! -->
+        <dependencies>
+            <!-- JBoss distributes a complete set of Java EE 6 APIs including 
+                a Bill of Materials (BOM). A BOM specifies the versions of a "stack" (or 
+                a collection) of artifacts. We use this here so that we always get the correct 
+                versions of artifacts. Here we use the jboss-javaee-6.0 stack (you can read 
+                this as the JBoss stack of the Java EE 6 APIs), and we use version 3.0.0.Final 
+                which is the latest release of the stack. You can actually use this stack 
+                with any version of JBoss AS that implements Java EE 6, not just JBoss AS 
+                7! -->
             <dependency>
                 <groupId>org.jboss.spec</groupId>
                 <artifactId>jboss-javaee-6.0</artifactId>
@@ -62,6 +62,17 @@
                 <version>${version.org.testng}</version>
             </dependency>
 
+            <!-- Shrinkwrap resolvers add support for resolving maven dependencies 
+                It must come before arquillian-bom that also has shrinkwrap-resolver-bom 
+                declared -->
+            <dependency>
+                <groupId>org.jboss.shrinkwrap.resolver</groupId>
+                <artifactId>shrinkwrap-resolver-bom</artifactId>
+                <version>${version.org.jboss.shrinkwrap.resolver}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+
             <!-- Arquillian lets test you your applications in real environment -->
             <dependency>
                 <groupId>org.jboss.arquillian</groupId>
@@ -71,7 +82,8 @@
                 <scope>import</scope>
             </dependency>
 
-            <!-- Arquillian Drone adds support for visual testing of your application -->
+            <!-- Arquillian Drone adds support for visual testing of your 
+                application -->
             <dependency>
                 <groupId>org.jboss.arquillian.extension</groupId>
                 <artifactId>arquillian-drone-bom</artifactId>
@@ -96,7 +108,8 @@
                 <type>pom</type>
             </dependency>
 
-            <!-- Arquillian Graphene is an enhanced tool based on Selenium allowing you to test AJAX more easily -->
+            <!-- Arquillian Graphene is an enhanced tool based on Selenium 
+                allowing you to test AJAX more easily -->
             <dependency>
                 <groupId>org.jboss.arquillian.graphene</groupId>
                 <artifactId>arquillian-graphene</artifactId>
@@ -105,7 +118,8 @@
             </dependency>
 
             <!-- Arquillian support for JBoss AS7 container -->
-            <!-- Note: Managed version of container allows Arquillian to control startup and shutdown of the container -->
+            <!-- Note: Managed version of container allows Arquillian to 
+                control startup and shutdown of the container -->
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-arquillian-container-managed</artifactId>
@@ -113,20 +127,12 @@
             </dependency>
 
             <!-- Arquillian support for JBoss AS7 container -->
-            <!-- Note: Remote version of container allows Arquillian to connect to already running container -->
+            <!-- Note: Remote version of container allows Arquillian to connect 
+                to already running container -->
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-arquillian-container-remote</artifactId>
                 <version>${version.org.jboss.as.arquillian.container}</version>
-            </dependency>
-            
-            <!-- Shrinkwrap resolvers add support for resolving maven dependencies -->
-            <dependency>
-                <groupId>org.jboss.shrinkwrap.resolver</groupId>
-                <artifactId>shrinkwrap-resolver-bom</artifactId>
-                <version>${version.org.jboss.shrinkwrap.resolver}</version>
-                <scope>import</scope>
-                <type>pom</type>
             </dependency>
 
         </dependencies>
@@ -135,14 +141,16 @@
     <build>
         <pluginManagement>
             <plugins>
-                <!-- The Maven Surefire plugin tests your application. Here we ensure we are using a version compatible with Arquillian -->
+                <!-- The Maven Surefire plugin tests your application. Here 
+                    we ensure we are using a version compatible with Arquillian -->
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${version.surefire.plugin}</version>
                 </plugin>
-                <!-- The JBoss AS plugin deploys your war to a local JBoss AS container -->
-                <!-- To use, set the JBOSS_HOME environment variable and run:
-                    mvn package jboss-as:deploy -->
+                <!-- The JBoss AS plugin deploys your war to a local JBoss 
+                    AS container -->
+                <!-- To use, set the JBOSS_HOME environment variable and 
+                    run: mvn package jboss-as:deploy -->
                 <plugin>
                     <groupId>org.jboss.as.plugins</groupId>
                     <artifactId>jboss-as-maven-plugin</artifactId>
