@@ -119,6 +119,15 @@
                 <artifactId>jboss-as-arquillian-container-remote</artifactId>
                 <version>${version.org.jboss.as.arquillian.container}</version>
             </dependency>
+            
+            <!-- Shrinkwrap resolvers add support for resolving maven dependencies -->
+            <dependency>
+                <groupId>org.jboss.shrinkwrap.resolver</groupId>
+                <artifactId>shrinkwrap-resolver-bom</artifactId>
+                <version>${version.org.jboss.shrinkwrap.resolver}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
 
         </dependencies>
     </dependencyManagement>
