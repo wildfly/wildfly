@@ -95,7 +95,8 @@ public class JSSEExpressionsUnitTestCase extends AbstractSubsystemBaseTest {
         //Assert.assertEquals(ModelType.LIST, loginModules.getType());
         ModelNode loginModule = loginModules.get(0).getValue();
         Assert.assertEquals(ModelType.OBJECT, auth.getType());
-        for (Property prop : loginModule.get(Constants.MODULE_OPTIONS).asPropertyList())
+        for (Property prop : loginModule.get(Constants.MODULE_OPTIONS).asPropertyList()){
             Assert.assertEquals(ModelType.EXPRESSION, prop.getValue().getType());
+        }
     }
 }

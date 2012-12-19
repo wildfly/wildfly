@@ -78,7 +78,9 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
     public static final SecuritySubsystemRootResourceDefinition INSTANCE = new SecuritySubsystemRootResourceDefinition();
     public static final SimpleAttributeDefinition DEEP_COPY_SUBJECT_MODE =
             new SimpleAttributeDefinitionBuilder(Constants.DEEP_COPY_SUBJECT_MODE, ModelType.BOOLEAN, true)
-                    .setDefaultValue(new ModelNode().set(false)).build();
+                    .setDefaultValue(new ModelNode(false))
+                    .setAllowExpression(true)
+                    .build();
 
     private SecuritySubsystemRootResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SecurityExtension.SUBSYSTEM_NAME),

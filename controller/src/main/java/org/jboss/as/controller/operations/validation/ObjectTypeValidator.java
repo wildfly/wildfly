@@ -45,7 +45,7 @@ public class ObjectTypeValidator extends ModelTypeValidator implements AllowedVa
     private final List<ModelNode> nodeValues;
 
     public ObjectTypeValidator(final boolean nullable, final AttributeDefinition... attributes) {
-        super(nullable, false, false, ModelType.OBJECT, findModelTypes(attributes));
+        super(nullable, true, false, ModelType.OBJECT, findModelTypes(attributes));
         allowedValues = new HashMap<String, AttributeDefinition>(attributes.length);
         nodeValues = new ArrayList<ModelNode>(attributes.length);
         for (AttributeDefinition attribute : attributes) {

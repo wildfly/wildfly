@@ -48,11 +48,13 @@ public class LoginModuleResourceDefinition extends SimpleResourceDefinition {
 
     static final SimpleAttributeDefinition FLAG = new SimpleAttributeDefinitionBuilder(Constants.FLAG, ModelType.STRING)
             .setAllowNull(false)
+            .setAllowExpression(true)
             .setValidator(new EnumValidator<ModuleFlag>(ModuleFlag.class, false, false))
             .build();
 
     static final SimpleAttributeDefinition MODULE = new SimpleAttributeDefinitionBuilder(Constants.MODULE, ModelType.STRING)
             .setAllowNull(true)
+            .setAllowExpression(true)
             .setMinSize(1)
             .build();
     static final PropertiesAttributeDefinition MODULE_OPTIONS = new PropertiesAttributeDefinition.Builder(Constants.MODULE_OPTIONS, true)
