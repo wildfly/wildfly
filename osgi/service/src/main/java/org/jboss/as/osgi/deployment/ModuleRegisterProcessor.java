@@ -55,9 +55,9 @@ public class ModuleRegisterProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
-        // Don't register EAR deployments
+        // Don't register EAR nor WAR deployments
         final DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        if (DeploymentTypeMarker.isType(DeploymentType.EAR, depUnit))
+        if (DeploymentTypeMarker.isType(DeploymentType.EAR, depUnit) || DeploymentTypeMarker.isType(DeploymentType.WAR, depUnit))
             return;
 
         // Don't register Bundle deployments
