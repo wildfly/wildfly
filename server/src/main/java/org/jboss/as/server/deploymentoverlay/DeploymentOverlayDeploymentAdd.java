@@ -64,12 +64,11 @@ public class DeploymentOverlayDeploymentAdd extends AbstractAddStepHandler {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
         final String deploymentOverlay =address.getElement(address.size() - 2).getValue();
-        final Boolean regularExpression = DeploymentOverlayDeploymentDefinition.REGULAR_EXPRESSION.resolveModelAttribute(context, model).asBoolean();
-        installServices(context, verificationHandler, newControllers, name, deploymentOverlay, regularExpression, priority);
+        installServices(context, verificationHandler, newControllers, name, deploymentOverlay, priority);
     }
 
-    static void installServices(final OperationContext context, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers, final String name, final String deploymentOverlay, final boolean regularExpression, final DeploymentOverlayPriority priority) {
-        final DeploymentOverlayLinkService service = new DeploymentOverlayLinkService(name, regularExpression, priority);
+    static void installServices(final OperationContext context, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers, final String name, final String deploymentOverlay, final DeploymentOverlayPriority priority) {
+        final DeploymentOverlayLinkService service = new DeploymentOverlayLinkService(name, priority);
 
         final ServiceName serviceName = DeploymentOverlayLinkService.SERVICE_NAME.append(deploymentOverlay).append(name);
         ServiceBuilder<DeploymentOverlayLinkService> builder = context.getServiceTarget().addService(serviceName, service)

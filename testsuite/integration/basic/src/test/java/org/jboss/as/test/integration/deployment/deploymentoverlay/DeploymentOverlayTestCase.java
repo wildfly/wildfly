@@ -106,7 +106,6 @@ public class DeploymentOverlayTestCase {
             addr.add(ModelDescriptionConstants.DEPLOYMENT, "*.war");
             op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
             op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-            op.get(ModelDescriptionConstants.REGULAR_EXPRESSION).set(true);
             ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
         }
 
