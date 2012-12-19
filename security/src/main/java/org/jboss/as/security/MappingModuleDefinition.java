@@ -54,7 +54,7 @@ public class MappingModuleDefinition extends SimpleResourceDefinition {
     protected static final PropertiesAttributeDefinition MODULE_OPTIONS = new PropertiesAttributeDefinition.Builder(Constants.MODULE_OPTIONS, true)
             .setAllowExpression(true)
             .build();
-    private static final AttributeDefinition[] ATTRIBUTES = {CODE, TYPE, MODULE_OPTIONS};
+    private static final AttributeDefinition[] ATTRIBUTES = {CODE, TYPE, LoginModuleResourceDefinition.MODULE, MODULE_OPTIONS};
 
 
     MappingModuleDefinition(String key) {
