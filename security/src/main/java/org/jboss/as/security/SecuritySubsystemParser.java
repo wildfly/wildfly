@@ -25,7 +25,6 @@ package org.jboss.as.security;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CODE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.parsing.ParseUtils.invalidAttributeValue;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
@@ -33,7 +32,36 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.security.Constants.*;
+import static org.jboss.as.security.Constants.ACL;
+import static org.jboss.as.security.Constants.ACL_MODULE;
+import static org.jboss.as.security.Constants.ADDITIONAL_PROPERTIES;
+import static org.jboss.as.security.Constants.ALGORITHM;
+import static org.jboss.as.security.Constants.AUDIT;
+import static org.jboss.as.security.Constants.AUTHENTICATION;
+import static org.jboss.as.security.Constants.AUTHORIZATION;
+import static org.jboss.as.security.Constants.AUTH_MODULE;
+import static org.jboss.as.security.Constants.CACHE_TYPE;
+import static org.jboss.as.security.Constants.CLASSIC;
+import static org.jboss.as.security.Constants.DEEP_COPY_SUBJECT_MODE;
+import static org.jboss.as.security.Constants.IDENTITY_TRUST;
+import static org.jboss.as.security.Constants.JASPI;
+import static org.jboss.as.security.Constants.JSSE;
+import static org.jboss.as.security.Constants.KEYSTORE;
+import static org.jboss.as.security.Constants.KEY_MANAGER;
+import static org.jboss.as.security.Constants.LOGIN_MODULE;
+import static org.jboss.as.security.Constants.LOGIN_MODULE_STACK;
+import static org.jboss.as.security.Constants.MAPPING;
+import static org.jboss.as.security.Constants.MAPPING_MODULE;
+import static org.jboss.as.security.Constants.MODULE_OPTIONS;
+import static org.jboss.as.security.Constants.NAME;
+import static org.jboss.as.security.Constants.POLICY_MODULE;
+import static org.jboss.as.security.Constants.PROVIDER;
+import static org.jboss.as.security.Constants.PROVIDER_MODULE;
+import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
+import static org.jboss.as.security.Constants.TRUSTSTORE;
+import static org.jboss.as.security.Constants.TRUST_MANAGER;
+import static org.jboss.as.security.Constants.TRUST_MODULE;
+import static org.jboss.as.security.Constants.VAULT;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -366,7 +394,6 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             JSSEResourceDefinition.CLIENT_AUTH.marshallAsAttribute(modelNode, false, writer);
             JSSEResourceDefinition.PROTOCOLS.marshallAsAttribute(modelNode, false, writer);
             JSSEResourceDefinition.ADDITIONAL_PROPERTIES.marshallAsElement(modelNode, writer);
-
             writer.writeEndElement();
         }
     }
@@ -834,75 +861,61 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
 
             switch (attribute) {
                 case KEYSTORE_PASSWORD: {
-                    ModelNode password = KeyStoreAttributeDefinition.parseField(PASSWORD, value, reader);
-                    op.get(KEYSTORE, PASSWORD).set(password);
+                    ComplexAttributes.PASSWORD.parseAndSetParameter(value, op.get(KEYSTORE), reader);
                     visited.add(attribute);
                     break;
                 }
                 case KEYSTORE_TYPE: {
-                    ModelNode type = KeyStoreAttributeDefinition.parseField(TYPE, value, reader);
-                    op.get(KEYSTORE, TYPE).set(type);
+                    ComplexAttributes.TYPE.parseAndSetParameter(value, op.get(KEYSTORE), reader);
                     break;
                 }
                 case KEYSTORE_URL: {
-                    ModelNode url = KeyStoreAttributeDefinition.parseField(URL, value, reader);
-                    op.get(KEYSTORE, URL).set(url);
+                    ComplexAttributes.URL.parseAndSetParameter(value, op.get(KEYSTORE), reader);
                     break;
                 }
                 case KEYSTORE_PROVIDER: {
-                    ModelNode provider = KeyStoreAttributeDefinition.parseField(PROVIDER, value, reader);
-                    op.get(KEYSTORE, PROVIDER).set(provider);
+                    ComplexAttributes.PROVIDER.parseAndSetParameter(value, op.get(KEYSTORE), reader);
                     break;
                 }
                 case KEYSTORE_PROVIDER_ARGUMENT: {
-                    ModelNode argument = KeyStoreAttributeDefinition.parseField(PROVIDER_ARGUMENT, value, reader);
-                    op.get(KEYSTORE, PROVIDER_ARGUMENT).set(argument);
+                    ComplexAttributes.PROVIDER_ARGUMENT.parseAndSetParameter(value, op.get(KEYSTORE), reader);
                     break;
                 }
                 case KEY_MANAGER_FACTORY_PROVIDER: {
-                    ModelNode provider = KeyManagerAttributeDefinition.parseField(PROVIDER, value, reader);
-                    op.get(KEY_MANAGER, PROVIDER).set(provider);
+                    ComplexAttributes.PROVIDER.parseAndSetParameter(value, op.get(KEY_MANAGER), reader);
                     break;
                 }
                 case KEY_MANAGER_FACTORY_ALGORITHM: {
-                    ModelNode provider = KeyManagerAttributeDefinition.parseField(ALGORITHM, value, reader);
-                    op.get(KEY_MANAGER, ALGORITHM).set(provider);
+                    ComplexAttributes.ALGORITHM.parseAndSetParameter(value, op.get(KEY_MANAGER), reader);
                     break;
                 }
                 case TRUSTSTORE_PASSWORD: {
-                    ModelNode password = KeyStoreAttributeDefinition.parseField(PASSWORD, value, reader);
-                    op.get(TRUSTSTORE, PASSWORD).set(password);
+                    ComplexAttributes.PASSWORD.parseAndSetParameter(value, op.get(TRUSTSTORE), reader);
                     visited.add(attribute);
                     break;
                 }
                 case TRUSTSTORE_TYPE: {
-                    ModelNode type = KeyStoreAttributeDefinition.parseField(TYPE, value, reader);
-                    op.get(TRUSTSTORE, TYPE).set(type);
+                    ComplexAttributes.TYPE.parseAndSetParameter(value, op.get(TRUSTSTORE), reader);
                     break;
                 }
                 case TRUSTSTORE_URL: {
-                    ModelNode url = KeyStoreAttributeDefinition.parseField(URL, value, reader);
-                    op.get(TRUSTSTORE, URL).set(url);
+                    ComplexAttributes.URL.parseAndSetParameter(value, op.get(TRUSTSTORE), reader);
                     break;
                 }
                 case TRUSTSTORE_PROVIDER: {
-                    ModelNode provider = KeyStoreAttributeDefinition.parseField(PROVIDER, value, reader);
-                    op.get(TRUSTSTORE, PROVIDER).set(provider);
+                    ComplexAttributes.PROVIDER.parseAndSetParameter(value, op.get(TRUSTSTORE), reader);
                     break;
                 }
                 case TRUSTSTORE_PROVIDER_ARGUMENT: {
-                    ModelNode argument = KeyStoreAttributeDefinition.parseField(PROVIDER_ARGUMENT, value, reader);
-                    op.get(TRUSTSTORE, PROVIDER_ARGUMENT).set(argument);
+                    ComplexAttributes.PROVIDER_ARGUMENT.parseAndSetParameter(value, op.get(TRUSTSTORE), reader);
                     break;
                 }
                 case TRUST_MANAGER_FACTORY_PROVIDER: {
-                    ModelNode provider = KeyManagerAttributeDefinition.parseField(PROVIDER, value, reader);
-                    op.get(TRUST_MANAGER, PROVIDER).set(provider);
+                    ComplexAttributes.PROVIDER.parseAndSetParameter(value, op.get(TRUST_MANAGER), reader);
                     break;
                 }
                 case TRUST_MANAGER_FACTORY_ALGORITHM: {
-                    ModelNode provider = KeyManagerAttributeDefinition.parseField(ALGORITHM, value, reader);
-                    op.get(TRUST_MANAGER, ALGORITHM).set(provider);
+                    ComplexAttributes.ALGORITHM.parseAndSetParameter(value, op.get(TRUST_MANAGER), reader);
                     break;
                 }
                 case CLIENT_ALIAS: {

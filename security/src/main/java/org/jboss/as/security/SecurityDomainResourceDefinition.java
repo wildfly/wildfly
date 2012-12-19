@@ -56,8 +56,9 @@ import org.jboss.security.SimplePrincipal;
  */
 public class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
 
-    public static final SimpleAttributeDefinition CACHE_TYPE =
-            new SimpleAttributeDefinitionBuilder(Constants.CACHE_TYPE, ModelType.STRING, true).build();
+    public static final SimpleAttributeDefinition CACHE_TYPE = new SimpleAttributeDefinitionBuilder(Constants.CACHE_TYPE, ModelType.STRING, true)
+            .setAllowExpression(true)
+            .build();
     static SimpleMapAttributeDefinition MODULE_OPTIONS = new SimpleMapAttributeDefinition.Builder(Constants.MODULE_OPTIONS, true)
             .setXmlName(Element.MODULE_OPTION.getLocalName())
             .setAllowExpression(true)
