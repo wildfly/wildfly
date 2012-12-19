@@ -45,7 +45,14 @@
                         flag="optional"/>
             </authentication-jaspi>
         </security-domain>
-	</security-domains>
+        <security-domain name="ordering" cache-type="default">
+            <authentication>
+                <login-module code="Remoting" flag="optional">
+                    <module-option name="password-stacking" value="useFirstPass"/>
+                </login-module>
+            </authentication>
+        </security-domain>
+    </security-domains>
 	<vault code="somevault">
 	  <vault-option name="xyz" value="zxc"/>
 	  <vault-option name="abc" value="def"/>

@@ -36,6 +36,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -170,10 +172,7 @@ public class LegacySupport {
      */
     @Deprecated
     public static class LoginModulesAttributeDefinition extends ListAttributeDefinition {
-
-
         public static final ParameterValidator validator;
-        public static final ParameterValidator fieldValidator;
 
         static {
             final ParametersValidator delegate = new ParametersValidator();
@@ -181,9 +180,7 @@ public class LegacySupport {
             delegate.registerValidator(Constants.FLAG, new EnumValidator<ModuleFlag>(ModuleFlag.class, false, false));
             delegate.registerValidator(Constants.MODULE, new StringLengthValidator(1, true));
             delegate.registerValidator(Constants.MODULE_OPTIONS, new ModelTypeValidator(ModelType.OBJECT, true));
-
             validator = new ParametersOfValidator(delegate);
-            fieldValidator = delegate;
         }
 
 
@@ -256,21 +253,14 @@ public class LegacySupport {
      */
     @Deprecated
     public static class MappingModulesAttributeDefinition extends ListAttributeDefinition {
-
         private static final ParameterValidator validator;
-        private static final ParameterValidator fieldValidator;
-
-
         static {
             final ParametersValidator delegate = new ParametersValidator();
             delegate.registerValidator(CODE, new StringLengthValidator(1));
             delegate.registerValidator(Constants.TYPE, new StringLengthValidator(1));
             delegate.registerValidator(Constants.MODULE, new StringLengthValidator(1, true));
             delegate.registerValidator(Constants.MODULE_OPTIONS, new ModelTypeValidator(ModelType.OBJECT, true));
-
             validator = new ParametersOfValidator(delegate);
-            fieldValidator = delegate;
-
         }
 
 
@@ -334,18 +324,13 @@ public class LegacySupport {
      */
     @Deprecated
     public static class ProviderModulesAttributeDefinition extends ListAttributeDefinition {
-
-
         public static final ParameterValidator validator;
-        public static final ParameterValidator fieldValidator;
 
         static {
             final ParametersValidator delegate = new ParametersValidator();
             delegate.registerValidator(CODE, new StringLengthValidator(1));
             delegate.registerValidator(Constants.MODULE_OPTIONS, new ModelTypeValidator(ModelType.OBJECT, true));
-
             validator = new ParametersOfValidator(delegate);
-            fieldValidator = delegate;
         }
 
 
@@ -432,44 +417,26 @@ public class LegacySupport {
 
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            Resource existing = context.readResource(PathAddress.EMPTY_ADDRESS);
             OperationStepHandler addHandler = context.getResourceRegistration().getSubModel(PathAddress.EMPTY_ADDRESS.append(newKeyName)).getOperationHandler(PathAddress.EMPTY_ADDRESS, "add");
-            for (ModelNode module : operation.get(VALUE).asList()) {
+            List<ModelNode> modules = new ArrayList<ModelNode>(operation.get(VALUE).asList());
+            Collections.reverse(modules); //need to reverse it to make sure they are added in proper order
+            for (ModelNode module : modules) {
                 ModelNode addModuleOp = module.clone();
                 String code = addModuleOp.get(Constants.CODE).asString();
                 PathElement relativePath = PathElement.pathElement(newKeyName, code);
                 PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR)).append(relativePath);
-                boolean exists = context.readResource(PathAddress.EMPTY_ADDRESS).hasChild(relativePath);
                 addModuleOp.get(OP_ADDR).set(address.toModelNode());
                 addModuleOp.get(OP).set(ADD);
                 context.addStep(addModuleOp, addHandler, OperationContext.Stage.IMMEDIATE);
-                if (exists) {
-                    ModelNode removeModuleOp = Util.createRemoveOperation(address);
-                    context.addStep(removeModuleOp, new SecurityDomainReloadRemoveHandler(), OperationContext.Stage.IMMEDIATE);
-                }
-                context.stepCompleted();
             }
+            //remove on the end to make sure it is executed first
+            for (Resource.ResourceEntry entry : existing.getChildren(newKeyName)) {
+                PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR)).append(entry.getPathElement());
+                ModelNode removeModuleOp = Util.createRemoveOperation(address);
+                context.addStep(removeModuleOp, new SecurityDomainReloadRemoveHandler(), OperationContext.Stage.IMMEDIATE);
+            }
+            context.stepCompleted();
         }
     }
-
-   /* static class JASPIAuthenticationModulesAttributeWriter implements OperationStepHandler {
-        @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            OperationStepHandler addHandler = context.getResourceRegistration().getSubModel(PathAddress.EMPTY_ADDRESS.append(AUTH_MODULE)).getOperationHandler(PathAddress.EMPTY_ADDRESS, "add");
-            for (ModelNode module : operation.get(VALUE).asList()) {
-                ModelNode addModuleOp = module.clone();
-                String code = addModuleOp.get(Constants.CODE).asString();
-                PathElement relativePath = PathElement.pathElement(AUTH_MODULE, code);
-                PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR)).append(relativePath);
-                boolean exists = context.readResource(PathAddress.EMPTY_ADDRESS).hasChild(relativePath);
-                addModuleOp.get(OP_ADDR).set(address.toModelNode());
-                addModuleOp.get(OP).set(ADD);
-                context.addStep(addModuleOp, addHandler, OperationContext.Stage.IMMEDIATE);
-                if (exists) {
-                    ModelNode removeModuleOp = Util.createRemoveOperation(address);
-                    context.addStep(removeModuleOp, new SecurityDomainReloadRemoveHandler(), OperationContext.Stage.IMMEDIATE);
-                }
-                context.stepCompleted();
-            }
-        }
-    }*/
 }
