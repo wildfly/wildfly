@@ -45,13 +45,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
-import org.jboss.as.controller.client.impl.AbstractModelControllerClient;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
 import org.jboss.as.test.integration.domain.mixed.Version.AsVersion;
-import org.jboss.as.test.integration.domain.mixed.util.AbstractMixedDomainTest;
+import org.jboss.as.test.integration.domain.mixed.util.MixedDomainTestSupport;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.xnio.IoUtils;
@@ -60,14 +60,20 @@ import org.xnio.IoUtils;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public abstract class SimpleMixedDomainTest extends AbstractMixedDomainTest {
+public abstract class SimpleMixedDomainTest  {
 
-    AbstractModelControllerClient masterClient;
-    AbstractModelControllerClient slaveClient;
+    MixedDomainTestSupport support;
+    Version.AsVersion version;
 
     @Before
     public void init() throws Exception {
+        support = MixedDomainTestSuite.getSupport(this.getClass());
+        version = MixedDomainTestSuite.getVersion(this.getClass());
+    }
 
+    @AfterClass
+    public synchronized static void afterClass() {
+        MixedDomainTestSuite.afterClass();
     }
 
     @Test
@@ -78,14 +84,15 @@ public abstract class SimpleMixedDomainTest extends AbstractMixedDomainTest {
 
     @Test
     public void testVersioning() throws Exception {
-        DomainClient masterClient = getSupport().getDomainMasterLifecycleUtil().createDomainClient();
+
+        DomainClient masterClient = support.getDomainMasterLifecycleUtil().createDomainClient();
         ModelNode masterModel;
         try {
             masterModel = readDomainModelForVersions(masterClient);
         } finally {
             IoUtils.safeClose(masterClient);
         }
-        DomainClient slaveClient = getSupport().getDomainSlaveLifecycleUtil().createDomainClient();
+        DomainClient slaveClient = support.getDomainSlaveLifecycleUtil().createDomainClient();
         ModelNode slaveModel;
         try {
             slaveModel = readDomainModelForVersions(slaveClient);
@@ -99,7 +106,7 @@ public abstract class SimpleMixedDomainTest extends AbstractMixedDomainTest {
     }
 
     private void cleanupKnownDifferencesInModelsForVersioningCheck(ModelNode masterModel, ModelNode slaveModel) {
-        if (getVersion() == AsVersion.V_7_1_2_Final || getVersion() == AsVersion.V_7_1_3_Final) {
+        if (version == AsVersion.V_7_1_2_Final || version == AsVersion.V_7_1_3_Final) {
             //First get rid of any undefined crap
             cleanUndefinedNodes(masterModel);
             cleanUndefinedNodes(slaveModel);
