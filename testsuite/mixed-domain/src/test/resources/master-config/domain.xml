@@ -34,8 +34,6 @@
         <extension module="org.jboss.as.weld"/>
     </extensions>
     <system-properties>
-        <!-- IPv4 is not required, but setting this helps avoid unintended use of IPv6 -->
-        <property name="java.net.preferIPv4Stack" value="true"/>
     </system-properties>
     <profiles>
         <profile name="default">
