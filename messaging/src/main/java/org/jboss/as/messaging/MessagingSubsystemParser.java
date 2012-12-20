@@ -376,7 +376,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
 
 
         if(!required.isEmpty()) {
-            missingRequired(reader, required);
+            throw missingRequired(reader, required);
         }
 
     }
@@ -450,7 +450,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
 
         if(!required.isEmpty()) {
-            missingRequired(reader, required);
+            throw missingRequired(reader, required);
         }
 
         checkClusterConnectionConstraints(reader, seen);
@@ -467,6 +467,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
     }
 
     protected void checkBroadcastGroupConstraints(XMLExtendedStreamReader reader, Set<Element> seen) throws XMLStreamException {
+        checkOnlyOneOfElements(reader, seen, Element.GROUP_ADDRESS, Element.SOCKET_BINDING);
+        if (seen.contains(Element.GROUP_ADDRESS) && !seen.contains(Element.GROUP_PORT)) {
+            throw missingRequired(reader, EnumSet.of(Element.GROUP_PORT));
+        }
     }
 
     private void processBridges(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
@@ -549,7 +553,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         checkOnlyOneOfElements(reader, seen, Element.STATIC_CONNECTORS, Element.DISCOVERY_GROUP_REF);
 
         if(!required.isEmpty()) {
-            missingRequired(reader, required);
+            throw missingRequired(reader, required);
         }
 
         updates.add(bridgeAdd);
@@ -594,7 +598,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
 
         if(!required.isEmpty()) {
-            missingRequired(reader, required);
+            throw missingRequired(reader, required);
         }
     }
 
@@ -626,7 +630,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
 
         if(!required.isEmpty()) {
-            missingRequired(reader, required);
+            throw missingRequired(reader, required);
         }
 
         updates.add(groupingHandlerAdd);
@@ -682,17 +686,15 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             }
         }
         if(name == null) {
-            ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
         }
 
         ModelNode broadcastGroupAdd = org.jboss.as.controller.operations.common.Util.getEmptyOperation(ADD, address.clone().add(CommonAttributes.BROADCAST_GROUP, name));
 
-        EnumSet<Element> required = EnumSet.of(Element.GROUP_ADDRESS, Element.GROUP_PORT);
         Set<Element> seen = EnumSet.noneOf(Element.class);
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             seen.add(element);
-            required.remove(element);
             switch (element) {
                 case LOCAL_BIND_ADDRESS:
                 case LOCAL_BIND_PORT:
@@ -709,10 +711,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     handleUnknownBroadcastGroupAttribute(reader, element, broadcastGroupAdd);
                 }
             }
-        }
-
-        if(!required.isEmpty()) {
-            missingRequired(reader, required);
         }
 
         checkBroadcastGroupConstraints(reader, seen);
@@ -759,16 +757,14 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             }
         }
         if(name == null) {
-            ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+            throw  missingRequired(reader, Collections.singleton(Attribute.NAME));
         }
 
         ModelNode discoveryGroup = org.jboss.as.controller.operations.common.Util.getEmptyOperation(ADD, address.clone().add(CommonAttributes.DISCOVERY_GROUP, name));
 
-        EnumSet<Element> required = EnumSet.of(Element.GROUP_ADDRESS, Element.GROUP_PORT);
         Set<Element> seen = EnumSet.noneOf(Element.class);
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
-            required.remove(element);
             seen.add(element);
             switch (element) {
                 case LOCAL_BIND_ADDRESS:
@@ -785,10 +781,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             }
         }
 
-        if(!required.isEmpty()) {
-            missingRequired(reader, required);
-        }
-
         checkDiscoveryGroupConstraints(reader, seen);
 
         updates.add(discoveryGroup);
@@ -800,6 +792,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
     }
 
     protected void checkDiscoveryGroupConstraints(XMLExtendedStreamReader reader, Set<Element> seen) throws XMLStreamException {
+        checkOnlyOneOfElements(reader, seen, Element.GROUP_ADDRESS, Element.SOCKET_BINDING);
+        if (seen.contains(Element.GROUP_ADDRESS) && !seen.contains(Element.GROUP_PORT)) {
+            throw missingRequired(reader, EnumSet.of(Element.GROUP_PORT));
+        }
     }
 
     void processConnectionFactories(final XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
@@ -1091,7 +1087,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 }
             }
             if(name == null) {
-                ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+                throw missingRequired(reader, Collections.singleton(Attribute.NAME));
             }
 
             final ModelNode connectorAddress = address.clone();
@@ -1108,7 +1104,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 } case NETTY_CONNECTOR: {
                     connectorAddress.add(REMOTE_CONNECTOR, name);
                     if(socketBinding == null) {
-                        ParseUtils.missingRequired(reader, Collections.singleton(Attribute.SOCKET_BINDING));
+                        throw missingRequired(reader, Collections.singleton(Attribute.SOCKET_BINDING));
                     }
                     operation.get(RemoteTransportDefinition.SOCKET_BINDING.getName()).set(socketBinding);
                     parseTransportConfiguration(reader, operation, false);
@@ -1314,7 +1310,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
 
         if(!required.isEmpty()) {
-            missingRequired(reader, required);
+            throw missingRequired(reader, required);
         }
 
         list.add(divertAdd);
@@ -1400,7 +1396,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
 
         final String name = reader.getAttributeValue(0);
         if(name == null) {
-            ParseUtils.missingRequired(reader, Collections.singleton("name"));
+            throw missingRequired(reader, Collections.singleton("name"));
         }
 
         final ModelNode topic = new ModelNode();
@@ -1475,7 +1471,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
     void processPooledConnectionFactory(final XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
         final String name = reader.getAttributeValue(0);
         if(name == null) {
-            ParseUtils.missingRequired(reader, Collections.singleton("name"));
+            throw missingRequired(reader, Collections.singleton("name"));
         }
 
         final ModelNode connectionFactory = new ModelNode();

@@ -26,6 +26,7 @@ import static java.util.Arrays.asList;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
@@ -38,6 +39,7 @@ import static org.jboss.as.messaging.Element.STATIC_CONNECTORS;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
@@ -81,6 +83,9 @@ public class Messaging13SubsystemParser extends Messaging12SubsystemParser {
         checkNotBothElements(reader, seen, Element.SOCKET_BINDING, Element.JGROUPS_STACK);
         checkNotBothElements(reader, seen, Element.JGROUPS_STACK, Element.GROUP_ADDRESS);
         checkNotBothElements(reader, seen, Element.GROUP_ADDRESS, Element.SOCKET_BINDING);
+        if (seen.contains(Element.GROUP_ADDRESS) && !seen.contains(Element.GROUP_PORT)) {
+            throw missingRequired(reader, EnumSet.of(Element.GROUP_PORT));
+        }
     }
 
     @Override
@@ -88,6 +93,9 @@ public class Messaging13SubsystemParser extends Messaging12SubsystemParser {
         checkNotBothElements(reader, seen, Element.SOCKET_BINDING, Element.JGROUPS_STACK);
         checkNotBothElements(reader, seen, Element.JGROUPS_STACK, Element.GROUP_ADDRESS);
         checkNotBothElements(reader, seen, Element.GROUP_ADDRESS, Element.SOCKET_BINDING);
+        if (seen.contains(Element.GROUP_ADDRESS) && !seen.contains(Element.GROUP_PORT)) {
+            throw missingRequired(reader, EnumSet.of(Element.GROUP_PORT));
+        }
     }
 
     protected void handleUnknownConnectionFactoryAttribute(XMLExtendedStreamReader reader, Element element, ModelNode connectionFactory, boolean pooled)
