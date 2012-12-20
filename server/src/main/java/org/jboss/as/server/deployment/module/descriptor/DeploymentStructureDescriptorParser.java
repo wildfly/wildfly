@@ -114,7 +114,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
         mapper.registerRootElement(ROOT_1_0, JBossDeploymentStructureParser10.INSTANCE);
         mapper.registerRootElement(ROOT_1_1, JBossDeploymentStructureParser11.INSTANCE);
         mapper.registerRootElement(ROOT_1_2, JBossDeploymentStructureParser12.INSTANCE);
-        mapper.registerRootElement(ROOT_NO_NAMESPACE, JBossDeploymentStructureParser11.INSTANCE);
+        mapper.registerRootElement(ROOT_NO_NAMESPACE, JBossDeploymentStructureParser12.INSTANCE);
     }
 
     @Override
