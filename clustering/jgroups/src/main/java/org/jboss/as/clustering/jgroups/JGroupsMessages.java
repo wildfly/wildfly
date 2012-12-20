@@ -63,7 +63,7 @@ public interface JGroupsMessages {
     @Message(id = 10271, value = "Failed to locate %s")
     String notFound(String resource);
 
-    @Message(id = 10272, value = "A node named %s already exists in this cluster.  Perhaps there is already a server running on this host?  If so, restart this server with a unique node name, via -Djboss.node.name=<node-name>")
+    @Message(id = 10272, value = "A node named %s already exists in this cluster. Perhaps there is already a server running on this host? If so, restart this server with a unique node name, via -Djboss.node.name=<node-name>")
     IllegalStateException duplicateNodeName(String name);
 
     @Message(id = 10273, value = "Transport for stack %s is not defined. Please specify both a transport and protocol list, either as optional parameters to add() or via batching.")
@@ -78,6 +78,6 @@ public interface JGroupsMessages {
     @Message(id = 10276, value = "Protocol with relative path %s is not defined.")
     OperationFailedException protocolNotDefined(String relativePath);
 
-    @Message(id = 10277, value = "Property %s for protocol with relative path %s is not defined. ")
+    @Message(id = 10277, value = "Property %s for protocol with relative path %s is not defined.")
     OperationFailedException propertyNotDefined(String propertyName, String protocolRelativePath);
 }
