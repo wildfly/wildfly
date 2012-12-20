@@ -38,6 +38,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.osgi.api.Echo;
 import org.jboss.as.test.integration.osgi.deployment.bundle.DeferredFailActivator;
+import org.jboss.as.test.integration.osgi.webapp.bundle.AnnotatedServlet;
 import org.jboss.as.test.integration.osgi.webapp.bundle.SimpleServlet;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
@@ -73,6 +74,9 @@ public class WebAppTestCase {
     static final String BUNDLE_D_WAB = "bundle-d.wab";
     static final String BUNDLE_E_JAR = "bundle-e.jar";
     static final String BUNDLE_F_WAB = "bundle-f.wab";
+    static final String BUNDLE_G_WAR = "bundle-g.war";
+    static final String LIB_G_JAR = "lib-g.jar";
+    static final String BUNDLE_H_WAR = "bundle-h.war";
 
     static final Asset STRING_ASSET = new StringAsset("Hello from Resource");
 
@@ -142,6 +146,32 @@ public class WebAppTestCase {
             Assert.assertEquals("Hello from Resource", result);
         } finally {
             deployer.undeploy(BUNDLE_B_WAR);
+        }
+    }
+
+    @Test
+    public void testOSGiStructureDeploymentWithLib() throws Exception {
+        deployer.deploy(BUNDLE_G_WAR);
+        try {
+            String result = performCall("/bundle-g/servlet?input=Hello");
+            Assert.assertEquals("Simple Servlet called with input=Hello", result);
+            result = performCall("/bundle-g/message.txt");
+            Assert.assertEquals("Hello from Resource", result);
+        } finally {
+            deployer.undeploy(BUNDLE_G_WAR);
+        }
+    }
+
+    @Test
+    public void testOSGiStructureDeploymentWithLibAndWebXML() throws Exception {
+        deployer.deploy(BUNDLE_H_WAR);
+        try {
+            String result = performCall("/bundle-h/servlet?input=Hello");
+            Assert.assertEquals("Simple Servlet called with input=Hello", result);
+            result = performCall("/bundle-h/message.txt");
+            Assert.assertEquals("Hello from Resource", result);
+        } finally {
+            deployer.undeploy(BUNDLE_H_WAR);
         }
     }
 
@@ -285,7 +315,7 @@ public class WebAppTestCase {
     @Deployment(name = SIMPLE_WAR, managed = false, testable = false)
     public static Archive<?> getSimpleWar() {
         final WebArchive archive = ShrinkWrap.create(WebArchive.class, SIMPLE_WAR);
-        archive.addClasses(SimpleServlet.class, Echo.class);
+        archive.addClasses(AnnotatedServlet.class, Echo.class);
         archive.addAsWebResource(STRING_ASSET, "message.txt");
         return archive;
     }
@@ -293,7 +323,7 @@ public class WebAppTestCase {
     @Deployment(name = BUNDLE_A_WAR, managed = false, testable = false)
     public static Archive<?> getBundleA() {
         final WebArchive archive = ShrinkWrap.create(WebArchive.class, BUNDLE_A_WAR);
-        archive.addClasses(SimpleServlet.class, Echo.class);
+        archive.addClasses(AnnotatedServlet.class, Echo.class);
         archive.addAsWebResource(STRING_ASSET, "message.txt");
         archive.setManifest(new Asset() {
             @Override
@@ -313,7 +343,7 @@ public class WebAppTestCase {
     @Deployment(name = BUNDLE_B_WAR, managed = false, testable = false)
     public static Archive<?> getBundleB() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_B_WAR);
-        archive.addClasses(SimpleServlet.class, Echo.class);
+        archive.addClasses(AnnotatedServlet.class, Echo.class);
         archive.addAsResource(STRING_ASSET, "message.txt");
         archive.setManifest(new Asset() {
             @Override
@@ -332,7 +362,7 @@ public class WebAppTestCase {
     @Deployment(name = BUNDLE_C_WAB, managed = false, testable = false)
     public static Archive<?> getBundleC() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_C_WAB);
-        archive.addClasses(SimpleServlet.class, Echo.class);
+        archive.addClasses(AnnotatedServlet.class, Echo.class);
         archive.addAsResource(STRING_ASSET, "message.txt");
         archive.setManifest(new Asset() {
             @Override
@@ -351,7 +381,7 @@ public class WebAppTestCase {
     @Deployment(name = BUNDLE_D_WAB, managed = false, testable = false)
     public static Archive<?> getBundleD() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_D_WAB);
-        archive.addClasses(SimpleServlet.class, Echo.class);
+        archive.addClasses(AnnotatedServlet.class, Echo.class);
         archive.addAsResource(STRING_ASSET, "message.txt");
         archive.setManifest(new Asset() {
             @Override
@@ -371,7 +401,7 @@ public class WebAppTestCase {
     @Deployment(name = BUNDLE_E_JAR, managed = false, testable = false)
     public static Archive<?> getBundleE() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_E_JAR);
-        archive.addClasses(SimpleServlet.class, Echo.class);
+        archive.addClasses(AnnotatedServlet.class, Echo.class);
         archive.addAsResource(STRING_ASSET, "message.txt");
         archive.setManifest(new Asset() {
             @Override
@@ -391,7 +421,7 @@ public class WebAppTestCase {
     @Deployment(name = BUNDLE_F_WAB, managed = false, testable = false)
     public static Archive<?> getBundleF() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_F_WAB);
-        archive.addClasses(SimpleServlet.class, Echo.class, DeferredFailActivator.class);
+        archive.addClasses(AnnotatedServlet.class, Echo.class, DeferredFailActivator.class);
         archive.addAsResource(STRING_ASSET, "message.txt");
         archive.setManifest(new Asset() {
             @Override
@@ -403,6 +433,62 @@ public class WebAppTestCase {
                 builder.addImportPackages(PostConstruct.class, WebServlet.class);
                 builder.addImportPackages(Servlet.class, HttpServlet.class);
                 builder.addImportPackages(BundleActivator.class);
+                return builder.openStream();
+            }
+        });
+        return archive;
+    }
+
+    @Deployment(name = BUNDLE_G_WAR, managed = false, testable = false)
+    public static Archive<?> getBundleG() {
+        final JavaArchive libjar = ShrinkWrap.create(JavaArchive.class, LIB_G_JAR);
+        libjar.addClasses(AnnotatedServlet.class, Echo.class);
+        final WebArchive archive = ShrinkWrap.create(WebArchive.class, BUNDLE_G_WAR);
+        archive.addAsLibraries(libjar);
+        archive.addAsWebResource(STRING_ASSET, "message.txt");
+        archive.setManifest(new Asset() {
+            @Override
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(archive.getName());
+                builder.addBundleManifestVersion(2);
+                builder.addImportPackages(PostConstruct.class, WebServlet.class);
+                builder.addImportPackages(Servlet.class, HttpServlet.class);
+                builder.addBundleClasspath("WEB-INF/lib/" + LIB_G_JAR);
+                return builder.openStream();
+            }
+        });
+        return archive;
+    }
+
+    @Deployment(name = BUNDLE_H_WAR, managed = false, testable = false)
+    public static Archive<?> getBundleH() {
+        final JavaArchive libjar = ShrinkWrap.create(JavaArchive.class, LIB_G_JAR);
+        libjar.addClasses(SimpleServlet.class, Echo.class);
+        final WebArchive archive = ShrinkWrap.create(WebArchive.class, BUNDLE_H_WAR);
+        archive.addAsLibraries(libjar);
+        archive.addAsWebResource(STRING_ASSET, "message.txt");
+        archive.setWebXML(new StringAsset("<web-app version='2.5' xmlns='http://java.sun.com/xml/ns/javaee' " +
+        		"xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' " +
+        		"xsi:schemaLocation='http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd'>" +
+        		"<servlet>" +
+        		"<servlet-name>appServlet</servlet-name>" +
+        		"<servlet-class>" + SimpleServlet.class.getName() + "</servlet-class>" +
+        		"<load-on-startup>1</load-on-startup>" +
+        		"</servlet>" +
+                "<servlet-mapping>" +
+                "<servlet-name>appServlet</servlet-name>" +
+                "<url-pattern>/servlet</url-pattern>" +
+                "</servlet-mapping>" +
+        		"</web-app>"));
+        archive.setManifest(new Asset() {
+            @Override
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(archive.getName());
+                builder.addBundleManifestVersion(2);
+                builder.addImportPackages(Servlet.class, HttpServlet.class);
+                builder.addBundleClasspath("WEB-INF/lib/" + LIB_G_JAR);
                 return builder.openStream();
             }
         });

@@ -24,6 +24,8 @@ package org.jboss.as.test.integration.osgi.webapp.bundle;
 import java.io.IOException;
 import java.io.Writer;
 
+import javax.annotation.PostConstruct;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -31,11 +33,13 @@ import javax.servlet.http.HttpServletResponse;
 import org.jboss.as.test.integration.osgi.api.Echo;
 
 @SuppressWarnings("serial")
-public class SimpleServlet extends HttpServlet {
+@WebServlet(name = "AnnotatedServlet", urlPatterns = { "/servlet" })
+public class AnnotatedServlet extends HttpServlet {
 
     private volatile Echo echo;
 
-    public SimpleServlet() {
+    @PostConstruct
+    public void messageSetup() {
         echo = new Echo() {
             @Override
             public String echo(String msg) {
