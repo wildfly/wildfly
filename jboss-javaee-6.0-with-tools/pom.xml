@@ -62,17 +62,6 @@
                 <version>${version.org.testng}</version>
             </dependency>
 
-            <!-- Shrinkwrap resolvers add support for resolving maven dependencies 
-                It must come before arquillian-bom that also has shrinkwrap-resolver-bom 
-                declared -->
-            <dependency>
-                <groupId>org.jboss.shrinkwrap.resolver</groupId>
-                <artifactId>shrinkwrap-resolver-bom</artifactId>
-                <version>${version.org.jboss.shrinkwrap.resolver}</version>
-                <scope>import</scope>
-                <type>pom</type>
-            </dependency>
-
             <!-- Arquillian lets test you your applications in real environment -->
             <dependency>
                 <groupId>org.jboss.arquillian</groupId>

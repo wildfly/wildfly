@@ -57,7 +57,6 @@
         <version.org.jboss.logging>3.1.0.GA</version.org.jboss.logging>
         <version.org.jboss.logging.processor>1.0.3.Final</version.org.jboss.logging.processor>
         <version.org.jboss.security.negotiation>2.1.1.Final</version.org.jboss.security.negotiation>
-        <version.org.jboss.shrinkwrap.resolver>2.0.0-alpha-5</version.org.jboss.shrinkwrap.resolver>
         <version.org.jboss.spec.jboss.javaee.6.0>3.0.0.Final</version.org.jboss.spec.jboss.javaee.6.0>
         <version.org.richfaces>4.2.0.Final</version.org.richfaces>
 
