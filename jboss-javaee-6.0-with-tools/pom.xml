@@ -124,6 +124,16 @@
                 <version>${version.org.jboss.as.arquillian.container}</version>
             </dependency>
 
+            <!-- Older versions of Shrinkwrap don't automatically manage 
+                the version of Shrinkwrap depchain for us -->
+            <!-- TODO remove this when Arquillian upgrades to a newer shrinkwrap -->
+            <dependency>
+                <groupId>org.jboss.shrinkwrap.resolver</groupId>
+                <artifactId>shrinkwrap-resolver-depchain</artifactId>
+                <type>pom</type>
+                <version>${version.org.jboss.shrinkwrap.resolver}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
