@@ -70,7 +70,7 @@ public class ServerShutdownHandler implements OperationStepHandler {
                 processState.setStopping();
                 final Thread thread = new Thread(new Runnable() {
                     public void run() {
-                        System.exit(restart ? ExitCodes.RESTART_PROCESS_FROM_STARTUP_SCRIPT : 0);
+                        System.exit(restart ? ExitCodes.RESTART_PROCESS_FROM_STARTUP_SCRIPT : ExitCodes.NORMAL);
                     }
                 });
                 // The intention is that this shutdown is graceful, and so the client gets a reply.

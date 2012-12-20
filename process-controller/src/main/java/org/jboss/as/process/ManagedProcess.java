@@ -333,7 +333,7 @@ final class ManagedProcess {
                         new Thread(new Runnable() {
                             public void run() {
                                 processController.shutdown();
-                                System.exit(0);
+                                System.exit(ExitCodes.NORMAL);
                             }
                         }).start();
                     }

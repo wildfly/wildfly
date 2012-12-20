@@ -27,7 +27,21 @@ package org.jboss.as.process;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class ExitCodes {
-    /** Exit code which serves two functions:
+
+    /**
+     * Exit code which indicates normal process exit.
+     */
+    public static final int NORMAL = 0;
+
+    /**
+     * Exit code which indicates a process failure. In a managed domain, if the process emitting this code is
+     * a {@code HostController}, the process controller will react to this code by attempting to respawn the host
+     * controller. For other processes this code has no special semantic associated with it.
+     */
+    public static final int FAILED = 1;
+
+    /**
+     * Exit code which serves two functions:
      * <ul>
      *   <li>
      *     <b>standalone mode:</b> - if a standalone server's exit code the startup script will start up the server again.
@@ -41,6 +55,14 @@ public class ExitCodes {
      */
     public static final int RESTART_PROCESS_FROM_STARTUP_SCRIPT = 10;
 
-    /** Exit code from host controller which the process controller does not try to respawn, and leads to the process controller shutting down in turn*/
+    /**
+     * Exit code from host controller which indicates a critical boot failure. The process controller
+     * will only try to respawn the host controller if there are no running servers; if there aren't,
+     * the process controller will shut down in turn. If there are running servers, the process controller
+     * will attempt to respawn the host controller, but with longer delays between respawn attempts
+     * than would be the case with {@link #FAILED}. The expectation is a critical boot failure will require
+     * some sort of human intervention to resolve, so immediately respawning will just result in
+     * noise in the logs.
+     */
     public static final int HOST_CONTROLLER_ABORT_EXIT_CODE = 99;
 }

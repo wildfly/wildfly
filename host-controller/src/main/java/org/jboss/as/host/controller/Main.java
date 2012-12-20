@@ -81,7 +81,7 @@ public final class Main {
             StreamUtils.readFully(System.in, authKey);
         } catch (IOException e) {
             System.err.println(MESSAGES.failedToReadAuthenticationKey(e));
-            System.exit(1);
+            fail();
             return;
         }
 
@@ -118,7 +118,7 @@ public final class Main {
         try {
             final HostControllerEnvironment config = determineEnvironment(args);
             if (config == null) {
-                restart();
+                abort();
                 return null;
             } else {
                 try {
@@ -137,8 +137,9 @@ public final class Main {
     }
 
     /**
-     * Terminates process controller. JVM shuts down with {@link ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE}.
-     * @param t
+     * Terminates process with an exit code that will trigger shutdown of the process controller as well if there
+     * are no running servers. JVM shuts down with {@link ExitCodes#HOST_CONTROLLER_ABORT_EXIT_CODE}.
+     * @param t the throwable that triggered abort
      */
     private static void abort(Throwable t) {
         try {
@@ -153,18 +154,19 @@ public final class Main {
     private static void abort() {
         SystemExiter.exit(ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE);
     }
-    /**
-     * Shits down JVM with exit code which triggers restart of controller.
-     */
-    private static void restart(){
-        SystemExiter.exit(ExitCodes.RESTART_PROCESS_FROM_STARTUP_SCRIPT);
-    }
 
     /**
      * Terminates JVM with exit code: 0 - normal termination.
      */
     private static void exit(){
-        SystemExiter.exit(0);
+        SystemExiter.exit(ExitCodes.NORMAL);
+    }
+
+    /**
+     * Terminates JVM with exit code: 1 - failed termination but not an abort situation.
+     */
+    private static void fail(){
+        SystemExiter.exit(ExitCodes.FAILED);
     }
 
     /**
@@ -380,7 +382,7 @@ public final class Main {
                     if (value == null) {
                         return null;
                     }
-                    String propertyName = null;
+                    String propertyName;
                     if (idx < 0) {
                         // -b xxx -bmanagement xxx
                         propertyName = arg.length() == 2 ? HostControllerEnvironment.JBOSS_BIND_ADDRESS : HostControllerEnvironment.JBOSS_BIND_ADDRESS_PREFIX + arg.substring(2);

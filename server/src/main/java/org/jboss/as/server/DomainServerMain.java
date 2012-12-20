@@ -29,6 +29,7 @@ import java.io.InterruptedIOException;
 import java.io.PrintStream;
 import java.util.Arrays;
 
+import org.jboss.as.process.ExitCodes;
 import org.jboss.as.process.protocol.StreamUtils;
 import org.jboss.as.server.mgmt.domain.HostControllerClient;
 import org.jboss.as.server.mgmt.domain.HostControllerConnectionService;
@@ -93,7 +94,7 @@ public final class DomainServerMain {
             org.jboss.as.process.protocol.StreamUtils.readFully(initialInput, authKey);
         } catch (IOException e) {
             e.printStackTrace();
-            System.exit(1);
+            System.exit(ExitCodes.FAILED);
             throw new IllegalStateException(); // not reached
         }
 
@@ -119,7 +120,7 @@ public final class DomainServerMain {
             }));
         } catch (Exception e) {
             e.printStackTrace(initialError);
-            System.exit(1);
+            System.exit(ExitCodes.FAILED);
             throw new IllegalStateException(); // not reached
         } finally {
         }
@@ -148,7 +149,7 @@ public final class DomainServerMain {
         }
 
         // Once the input stream is cut off, shut down
-        System.exit(0);
+        System.exit(ExitCodes.NORMAL);
         throw new IllegalStateException(); // not reached
     }
 

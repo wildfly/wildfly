@@ -33,6 +33,7 @@ import java.util.StringTokenizer;
 
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.process.CommandLineConstants;
+import org.jboss.as.process.ExitCodes;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.logmanager.Level;
 import org.jboss.logmanager.Logger;
@@ -106,7 +107,7 @@ public final class Main {
                 t.printStackTrace(System.err);
             }
         } finally {
-            SystemExiter.exit(1);
+            SystemExiter.exit(ExitCodes.FAILED);
         }
     }
 
