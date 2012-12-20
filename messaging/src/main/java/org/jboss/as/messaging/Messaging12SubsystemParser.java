@@ -267,7 +267,7 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
         checkOnlyOneOfElements(reader, seen, Element.STATIC_CONNECTORS, Element.DISCOVERY_GROUP_REF);
 
         if(!required.isEmpty()) {
-            missingRequired(reader, required);
+            throw missingRequired(reader, required);
         }
 
         updates.add(bridgeAdd);
@@ -338,7 +338,7 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
         checkOnlyOneOfElements(reader, seen, Element.STATIC_CONNECTORS, Element.DISCOVERY_GROUP_REF);
 
         if(!required.isEmpty()) {
-            missingRequired(reader, required);
+            throw missingRequired(reader, required);
         }
 
         updates.add(clusterConnectionAdd);

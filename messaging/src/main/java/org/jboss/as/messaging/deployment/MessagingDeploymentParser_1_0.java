@@ -144,7 +144,7 @@ class MessagingDeploymentParser_1_0 implements XMLStreamConstants, XMLElementRea
 
         final String name = propertyReplacer.replaceProperties(reader.getAttributeValue(0));
         if (name == null) {
-            ParseUtils.missingRequired(reader, Collections.singleton("name"));
+            throw ParseUtils.missingRequired(reader, Collections.singleton("name"));
         }
 
         final ModelNode topic = new ModelNode();
@@ -171,7 +171,7 @@ class MessagingDeploymentParser_1_0 implements XMLStreamConstants, XMLElementRea
         final String name = propertyReplacer.replaceProperties(reader.getAttributeValue(0));
 
         if (name == null) {
-            ParseUtils.missingRequired(reader, Collections.singleton("name"));
+            throw ParseUtils.missingRequired(reader, Collections.singleton("name"));
         }
 
         final ModelNode queue = new ModelNode();
