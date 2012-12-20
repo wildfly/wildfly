@@ -195,7 +195,6 @@
             <subsystem xmlns="urn:jboss:domain:naming:1.2">
                 <remote-naming/>
             </subsystem>
-            <!-- OSGi does not work on the older slaves with deployments https://issues.jboss.org/browse/AS7-6202
             <subsystem xmlns="urn:jboss:domain:osgi:1.2" activation="lazy">
                 <properties>
                     <property name="org.osgi.framework.startlevel.beginning">1</property>
@@ -216,7 +215,6 @@
                     <capability name="org.jboss.as.osgi.http" startlevel="1"/>
                 </capabilities>
             </subsystem>
-            -->
             <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
             <subsystem xmlns="urn:jboss:domain:remoting:1.1">
                 <connector name="remoting-connector" socket-binding="remoting" security-realm="ApplicationRealm"/>
@@ -522,7 +520,6 @@
             <subsystem xmlns="urn:jboss:domain:naming:1.2">
                 <remote-naming/>
             </subsystem>
-            <!-- OSGi does not work on the older slaves with deployments https://issues.jboss.org/browse/AS7-6202
             <subsystem xmlns="urn:jboss:domain:osgi:1.2" activation="lazy">
                 <properties>
                     <property name="org.osgi.framework.startlevel.beginning">1</property>
@@ -543,7 +540,6 @@
                     <capability name="org.jboss.as.osgi.http" startlevel="1"/>
                 </capabilities>
             </subsystem>
-            -->
             <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
             <subsystem xmlns="urn:jboss:domain:remoting:1.1">
                 <connector name="remoting-connector" socket-binding="remoting" security-realm="ApplicationRealm"/>
@@ -847,7 +843,6 @@
             <subsystem xmlns="urn:jboss:domain:naming:1.2">
                 <remote-naming/>
             </subsystem>
-            <!-- OSGi does not work on the older slaves with deployments https://issues.jboss.org/browse/AS7-6202
             <subsystem xmlns="urn:jboss:domain:osgi:1.2" activation="lazy">
                 <properties>
                     <property name="org.osgi.framework.startlevel.beginning">1</property>
@@ -868,7 +863,6 @@
                     <capability name="org.jboss.as.osgi.http" startlevel="1"/>
                 </capabilities>
             </subsystem>
-            -->
             <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
             <subsystem xmlns="urn:jboss:domain:remoting:1.1">
                 <connector name="remoting-connector" socket-binding="remoting" security-realm="ApplicationRealm"/>
@@ -1279,7 +1273,6 @@
             <subsystem xmlns="urn:jboss:domain:naming:1.2">
                 <remote-naming/>
             </subsystem>
-            <!-- OSGi does not work on the older slaves with deployments https://issues.jboss.org/browse/AS7-6202
             <subsystem xmlns="urn:jboss:domain:osgi:1.2" activation="lazy">
                 <properties>
                     <property name="org.osgi.framework.startlevel.beginning">1</property>
@@ -1300,7 +1293,6 @@
                     <capability name="org.jboss.as.osgi.http" startlevel="1"/>
                 </capabilities>
             </subsystem>
-            -->
             <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
             <subsystem xmlns="urn:jboss:domain:remoting:1.1">
                 <connector name="remoting-connector" socket-binding="remoting" security-realm="ApplicationRealm"/>
@@ -1383,6 +1375,8 @@
             <socket-binding name="ajp" port="8009"/>
             <socket-binding name="http" port="8080"/>
             <socket-binding name="https" port="8443"/>
+            <!-- OSGi does not work in 7.1.x without this binding. See https://issues.jboss.org/browse/AS7-6202 -->
+            <socket-binding name="osgi-http" interface="management" port="8090"/>
             <socket-binding name="remoting" port="4447"/>
             <socket-binding name="txn-recovery-environment" port="4712"/>
             <socket-binding name="txn-status-manager" port="4713"/>
@@ -1401,6 +1395,8 @@
             <socket-binding name="jgroups-udp" port="55200" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45688"/>
             <socket-binding name="jgroups-udp-fd" port="54200"/>
             <socket-binding name="modcluster" port="0" multicast-address="224.0.1.105" multicast-port="23364"/>
+            <!-- OSGi does not work in 7.1.x without this binding. See https://issues.jboss.org/browse/AS7-6202 -->
+            <socket-binding name="osgi-http" interface="management" port="8090"/>
             <socket-binding name="remoting" port="4447"/>
             <socket-binding name="txn-recovery-environment" port="4712"/>
             <socket-binding name="txn-status-manager" port="4713"/>
@@ -1418,6 +1414,8 @@
             <socket-binding name="messaging" port="5445"/>
             <socket-binding name="messaging-group" port="0" multicast-address="${jboss.messaging.group.address:231.7.7.7}" multicast-port="${jboss.messaging.group.port:9876}"/>
             <socket-binding name="messaging-throughput" port="5455"/>
+            <!-- OSGi does not work in 7.1.x without this binding. See https://issues.jboss.org/browse/AS7-6202 -->
+            <socket-binding name="osgi-http" interface="management" port="8090"/>
             <socket-binding name="remoting" port="4447"/>
             <socket-binding name="txn-recovery-environment" port="4712"/>
             <socket-binding name="txn-status-manager" port="4713"/>
@@ -1441,6 +1439,8 @@
             <socket-binding name="messaging-group" port="0" multicast-address="${jboss.messaging.group.address:231.7.7.7}" multicast-port="${jboss.messaging.group.port:9876}"/>
             <socket-binding name="messaging-throughput" port="5455"/>
             <socket-binding name="modcluster" port="0" multicast-address="224.0.1.105" multicast-port="23364"/>
+            <!-- OSGi does not work in 7.1.x without this binding. See https://issues.jboss.org/browse/AS7-6202 -->
+            <socket-binding name="osgi-http" interface="management" port="8090"/>
             <socket-binding name="remoting" port="4447"/>
             <socket-binding name="txn-recovery-environment" port="4712"/>
             <socket-binding name="txn-status-manager" port="4713"/>
