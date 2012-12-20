@@ -90,7 +90,7 @@ public class SystemPropertyAddHandler implements OperationStepHandler{
         final boolean reload = !applyToRuntime && context.getProcessType().isServer();
 
         if (applyToRuntime) {
-            final String setValue = value != null ? VALUE.resolveModelAttribute(context, operation).asString() : null;
+            final String setValue = value != null ? VALUE.resolveModelAttribute(context, model).asString() : null;
             if (setValue != null) {
                 SecurityActions.setSystemProperty(name, setValue);
             } else {

@@ -39,7 +39,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP_CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -66,7 +65,6 @@ import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import java.io.File;
 import java.util.AbstractList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -272,7 +270,7 @@ public final class ManagedServerOperationsFactory {
     }
 
     private Map<String, String> getAllSystemProperties(boolean boottimeOnly) {
-        Map<String, String> props = new HashMap<String, String>();
+        Map<String, String> props = new LinkedHashMap<String, String>();
 
         addSystemProperties(domainModel, props, boottimeOnly);
         addSystemProperties(serverGroup, props, boottimeOnly);
