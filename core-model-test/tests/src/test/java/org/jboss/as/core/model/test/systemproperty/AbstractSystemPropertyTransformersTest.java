@@ -29,6 +29,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import java.util.List;
 
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
@@ -37,9 +40,12 @@ import org.jboss.as.core.model.test.LegacyKernelServicesInitializer.TestControll
 import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.core.model.test.util.StandardServerGroupInitializers;
 import org.jboss.as.core.model.test.util.TransformersTestParameters;
+import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  *
@@ -49,23 +55,25 @@ public abstract class AbstractSystemPropertyTransformersTest extends AbstractCor
 
     private final ModelVersion modelVersion;
     private final TestControllerVersion testControllerVersion;
-    private final String xmlResource;
     private final boolean serverGroup;
     private final ModelNode expectedUndefined;
 
-    public AbstractSystemPropertyTransformersTest(SystemPropertyTransformersTestParameters params, String xmlResource, boolean serverGroup) {
+    public AbstractSystemPropertyTransformersTest(TransformersTestParameters params, boolean serverGroup) {
         this.modelVersion = params.getModelVersion();
         this.testControllerVersion = params.getTestControllerVersion();
-        this.xmlResource = xmlResource;
         this.serverGroup = serverGroup;
-        this.expectedUndefined = params.getExpectedUndefined();
+        this.expectedUndefined = getExpectedUndefined(params.getModelVersion());
     }
 
+    @Parameters
+    public static List<Object[]> parameters(){
+        return TransformersTestParameters.setupVersions();
+    }
 
     @Test
     public void testSystemPropertyTransformer() throws Exception {
         KernelServicesBuilder builder = createKernelServicesBuilder(TestModelType.DOMAIN)
-                .setXmlResource(xmlResource);
+                .setXmlResource(serverGroup ? "domain-servergroup-systemproperties.xml" : "domain-systemproperties.xml");
         if (serverGroup) {
             builder.setModelInitializer(StandardServerGroupInitializers.XML_MODEL_INITIALIZER, StandardServerGroupInitializers.XML_MODEL_WRITE_SANITIZER);
         }
@@ -95,35 +103,62 @@ public abstract class AbstractSystemPropertyTransformersTest extends AbstractCor
         Assert.assertEquals(3, properties.get("sys.prop.test.three", VALUE).asInt());
         Assert.assertEquals(expectedUndefined, properties.get("sys.prop.test.four", BOOT_TIME));
         Assert.assertFalse(properties.get("sys.prop.test.four", VALUE).isDefined());
+
+        //Test the write attribute handler, the 'add' got tested at boot time
+        PathAddress baseAddress = serverGroup ? PathAddress.pathAddress(PathElement.pathElement(SERVER_GROUP, "test")) : PathAddress.EMPTY_ADDRESS;
+        PathAddress propAddress = baseAddress.append(SYSTEM_PROPERTY, "sys.prop.test.two");
+        //value should just work
+        ModelNode op = Util.getWriteAttributeOperation(propAddress, VALUE, new ModelNode("test12"));
+        ModelTestUtils.checkOutcome(mainServices.executeOperation(modelVersion, mainServices.transformOperation(modelVersion, op)));
+        Assert.assertEquals("test12", ModelTestUtils.getSubModel(legacyServices.readWholeModel(), propAddress).get(VALUE).asString());
+
+        //boot time should be 'true' if undefined
+        op = Util.getWriteAttributeOperation(propAddress, BOOT_TIME, new ModelNode());
+        ModelTestUtils.checkOutcome(mainServices.executeOperation(modelVersion, mainServices.transformOperation(modelVersion, op)));
+        Assert.assertTrue(ModelTestUtils.getSubModel(legacyServices.readWholeModel(), propAddress).get(BOOT_TIME).asBoolean());
+        op = Util.getUndefineAttributeOperation(propAddress, BOOT_TIME);
+        ModelTestUtils.checkOutcome(mainServices.executeOperation(modelVersion, mainServices.transformOperation(modelVersion, op)));
+        Assert.assertTrue(ModelTestUtils.getSubModel(legacyServices.readWholeModel(), propAddress).get(BOOT_TIME).asBoolean());
     }
 
-    static class SystemPropertyTransformersTestParameters extends TransformersTestParameters {
-        private ModelNode expectedUndefined;
-        public SystemPropertyTransformersTestParameters(TransformersTestParameters delegate, ModelNode expectedUndefined) {
-            super(delegate);
-            this.expectedUndefined = expectedUndefined;
+    @Test
+    public void testSystemPropertiesWithExpressionsBoot() throws Exception {
+        KernelServicesBuilder builder = createKernelServicesBuilder(TestModelType.DOMAIN)
+                .setXmlResource(serverGroup ? "domain-servergroup-systemproperties-with-expressions.xml" : "domain-systemproperties-with-expressions.xml");
+        if (serverGroup) {
+            builder.setModelInitializer(StandardServerGroupInitializers.XML_MODEL_INITIALIZER, StandardServerGroupInitializers.XML_MODEL_WRITE_SANITIZER);
         }
 
-        public ModelNode getExpectedUndefined() {
-            return expectedUndefined;
+        LegacyKernelServicesInitializer legacyInitializer = builder.createLegacyKernelServicesBuilder(modelVersion, testControllerVersion);
+        if (serverGroup) {
+            StandardServerGroupInitializers.addServerGroupInitializers(legacyInitializer);
         }
+
+        KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+        //Test the write attribute handler, the 'add' got tested at boot time
+        PathAddress baseAddress = serverGroup ? PathAddress.pathAddress(PathElement.pathElement(SERVER_GROUP, "test")) : PathAddress.EMPTY_ADDRESS;
+        PathAddress propAddress = baseAddress.append(SYSTEM_PROPERTY, "sys.prop.test.two");
+        //value should just work
+        ModelNode op = Util.getWriteAttributeOperation(propAddress, VALUE, new ModelNode().setExpression("${sys.prop.test.two}"));
+        ModelTestUtils.checkOutcome(mainServices.executeOperation(modelVersion, mainServices.transformOperation(modelVersion, op)));
+        ModelNode value = ModelTestUtils.getSubModel(legacyServices.readWholeModel(), propAddress).get(VALUE);
+        Assert.assertTrue(value.getType() == ModelType.EXPRESSION);
+        Assert.assertEquals("${sys.prop.test.two}", value.asString());
 
     }
 
-    static List<Object[]> createSystemPropertyTestTransformerParameters(){
-        List<Object[]> params = TransformersTestParameters.setupVersions();
-        for (Object[] element : params) {
-            TransformersTestParameters param = (TransformersTestParameters)element[0];
-            ModelNode expectedUndefined;
-            if (param.getModelVersion().equals(ModelVersion.create(1, 4, 0))) {
-                expectedUndefined = new ModelNode();
-            } else if (param.getModelVersion().equals(ModelVersion.create(1, 2, 0))) {
-                expectedUndefined = new ModelNode(true);
-            } else {
-                throw new IllegalStateException("Not known model version " + param.getModelVersion());
-            }
-            element[0] = new SystemPropertyTransformersTestParameters(param, expectedUndefined);
+    private ModelNode getExpectedUndefined(ModelVersion modelVersion){
+        if (modelVersion.equals(ModelVersion.create(1, 4, 0))) {
+            return new ModelNode();
+        } else if (modelVersion.equals(ModelVersion.create(1, 2, 0))) {
+            return new ModelNode(true);
+        } else {
+            throw new IllegalStateException("Not known model version " + modelVersion);
         }
-        return params;
     }
 }
