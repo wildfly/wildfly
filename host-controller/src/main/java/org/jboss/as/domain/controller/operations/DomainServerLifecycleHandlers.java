@@ -102,8 +102,11 @@ public class DomainServerLifecycleHandlers {
             this.serverInventory = serverInventory;
         }
 
-        String getServerGroupName(final ModelNode operation) {
+        String getServerGroupName(final OperationContext context, final ModelNode operation) {
             final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+
+            Resource.Tools.readModel(context.readResourceFromRoot(PathAddress.pathAddress(operation.get(OP_ADDR)), true));
+
             if (address.size() == 0) {
                 return null;
             }
@@ -136,7 +139,7 @@ public class DomainServerLifecycleHandlers {
 
         @Override
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-            final String group = getServerGroupName(operation);
+            final String group = getServerGroupName(context, operation);
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -163,7 +166,7 @@ public class DomainServerLifecycleHandlers {
         @Override
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
             final ModelNode model = Resource.Tools.readModel(context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, true));
-            final String group = getServerGroupName(operation);
+            final String group = getServerGroupName(context, operation);
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -203,7 +206,7 @@ public class DomainServerLifecycleHandlers {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     final ModelNode model = Resource.Tools.readModel(context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, true));
-                    final String group = getServerGroupName(operation);
+                    final String group = getServerGroupName(context, operation);
                     context.addStep(new OperationStepHandler() {
                         @Override
                         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
