@@ -113,7 +113,13 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
         ServiceName containerServiceName = templateCacheServiceName.getParent();
         String containerName = containerServiceName.getSimpleName();
         ServiceName templateCacheConfigurationServiceName = AbstractCacheConfigurationService.getServiceName(containerName, templateCacheName);
-        String cacheName = deploymentServiceName.getParent().getSimpleName() + deploymentServiceName.getSimpleName();
+        String host = deploymentServiceName.getParent().getSimpleName();
+        String contextPath = deploymentServiceName.getSimpleName();
+        StringBuilder cacheNameBuilder = new StringBuilder(host).append(contextPath);
+        if (contextPath.equals("/")) {
+            cacheNameBuilder.append("ROOT");
+        }
+        String cacheName = cacheNameBuilder.toString();
         ServiceName cacheConfigurationServiceName = AbstractCacheConfigurationService.getServiceName(containerName, cacheName);
         ServiceName cacheServiceName = CacheService.getServiceName(containerName, cacheName);
 
