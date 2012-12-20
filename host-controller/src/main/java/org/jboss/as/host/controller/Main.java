@@ -103,7 +103,7 @@ public final class Main {
         create(args, authKey);
 
         while (in.read() != -1) {}
-        System.exit(0);
+        exit();
     }
 
     private Main() {
@@ -118,7 +118,7 @@ public final class Main {
         try {
             final HostControllerEnvironment config = determineEnvironment(args);
             if (config == null) {
-                abort(null);
+                restart();
                 return null;
             } else {
                 try {
@@ -131,28 +131,40 @@ public final class Main {
                 }
             }
         } catch (Throwable t) {
-            abort(t, ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE);
+            abort(t);
             return null;
         }
     }
 
-    private void abort(Throwable t) {
-        abort(t, 1);
-    }
-
-    private void abort(Throwable t, int exitCode) {
+    /**
+     * Terminates process controller. JVM shuts down with {@link ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE}.
+     * @param t
+     */
+    private static void abort(Throwable t) {
         try {
             if (t != null) {
                 t.printStackTrace();
-            } else {
-                // Inform the process controller that we are shutting down on purpose
-                // so it doesn't try to respawn us
-                exitCode = ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE;
             }
-
         } finally {
-            SystemExiter.exit(exitCode);
+            abort();
         }
+    }
+
+    private static void abort() {
+        SystemExiter.exit(ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE);
+    }
+    /**
+     * Shits down JVM with exit code which triggers restart of controller.
+     */
+    private static void restart(){
+        SystemExiter.exit(ExitCodes.RESTART_PROCESS_FROM_STARTUP_SCRIPT);
+    }
+
+    /**
+     * Terminates JVM with exit code: 0 - normal termination.
+     */
+    private static void exit(){
+        SystemExiter.exit(0);
     }
 
     /**
