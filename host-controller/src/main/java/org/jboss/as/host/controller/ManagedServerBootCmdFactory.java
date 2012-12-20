@@ -79,17 +79,17 @@ class ManagedServerBootCmdFactory implements ManagedServerBootConfiguration {
         this.serverName = serverName;
         this.domainModel = domainModel;
         this.hostModel = hostModel;
-        this.serverModel = hostModel.require(SERVER_CONFIG).require(serverName);
         this.environment = environment;
+        this.expressionResolver = expressionResolver;
+        this.serverModel = resolveExpressions(hostModel.require(SERVER_CONFIG).require(serverName));
 
         final String serverGroupName = serverModel.require(GROUP).asString();
-        this.serverGroup = domainModel.require(SERVER_GROUP).require(serverGroupName);
-        this.expressionResolver = expressionResolver;
+        this.serverGroup = resolveExpressions(domainModel.require(SERVER_GROUP).require(serverGroupName));
 
         String serverVMName = null;
         ModelNode serverVM = null;
         if(serverModel.hasDefined(JVM)) {
-            for(final String jvm : serverModel.get(JVM).keys()) {
+            for (final String jvm : serverModel.get(JVM).keys()) {
                 serverVMName = jvm;
                 serverVM = serverModel.get(JVM, jvm);
                 break;
@@ -120,24 +120,23 @@ class ManagedServerBootCmdFactory implements ManagedServerBootConfiguration {
         final ModelNode hostVM = jvmName != null ? hostModel.get(JVM, jvmName) : null;
 
         this.jvmElement = new JvmElement(jvmName,
-                resolveJVMOptions(hostVM),
-                resolveJVMOptions(groupVM),
-                resolveJVMOptions(serverVM));
+                resolveExpressions(hostVM),
+                resolveExpressions(groupVM),
+                resolveExpressions(serverVM));
     }
 
     /**
-     * resolve expressions of the jvm model (if there is any)
+     * Resolve expressions in the given model (if there are any)
      */
-    private ModelNode resolveJVMOptions(final ModelNode vmModel) {
-        if (vmModel == null) {
+    private ModelNode resolveExpressions(final ModelNode unresolved) {
+        if (unresolved == null) {
             return null;
         }
         try {
-            return expressionResolver.resolveExpressions(vmModel.clone());
+            return expressionResolver.resolveExpressions(unresolved.clone());
         } catch (OperationFailedException e) {
-            // should we fail or allow to proceed without having resolved the expression?
-            HostControllerLogger.CONTROLLER_MANAGEMENT_LOGGER.warn(e.getLocalizedMessage());
-            return vmModel;
+            // Fail
+            throw new IllegalStateException(e.getMessage(), e);
         }
     }
 
