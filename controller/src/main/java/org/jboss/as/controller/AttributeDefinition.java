@@ -102,7 +102,7 @@ public abstract class AttributeDefinition {
         }
         if (flags == null || flags.length == 0) {
             this.flags = EnumSet.noneOf(AttributeAccess.Flag.class);
-        } else if (flags.length == 0) {
+        } else if (flags.length == 1) {
             this.flags = EnumSet.of(flags[0]);
         } else {
             this.flags = EnumSet.of(flags[0], flags);
