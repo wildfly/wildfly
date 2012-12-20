@@ -78,6 +78,7 @@ import java.util.Set;
 import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.operations.common.SnapshotDeleteHandler;
 import org.jboss.as.controller.operations.common.SnapshotListHandler;
@@ -163,7 +164,6 @@ public class CoreResourceManagementTestCase {
         OTHER_RUNNING_SERVER_CLASSLOADING_ADDRESS.add(CORE_SERVICE, PLATFORM_MBEAN);
         OTHER_RUNNING_SERVER_CLASSLOADING_ADDRESS.add(TYPE, "class-loading");
         OTHER_RUNNING_SERVER_CLASSLOADING_ADDRESS.protect();
-
     }
 
     @BeforeClass
@@ -386,6 +386,95 @@ public class CoreResourceManagementTestCase {
 
         response = slaveClient.execute(composite);
         validateResponse(response);
+    }
+
+    @Test
+    public void testSystemPropertyExpressions() throws Exception {
+        DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
+        DomainClient slaveClient = domainSlaveLifecycleUtil.getDomainClient();
+
+        //Make sure that the domain.xml system properties can be resolved on the servers
+        final String propOne = "jboss.domain.test.property.one";
+        final String propTwo = "jboss.domain.test.property.two";
+        final String propThree = "jboss.domain.test.property.three";
+        final ModelNode rootOneAddr = getPropertyAddress(ROOT_PROP_ADDRESS, propOne);
+        final ModelNode rootTwoAddr = getPropertyAddress(ROOT_PROP_ADDRESS, propTwo);
+        final ModelNode mainServerOne = getPropertyAddress(MAIN_RUNNING_SERVER_PROP_ADDRESS, propOne);
+        final ModelNode mainServerTwo = getPropertyAddress(MAIN_RUNNING_SERVER_PROP_ADDRESS, propTwo);
+        final ModelNode otherServerOne = getPropertyAddress(OTHER_RUNNING_SERVER_PROP_ADDRESS, propOne);
+        final ModelNode otherServerTwo = getPropertyAddress(OTHER_RUNNING_SERVER_PROP_ADDRESS, propTwo);
+
+        //Check the raw values
+        ModelNode response = masterClient.execute(getReadAttributeOperation(rootOneAddr, VALUE));
+        ModelNode returnVal = validateResponse(response);
+        Assert.assertEquals("ONE", returnVal.asString());
+
+        response = masterClient.execute(getReadAttributeOperation(rootTwoAddr, VALUE));
+        returnVal = validateResponse(response);
+        Assert.assertEquals(ModelType.EXPRESSION, returnVal.getType());
+        Assert.assertEquals("${jboss.domain.test.property.one}", returnVal.asString());
+
+        response = masterClient.execute(getReadAttributeOperation(mainServerOne, VALUE));
+        returnVal = validateResponse(response);
+        Assert.assertEquals("ONE", returnVal.asString());
+
+        response = masterClient.execute(getReadAttributeOperation(mainServerTwo, VALUE));
+        returnVal = validateResponse(response);
+        Assert.assertEquals(ModelType.EXPRESSION, returnVal.getType());
+        Assert.assertEquals("${jboss.domain.test.property.one}", returnVal.asString());
+
+        response = slaveClient.execute(getReadAttributeOperation(otherServerOne, VALUE));
+        returnVal = validateResponse(response);
+        Assert.assertEquals("ONE", returnVal.asString());
+
+        response = slaveClient.execute(getReadAttributeOperation(otherServerTwo, VALUE));
+        returnVal = validateResponse(response);
+        Assert.assertEquals(ModelType.EXPRESSION, returnVal.getType());
+        Assert.assertEquals("${jboss.domain.test.property.one}", returnVal.asString());
+
+        //Resolve the system properties
+        response = masterClient.execute(getResolveExpressionOperation(propTwo, MAIN_RUNNING_SERVER_ADDRESS));
+        returnVal = validateResponse(response);
+        Assert.assertEquals("ONE", returnVal.asString());
+
+        response = slaveClient.execute(getResolveExpressionOperation(propTwo, OTHER_RUNNING_SERVER_ADDRESS));
+        returnVal = validateResponse(response);
+        Assert.assertEquals("ONE", returnVal.asString());
+
+        //Add another system property and check that gets resolved on the servers
+        ModelNode addOp = new ModelNode();
+        addOp.get(OP).set(ADD);
+        addOp.get(OP_ADDR).add(SYSTEM_PROPERTY, propThree);
+        addOp.get(VALUE).set("${jboss.domain.test.property.one}");
+        response = masterClient.execute(addOp);
+        validateResponse(response);
+
+        final ModelNode rootThreeAddr = getPropertyAddress(ROOT_PROP_ADDRESS, propThree);
+        final ModelNode mainServerThree = getPropertyAddress(MAIN_RUNNING_SERVER_PROP_ADDRESS, propThree);
+        final ModelNode otherServerThree = getPropertyAddress(OTHER_RUNNING_SERVER_PROP_ADDRESS, propThree);
+
+        response = masterClient.execute(getReadAttributeOperation(rootThreeAddr, VALUE));
+        returnVal = validateResponse(response);
+        Assert.assertEquals(ModelType.EXPRESSION, returnVal.getType());
+        Assert.assertEquals("${jboss.domain.test.property.one}", returnVal.asString());
+
+        response = masterClient.execute(getReadAttributeOperation(mainServerThree, VALUE));
+        returnVal = validateResponse(response);
+        Assert.assertEquals(ModelType.EXPRESSION, returnVal.getType());
+        Assert.assertEquals("${jboss.domain.test.property.one}", returnVal.asString());
+
+        response = slaveClient.execute(getReadAttributeOperation(otherServerThree, VALUE));
+        returnVal = validateResponse(response);
+        Assert.assertEquals(ModelType.EXPRESSION, returnVal.getType());
+        Assert.assertEquals("${jboss.domain.test.property.one}", returnVal.asString());
+
+        response = masterClient.execute(getResolveExpressionOperation(propThree, MAIN_RUNNING_SERVER_ADDRESS));
+        returnVal = validateResponse(response);
+        Assert.assertEquals("ONE", returnVal.asString());
+
+        response = slaveClient.execute(getResolveExpressionOperation(propThree, OTHER_RUNNING_SERVER_ADDRESS));
+        returnVal = validateResponse(response);
+        Assert.assertEquals("ONE", returnVal.asString());
     }
 
     @Test
@@ -906,6 +995,27 @@ public class CoreResourceManagementTestCase {
             // Just establish the standard structure; caller can fill in address later
             op.get(OP_ADDR);
         }
+        return op;
+    }
+
+    private ModelNode getPropertyAddress(ModelNode basePropAddress, String propName) {
+        PathAddress addr = PathAddress.pathAddress(basePropAddress);
+        PathAddress copy = PathAddress.EMPTY_ADDRESS;
+        for (PathElement element : addr) {
+            if (!element.getKey().equals(SYSTEM_PROPERTY)) {
+                copy = copy.append(element);
+            } else {
+                copy = copy.append(PathElement.pathElement(SYSTEM_PROPERTY, propName));
+            }
+        }
+        return copy.toModelNode();
+    }
+
+    private ModelNode getResolveExpressionOperation(String propName, ModelNode address) {
+        ModelNode op = new ModelNode();
+        op.get(OP).set("resolve-expression");
+        op.get(OP_ADDR).set(address);
+        op.get("expression").setExpression("${" + propName + "}");
         return op;
     }
 }

@@ -53,6 +53,8 @@
     </extensions>
 
     <system-properties>
+      <property name="jboss.domain.test.property.one" value="ONE"/>
+      <property name="jboss.domain.test.property.two" value="${jboss.domain.test.property.one}"/>
     </system-properties>
 
     <paths>
