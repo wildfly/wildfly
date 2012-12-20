@@ -31,6 +31,7 @@ import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.STORAGE_RUNTIME;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR_REF_STRING;
+import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_REF;
 import static org.jboss.as.messaging.CommonAttributes.STATIC_CONNECTORS;
 import static org.jboss.dmr.ModelType.BIG_DECIMAL;
 import static org.jboss.dmr.ModelType.BOOLEAN;
@@ -86,6 +87,7 @@ public class ClusterConnectionDefinition extends SimpleResourceDefinition {
             .setDefaultValue(new ModelNode(false))
             .setAllowNull(true)
             .setAllowExpression(true)
+            .setAlternatives(CommonAttributes.DISCOVERY_GROUP_NAME)
             .setRestartAllServices()
             .build();
 
@@ -120,7 +122,7 @@ public class ClusterConnectionDefinition extends SimpleResourceDefinition {
 
     public static final SimpleAttributeDefinition DISCOVERY_GROUP_NAME = create(CommonAttributes.DISCOVERY_GROUP_NAME, STRING)
             .setAllowNull(true)
-            .setAlternatives(STATIC_CONNECTORS)
+            .setAlternatives(ALLOW_DIRECT_CONNECTIONS_ONLY.getName(), CONNECTOR_REFS.getName())
             .setAttributeMarshaller(AttributeMarshallers.DISCOVERY_GROUP_MARSHALLER)
             .setRestartAllServices()
             .build();
