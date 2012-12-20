@@ -39,7 +39,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP_CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -121,8 +120,10 @@ public final class ManagedServerOperationsFactory {
      * @param domainController the domain controller
      * @return the list of boot operations
      */
-    public static ModelNode createBootUpdates(final String serverName, final ModelNode domainModel, final ModelNode hostModel, final DomainController domainController, final ExpressionResolver expressionResolver) {
-        final ManagedServerOperationsFactory factory = new ManagedServerOperationsFactory(serverName, domainModel, hostModel, domainController);
+    public static ModelNode createBootUpdates(final String serverName, final ModelNode domainModel, final ModelNode hostModel,
+                                              final DomainController domainController, final ExpressionResolver expressionResolver) {
+        final ManagedServerOperationsFactory factory = new ManagedServerOperationsFactory(serverName, domainModel,
+                hostModel, domainController, expressionResolver);
         return factory.getBootUpdates();
     }
 
@@ -133,17 +134,35 @@ public final class ManagedServerOperationsFactory {
     private final ModelNode serverGroup;
     private final String profileName;
     private final DomainController domainController;
+    private final ExpressionResolver expressionResolver;
 
-    ManagedServerOperationsFactory(final String serverName, final ModelNode domainModel, final ModelNode hostModel, final DomainController domainController) {
+    ManagedServerOperationsFactory(final String serverName, final ModelNode domainModel, final ModelNode hostModel,
+                                   final DomainController domainController, final ExpressionResolver expressionResolver) {
         this.serverName = serverName;
         this.domainModel = domainModel;
         this.hostModel = hostModel;
-        this.serverModel = hostModel.require(SERVER_CONFIG).require(serverName);
         this.domainController = domainController;
+        this.expressionResolver = expressionResolver;
+        this.serverModel = resolveExpressions(hostModel.require(SERVER_CONFIG).require(serverName));
 
         final String serverGroupName = serverModel.require(GROUP).asString();
-        this.serverGroup = domainModel.require(SERVER_GROUP).require(serverGroupName);
+        this.serverGroup = resolveExpressions(domainModel.require(SERVER_GROUP).require(serverGroupName));
         this.profileName = serverGroup.require(PROFILE).asString();
+    }
+
+    /**
+     * Resolve expressions in the given model (if there are any)
+     */
+    private ModelNode resolveExpressions(final ModelNode unresolved) {
+        if (unresolved == null) {
+            return null;
+        }
+        try {
+            return expressionResolver.resolveExpressions(unresolved.clone());
+        } catch (OperationFailedException e) {
+            // Fail
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     ModelNode getBootUpdates() {

@@ -19,7 +19,6 @@
 package org.jboss.as.host.controller.operations;
 
 
-import org.jboss.as.controller.HashUtil;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
@@ -40,8 +39,10 @@ import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.HostRunningModeControl;
 import org.jboss.as.host.controller.RestartMode;
 import org.jboss.as.host.controller.ServerInventory;
+import org.jboss.as.host.controller.resources.ServerConfigResourceDefinition;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 
 /**
  * Starts or reconnect all auto-start servers (at boot).
@@ -97,7 +98,7 @@ public class StartServersHandler implements OperationStepHandler {
                     if (hostControllerEnvironment.isRestart() || runningModeControl.getRestartMode() == RestartMode.HC_ONLY){
                         restartedHcStartOrReconnectServers(servers, domainModel);
                     } else {
-                        cleanStartServers(servers, domainModel);
+                        cleanStartServers(servers, domainModel, context);
                     }
                 }
                 context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
@@ -107,9 +108,10 @@ public class StartServersHandler implements OperationStepHandler {
         context.stepCompleted();
     }
 
-    private void cleanStartServers(final ModelNode servers, final ModelNode domainModel){
-        for(final String serverName : servers.keys()) {
-            if(servers.get(serverName, AUTO_START).asBoolean(true)) {
+    private void cleanStartServers(final ModelNode servers, final ModelNode domainModel, OperationContext context) throws OperationFailedException {
+        for(final Property serverProp : servers.asPropertyList()) {
+            String serverName = serverProp.getName();
+            if (ServerConfigResourceDefinition.AUTO_START.resolveModelAttribute(context, serverProp.getValue()).asBoolean(true)) {
                 try {
                     serverInventory.startServer(serverName, domainModel);
                 } catch (Exception e) {
