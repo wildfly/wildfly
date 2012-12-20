@@ -1,3 +1,25 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 package org.jboss.as.test.integration.logging.profiles;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
@@ -34,35 +56,37 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.test.integration.logging.util.LoggingServlet;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.jboss.osgi.metadata.ManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jfree.util.Log;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
  * 
- * @author Petr Kremensky <pkremens@redhat.com>
+ * @author Petr Křemenský <pkremens@redhat.com>
  */
 @ServerSetup(LoggingProfilesTestCase.LoggingProfilesTestCaseSetup.class)
 @RunWith(Arquillian.class)
 public class LoggingProfilesTestCase {
+	private static Logger log = Logger.getLogger(LoggingProfilesTestCase.class);
 
 	@ContainerResource
 	private ManagementClient managementClient;
 
 	private static final String FS = System.getProperty("file.separator");
 	private static final File logDir = new File(
-			System.getProperty("jbossas.ts.submodule.dir"), "target" + FS
-					+ "jbossas" + FS + "standalone" + FS + "log");
-
+	System.getProperty("jbossas.ts.submodule.dir"), "target" + FS
+	+ "jbossas" + FS + "standalone" + FS + "log");
 	private static final File loggingTestLog = new File(logDir,
 			"logging-test.log");
+
 	private static final File dummyLog1 = new File(logDir, "dummy-profile1.log");
 	private static final File dummyLog2 = new File(logDir, "dummy-profile2.log");
 	private static final File dummyLog1Changed = new File(logDir,
@@ -124,7 +148,7 @@ public class LoggingProfilesTestCase {
 				try {
 					executeOperation(modelNode);
 				} catch (MgmtOperationException exp) {
-					Log.warn(exp.getMessage());
+					log.warn(exp.getMessage());
 				}
 			}
 		}
@@ -231,7 +255,7 @@ public class LoggingProfilesTestCase {
 				try {
 					executeOperation(modelNode);
 				} catch (MgmtOperationException exp) {
-					Log.warn(exp.getMessage());
+					log.warn(exp.getMessage());
 				}
 			}
 		}
