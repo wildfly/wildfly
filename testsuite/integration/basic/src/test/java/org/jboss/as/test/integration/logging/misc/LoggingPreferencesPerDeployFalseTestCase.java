@@ -19,7 +19,8 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.logging.profiles;
+
+package org.jboss.as.test.integration.logging.misc;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -47,7 +48,9 @@ import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.logging.util.LoggingServlet;
@@ -59,7 +62,6 @@ import org.jboss.osgi.metadata.ManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -67,30 +69,43 @@ import org.junit.runner.RunWith;
  * 
  * @author Petr Křemenský <pkremens@redhat.com>
  */
-@ServerSetup(NonExistingProfileTestCase.NonExistingProfileTestCaseSetup.class)
+
+@ServerSetup(LoggingPreferencesPerDeployFalseTestCase.LoggingPreferencesPerDeployFalseTestCaseSetup.class)
 @RunWith(Arquillian.class)
-public class NonExistingProfileTestCase {
+public class LoggingPreferencesPerDeployFalseTestCase {
 
 	private static Logger log = Logger
-			.getLogger(NonExistingProfileTestCase.class);
+			.getLogger(LoggingPreferencesPerDeployFalseTestCase.class);
 
-	@ArquillianResource(LoggingServlet.class)
-	URL url;
+	@ContainerResource
+	private ManagementClient managementClient;
+
 	private static final String FS = System.getProperty("file.separator");
 	private static final File logDir = new File(
 	System.getProperty("jbossas.ts.submodule.dir"), "target" + FS
 	+ "jbossas" + FS + "standalone" + FS + "log");
 	private static final File loggingTestLog = new File(logDir,
 			"logging-test.log");
+	private static final File logFile = new File(logDir,
+			"jboss-logging-properties-test.log");
 
-	static class NonExistingProfileTestCaseSetup extends
+	private static final File dummyLog1 = new File(logDir, "dummy-profile1.log");
+
+	static class LoggingPreferencesPerDeployFalseTestCaseSetup extends
 			AbstractMgmtServerSetupTask {
 
 		@Override
 		public void tearDown(ManagementClient managementClient,
 				String containerId) throws Exception {
 			final List<ModelNode> updates = new ArrayList<ModelNode>();
-			loggingTestLog.delete();
+			// clean test log files
+			if (loggingTestLog.exists()) {
+				loggingTestLog.delete();
+			}
+			if (dummyLog1.exists()) {
+				dummyLog1.delete();
+			}
+
 			// remove LOGGING_TEST from root-logger
 			ModelNode op = new ModelNode();
 			op.get(OP).set("root-logger-unassign-handler");
@@ -107,6 +122,21 @@ public class NonExistingProfileTestCase {
 					"LOGGING_TEST");
 			updates.add(op);
 
+			// remove dummy-profile1
+			op = new ModelNode();
+			op.get(OP).set(REMOVE);
+			op.get(OP_ADDR).add(SUBSYSTEM, "logging");
+			op.get(OP_ADDR).add("logging-profile", "dummy-profile1");
+			updates.add(op);
+
+			// remove "org.jboss.as.logging.per-deployment=false" system
+			// property
+			op = new ModelNode();
+			op.get(OP).set(REMOVE);
+			op.get(OP_ADDR).add("system-property",
+					"org.jboss.as.logging.per-deployment");
+			updates.add(op);
+
 			// we want to perform all operations
 			for (ModelNode modelNode : updates) {
 				try {
@@ -115,15 +145,14 @@ public class NonExistingProfileTestCase {
 					log.warn(exp.getMessage());
 				}
 			}
-
 		}
 
 		@Override
 		protected void doSetup(ManagementClient managementClient)
 				throws Exception {
+
 			final List<ModelNode> updates = new ArrayList<ModelNode>();
 
-			// add custom file-handler
 			ModelNode op = new ModelNode();
 			op.get(OP).set(ADD);
 			op.get(OP_ADDR).add(SUBSYSTEM, "logging");
@@ -138,7 +167,6 @@ public class NonExistingProfileTestCase {
 			op.get("formatter").set("%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n");
 			updates.add(op);
 
-			// add handler to root-logger
 			op = new ModelNode();
 			op.get(OP).set("root-logger-assign-handler");
 			op.get(OP_ADDR).add(SUBSYSTEM, "logging");
@@ -146,7 +174,50 @@ public class NonExistingProfileTestCase {
 			op.get("name").set("LOGGING_TEST");
 			updates.add(op);
 
-			// we want all operations to perform
+			// create dummy-profile1
+			op = new ModelNode();
+			op.get(OP).set(ADD);
+			op.get(OP_ADDR).add(SUBSYSTEM, "logging");
+			op.get(OP_ADDR).add("logging-profile", "dummy-profile1");
+			updates.add(op);
+
+			// add file handler
+			op = new ModelNode();
+			op.get(OP).set(ADD);
+			op.get(OP_ADDR).add(SUBSYSTEM, "logging");
+			op.get(OP_ADDR).add("logging-profile", "dummy-profile1");
+			op.get(OP_ADDR).add("periodic-rotating-file-handler", "DUMMY1");
+			op.get("level").set("FATAL");
+			op.get("append").set("true");
+			op.get("suffix").set(".yyyy-MM-dd");
+			file = new ModelNode();
+			file.get("relative-to").set("jboss.server.log.dir");
+			file.get("path").set("dummy-profile1.log");
+			op.get("file").set(file);
+			op.get("formatter").set("%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n");
+			updates.add(op);
+
+			// add root logger
+			op = new ModelNode();
+			op.get(OP).set(ADD);
+			op.get(OP_ADDR).add(SUBSYSTEM, "logging");
+			op.get(OP_ADDR).add("logging-profile", "dummy-profile1");
+			op.get(OP_ADDR).add("root-logger", "ROOT");
+			op.get("level").set("INFO");
+			ModelNode handlers = op.get("handlers");
+			handlers.add("DUMMY1");
+			op.get("handlers").set(handlers);
+			updates.add(op);
+
+			// add "org.jboss.as.logging.per-deployment=false" system property
+			op = new ModelNode();
+			op.get(OP).set(ADD);
+			op.get(OP_ADDR).add("system-property",
+					"org.jboss.as.logging.per-deployment");
+			op.get("value").set("false");
+			updates.add(op);
+
+			// we want to perform all operations
 			for (ModelNode modelNode : updates) {
 				try {
 					executeOperation(modelNode);
@@ -168,41 +239,20 @@ public class NonExistingProfileTestCase {
 				StringBuffer dependencies = new StringBuffer();
 				builder.addManifestHeader("Dependencies",
 						dependencies.toString());
-				builder.addManifestHeader("Logging-Profile",
-						"non-existing-profile");
+				builder.addManifestHeader("Logging-Profile", "dummy-profile1");
 				return builder.openStream();
 			}
 		});
 		return archive;
 	}
 
-	@AfterClass
-	@RunAsClient
-	public static void cleanCustomFile() {
-		loggingTestLog.delete();
-	}
+	@ArquillianResource(LoggingServlet.class)
+	URL url;
 
-	@Test
 	@RunAsClient
-	public void warningMessageTest() throws IOException {
-		BufferedReader br = new BufferedReader(new InputStreamReader(
-				new FileInputStream(loggingTestLog), Charset.forName("UTF-8")));
-		String line;
-		boolean warningFound = false;
-		while ((line = br.readLine()) != null) {
-			// Look for message id in order to support all languages
-			if (line.contains("JBAS011509")) {
-				warningFound = true;
-				break;
-			}
-		}
-		br.close();
-		Assert.assertTrue(warningFound);
-	}
-
 	@Test
-	@RunAsClient
-	public void defaultLoggingTest() throws IOException {
+	@InSequence(1)
+	public void checkDummyLog1Test() throws IOException {
 		// make some logs
 		HttpURLConnection http = (HttpURLConnection) new URL(url, "Logger")
 				.openConnection();
@@ -211,7 +261,7 @@ public class NonExistingProfileTestCase {
 				statusCode == HttpServletResponse.SC_OK);
 		// check logs
 		BufferedReader br = new BufferedReader(new InputStreamReader(
-				new FileInputStream(loggingTestLog), Charset.forName("UTF-8")));
+				new FileInputStream(dummyLog1), Charset.forName("UTF-8")));
 		String line;
 		boolean logFound = false;
 		while ((line = br.readLine()) != null) {
@@ -223,4 +273,13 @@ public class NonExistingProfileTestCase {
 		br.close();
 		Assert.assertTrue(logFound);
 	}
+
+	@Test
+	@RunAsClient
+	@InSequence(2)
+	public void perDeployFilePresenceTest() {
+		Assert.assertFalse("File: " + logFile.toString()
+				+ " should not be created!", logFile.exists());
+	}
+
 }

@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.logging.profiles;
+package org.jboss.as.test.integration.logging.misc;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -32,7 +32,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -47,19 +46,18 @@ import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.integration.logging.util.LoggingBean;
 import org.jboss.as.test.integration.logging.util.LoggingServlet;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-import org.jboss.osgi.metadata.ManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -67,23 +65,24 @@ import org.junit.runner.RunWith;
  * 
  * @author Petr Křemenský <pkremens@redhat.com>
  */
-@ServerSetup(NonExistingProfileTestCase.NonExistingProfileTestCaseSetup.class)
+
+@ServerSetup(LoggingPerDeployFalseTestCase.LoggingPerDeployFalseTestCaseSetup.class)
 @RunWith(Arquillian.class)
-public class NonExistingProfileTestCase {
+public class LoggingPerDeployFalseTestCase {
 
 	private static Logger log = Logger
-			.getLogger(NonExistingProfileTestCase.class);
+			.getLogger(LoggingPerDeployFalseTestCase.class);
 
-	@ArquillianResource(LoggingServlet.class)
-	URL url;
 	private static final String FS = System.getProperty("file.separator");
 	private static final File logDir = new File(
 	System.getProperty("jbossas.ts.submodule.dir"), "target" + FS
 	+ "jbossas" + FS + "standalone" + FS + "log");
 	private static final File loggingTestLog = new File(logDir,
 			"logging-test.log");
+	private static final File logFile = new File(logDir,
+			"jboss-logging-properties-test.log");
 
-	static class NonExistingProfileTestCaseSetup extends
+	static class LoggingPerDeployFalseTestCaseSetup extends
 			AbstractMgmtServerSetupTask {
 
 		@Override
@@ -105,6 +104,14 @@ public class NonExistingProfileTestCase {
 			op.get(OP_ADDR).add(SUBSYSTEM, "logging");
 			op.get(OP_ADDR).add("periodic-rotating-file-handler",
 					"LOGGING_TEST");
+			updates.add(op);
+
+			// remove "org.jboss.as.logging.per-deployment=false" system
+			// property
+			op = new ModelNode();
+			op.get(OP).set(REMOVE);
+			op.get(OP_ADDR).add("system-property",
+					"org.jboss.as.logging.per-deployment");
 			updates.add(op);
 
 			// we want to perform all operations
@@ -146,6 +153,14 @@ public class NonExistingProfileTestCase {
 			op.get("name").set("LOGGING_TEST");
 			updates.add(op);
 
+			// add "org.jboss.as.logging.per-deployment=false" system property
+			op = new ModelNode();
+			op.get(OP).set(ADD);
+			op.get(OP_ADDR).add("system-property",
+					"org.jboss.as.logging.per-deployment");
+			op.get("value").set("false");
+			updates.add(op);
+
 			// we want all operations to perform
 			for (ModelNode modelNode : updates) {
 				try {
@@ -157,51 +172,22 @@ public class NonExistingProfileTestCase {
 		}
 	}
 
+	@ArquillianResource(LoggingServlet.class)
+	URL url;
+
 	@Deployment
 	public static WebArchive createDeployment() {
 		WebArchive archive = ShrinkWrap.create(WebArchive.class, "logging.war");
 		archive.addClasses(LoggingServlet.class);
-		archive.setManifest(new Asset() {
-			@Override
-			public InputStream openStream() {
-				ManifestBuilder builder = ManifestBuilder.newInstance();
-				StringBuffer dependencies = new StringBuffer();
-				builder.addManifestHeader("Dependencies",
-						dependencies.toString());
-				builder.addManifestHeader("Logging-Profile",
-						"non-existing-profile");
-				return builder.openStream();
-			}
-		});
+		archive.addAsResource(LoggingBean.class.getPackage(),
+				"jboss-logging.properties",
+				"WEB-INF/classes/jboss-logging.properties");
 		return archive;
 	}
 
-	@AfterClass
-	@RunAsClient
-	public static void cleanCustomFile() {
-		loggingTestLog.delete();
-	}
-
 	@Test
 	@RunAsClient
-	public void warningMessageTest() throws IOException {
-		BufferedReader br = new BufferedReader(new InputStreamReader(
-				new FileInputStream(loggingTestLog), Charset.forName("UTF-8")));
-		String line;
-		boolean warningFound = false;
-		while ((line = br.readLine()) != null) {
-			// Look for message id in order to support all languages
-			if (line.contains("JBAS011509")) {
-				warningFound = true;
-				break;
-			}
-		}
-		br.close();
-		Assert.assertTrue(warningFound);
-	}
-
-	@Test
-	@RunAsClient
+	@InSequence(1)
 	public void defaultLoggingTest() throws IOException {
 		// make some logs
 		HttpURLConnection http = (HttpURLConnection) new URL(url, "Logger")
@@ -223,4 +209,13 @@ public class NonExistingProfileTestCase {
 		br.close();
 		Assert.assertTrue(logFound);
 	}
+
+	@Test
+	@RunAsClient
+	@InSequence(2)
+	public void perDeployFilePresenceTest() {
+		Assert.assertFalse("File: " + logFile.toString()
+				+ " should not be created!", logFile.exists());
+	}
+
 }
