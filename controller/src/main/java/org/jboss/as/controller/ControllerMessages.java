@@ -2587,4 +2587,7 @@ public interface ControllerMessages {
      */
     @Message(id = 14885, value = "Invalid %s \"%s\"")
     IllegalArgumentException invalidPermission(String permissionClass, String permissionName);
+
+    @Message(id = 14886, value = "Method cannot be called from a chained transformer")
+    IllegalStateException cannotCallMethodFromChainedTransformer();
 }
