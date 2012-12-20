@@ -65,7 +65,6 @@ import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import java.io.File;
 import java.util.AbstractList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -291,7 +290,7 @@ public final class ManagedServerOperationsFactory {
     }
 
     private Map<String, String> getAllSystemProperties(boolean boottimeOnly) {
-        Map<String, String> props = new HashMap<String, String>();
+        Map<String, String> props = new LinkedHashMap<String, String>();
 
         addSystemProperties(domainModel, props, boottimeOnly);
         addSystemProperties(serverGroup, props, boottimeOnly);
