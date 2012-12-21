@@ -233,7 +233,7 @@ public final class TransformerRegistry {
     }
 
     public static Resource modelToResource(final ImmutableManagementResourceRegistration reg, final ModelNode model, boolean includeUndefined) {
-        return TransformationUtils.modelToResource(reg, model, includeUndefined);
+        return TransformationUtils.modelToResource(PathAddress.EMPTY_ADDRESS, reg, model, includeUndefined);
     }
 
     public static class Factory {

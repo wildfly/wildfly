@@ -22,11 +22,13 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
 
@@ -42,6 +44,10 @@ public class StackResource extends SimpleResourceDefinition {
     static final OperationStepHandler EXPORT_NATIVE_CONFIGURATION_HANDLER = new ExportNativeConfiguration();
 
     private final boolean runtimeRegistration;
+
+    static final StringListAttributeDefinition PROTOCOLS = new StringListAttributeDefinition.Builder(ModelKeys.PROTOCOLS)
+            .setAllowNull(true)
+            .build();
 
     // attributes
     // operations
@@ -73,7 +79,7 @@ public class StackResource extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         super.registerAttributes(resourceRegistration);
-        // no stack attributes
+        resourceRegistration.registerReadOnlyAttribute(PROTOCOLS, null);
     }
 
     @Override

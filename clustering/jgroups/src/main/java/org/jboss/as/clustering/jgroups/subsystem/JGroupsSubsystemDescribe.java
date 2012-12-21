@@ -77,7 +77,7 @@ public class JGroupsSubsystemDescribe implements OperationStepHandler {
                     ModelNode transportAddress = stackAddress.clone();
                     transportAddress.add(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
                     // no optional transport:add parameters will be present, so use attributes list
-                    result.add(createOperation(TransportResource.TRANSPORT_ATTRIBUTES, transportAddress, transport));
+                    result.add(createOperation(transportAddress, transport,TransportResource.TRANSPORT_ATTRIBUTES));
                     addProtocolPropertyCommands(transport, transportAddress, result);
                 }
                 // protocol=*
@@ -102,13 +102,12 @@ public class JGroupsSubsystemDescribe implements OperationStepHandler {
         if (protocol.hasDefined(ModelKeys.PROPERTY)) {
             for (Property property : protocol.get(ModelKeys.PROPERTY).asPropertyList()) {
                 ModelNode propertyAddress = address.clone().add(ModelKeys.PROPERTY, property.getName());
-                AttributeDefinition[] ATTRIBUTE = { PropertyResource.VALUE };
-                result.add(createOperation(ATTRIBUTE, propertyAddress, property.getValue()));
+                result.add(createOperation(propertyAddress, property.getValue(),PropertyResource.VALUE));
             }
         }
     }
 
-    static ModelNode createOperation(AttributeDefinition[] attributes, ModelNode address, ModelNode existing) throws OperationFailedException {
+    static ModelNode createOperation(ModelNode address, ModelNode existing,AttributeDefinition ... attributes) throws OperationFailedException {
         ModelNode operation = Util.getEmptyOperation(ADD, address);
         for (final AttributeDefinition attribute : attributes) {
             attribute.validateAndSet(existing, operation);

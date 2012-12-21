@@ -66,17 +66,19 @@ public class JGroupsSubsystemTransformerTestCase extends OperationTestCaseBase {
      *
      * @throws Exception
      */
-    @Ignore
     @Test
     public void testTransformer_1_1_0() throws Exception {
         ModelVersion version = ModelVersion.create(1, 1, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXml(getSubsystemXml());
+                .setSubsystemXmlResource("jgroups-transformer_1_1.xml");
         builder.createLegacyKernelServicesBuilder(null, version)
-            .addMavenResourceURL("org.jboss.as:jboss-as-clustering-jgroups:7.1.2.Final");
+                .addMavenResourceURL("org.jboss.as:jboss-as-clustering-jgroups:7.1.2.Final")
+                .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.2.Final")
+                .addParentFirstClassPattern("org.jboss.as.controller.*");
 
         KernelServices mainServices = builder.build();
-
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        Assert.assertTrue(mainServices.getLegacyServices(version).isSuccessfulBoot());
         checkSubsystemModelTransformation(mainServices, version);
     }
 

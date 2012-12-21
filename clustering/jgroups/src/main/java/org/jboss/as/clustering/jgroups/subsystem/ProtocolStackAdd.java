@@ -21,9 +21,10 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 
 import java.lang.reflect.Field;
 import java.security.AccessController;
@@ -33,14 +34,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
-
 import javax.management.MBeanServer;
 
 import org.jboss.as.clustering.jgroups.ChannelFactory;
@@ -54,7 +52,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
@@ -75,50 +72,24 @@ import org.jboss.threads.JBossExecutors;
 /**
  * @author Paul Ferraro
  */
-public class ProtocolStackAdd extends AbstractAddStepHandler implements DescriptionProvider {
+public class ProtocolStackAdd extends AbstractAddStepHandler {
 
     public static final ProtocolStackAdd INSTANCE = new ProtocolStackAdd();
 
     static ModelNode createOperation(ModelNode address, ModelNode existing) {
-        ModelNode operation = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
-        populate(existing, operation);
-        return operation;
-    }
-
-    // need to override the description provider in order to not include the attribute protocols
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        ResourceBundle resources = ResourceBundle.getBundle(JGroupsExtension.RESOURCE_NAME, (locale == null) ? Locale.getDefault() : locale);
-
-        ModelNode stack = new ModelNode();
-        stack.get(ModelDescriptionConstants.OPERATION_NAME).set(ADD);
-        stack.get(ModelDescriptionConstants.DESCRIPTION).set(resources.getString("jgroups.stack.add"));
-
-        // optional TRANSPORT and PROTOCOLS parameters (to permit configuring a stack from add())
-        TransportResource.TRANSPORT.addOperationParameterDescription(resources,"jgroups.stack.add", stack);
-        ProtocolResource.PROTOCOLS.addOperationParameterDescription(resources, "jgroups.stack.add" , stack);
-
-        return stack ;
-    }
-
-    private static void populate(ModelNode source, ModelNode target) {
-        // nothing to do for a basic add
+        return Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
     }
 
     @Override
-    protected void populateModel(final ModelNode operation, final ModelNode model) {
+    protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
         // this method is abstract in AbstractAddStepHandler
         // we want to use its more explicit version below, but have to override it anyway
+        StackResource.PROTOCOLS.validateAndSet(operation,model);
     }
 
     @Override
-    protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) {
-
-        final ModelNode model = resource.getModel();
-
-        // handle the basic add() operation parameters
-        populate(operation, model);
-
+    protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws OperationFailedException {
+        populateModel(operation, resource);
         // add a step to initialize an *optional* TRANSPORT parameter
         if (operation.hasDefined(ModelKeys.TRANSPORT)) {
             // create an ADD operation to add the transport=TRANSPORT child
@@ -144,15 +115,9 @@ public class ProtocolStackAdd extends AbstractAddStepHandler implements Descript
 
             for (int i = protocols.size()-1; i >= 0; i--) {
                 ModelNode protocol = protocols.get(i);
-
                 // create an ADD operation to add the protocol=* child
-                ModelNode addProtocol = protocol.clone();
-                addProtocol.get(OPERATION_NAME).set(ModelKeys.ADD_PROTOCOL);
-                // add-protocol is a stack operation
-                ModelNode protocolAddress = operation.get(OP_ADDR).clone();
-                protocolAddress.protect();
-                addProtocol.get(OP_ADDR).set(protocolAddress);
-
+                ModelNode addProtocol = Util.createOperation(ModelKeys.ADD_PROTOCOL,PathAddress.pathAddress(operation.get(OP_ADDR)));
+                addProtocol.get(TYPE).set(protocol);
                 // execute the operation using the transport handler
                 context.addStep(addProtocol, ProtocolResource.PROTOCOL_ADD_HANDLER, OperationContext.Stage.IMMEDIATE);
             }
