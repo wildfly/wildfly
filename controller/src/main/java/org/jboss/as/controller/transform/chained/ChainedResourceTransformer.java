@@ -21,22 +21,16 @@
 */
 package org.jboss.as.controller.transform.chained;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ProcessType;
-import org.jboss.as.controller.RunningMode;
-import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.TransformationTarget;
-import org.jboss.dmr.ModelNode;
 
 /**
  * An experimental resource transformer allowing you to combine several transformers.
+ * TODO Add the ability to remove child resources - ping me if needed :-)
  *
  * @deprecated Experimental and likely to change
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -51,12 +45,14 @@ public class ChainedResourceTransformer implements ResourceTransformer {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource)
             throws OperationFailedException {
         if (resource.isProxy() || resource.isRuntime()) {
             return;
         }
 
+        @SuppressWarnings("deprecation")
         ChainedResourceTransformationContext wrappedContext = new ChainedResourceTransformationContext(context);
         for (ChainedResourceTransformerEntry entry : entries) {
             entry.transformResource(wrappedContext, address, resource);
@@ -64,89 +60,5 @@ public class ChainedResourceTransformer implements ResourceTransformer {
 
         final ResourceTransformationContext childContext = context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
         childContext.processChildren(resource);
-    }
-
-    private static class ChainedResourceTransformationContext implements ResourceTransformationContext {
-        private final ResourceTransformationContext delegate;
-
-        ChainedResourceTransformationContext(ResourceTransformationContext delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public TransformationTarget getTarget() {
-            return delegate.getTarget();
-        }
-
-        @Override
-        public ProcessType getProcessType() {
-            return delegate.getProcessType();
-        }
-
-        @Override
-        public RunningMode getRunningMode() {
-            return delegate.getRunningMode();
-        }
-
-        @Override
-        public ImmutableManagementResourceRegistration getResourceRegistration(PathAddress address) {
-            return delegate.getResourceRegistration(address);
-        }
-
-        @Override
-        public ImmutableManagementResourceRegistration getResourceRegistrationFromRoot(PathAddress address) {
-            return delegate.getResourceRegistrationFromRoot(address);
-        }
-
-        @Override
-        public Resource readResource(PathAddress address) {
-            return delegate.readResource(address);
-        }
-
-        @Override
-        public Resource readResourceFromRoot(PathAddress address) {
-            return delegate.readResourceFromRoot(address);
-        }
-
-        @Override
-        public ModelNode resolveExpressions(ModelNode node) throws OperationFailedException {
-            return delegate.resolveExpressions(node);
-        }
-
-        @Override
-        public ResourceTransformer resolveTransformer(PathAddress address) {
-            return delegate.resolveTransformer(address);
-        }
-
-
-        @Override
-        public Resource getTransformedRoot() {
-            return delegate.getTransformedRoot();
-        }
-
-        @Override
-        public ResourceTransformationContext addTransformedResource(PathAddress relativeAddress, Resource resource) {
-            throw MESSAGES.cannotCallMethodFromChainedTransformer();
-        }
-
-        @Override
-        public ResourceTransformationContext addTransformedResourceFromRoot(PathAddress absoluteAddress, Resource resource) {
-            throw MESSAGES.cannotCallMethodFromChainedTransformer();
-        }
-
-        @Override
-        public void addTransformedRecursiveResource(PathAddress relativeAddress, Resource resource) {
-            throw MESSAGES.cannotCallMethodFromChainedTransformer();
-        }
-
-        @Override
-        public void processChildren(Resource resource) throws OperationFailedException {
-            throw MESSAGES.cannotCallMethodFromChainedTransformer();
-        }
-
-        @Override
-        public void processChild(PathElement element, Resource child) throws OperationFailedException {
-            throw MESSAGES.cannotCallMethodFromChainedTransformer();
-        }
     }
 }

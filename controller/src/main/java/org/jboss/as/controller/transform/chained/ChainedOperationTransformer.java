@@ -32,7 +32,7 @@ import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.dmr.ModelNode;
 
 /**
- * An experimental operation transformer allowing you to chain several transformers
+ * An experimental operation transformer allowing you to chain several transformers.
  *
  * @deprecated Experimental and likely to change
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>

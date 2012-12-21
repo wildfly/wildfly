@@ -35,10 +35,10 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.RejectExpressionValuesChainedTransformer;
-import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.controller.transform.chained.ChainedOperationTransformer;
+import org.jboss.as.controller.transform.chained.ChainedResourceTransformationContext;
 import org.jboss.as.controller.transform.chained.ChainedResourceTransformer;
 import org.jboss.as.controller.transform.chained.ChainedResourceTransformerEntry;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
@@ -62,7 +62,7 @@ class SystemPropertyTransformers {
                         new ChainedResourceTransformerEntry() {
 
                             @Override
-                            public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource)
+                            public void transformResource(ChainedResourceTransformationContext context, PathAddress address, Resource resource)
                                     throws OperationFailedException {
                                 ModelNode model = resource.getModel();
                                 if (!model.hasDefined(BOOT_TIME)) {

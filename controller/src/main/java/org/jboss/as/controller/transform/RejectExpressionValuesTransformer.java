@@ -28,6 +28,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.chained.ChainedResourceTransformer;
 import org.jboss.dmr.ModelNode;
 
 /**

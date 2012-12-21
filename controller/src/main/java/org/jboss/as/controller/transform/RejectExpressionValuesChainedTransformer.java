@@ -33,6 +33,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.chained.ChainedResourceTransformationContext;
 import org.jboss.as.controller.transform.chained.ChainedResourceTransformerEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -44,6 +45,7 @@ import org.jboss.dmr.Property;
  * @see ChainedResourceTransformer
  */
 @Deprecated
+@SuppressWarnings("deprecation")
 public class RejectExpressionValuesChainedTransformer implements ChainedResourceTransformerEntry, OperationTransformer {
 
     private static final Pattern EXPRESSION_PATTERN = Pattern.compile(".*\\$\\{.*\\}.*");
@@ -120,7 +122,7 @@ public class RejectExpressionValuesChainedTransformer implements ChainedResource
     }
 
     @Override
-    public void transformResource(final ResourceTransformationContext context, final PathAddress address,
+    public void transformResource(final ChainedResourceTransformationContext context, final PathAddress address,
                                   final Resource resource) throws OperationFailedException {
         // Check the model
         final ModelNode model = resource.getModel();

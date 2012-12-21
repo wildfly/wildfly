@@ -23,25 +23,22 @@ package org.jboss.as.controller.transform.chained;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
 
 /**
  * Provides chained transformation of resources.
- * 
+ *
  * @deprecated Experimental and likely to change
  * @author Kabir Khan
  */
 @Deprecated
-public interface ChainedResourceTransformerEntry extends ResourceTransformer {
+public interface ChainedResourceTransformerEntry {
 
     /**
-     * Same as {@link ResourceTransformer#transformResource(ResourceTransformationContext, PathAddress, Resource)} with the exception
-     * that you cannot call {@link ResourceTransformationContext#addTransformedResource(PathAddress, Resource)}, {@link ResourceTransformationContext#addTransformedResourceFromRoot(PathAddress, Resource)},
-     * {@link ResourceTransformationContext#addTransformedRecursiveResource(PathAddress, Resource)}, {@link ResourceTransformationContext#processChild(PathElement, Resource)} or
-     * {@link ResourceTransformationContext#processChildren(Resource)} on the passed in {@code context}.
+     * Similar to {@link ResourceTransformer#transformResource(ResourceTransformationContext, PathAddress, Resource)} but for use with {@link ChainedOperationTransformer}
      */
-    void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException;
+    @SuppressWarnings("deprecation")
+    void transformResource(ChainedResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException;
 }

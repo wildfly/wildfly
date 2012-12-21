@@ -49,7 +49,6 @@ import org.jboss.as.controller.registry.OperationTransformerRegistry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.registry.Resource.ResourceEntry;
 import org.jboss.as.controller.transform.AbstractOperationTransformer;
-import org.jboss.as.controller.transform.ChainedResourceTransformer;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
@@ -60,6 +59,8 @@ import org.jboss.as.controller.transform.TransformationTargetImpl;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.controller.transform.Transformers;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.controller.transform.chained.ChainedResourceTransformationContext;
+import org.jboss.as.controller.transform.chained.ChainedResourceTransformer;
 import org.jboss.as.controller.transform.chained.ChainedResourceTransformerEntry;
 import org.jboss.dmr.ModelNode;
 import org.junit.Before;
@@ -237,7 +238,7 @@ public class OperationTransformationTestCase {
 
         ChainedResourceTransformerEntry shiftKey = new ChainedResourceTransformerEntry() {
             @Override
-            public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource)
+            public void transformResource(ChainedResourceTransformationContext context, PathAddress address, Resource resource)
                     throws OperationFailedException {
                 ModelNode model = resource.getModel();
                 if (model.isDefined()) {
@@ -261,7 +262,7 @@ public class OperationTransformationTestCase {
 
         ChainedResourceTransformerEntry upperCaseValue = new ChainedResourceTransformerEntry() {
             @Override
-            public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource)
+            public void transformResource(ChainedResourceTransformationContext context, PathAddress address, Resource resource)
                     throws OperationFailedException {
                 ModelNode model = resource.getModel();
                 if (model.isDefined()) {
