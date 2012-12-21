@@ -438,6 +438,10 @@ public interface ControllerLogger extends BasicLogger {
     void noHandlerForOperation(String operationName, PathAddress address);
 
     @LogMessage(level = WARN)
-    @Message(id = 13401, value = "Transforming resource %s for host controller '%s' to model version '%s' -- attributes %s do not support expressions in that model version and this resource will need to be ignored on that host.")
-    void rejectExpressionResourceTransformerFoundExpressions(PathAddress pathAddress, String legacyHostName, ModelVersion modelVersion, Set<String> attributeNames);
+    @Message(id = 13401, value = "Transforming resource %s for host controller '%s' to core model version '%s' -- attributes %s do not support expressions in that model version and this resource will need to be ignored on that host.")
+    void rejectExpressionCoreModelResourceTransformerFoundExpressions(PathAddress pathAddress, String legacyHostName, ModelVersion modelVersion, Set<String> attributeNames);
+
+    @LogMessage(level = WARN)
+    @Message(id = 13402, value = "Transforming resource %s for host controller '%s' to subsystem '%s' model version '%s' -- attributes %s do not support expressions in that model version and this resource will need to be ignored on that host.")
+    void rejectExpressionSubsystemModelResourceTransformerFoundExpressions(PathAddress pathAddress, String legacyHostName, String subsystem, ModelVersion modelVersion, Set<String> attributeNames);
 }

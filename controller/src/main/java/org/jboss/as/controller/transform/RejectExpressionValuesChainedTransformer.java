@@ -222,6 +222,9 @@ public class RejectExpressionValuesChainedTransformer implements ChainedResource
     }
 
     private String logError(TransformationContext context, PathAddress pathAddress, Set<String> attributes, ModelNode op) throws OperationFailedException {
+
+        //TODO the determining of whether the version is 1.4.0, i.e. knows about ignored resources or not could be moved to a utility method
+
         final TransformationTarget tgt = context.getTarget();
         final String hostName = tgt.getHostName();
         final ModelVersion coreVersion = tgt.getVersion();
@@ -230,19 +233,29 @@ public class RejectExpressionValuesChainedTransformer implements ChainedResource
 
         //For 7.1.x, we have no idea if the slave has ignored the resource or not. On 7.2.x the slave registers the ignored resources as
         //part of the registration process so we have a better idea and can throw errors if the slave was ignored
-        if (op == null && coreVersion != null) {
-            //The only time coreVersion can be null is in the subsystem tests so if that happens simply log a warning
+        if (op == null) {
             if (coreVersion.getMajor() >= 1 && coreVersion.getMinor() >= 4) {
                 //We are 7.2.x so we should throw an error
-                throw ControllerMessages.MESSAGES.rejectExpressionResourceTransformerFoundExpressions(pathAddress, hostName, usedVersion, attributes);
+                if (subsystemName != null) {
+                    throw ControllerMessages.MESSAGES.rejectExpressionSubsystemModelResourceTransformerFoundExpressions(pathAddress, hostName, subsystemName, usedVersion, attributes);
+                }
+                throw ControllerMessages.MESSAGES.rejectExpressionCoreModelResourceTransformerFoundExpressions(pathAddress, hostName, usedVersion, attributes);
             }
         }
 
         if (op == null) {
-            ControllerLogger.TRANSFORMER_LOGGER.rejectExpressionResourceTransformerFoundExpressions(pathAddress, hostName, usedVersion, attributes);
+            if (subsystemName != null) {
+                ControllerLogger.TRANSFORMER_LOGGER.rejectExpressionSubsystemModelResourceTransformerFoundExpressions(pathAddress, hostName, subsystemName, usedVersion, attributes);
+            } else {
+                ControllerLogger.TRANSFORMER_LOGGER.rejectExpressionCoreModelResourceTransformerFoundExpressions(pathAddress, hostName, usedVersion, attributes);
+            }
             return null;
         } else {
-            return ControllerMessages.MESSAGES.rejectExpressionOperationTransformerFoundExpressions(op, pathAddress, hostName, usedVersion, attributes).getMessage();
+            if (subsystemName != null) {
+                return ControllerMessages.MESSAGES.rejectExpressionSubsystemModelOperationTransformerFoundExpressions(op, pathAddress, hostName, subsystemName, usedVersion, attributes).getMessage();
+            } else {
+                return ControllerMessages.MESSAGES.rejectExpressionCoreModelOperationTransformerFoundExpressions(op, pathAddress, hostName, usedVersion, attributes).getMessage();
+            }
         }
     }
 

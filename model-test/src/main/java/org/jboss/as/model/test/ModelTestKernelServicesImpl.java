@@ -62,6 +62,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformationTarget;
+import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceContainer;
 
@@ -324,6 +325,10 @@ public abstract class ModelTestKernelServicesImpl<T extends ModelTestKernelServi
 
     protected TransformationContext createTransformationContext(TransformationTarget target) {
         return new TestTransformationContext(target, ModelTestModelControllerService.grabRootResource(this));
+    }
+
+    protected TransformerRegistry getTransformersRegistry() {
+        return controllerService.getTransformersRegistry();
     }
 
     private class TestTransformationContext implements TransformationContext {
