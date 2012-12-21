@@ -205,7 +205,7 @@ public class KernelServicesImpl extends ModelTestKernelServicesImpl<KernelServic
         return subsystems;
     }
 
-    private static  TransformationTarget.IgnoredTransformationRegistry MOCK_IGNORED_DOMAIN_RESOURCE_REGISTRY = new  TransformationTarget.IgnoredTransformationRegistry() {
+    private static TransformationTarget.IgnoredTransformationRegistry MOCK_IGNORED_DOMAIN_RESOURCE_REGISTRY = new  TransformationTarget.IgnoredTransformationRegistry() {
 
         @Override
         public boolean isResourceTransformationIgnored(PathAddress address) {
@@ -215,6 +215,11 @@ public class KernelServicesImpl extends ModelTestKernelServicesImpl<KernelServic
         @Override
         public boolean isOperationTransformationIgnored(PathAddress address) {
             return false;
+        }
+
+        @Override
+        public String getHostName() {
+            return null;
         }
     };
 }

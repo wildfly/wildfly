@@ -53,7 +53,7 @@ import org.jboss.dmr.ModelNode;
 class SystemPropertyTransformers {
 
     @SuppressWarnings("deprecation")
-    static final RejectExpressionValuesChainedTransformer rejectExpressions = new RejectExpressionValuesChainedTransformer(SystemPropertyResourceDefinition.VALUE).setWarnOnResource();
+    static final RejectExpressionValuesChainedTransformer rejectExpressions = new RejectExpressionValuesChainedTransformer(SystemPropertyResourceDefinition.VALUE);
 
 
     static TransformersSubRegistration registerTransformers(TransformersSubRegistration parent) {
