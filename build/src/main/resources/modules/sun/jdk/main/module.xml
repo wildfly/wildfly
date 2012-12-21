@@ -73,6 +73,7 @@
                 <path name="sun/util/calendar"/>
                 <path name="sun/util/locale"/>
                 <path name="sun/util/resources"/>
+                <path name="sun/security/pkcs11"/>
                 <path name="sun/security/provider"/>
                 <path name="sun/text"/>
                 <path name="META-INF/services"/>
