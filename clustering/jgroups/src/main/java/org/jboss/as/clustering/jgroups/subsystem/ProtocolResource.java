@@ -23,7 +23,6 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
@@ -79,10 +78,6 @@ public class ProtocolResource extends SimpleResourceDefinition {
                 setSuffix("protocol").
                 build();
 
-    static final ObjectListAttributeDefinition PROTOCOLS = ObjectListAttributeDefinition.
-            Builder.of(ModelKeys.PROTOCOLS, PROTOCOL).
-            setAllowNull(true).
-            build();
 
     // operations
     static final OperationDefinition PROTOCOL_ADD = new SimpleOperationDefinitionBuilder(ModelKeys.ADD_PROTOCOL, JGroupsExtension.getResourceDescriptionResolver("stack"))
@@ -97,22 +92,14 @@ public class ProtocolResource extends SimpleResourceDefinition {
     static final OperationStepHandler PROTOCOL_REMOVE_HANDLER = new ProtocolLayerRemove();
 
     // registration
-    ProtocolResource() {
-        super(PROTOCOL_PATH,
-                JGroupsExtension.getResourceDescriptionResolver(ModelKeys.PROTOCOL));
-    }
-
-    @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
+    private ProtocolResource() {
+        super(PROTOCOL_PATH, JGroupsExtension.getResourceDescriptionResolver(ModelKeys.PROTOCOL));
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         super.registerAttributes(resourceRegistration);
-
         final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(PROTOCOL_ATTRIBUTES);
-
         for (AttributeDefinition attr : PROTOCOL_ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
         }
@@ -121,7 +108,6 @@ public class ProtocolResource extends SimpleResourceDefinition {
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         super.registerChildren(resourceRegistration);
-
         resourceRegistration.registerSubModel(PropertyResource.INSTANCE);
     }
 }

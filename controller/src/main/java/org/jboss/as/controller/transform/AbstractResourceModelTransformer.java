@@ -64,7 +64,7 @@ public abstract class AbstractResourceModelTransformer implements ResourceTransf
         final TransformationTarget target = context.getTarget();
         final ResourceDefinition definition = loader.load(target);
         final ManagementResourceRegistration targetDefinition = ManagementResourceRegistration.Factory.create(definition);
-        final Resource transformed = TransformationUtils.modelToResource(targetDefinition, result, false);
+        final Resource transformed = TransformationUtils.modelToResource(address, targetDefinition, result, false);
         // Add the model recursively
         context.addTransformedRecursiveResource(PathAddress.EMPTY_ADDRESS, transformed);
     }

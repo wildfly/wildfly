@@ -23,6 +23,15 @@
     "children" => [{
         "model-description" => {
             "description" => "The configuration of a jgroups protocol stack.",
+            "attributes" => {"protocols" => {
+                 "type" => LIST,
+                 "description" => "The list of configured protocols for a protocol stack.",
+                 "expressions-allowed" => false,
+                 "nillable" => true,
+                 "value-type" => STRING,
+                 "access-type" => "read-only",
+                 "storage" => "configuration"
+            }},
             "children" => {
                 "transport" => {
                     "description" => "The configuration of a transport for a protocol stack.",

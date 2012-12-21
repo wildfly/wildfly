@@ -40,10 +40,10 @@ import org.jboss.dmr.Property;
  */
 public class ProtocolLayerAdd implements OperationStepHandler {
 
-    AttributeDefinition[] attributes ;
+    AttributeDefinition[] attributes;
 
     public ProtocolLayerAdd(AttributeDefinition... attributes) {
-        this.attributes = attributes ;
+        this.attributes = attributes;
     }
 
     @Override
@@ -58,8 +58,8 @@ public class ProtocolLayerAdd implements OperationStepHandler {
         PathElement protocolRelativePath = PathElement.pathElement(ModelKeys.PROTOCOL, type.asString());
 
         // if child resource already exists, throw OFE
-        if (resource.hasChild(protocolRelativePath))  {
-            throw JGroupsMessages.MESSAGES.protocolAlreadyDefined(protocolRelativePath.toString()) ;
+        if (resource.hasChild(protocolRelativePath)) {
+            throw JGroupsMessages.MESSAGES.protocolAlreadyDefined(protocolRelativePath.toString());
         }
 
         // now get the created model
@@ -67,33 +67,31 @@ public class ProtocolLayerAdd implements OperationStepHandler {
         final ModelNode protocol = childResource.getModel();
 
         // Process attributes
-        for(final AttributeDefinition attribute : attributes) {
+        for (final AttributeDefinition attribute : attributes) {
             // we use PROPERTIES only to allow the user to pass in a list of properties on store add commands
             // don't copy these into the model
-            if (attribute.getName().equals(ModelKeys.PROPERTIES))
-                continue ;
+            if (attribute.getName().equals(ModelKeys.PROPERTIES)) { continue; }
 
             attribute.validateAndSet(operation, protocol);
         }
 
         // get the current list of protocol names and add the new protocol
         // this list is used to maintain order
-        ModelNode protocols = subModel.get(ModelKeys.PROTOCOLS) ;
+        ModelNode protocols = subModel.get(ModelKeys.PROTOCOLS);
         if (!protocols.isDefined()) {
             protocols.setEmptyList();
         }
         protocols.add(type);
 
         // Process type specific properties if required
-        process(subModel, operation);
 
         // The protocol parameters  <property name=>value</property>
-        if(operation.hasDefined(ModelKeys.PROPERTIES)) {
-            for(Property property : operation.get(ModelKeys.PROPERTIES).asPropertyList()) {
+        if (operation.hasDefined(ModelKeys.PROPERTIES)) {
+            for (Property property : operation.get(ModelKeys.PROPERTIES).asPropertyList()) {
                 // create a new property=name resource
                 final Resource param = context.createResource(PathAddress.pathAddress(protocolRelativePath, PathElement.pathElement(ModelKeys.PROPERTY, property.getName())));
                 final ModelNode value = property.getValue();
-                if(! value.isDefined()) {
+                if (!value.isDefined()) {
                     throw JGroupsMessages.MESSAGES.propertyNotDefined(property.getName(), protocolRelativePath.toString());
                 }
                 // set the value of the property
@@ -105,10 +103,6 @@ public class ProtocolLayerAdd implements OperationStepHandler {
         context.stepCompleted();
     }
 
-    void process(ModelNode subModel, ModelNode operation) {
-        //
-    }
-
     /**
      * Add a step triggering the {@linkplain org.jboss.as.controller.OperationContext#reloadRequired()} in case the
      * the cache service is installed, since the transport-config operations need a reload/restart and can't be
@@ -117,7 +111,7 @@ public class ProtocolLayerAdd implements OperationStepHandler {
      * @param context the operation context
      */
     void reloadRequiredStep(final OperationContext context) {
-        if (context.getProcessType().isServer() &&  !context.isBooting()) {
+        if (context.getProcessType().isServer() && !context.isBooting()) {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {

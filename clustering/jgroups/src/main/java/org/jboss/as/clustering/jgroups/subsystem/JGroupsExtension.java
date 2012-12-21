@@ -97,14 +97,11 @@ public class JGroupsExtension implements Extension {
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
 
         final boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
-
         final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(new JGroupsSubsystemRootResource());
         subsystem.registerOperationHandler(JGroupsSubsystemDescribe.DEFINITON,JGroupsSubsystemDescribe.INSTANCE);
 
         subsystem.registerSubModel(new StackResource(registerRuntimeOnly));
-
         registration.registerXMLElementWriter(new JGroupsSubsystemXMLWriter());
-
         // Register the model transformers
         registerTransformers(registration);
     }
@@ -123,8 +120,7 @@ public class JGroupsExtension implements Extension {
         }
     }
 
-
-        // Transformation
+    // Transformation
 
     /**
      * Register the transformers for older model versions.
@@ -132,7 +128,6 @@ public class JGroupsExtension implements Extension {
      * @param subsystem the subsystems registration
      */
     private static void registerTransformers(final SubsystemRegistration subsystem) {
-
         // Transformations to the 1.1.0 Model
         // - we need to reject expressions for transport (and similarly for protocol properties) for these operations
         //   transport=TRANSPORT/property=<name>:add(value=<value>)
@@ -144,7 +139,7 @@ public class JGroupsExtension implements Extension {
                 TransportResource.PROPERTIES, ProtocolResource.PROPERTIES);
 
         final TransformersSubRegistration registration = subsystem.registerModelTransformers(version110, ResourceTransformer.DEFAULT);
-        final TransformersSubRegistration stack = registration.registerSubResource(StackResource.STACK_PATH) ;
+        final TransformersSubRegistration stack = registration.registerSubResource(StackResource.STACK_PATH);
 
         // reject expressions for transport properties, for the add and write-attribute op
         final TransformersSubRegistration transport = stack.registerSubResource(TransportResource.TRANSPORT_PATH) ;

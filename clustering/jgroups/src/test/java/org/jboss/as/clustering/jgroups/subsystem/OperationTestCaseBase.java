@@ -102,18 +102,13 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     protected static ModelNode getProtocolStackAddOperationWithParameters(String stackName) {
         ModelNode addOp = getProtocolStackAddOperation(stackName);
         // add optional TRANSPORT attribute
-        ModelNode transport = new ModelNode();
+        ModelNode transport = addOp.get(ModelKeys.TRANSPORT);
         transport.get(ModelKeys.TYPE).set("UDP");
-        addOp.get(ModelKeys.TRANSPORT).set(transport);
+
         // add optional PROTOCOLS attribute
-        ModelNode protocolsList = new ModelNode();
-        ModelNode mping = new ModelNode() ;
-        mping.get(ModelKeys.TYPE).set("MPING");
-        protocolsList.add(mping);
-        ModelNode flush = new ModelNode() ;
-        flush.get(ModelKeys.TYPE).set("pbcast.FLUSH");
-        protocolsList.add(flush);
-        addOp.get(ModelKeys.PROTOCOLS).set(protocolsList);
+        ModelNode protocolsList = addOp.get(ModelKeys.PROTOCOLS);
+        protocolsList.add("MPING");
+        protocolsList.add("pbcast.FLUSH");
         return addOp ;
     }
 
