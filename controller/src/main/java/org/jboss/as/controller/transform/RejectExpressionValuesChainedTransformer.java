@@ -21,7 +21,10 @@
 */
 package org.jboss.as.controller.transform;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -29,11 +32,14 @@ import java.util.regex.Pattern;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.chained.ChainedResourceTransformationContext;
+import org.jboss.as.controller.transform.chained.ChainedResourceTransformer;
 import org.jboss.as.controller.transform.chained.ChainedResourceTransformerEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -52,7 +58,6 @@ public class RejectExpressionValuesChainedTransformer implements ChainedResource
 
     private final Set<String> attributeNames;
     private final OperationTransformer writeAttributeTransformer = new WriteAttributeTransformer();
-    private volatile boolean warnOnResource;
 
 
     public RejectExpressionValuesChainedTransformer(AttributeDefinition... attributes) {
@@ -70,19 +75,6 @@ public class RejectExpressionValuesChainedTransformer implements ChainedResource
     public RejectExpressionValuesChainedTransformer(String... attributeNames) {
         this.attributeNames = new HashSet<String>();
         this.attributeNames.addAll(Arrays.asList(attributeNames));
-    }
-
-    /**
-     * This should be called for resource transformations done for 7.1.x, as we have no idea if the slave has ignored the resource or not. If
-     * this method is called, we log an error if expressions were used rather than throw an error (since the slave might have ignored the resource).
-     * On 7.2.x the slave registers the ingored resources as part of the registration process so we have a better idea and can throw errors if the
-     * resource is not ignored.
-     *
-     * @return this transformer
-     */
-    public RejectExpressionValuesChainedTransformer setWarnOnResource() {
-        this.warnOnResource = true;
-        return this;
     }
 
     /**
@@ -111,7 +103,12 @@ public class RejectExpressionValuesChainedTransformer implements ChainedResource
                 @Override
                 public String getFailureDescription() {
                     // TODO OFE.getMessage
-                    return ControllerMessages.MESSAGES.expressionNotAllowed(attributes.toString()).getMessage();
+                    try {
+                        return logError(context, address, attributes, operation);
+                    } catch (OperationFailedException e) {
+                        //This will not happen
+                        return null;
+                    }
                 }
             };
         } else {
@@ -128,11 +125,7 @@ public class RejectExpressionValuesChainedTransformer implements ChainedResource
         final ModelNode model = resource.getModel();
         final Set<String> attributes = checkModel(model);
         if (attributes.size() > 0) {
-            if (warnOnResource) {
-                ControllerLogger.TRANSFORMER_LOGGER.expressionNotAllowed(attributes.toString());
-            } else {
-                throw ControllerMessages.MESSAGES.expressionNotAllowed(attributes.toString());
-            }
+            logError(context, address, attributes, null);
         }
     }
 
@@ -189,7 +182,7 @@ public class RejectExpressionValuesChainedTransformer implements ChainedResource
     class WriteAttributeTransformer implements OperationTransformer {
 
         @Override
-        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
+        public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation) throws OperationFailedException {
             final String attribute = operation.require(ModelDescriptionConstants.NAME).asString();
             boolean containsExpression = false;
             if(attributeNames.contains(attribute)) {
@@ -209,8 +202,12 @@ public class RejectExpressionValuesChainedTransformer implements ChainedResource
 
                     @Override
                     public String getFailureDescription() {
-                        // TODO OFE.getMessage
-                        return ControllerMessages.MESSAGES.expressionNotAllowed(attribute).getMessage();
+                        try {
+                            return logError(context, address, Collections.singleton(attribute), operation);
+                        } catch (OperationFailedException e) {
+                            //This will not happen
+                            return null;
+                        }
                     }
                 };
                 return new TransformedOperation(operation, rejectPolicy, OperationResultTransformer.ORIGINAL_RESULT);
@@ -224,4 +221,38 @@ public class RejectExpressionValuesChainedTransformer implements ChainedResource
         return EXPRESSION_PATTERN.matcher(value).matches();
     }
 
+    private String logError(TransformationContext context, PathAddress pathAddress, Set<String> attributes, ModelNode op) throws OperationFailedException {
+        final TransformationTarget tgt = context.getTarget();
+        final String hostName = tgt.getHostName();
+        final ModelVersion coreVersion = tgt.getVersion();
+        final String subsystemName = findSubsystemVersion(pathAddress);
+        final ModelVersion usedVersion = subsystemName == null ? coreVersion : tgt.getSubsystemVersion(subsystemName);
+
+        //For 7.1.x, we have no idea if the slave has ignored the resource or not. On 7.2.x the slave registers the ignored resources as
+        //part of the registration process so we have a better idea and can throw errors if the slave was ignored
+        if (op == null && coreVersion != null) {
+            //The only time coreVersion can be null is in the subsystem tests so if that happens simply log a warning
+            if (coreVersion.getMajor() >= 1 && coreVersion.getMinor() >= 4) {
+                //We are 7.2.x so we should throw an error
+                throw ControllerMessages.MESSAGES.rejectExpressionResourceTransformerFoundExpressions(pathAddress, hostName, usedVersion, attributes);
+            }
+        }
+
+        if (op == null) {
+            ControllerLogger.TRANSFORMER_LOGGER.rejectExpressionResourceTransformerFoundExpressions(pathAddress, hostName, usedVersion, attributes);
+            return null;
+        } else {
+            return ControllerMessages.MESSAGES.rejectExpressionOperationTransformerFoundExpressions(op, pathAddress, hostName, usedVersion, attributes).getMessage();
+        }
+    }
+
+
+    private String findSubsystemVersion(PathAddress pathAddress) {
+        for (PathElement element : pathAddress) {
+            if (element.getKey().equals(SUBSYSTEM)) {
+                return element.getValue();
+            }
+        }
+        return null;
+    }
 }

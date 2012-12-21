@@ -59,19 +59,6 @@ public class RejectExpressionValuesTransformer implements ResourceTransformer, O
     }
 
     /**
-     * This should be called for resource transformations done for 7.1.x, as we have no idea if the slave has ignored the resource or not. If
-     * this method is called, we log an error if expressions were used rather than throw an error (since the slave might have ignored the resource).
-     * On 7.2.x the slave registers the ingored resources as part of the registration process so we have a better idea and can throw errors if the
-     * resource is not ignored.
-     *
-     * @return this transformer
-     */
-    public RejectExpressionValuesTransformer setWarnOnResource() {
-        chainedExpressionTransformer.setWarnOnResource();
-        return this;
-    }
-
-    /**
      * Get a "write-attribute" operation transformer.
      *
      * @return a write attribute operation transformer

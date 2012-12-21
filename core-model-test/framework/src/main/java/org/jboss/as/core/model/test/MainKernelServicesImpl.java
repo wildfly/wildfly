@@ -178,5 +178,10 @@ public class MainKernelServicesImpl extends AbstractKernelServicesImpl {
         public boolean isOperationTransformationIgnored(PathAddress address) {
             return false;
         }
+
+        @Override
+        public String getHostName() {
+            return null;
+        }
     };
 }
