@@ -18,6 +18,7 @@ import static org.jboss.as.web.WebMessages.MESSAGES;
 
 import java.net.MalformedURLException;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Map;
 
 import javax.management.MBeanServer;
@@ -43,6 +44,7 @@ import org.jboss.msc.value.InjectedValue;
  * Service configuring and starting the web container.
  *
  * @author Emanuel Muckenhuber
+ * @author Jean-Frederic Clere
  */
 public class WebServerService implements WebServer, Service<WebServer> {
 
@@ -56,7 +58,7 @@ public class WebServerService implements WebServer, Service<WebServer> {
     private Engine engine;
     private StandardServer server;
     private StandardService service;
-    private Map<String, Valve> authenvalves = null;
+    private Map<String, AuthenticatorValve> authenvalves = null;
 
     private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
     private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<PathManager>();
@@ -173,14 +175,19 @@ public class WebServerService implements WebServer, Service<WebServer> {
     }
 
     @Override
-    public void addValve(String name, Valve valve) {
+    public void addValve(Valve valve) {
         final Engine engine = this.engine;
-        if (valve instanceof org.apache.catalina.authenticator.AuthenticatorBase) {
-            /* needs to be add to all contexts */
-            addAuthenValve(name, valve);
-            return;
-        }
         ((StandardEngine) engine).addValve(valve);
+    }
+
+    @Override
+    public void addValve(String name, Class classz, Hashtable<String, String> properties) {
+        if (this.authenvalves== null)
+            this.authenvalves = new HashMap<String, AuthenticatorValve>();
+        AuthenticatorValve authvalve = new AuthenticatorValve();
+        authvalve.classz = classz;
+        authvalve.properties = properties;
+        this.authenvalves.put(name, authvalve);
     }
 
     @Override
@@ -189,13 +196,7 @@ public class WebServerService implements WebServer, Service<WebServer> {
         ((StandardEngine) engine).removeValve(valve);
     }
 
-    public Map<String, Valve> getAuthenValves() {
+    public Map<String, AuthenticatorValve> getAuthenValves() {
         return this.authenvalves;
     }
-    public void addAuthenValve(String name, Valve valve) {
-        if (this.authenvalves == null)
-            this.authenvalves = new HashMap<String, Valve>();
-        this.authenvalves.put(name, valve);
-    }
-
 }

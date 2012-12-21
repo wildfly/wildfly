@@ -23,6 +23,7 @@ package org.jboss.as.web.deployment;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +61,7 @@ import org.jboss.as.clustering.web.DistributedCacheManagerFactory;
 import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.web.AuthenticatorValve;
 import org.jboss.as.web.WebLogger;
 import org.jboss.as.web.WebServerService;
 import org.jboss.as.web.deployment.helpers.VFSDirContext;
@@ -123,7 +125,7 @@ public class JBossContextConfig extends ContextConfig {
     private DeploymentUnit deploymentUnitContext = null;
     private Set<String> overlays = new HashSet<String>();
     private final InjectedValue<DistributedCacheManagerFactory> factory = new InjectedValue<DistributedCacheManagerFactory>();
-    private Map<String, Valve> authenValves = null;
+    private Map<String, AuthenticatorValve> authenValves = null;
     /**
      * <p>
      * Creates a new instance of {@code JBossContextConfig}.
@@ -881,10 +883,37 @@ public class JBossContextConfig extends ContextConfig {
             metaData.resolveRunAs();
         }
 
+        // Configure configure global authenticators.
+        if (ok) {
+            if (authenValves != null) {
+                Map<String, Valve> authenvalves = new HashMap<String, Valve>();
+                for (String name : authenValves.keySet()) {
+                    // Instantiate valve and add properties.
+                    AuthenticatorValve authenvalve = (AuthenticatorValve) authenValves.get(name);
+                    Valve valve = null;
+                    try {
+                        valve = (Valve) authenvalve.classz.newInstance();
+                    } catch (InstantiationException e) {
+                        ok = false;
+                        break;
+                    } catch (IllegalAccessException e) {
+                        ok = false;
+                        break;
+                    }
+                    if (authenvalve.properties != null) {
+                        for (String pro: authenvalve.properties.keySet()) {
+                            IntrospectionUtils.setProperty(valve, pro, authenvalve.properties.get(pro));
+                        }
+                    }
+                    authenvalves.put(name, valve);
+                }
+                if (ok)
+                    setCustomAuthenticators(authenvalves);
+            }
+        }
+
         // Configure an authenticator if we need one
         if (ok) {
-            if (authenValves != null)
-                setCustomAuthenticators(authenValves);
             authenticatorConfig();
         }
 

@@ -22,7 +22,10 @@
 
 package org.jboss.as.web;
 
+import java.util.Hashtable;
+
 import org.apache.catalina.Valve;
+import org.apache.catalina.authenticator.AuthenticatorBase;
 import org.apache.tomcat.util.IntrospectionUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -63,26 +66,41 @@ public class WebValveService implements Service<Valve> {
             final ModuleLoader moduleLoader = Module.getBootModuleLoader();
             final ModuleIdentifier id = ModuleIdentifier.create(module);
             Module valveModule = moduleLoader.loadModule(id);
+
+            Class classz = valveModule.getClassLoader().loadClass(classname);
+            if (!AuthenticatorBase.class.isAssignableFrom(classz)) {
+                valve = (Valve) valveModule.getClassLoader().loadClass(classname).newInstance();
+                if (params != null) {
+                    for (final Property param : params.asPropertyList()) {
+                        IntrospectionUtils.setProperty(valve, param.getName(), param.getValue().asString());
+                    }
+                }
+                webServer.getValue().addValve(valve);
+                this.valve = valve;
+            } else {
+                /* a context valve needs to be instanced per webapp */
+                Hashtable<String, String> properties = new Hashtable<String, String>();
+                if (params != null) {
+                    for (final Property param : params.asPropertyList()) {
+                        properties.put(param.getName(), param.getValue().asString());
+                    }
+                }
+                webServer.getValue().addValve(this.name, classz, properties);
+            }
             valve = WebValve.createValve(classname, valveModule.getClassLoader());
         } catch (Exception e) {
             throw new StartException(e);
         }
-        /* Process parameters */
-        if (params != null) {
-            for (final Property param : params.asPropertyList()) {
-                IntrospectionUtils.setProperty(valve, param.getName(), param.getValue().asString());
-            }
-        }
-        webServer.getValue().addValve(this.name, valve);
-        this.valve = valve;
     }
 
     /** {@inheritDoc} */
     public synchronized void stop(StopContext context) {
-        final Valve valve = this.valve;
-        this.valve = null;
-        final WebServer server = webServer.getValue();
-        server.removeValve(valve);
+        if (this.valve != null) {
+            final Valve valve = this.valve;
+            this.valve = null;
+            final WebServer server = webServer.getValue();
+            server.removeValve(valve);
+        }
     }
 
     /** {@inheritDoc} */
