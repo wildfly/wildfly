@@ -2591,10 +2591,17 @@ public interface ControllerMessages {
     @Message(id = 14886, value = "Method cannot be called from a chained transformer")
     IllegalStateException cannotCallMethodFromChainedTransformer();
 
-    @Message(id = 14887, value = "Transforming resource %s for host controller '%s' to model version '%s' -- attributes %s do not support expressions in that model version and this resource will need to be ignored on that host.")
-    OperationFailedException rejectExpressionResourceTransformerFoundExpressions(PathAddress pathAddress, String legacyHostName, ModelVersion modelVersion, Set<String> attributeNames);
 
-    @Message(id = 14888, value = "Transforming operation %s at resource %s for host controller '%s' to model version '%s' -- attributes %s do not support expressions in that model version and this resource will need to be ignored on that host.")
-    OperationFailedException rejectExpressionOperationTransformerFoundExpressions(ModelNode op, PathAddress pathAddress, String legacyHostName, ModelVersion modelVersion, Set<String> attributeNames);
+    @Message(id = 14887, value = "Transforming resource %s for host controller '%s' to core model version '%s' -- attributes %s do not support expressions in that model version and this resource will need to be ignored on that host.")
+    OperationFailedException rejectExpressionCoreModelResourceTransformerFoundExpressions(PathAddress pathAddress, String legacyHostName, ModelVersion modelVersion, Set<String> attributeNames);
+
+    @Message(id = 14888, value = "Transforming operation %s at resource %s for host controller '%s' to core model version '%s' -- attributes %s do not support expressions in that model version and this resource will need to be ignored on that host.")
+    OperationFailedException rejectExpressionCoreModelOperationTransformerFoundExpressions(ModelNode op, PathAddress pathAddress, String legacyHostName, ModelVersion modelVersion, Set<String> attributeNames);
+
+    @Message(id = 14889, value = "Transforming resource %s for host controller '%s' to subsystem '%s' model version '%s' -- attributes %s do not support expressions in that model version and this resource will need to be ignored on that host.")
+    OperationFailedException rejectExpressionSubsystemModelResourceTransformerFoundExpressions(PathAddress pathAddress, String legacyHostName, String subsystem, ModelVersion modelVersion, Set<String> attributeNames);
+
+    @Message(id = 14890, value = "Transforming operation %s at resource %s for host controller '%s' to subsystem '%s' model version '%s' -- attributes %s do not support expressions in that model version and this resource will need to be ignored on that host.")
+    OperationFailedException rejectExpressionSubsystemModelOperationTransformerFoundExpressions(ModelNode op, PathAddress pathAddress, String legacyHostName, String subsystem, ModelVersion modelVersion, Set<String> attributeNames);
 
 }
