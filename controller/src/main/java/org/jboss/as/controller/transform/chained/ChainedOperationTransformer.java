@@ -34,15 +34,15 @@ import org.jboss.dmr.ModelNode;
 /**
  * An experimental operation transformer allowing you to chain several transformers
  *
- * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @deprecated Experimental and likely to change
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 @Deprecated
 public class ChainedOperationTransformer implements OperationTransformer {
 
-    private final ChainedOperationTransformerEntry[] entries;
+    private final OperationTransformer[] entries;
 
-    public ChainedOperationTransformer(ChainedOperationTransformerEntry...entries) {
+    public ChainedOperationTransformer(OperationTransformer...entries) {
         this.entries = entries;
     }
 
@@ -51,7 +51,7 @@ public class ChainedOperationTransformer implements OperationTransformer {
             throws OperationFailedException {
         List<TransformedOperation> delegates = new ArrayList<TransformedOperation>();
         ModelNode currentOperation = operation;
-        for (ChainedOperationTransformerEntry entry : entries) {
+        for (OperationTransformer entry : entries) {
             TransformedOperation transformed = entry.transformOperation(context, address, currentOperation);
             currentOperation = transformed.getTransformedOperation();
             delegates.add(transformed);

@@ -60,6 +60,7 @@ import org.jboss.as.controller.transform.TransformationTargetImpl;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.controller.transform.Transformers;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.controller.transform.chained.ChainedResourceTransformerEntry;
 import org.jboss.dmr.ModelNode;
 import org.junit.Before;
 import org.junit.Test;
@@ -234,7 +235,7 @@ public class OperationTransformationTestCase {
         final TransformerRegistry transformers = TransformerRegistry.Factory.create(null);
         TransformersSubRegistration rootTransformers = transformers.getDomainRegistration(ModelVersion.create(1, 0));
 
-        ChainedResourceTransformer.ChainedResourceTransformerEntry shiftKey = new ChainedResourceTransformer.ChainedResourceTransformerEntry() {
+        ChainedResourceTransformerEntry shiftKey = new ChainedResourceTransformerEntry() {
             @Override
             public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource)
                     throws OperationFailedException {
@@ -258,7 +259,7 @@ public class OperationTransformationTestCase {
             }
         };
 
-        ChainedResourceTransformer.ChainedResourceTransformerEntry upperCaseValue = new ChainedResourceTransformer.ChainedResourceTransformerEntry() {
+        ChainedResourceTransformerEntry upperCaseValue = new ChainedResourceTransformerEntry() {
             @Override
             public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource)
                     throws OperationFailedException {

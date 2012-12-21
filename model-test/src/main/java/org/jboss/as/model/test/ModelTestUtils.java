@@ -22,6 +22,7 @@
 package org.jboss.as.model.test;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
@@ -115,6 +116,17 @@ public class ModelTestUtils {
         boolean success = SUCCESS.equals(result.get(OUTCOME).asString());
         Assert.assertTrue(result.get(FAILURE_DESCRIPTION).asString(), success);
         return result;
+    }
+
+    /**
+     * Checks that the operation failes
+     *
+     * @param result the result to check
+     * @return the failure desciption contents
+     */
+    public static ModelNode checkFailed(ModelNode result) {
+        Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
+        return result.get(FAILURE_DESCRIPTION);
     }
 
     public static void validateModelDescriptions(PathAddress address, ImmutableManagementResourceRegistration reg) {

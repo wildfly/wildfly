@@ -28,6 +28,7 @@ import static org.jboss.logging.Logger.Level.WARN;
 import java.io.Closeable;
 import java.net.InetAddress;
 import java.util.Set;
+
 import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.dmr.ModelNode;
@@ -78,6 +79,11 @@ public interface ControllerLogger extends BasicLogger {
      * A logger for logging deprecated resources usage
      */
     ControllerLogger DEPRECATED_LOGGER = Logger.getMessageLogger(ControllerLogger.class, ControllerLogger.class.getPackage().getName() + ".management-deprecated");
+
+    /**
+     * A logger for logging problems in the transformers
+     */
+    ControllerLogger TRANSFORMER_LOGGER = Logger.getMessageLogger(ControllerLogger.class, ControllerLogger.class.getPackage().getName() + ".transformer");
 
     /**
      * Logs a warning message indicating the address, represented by the {@code address} parameter, could not be
@@ -430,4 +436,8 @@ public interface ControllerLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 13400, value = "No operation named '%s' exists at address %s")
     void noHandlerForOperation(String operationName, PathAddress address);
+
+    @LogMessage(level = WARN)
+    @Message(id = 13401, value = "%s may not be ModelType.EXPRESSION")
+    void expressionNotAllowed(String name);
 }
