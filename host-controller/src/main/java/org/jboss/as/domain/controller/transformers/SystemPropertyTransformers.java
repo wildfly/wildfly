@@ -34,10 +34,13 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.RejectExpressionValuesChainedTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
-import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.controller.transform.chained.ChainedOperationTransformer;
+import org.jboss.as.controller.transform.chained.ChainedResourceTransformer;
+import org.jboss.as.controller.transform.chained.ChainedResourceTransformerEntry;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
 import org.jboss.dmr.ModelNode;
 
@@ -48,33 +51,41 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 class SystemPropertyTransformers {
+
+    @SuppressWarnings("deprecation")
+    static final RejectExpressionValuesChainedTransformer rejectExpressions = new RejectExpressionValuesChainedTransformer(SystemPropertyResourceDefinition.VALUE).setWarnOnResource();
+
+
     static TransformersSubRegistration registerTransformers(TransformersSubRegistration parent) {
-        TransformersSubRegistration reg = parent.registerSubResource(SystemPropertyResourceDefinition.PATH, new ResourceTransformer() {
+        TransformersSubRegistration reg = parent.registerSubResource(SystemPropertyResourceDefinition.PATH,
+                new ChainedResourceTransformer(
+                        new ChainedResourceTransformerEntry() {
 
-            @Override
-            public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource)
-                    throws OperationFailedException {
-                ModelNode model = resource.getModel();
-                if (!model.hasDefined(BOOT_TIME)) {
-                    model.get(BOOT_TIME).set(true);
-                }
-                final ResourceTransformationContext childContext = context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
-                childContext.processChildren(resource);
-            }
-        });
+                            @Override
+                            public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource)
+                                    throws OperationFailedException {
+                                ModelNode model = resource.getModel();
+                                if (!model.hasDefined(BOOT_TIME)) {
+                                    model.get(BOOT_TIME).set(true);
+                                }
+                            }
+                        },
+                        rejectExpressions));
 
-        reg.registerOperationTransformer(ADD, new OperationTransformer() {
-
-            @Override
-            public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation)
-                    throws OperationFailedException {
-                ModelNode transformed = operation.clone();
-                if (!transformed.hasDefined(BOOT_TIME)) {
-                    transformed.get(BOOT_TIME).set(true);
-                }
-                return new TransformedOperation(transformed, OperationResultTransformer.ORIGINAL_RESULT);
-            }
-        });
+        reg.registerOperationTransformer(ADD,
+                new ChainedOperationTransformer(
+                    new OperationTransformer() {
+                        @Override
+                        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation)
+                                throws OperationFailedException {
+                            ModelNode transformed = operation.clone();
+                            if (!transformed.hasDefined(BOOT_TIME)) {
+                                transformed.get(BOOT_TIME).set(true);
+                            }
+                            return new TransformedOperation(transformed, OperationResultTransformer.ORIGINAL_RESULT);
+                        }
+                    },
+                    rejectExpressions));
 
         OperationTransformer forceTrue = new OperationTransformer() {
 
@@ -94,12 +105,11 @@ class SystemPropertyTransformers {
                 return new TransformedOperation(transformed, OperationResultTransformer.ORIGINAL_RESULT);
             }
         };
-        reg.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, forceTrue);
-        reg.registerOperationTransformer(UNDEFINE_ATTRIBUTE_OPERATION, forceTrue);
+        reg.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, new ChainedOperationTransformer(forceTrue, rejectExpressions));
+        reg.registerOperationTransformer(UNDEFINE_ATTRIBUTE_OPERATION, new ChainedOperationTransformer(forceTrue, rejectExpressions));
 
         return reg;
     }
-
 
 
 }

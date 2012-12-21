@@ -21,6 +21,7 @@
 */
 package org.jboss.as.core.model.test.systemproperty;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
@@ -137,18 +138,42 @@ public abstract class AbstractSystemPropertyTransformersTest extends AbstractCor
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
 
+        //This passes since the boot currently does not invoke the transformers, and the rejected expression transformer which
+        //would fail fails on the way out.
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
-        //Test the write attribute handler, the 'add' got tested at boot time
+        //Now test the individual methods
         PathAddress baseAddress = serverGroup ? PathAddress.pathAddress(PathElement.pathElement(SERVER_GROUP, "test")) : PathAddress.EMPTY_ADDRESS;
-        PathAddress propAddress = baseAddress.append(SYSTEM_PROPERTY, "sys.prop.test.two");
-        //value should just work
-        ModelNode op = Util.getWriteAttributeOperation(propAddress, VALUE, new ModelNode().setExpression("${sys.prop.test.two}"));
-        ModelTestUtils.checkOutcome(mainServices.executeOperation(modelVersion, mainServices.transformOperation(modelVersion, op)));
-        ModelNode value = ModelTestUtils.getSubModel(legacyServices.readWholeModel(), propAddress).get(VALUE);
-        Assert.assertTrue(value.getType() == ModelType.EXPRESSION);
-        Assert.assertEquals("${sys.prop.test.two}", value.asString());
+        PathAddress propNewAddress = baseAddress.append(SYSTEM_PROPERTY, "sys.prop.test.new");
+        PathAddress propTwoAddress = baseAddress.append(SYSTEM_PROPERTY, "sys.prop.test.two");
+
+        ModelNode addParams = new ModelNode();
+        addParams.get(VALUE).setExpression("${sys.prop.test.two}");
+        ModelNode addWithExpression = Util.getOperation(ADD, propNewAddress, addParams);
+        ModelNode writeWithExpression = Util.getWriteAttributeOperation(propTwoAddress, VALUE, new ModelNode().setExpression("${sys.prop.test.one}"));
+
+        if (allowExpressions()) {
+            ModelTestUtils.checkOutcome(mainServices.executeOperation(modelVersion, mainServices.transformOperation(modelVersion, addWithExpression)));
+            ModelTestUtils.checkOutcome(mainServices.executeOperation(modelVersion, mainServices.transformOperation(modelVersion, writeWithExpression)));
+
+            ModelNode legacyModel = legacyServices.readWholeModel();
+            ModelNode value = ModelTestUtils.getSubModel(legacyModel, propNewAddress).get(VALUE);
+            Assert.assertTrue(value.getType() == ModelType.EXPRESSION);
+            Assert.assertEquals("${sys.prop.test.two}", value.asString());
+
+            value = ModelTestUtils.getSubModel(legacyModel, propTwoAddress).get(VALUE);
+            Assert.assertTrue(value.getType() == ModelType.EXPRESSION);
+            Assert.assertEquals("${sys.prop.test.one}", value.asString());
+        } else {
+            ModelTestUtils.checkFailed(mainServices.executeOperation(modelVersion, mainServices.transformOperation(modelVersion, addWithExpression)));
+            ModelTestUtils.checkFailed(mainServices.executeOperation(modelVersion, mainServices.transformOperation(modelVersion, writeWithExpression)));
+        }
+
+        //Resource transformation should work on both 7.1.x and 7.2.x since
+        //-7.2.x does no transformation
+        //-7.1.x transformers are registered with RejectExpressionValuesTransformer.setWarnOnResource()
+        ModelNode model = mainServices.readTransformedModel(modelVersion);
 
     }
 
@@ -160,5 +185,9 @@ public abstract class AbstractSystemPropertyTransformersTest extends AbstractCor
         } else {
             throw new IllegalStateException("Not known model version " + modelVersion);
         }
+    }
+
+    private boolean allowExpressions() {
+        return modelVersion.getMajor() >= 1 && modelVersion.getMinor() >= 4;
     }
 }

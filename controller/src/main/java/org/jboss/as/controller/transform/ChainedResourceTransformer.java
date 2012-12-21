@@ -30,6 +30,7 @@ import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.chained.ChainedResourceTransformerEntry;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -58,21 +59,6 @@ public class ChainedResourceTransformer implements ResourceTransformer {
 
         final ResourceTransformationContext childContext = context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
         childContext.processChildren(resource);
-    }
-
-    /**
-     * Provides chained transformation.
-     *
-     */
-    public interface ChainedResourceTransformerEntry extends ResourceTransformer {
-
-        /**
-         * Same as {@link ResourceTransformer#transformResource(ResourceTransformationContext, PathAddress, Resource)} with the exception
-         * that you cannot call {@link ResourceTransformationContext#addTransformedResource(PathAddress, Resource)}, {@link ResourceTransformationContext#addTransformedResourceFromRoot(PathAddress, Resource)},
-         * {@link ResourceTransformationContext#addTransformedRecursiveResource(PathAddress, Resource)}, {@link ResourceTransformationContext#processChild(PathElement, Resource)} or
-         * {@link ResourceTransformationContext#processChildren(Resource)} on the passed in {@code context}.
-         */
-        void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException;
     }
 
     private static class ChainedResourceTransformationContext implements ResourceTransformationContext {

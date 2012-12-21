@@ -30,8 +30,11 @@ import org.jboss.as.controller.transform.ResourceTransformer;
 
 /**
  * Provides chained transformation of resources.
- *
+ * 
+ * @deprecated Experimental and likely to change
+ * @author Kabir Khan
  */
+@Deprecated
 public interface ChainedResourceTransformerEntry extends ResourceTransformer {
 
     /**

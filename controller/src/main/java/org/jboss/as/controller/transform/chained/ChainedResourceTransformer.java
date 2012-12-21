@@ -38,8 +38,8 @@ import org.jboss.dmr.ModelNode;
 /**
  * An experimental resource transformer allowing you to combine several transformers.
  *
- * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @deprecated Experimental and likely to change
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 @Deprecated
 public class ChainedResourceTransformer implements ResourceTransformer {
