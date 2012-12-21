@@ -181,7 +181,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             // enroll for next message (whenever it's available)
             channel.receiveMessage(this);
 
-        } catch (IOException e) {
+        } catch (Throwable e) {
             // log it
             EjbLogger.ROOT_LOGGER.exceptionOnChannel(e, channel, messageInputStream);
             // no more messages can be sent or received on this channel

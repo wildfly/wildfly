@@ -118,8 +118,8 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
             moduleName = (String) unmarshaller.readObject();
             distinctName = (String) unmarshaller.readObject();
             beanName = (String) unmarshaller.readObject();
-        } catch (ClassNotFoundException e) {
-            throw EjbMessages.MESSAGES.classNotFoundException(e);
+        } catch (Throwable e) {
+            throw EjbMessages.MESSAGES.failedToReadEjbInfo(e);
         }
         final EjbDeploymentInformation ejbDeploymentInformation = this.findEJB(appName, moduleName, distinctName, beanName);
         if (ejbDeploymentInformation == null) {
@@ -138,8 +138,8 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
             final EJBLocator<?> locator;
             try {
                 locator = (EJBLocator<?>) unmarshaller.readObject();
-            } catch (ClassNotFoundException e) {
-                throw EjbMessages.MESSAGES.classNotFoundException(e);
+            } catch (Throwable e) {
+                throw EjbMessages.MESSAGES.failedToReadEJBLocator(e);
             }
             final String viewClassName = locator.getViewType().getName();
             // Make sure it's a remote view
@@ -160,9 +160,9 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
                 for (int i = 0; i < methodParamTypes.length; i++) {
                     try {
                         methodParams[i] = unmarshaller.readObject();
-                    } catch (ClassNotFoundException cnfe) {
+                    } catch (Throwable e) {
                         // write out the failure
-                        MethodInvocationMessageHandler.this.writeException(channelAssociation, MethodInvocationMessageHandler.this.marshallerFactory, invocationId, cnfe, null);
+                        MethodInvocationMessageHandler.this.writeException(channelAssociation, MethodInvocationMessageHandler.this.marshallerFactory, invocationId, e, null);
                         return;
                     }
                 }
@@ -171,9 +171,9 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
             final Map<String, Object> attachments;
             try {
                 attachments = this.readAttachments(unmarshaller);
-            } catch (ClassNotFoundException cnfe) {
+            } catch (Throwable e) {
                 // write out the failure
-                MethodInvocationMessageHandler.this.writeException(channelAssociation, MethodInvocationMessageHandler.this.marshallerFactory, invocationId, cnfe, null);
+                MethodInvocationMessageHandler.this.writeException(channelAssociation, MethodInvocationMessageHandler.this.marshallerFactory, invocationId, e, null);
                 return;
             }
             // done with unmarshalling
@@ -204,7 +204,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
                         try {
                             // write out the failure
                             MethodInvocationMessageHandler.this.writeException(channelAssociation, MethodInvocationMessageHandler.this.marshallerFactory, invocationId, throwable, attachments);
-                        } catch (IOException ioe) {
+                        } catch (Throwable ioe) {
                             // we couldn't write out a method invocation failure message. So let's at least log the
                             // actual method invocation exception, for debugging/reference
                             EjbLogger.ROOT_LOGGER.errorInvokingMethod(throwable, invokedMethod, beanName, appName, moduleName, distinctName);
@@ -236,7 +236,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
                             attachments.put(Affinity.WEAK_AFFINITY_CONTEXT_KEY, weakAffinity);
                         }
                         writeMethodInvocationResponse(channelAssociation, invocationId, result, attachments);
-                    } catch (IOException ioe) {
+                    } catch (Throwable ioe) {
                         EjbLogger.ROOT_LOGGER.couldNotWriteMethodInvocation(ioe, invokedMethod, beanName, appName, moduleName, distinctName);
                         // close the channel unless this is a NotSerializableException
                         //as this does not represent a problem with the channel there is no
@@ -350,7 +350,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
         final MessageOutputStream messageOutputStream;
         try {
             messageOutputStream = channelAssociation.acquireChannelMessageOutputStream();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw EjbMessages.MESSAGES.failedToOpenMessageOutputStream(e);
         }
         outputStream = new DataOutputStream(messageOutputStream);
@@ -378,7 +378,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
         final MessageOutputStream messageOutputStream;
         try {
             messageOutputStream = channelAssociation.acquireChannelMessageOutputStream();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw EjbMessages.MESSAGES.failedToOpenMessageOutputStream(e);
         }
         outputStream = new DataOutputStream(messageOutputStream);
