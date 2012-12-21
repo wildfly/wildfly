@@ -29,6 +29,7 @@ import javax.management.MBeanServer;
 
 import org.jboss.as.jmx.MBeanRegistrationService;
 import org.jboss.as.jmx.MBeanServerService;
+import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.service.component.ServiceComponentInstantiator;
 import org.jboss.msc.inject.Injector;
@@ -59,6 +60,7 @@ final class MBeanServices {
     private final ServiceBuilder<?> startStopServiceBuilder;
     private final ServiceTarget target;
     private boolean installed;
+    private final ServiceName duServiceName;
 
     /**
      *
@@ -70,6 +72,7 @@ final class MBeanServices {
      * @param duServiceName the deployment unit's service name
      */
     MBeanServices(final String mBeanName, final Object mBeanInstance, final List<ClassReflectionIndex<?>> mBeanClassHierarchy, final ServiceTarget target,ServiceComponentInstantiator componentInstantiator, final ServiceName duServiceName) {
+        this.duServiceName = duServiceName;
         if (mBeanClassHierarchy == null) {
             throw SarMessages.MESSAGES.nullVar("mBeanName");
         }
@@ -85,6 +88,7 @@ final class MBeanServices {
         createDestroyService = new CreateDestroyService(mBeanInstance, createMethod, destroyMethod,componentInstantiator, duServiceName);
         createDestroyServiceName = ServiceNameFactory.newCreateDestroy(mBeanName);
         createDestroyServiceBuilder = target.addService(createDestroyServiceName, createDestroyService);
+        createDestroyServiceBuilder.addDependency(NamingService.SERVICE_NAME);
         if(componentInstantiator != null) {
             // the service that starts the EE component needs to start first
             createDestroyServiceBuilder.addDependency(componentInstantiator.getComponentStartServiceName());
@@ -96,6 +100,7 @@ final class MBeanServices {
         startStopServiceName = ServiceNameFactory.newStartStop(mBeanName);
         startStopServiceBuilder = target.addService(startStopServiceName, startStopService);
         startStopServiceBuilder.addDependency(createDestroyServiceName);
+        startStopServiceBuilder.addDependency(NamingService.SERVICE_NAME);
 
         this.mBeanName = mBeanName;
         this.target = target;
@@ -130,7 +135,7 @@ final class MBeanServices {
         startStopServiceBuilder.install();
 
         // Add service to register the mbean in the mbean server
-        final MBeanRegistrationService<Object> mbeanRegistrationService = new MBeanRegistrationService<Object>(mBeanName);
+        final MBeanRegistrationService<Object> mbeanRegistrationService = new MBeanRegistrationService<Object>(mBeanName, duServiceName);
         target.addService(MBeanRegistrationService.SERVICE_NAME.append(mBeanName), mbeanRegistrationService)
             .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, mbeanRegistrationService.getMBeanServerInjector())
             .addDependency(startStopServiceName, Object.class, mbeanRegistrationService.getValueInjector())

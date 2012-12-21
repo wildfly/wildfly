@@ -26,7 +26,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.jboss.as.naming.WritableServiceBasedNamingStore;
-import org.jboss.msc.service.LifecycleContext;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 
@@ -55,7 +54,7 @@ abstract class AbstractService implements Service<Object> {
         return mBeanInstance;
     }
 
-    protected void invokeLifecycleMethod(final Method method, final LifecycleContext context) throws InvocationTargetException, IllegalAccessException {
+    protected void invokeLifecycleMethod(final Method method) throws InvocationTargetException, IllegalAccessException {
         if (method != null) {
             WritableServiceBasedNamingStore.pushOwner(duServiceName);
             final ClassLoader old = SecurityActions.setThreadContextClassLoader(mBeanInstance.getClass().getClassLoader());
