@@ -141,8 +141,8 @@ class DataSourceModelNodeUtil {
         final Integer minPoolSize = getIntIfSetOrGetDefault(operationContext, dataSourceNode, MIN_POOL_SIZE, Defaults.MIN_POOL_SIZE);
         final boolean prefill = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, POOL_PREFILL, Defaults.PREFILL);
         final boolean useStrictMin = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, POOL_USE_STRICT_MIN, Defaults.USE_STRICT_MIN);
-        final FlushStrategy flushStrategy = dataSourceNode.hasDefined(POOL_FLUSH_STRATEGY.getName()) ? FlushStrategy.forName(dataSourceNode
-                .get(POOL_FLUSH_STRATEGY.getName()).asString()) : Defaults.FLUSH_STRATEGY;
+        final String flushStrategyString = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, POOL_FLUSH_STRATEGY, Defaults.FLUSH_STRATEGY.toString());
+        final FlushStrategy flushStrategy = FlushStrategy.forName(flushStrategyString); // TODO relax case sensitivity
         final Boolean allowMultipleUsers = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, ALLOW_MULTIPLE_USERS, Defaults.ALLOW_MULTIPLE_USERS);
 
            final DsPool pool = new DsPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy, allowMultipleUsers);
@@ -158,8 +158,8 @@ class DataSourceModelNodeUtil {
 
         final boolean sharePreparedStatements = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, SHARE_PREPARED_STATEMENTS, Defaults.SHARE_PREPARED_STATEMENTS);
         final Long preparedStatementsCacheSize = getLongIfSetOrGetDefault(operationContext, dataSourceNode, PREPARED_STATEMENTS_CACHE_SIZE, null);
-        final Statement.TrackStatementsEnum trackStatements = dataSourceNode.hasDefined(TRACK_STATEMENTS.getName()) ? Statement.TrackStatementsEnum
-                .valueOf(dataSourceNode.get(TRACK_STATEMENTS.getName()).asString().toUpperCase(Locale.ENGLISH)) : Defaults.TRACK_STATEMENTS;
+        final String trackStatementsString = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, TRACK_STATEMENTS, Defaults.TRACK_STATEMENTS.toString());
+        final Statement.TrackStatementsEnum trackStatements = Statement.TrackStatementsEnum.valueOf(trackStatementsString.toUpperCase(Locale.ENGLISH));
         final Statement statement = new StatementImpl(sharePreparedStatements, preparedStatementsCacheSize, trackStatements);
 
         final Integer allocationRetry = getIntIfSetOrGetDefault(operationContext, dataSourceNode, ALLOCATION_RETRY, null);
@@ -172,11 +172,12 @@ class DataSourceModelNodeUtil {
         final boolean setTxQueryTimeout = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, SET_TX_QUERY_TIMEOUT, Defaults.SET_TX_QUERY_TIMEOUT);
         final TimeOut timeOut = new TimeOutImpl(blockingTimeoutMillis, idleTimeoutMinutes, allocationRetry,
                 allocationRetryWaitMillis, xaResourceTimeout, setTxQueryTimeout, queryTimeout, useTryLock);
+        final String transactionIsolationString = getResolvedStringIfSetOrGetDefault(operationContext,  dataSourceNode, TRANSACTION_ISOLATION, null);
         TransactionIsolation transactionIsolation = null;
-        if (dataSourceNode.hasDefined(TRANSACTION_ISOLATION.getName())) {
-            transactionIsolation = TransactionIsolation.forName(dataSourceNode.get(TRANSACTION_ISOLATION.getName()).asString());
+        if (transactionIsolationString != null) {
+            transactionIsolation = TransactionIsolation.forName(transactionIsolationString); // TODO relax case sensitivity
             if (transactionIsolation == null) {
-                transactionIsolation = TransactionIsolation.customLevel(dataSourceNode.get(TRANSACTION_ISOLATION.getName()).asString());
+                transactionIsolation = TransactionIsolation.customLevel(transactionIsolationString);
             }
         }
 
@@ -226,8 +227,8 @@ class DataSourceModelNodeUtil {
         final Boolean padXid = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, PAD_XID, Defaults.PAD_XID);
         final Boolean isSameRmOverride = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, SAME_RM_OVERRIDE, Defaults.IS_SAME_RM_OVERRIDE);
         final Boolean wrapXaDataSource = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, WRAP_XA_RESOURCE, Defaults.WRAP_XA_RESOURCE);
-        final FlushStrategy flushStrategy = dataSourceNode.hasDefined(POOL_FLUSH_STRATEGY.getName()) ? FlushStrategy.forName(dataSourceNode
-                .get(POOL_FLUSH_STRATEGY.getName()).asString()) : Defaults.FLUSH_STRATEGY;
+        final String flushStrategyString = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, POOL_FLUSH_STRATEGY, Defaults.FLUSH_STRATEGY.toString());
+        final FlushStrategy flushStrategy = FlushStrategy.forName(flushStrategyString); // TODO relax case sensitivity
 
         final Boolean allowMultipleUsers = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, ALLOW_MULTIPLE_USERS, Defaults.ALLOW_MULTIPLE_USERS);
 
@@ -245,8 +246,8 @@ class DataSourceModelNodeUtil {
         final Boolean sharePreparedStatements = dataSourceNode.hasDefined(SHARE_PREPARED_STATEMENTS.getName()) ? dataSourceNode.get(
                 SHARE_PREPARED_STATEMENTS.getName()).asBoolean() : Defaults.SHARE_PREPARED_STATEMENTS;
         final Long preparedStatementsCacheSize = getLongIfSetOrGetDefault(operationContext, dataSourceNode, PREPARED_STATEMENTS_CACHE_SIZE, null);
-        final Statement.TrackStatementsEnum trackStatements = dataSourceNode.hasDefined(TRACK_STATEMENTS.getName()) ? Statement.TrackStatementsEnum
-                .valueOf(dataSourceNode.get(TRACK_STATEMENTS.getName()).asString().toUpperCase(Locale.ENGLISH)) : Defaults.TRACK_STATEMENTS;
+        final String trackStatementsString = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, TRACK_STATEMENTS, Defaults.TRACK_STATEMENTS.toString());
+        final Statement.TrackStatementsEnum trackStatements = Statement.TrackStatementsEnum.valueOf(trackStatementsString.toUpperCase(Locale.ENGLISH));
         final Statement statement = new StatementImpl(sharePreparedStatements, preparedStatementsCacheSize, trackStatements);
 
         final Integer allocationRetry = getIntIfSetOrGetDefault(operationContext, dataSourceNode, ALLOCATION_RETRY, null);
@@ -259,11 +260,12 @@ class DataSourceModelNodeUtil {
         final Boolean setTxQueryTimeout = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, SET_TX_QUERY_TIMEOUT, Defaults.SET_TX_QUERY_TIMEOUT);
         final TimeOut timeOut = new TimeOutImpl(blockingTimeoutMillis, idleTimeoutMinutes, allocationRetry,
                 allocationRetryWaitMillis, xaResourceTimeout, setTxQueryTimeout, queryTimeout, useTryLock);
+        final String transactionIsolationString = getResolvedStringIfSetOrGetDefault(operationContext,  dataSourceNode, TRANSACTION_ISOLATION, null);
         TransactionIsolation transactionIsolation = null;
-        if (dataSourceNode.hasDefined(TRANSACTION_ISOLATION.getName())) {
-            transactionIsolation = TransactionIsolation.forName(dataSourceNode.get(TRANSACTION_ISOLATION.getName()).asString());
+        if (transactionIsolationString != null) {
+            transactionIsolation = TransactionIsolation.forName(transactionIsolationString); // TODO relax case sensitivity
             if (transactionIsolation == null) {
-                transactionIsolation = TransactionIsolation.customLevel(dataSourceNode.get(TRANSACTION_ISOLATION.getName()).asString());
+                transactionIsolation = TransactionIsolation.customLevel(transactionIsolationString);
             }
         }
         final String checkValidConnectionSql = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, CHECK_VALID_CONNECTION_SQL, null);
@@ -308,6 +310,9 @@ class DataSourceModelNodeUtil {
     }
 
     private static Long getLongIfSetOrGetDefault(final OperationContext context, final ModelNode dataSourceNode, final SimpleAttributeDefinition key, final Long defaultValue) throws OperationFailedException {
+        // FIXME get rid of the defaultValue param and ensure the default is stored in 'key', then do this
+//        ModelNode resolvedNode = key.resolveModelAttribute(context, dataSourceNode);
+//        return resolvedNode.isDefined() ? resolvedNode.asLong() : null;
         if (dataSourceNode.hasDefined(key.getName())) {
             if (key.isAllowExpression()) {
                 return context.resolveExpressions(dataSourceNode.get(key.getName())).asLong();
@@ -320,6 +325,9 @@ class DataSourceModelNodeUtil {
     }
 
     private static Integer getIntIfSetOrGetDefault(final OperationContext context, final ModelNode dataSourceNode, final SimpleAttributeDefinition key, final Integer defaultValue) throws OperationFailedException {
+        // FIXME get rid of the defaultValue param and ensure the default is stored in 'key', then do this
+//        ModelNode resolvedNode = key.resolveModelAttribute(context, dataSourceNode);
+//        return resolvedNode.isDefined() ? resolvedNode.asInt() : null;
         if (dataSourceNode.hasDefined(key.getName())) {
             if (key.isAllowExpression()) {
                 return context.resolveExpressions(dataSourceNode.get(key.getName())).asInt();
@@ -333,6 +341,9 @@ class DataSourceModelNodeUtil {
 
     private static Boolean getBooleanIfSetOrGetDefault(final OperationContext context, final ModelNode dataSourceNode, final SimpleAttributeDefinition key,
             final Boolean defaultValue) throws OperationFailedException {
+        // FIXME get rid of the defaultValue param and ensure the default is stored in 'key', then do this
+//        ModelNode resolvedNode = key.resolveModelAttribute(context, dataSourceNode);
+//        return resolvedNode.isDefined() ? resolvedNode.asBoolean() : null;
         if (dataSourceNode.hasDefined(key.getName())) {
             if (key.isAllowExpression()) {
                 return context.resolveExpressions(dataSourceNode.get(key.getName())).asBoolean();
@@ -345,6 +356,13 @@ class DataSourceModelNodeUtil {
     }
 
     private static String getResolvedStringIfSetOrGetDefault(final OperationContext context, final ModelNode dataSourceNode, final SimpleAttributeDefinition key, final String defaultValue) throws OperationFailedException {
+        // FIXME get rid of the defaultValue param and ensure the default is stored in 'key', then do this
+        //ModelNode resolvedNode = key.resolveModelAttribute(context, dataSourceNode);
+        //String resolvedString = resolvedNode.isDefined() ? resolvedNode.asString() : null;
+        //if (resolvedString != null && resolvedString.trim().length() == 0) {
+        //    resolvedString = null;
+        //}
+        //return resolvedString;
         if (dataSourceNode.hasDefined(key.getName())) {
             String returnValue = key.resolveModelAttribute(context,dataSourceNode).asString();
             return (returnValue != null && returnValue.trim().length() != 0) ? returnValue : null;
@@ -357,7 +375,7 @@ class DataSourceModelNodeUtil {
             throws ValidateException, OperationFailedException {
         if (dataSourceNode.hasDefined(className.getName())) {
             String exceptionSorterClassName = dataSourceNode.get(className.getName()).asString();
-
+            // FIXME the return value of this call is discarded
             getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, className, null);
 
             Map<String, String> exceptionSorterProperty = null;
