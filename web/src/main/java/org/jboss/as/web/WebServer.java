@@ -21,6 +21,8 @@
  */
 package org.jboss.as.web;
 
+import java.util.Hashtable;
+
 import org.apache.catalina.Host;
 import org.apache.catalina.Valve;
 import org.apache.catalina.connector.Connector;
@@ -74,10 +76,9 @@ public interface WebServer {
 
     /**
      * Add a global valve.
-     * @param name of the authenticator. (the auth-method of the login-config).
      * @param valve the valve
      */
-    void addValve(String name, Valve valve);
+    void addValve(Valve valve);
 
     /**
      * Remove a global valve.
@@ -85,4 +86,12 @@ public interface WebServer {
      * @param host the valve
      */
     void removeValve(Valve valve);
+
+    /**
+     * Add a global valve.
+     * @param name of the authenticator. (the auth-method of the login-config).
+     * @param class the class of the valve
+     * @param properties the properties of the valve.
+     */
+    void addValve(String name, Class classz, Hashtable<String, String> properties);
 }
