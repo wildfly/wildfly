@@ -111,7 +111,7 @@
         <version.jboss.jaxbintros>1.0.2.GA</version.jboss.jaxbintros>
         <version.aesh>0.27</version.aesh>
         <version.jansi>1.8</version.jansi>
-        <version.joda-time>1.6.2</version.joda-time>
+        <version.joda-time>2.1</version.joda-time>
         <version.junit>4.10</version.junit>
         <version.log4j>1.2.16</version.log4j>
         <version.net.jcip>1.0</version.net.jcip>
