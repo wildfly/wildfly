@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.NoopOperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
@@ -98,14 +99,17 @@ public class ServerConfigResourceDefinition extends SimpleResourceDefinition {
      * resource description. So for compatibility we register it here as well, and include it in the description
      * to be consistent and to avoid having to do hacks just to not register it.
      */
-    public static final AttributeDefinition PRIORITY  = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.PRIORITY, ModelType.INT, true).build();
+    public static final AttributeDefinition PRIORITY  = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.PRIORITY, ModelType.INT, true)
+            .setDeprecated(ModelVersion.create(1,4))
+            .build();
     /**
      * Bogus attribute that we accidentally registered in AS 7.1.2/EAP 6 even though it didn't appear in the
      * resource description. So for compatibility we register it here as well, and include it in the description
      * to be consistent and to avoid having to do hacks just to not register it.
      */
-    public static final AttributeDefinition CPU_AFFINITY  = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.CPU_AFFINITY, ModelType.STRING, true).build();
-
+    public static final AttributeDefinition CPU_AFFINITY  = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.CPU_AFFINITY, ModelType.STRING, true)
+            .setDeprecated(ModelVersion.create(1,4))
+            .build();
 
     /** The attributes that can be written by the {@code add} operation */
     public static final List<SimpleAttributeDefinition> WRITABLE_ATTRIBUTES = Arrays.asList(AUTO_START, SOCKET_BINDING_GROUP, SOCKET_BINDING_PORT_OFFSET, GROUP);
