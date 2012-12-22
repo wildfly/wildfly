@@ -29,18 +29,15 @@
 
     <parent>
         <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-parent</artifactId>
+        <artifactId>jboss-as-osgi</artifactId>
         <version>7.1.4.Final-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-osgi</artifactId>
+    <artifactId>jboss-as-osgi-integration</artifactId>
+    <name>JBoss Application Server: OSGi Integration</name>
     <packaging>pom</packaging>
 
-    <name>JBoss Application Server: OSGi</name>
-
     <modules>
-        <module>integration</module>
-        <module>service</module>
+        <module>configadmin</module>
     </modules>
 </project>
