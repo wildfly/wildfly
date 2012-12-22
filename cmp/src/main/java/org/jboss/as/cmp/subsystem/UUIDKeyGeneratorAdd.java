@@ -25,6 +25,7 @@ package org.jboss.as.cmp.subsystem;
 import org.jboss.as.cmp.keygenerator.KeyGeneratorFactory;
 import org.jboss.as.cmp.keygenerator.uuid.UUIDKeyGeneratorFactory;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
@@ -39,7 +40,7 @@ public class UUIDKeyGeneratorAdd extends AbstractKeyGeneratorAdd {
     private UUIDKeyGeneratorAdd() {
     }
 
-    protected Service<KeyGeneratorFactory> getKeyGeneratorFactory(final ModelNode operation) {
+    protected Service<KeyGeneratorFactory> getKeyGeneratorFactory(final OperationContext context, final ModelNode operation) {
         return new UUIDKeyGeneratorFactory();
     }
 
