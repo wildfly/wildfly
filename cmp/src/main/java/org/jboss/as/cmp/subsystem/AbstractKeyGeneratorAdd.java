@@ -42,7 +42,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
-import static org.jboss.as.cmp.subsystem.CmpSubsystemModel.JNDI_NAME;
 
 /**
  * @author John Bailey
@@ -52,15 +51,17 @@ public abstract class AbstractKeyGeneratorAdd extends AbstractAddStepHandler {
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         final String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
 
-        final Service<KeyGeneratorFactory> keyGeneratorFactory = getKeyGeneratorFactory(operation);
+        final Service<KeyGeneratorFactory> keyGeneratorFactory = getKeyGeneratorFactory(context, model);
         final ServiceBuilder<KeyGeneratorFactory> factoryServiceBuilder = context.getServiceTarget().addService(getServiceName(name), keyGeneratorFactory)
                 .addDependency(KeyGeneratorFactoryRegistry.SERVICE_NAME, KeyGeneratorFactoryRegistry.class, KeyGeneratorFactoryRegistry.getRegistryInjector(name, keyGeneratorFactory))
                 .addListener(verificationHandler);
         addDependencies(operation, keyGeneratorFactory, factoryServiceBuilder);
 
-        if (operation.hasDefined(JNDI_NAME)) {
+        ModelNode jndiNode = AbstractKeyGeneratorResourceDescription.JNDI_NAME.resolveModelAttribute(context, model);
+
+        if (jndiNode.isDefined()) {
             // Bind the KeyGeneratorFactory into JNDI
-            String jndiName = (operation.get(JNDI_NAME).asString());
+            String jndiName = jndiNode.asString();
 
             final ManagedReferenceFactory valueManagedReferenceFactory = new org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory() {
 
@@ -94,7 +95,7 @@ public abstract class AbstractKeyGeneratorAdd extends AbstractAddStepHandler {
         newControllers.add(factoryServiceBuilder.install());
     }
 
-    protected abstract Service<KeyGeneratorFactory> getKeyGeneratorFactory(final ModelNode operation);
+    protected abstract Service<KeyGeneratorFactory> getKeyGeneratorFactory(final OperationContext context, final ModelNode model) throws OperationFailedException;
 
     protected abstract ServiceName getServiceName(final String name);
 
