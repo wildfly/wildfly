@@ -2013,7 +2013,7 @@ public interface EjbMessages {
     EJBException componentIsShuttingDown();
 
     @Message(id = 14560, value = "Could not open message outputstream for writing to Channel")
-    RuntimeException failedToOpenMessageOutputStream(@Cause Exception e);
+    IOException failedToOpenMessageOutputStream(@Cause Throwable e);
 
     @Message(id = 14561, value = "Could not create session for stateful bean %s")
     RuntimeException failedToCreateSessionForStatefulBean(@Cause Exception e, String beanName);
@@ -2104,4 +2104,11 @@ public interface EjbMessages {
 
     @Message(id = 14230, value = "EJB %s of type %s must not be declared final")
     DeploymentUnitProcessingException ejbMustNotBeFinalClass(String componentName, String componentClassName);
+
+    @Message(id = 14233, value = "Failed to read EJB info")
+    IOException failedToReadEjbInfo(@Cause Throwable e);
+
+    @Message(id = 14234, value = "Failed to read EJB Locator")
+    IOException failedToReadEJBLocator(@Cause Throwable e);
+
 }
