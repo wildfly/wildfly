@@ -19,57 +19,47 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.cmp.subsystem;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.dmr.ModelType;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
- * @author Stuart Douglas
+ * Class packages attribute definitions common to all key generator variants.
+ *
+ * @author Manuel Fehlhammer
  */
-public class UUIDKeyGeneratorResourceDescription extends AbstractKeyGeneratorResourceDescription {
+public abstract class AbstractKeyGeneratorResourceDescription extends SimpleResourceDefinition {
 
-    public static final UUIDKeyGeneratorResourceDescription INSTANCE = new UUIDKeyGeneratorResourceDescription();
-
-    public static final Map<String, SimpleAttributeDefinition> ATTRIBUTE_MAP;
-    public static final SimpleAttributeDefinition[] ATTRIBUTES;
-
-    static {
-        List<SimpleAttributeDefinition> list = new ArrayList<SimpleAttributeDefinition>(COMMON_ATTRIBUTES.length + 10);
-        Collections.addAll(list, COMMON_ATTRIBUTES);
-        ATTRIBUTES = list.toArray(new SimpleAttributeDefinition[list.size()]);
-
-        Map<String, SimpleAttributeDefinition> map = new LinkedHashMap<String, SimpleAttributeDefinition>();
-        for(SimpleAttributeDefinition ad : ATTRIBUTES) {
-            map.put(ad.getName(), ad);
-        }
-        ATTRIBUTE_MAP = Collections.unmodifiableMap(map);
+    protected AbstractKeyGeneratorResourceDescription(PathElement pathElement, ResourceDescriptionResolver descriptionResolver,
+                                                      OperationStepHandler addHandler, OperationStepHandler removeHandler) {
+        super(pathElement, descriptionResolver, addHandler, removeHandler);
     }
 
-    private UUIDKeyGeneratorResourceDescription() {
-        super(CmpSubsystemModel.UUID_KEY_GENERATOR_PATH,
-                CmpExtension.getResourceDescriptionResolver(CmpSubsystemModel.UUID_KEY_GENERATOR),
-                UUIDKeyGeneratorAdd.INSTANCE, UUIDKeyGeneratorRemove.INSTANCE);
-    }
+    public static final SimpleAttributeDefinition JNDI_NAME =
+            new SimpleAttributeDefinitionBuilder(CmpSubsystemModel.JNDI_NAME, ModelType.STRING, true)
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build();
+
+    public static final SimpleAttributeDefinition[] COMMON_ATTRIBUTES = {JNDI_NAME};
+    public abstract Map<String, SimpleAttributeDefinition> getAttributeMap();
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        for (AttributeDefinition attr : ATTRIBUTE_MAP.values()) {
+        for (AttributeDefinition attr : getAttributeMap().values()) {
             resourceRegistration.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
         }
-    }
-
-    @Override
-    public Map<String, SimpleAttributeDefinition> getAttributeMap() {
-        return ATTRIBUTE_MAP;
     }
 }

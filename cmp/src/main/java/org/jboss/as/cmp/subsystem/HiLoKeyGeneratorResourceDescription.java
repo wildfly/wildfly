@@ -22,30 +22,23 @@
 
 package org.jboss.as.cmp.subsystem;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
 
 /**
  * @author Stuart Douglas
  */
-public class HiLoKeyGeneratorResourceDescription extends SimpleResourceDefinition {
+public class HiLoKeyGeneratorResourceDescription extends AbstractKeyGeneratorResourceDescription {
 
     public static final HiLoKeyGeneratorResourceDescription INSTANCE = new HiLoKeyGeneratorResourceDescription();
-
-    public static final SimpleAttributeDefinition JNDI_NAME = new SimpleAttributeDefinitionBuilder(CmpSubsystemModel.JNDI_NAME, ModelType.STRING, true)
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .build();
 
     public static final SimpleAttributeDefinition BLOCK_SIZE = new SimpleAttributeDefinitionBuilder(CmpSubsystemModel.BLOCK_SIZE, ModelType.LONG, true)
             .setAllowExpression(true)
@@ -97,22 +90,28 @@ public class HiLoKeyGeneratorResourceDescription extends SimpleResourceDefinitio
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
+    public static final SimpleAttributeDefinition[] ATTRIBUTES;
     public static final Map<String, SimpleAttributeDefinition> ATTRIBUTE_MAP;
-    public static final SimpleAttributeDefinition[] ATTRIBUTES = {JNDI_NAME, BLOCK_SIZE, CREATE_TABLE, CREATE_TABLE_DDL, DATA_SOURCE, DROP_TABLE, ID_COLUMN, SELECT_HI_DDL, SEQUENCE_COLUMN, SEQUENCE_NAME, TABLE_NAME};
 
     static {
+        List<SimpleAttributeDefinition> list = new ArrayList<SimpleAttributeDefinition>(COMMON_ATTRIBUTES.length + 10);
+        Collections.addAll(list, COMMON_ATTRIBUTES);
+        list.add(BLOCK_SIZE);
+        list.add(CREATE_TABLE);
+        list.add(CREATE_TABLE_DDL);
+        list.add(DATA_SOURCE);
+        list.add(DROP_TABLE);
+        list.add(ID_COLUMN);
+        list.add(SELECT_HI_DDL);
+        list.add(SEQUENCE_COLUMN);
+        list.add(SEQUENCE_NAME);
+        list.add(TABLE_NAME);
+        ATTRIBUTES = list.toArray(new SimpleAttributeDefinition[list.size()]);
+
         Map<String, SimpleAttributeDefinition> map = new LinkedHashMap<String, SimpleAttributeDefinition>();
-        map.put(JNDI_NAME.getName(), JNDI_NAME);
-        map.put(BLOCK_SIZE.getName(), BLOCK_SIZE);
-        map.put(CREATE_TABLE.getName(), CREATE_TABLE);
-        map.put(CREATE_TABLE_DDL.getName(), CREATE_TABLE_DDL);
-        map.put(DATA_SOURCE.getName(), DATA_SOURCE);
-        map.put(DROP_TABLE.getName(), DROP_TABLE);
-        map.put(ID_COLUMN.getName(), ID_COLUMN);
-        map.put(SELECT_HI_DDL.getName(), SELECT_HI_DDL);
-        map.put(SEQUENCE_COLUMN.getName(), SEQUENCE_COLUMN);
-        map.put(SEQUENCE_NAME.getName(), SEQUENCE_NAME);
-        map.put(TABLE_NAME.getName(), TABLE_NAME);
+        for(SimpleAttributeDefinition ad : ATTRIBUTES) {
+            map.put(ad.getName(), ad);
+        }
         ATTRIBUTE_MAP = Collections.unmodifiableMap(map);
     }
 
@@ -123,9 +122,7 @@ public class HiLoKeyGeneratorResourceDescription extends SimpleResourceDefinitio
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        for (AttributeDefinition attr : ATTRIBUTE_MAP.values()) {
-            resourceRegistration.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
-        }
+    public Map<String, SimpleAttributeDefinition> getAttributeMap() {
+        return ATTRIBUTE_MAP;
     }
 }
