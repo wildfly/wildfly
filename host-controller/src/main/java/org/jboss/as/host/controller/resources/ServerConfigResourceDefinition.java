@@ -77,7 +77,7 @@ public class ServerConfigResourceDefinition extends SimpleResourceDefinition {
             .setDefaultValue(new ModelNode(true)).build();
 
     public static final SimpleAttributeDefinition SOCKET_BINDING_GROUP = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.SOCKET_BINDING_GROUP, ModelType.STRING, true)
-            .setAllowExpression(true).build();
+            .build();
 
     public static final SimpleAttributeDefinition SOCKET_BINDING_PORT_OFFSET = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET, ModelType.INT, true)
             .setAllowExpression(true)
@@ -87,7 +87,7 @@ public class ServerConfigResourceDefinition extends SimpleResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition GROUP = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.GROUP, ModelType.STRING)
-            .setAllowExpression(true).build();
+            .build();
 
     public static final SimpleAttributeDefinition STATUS = SimpleAttributeDefinitionBuilder.create(ServerStatusHandler.ATTRIBUTE_NAME, ModelType.STRING)
             .setValidator(new EnumValidator<ServerStatus>(ServerStatus.class, false, false))
