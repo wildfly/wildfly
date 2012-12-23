@@ -29,6 +29,8 @@ import java.lang.management.ManagementFactory;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
+
+import org.jboss.as.naming.WritableServiceBasedNamingStore;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -49,14 +51,16 @@ public class MBeanRegistrationService<T> implements Service<Void> {
     private final InjectedValue<T> value = new InjectedValue<T>();
     private final String name;
     private ObjectName objectName;
+    private final ServiceName duServiceName;
 
     /**
      * Create an instance.
      *
      * @param name The name to use as an ObjectName
      */
-    public MBeanRegistrationService(final String name) {
+    public MBeanRegistrationService(final String name, final ServiceName duServiceName) {
         this.name = name;
+        this.duServiceName = duServiceName;
     }
 
     /**
@@ -65,8 +69,8 @@ public class MBeanRegistrationService<T> implements Service<Void> {
      * @param name The name to use as an ObjectName
      * @param value The object to register
      */
-    public MBeanRegistrationService(final String name, final Value<T> value) {
-        this.name = name;
+    public MBeanRegistrationService(final String name, final ServiceName duServiceName, final Value<T> value) {
+        this(name, duServiceName);
         this.value.inject(value.getValue());
     }
 
@@ -85,11 +89,14 @@ public class MBeanRegistrationService<T> implements Service<Void> {
             throw MESSAGES.mbeanRegistrationFailed(e, name);
         }
 
+        WritableServiceBasedNamingStore.pushOwner(duServiceName);
         try {
             ROOT_LOGGER.debugf("Registering [%s] with name [%s]", value, objectName);
             mBeanServer.registerMBean(value, objectName);
         } catch (Exception e) {
             throw MESSAGES.mbeanRegistrationFailed(e, name);
+        } finally {
+            WritableServiceBasedNamingStore.popOwner();
         }
     }
 
@@ -103,10 +110,13 @@ public class MBeanRegistrationService<T> implements Service<Void> {
             ROOT_LOGGER.cannotUnregisterObject();
         }
         final MBeanServer mBeanServer = getMBeanServer();
+        WritableServiceBasedNamingStore.pushOwner(duServiceName);
         try {
             mBeanServer.unregisterMBean(objectName);
         } catch (Exception e) {
             ROOT_LOGGER.unregistrationFailure(e, objectName);
+        } finally {
+            WritableServiceBasedNamingStore.popOwner();
         }
     }
 
