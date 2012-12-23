@@ -29,6 +29,7 @@ import org.jboss.as.naming.NamingLogger;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -66,7 +67,10 @@ public class RuntimeBindReleaseService implements Service<Set<ServiceName>> {
                 ServiceContainer container = context.getController().getServiceContainer();
                 for (ServiceName serviceName : serviceNames) {
                     try {
-                        ((BinderService) container.getService(serviceName).getService()).release();
+                        final ServiceController<?> serviceController = container.getService(serviceName);
+                        if(serviceController != null) {
+                            ((BinderService)serviceController.getService()).release();
+                        }
                     } catch (Throwable e) {
                         NamingLogger.ROOT_LOGGER.failedToReleaseBinderService(e);
                     }

@@ -24,16 +24,20 @@ package org.jboss.as.test.integration.sar.servicembean;
 
 import javax.management.Attribute;
 import javax.management.ObjectName;
+import javax.naming.InitialContext;
 
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
  * An MBean that extends legacy {@link ServiceMBeanSupport}.
- * 
+ *
  * @author Eduardo Martins
- * 
+ *
  */
 public class TestService extends ServiceMBeanSupport implements TestServiceMBean {
+
+    private static final String NAME = "java:global/env/foo/legacy";
+    private static final String VALUE = "BAR";
 
     @Override
     protected void createService() throws Exception {
@@ -44,12 +48,14 @@ public class TestService extends ServiceMBeanSupport implements TestServiceMBean
     @Override
     protected void startService() throws Exception {
         getLog().info("startService()");
+        new InitialContext().bind(NAME, VALUE);
         setTestResultMBeanAttribute("StartServiceInvoked", true);
     }
 
     @Override
     protected void stopService() throws Exception {
         getLog().info("stopService()");
+        new InitialContext().unbind(NAME);
         setTestResultMBeanAttribute("StopServiceInvoked", true);
     }
 
