@@ -58,10 +58,14 @@ public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore imp
         this.serviceTarget = serviceTarget;
     }
 
-    @SuppressWarnings("unchecked")
     public void bind(final Name name, final Object object) throws NamingException {
         final ServiceName deploymentUnitServiceName = requireOwner();
         final ServiceName bindName = buildServiceName(name);
+        bind(name, bindName, object, deploymentUnitServiceName);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void bind(final Name name, final ServiceName bindName, final Object object, final ServiceName deploymentUnitServiceName) throws NamingException {
         try {
             final BinderService binderService = new BinderService(name.toString());
             final BindListener listener = new BindListener();
@@ -86,31 +90,40 @@ public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore imp
     }
 
     public void rebind(Name name, Object object) throws NamingException {
+        final ServiceName deploymentUnitServiceName = requireOwner();
+        final ServiceName bindName = buildServiceName(name);
         try {
-            unbind(name);
+            unbind(name, bindName);
         } catch (NamingException ignore) {
             // rebind may fail if there is no existing binding
         }
-
-        bind(name, object);
+        bind(name, bindName, object, deploymentUnitServiceName);
     }
 
     public void rebind(final Name name, final Object object, final Class<?> bindType) throws NamingException {
         rebind(name, object);
     }
 
+    @SuppressWarnings("unchecked")
     public void unbind(final Name name) throws NamingException {
-        requireOwner();
+        final ServiceName deploymentUnitServiceName = requireOwner();
         final ServiceName bindName = buildServiceName(name);
+        // do the unbinding
+        unbind(name, bindName);
+        // remove the service name from runtime bindings management service
+        final Set<ServiceName> duBindingReferences = (Set<ServiceName>) getServiceRegistry().getService(JndiNamingDependencyProcessor.serviceName(deploymentUnitServiceName)).getValue();
+        duBindingReferences.remove(bindName);
+    }
 
+    private void unbind(final Name name, final ServiceName bindName) throws NamingException {
         final ServiceController<?> controller = getServiceRegistry().getService(bindName);
         if (controller == null) {
             throw MESSAGES.cannotResolveService(bindName);
         }
-
         final UnbindListener listener = new UnbindListener();
         controller.addListener(listener);
         try {
+            // when added, the listener stops the binding service
             listener.await();
         } catch (Exception e) {
             throw namingException("Failed to unbind [" + bindName + "]", e);

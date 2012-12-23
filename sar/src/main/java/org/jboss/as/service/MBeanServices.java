@@ -61,6 +61,11 @@ final class MBeanServices {
     private boolean installed;
 
     /**
+     * the msc deployable unit service name to be used on writable naming store invocation context setup
+     */
+    private final ServiceName duServiceName;
+
+    /**
      *
      * @param mBeanName
      * @param mBeanInstance
@@ -99,6 +104,7 @@ final class MBeanServices {
 
         this.mBeanName = mBeanName;
         this.target = target;
+        this.duServiceName = duServiceName;
     }
 
     Service<Object> getCreateDestroyService() {
@@ -130,7 +136,7 @@ final class MBeanServices {
         startStopServiceBuilder.install();
 
         // Add service to register the mbean in the mbean server
-        final MBeanRegistrationService<Object> mbeanRegistrationService = new MBeanRegistrationService<Object>(mBeanName);
+        final MBeanRegistrationService<Object> mbeanRegistrationService = new MBeanRegistrationService<Object>(mBeanName, duServiceName);
         target.addService(MBeanRegistrationService.SERVICE_NAME.append(mBeanName), mbeanRegistrationService)
             .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, mbeanRegistrationService.getMBeanServerInjector())
             .addDependency(startStopServiceName, Object.class, mbeanRegistrationService.getValueInjector())

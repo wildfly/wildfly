@@ -58,11 +58,14 @@ abstract class AbstractService implements Service<Object> {
     protected void invokeLifecycleMethod(final Method method, final LifecycleContext context) throws InvocationTargetException, IllegalAccessException {
         if (method != null) {
             WritableServiceBasedNamingStore.pushOwner(duServiceName);
-            final ClassLoader old = SecurityActions.setThreadContextClassLoader(mBeanInstance.getClass().getClassLoader());
             try {
-                method.invoke(mBeanInstance);
+                final ClassLoader old = SecurityActions.setThreadContextClassLoader(mBeanInstance.getClass().getClassLoader());
+                try {
+                    method.invoke(mBeanInstance);
+                } finally {
+                    SecurityActions.resetThreadContextClassLoader(old);
+                }
             } finally {
-                SecurityActions.resetThreadContextClassLoader(old);
                 WritableServiceBasedNamingStore.popOwner();
             }
         }
