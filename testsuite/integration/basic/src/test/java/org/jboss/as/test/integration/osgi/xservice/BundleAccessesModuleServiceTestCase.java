@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.osgi.xservice;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.InputStream;
 
 import javax.inject.Inject;
@@ -36,14 +38,13 @@ import org.jboss.as.test.integration.osgi.xservice.module.EchoService;
 import org.jboss.as.test.integration.osgi.xservice.module.TargetModuleActivator;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.osgi.framework.Services;
-import org.jboss.osgi.spi.ManifestBuilder;
-import org.jboss.osgi.spi.OSGiManifestBuilder;
+import org.jboss.osgi.metadata.ManifestBuilder;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -53,8 +54,6 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * A test that shows how a bundle can access an MSC service.
@@ -79,7 +78,7 @@ public class BundleAccessesModuleServiceTestCase extends AbstractXServiceTestCas
 
     @Deployment
     public static JavaArchive createdeployment() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "xservice-module-access");
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "xservice-bam-tests");
         archive.addClasses(AbstractXServiceTestCase.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
@@ -153,7 +152,7 @@ public class BundleAccessesModuleServiceTestCase extends AbstractXServiceTestCas
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 ManifestBuilder builder = ManifestBuilder.newInstance();
-                builder.addManifestHeader("Dependencies", "org.jboss.modules,org.jboss.logging");
+                builder.addManifestHeader("Dependencies", "org.jboss.modules,org.jboss.logging,org.osgi.core");
                 return builder.openStream();
             }
         });

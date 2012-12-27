@@ -16,12 +16,6 @@
  */
 package org.jboss.as.test.smoke.osgi;
 
-import static org.jboss.as.test.osgi.OSGiManagementOperations.bundleStart;
-import static org.jboss.as.test.osgi.OSGiManagementOperations.bundleStop;
-import static org.jboss.as.test.osgi.OSGiManagementOperations.getBundleId;
-import static org.jboss.as.test.osgi.OSGiManagementOperations.getBundleInfo;
-import static org.jboss.as.test.osgi.OSGiManagementOperations.getBundleState;
-
 import java.io.InputStream;
 
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -32,10 +26,11 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.osgi.parser.ModelConstants;
+import org.jboss.as.test.osgi.FrameworkManagement;
 import org.jboss.as.test.smoke.osgi.bundle.SimpleActivator;
 import org.jboss.as.test.smoke.osgi.bundle.SimpleService;
 import org.jboss.dmr.ModelNode;
-import org.jboss.osgi.spi.OSGiManifestBuilder;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -76,14 +71,14 @@ public class SimpleRunAsClientTestCase {
 
         deployer.deploy(DEPLOYMENT_NAME);
         try {
-            Long bundleId = getBundleId(getControllerClient(), SYMBOLIC_NAME, null);
+            Long bundleId = FrameworkManagement.getBundleId(getControllerClient(), SYMBOLIC_NAME, null);
             Assert.assertNotNull("Bundle found", bundleId);
-            Assert.assertEquals("INSTALLED", getBundleState(getControllerClient(), bundleId));
+            Assert.assertEquals("INSTALLED", FrameworkManagement.getBundleState(getControllerClient(), bundleId));
 
-            Assert.assertTrue("Bundle started", bundleStart(getControllerClient(), bundleId));
-            Assert.assertEquals("ACTIVE", getBundleState(getControllerClient(), bundleId));
+            FrameworkManagement.bundleStart(getControllerClient(), bundleId);
+            Assert.assertEquals("ACTIVE", FrameworkManagement.getBundleState(getControllerClient(), bundleId));
 
-            ModelNode info = getBundleInfo(getControllerClient(), bundleId);
+            ModelNode info = FrameworkManagement.getBundleInfo(getControllerClient(), bundleId);
             Assert.assertEquals(7, info.asList().size());
             Assert.assertEquals(bundleId, (Long)info.get(ModelConstants.ID).asLong());
             Assert.assertEquals(1, info.get(ModelConstants.STARTLEVEL).asInt());
@@ -93,14 +88,14 @@ public class SimpleRunAsClientTestCase {
             Assert.assertEquals("bundle", info.get(ModelConstants.TYPE).asString());
             Assert.assertEquals("0.0.0", info.get(ModelConstants.VERSION).asString());
 
-            Assert.assertTrue("Bundle stopped", bundleStop(getControllerClient(), bundleId));
-            Assert.assertEquals("RESOLVED", getBundleState(getControllerClient(), bundleId));
+            FrameworkManagement.bundleStop(getControllerClient(), bundleId);
+            Assert.assertEquals("RESOLVED", FrameworkManagement.getBundleState(getControllerClient(), bundleId));
 
-            Assert.assertTrue("Bundle started", bundleStart(getControllerClient(), DEPLOYMENT_NAME));
-            Assert.assertEquals("ACTIVE", getBundleState(getControllerClient(), DEPLOYMENT_NAME));
+            FrameworkManagement.bundleStart(getControllerClient(), DEPLOYMENT_NAME);
+            Assert.assertEquals("ACTIVE", FrameworkManagement.getBundleState(getControllerClient(), DEPLOYMENT_NAME));
 
-            Assert.assertTrue("Bundle stopped", bundleStop(getControllerClient(), DEPLOYMENT_NAME));
-            Assert.assertEquals("RESOLVED", getBundleState(getControllerClient(), DEPLOYMENT_NAME));
+            FrameworkManagement.bundleStop(getControllerClient(), DEPLOYMENT_NAME);
+            Assert.assertEquals("RESOLVED", FrameworkManagement.getBundleState(getControllerClient(), DEPLOYMENT_NAME));
         } finally {
             deployer.undeploy(DEPLOYMENT_NAME);
         }

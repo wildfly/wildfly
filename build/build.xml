@@ -929,6 +929,18 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-osgi-service"/>
         </module-def>
 
+     	<module-def name="org.jboss.as.osgi.jmx">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-osgi-jmx"/>
+        </module-def>
+
+     	<module-def name="org.jboss.as.osgi.jta">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-osgi-jta"/>
+        </module-def>
+
+     	<module-def name="org.jboss.as.osgi.naming">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-osgi-naming"/>
+        </module-def>
+
         <module-def name="org.jboss.as.sar">
             <maven-resource group="org.jboss.as" artifact="jboss-as-sar"/>
         </module-def>
@@ -1035,8 +1047,11 @@
             <maven-resource group="org.jboss.netty" artifact="netty"/>
         </module-def>
 
-        <module-def name="org.jboss.osgi.framework">
+        <module-def name="org.jboss.osgi.deployment">
             <maven-resource group="org.jboss.osgi.deployment" artifact="jbosgi-deployment"/>
+        </module-def>
+
+        <module-def name="org.jboss.osgi.framework">
             <maven-resource group="org.jboss.osgi.framework" artifact="jbosgi-framework-core"/>
         </module-def>
 
@@ -1217,6 +1232,10 @@
             <maven-resource group="org.osgi" artifact="org.osgi.core"/>
         </module-def>
 
+        <module-def name="org.osgi.enterprise">
+            <maven-resource group="org.osgi" artifact="org.osgi.enterprise"/>
+        </module-def>
+
         <module-def name="org.picketlink">
             <maven-resource group="org.picketlink" artifact="picketlink-core" jandex="true"/>
             <maven-resource group="org.picketlink.distribution" artifact="picketlink-jbas7" jandex="true"/>
@@ -1290,10 +1309,6 @@
 
         <bundle-def name="org.jboss.osgi.logging">
             <maven-bundle group="org.jboss.osgi.logging" artifact="jboss-osgi-logging"/>
-        </bundle-def>
-
-        <bundle-def name="org.osgi.enterprise">
-            <maven-bundle group="org.osgi" artifact="org.osgi.enterprise"/>
         </bundle-def>
 
         <bundle-def name="org.projectodd.stilts">
