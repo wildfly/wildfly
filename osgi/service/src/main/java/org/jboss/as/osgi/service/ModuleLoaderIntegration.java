@@ -24,14 +24,13 @@ package org.jboss.as.osgi.service;
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.server.Services.JBOSS_SERVICE_MODULE_LOADER;
 import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_PREFIX;
-import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_SERVICE_PREFIX;
-import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_SPEC_SERVICE_PREFIX;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.moduleservice.ModuleLoadService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
@@ -49,199 +48,198 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Value;
 import org.jboss.osgi.deployment.deployer.Deployment;
-import org.jboss.osgi.framework.BundleManager;
-import org.jboss.osgi.framework.IntegrationServices;
-import org.jboss.osgi.framework.ModuleLoaderPlugin;
-import org.jboss.osgi.framework.TypeAdaptor;
-import org.jboss.osgi.resolver.XResource;
-import org.osgi.framework.Bundle;
+import org.jboss.osgi.framework.spi.BundleManager;
+import org.jboss.osgi.framework.spi.FrameworkModuleLoader;
+import org.jboss.osgi.framework.spi.FrameworkModuleLoaderPlugin;
+import org.jboss.osgi.resolver.XBundle;
+import org.jboss.osgi.resolver.XBundleRevision;
+import org.jboss.osgi.resolver.XIdentityCapability;
+import org.osgi.framework.wiring.BundleWire;
 
 /**
  * This is the single {@link ModuleLoader} that the OSGi layer uses for the modules that are associated with the bundles that
  * are registered with the {@link BundleManager}.
- * <p/>
- * Plain AS7 modules can create dependencies on OSGi deployments, because OSGi modules can also be loaded from the
- * {@link ServiceModuleLoader}
  *
  * @author thomas.diesler@jboss.com
  * @since 20-Apr-2011
  */
-final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoaderPlugin {
+final class ModuleLoaderIntegration extends FrameworkModuleLoaderPlugin {
 
     private final InjectedValue<ServiceModuleLoader> injectedModuleLoader = new InjectedValue<ServiceModuleLoader>();
     private ServiceContainer serviceContainer;
     private ServiceTarget serviceTarget;
 
-    static ServiceController<?> addService(final ServiceTarget target) {
-        ModuleLoaderIntegration service = new ModuleLoaderIntegration();
-        ServiceBuilder<?> builder = target.addService(IntegrationServices.MODULE_LOADER_PLUGIN, service);
-        builder.addDependency(JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, service.injectedModuleLoader);
-        builder.setInitialMode(Mode.ON_DEMAND);
-        return builder.install();
-    }
-
-    private ModuleLoaderIntegration() {
+    @Override
+    protected void addServiceDependencies(ServiceBuilder<FrameworkModuleLoader> builder) {
+        super.addServiceDependencies(builder);
+        builder.addDependency(JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, injectedModuleLoader);
     }
 
     @Override
     public void start(StartContext context) throws StartException {
-        ServiceController<?> controller = context.getController();
-        LOGGER.tracef("Starting: %s in mode %s", controller.getName(), controller.getMode());
         serviceContainer = context.getController().getServiceContainer();
         serviceTarget = context.getChildTarget();
+        super.start(context);
     }
 
     @Override
-    public void stop(StopContext context) {
-        ServiceController<?> controller = context.getController();
-        LOGGER.tracef("Stopping: %s in mode %s", controller.getName(), controller.getMode());
+    protected FrameworkModuleLoader createServiceValue(StartContext startContext) {
+        return new FrameworkModuleLoaderImpl();
     }
 
-    @Override
-    public ModuleLoaderPlugin getValue() throws IllegalStateException {
-        return this;
-    }
+    class FrameworkModuleLoaderImpl implements FrameworkModuleLoader {
 
-    @Override
-    public ModuleLoader getModuleLoader() {
-        return this;
-    }
+        @Override
+        public ModuleLoader getModuleLoader() {
+            class DelegatingModuleLoader extends ModuleLoader {
 
-    /**
-     * Get the module identifier for the given {@link XBundleRevision}. The returned identifier must be such that it can be used
-     * by the {@link ServiceModuleLoader}
-     */
-    @Override
-    public ModuleIdentifier getModuleIdentifier(XResource resource, int rev) {
-        Bundle bundle = resource.getAttachment(Bundle.class);
-        Deployment deployment = ((TypeAdaptor) bundle).adapt(Deployment.class);
-        ModuleIdentifier identifier = deployment.getAttachment(ModuleIdentifier.class);
-        if (identifier == null) {
-            String name = bundle.getSymbolicName();
-            if (rev > 0) {
-                name += "-rev" + rev;
+                @Override
+                protected ModuleSpec findModule(ModuleIdentifier identifier) throws ModuleLoadException {
+                    ModuleSpec moduleSpec = injectedModuleLoader.getValue().findModule(identifier);
+                    if (moduleSpec == null)
+                        LOGGER.debugf("Cannot obtain module spec for: %s", identifier);
+                    return moduleSpec;
+                }
+
+                @Override
+                protected Module preloadModule(ModuleIdentifier identifier) throws ModuleLoadException {
+                    Module module = ModuleLoader.preloadModule(identifier, injectedModuleLoader.getValue());
+                    if (module == null)
+                        LOGGER.debugf("Cannot obtain module for: %s", identifier);
+                    return module;
+                }
+
+                @Override
+                public void setAndRelinkDependencies(Module module, List<DependencySpec> dependencies) throws ModuleLoadException {
+                    throw new UnsupportedOperationException();
+                }
+
+                @Override
+                public String toString() {
+                    return ModuleLoaderIntegration.class.getSimpleName() + "." + getClass().getSimpleName();
+                }
             }
-            String version = bundle.getVersion().toString();
-            identifier = ModuleIdentifier.create(MODULE_PREFIX + name, version);
-        }
-        return identifier;
-    }
-
-    @Override
-    public void addIntegrationDependencies(ModuleSpecBuilderContext context) {
-    }
-
-    /**
-     * Add a {@link ModuleSpec} for and OSGi module as a service that can later be looked up by the {@link ServiceModuleLoader}
-     */
-    @Override
-    public void addModuleSpec(XResource resource, ModuleSpec moduleSpec) {
-        ModuleIdentifier identifier = moduleSpec.getModuleIdentifier();
-        LOGGER.tracef("Add module spec to loader: %s", identifier);
-        ServiceName moduleSpecName = getModuleSpecServiceName(identifier);
-        serviceTarget.addService(moduleSpecName, new ValueService<ModuleSpec>(new ImmediateValue<ModuleSpec>(moduleSpec))).install();
-
-        // Install the alias [symbolic-name:version]
-        ModuleIdentifier aliasIdentifier = getModuleAliasIdentifier(resource);
-        if (aliasIdentifier != null && !aliasIdentifier.equals(identifier)) {
-            ServiceName aliasSpecName = getModuleSpecServiceName(aliasIdentifier);
-            ModuleSpec aliasSpec = ModuleSpec.buildAlias(aliasIdentifier, identifier).create();
-            serviceTarget.addService(aliasSpecName, new ValueService<ModuleSpec>(new ImmediateValue<ModuleSpec>(aliasSpec))).install();
-        }
-    }
-
-    /**
-     * Add an already loaded {@link Module} to the OSGi {@link ModuleLoader}. This happens when AS registers an existing
-     * {@link Module} with the {@link BundleManager}.
-     * <p/>
-     * The {@link Module} may not necessarily result from a user deployment. We use the same {@link ServiceName} convention as
-     * in {@link ServiceModuleLoader#moduleServiceName(ModuleIdentifier)}
-     * <p/>
-     * The {@link ServiceModuleLoader} cannot load these modules.
-     */
-    @Override
-    public void addModule(XResource resource, Module module) {
-        ServiceName moduleServiceName = getModuleServiceName(module.getIdentifier());
-        if (serviceContainer.getService(moduleServiceName) == null) {
-            LOGGER.debugf("Add module to loader: %s", module.getIdentifier());
-            serviceTarget.addService(moduleServiceName, new ValueService<Module>(new ImmediateValue<Module>(module))).install();
-        }
-    }
-
-    @Override
-    public ServiceName createModuleService(XResource resource, ModuleIdentifier identifier) {
-        List<ModuleDependency> dependencies = Collections.emptyList();
-        return ModuleLoadService.install(serviceTarget, identifier, dependencies);
-    }
-
-    /**
-     * Remove the {@link Module} and {@link ModuleSpec} services associated with the given identifier.
-     */
-    @Override
-    public void removeModule(XResource resource, ModuleIdentifier identifier) {
-        Set<ServiceName> serviceNames = new HashSet<ServiceName>();
-        serviceNames.add(getModuleSpecServiceName(identifier));
-        serviceNames.add(getModuleServiceName(identifier));
-
-        ModuleIdentifier aliasIdentifier = getModuleAliasIdentifier(resource);
-        if (aliasIdentifier != null) {
-            serviceNames.add(getModuleSpecServiceName(aliasIdentifier));
-            serviceNames.add(getModuleServiceName(aliasIdentifier));
+            return new DelegatingModuleLoader();
         }
 
-        for (ServiceName serviceName : serviceNames) {
-            ServiceController<?> controller = serviceContainer.getService(serviceName);
-            if (controller != null) {
-                LOGGER.debugf("Remove from loader: %s", serviceName);
-                controller.setMode(Mode.REMOVE);
+        /**
+         * Get the module identifier for the given {@link XBundleRevision}. The returned identifier must be such that it can be used
+         * by the {@link ServiceModuleLoader}
+         */
+        @Override
+        public ModuleIdentifier getModuleIdentifier(XBundleRevision brev) {
+            XBundle bundle = brev.getBundle();
+            Deployment deployment = bundle.adapt(Deployment.class);
+            ModuleIdentifier identifier = deployment.getAttachment(ModuleIdentifier.class);
+            if (identifier == null) {
+                XIdentityCapability icap = brev.getIdentityCapability();
+                List<XBundleRevision> allrevs = bundle.getAllBundleRevisions();
+                String name = icap.getSymbolicName();
+                if (allrevs.size() > 1) {
+                    name += "-rev" + (allrevs.size() - 1);
+                }
+                identifier = ModuleIdentifier.create(MODULE_PREFIX + name, brev.getVersion().toString());
+            }
+            return identifier;
+        }
+
+        @Override
+        public void addIntegrationDependencies(ModuleSpecBuilderContext context) {
+            // no nothing
+        }
+
+        /**
+         * Add a {@link ModuleSpec} for and OSGi module as a service that can later be looked up by the {@link ServiceModuleLoader}
+         */
+        @Override
+        public void addModuleSpec(XBundleRevision brev, final ModuleSpec moduleSpec) {
+            ModuleIdentifier moduleId = moduleSpec.getModuleIdentifier();
+            LOGGER.tracef("Add module spec to loader: %s", moduleId);
+            ServiceName serviceName = getModuleSpecServiceName(moduleId);
+            Value<ModuleSpec> value = new ImmediateValue<ModuleSpec>(moduleSpec);
+            serviceTarget.addService(serviceName, new ValueService<ModuleSpec>(value)).install();
+        }
+
+        /**
+         * Add an already loaded {@link Module} to the OSGi {@link ModuleLoader}. This happens when AS registers an existing
+         * {@link Module} with the {@link BundleManager}.
+         * <p/>
+         * The {@link Module} may not necessarily result from a user deployment. We use the same {@link ServiceName} convention as
+         * in {@link ServiceModuleLoader#moduleServiceName(ModuleIdentifier)}
+         * <p/>
+         * The {@link ServiceModuleLoader} cannot load these modules.
+         */
+        @Override
+        public void addModule(XBundleRevision brev, final Module module) {
+            ModuleIdentifier moduleId = module.getIdentifier();
+            ServiceName moduleServiceName = getModuleServiceName(moduleId);
+            if (serviceContainer.getService(moduleServiceName) == null) {
+                LOGGER.debugf("Add module to loader: %s", moduleId);
+                ValueService<Module> service = new ValueService<Module>(new ImmediateValue<Module>(module));
+                ServiceBuilder<Module> builder = serviceTarget.addService(moduleServiceName, service);
+                builder.install();
             }
         }
-    }
 
-    @Override
-    protected ModuleSpec findModule(ModuleIdentifier identifier) throws ModuleLoadException {
-        ModuleSpec moduleSpec = injectedModuleLoader.getValue().findModule(identifier);
-        if (moduleSpec == null)
-            LOGGER.debugf("Cannot obtain module spec for: %s", identifier);
-        return moduleSpec;
-    }
+        @Override
+        public ServiceName createModuleService(XBundleRevision brev, List<BundleWire> wires) {
+            Deployment deployment = brev.getBundle().adapt(Deployment.class);
+            DeploymentUnit depUnit = deployment.getAttachment(DeploymentUnit.class);
 
-    @Override
-    protected Module preloadModule(ModuleIdentifier identifier) throws ModuleLoadException {
-        Module module = ModuleLoader.preloadModule(identifier, injectedModuleLoader.getValue());
-        if (module == null)
-            LOGGER.debugf("Cannot obtain module for: %s", identifier);
-        return module;
-    }
+            // Add a dependency on the parent module if we have one
+            List<ModuleDependency> dependencies = new ArrayList<ModuleDependency>();
+            if (depUnit != null && depUnit.getParent() != null) {
+                String parentName = depUnit.getParent().getName();
+                ModuleIdentifier depId = ModuleIdentifier.create(MODULE_PREFIX + parentName);
+                dependencies.add(new ModuleDependency(null, depId, false, false, false, false));
+            }
 
-    @Override
-    public void setAndRelinkDependencies(Module module, List<DependencySpec> dependencies) throws ModuleLoadException {
-        throw new UnsupportedOperationException();
-    }
+            // Add dependencies on all modules this brev has a wire to
+            for (BundleWire wire : wires) {
+                XBundleRevision provider = (XBundleRevision) wire.getProvider();
+                ModuleIdentifier providerid = provider.getModuleIdentifier();
+                dependencies.add(new ModuleDependency(null, providerid, false, false, false, false));
+            }
 
-    @Override
-    public ServiceName getModuleServiceName(ModuleIdentifier identifier) {
-        return MODULE_SERVICE_PREFIX.append(identifier.getName()).append(identifier.getSlot());
-    }
+            ModuleIdentifier identifier = brev.getModuleIdentifier();
+            return ModuleLoadService.install(serviceTarget, identifier, dependencies);
+        }
 
-    private ServiceName getModuleSpecServiceName(ModuleIdentifier identifier) {
-        return MODULE_SPEC_SERVICE_PREFIX.append(identifier.getName()).append(identifier.getSlot());
-    }
+        /**
+         * Remove the {@link Module} and {@link ModuleSpec} services associated with the given identifier.
+         */
+        @Override
+        public void removeModule(XBundleRevision brev) {
+            Set<ServiceName> serviceNames = new HashSet<ServiceName>();
+            ModuleIdentifier identifier = brev.getModuleIdentifier();
+            serviceNames.add(getModuleSpecServiceName(identifier));
+            serviceNames.add(getModuleServiceName(identifier));
+            for (ServiceName serviceName : serviceNames) {
+                ServiceController<?> controller = serviceContainer.getService(serviceName);
+                if (controller != null) {
+                    LOGGER.debugf("Remove from loader: %s", serviceName);
+                    controller.setMode(Mode.REMOVE);
+                }
+            }
+        }
 
-    private ModuleIdentifier getModuleAliasIdentifier(XResource resource) {
-        Bundle bundle = resource.getAttachment(Bundle.class);
-        String name = bundle.getSymbolicName();
-        String version = bundle.getVersion().toString();
-        return (name != null ? ModuleIdentifier.create(MODULE_PREFIX + name, version) : null);
-    }
+        @Override
+        public ServiceName getModuleServiceName(ModuleIdentifier identifier) {
+            return ServiceModuleLoader.moduleServiceName(identifier);
+        }
 
-    @Override
-    public String toString() {
-        return ModuleLoaderIntegration.class.getSimpleName();
+        private ServiceName getModuleSpecServiceName(ModuleIdentifier identifier) {
+            return ServiceModuleLoader.moduleSpecServiceName(identifier);
+        }
+
+        @Override
+        public String toString() {
+            return ModuleLoaderIntegration.class.getSimpleName();
+        }
     }
-}
+ }

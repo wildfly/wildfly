@@ -23,12 +23,12 @@
 package org.jboss.as.osgi.service;
 
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
-import static org.jboss.as.osgi.OSGiConstants.SERVICE_BASE_NAME;
 
+import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -48,15 +48,14 @@ import org.osgi.service.resolver.Resolver;
  */
 class ResolverService extends AbstractService<Resolver> {
 
-    static final ServiceName RESOLVER_NAME = SERVICE_BASE_NAME.append("resolver");
-
     private final InjectedValue<XEnvironment> injectedEnvironment = new InjectedValue<XEnvironment>();
     private XResolver resolver;
 
     static ServiceController<?> addService(final ServiceTarget target) {
         ResolverService service = new ResolverService();
-        ServiceBuilder<?> builder = target.addService(RESOLVER_NAME, service);
+        ServiceBuilder<?> builder = target.addService(OSGiConstants.RESOLVER_SERVICE_NAME, service);
         builder.addDependency(Services.ENVIRONMENT, XEnvironment.class, service.injectedEnvironment);
+        builder.setInitialMode(Mode.ACTIVE);
         return builder.install();
     }
 

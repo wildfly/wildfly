@@ -24,13 +24,11 @@ package org.jboss.as.osgi.deployment;
 
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.osgi.service.ModuleRegistrationTracker.MODULE_REGISTRATION_COMPLETE;
-import static org.jboss.osgi.framework.Services.FRAMEWORK_ACTIVE;
 
 import java.util.List;
 
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.osgi.OSGiConstants;
-import org.jboss.as.osgi.service.FrameworkActivationService;
+import org.jboss.as.osgi.service.FrameworkActivator;
 import org.jboss.as.osgi.service.InitialDeploymentTracker;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
@@ -43,7 +41,6 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.Services;
 
@@ -71,16 +68,21 @@ public class FrameworkActivateProcessor implements DeploymentUnitProcessor {
         if (deployment == null && hasInjectionPoint == false)
             return;
 
-        // Install the {@link FrameworkActivationService} if not done so already
-        ServiceVerificationHandler verificationHandler = depUnit.getAttachment(Attachments.SERVICE_VERIFICATION_HANDLER);
-        FrameworkActivationService.activateOnce(verificationHandler);
+        // Activate the framework if not done so already
+        FrameworkActivator.activate(depUnit.getAttachment(Attachments.SERVICE_VERIFICATION_HANDLER));
 
         // Setup a dependency on the the next phase. Persistent bundles have a dependency on the bootstrap bundles
-        ServiceName phaseDependency = deploymentTracker.isComplete() ? FRAMEWORK_ACTIVE : MODULE_REGISTRATION_COMPLETE;
-        phaseContext.addDeploymentDependency(phaseDependency, AttachmentKey.create(Object.class));
+        if (deploymentTracker.isComplete()) {
+            phaseContext.addDeploymentDependency(Services.FRAMEWORK_ACTIVE, AttachmentKey.create(Object.class));
+        } else {
+            phaseContext.addDeploymentDependency(MODULE_REGISTRATION_COMPLETE, AttachmentKey.create(Object.class));
+            phaseContext.addDeploymentDependency(Services.FRAMEWORK_CREATE, OSGiConstants.SYSTEM_CONTEXT_KEY);
+        }
 
         // Make these services available for a bundle deployment only
         phaseContext.addDeploymentDependency(Services.BUNDLE_MANAGER, OSGiConstants.BUNDLE_MANAGER_KEY);
+        phaseContext.addDeploymentDependency(Services.RESOLVER, OSGiConstants.RESOLVER_KEY);
+        phaseContext.addDeploymentDependency(Services.ENVIRONMENT, OSGiConstants.ENVIRONMENT_KEY);
     }
 
     @Override
@@ -101,7 +103,7 @@ public class FrameworkActivateProcessor implements DeploymentUnitProcessor {
             if (target instanceof FieldInfo) {
                 FieldInfo fieldInfo = (FieldInfo) target;
                 String typeName = fieldInfo.type().toString();
-                if (typeName.startsWith("org.osgi.framework")) {
+                if (typeName.startsWith("org.osgi.framework") || typeName.startsWith("org.osgi.service")) {
                     LOGGER.debugf("OSGi injection point of type '%s' detected: %s", typeName, fieldInfo.declaringClass());
                     result = true;
                     break;

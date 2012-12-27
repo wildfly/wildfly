@@ -238,8 +238,7 @@ public class BundleResourceHandlerTestCase {
         Mockito.when(slsc.getValue()).thenReturn(startLevelService);
 
         ServiceRegistry sr = Mockito.mock(ServiceRegistry.class);
-        Mockito.when(sr.getService(Services.SYSTEM_CONTEXT)).thenReturn(scsc);
-        Mockito.when(sr.getService(Services.SYSTEM_BUNDLE)).thenReturn(sbsc);
+        Mockito.when(sr.getService(Services.FRAMEWORK_CREATE)).thenReturn(scsc);
         Mockito.when(sr.getService(Services.START_LEVEL)).thenReturn(slsc);
 
         contextResult = new ModelNode();

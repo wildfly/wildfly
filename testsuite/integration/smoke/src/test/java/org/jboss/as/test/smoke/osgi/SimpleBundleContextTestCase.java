@@ -25,8 +25,7 @@ import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.osgi.framework.Constants;
-import org.jboss.osgi.spi.ManifestBuilder;
+import org.jboss.osgi.metadata.ManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -34,7 +33,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.Version;
 
 /**
  * Tests that a non OSGi module can have the system context injected
@@ -69,8 +67,6 @@ public class SimpleBundleContextTestCase {
 
         Bundle bundle = bundleContext.getBundle();
         assertNotNull("Bundle not null", bundle);
-        assertEquals(Constants.SYSTEM_BUNDLE_SYMBOLICNAME, bundle.getSymbolicName());
-        assertEquals(Version.emptyVersion, bundle.getVersion());
         assertEquals(0, bundle.getBundleId());
     }
 }

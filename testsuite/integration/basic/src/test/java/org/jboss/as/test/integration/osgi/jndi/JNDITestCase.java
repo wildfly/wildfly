@@ -41,7 +41,8 @@ import javax.naming.spi.ObjectFactory;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.osgi.spi.OSGiManifestBuilder;
+import org.jboss.as.test.osgi.FrameworkUtils;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -49,8 +50,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
+import org.osgi.util.tracker.ServiceTracker;
 
 /**
  * A test that deployes a bundle that exercises the {@link InitialContext}
@@ -68,6 +69,7 @@ public class JNDITestCase {
     @Deployment
     public static JavaArchive createdeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-jndi");
+        archive.addClasses(FrameworkUtils.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
@@ -75,6 +77,7 @@ public class JNDITestCase {
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(InitialContext.class);
                 builder.addImportPackages(InitialContextFactoryBuilder.class);
+                builder.addImportPackages(ServiceTracker.class);
                 return builder.openStream();
             }
         });
@@ -84,7 +87,7 @@ public class JNDITestCase {
     @Test
     public void testJNDIAccess() throws Exception {
         bundle.start();
-        InitialContext iniCtx = getInitialContext(bundle.getBundleContext());
+        InitialContext iniCtx = new InitialContext();
         Object lookup = iniCtx.lookup("java:jboss");
         assertNotNull("Lookup not null", lookup);
 
@@ -97,8 +100,7 @@ public class JNDITestCase {
     public void testInitialContextFactoryBuilderService() throws Exception {
         bundle.start();
         BundleContext context = bundle.getBundleContext();
-        ServiceReference ref = context.getServiceReference(InitialContextFactoryBuilder.class.getName());
-        InitialContextFactoryBuilder builder = (InitialContextFactoryBuilder) context.getService(ref);
+        InitialContextFactoryBuilder builder = FrameworkUtils.waitForService(context, InitialContextFactoryBuilder.class);
 
         InitialContextFactory factory = builder.createInitialContextFactory(null);
         Context iniCtx = factory.getInitialContext(null);
@@ -159,13 +161,7 @@ public class JNDITestCase {
         assertTrue(gone);
     }
 
-    private InitialContext getInitialContext(BundleContext context) {
-        ServiceReference sref = context.getServiceReference(InitialContext.class.getName());
-        return (InitialContext) context.getService(sref);
-    }
-
     public class TestObjectFactory implements ObjectFactory {
-
         @Override
         public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception {
             return new InitialContext(new Hashtable<String, Object>()) {
