@@ -81,39 +81,40 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
         context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
 
         ModelNode model = context.getModelNode();
-        List<Property> sessions = model.get(MAIL_SESSION).asPropertyList();
+        if (model.hasDefined(MAIL_SESSION)) {
+            List<Property> sessions = model.get(MAIL_SESSION).asPropertyList();
 
-        for (Property mailSession : sessions) {
-            ModelNode sessionData = mailSession.getValue();
-            writer.writeStartElement(Element.MAIL_SESSION.getLocalName());
+            for (Property mailSession : sessions) {
+                ModelNode sessionData = mailSession.getValue();
+                writer.writeStartElement(Element.MAIL_SESSION.getLocalName());
 
-            JNDI_NAME.marshallAsAttribute(sessionData, writer);
-            DEBUG.marshallAsAttribute(sessionData, false, writer);
-            FROM.marshallAsAttribute(sessionData, false, writer);
+                JNDI_NAME.marshallAsAttribute(sessionData, writer);
+                DEBUG.marshallAsAttribute(sessionData, false, writer);
+                FROM.marshallAsAttribute(sessionData, false, writer);
 
-            if (sessionData.hasDefined(SERVER_TYPE)) {
-                for (Property property : sessionData.get(SERVER_TYPE).asPropertyList()) {
-                    String name = property.getName();
-                    if (name.equals(SMTP)) {
-                        writeServerModel(writer, property.getValue(), SMTP_SERVER, null);
-                    } else if (name.equals(POP3)) {
-                        writeServerModel(writer, property.getValue(), POP3_SERVER, null);
-                    } else if (name.equals(IMAP)) {
-                        writeServerModel(writer, property.getValue(), IMAP_SERVER, null);
-                    } else {
-                        throw new XMLStreamException("unknown model element " + name);
+                if (sessionData.hasDefined(SERVER_TYPE)) {
+                    for (Property property : sessionData.get(SERVER_TYPE).asPropertyList()) {
+                        String name = property.getName();
+                        if (name.equals(SMTP)) {
+                            writeServerModel(writer, property.getValue(), SMTP_SERVER, null);
+                        } else if (name.equals(POP3)) {
+                            writeServerModel(writer, property.getValue(), POP3_SERVER, null);
+                        } else if (name.equals(IMAP)) {
+                            writeServerModel(writer, property.getValue(), IMAP_SERVER, null);
+                        } else {
+                            throw new XMLStreamException("unknown model element " + name);
+                        }
                     }
                 }
-            }
-            if (sessionData.hasDefined(CUSTOM)) {
-                for (Property property : sessionData.get(CUSTOM).asPropertyList()) {
-                    String name = property.getName();
-                    writeServerModel(writer, property.getValue(), CUSTOM_SERVER, name);
+                if (sessionData.hasDefined(CUSTOM)) {
+                    for (Property property : sessionData.get(CUSTOM).asPropertyList()) {
+                        String name = property.getName();
+                        writeServerModel(writer, property.getValue(), CUSTOM_SERVER, name);
+                    }
                 }
+
+                writer.writeEndElement();
             }
-
-
-            writer.writeEndElement();
         }
         writer.writeEndElement();
     }
