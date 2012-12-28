@@ -51,26 +51,28 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
         context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
 
         ModelNode model = context.getModelNode();
-        List<Property> sessions = model.get(MAIL_SESSION).asPropertyList();
+        if (model.hasDefined(MAIL_SESSION)) {
+            List<Property> sessions = model.get(MAIL_SESSION).asPropertyList();
 
-        for (Property mailSession : sessions) {
-            ModelNode sessionData = mailSession.getValue();
-            writer.writeStartElement(Element.MAIL_SESSION.getLocalName());
+            for (Property mailSession : sessions) {
+                ModelNode sessionData = mailSession.getValue();
+                writer.writeStartElement(Element.MAIL_SESSION.getLocalName());
 
-            JNDI_NAME.marshallAsAttribute(sessionData, writer);
-            DEBUG.marshallAsAttribute(sessionData, false, writer);
-            FROM.marshallAsAttribute(sessionData, false, writer);
-            ModelNode server = sessionData.get(SERVER_TYPE);
-            if (server.hasDefined(SMTP)) {
-                writeServerModel(writer, server.get(SMTP), SMTP_SERVER);
+                JNDI_NAME.marshallAsAttribute(sessionData, writer);
+                DEBUG.marshallAsAttribute(sessionData, false, writer);
+                FROM.marshallAsAttribute(sessionData, false, writer);
+                ModelNode server = sessionData.get(SERVER_TYPE);
+                if (server.hasDefined(SMTP)) {
+                    writeServerModel(writer, server.get(SMTP), SMTP_SERVER);
+                }
+                if (server.hasDefined(POP3)) {
+                    writeServerModel(writer, server.get(POP3), POP3_SERVER);
+                }
+                if (server.hasDefined(IMAP)) {
+                    writeServerModel(writer, server.get(IMAP), IMAP_SERVER);
+                }
+                writer.writeEndElement();
             }
-            if (server.hasDefined(POP3)) {
-                writeServerModel(writer, server.get(POP3), POP3_SERVER);
-            }
-            if (server.hasDefined(IMAP)) {
-                writeServerModel(writer, server.get(IMAP), IMAP_SERVER);
-            }
-            writer.writeEndElement();
         }
         writer.writeEndElement();
     }
