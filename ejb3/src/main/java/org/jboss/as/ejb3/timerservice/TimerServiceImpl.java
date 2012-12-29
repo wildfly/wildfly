@@ -900,17 +900,21 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             if (ineligibleTimerStates.contains(persistedTimer.getTimerState())) {
                 continue;
             }
-            TimerImpl activeTimer;
-            if (persistedTimer.isCalendarTimer()) {
-                final CalendarTimerEntity calendarTimerEntity = (CalendarTimerEntity) persistedTimer;
-                // create a timer instance from the persisted calendar timer
-                activeTimer = new CalendarTimer(calendarTimerEntity, this);
-            } else {
-                // create the timer instance from the persisted state
-                activeTimer = new TimerImpl(persistedTimer, this);
+            try {
+                TimerImpl activeTimer;
+                if (persistedTimer.isCalendarTimer()) {
+                    final CalendarTimerEntity calendarTimerEntity = (CalendarTimerEntity) persistedTimer;
+                    // create a timer instance from the persisted calendar timer
+                    activeTimer = new CalendarTimer(calendarTimerEntity, this);
+                } else {
+                    // create the timer instance from the persisted state
+                    activeTimer = new TimerImpl(persistedTimer, this);
+                }
+                // add it to the list of timers which will be restored
+                activeTimers.add(activeTimer);
+            } catch (RuntimeException e) {
+                EJB3_LOGGER.timerReinstatementFailed(persistedTimer.getTimedObjectId(), persistedTimer.getId(), e);
             }
-            // add it to the list of timers which will be restored
-            activeTimers.add(activeTimer);
         }
 
         return activeTimers;
