@@ -804,6 +804,9 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 14260, value = "Cannot delete cache %s %s, will be deleted on exit")
     void cannotDeleteCacheFile(String fileType, String fileName);
 
+    @LogMessage(level = WARN)
+    @Message(id = 14261, value = "Failed to reinstate timer '%s' (id=%s) from it's persistent state")
+    void timerReinstatementFailed(String timedObjectId, String timerId, @Cause Throwable cause);
 
     // Don't add message ids greater that 14299!!! If you need more first check what EjbMessages is
     // using and take more (lower) numbers from the available range for this module. If the range for the module is
