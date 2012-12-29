@@ -16,9 +16,6 @@
 
 package org.jboss.as.test.smoke.stilts.bundle;
 
-
-import static org.jboss.as.test.smoke.stilts.bundle.SimpleStomplet.DESTINATION_QUEUE_ONE;
-
 import java.util.Dictionary;
 import java.util.Hashtable;
 
@@ -26,19 +23,12 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.projectodd.stilts.stomplet.Stomplet;
 
-
-/**
- * The BundleActivator for a simple {@link Stomplet) deployment.
- *
- * @author thomas.diesler@jboss.com
- * @since 07-Sep-2011
- */
 public class SimpleStompletActivator implements BundleActivator {
 
     @Override
     public void start(BundleContext context) throws Exception {
         Dictionary<String, String> props = new Hashtable<String, String>();
-        props.put("destinationPattern", DESTINATION_QUEUE_ONE);
+        props.put("destinationPattern", SimpleStomplet.DESTINATION_QUEUE_ONE);
         context.registerService(Stomplet.class.getName(), new SimpleStomplet(), props);
     }
 

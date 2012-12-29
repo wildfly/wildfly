@@ -39,5 +39,8 @@
 
     <modules>
         <module>configadmin</module>
+        <module>jmx</module>
+        <module>jta</module>
+        <module>naming</module>
     </modules>
 </project>

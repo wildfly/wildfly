@@ -21,20 +21,17 @@
  */
 package org.jboss.as.test.osgi;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.osgi.framework.Bundle;
+import org.junit.Assert;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.ServiceReference;
-import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.service.startlevel.StartLevel;
+import org.osgi.util.tracker.ServiceTracker;
 
 
 /**
@@ -43,10 +40,14 @@ import org.osgi.service.startlevel.StartLevel;
  * @author thomas.diesler@jboss.com
  * @since 24-May-2011
  */
-public final class OSGiFrameworkUtils {
+public final class FrameworkUtils {
 
     // Hide ctor
-    private OSGiFrameworkUtils() {
+    private FrameworkUtils() {
+    }
+
+    public static void changeStartLevel(final BundleContext context, final int level) throws InterruptedException, TimeoutException {
+        changeStartLevel(context, level, 10, TimeUnit.SECONDS);
     }
 
     /**
@@ -71,16 +72,38 @@ public final class OSGiFrameworkUtils {
         }
     }
 
-    /**
-     * Use {@link PackageAdmin#getBundles(String, String)} to find a deployed bundle by
-     * symbolic name and version range
-     */
-    public static Bundle getDeployedBundle(BundleContext context, String symbolicName, String versionRange) {
-        ServiceReference sref = context.getServiceReference(PackageAdmin.class.getName());
-        PackageAdmin packageAdmin = (PackageAdmin) context.getService(sref);
-        Bundle[] bundles = packageAdmin.getBundles(symbolicName, versionRange);
-        assertNotNull("Bundles found", bundles);
-        assertEquals("One bundle found", 1, bundles.length);
-        return bundles[0];
+    public static <T> T waitForService(BundleContext context, Class<T> clazz) {
+        return waitForService(context, clazz, 10, TimeUnit.SECONDS);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T waitForService(BundleContext context, Class<T> clazz, long timeout, TimeUnit unit) {
+        ServiceReference sref = waitForServiceReference(context, clazz, timeout, unit);
+        T service = sref != null ? (T) context.getService(sref) : null;
+        Assert.assertNotNull("Service registered: " + clazz.getName(), service);
+        return service;
+    }
+
+    public static ServiceReference waitForServiceReference(BundleContext context, Class<?> clazz) {
+        return waitForServiceReference(context, clazz, 10, TimeUnit.SECONDS);
+    }
+
+    public static ServiceReference waitForServiceReference(BundleContext context, Class<?> clazz, long timeout, TimeUnit unit) {
+        ServiceTracker tracker = new ServiceTracker(context, clazz.getName(), null);
+        tracker.open();
+
+        ServiceReference sref = null;
+        try {
+            if (tracker.waitForService(unit.toMillis(timeout)) != null) {
+                sref = context.getServiceReference(clazz.getName());
+            }
+        } catch (InterruptedException e) {
+            // service will be null
+        } finally {
+            tracker.close();
+        }
+
+        Assert.assertNotNull("Service registered: " + clazz.getName(), sref);
+        return sref;
     }
 }
