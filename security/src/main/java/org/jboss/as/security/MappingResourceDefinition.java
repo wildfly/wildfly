@@ -24,7 +24,6 @@ package org.jboss.as.security;
 
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
@@ -39,7 +38,7 @@ public class MappingResourceDefinition extends SimpleResourceDefinition {
     public static final ListAttributeDefinition MAPPING_MODULES = new LegacySupport.MappingModulesAttributeDefinition();
 
     private MappingResourceDefinition() {
-        super(PathElement.pathElement(Constants.MAPPING, Constants.CLASSIC),
+        super(SecurityExtension.PATH_MAPPING_CLASSIC,
                 SecurityExtension.getResourceDescriptionResolver(Constants.MAPPING),
                 LoginModuleStackResourceDefinitionAdd.INSTANCE, new SecurityDomainReloadRemoveHandler());
     }

@@ -22,18 +22,24 @@
 
 package org.jboss.as.security;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.OperationResultTransformer;
+import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -47,6 +53,7 @@ public class SecurityExtension implements Extension {
     public static final ServiceName JBOSS_SECURITY = ServiceName.JBOSS.append("security");
 
     public static final String SUBSYSTEM_NAME = "security";
+    static final PathElement PATH_SUBSYSTEM = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
 
     private static final String RESOURCE_NAME = SecurityExtension.class.getPackage().getName() + ".LocalDescriptions";
 
@@ -56,7 +63,13 @@ public class SecurityExtension implements Extension {
 
     private static final SecuritySubsystemParser PARSER = SecuritySubsystemParser.getInstance();
     static final PathElement ACL_PATH = PathElement.pathElement(Constants.ACL, Constants.CLASSIC);
-    static final PathElement JASPI_AUTH_PATH = PathElement.pathElement(Constants.AUTHENTICATION, Constants.JASPI);
+    static final PathElement PATH_JASPI_AUTH = PathElement.pathElement(Constants.AUTHENTICATION, Constants.JASPI);
+    static final PathElement PATH_CLASSIC_AUTHENTICATION = PathElement.pathElement(Constants.AUTHENTICATION, Constants.CLASSIC);
+    static final PathElement SECURITY_DOMAIN_PATH = PathElement.pathElement(Constants.SECURITY_DOMAIN);
+    static final PathElement PATH_AUTHORIZATION_CLASSIC = PathElement.pathElement(Constants.AUTHORIZATION, Constants.CLASSIC);
+    static final PathElement PATH_MAPPING_CLASSIC = PathElement.pathElement(Constants.MAPPING, Constants.CLASSIC);
+    static final PathElement PATH_AUDIT_CLASSIC = PathElement.pathElement(Constants.AUDIT, Constants.CLASSIC);
+    static final PathElement PATH_LOGIN_MODULE_STACK = PathElement.pathElement(Constants.LOGIN_MODULE_STACK);
 
     static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
         return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, SecurityExtension.class.getClassLoader(), true, true);
@@ -94,6 +107,7 @@ public class SecurityExtension implements Extension {
         securityDomain.registerSubModel(JSSEResourceDefinition.INSTANCE);
         registration.registerSubModel(VaultResourceDefinition.INSTANCE);
         subsystem.registerXMLElementWriter(PARSER);
+        registerTransformers(subsystem);
     }
 
     @Override
@@ -101,5 +115,49 @@ public class SecurityExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_1_0.getUriString(), PARSER);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_1_1.getUriString(), PARSER);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_1_2.getUriString(), PARSER);
+    }
+
+    private void registerTransformers(SubsystemRegistration subsystemRegistration) {
+        TransformersSubRegistration subsystemTransformer = subsystemRegistration.registerModelTransformers(ModelVersion.create(1, 1), null);
+        TransformersSubRegistration securityDomain = subsystemTransformer.registerSubResource(SECURITY_DOMAIN_PATH);
+        securityDomain.registerSubResource(PATH_CLASSIC_AUTHENTICATION, new ModulesToAttributeTransformer(Constants.LOGIN_MODULE, Constants.LOGIN_MODULES))
+                .registerSubResource(PathElement.pathElement(Constants.LOGIN_MODULE), true);
+        securityDomain.registerSubResource(PATH_AUTHORIZATION_CLASSIC, new ModulesToAttributeTransformer(Constants.POLICY_MODULE, Constants.POLICY_MODULES))
+                .registerSubResource(PathElement.pathElement(Constants.POLICY_MODULE), true);
+        securityDomain.registerSubResource(PATH_MAPPING_CLASSIC, new ModulesToAttributeTransformer(Constants.MAPPING_MODULE, Constants.MAPPING_MODULES))
+                .registerSubResource(PathElement.pathElement(Constants.MAPPING_MODULE), true);
+        securityDomain.registerSubResource(PATH_AUDIT_CLASSIC, new ModulesToAttributeTransformer(Constants.PROVIDER_MODULE, Constants.PROVIDER_MODULES))
+                .registerSubResource(PathElement.pathElement(Constants.PROVIDER_MODULE), true);
+        TransformersSubRegistration jaspiReg = securityDomain.registerSubResource(PATH_JASPI_AUTH, new ModulesToAttributeTransformer(Constants.AUTH_MODULE, Constants.AUTH_MODULES));
+        jaspiReg.registerSubResource(PathElement.pathElement(Constants.AUTH_MODULE), true);
+        jaspiReg.registerSubResource(PATH_LOGIN_MODULE_STACK, new ModulesToAttributeTransformer(Constants.LOGIN_MODULE, Constants.LOGIN_MODULES))
+                .registerSubResource(PathElement.pathElement(Constants.LOGIN_MODULE), true);
+    }
+
+
+    private static void transformModulesToAttributes(final PathAddress address, final String newName, final String oldName, final TransformationContext context, final ModelNode model) {
+        ModelNode modules = model.get(oldName);
+        for (Resource.ResourceEntry entry : context.readResource(address).getChildren(newName)) {
+            Resource moduleResource = context.readResource(address.append(entry.getPathElement()));
+            modules.add(moduleResource.getModel());
+        }
+    }
+
+    private static class ModulesToAttributeTransformer implements OperationTransformer {
+        private final String resourceName;
+        private final String oldName;
+
+        ModulesToAttributeTransformer(String resourceName, String oldName) {
+            this.resourceName = resourceName;
+            this.oldName = oldName;
+        }
+
+        @Override
+        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
+            transformModulesToAttributes(address, resourceName, oldName, context, operation);
+            TransformedOperation op = new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
+            return op;
+        }
+
     }
 }

@@ -23,7 +23,6 @@ package org.jboss.as.security;
 
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
@@ -38,7 +37,7 @@ public class AuthorizationResourceDefinition extends SimpleResourceDefinition {
     public static final ListAttributeDefinition POLICY_MODULES = new LegacySupport.LoginModulesAttributeDefinition(Constants.POLICY_MODULES, Constants.POLICY_MODULE);
 
     private AuthorizationResourceDefinition() {
-        super(PathElement.pathElement(Constants.AUTHORIZATION, Constants.CLASSIC),
+        super(SecurityExtension.PATH_AUTHORIZATION_CLASSIC,
                 SecurityExtension.getResourceDescriptionResolver(Constants.AUTHORIZATION),
                 AuthorizationResourceDefinitionAdd.INSTANCE, new SecurityDomainReloadRemoveHandler());
     }

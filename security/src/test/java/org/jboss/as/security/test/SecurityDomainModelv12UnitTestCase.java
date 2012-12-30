@@ -24,6 +24,7 @@ package org.jboss.as.security.test;
 import java.io.IOException;
 import java.util.List;
 
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.operations.common.Util;
@@ -31,6 +32,7 @@ import org.jboss.as.security.SecurityExtension;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
@@ -88,5 +90,23 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
             ModelNode module = modules.get(i-1);
             Assert.assertEquals(module.get("code").asString(), "module-" + i);
         }
+    }
+
+    @Test
+    public void testTransformers() throws Exception {
+        ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
+        KernelServicesBuilder builder = createKernelServicesBuilder(null)
+                .setSubsystemXml(getSubsystemXml());
+
+        //which is why we need to include the jboss-as-controller artifact.
+        builder.createLegacyKernelServicesBuilder(null, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-security:7.1.2.Final")
+                .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.2.Final")
+                .addParentFirstClassPattern("org.jboss.as.controller.*");
+
+        KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        Assert.assertTrue(mainServices.getLegacyServices(modelVersion).isSuccessfulBoot());
+        checkSubsystemModelTransformation(mainServices,modelVersion);
     }
 }
