@@ -39,7 +39,7 @@ public class JASPIAuthenticationResourceDefinition extends SimpleResourceDefinit
     public static final ListAttributeDefinition AUTH_MODULES = new LegacySupport.JASPIAuthenticationModulesAttributeDefinition();
 
     private JASPIAuthenticationResourceDefinition() {
-        super(SecurityExtension.JASPI_AUTH_PATH,
+        super(SecurityExtension.PATH_JASPI_AUTH,
                 SecurityExtension.getResourceDescriptionResolver(Constants.AUTHENTICATION + "." + Constants.JASPI),
                 JASPIAuthenticationResourceDefinitionAdd.INSTANCE, new SecurityDomainReloadRemoveHandler());
     }

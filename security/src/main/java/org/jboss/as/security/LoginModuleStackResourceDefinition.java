@@ -23,7 +23,6 @@ package org.jboss.as.security;
 
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
@@ -38,7 +37,7 @@ public class LoginModuleStackResourceDefinition extends SimpleResourceDefinition
     public static final ListAttributeDefinition LOGIN_MODULES = new LegacySupport.LoginModulesAttributeDefinition(Constants.LOGIN_MODULES, Constants.LOGIN_MODULE);
 
     private LoginModuleStackResourceDefinition() {
-        super(PathElement.pathElement(Constants.LOGIN_MODULE_STACK),
+        super(SecurityExtension.PATH_LOGIN_MODULE_STACK,
               SecurityExtension.getResourceDescriptionResolver(Constants.LOGIN_MODULE_STACK),
               LoginModuleStackResourceDefinitionAdd.INSTANCE, new SecurityDomainReloadRemoveHandler());
     }

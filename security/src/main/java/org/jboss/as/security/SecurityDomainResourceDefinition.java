@@ -31,7 +31,6 @@ import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
@@ -59,21 +58,21 @@ public class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
     public static final SimpleAttributeDefinition CACHE_TYPE = new SimpleAttributeDefinitionBuilder(Constants.CACHE_TYPE, ModelType.STRING, true)
             .setAllowExpression(true)
             .build();
-    static SimpleMapAttributeDefinition MODULE_OPTIONS = new SimpleMapAttributeDefinition.Builder(Constants.MODULE_OPTIONS, true)
+    /*static SimpleMapAttributeDefinition MODULE_OPTIONS = new SimpleMapAttributeDefinition.Builder(Constants.MODULE_OPTIONS, true)
             .setXmlName(Element.MODULE_OPTION.getLocalName())
             .setAllowExpression(true)
-            .build();
+            .build();*/
     private final boolean registerRuntimeOnly;
 
     SecurityDomainResourceDefinition(boolean registerRuntimeOnly) {
-        super(PathElement.pathElement(Constants.SECURITY_DOMAIN),
+        super(SecurityExtension.SECURITY_DOMAIN_PATH,
                 SecurityExtension.getResourceDescriptionResolver(Constants.SECURITY_DOMAIN), SecurityDomainAdd.INSTANCE, SecurityDomainRemove.INSTANCE);
         this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadWriteAttribute(CACHE_TYPE, null, new SecurityDomainReloadWriteHandler(CACHE_TYPE));
-        resourceRegistration.registerReadWriteAttribute(MODULE_OPTIONS, null, new SecurityDomainReloadWriteHandler(MODULE_OPTIONS));
+        //resourceRegistration.registerReadWriteAttribute(MODULE_OPTIONS, null, new SecurityDomainReloadWriteHandler(MODULE_OPTIONS));
     }
 
     @Override

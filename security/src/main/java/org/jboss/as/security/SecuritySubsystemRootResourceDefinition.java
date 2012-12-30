@@ -29,7 +29,6 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -37,7 +36,6 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -83,7 +81,7 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
                     .build();
 
     private SecuritySubsystemRootResourceDefinition() {
-        super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SecurityExtension.SUBSYSTEM_NAME),
+        super(SecurityExtension.PATH_SUBSYSTEM,
                 SecurityExtension.getResourceDescriptionResolver(SecurityExtension.SUBSYSTEM_NAME), NewSecuritySubsystemAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 

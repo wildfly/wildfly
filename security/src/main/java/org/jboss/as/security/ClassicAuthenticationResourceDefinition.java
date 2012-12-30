@@ -22,7 +22,6 @@
 package org.jboss.as.security;
 
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
@@ -37,7 +36,7 @@ public class ClassicAuthenticationResourceDefinition extends SimpleResourceDefin
     public static final LegacySupport.LoginModulesAttributeDefinition LOGIN_MODULES = new LegacySupport.LoginModulesAttributeDefinition(Constants.LOGIN_MODULES, Constants.LOGIN_MODULE);
 
     private ClassicAuthenticationResourceDefinition() {
-        super(PathElement.pathElement(Constants.AUTHENTICATION, Constants.CLASSIC),
+        super(SecurityExtension.PATH_CLASSIC_AUTHENTICATION,
                 SecurityExtension.getResourceDescriptionResolver(Constants.AUTHENTICATION + "." + Constants.CLASSIC),
                 new ClassicAuthenticationResourceDefinitionAdd(), new SecurityDomainReloadRemoveHandler());
     }
