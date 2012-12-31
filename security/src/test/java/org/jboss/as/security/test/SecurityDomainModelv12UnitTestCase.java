@@ -108,5 +108,6 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
         Assert.assertTrue(mainServices.isSuccessfulBoot());
         Assert.assertTrue(mainServices.getLegacyServices(modelVersion).isSuccessfulBoot());
         checkSubsystemModelTransformation(mainServices,modelVersion);
+
     }
 }

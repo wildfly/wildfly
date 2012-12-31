@@ -37,6 +37,8 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.ResourceTransformationContext;
+import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.dmr.ModelNode;
@@ -120,30 +122,36 @@ public class SecurityExtension implements Extension {
     private void registerTransformers(SubsystemRegistration subsystemRegistration) {
         TransformersSubRegistration subsystemTransformer = subsystemRegistration.registerModelTransformers(ModelVersion.create(1, 1), null);
         TransformersSubRegistration securityDomain = subsystemTransformer.registerSubResource(SECURITY_DOMAIN_PATH);
-        securityDomain.registerSubResource(PATH_CLASSIC_AUTHENTICATION, new ModulesToAttributeTransformer(Constants.LOGIN_MODULE, Constants.LOGIN_MODULES))
+
+        ModulesToAttributeTransformer loginModule = new ModulesToAttributeTransformer(Constants.LOGIN_MODULE, Constants.LOGIN_MODULES);
+        securityDomain.registerSubResource(PATH_CLASSIC_AUTHENTICATION, loginModule, loginModule)
                 .registerSubResource(PathElement.pathElement(Constants.LOGIN_MODULE), true);
-        securityDomain.registerSubResource(PATH_AUTHORIZATION_CLASSIC, new ModulesToAttributeTransformer(Constants.POLICY_MODULE, Constants.POLICY_MODULES))
+        final ModulesToAttributeTransformer policyModule = new ModulesToAttributeTransformer(Constants.POLICY_MODULE, Constants.POLICY_MODULES);
+        securityDomain.registerSubResource(PATH_AUTHORIZATION_CLASSIC, policyModule, policyModule)
                 .registerSubResource(PathElement.pathElement(Constants.POLICY_MODULE), true);
-        securityDomain.registerSubResource(PATH_MAPPING_CLASSIC, new ModulesToAttributeTransformer(Constants.MAPPING_MODULE, Constants.MAPPING_MODULES))
+        final ModulesToAttributeTransformer mappingModule = new ModulesToAttributeTransformer(Constants.MAPPING_MODULE, Constants.MAPPING_MODULES);
+        securityDomain.registerSubResource(PATH_MAPPING_CLASSIC, mappingModule, mappingModule)
                 .registerSubResource(PathElement.pathElement(Constants.MAPPING_MODULE), true);
-        securityDomain.registerSubResource(PATH_AUDIT_CLASSIC, new ModulesToAttributeTransformer(Constants.PROVIDER_MODULE, Constants.PROVIDER_MODULES))
+        final ModulesToAttributeTransformer providerModule = new ModulesToAttributeTransformer(Constants.PROVIDER_MODULE, Constants.PROVIDER_MODULES);
+        securityDomain.registerSubResource(PATH_AUDIT_CLASSIC, providerModule, providerModule)
                 .registerSubResource(PathElement.pathElement(Constants.PROVIDER_MODULE), true);
-        TransformersSubRegistration jaspiReg = securityDomain.registerSubResource(PATH_JASPI_AUTH, new ModulesToAttributeTransformer(Constants.AUTH_MODULE, Constants.AUTH_MODULES));
+        final ModulesToAttributeTransformer authModule = new ModulesToAttributeTransformer(Constants.AUTH_MODULE, Constants.AUTH_MODULES);
+        TransformersSubRegistration jaspiReg = securityDomain.registerSubResource(PATH_JASPI_AUTH, authModule, authModule);
         jaspiReg.registerSubResource(PathElement.pathElement(Constants.AUTH_MODULE), true);
-        jaspiReg.registerSubResource(PATH_LOGIN_MODULE_STACK, new ModulesToAttributeTransformer(Constants.LOGIN_MODULE, Constants.LOGIN_MODULES))
+        jaspiReg.registerSubResource(PATH_LOGIN_MODULE_STACK, loginModule, loginModule)
                 .registerSubResource(PathElement.pathElement(Constants.LOGIN_MODULE), true);
     }
 
 
     private static void transformModulesToAttributes(final PathAddress address, final String newName, final String oldName, final TransformationContext context, final ModelNode model) {
-        ModelNode modules = model.get(oldName);
-        for (Resource.ResourceEntry entry : context.readResource(address).getChildren(newName)) {
-            Resource moduleResource = context.readResource(address.append(entry.getPathElement()));
+        ModelNode modules = model.get(oldName).setEmptyList();
+        for (Resource.ResourceEntry entry : context.readResourceFromRoot(address).getChildren(newName)) {
+            Resource moduleResource = context.readResourceFromRoot(address.append(entry.getPathElement()));
             modules.add(moduleResource.getModel());
         }
     }
 
-    private static class ModulesToAttributeTransformer implements OperationTransformer {
+    private static class ModulesToAttributeTransformer implements OperationTransformer, ResourceTransformer {
         private final String resourceName;
         private final String oldName;
 
@@ -159,5 +167,13 @@ public class SecurityExtension implements Extension {
             return op;
         }
 
+        @Override
+        public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
+            ModelNode model = new ModelNode();
+            transformModulesToAttributes(address, resourceName, oldName, context, model);
+            resource.writeModel(model);
+            final ResourceTransformationContext childContext = context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
+            childContext.processChildren(resource);
+        }
     }
 }

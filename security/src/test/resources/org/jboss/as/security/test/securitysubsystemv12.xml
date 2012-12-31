@@ -52,6 +52,26 @@
                 </login-module>
             </authentication>
         </security-domain>
+        <security-domain name="other2" cache-type="default">
+            <authentication>
+                <login-module code="Remoting" flag="optional">
+                    <module-option name="password-stacking" value="useFirstPass"/>
+                </login-module>
+                <login-module code="RealmDirect" flag="required">
+                    <module-option name="password-stacking" value="useFirstPass"/>
+                </login-module>
+            </authentication>
+        </security-domain>
+        <security-domain name="jboss-web-policy" cache-type="default">
+            <authorization>
+                <policy-module code="Delegating" flag="required"/>
+            </authorization>
+        </security-domain>
+        <security-domain name="jboss-ejb-policy" cache-type="default">
+            <authorization>
+                <policy-module code="Delegating" flag="required"/>
+            </authorization>
+        </security-domain>
     </security-domains>
 	<vault code="somevault">
 	  <vault-option name="xyz" value="zxc"/>
