@@ -88,6 +88,7 @@ public class ModelTypeValidatorUnitTestCase {
     public void testInt() {
         ModelTypeValidator testee = new ModelTypeValidator(ModelType.INT, false, false, false);
         validateNumbers(testee);
+        invalidateIntRange(testee);
 
         testee = new ModelTypeValidator(ModelType.INT, false, false, true);
         assertOk(testee, new ModelNode().set(1));
@@ -98,6 +99,7 @@ public class ModelTypeValidatorUnitTestCase {
     public void testLong() {
         ModelTypeValidator testee = new ModelTypeValidator(ModelType.LONG, false, false, false);
         validateNumbers(testee);
+        invalidateLongRange(testee);
 
         testee = new ModelTypeValidator(ModelType.LONG, false, false, true);
         assertOk(testee, new ModelNode().set(1L));
@@ -208,6 +210,26 @@ public class ModelTypeValidatorUnitTestCase {
         assertOk(testee, new ModelNode().set(1L));
         assertOk(testee, new ModelNode().set((double) 1));
         assertOk(testee, new ModelNode().set("1"));
+    }
+
+    private static void invalidateIntRange(ModelTypeValidator testee) {
+        assertInvalid(testee, new ModelNode().set(BigDecimal.valueOf(Integer.MAX_VALUE).add(BigDecimal.ONE)));
+        assertInvalid(testee, new ModelNode().set(BigDecimal.valueOf(Integer.MIN_VALUE).subtract(BigDecimal.ONE)));
+        assertInvalid(testee, new ModelNode().set(BigInteger.valueOf(Integer.MAX_VALUE).add(BigInteger.ONE)));
+        assertInvalid(testee, new ModelNode().set(BigInteger.valueOf(Integer.MIN_VALUE).subtract(BigInteger.ONE)));
+        assertInvalid(testee, new ModelNode().set(Integer.MAX_VALUE + 1L));
+        assertInvalid(testee, new ModelNode().set(Integer.MIN_VALUE - 1L));
+        assertInvalid(testee, new ModelNode().set(Integer.MAX_VALUE + 1d));
+        assertInvalid(testee, new ModelNode().set(Integer.MIN_VALUE - 1d));
+    }
+
+    private static void invalidateLongRange(ModelTypeValidator testee) {
+        assertInvalid(testee, new ModelNode().set(BigDecimal.valueOf(Long.MAX_VALUE).add(BigDecimal.ONE)));
+        assertInvalid(testee, new ModelNode().set(BigDecimal.valueOf(Long.MIN_VALUE).subtract(BigDecimal.ONE)));
+        assertInvalid(testee, new ModelNode().set(BigInteger.valueOf(Long.MAX_VALUE).add(BigInteger.ONE)));
+        assertInvalid(testee, new ModelNode().set(BigInteger.valueOf(Long.MIN_VALUE).subtract(BigInteger.ONE)));
+        assertInvalid(testee, new ModelNode().set(Long.MAX_VALUE * 10d));
+        assertInvalid(testee, new ModelNode().set(Long.MIN_VALUE * 10d));
     }
 
     private static void assertOk(ModelTypeValidator validator, ModelNode toTest) {

@@ -18,6 +18,8 @@
  */
 package org.jboss.as.controller.operations.validation;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.EnumSet;
 
 import org.jboss.as.controller.OperationFailedException;
@@ -51,6 +53,11 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class ModelTypeValidator implements ParameterValidator {
+    protected static final BigDecimal BIGDECIMAL_MAX = BigDecimal.valueOf(Integer.MAX_VALUE);
+    protected static final BigDecimal BIGDECIMAL_MIN = BigDecimal.valueOf(Integer.MIN_VALUE);
+    protected static final BigInteger BIGINTEGER_MAX = BigInteger.valueOf(Integer.MAX_VALUE);
+    protected static final BigInteger BIGINTEGER_MIN = BigInteger.valueOf(Integer.MIN_VALUE);
+
     protected final EnumSet<ModelType> validTypes;
     protected final boolean nullable;
     protected final boolean strictType;
@@ -152,6 +159,10 @@ public class ModelTypeValidator implements ParameterValidator {
 
     private boolean matches(ModelNode value, ModelType validType) {
         try {
+
+            if (validType == value.getType())
+                return true;
+
             switch (validType) {
             case BIG_DECIMAL: {
                 value.asBigDecimal();
@@ -166,12 +177,46 @@ public class ModelTypeValidator implements ParameterValidator {
                 return true;
             }
             case INT: {
-                value.asInt();
-                return true;
+                switch (value.getType()){
+                    case BIG_DECIMAL:
+                        BigDecimal valueBigDecimal = value.asBigDecimal();
+                        return (valueBigDecimal.compareTo(BIGDECIMAL_MAX) <= 0) && (valueBigDecimal.compareTo(BIGDECIMAL_MIN) >= 0);
+                    case BIG_INTEGER:
+                        BigInteger valueBigInteger = value.asBigInteger();
+                        return (valueBigInteger.compareTo(BIGINTEGER_MAX) <= 0) && (valueBigInteger.compareTo(BIGINTEGER_MIN) >= 0);
+                    case LONG:
+                        Long valueLong = value.asLong();
+                        return valueLong <= Integer.MAX_VALUE && valueLong >= Integer.MIN_VALUE;
+                    case DOUBLE:
+                        Double valueDouble = value.asDouble();
+                        return valueDouble <= Integer.MAX_VALUE && valueDouble >= Integer.MIN_VALUE;
+                    case STRING:
+                        value.asInt();
+                        return true;
+                    default:
+                        return false;
+                }
             }
             case LONG: {
-                value.asLong();
-                return true;
+                switch(value.getType()){
+                    case BIG_DECIMAL:
+                        BigDecimal valueBigDecimal = value.asBigDecimal();
+                        return (valueBigDecimal.compareTo(BIGDECIMAL_MAX) <= 0) && (valueBigDecimal.compareTo(BIGDECIMAL_MIN) >= 0);
+                    case BIG_INTEGER:
+                        BigInteger valueBigInteger = value.asBigInteger();
+                        return (valueBigInteger.compareTo(BIGINTEGER_MAX) <= 0) && (valueBigInteger.compareTo(BIGINTEGER_MIN) >= 0);
+                    case DOUBLE:
+                        Double valueDouble = value.asDouble();
+                        return valueDouble <= Long.MAX_VALUE && valueDouble >= Long.MIN_VALUE;
+                    case INT:
+                        value.asLong();
+                        return true;
+                    case STRING:
+                        value.asLong();
+                        return true;
+                    default:
+                        return false;
+                }
             }
             case PROPERTY: {
                 value.asProperty();
@@ -231,7 +276,7 @@ public class ModelTypeValidator implements ParameterValidator {
             case TYPE:
             case UNDEFINED:
             default:
-                return validType == value.getType();
+                return false;
             }
         }
         catch (RuntimeException e) {
