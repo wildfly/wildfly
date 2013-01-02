@@ -118,10 +118,17 @@ public class DomainLifecycleUtil {
 
             String jbossHomeDir = configuration.getJbossHome();
 
-            final String additionalJavaOpts = System.getProperty("jboss.options");
+            final List<String> additionalJavaOpts = new ArrayList<String>();
+            final String jbossOptions = System.getProperty("jboss.options");
+            if (jbossOptions != null) {
+                Collections.addAll(additionalJavaOpts, jbossOptions.split("\\s+"));
+            }
+            if (configuration.getJavaVmArguments() != null) {
+                Collections.addAll(additionalJavaOpts, configuration.getJavaVmArguments().split("\\s+"));
+            }
 
             File modulesJar = new File(jbossHomeDir + File.separatorChar + "jboss-modules.jar");
-            if (modulesJar.exists() == false)
+            if (!modulesJar.exists())
                 throw new IllegalStateException("Cannot find: " + modulesJar);
 
             String javaHome = configuration.getJavaHome();
@@ -145,13 +152,21 @@ public class DomainLifecycleUtil {
             pw.close();
             fos.close();
 
+            // Put out empty application realm properties files so servers don't complain
+            File appUsersProps = new File(domainPath + "/configuration/application-users.properties");fos = new FileOutputStream(usersFile);
+            pw = new PrintWriter(appUsersProps);
+            pw.println("# Application users");
+            pw.close();
+            fos.close();
+            File appRolesProps = new File(domainPath + "/configuration/application-roles.properties");fos = new FileOutputStream(usersFile);
+            pw = new PrintWriter(appRolesProps);
+            pw.println("# Application users");
+            pw.close();
+            fos.close();
+
             List<String> cmd = new ArrayList<String>();
             cmd.add(java);
-            if (additionalJavaOpts != null) {
-                for (String opt : additionalJavaOpts.split("\\s+")) {
-                    cmd.add(opt);
-                }
-            }
+            cmd.addAll(additionalJavaOpts);
             TestSuiteEnvironment.getIpv6Args(cmd);
             cmd.add("-Djboss.home.dir=" + jbossHomeDir);
             cmd.add("-Dorg.jboss.boot.log.file=" + domainPath + "/log/process-controller.log");
@@ -171,18 +186,15 @@ public class DomainLifecycleUtil {
             cmd.add("-Dorg.jboss.boot.log.file=" + domainPath + "/log/host-controller.log");
             cmd.add("-Dlogging.configuration=file:" + jbossHomeDir + "/domain/configuration/logging.properties");
             TestSuiteEnvironment.getIpv6Args(cmd);
-            if (additionalJavaOpts != null) {
-                for (String opt : additionalJavaOpts.split("\\s+")) {
-                    cmd.add(opt);
-                }
-            }
+            cmd.addAll(additionalJavaOpts);
             cmd.add("--");
             cmd.add("-default-jvm");
             cmd.add(java);
             if (configuration.getHostCommandLineProperties() != null) {
-                for (String opt : configuration.getHostCommandLineProperties().split("\\s+")) {
-                    cmd.add(opt);
-                }
+                Collections.addAll(cmd, configuration.getHostCommandLineProperties().split("\\s+"));
+            }
+            if (configuration.isAdminOnly()) {
+                cmd.add("--admin-only");
             }
 
             String domainDirectory = configuration.getDomainDirectory();
@@ -216,12 +228,18 @@ public class DomainLifecycleUtil {
             process = wrapper;
 
             long start = System.currentTimeMillis();
-            // Wait a bit to let HC get going
-            TimeUnit.SECONDS.sleep(2);
-            // Wait for the servers to be started
-            awaitServers(start);
+            if (configuration.isAdminOnly()) {
+                // Wait for the HC to be started
+                awaitHostController(start);
+                log.info("HostController started in " + (System.currentTimeMillis() - start) + " ms");
 
-            log.info("All servers started in " + (System.currentTimeMillis() - start) + " ms");
+            } else {
+                // Wait a bit to let HC get going
+                TimeUnit.SECONDS.sleep(2);
+                // Wait for the servers to be started
+                awaitServers(start);
+                log.info("All servers started in " + (System.currentTimeMillis() - start) + " ms");
+            }
         } catch (Exception e) {
             throw new RuntimeException("Could not start container", e);
         }
@@ -400,6 +418,25 @@ public class DomainLifecycleUtil {
         }
     }
 
+    private void awaitHostController(long start) throws InterruptedException, TimeoutException {
+
+        boolean hcAvailable = false;
+        long deadline = start + configuration.getStartupTimeoutInSeconds() * 1000;
+        while (!hcAvailable) {
+            long remaining = deadline - System.currentTimeMillis();
+            if(remaining <= 0) {
+                break;
+            }
+            if (!hcAvailable) {
+                TimeUnit.MILLISECONDS.sleep(250);
+            }
+            hcAvailable = isHostControllerStarted();
+        }
+        if (!hcAvailable) {
+            throw new TimeoutException(String.format("HostController was not started within [%d] seconds", configuration.getStartupTimeoutInSeconds()));
+        }
+    }
+
     private synchronized DomainTestClient internalGetOrCreateClient() {
         // Perhaps get rid of the shared client...
         if (domainClient == null) {
@@ -439,6 +476,19 @@ public class DomainLifecycleUtil {
         return false;
     }
 
+    private boolean isHostControllerStarted() {
+        try {
+            ModelNode address = new ModelNode();
+            address.add("host", configuration.getHostName());
+
+            ControlledProcessState.State status = Enum.valueOf(ControlledProcessState.State.class, readAttribute("host-state", address).asString().toUpperCase(Locale.ENGLISH));
+            return status == ControlledProcessState.State.RUNNING;
+        } catch (Exception ignored) {
+            //
+        }
+        return false;
+    }
+
     private synchronized void closeConnection() {
         if (connection != null) {
             try {
@@ -465,9 +515,10 @@ public class DomainLifecycleUtil {
             ModelNode address = new ModelNode();
             address.add("host", configuration.getHostName());
             address.add("server-config", server);
-            String group = readAttribute("group", address).asString();
-            if (!readAttribute("auto-start", address).asBoolean())
+            String group = readAttribute("group", address).resolve().asString();
+            if (!readAttribute("auto-start", address).resolve().asBoolean()) {
                 continue;
+            }
 
             address = new ModelNode();
             address.add("host", configuration.getHostName());

@@ -62,12 +62,15 @@ public abstract class ServerRestartRequiredServerConfigWriteAttributeHandler ext
             //Set an attachment to avoid propagation to the servers, we don't want them to go into restart-required if nothing changed
             ServerOperationResolver.addToDontPropagateToServersAttachment(context, operation);
         }
-        // Validate the profile reference.
+
+        // Validate the model reference.
 
         // Issue: We resolve in Stage.MODEL even though system properties may not be available yet. Not ideal,
-        // but some attributes used in implementations already support expressions for model references
+        // but the attributes involved do not support expressions because they are model references
         ModelNode resolvedValue = attributeDefinition.resolveModelAttribute(context, resource.getModel());
-        validateReferencedNewValueExists(context, resolvedValue);
+        if (resolvedValue.isDefined()) {
+            validateReferencedNewValueExists(context, resolvedValue);
+        } // else the attribute must support undefined values
     }
 
     protected abstract void validateReferencedNewValueExists(OperationContext context, ModelNode value) throws OperationFailedException;
@@ -111,7 +114,8 @@ public abstract class ServerRestartRequiredServerConfigWriteAttributeHandler ext
         }
 
         @Override
-        protected void validateReferencedNewValueExists(OperationContext context, ModelNode resolvedValue) throws OperationFailedException{
+        protected void validateReferencedNewValueExists(OperationContext context, ModelNode resolvedValue) throws OperationFailedException {
+            // our attribute is not a model reference
         }
     }
 }
