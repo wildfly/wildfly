@@ -63,6 +63,7 @@ public interface CommonAttributes {
 
     // Attributes
     PropertyAttributeDefinition APPEND = PropertyAttributeDefinition.Builder.of("append", ModelType.BOOLEAN, true)
+            .setAllowExpression(true)
             .setAttributeMarshaller(ElementAttributeMarshaller.VALUE_ATTRIBUTE_MARSHALLER)
             .setDefaultValue(new ModelNode(true))
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
@@ -71,6 +72,7 @@ public interface CommonAttributes {
     String ASYNC_HANDLER = "async-handler";
 
     PropertyAttributeDefinition AUTOFLUSH = PropertyAttributeDefinition.Builder.of("autoflush", ModelType.BOOLEAN, true)
+            .setAllowExpression(true)
             .setDefaultValue(new ModelNode(true))
             .setPropertyName("autoFlush")
             .build();
@@ -85,7 +87,8 @@ public interface CommonAttributes {
 
     String CUSTOM_HANDLER = "custom-handler";
 
-    PropertyAttributeDefinition ENABLED = PropertyAttributeDefinition.Builder.of("enabled", ModelType.STRING, true)
+    PropertyAttributeDefinition ENABLED = PropertyAttributeDefinition.Builder.of("enabled", ModelType.BOOLEAN, true)
+            .setAllowExpression(true)
             .setDefaultValue(new ModelNode(true))
             .build();
 
@@ -244,6 +247,7 @@ public interface CommonAttributes {
             .build();
 
     PropertyAttributeDefinition USE_PARENT_HANDLERS = PropertyAttributeDefinition.Builder.of("use-parent-handlers", ModelType.BOOLEAN, true)
+            .setAllowExpression(true)
             .setDefaultValue(new ModelNode(true))
             .setPropertyName("useParentHandlers")
             .build();
