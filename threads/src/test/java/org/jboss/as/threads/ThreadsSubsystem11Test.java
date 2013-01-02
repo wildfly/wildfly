@@ -27,6 +27,7 @@ package org.jboss.as.threads;
 import java.io.IOException;
 
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
@@ -39,5 +40,10 @@ public class ThreadsSubsystem11Test extends AbstractSubsystemBaseTest {
     @Override
     protected String getSubsystemXml() throws IOException {
         return readResource("threads-subsystem-1_1.xml");
+    }
+
+    @Test
+    public void testExpressions() throws Exception {
+        standardSubsystemTest("expressions.xml");
     }
 }

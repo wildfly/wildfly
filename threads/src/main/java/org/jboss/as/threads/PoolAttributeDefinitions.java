@@ -22,10 +22,15 @@
 package org.jboss.as.threads;
 
 
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ObjectTypeAttributeDefinition;
+import org.jboss.as.controller.PropagatingCorrector;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
@@ -49,6 +54,19 @@ public interface PoolAttributeDefinitions {
             .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, false, true)).setAllowExpression(true).build();
 
     KeepAliveTimeAttributeDefinition KEEPALIVE_TIME = new KeepAliveTimeAttributeDefinition();
+//    SimpleAttributeDefinition KEEPALIVE_TIME_TIME = new SimpleAttributeDefinitionBuilder(CommonAttributes.TIME, ModelType.LONG, false)
+//            .setAllowExpression(true)
+//            .build();
+//
+//    SimpleAttributeDefinition KEEPALIVE_TIME_UNIT = new SimpleAttributeDefinitionBuilder(CommonAttributes.UNIT, ModelType.STRING, false)
+//            .setAllowExpression(true)
+//            .setValidator(new EnumValidator<TimeUnit>(TimeUnit.class, false, true))
+//            .build();
+//
+//    ObjectTypeAttributeDefinition KEEPALIVE_TIME = ObjectTypeAttributeDefinition.Builder.of(CommonAttributes.KEEPALIVE_TIME, KEEPALIVE_TIME_TIME, KEEPALIVE_TIME_UNIT)
+//            .setAllowNull(true)
+//            .setCorrector(PropagatingCorrector.INSTANCE)
+//            .build();
 
     SimpleAttributeDefinition CORE_THREADS = new SimpleAttributeDefinitionBuilder(CommonAttributes.CORE_THREADS, ModelType.INT, true)
             .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, true, true)).setAllowExpression(true).build();
@@ -60,11 +78,17 @@ public interface PoolAttributeDefinitions {
             .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, false, true)).setAllowExpression(true).setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
 
     SimpleAttributeDefinition ALLOW_CORE_TIMEOUT = new SimpleAttributeDefinitionBuilder(CommonAttributes.ALLOW_CORE_TIMEOUT, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode().set(false)).build();
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(false))
+            .build();
 
-    SimpleAttributeDefinition GROUP_NAME = new SimpleAttributeDefinition(CommonAttributes.GROUP_NAME, ModelType.STRING, true);
+    SimpleAttributeDefinition GROUP_NAME = new SimpleAttributeDefinitionBuilder(CommonAttributes.GROUP_NAME, ModelType.STRING, true)
+            .setAllowExpression(true)
+            .build();
 
-    SimpleAttributeDefinition THREAD_NAME_PATTERN = new SimpleAttributeDefinition(CommonAttributes.THREAD_NAME_PATTERN, ModelType.STRING, true);
+    SimpleAttributeDefinition THREAD_NAME_PATTERN = new SimpleAttributeDefinitionBuilder(CommonAttributes.THREAD_NAME_PATTERN, ModelType.STRING, true)
+            .setAllowExpression(true)
+            .build();
 
     SimpleAttributeDefinition PRIORITY = new SimpleAttributeDefinition(CommonAttributes.PRIORITY, CommonAttributes.PRIORITY, null,
             ModelType.INT, true, true, MeasurementUnit.NONE, new IntRangeValidator(Thread.MIN_PRIORITY, Thread.MAX_PRIORITY, true, true));
