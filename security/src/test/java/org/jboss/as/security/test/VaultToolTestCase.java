@@ -51,7 +51,6 @@ public class VaultToolTestCase {
 
     String vaultSharedKey = getStoredAttributeSharedKey(outputLines);
     Assert.assertNotNull("VaultTool did not return a line starting with VAULT::", vaultSharedKey);
-
     MockRuntimeVaultReader rvr = new MockRuntimeVaultReader();
     Map<String, Object> options = generateVaultOptionsMap();
     rvr.createVault("", options);
