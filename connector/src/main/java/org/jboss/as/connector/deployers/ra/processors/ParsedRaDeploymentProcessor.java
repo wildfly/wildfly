@@ -130,7 +130,11 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                 @Override
                 protected void registerIronjacamar(final ServiceController<? extends Object> controller, final ManagementResourceRegistration subRegistration, final Resource subsystemResource) {
                     //register ironJacamar
-                    subRegistration.registerSubModel(new IronJacamarResourceDefinition());
+                    try {
+                        subRegistration.registerSubModel(new IronJacamarResourceDefinition());
+                    } catch (IllegalArgumentException iae) {
+                        //ignore it: submodel already registered
+                    }
                     AS7MetadataRepository mdr = ((ResourceAdapterDeploymentService) controller.getService()).getMdr();
                     IronJacamarResourceCreator.INSTANCE.execute(subsystemResource, mdr);
                 }
