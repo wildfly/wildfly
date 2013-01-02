@@ -105,10 +105,11 @@ public abstract class AbstractSystemPropertyTransformersTest extends AbstractCor
     private ModelNode getExpectedUndefined(ModelVersion modelVersion){
         if (modelVersion.equals(ModelVersion.create(1, 4, 0))) {
             return new ModelNode();
-        } else if (modelVersion.equals(ModelVersion.create(1, 2, 0))) {
+        } else if (modelVersion.equals(ModelVersion.create(1, 2, 0)) || modelVersion.equals(ModelVersion.create(1, 3, 0))) {
             return new ModelNode(true);
         } else {
             throw new IllegalStateException("Not known model version " + modelVersion);
         }
     }
+
 }
