@@ -128,14 +128,12 @@ class JacORBSubsystemDefinitions {
             JacORBSubsystemConstants.ORB_SOCKET_BINDING, ModelType.STRING, true)
             .setDefaultValue(new ModelNode().set("jacorb"))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition ORB_SSL_SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.ORB_SSL_SOCKET_BINDING, ModelType.STRING, true)
             .setDefaultValue(new ModelNode().set("jacorb-ssl"))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setAllowExpression(true)
             .build();
 
     // connection attribute definitions.
@@ -355,7 +353,6 @@ class JacORBSubsystemDefinitions {
     public static final SimpleAttributeDefinition SECURITY_SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.SECURITY_SECURITY_DOMAIN, ModelType.STRING, true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition SECURITY_ADD_COMPONENT_INTERCEPTOR = new SimpleAttributeDefinitionBuilder(
