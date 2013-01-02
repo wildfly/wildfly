@@ -152,7 +152,9 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
                 if (rr != null) {
                     for (XAResourceRecovery recovery : value.getDeployment().getRecovery()) {
-                        rr.removeXAResourceRecovery(recovery);
+                        if (recovery!= null) {
+                            rr.removeXAResourceRecovery(recovery);
+                        }
                     }
                 }
             }
