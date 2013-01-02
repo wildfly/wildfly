@@ -29,6 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
@@ -36,7 +37,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -91,6 +95,11 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
         "        <property name=\"some_property\" value=\"some_value\"/>" +
         "    </properties>" +
         "</subsystem>";
+    }
+
+    @Test
+    public void testExpressions() throws Exception {
+        standardSubsystemTest("expressions.xml");
     }
 
     @Test
@@ -282,10 +291,10 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
         operation.get(OP_ADDR).add(SUBSYSTEM, "jacorb");
         operation.get(NAME); //
         operation.get(VALUE).setExpression("${org.jboss.test.value:test}");
-
+        final Set<String> toSkip = new HashSet<String>(Arrays.asList(JacORBSubsystemConstants.SECURITY_SECURITY_DOMAIN,
+                SOCKET_BINDING, JacORBSubsystemConstants.ORB_SSL_SOCKET_BINDING, PROPERTIES));
         for(final String key : JacORBSubsystemDefinitions.ATTRIBUTES_BY_NAME.keySet()) {
-            if(key.equals(PROPERTIES)) {
-                // Skip properties
+            if (toSkip.contains(key)) {
                 continue;
             }
 
