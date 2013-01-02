@@ -54,6 +54,11 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
     }
 
     @Test
+    public void testExpressions() throws Exception {
+        standardSubsystemTest("/expressions.xml");
+    }
+
+    @Test
     public void testConfiguration() throws Exception {
         final KernelServices kernelServices = boot();
         final ModelNode currentModel = getSubsystemModel(kernelServices);
