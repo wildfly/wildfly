@@ -502,6 +502,9 @@
                                         <goals>
                                             <goal>copy</goal>
                                             <goal>properties</goal>
+                                            <goal>
+                                            	copy-dependencies
+                                            </goal>
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
