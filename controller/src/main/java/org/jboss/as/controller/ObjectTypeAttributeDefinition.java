@@ -52,6 +52,11 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
     private final AttributeDefinition[] valueTypes;
     private final String suffix;
 
+    protected ObjectTypeAttributeDefinition(final String name, final AttributeDefinition[] valueTypes, final boolean allowNull,
+                                            final ParameterCorrector corrector) {
+        this(name, name, null, valueTypes, allowNull, null, corrector, null, null, null, false, null);
+    }
+
     protected ObjectTypeAttributeDefinition(final String name, final String xmlName, final String suffix, final AttributeDefinition[] valueTypes, final boolean allowNull,
                                             final ParameterValidator validator, final ParameterCorrector corrector, final String[] alternatives, final String[] requires,
                                             final AttributeMarshaller attributeMarshaller, final boolean resourceOnly, final DeprecationData deprecated, final AttributeAccess.Flag... flags) {
