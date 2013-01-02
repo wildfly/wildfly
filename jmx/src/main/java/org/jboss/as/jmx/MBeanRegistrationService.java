@@ -26,9 +26,12 @@ import static org.jboss.as.jmx.JmxLogger.ROOT_LOGGER;
 import static org.jboss.as.jmx.JmxMessages.MESSAGES;
 
 import java.lang.management.ManagementFactory;
+
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
+
+import org.jboss.as.naming.WritableServiceBasedNamingStore;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -36,7 +39,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
 
 /**
  * Service used to register and unregister an mbean with an mbean server.
@@ -49,25 +51,17 @@ public class MBeanRegistrationService<T> implements Service<Void> {
     private final InjectedValue<T> value = new InjectedValue<T>();
     private final String name;
     private ObjectName objectName;
+    private final ServiceName duServiceName;
 
     /**
      * Create an instance.
      *
      * @param name The name to use as an ObjectName
+     * @param duServiceName the deployment unit's service name
      */
-    public MBeanRegistrationService(final String name) {
+    public MBeanRegistrationService(final String name, ServiceName duServiceName) {
         this.name = name;
-    }
-
-    /**
-     * Create an instance.
-     *
-     * @param name The name to use as an ObjectName
-     * @param value The object to register
-     */
-    public MBeanRegistrationService(final String name, final Value<T> value) {
-        this.name = name;
-        this.value.inject(value.getValue());
+        this.duServiceName = duServiceName;
     }
 
     /**
@@ -85,11 +79,14 @@ public class MBeanRegistrationService<T> implements Service<Void> {
             throw MESSAGES.mbeanRegistrationFailed(e, name);
         }
 
+        WritableServiceBasedNamingStore.pushOwner(duServiceName);
         try {
             ROOT_LOGGER.debugf("Registering [%s] with name [%s]", value, objectName);
             mBeanServer.registerMBean(value, objectName);
         } catch (Exception e) {
             throw MESSAGES.mbeanRegistrationFailed(e, name);
+        } finally {
+            WritableServiceBasedNamingStore.popOwner();
         }
     }
 
