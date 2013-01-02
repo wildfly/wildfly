@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller.transform;
+package org.jboss.as.subsystem.test;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -29,7 +29,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 import org.jboss.as.controller.ModelVersion;
@@ -37,35 +36,32 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.global.ReadResourceHandler;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.ResourceTransformationContext;
+import org.jboss.as.controller.transform.TransformationTarget;
+import org.jboss.as.controller.transform.TransformationTargetImpl;
+import org.jboss.as.controller.transform.TransformerRegistry;
+import org.jboss.as.controller.transform.Transformers;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
-public class ReadTransformedResourceOperation implements OperationStepHandler {
+class ReadTransformedResourceOperation implements OperationStepHandler {
 
     private final ParametersValidator validator = new ParametersValidator();
-
-    public static DescriptionProvider DESCRIPTION = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return new ModelNode();
-        }
-    };
 
     private final TransformerRegistry transformerRegistry;
     private final ModelVersion coreModelVersion;
     private final ModelVersion subsystemModelVersion;
 
-    public ReadTransformedResourceOperation(final TransformerRegistry transformerRegistry, ModelVersion coreModelVersion, ModelVersion subsystemModelVersion) {
+    ReadTransformedResourceOperation(final TransformerRegistry transformerRegistry, ModelVersion coreModelVersion, ModelVersion subsystemModelVersion) {
         validator.registerValidator(SUBSYSTEM, new ModelTypeValidator(ModelType.STRING, false));
         this.transformerRegistry = transformerRegistry;
         this.coreModelVersion = coreModelVersion;
