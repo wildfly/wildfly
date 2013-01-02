@@ -668,4 +668,58 @@ public interface HostControllerMessages {
      */
     @Message(id = Message.NONE, value="Use %s --help for information on valid command line arguments and their syntax.")
     String usageNote(String command);
+
+    @Message(id=16515, value="Cannot access S3 file: %s")
+    IllegalStateException cannotAccessS3File(String message);
+
+    @Message(id=16516, value="Failed to obtain domain controller data from S3 file")
+    IllegalStateException failedMarshallingDomainControllerData();
+
+    @Message(id=16517, value="Cannot write domain controller data to S3 file: %s")
+    IOException cannotWriteToS3File(String message);
+
+    @Message(id=16518, value="Cannot access S3 bucket '%s': %s")
+    IllegalStateException cannotAccessS3Bucket(String location, String message);
+
+    @Message(id=16519, value="Tried all domain controller discovery option(s) but unable to connect")
+    IllegalStateException discoveryOptionsFailureUnableToConnect(@Cause Throwable cause);
+
+    @Message(id=16520, value="pre_signed_put_url and pre_signed_delete_url must have the same path")
+    IllegalStateException preSignedUrlsMustHaveSamePath();
+
+    @Message(id=16521, value="pre_signed_put_url and pre_signed_delete_url must both be set or both unset")
+    IllegalStateException preSignedUrlsMustBeSetOrUnset();
+
+    @Message(id=16522, value="pre-signed url %s must point to a file within a bucket")
+    IllegalStateException preSignedUrlMustPointToFile(String preSignedUrl);
+
+    @Message(id=16523, value="pre-signed url %s is not a valid url")
+    IllegalStateException invalidPreSignedUrl(String preSignedUrl);
+
+    @Message(id=16524, value="pre-signed url %s may only have a subdirectory under a bucket")
+    IllegalStateException invalidPreSignedUrlLength(String preSignedUrl);
+
+    @Message(id=16525, value="Creating location-constrained bucket with unsupported calling-format")
+    IllegalArgumentException creatingBucketWithUnsupportedCallingFormat();
+
+    @Message(id=16526, value="Invalid location: %s")
+    IllegalArgumentException invalidS3Location(String location);
+
+    @Message(id=16527, value="Invalid bucket name: %s")
+    IllegalArgumentException invalidS3Bucket(String bucket);
+
+    @Message(id=16528, value="bucket '%s' could not be accessed (rsp=%d (%s)). Maybe the bucket is owned by somebody else or the authentication failed")
+    IOException bucketAuthenticationFailure(String bucket, int httpCode, String responseMessage);
+
+    @Message(id=16529, value="Unexpected response: %s")
+    IOException unexpectedResponse(String message);
+
+    @Message(id=16530, value="HTTP redirect support required")
+    RuntimeException httpRedirectSupportRequired();
+
+    @Message(id=16531, value = "Unexpected error parsing bucket listing(s)")
+    RuntimeException errorParsingBucketListings(@Cause Throwable cause);
+
+    @Message(id=16532, value = "Couldn't initialize a SAX driver for the XMLReader")
+    RuntimeException cannotInitializeSaxDriver();
 }

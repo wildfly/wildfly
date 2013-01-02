@@ -34,6 +34,7 @@ public class ModelDescriptionConstants {
 
     /** The key for {@link AttributeAccess.AccessType} fields. */
     public static final String ACCESS_TYPE = "access-type";
+    public static final String ACCESS_KEY = "access-key";
     public static final String ADD = "add";
     public static final String ADDRESS = "address";
     public static final String ADMIN_ONLY = "admin-only";
@@ -84,6 +85,7 @@ public class ModelDescriptionConstants {
     public static final String DIRECTORY = "directory";
     public static final String DIRECTORY_GROUPING = "directory-grouping";
     public static final String DISABLE = "disable";
+    public static final String DISCOVERY_OPTION = "discovery-option";
     public static final String DOMAIN = "domain";
     public static final String DOMAIN_FAILURE_DESCRIPTION = "domain-failure-description";
     public static final String DOMAIN_CONTROLLER = "domain-controller";
@@ -133,6 +135,7 @@ public class ModelDescriptionConstants {
     public static final String LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING = "local-destination-outbound-socket-binding";
     public static final String LOCAL_HOST_NAME = "local-host-name";
     public static final String LOCALE = "locale";
+    public static final String LOCATION = "location";
     public static final String MANAGEMENT_SUBSYSTEM_ENDPOINT = "management-subsystem-endpoint";
     public static final String MANAGEMENT = "management";
     public static final String MANAGEMENT_CLIENT_CONTENT = "management-client-content";
@@ -182,6 +185,9 @@ public class ModelDescriptionConstants {
     public static final String PLATFORM_MBEAN = "platform-mbean";
     public static final String PORT = "port";
     public static final String PORT_OFFSET = "port-offset";
+    public static final String PREFIX = "prefix";
+    public static final String PRE_SIGNED_DELETE_URL = "pre-signed-delete-url";
+    public static final String PRE_SIGNED_PUT_URL = "pre-signed-put-url";
     public static final String PRIORITY = "priority";
     public static final String PROBLEM = "problem";
     public static final String PROCESS_TYPE = "process-type";
@@ -237,11 +243,13 @@ public class ModelDescriptionConstants {
     public static final String RUNNING_SERVER = "server";
     public static final String RUNTIME_NAME = "runtime-name";
     public static final String RUNTIME_UPDATE_SKIPPED = "runtime-update-skipped";
+    public static final String S3_DISCOVERY = "S3-discovery";
     public static final String SCHEMA_LOCATION = "schema-location";
     public static final String SCHEMA_LOCATIONS = "schema-locations";
     public static final String SEARCH_CREDENTIAL = "search-credential";
     public static final String SEARCH_DN = "search-dn";
     public static final String SECRET = "secret";
+    public static final String SECRET_ACCESS_KEY = "secret-access-key";
     public static final String SECURE_PORT = "secure-port";
     public static final String SECURE_SOCKET_BINDING = "secure-socket-binding";
     public static final String SECURITY_REALM = "security-realm";

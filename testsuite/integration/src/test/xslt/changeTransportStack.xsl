@@ -2,7 +2,7 @@
 <!-- Author: Radoslav Husar, Version: March 2012 -->
 <xsl:stylesheet version="2.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:domain="urn:jboss:domain:1.4"
+                xmlns:domain="urn:jboss:domain:1.5"
                 xmlns:jgroups="urn:jboss:domain:jgroups:1.1"
 >
 

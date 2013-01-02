@@ -2587,4 +2587,18 @@ public interface ControllerMessages {
      */
     @Message(id = 14885, value = "Invalid %s \"%s\"")
     IllegalArgumentException invalidPermission(String permissionClass, String permissionName);
+
+    /**
+     * Creates an exception indicating that {@code discoveryOptionsName} must be declared
+     * or the {@code hostName} and {@code portName} need to be provided.
+     *
+     * @param discoveryOptionsName the discovery-options element name.
+     * @param hostName the host attribute name.
+     * @param portName the port attribute name.
+     * @param location the location of the error.
+     *
+     * @return a {@link XMLStreamException} for the error.
+     */
+    @Message(id = 14886, value = "%s must be declared or the %s and the %s need to be provided.")
+    XMLStreamException discoveryOptionsMustBeDeclared(String discoveryOptionsName, String hostName, String portName, @Param Location location);
 }

@@ -45,6 +45,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -71,6 +72,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
+import org.jboss.as.host.controller.discovery.DiscoveryOption;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.dmr.ModelNode;
@@ -121,15 +123,11 @@ public abstract class AbstractOperationTestCase {
             return null;
         }
 
-        public String getRemoteDomainControllerHost() {
+        public String getRemoteDomainControllerUsername() {
             return null;
         }
 
-        public int getRemoteDomainControllerPort() {
-            return 0;
-        }
-
-        public String getRemoteDomainControllerUsername() {
+        public List<DiscoveryOption> getRemoteDomainControllerDiscoveryOptions() {
             return null;
         }
 
