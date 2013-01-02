@@ -121,7 +121,7 @@ public class RuntimeVaultReader extends AbstractVaultReader {
 
     private char[] getValue(String vaultString) throws SecurityVaultException {
         String[] tokens = tokens(vaultString);
-        return vault.retrieve(tokens[1], tokens[2], tokens[3].getBytes());
+        return vault.retrieve(tokens[1], tokens[2], tokens[3].getBytes(VaultSession.CHARSET));
     }
 
     private String[] tokens(String vaultString) {
