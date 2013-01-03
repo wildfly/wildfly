@@ -26,9 +26,10 @@ import java.io.IOException;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
-import org.jboss.as.logging.Operations.CompositeOperationBuilder;
+import org.jboss.as.controller.client.helpers.Operations.CompositeOperationBuilder;
 import org.jboss.as.logging.logmanager.ConfigurationPersistence;
 import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.subsystem.test.SubsystemOperations;
 import org.jboss.byteman.contrib.bmunit.BMRule;
 import org.jboss.byteman.contrib.bmunit.BMRules;
 import org.jboss.byteman.contrib.bmunit.BMUnitRunner;
@@ -85,14 +86,14 @@ public class LoggingSubsystemRollbackTestCase extends AbstractLoggingSubsystemTe
         final PathAddress address = createLoggerAddress("org.jboss.as.logging.test");
 
         // Operation should fail based on byteman script
-        ModelNode op = Operations.createAddOperation(address.toModelNode());
+        ModelNode op = SubsystemOperations.createAddOperation(address.toModelNode());
         ModelNode result = kernelServices.executeOperation(op);
-        Assert.assertFalse("The add operation should have failed, but was successful: " + result, Operations.successful(result));
+        Assert.assertFalse("The add operation should have failed, but was successful: " + result, SubsystemOperations.isSuccessfulOutcome(result));
 
         // Verify the loggers are not there - operation should fail on missing resource
-        op = Operations.createReadResourceOperation(address.toModelNode());
+        op = SubsystemOperations.createReadResourceOperation(address.toModelNode());
         result = kernelServices.executeOperation(op);
-        Assert.assertFalse("The operation should have failed, but was successful: " + result, Operations.successful(result));
+        Assert.assertFalse("The operation should have failed, but was successful: " + result, SubsystemOperations.isSuccessfulOutcome(result));
 
         // verify the subsystem model matches the old model
         final ModelNode currentModel = getSubsystemModel(kernelServices);
@@ -118,16 +119,16 @@ public class LoggingSubsystemRollbackTestCase extends AbstractLoggingSubsystemTe
         // Handler address
         final PathAddress address = createConsoleHandlerAddress("CONSOLE2");
         // Operation should fail based on byteman script
-        ModelNode op = Operations.createAddOperation(address.toModelNode());
+        ModelNode op = SubsystemOperations.createAddOperation(address.toModelNode());
         op.get(CommonAttributes.LEVEL.getName()).set("INFO");
         op.get(CommonAttributes.FORMATTER.getName()).set("%d{HH:mm:ss,SSS} %-5p [%c] (%t) CONSOLE2: %s%E%n");
         ModelNode result = kernelServices.executeOperation(op);
-        Assert.assertFalse("The add operation should have failed, but was successful: " + result, Operations.successful(result));
+        Assert.assertFalse("The add operation should have failed, but was successful: " + result, SubsystemOperations.isSuccessfulOutcome(result));
 
         // Verify the loggers are not there - operation should fail on missing resource
-        op = Operations.createReadResourceOperation(address.toModelNode());
+        op = SubsystemOperations.createReadResourceOperation(address.toModelNode());
         result = kernelServices.executeOperation(op);
-        Assert.assertFalse("The operation should have failed, but was successful: " + result, Operations.successful(result));
+        Assert.assertFalse("The operation should have failed, but was successful: " + result, SubsystemOperations.isSuccessfulOutcome(result));
 
         // verify the subsystem model matches the old model
         final ModelNode currentModel = getSubsystemModel(kernelServices);
@@ -150,18 +151,18 @@ public class LoggingSubsystemRollbackTestCase extends AbstractLoggingSubsystemTe
         // Add a handler to be removed
         final PathAddress consoleHandler = createConsoleHandlerAddress("CONSOLE2");
         // Create a new handler
-        ModelNode op = Operations.createAddOperation(consoleHandler.toModelNode());
+        ModelNode op = SubsystemOperations.createAddOperation(consoleHandler.toModelNode());
         op.get(CommonAttributes.LEVEL.getName()).set("INFO");
         op.get(CommonAttributes.FORMATTER.getName()).set("%d{HH:mm:ss,SSS} %-5p [%c] (%t) CONSOLE2: %s%E%n");
         ModelNode result = kernelServices.executeOperation(op);
-        Assert.assertTrue(Operations.getFailureDescription(result), Operations.successful(result));
+        Assert.assertTrue(SubsystemOperations.getFailureDescriptionAsString(result), SubsystemOperations.isSuccessfulOutcome(result));
 
         // Add the handler to a logger
         final PathAddress loggerAddress = createLoggerAddress("org.jboss.as.logging");
-        op = Operations.createOperation(CommonAttributes.ADD_HANDLER_OPERATION_NAME, loggerAddress.toModelNode());
+        op = SubsystemOperations.createOperation(CommonAttributes.ADD_HANDLER_OPERATION_NAME, loggerAddress.toModelNode());
         op.get(CommonAttributes.HANDLER_NAME.getName()).set(consoleHandler.getLastElement().getValue());
         result = kernelServices.executeOperation(op);
-        Assert.assertTrue(Operations.getFailureDescription(result), Operations.successful(result));
+        Assert.assertTrue(SubsystemOperations.getFailureDescriptionAsString(result), SubsystemOperations.isSuccessfulOutcome(result));
 
         // Save the current model
         final ModelNode validSubsystemModel = getSubsystemModel(kernelServices);
@@ -171,7 +172,7 @@ public class LoggingSubsystemRollbackTestCase extends AbstractLoggingSubsystemTe
 
         // create a new handler
         final PathAddress fileHandlerAddress = createFileHandlerAddress("fail-fh");
-        final ModelNode fileHandlerOp = Operations.createAddOperation(fileHandlerAddress.toModelNode());
+        final ModelNode fileHandlerOp = SubsystemOperations.createAddOperation(fileHandlerAddress.toModelNode());
         fileHandlerOp.get(CommonAttributes.FILE.getName(), PathResourceDefinition.RELATIVE_TO.getName()).set("jboss.server.log.dir");
         fileHandlerOp.get(CommonAttributes.FILE.getName(), PathResourceDefinition.PATH.getName()).set("fail-fh.log");
         fileHandlerOp.get(CommonAttributes.AUTOFLUSH.getName()).set(true);
@@ -179,21 +180,21 @@ public class LoggingSubsystemRollbackTestCase extends AbstractLoggingSubsystemTe
 
         // create a new logger
         final PathAddress testLoggerAddress = createLoggerAddress("test");
-        final ModelNode testLoggerOp = Operations.createAddOperation(testLoggerAddress.toModelNode());
+        final ModelNode testLoggerOp = SubsystemOperations.createAddOperation(testLoggerAddress.toModelNode());
         operationBuilder.addStep(testLoggerOp);
 
         // add handler to logger
-        operationBuilder.addStep(Operations.createWriteAttributeOperation(testLoggerAddress.toModelNode(), CommonAttributes.HANDLERS, new ModelNode().setEmptyList().add("fail-fh")));
+        operationBuilder.addStep(SubsystemOperations.createWriteAttributeOperation(testLoggerAddress.toModelNode(), CommonAttributes.HANDLERS, new ModelNode().setEmptyList().add("fail-fh")));
 
         // remove the console handler
-        operationBuilder.addStep(Operations.createRemoveOperation(consoleHandler.toModelNode(), false));
+        operationBuilder.addStep(SubsystemOperations.createRemoveOperation(consoleHandler.toModelNode()));
 
         // add handler to existing logger - should force fail on this one
-        operationBuilder.addStep(Operations.createWriteAttributeOperation(loggerAddress.toModelNode(), CommonAttributes.HANDLERS, new ModelNode().setEmptyList().add("fail-fh")));
+        operationBuilder.addStep(SubsystemOperations.createWriteAttributeOperation(loggerAddress.toModelNode(), CommonAttributes.HANDLERS, new ModelNode().setEmptyList().add("fail-fh")));
 
         // verify the operation failed
         result = kernelServices.executeOperation(operationBuilder.build().getOperation());
-        Assert.assertFalse("The add operation should have failed, but was successful: " + result, Operations.successful(result));
+        Assert.assertFalse("The add operation should have failed, but was successful: " + result, SubsystemOperations.isSuccessfulOutcome(result));
 
         // verify the subsystem model matches the old model
         final ModelNode currentModel = getSubsystemModel(kernelServices);
@@ -216,18 +217,18 @@ public class LoggingSubsystemRollbackTestCase extends AbstractLoggingSubsystemTe
         // Add a handler to be removed
         final PathAddress consoleHandler = createConsoleHandlerAddress("CONSOLE2");
         // Create a new handler
-        ModelNode op = Operations.createAddOperation(consoleHandler.toModelNode());
+        ModelNode op = SubsystemOperations.createAddOperation(consoleHandler.toModelNode());
         op.get(CommonAttributes.LEVEL.getName()).set("INFO");
         op.get(CommonAttributes.FORMATTER.getName()).set("%d{HH:mm:ss,SSS} %-5p [%c] (%t) CONSOLE2: %s%E%n");
         ModelNode result = kernelServices.executeOperation(op);
-        Assert.assertTrue(Operations.getFailureDescription(result), Operations.successful(result));
+        Assert.assertTrue(SubsystemOperations.getFailureDescriptionAsString(result), SubsystemOperations.isSuccessfulOutcome(result));
 
         // Add the handler to a logger
         final PathAddress loggerAddress = createLoggerAddress("org.jboss.as.logging");
-        op = Operations.createOperation(CommonAttributes.ADD_HANDLER_OPERATION_NAME, loggerAddress.toModelNode());
+        op = SubsystemOperations.createOperation(CommonAttributes.ADD_HANDLER_OPERATION_NAME, loggerAddress.toModelNode());
         op.get(CommonAttributes.HANDLER_NAME.getName()).set(consoleHandler.getLastElement().getValue());
         result = kernelServices.executeOperation(op);
-        Assert.assertTrue(Operations.getFailureDescription(result), Operations.successful(result));
+        Assert.assertTrue(SubsystemOperations.getFailureDescriptionAsString(result), SubsystemOperations.isSuccessfulOutcome(result));
 
         // Save the current model
         final ModelNode validSubsystemModel = getSubsystemModel(kernelServices);
@@ -236,7 +237,7 @@ public class LoggingSubsystemRollbackTestCase extends AbstractLoggingSubsystemTe
 
         // create a new handler
         final PathAddress fileHandlerAddress = createFileHandlerAddress("fail-fh");
-        final ModelNode fileHandlerOp = Operations.createAddOperation(fileHandlerAddress.toModelNode());
+        final ModelNode fileHandlerOp = SubsystemOperations.createAddOperation(fileHandlerAddress.toModelNode());
         fileHandlerOp.get(CommonAttributes.FILE.getName(), PathResourceDefinition.RELATIVE_TO.getName()).set("jboss.server.log.dir");
         fileHandlerOp.get(CommonAttributes.FILE.getName(), PathResourceDefinition.PATH.getName()).set("fail-fh.log");
         fileHandlerOp.get(CommonAttributes.AUTOFLUSH.getName()).set(true);
@@ -244,18 +245,18 @@ public class LoggingSubsystemRollbackTestCase extends AbstractLoggingSubsystemTe
 
         // create a new logger
         final PathAddress testLoggerAddress = createLoggerAddress(PROFILE_NAME, "test");
-        final ModelNode testLoggerOp = Operations.createAddOperation(testLoggerAddress.toModelNode());
+        final ModelNode testLoggerOp = SubsystemOperations.createAddOperation(testLoggerAddress.toModelNode());
         operationBuilder.addStep(testLoggerOp);
 
         // remove the console handler
-        operationBuilder.addStep(Operations.createRemoveOperation(consoleHandler.toModelNode(), false));
+        operationBuilder.addStep(SubsystemOperations.createRemoveOperation(consoleHandler.toModelNode()));
 
         // add handler to existing logger - should force fail on this one
-        operationBuilder.addStep(Operations.createWriteAttributeOperation(loggerAddress.toModelNode(), CommonAttributes.HANDLERS, new ModelNode().setEmptyList().add("fail-fh")));
+        operationBuilder.addStep(SubsystemOperations.createWriteAttributeOperation(loggerAddress.toModelNode(), CommonAttributes.HANDLERS, new ModelNode().setEmptyList().add("fail-fh")));
 
         // verify the operation failed
         result = kernelServices.executeOperation(operationBuilder.build().getOperation());
-        Assert.assertFalse("The add operation should have failed, but was successful: " + result, Operations.successful(result));
+        Assert.assertFalse("The add operation should have failed, but was successful: " + result, SubsystemOperations.isSuccessfulOutcome(result));
 
         // verify the subsystem model matches the old model
         final ModelNode currentModel = getSubsystemModel(kernelServices);
@@ -359,14 +360,14 @@ public class LoggingSubsystemRollbackTestCase extends AbstractLoggingSubsystemTe
         // The handler address to remove
         final PathAddress profileAddress = createAddress(CommonAttributes.LOGGING_PROFILE, PROFILE_NAME);
         // Remove the handler
-        compositeOperationBuilder.addStep(Operations.createRemoveOperation(profileAddress.toModelNode(), true));
+        compositeOperationBuilder.addStep(SubsystemOperations.createRemoveOperation(profileAddress.toModelNode(), true));
 
         // Add a step to fail
         final ModelNode rootLoggerAddress = createRootLoggerAddress().toModelNode();
-        compositeOperationBuilder.addStep(Operations.createWriteAttributeOperation(rootLoggerAddress, CommonAttributes.LEVEL, "INFO"));
+        compositeOperationBuilder.addStep(SubsystemOperations.createWriteAttributeOperation(rootLoggerAddress, CommonAttributes.LEVEL, "INFO"));
 
         ModelNode result = kernelServices.executeOperation(compositeOperationBuilder.build().getOperation());
-        Assert.assertFalse("The update operation should have failed, but was successful: " + result, Operations.successful(result));
+        Assert.assertFalse("The update operation should have failed, but was successful: " + result, SubsystemOperations.isSuccessfulOutcome(result));
 
         // verify the subsystem model matches the old model
         final ModelNode currentModel = getSubsystemModel(kernelServices);
@@ -388,11 +389,11 @@ public class LoggingSubsystemRollbackTestCase extends AbstractLoggingSubsystemTe
         // Add a handler to be removed
         final PathAddress consoleHandler = createConsoleHandlerAddress(profileName, "CONSOLE2");
         // Create a new handler
-        ModelNode op = Operations.createAddOperation(consoleHandler.toModelNode());
+        ModelNode op = SubsystemOperations.createAddOperation(consoleHandler.toModelNode());
         op.get(CommonAttributes.LEVEL.getName()).set("INFO");
         op.get(CommonAttributes.FORMATTER.getName()).set("%d{HH:mm:ss,SSS} %-5p [%c] (%t) CONSOLE2: %s%E%n");
         ModelNode result = kernelServices.executeOperation(op);
-        Assert.assertFalse("The add operation should have failed, but was successful: " + result, Operations.successful(result));
+        Assert.assertFalse("The add operation should have failed, but was successful: " + result, SubsystemOperations.isSuccessfulOutcome(result));
 
         // verify the subsystem model matches the old model
         ModelNode currentModel = getSubsystemModel(kernelServices);
@@ -404,9 +405,9 @@ public class LoggingSubsystemRollbackTestCase extends AbstractLoggingSubsystemTe
 
         // Fail on a logger write attribute
         final PathAddress loggerAddress = createLoggerAddress(profileName, "org.jboss.as.logging.test");
-        op = Operations.createAddOperation(loggerAddress.toModelNode());
+        op = SubsystemOperations.createAddOperation(loggerAddress.toModelNode());
         result = kernelServices.executeOperation(op);
-        Assert.assertFalse("The add operation should have failed, but was successful: " + result, Operations.successful(result));
+        Assert.assertFalse("The add operation should have failed, but was successful: " + result, SubsystemOperations.isSuccessfulOutcome(result));
 
         // verify the subsystem model matches the old model
         currentModel = getSubsystemModel(kernelServices);
@@ -425,9 +426,9 @@ public class LoggingSubsystemRollbackTestCase extends AbstractLoggingSubsystemTe
         // Add a handler to be removed
         final PathAddress consoleHandler = createConsoleHandlerAddress(profileName, "CONSOLE");
         // Create a new handler
-        ModelNode op = Operations.createWriteAttributeOperation(consoleHandler.toModelNode(), CommonAttributes.TARGET, "System.err");
+        ModelNode op = SubsystemOperations.createWriteAttributeOperation(consoleHandler.toModelNode(), CommonAttributes.TARGET, "System.err");
         ModelNode result = kernelServices.executeOperation(op);
-        Assert.assertFalse("The write operation should have failed, but was successful: " + result, Operations.successful(result));
+        Assert.assertFalse("The write operation should have failed, but was successful: " + result, SubsystemOperations.isSuccessfulOutcome(result));
 
         // verify the subsystem model matches the old model
         ModelNode currentModel = getSubsystemModel(kernelServices);
@@ -439,9 +440,9 @@ public class LoggingSubsystemRollbackTestCase extends AbstractLoggingSubsystemTe
 
         // Fail on a logger write attribute
         final PathAddress rootLoggerAddress = createRootLoggerAddress(profileName);
-        op = Operations.createWriteAttributeOperation(rootLoggerAddress.toModelNode(), CommonAttributes.LEVEL, "TRACE");
+        op = SubsystemOperations.createWriteAttributeOperation(rootLoggerAddress.toModelNode(), CommonAttributes.LEVEL, "TRACE");
         result = kernelServices.executeOperation(op);
-        Assert.assertFalse("The write operation should have failed, but was successful: " + result, Operations.successful(result));
+        Assert.assertFalse("The write operation should have failed, but was successful: " + result, SubsystemOperations.isSuccessfulOutcome(result));
 
         // verify the subsystem model matches the old model
         currentModel = getSubsystemModel(kernelServices);
@@ -461,10 +462,10 @@ public class LoggingSubsystemRollbackTestCase extends AbstractLoggingSubsystemTe
         // Add a handler to be removed
         final PathAddress consoleHandler = createConsoleHandlerAddress(profileName, "CONSOLE");
         // Create a new handler
-        ModelNode op = Operations.createOperation(AbstractHandlerDefinition.CHANGE_LEVEL_OPERATION_NAME, consoleHandler.toModelNode());
+        ModelNode op = SubsystemOperations.createOperation(AbstractHandlerDefinition.CHANGE_LEVEL_OPERATION_NAME, consoleHandler.toModelNode());
         op.get(CommonAttributes.LEVEL.getName()).set("DEBUG");
         ModelNode result = kernelServices.executeOperation(op);
-        Assert.assertFalse("The update operation should have failed, but was successful: " + result, Operations.successful(result));
+        Assert.assertFalse("The update operation should have failed, but was successful: " + result, SubsystemOperations.isSuccessfulOutcome(result));
 
         // verify the subsystem model matches the old model
         ModelNode currentModel = getSubsystemModel(kernelServices);
@@ -476,10 +477,10 @@ public class LoggingSubsystemRollbackTestCase extends AbstractLoggingSubsystemTe
 
         // Fail on a logger write attribute
         final PathAddress rootLoggerAddress = createRootLoggerAddress(profileName);
-        op = Operations.createOperation(RootLoggerResourceDefinition.ROOT_LOGGER_CHANGE_LEVEL_OPERATION_NAME, rootLoggerAddress.toModelNode());
+        op = SubsystemOperations.createOperation(RootLoggerResourceDefinition.ROOT_LOGGER_CHANGE_LEVEL_OPERATION_NAME, rootLoggerAddress.toModelNode());
         op.get(CommonAttributes.LEVEL.getName()).set("TRACE");
         result = kernelServices.executeOperation(op);
-        Assert.assertFalse("The update operation should have failed, but was successful: " + result, Operations.successful(result));
+        Assert.assertFalse("The update operation should have failed, but was successful: " + result, SubsystemOperations.isSuccessfulOutcome(result));
 
         // verify the subsystem model matches the old model
         currentModel = getSubsystemModel(kernelServices);
@@ -502,18 +503,18 @@ public class LoggingSubsystemRollbackTestCase extends AbstractLoggingSubsystemTe
         // The handler address to remove
         final PathAddress consoleHandler = createConsoleHandlerAddress(profileName, "CONSOLE");
         // Remove the handler
-        compositeOperationBuilder.addStep(Operations.createRemoveOperation(consoleHandler.toModelNode(), false));
+        compositeOperationBuilder.addStep(SubsystemOperations.createRemoveOperation(consoleHandler.toModelNode()));
 
         // The logger to remove
         final PathAddress loggerAddress = createLoggerAddress(profileName, "org.jboss.as.logging");
-        compositeOperationBuilder.addStep(Operations.createRemoveOperation(loggerAddress.toModelNode(), false));
+        compositeOperationBuilder.addStep(SubsystemOperations.createRemoveOperation(loggerAddress.toModelNode()));
 
         // Add a step to fail
         final ModelNode rootLoggerAddress = createRootLoggerAddress(profileName).toModelNode();
-        compositeOperationBuilder.addStep(Operations.createWriteAttributeOperation(rootLoggerAddress, CommonAttributes.LEVEL, "INFO"));
+        compositeOperationBuilder.addStep(SubsystemOperations.createWriteAttributeOperation(rootLoggerAddress, CommonAttributes.LEVEL, "INFO"));
 
         ModelNode result = kernelServices.executeOperation(compositeOperationBuilder.build().getOperation());
-        Assert.assertFalse("The update operation should have failed, but was successful: " + result, Operations.successful(result));
+        Assert.assertFalse("The update operation should have failed, but was successful: " + result, SubsystemOperations.isSuccessfulOutcome(result));
 
         // verify the subsystem model matches the old model
         ModelNode currentModel = getSubsystemModel(kernelServices);
