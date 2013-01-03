@@ -278,12 +278,16 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         ArjunaObjectStoreEnvironmentService.JdbcStoreConfigBulder confiBuilder = new ArjunaObjectStoreEnvironmentService.JdbcStoreConfigBulder();
         confiBuilder.setActionDropTable(TransactionSubsystemRootResourceDefinition.JDBC_ACTION_STORE_DROP_TABLE.resolveModelAttribute(context, model).asBoolean())
-                .setActionTablePrefix(TransactionSubsystemRootResourceDefinition.JDBC_ACTION_STORE_TABLE_PREFIX.resolveModelAttribute(context, model).asString())
                 .setStateDropTable(TransactionSubsystemRootResourceDefinition.JDBC_STATE_STORE_DROP_TABLE.resolveModelAttribute(context, model).asBoolean())
-                .setStateTablePrefix(TransactionSubsystemRootResourceDefinition.JDBC_STATE_STORE_TABLE_PREFIX.resolveModelAttribute(context, model).asString())
-                .setCommunicationDropTable(TransactionSubsystemRootResourceDefinition.JDBC_COMMUNICATION_STORE_DROP_TABLE.resolveModelAttribute(context, model).asBoolean())
-                .setCommunicationTablePrefix(TransactionSubsystemRootResourceDefinition.JDBC_COMMUNICATION_STORE_TABLE_PREFIX.resolveModelAttribute(context, model).asString());
+                .setCommunicationDropTable(TransactionSubsystemRootResourceDefinition.JDBC_COMMUNICATION_STORE_DROP_TABLE.resolveModelAttribute(context, model).asBoolean());
 
+        if (model.hasDefined(TransactionSubsystemRootResourceDefinition.JDBC_ACTION_STORE_TABLE_PREFIX.getName()))
+            confiBuilder.setActionTablePrefix(TransactionSubsystemRootResourceDefinition.JDBC_ACTION_STORE_TABLE_PREFIX.resolveModelAttribute(context, model).asString());
+        if (model.hasDefined(TransactionSubsystemRootResourceDefinition.JDBC_STATE_STORE_TABLE_PREFIX.getName()))
+            confiBuilder.setStateTablePrefix(TransactionSubsystemRootResourceDefinition.JDBC_STATE_STORE_TABLE_PREFIX.resolveModelAttribute(context, model).asString());
+
+        if (model.hasDefined(TransactionSubsystemRootResourceDefinition.JDBC_COMMUNICATION_STORE_TABLE_PREFIX.getName()))
+            confiBuilder.setCommunicationTablePrefix(TransactionSubsystemRootResourceDefinition.JDBC_COMMUNICATION_STORE_TABLE_PREFIX.resolveModelAttribute(context, model).asString());
 
         if (ROOT_LOGGER.isDebugEnabled()) {
             ROOT_LOGGER.debugf("objectStorePathRef=%s, objectStorePath=%s\n", objectStorePathRef, objectStorePath);
