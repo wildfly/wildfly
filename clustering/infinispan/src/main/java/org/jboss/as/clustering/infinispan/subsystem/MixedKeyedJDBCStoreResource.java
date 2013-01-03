@@ -43,7 +43,7 @@ import org.jboss.as.controller.registry.OperationEntry;
  */
 public class MixedKeyedJDBCStoreResource extends BaseJDBCStoreResource {
 
-    private static final PathElement MIXED_KEYED_JDBC_STORE_PATH = PathElement.pathElement(ModelKeys.MIXED_KEYED_JDBC_STORE, ModelKeys.MIXED_KEYED_JDBC_STORE_NAME);
+    public static final PathElement MIXED_KEYED_JDBC_STORE_PATH = PathElement.pathElement(ModelKeys.MIXED_KEYED_JDBC_STORE, ModelKeys.MIXED_KEYED_JDBC_STORE_NAME);
 
     // attributes
     static final AttributeDefinition[] MIXED_KEYED_JDBC_STORE_ATTRIBUTES = {STRING_KEYED_TABLE, BINARY_KEYED_TABLE};

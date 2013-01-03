@@ -49,7 +49,7 @@ import org.jboss.dmr.ModelType;
  */
 public class RemoteStoreResource extends BaseStoreResource {
 
-    private static final PathElement REMOTE_STORE_PATH = PathElement.pathElement(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME);
+    public static final PathElement REMOTE_STORE_PATH = PathElement.pathElement(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME);
 
     // attributes
     static final SimpleAttributeDefinition CACHE =

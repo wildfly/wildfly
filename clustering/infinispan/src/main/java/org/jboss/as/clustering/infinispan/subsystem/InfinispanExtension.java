@@ -60,7 +60,7 @@ public class InfinispanExtension implements Extension {
     public static final String RESOURCE_NAME = InfinispanExtension.class.getPackage().getName() + "." +"LocalDescriptions";
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 5;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 4;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
@@ -92,10 +92,7 @@ public class InfinispanExtension implements Extension {
         }
 
         subsystem.registerSubsystemModel(new InfinispanSubsystemRootResource(resolvePathHandler));
-
         subsystem.registerXMLElementWriter(new InfinispanSubsystemXMLWriter());
-
-        // Register the model transformers
         registerTransformers(subsystem);
     }
 
@@ -131,7 +128,7 @@ public class InfinispanExtension implements Extension {
      *
      * @param subsystem the subsystems registration
      */
-    private static void registerTransformers(final SubsystemRegistration subsystem) {
+    private static void registerTransformersX(final SubsystemRegistration subsystem) {
 
         final InfinispanOperationTransformer_1_3 ot = new InfinispanOperationTransformer_1_3();
         final RejectExpressionValuesTransformer ret = new RejectExpressionValuesTransformer(StorePropertyResource.VALUE);
@@ -145,6 +142,49 @@ public class InfinispanExtension implements Extension {
         containerRegistration.registerSubResource(DistributedCacheResource.DISTRIBUTED_CACHE_PATH).registerOperationTransformer(ADD, ot);
     }
 
+    private static void registerTransformers(final SubsystemRegistration subsystem) {
+
+        // define the resource and operation transformers
+        final InfinispanOperationTransformer_1_3 ot = new InfinispanOperationTransformer_1_3();
+        final RejectExpressionValuesTransformer ret = new RejectExpressionValuesTransformer(StorePropertyResource.VALUE);
+
+        PathElement[] cachePaths = {
+                LocalCacheResource.LOCAL_CACHE_PATH,
+                InvalidationCacheResource.INVALIDATION_CACHE_PATH,
+                ReplicatedCacheResource.REPLICATED_CACHE_PATH,
+                DistributedCacheResource.DISTRIBUTED_CACHE_PATH};
+
+        // Register the model transformers
+        TransformersSubRegistration registration = subsystem.registerModelTransformers(ModelVersion.create(1, 3), new InfinispanSubsystemTransformer_1_3());
+        TransformersSubRegistration containerRegistration = registration.registerSubResource(CacheContainerResource.CONTAINER_PATH);
+        for (int i=0; i < cachePaths.length; i++) {
+            // register operation transformers for cache ADD operations
+            TransformersSubRegistration cacheRegistration = containerRegistration.registerSubResource(cachePaths[i]);
+            cacheRegistration.registerOperationTransformer(ModelDescriptionConstants.ADD, ot);
+            // register operation transformers for cache store property ADD and write operations
+            registerStorePropertyTransformers(cacheRegistration, ret) ;
+        }
+    }
+
+    private static void registerStorePropertyTransformers(TransformersSubRegistration reg, RejectExpressionValuesTransformer reject) {
+
+        PathElement[] storePaths = {
+                StoreResource.STORE_PATH,
+                FileStoreResource.FILE_STORE_PATH,
+                StringKeyedJDBCStoreResource.STRING_KEYED_JDBC_STORE_PATH,
+                BinaryKeyedJDBCStoreResource.BINARY_KEYED_JDBC_STORE_PATH,
+                MixedKeyedJDBCStoreResource.MIXED_KEYED_JDBC_STORE_PATH,
+                RemoteStoreResource.REMOTE_STORE_PATH
+        } ;
+
+        for (int i=0; i < storePaths.length; i++) {
+            // reject expressions on store properties
+            TransformersSubRegistration storeReg = reg.registerSubResource(storePaths[i]);
+            TransformersSubRegistration storePropertyReg = storeReg.registerSubResource(StorePropertyResource.STORE_PROPERTY_PATH);
+            storePropertyReg.registerOperationTransformer(ModelDescriptionConstants.ADD, reject);
+            storePropertyReg.registerOperationTransformer(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, reject.getWriteAttributeTransformer());
+        }
+    }
 
     private static class InfinispanResourceDescriptionResolver extends StandardResourceDescriptionResolver {
 
