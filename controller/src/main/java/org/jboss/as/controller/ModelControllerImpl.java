@@ -452,16 +452,16 @@ class ModelControllerImpl implements ModelController {
         stateMonitor.release();
     }
 
-    void awaitContainerMonitor(final boolean interruptibly, final int count) throws InterruptedException {
+    void awaitContainerMonitor(final boolean interruptibly) throws InterruptedException {
         if (interruptibly) {
-            stateMonitor.await(count);
+            stateMonitor.await();
         } else {
-            stateMonitor.awaitUninterruptibly(count);
+            stateMonitor.awaitUninterruptibly();
         }
     }
 
-    ContainerStateMonitor.ContainerStateChangeReport awaitContainerStateChangeReport(final int count) throws InterruptedException {
-        return stateMonitor.awaitContainerStateChangeReport(count);
+    ContainerStateMonitor.ContainerStateChangeReport awaitContainerStateChangeReport() throws InterruptedException {
+        return stateMonitor.awaitContainerStateChangeReport();
     }
 
     ServiceRegistry getServiceRegistry() {
