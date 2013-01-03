@@ -22,7 +22,6 @@
 package org.jboss.as.webservices.dmr;
 
 import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
-import static org.jboss.as.webservices.dmr.Constants.MODIFY_WSDL_ADDRESS;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_HOST;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_PORT;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_SECURE_PORT;
@@ -46,7 +45,6 @@ import org.jboss.as.webservices.service.EndpointRegistryService;
 import org.jboss.as.webservices.service.PortComponentLinkService;
 import org.jboss.as.webservices.service.ServerConfigService;
 import org.jboss.as.webservices.util.ModuleClassLoaderProvider;
-import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -57,13 +55,12 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
-
     static final WSSubsystemAdd INSTANCE = new WSSubsystemAdd();
 
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        for (AttributeDefinition attr:Attributes.SUBSYSTEM_ATTRIBUTES){
-            attr.validateAndSet(operation,model);
+        for (AttributeDefinition attr : Attributes.SUBSYSTEM_ATTRIBUTES) {
+            attr.validateAndSet(operation, model);
         }
     }
 
@@ -71,9 +68,7 @@ public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         ROOT_LOGGER.activatingWebservicesExtension();
         ModuleClassLoaderProvider.register();
-
         final boolean appclient = context.getProcessType() == ProcessType.APPLICATION_CLIENT;
-
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
@@ -84,7 +79,7 @@ public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         ServiceTarget serviceTarget = context.getServiceTarget();
         if (appclient && model.hasDefined(WSDL_HOST)) {
-            ServerConfigImpl serverConfig = createServerConfig(model, true,context);
+            ServerConfigImpl serverConfig = createServerConfig(model, true, context);
             newControllers.add(ServerConfigService.install(serviceTarget, serverConfig, verificationHandler));
         }
         if (!appclient) {
@@ -107,13 +102,13 @@ public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
             throw new RuntimeException(e);
         }
         if (!appclient) {
-            config.setModifySOAPAddress(Attributes.MODIFY_WSDL_ADDRESS.resolveModelAttribute(context,configuration).asBoolean());
+            config.setModifySOAPAddress(Attributes.MODIFY_WSDL_ADDRESS.resolveModelAttribute(context, configuration).asBoolean());
         }
         if (configuration.hasDefined(WSDL_PORT)) {
-            config.setWebServicePort(Attributes.WSDL_PORT.resolveModelAttribute(context,configuration).asInt());
+            config.setWebServicePort(Attributes.WSDL_PORT.resolveModelAttribute(context, configuration).asInt());
         }
         if (configuration.hasDefined(WSDL_SECURE_PORT)) {
-            config.setWebServiceSecurePort(Attributes.WSDL_SECURE_PORT.resolveModelAttribute(context,configuration).asInt());
+            config.setWebServiceSecurePort(Attributes.WSDL_SECURE_PORT.resolveModelAttribute(context, configuration).asInt());
         }
         return config;
     }

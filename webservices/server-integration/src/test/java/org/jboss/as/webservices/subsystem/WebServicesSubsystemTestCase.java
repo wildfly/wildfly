@@ -23,7 +23,6 @@ package org.jboss.as.webservices.subsystem;
 import java.io.IOException;
 
 import junit.framework.Assert;
-
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.model.test.ModelFixer;
@@ -54,7 +53,6 @@ public final class WebServicesSubsystemTestCase extends AbstractSubsystemBaseTes
             protected RunningMode getRunningMode() {
                 return RunningMode.ADMIN_ONLY;
             }
-
         };
     }
 
