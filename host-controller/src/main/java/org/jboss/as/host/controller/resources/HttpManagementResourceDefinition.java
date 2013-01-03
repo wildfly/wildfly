@@ -75,6 +75,7 @@ public class HttpManagementResourceDefinition extends SimpleResourceDefinition {
             .setAllowExpression(true).setValidator(new IntRangeValidator(0, 65535, true, true))
             .build();
     public static final SimpleAttributeDefinition CONSOLE_ENABLED = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.CONSOLE_ENABLED, ModelType.BOOLEAN, true)
+                .setAllowExpression(true)
                 .setXmlName(Attribute.CONSOLE_ENABLED.getLocalName())
                 .setDefaultValue(new ModelNode(true))
                 .build();
