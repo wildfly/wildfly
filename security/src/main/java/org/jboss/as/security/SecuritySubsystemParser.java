@@ -179,10 +179,9 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
 
             ModelNode node = context.getModelNode();
-
-            if (node.hasDefined(DEEP_COPY_SUBJECT_MODE) && node.get(DEEP_COPY_SUBJECT_MODE).asBoolean()) {
+            if (SecuritySubsystemRootResourceDefinition.DEEP_COPY_SUBJECT_MODE.isMarshallable(node)) {
                 writer.writeEmptyElement(Element.SECURITY_MANAGEMENT.getLocalName());
-                writeAttribute(writer, Attribute.DEEP_COPY_SUBJECT_MODE, node.get(DEEP_COPY_SUBJECT_MODE));
+                SecuritySubsystemRootResourceDefinition.DEEP_COPY_SUBJECT_MODE.marshallAsAttribute(node,writer);
             }
 
             if (node.hasDefined(SECURITY_DOMAIN) && node.get(SECURITY_DOMAIN).asInt() > 0) {

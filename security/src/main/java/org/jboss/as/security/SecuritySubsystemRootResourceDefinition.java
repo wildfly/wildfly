@@ -73,9 +73,8 @@ import org.jboss.security.plugins.mapping.JBossMappingManager;
  */
 public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefinition {
 
-    public static final SecuritySubsystemRootResourceDefinition INSTANCE = new SecuritySubsystemRootResourceDefinition();
-    public static final SimpleAttributeDefinition DEEP_COPY_SUBJECT_MODE =
-            new SimpleAttributeDefinitionBuilder(Constants.DEEP_COPY_SUBJECT_MODE, ModelType.BOOLEAN, true)
+    static final SecuritySubsystemRootResourceDefinition INSTANCE = new SecuritySubsystemRootResourceDefinition();
+    static final SimpleAttributeDefinition DEEP_COPY_SUBJECT_MODE = new SimpleAttributeDefinitionBuilder(Constants.DEEP_COPY_SUBJECT_MODE, ModelType.BOOLEAN, true)
                     .setDefaultValue(new ModelNode(false))
                     .setAllowExpression(true)
                     .build();
@@ -152,7 +151,7 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
                 .setInitialMode(ServiceController.Mode.ACTIVE).install());
 
             // add security management service
-            ModelNode modelNode = model.get(Constants.DEEP_COPY_SUBJECT_MODE);
+            ModelNode modelNode = SecuritySubsystemRootResourceDefinition.DEEP_COPY_SUBJECT_MODE.resolveModelAttribute(context,model);
             final SecurityManagementService securityManagementService = new SecurityManagementService(
                 AUTHENTICATION_MANAGER, modelNode.isDefined() && modelNode.asBoolean(), CALLBACK_HANDLER,
                 AUTHORIZATION_MANAGER, AUDIT_MANAGER, IDENTITY_TRUST_MANAGER, MAPPING_MANAGER);
