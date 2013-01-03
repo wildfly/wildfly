@@ -33,12 +33,14 @@ import java.util.logging.Level;
 import org.apache.commons.io.FileUtils;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.jboss.as.subsystem.test.SubsystemOperations;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.LogContext;
 import org.jboss.logmanager.Logger;
@@ -137,18 +139,18 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
         final ModelNode handlerAddress = createFileHandlerAddress("FILE").toModelNode();
 
         // Disable the handler
-        TransformedOperation transformedOperation = kernelServices.transformOperation(modelVersion, Operations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, false));
+        TransformedOperation transformedOperation = kernelServices.transformOperation(modelVersion, SubsystemOperations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, false));
         // Validate the operation has been transformed properly
-        assertEquals(AbstractHandlerDefinition.DISABLE_HANDLER.getName(), Operations.getOperationName(transformedOperation.getTransformedOperation()));
+        assertEquals(AbstractHandlerDefinition.DISABLE_HANDLER.getName(), SubsystemOperations.getOperationName(transformedOperation.getTransformedOperation()));
         // Execute the operation to confirm success
-        executeTransformOperation(kernelServices, modelVersion, Operations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, false));
+        executeTransformOperation(kernelServices, modelVersion, SubsystemOperations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, false));
 
         // Re-enable the handler
         // Validate the operation has been transformed properly
-        transformedOperation = kernelServices.transformOperation(modelVersion, Operations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, true));
-        assertEquals(AbstractHandlerDefinition.ENABLE_HANDLER.getName(), Operations.getOperationName(transformedOperation.getTransformedOperation()));
+        transformedOperation = kernelServices.transformOperation(modelVersion, SubsystemOperations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, true));
+        assertEquals(AbstractHandlerDefinition.ENABLE_HANDLER.getName(), SubsystemOperations.getOperationName(transformedOperation.getTransformedOperation()));
         // Execute the operation to confirm success
-        executeTransformOperation(kernelServices, modelVersion, Operations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, true));
+        executeTransformOperation(kernelServices, modelVersion, SubsystemOperations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, true));
     }
 
     @Test
@@ -163,101 +165,101 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
         // Write legacy filters
         for (Map.Entry<String, ModelNode> entry : FilterConversionTestCase.MAP.entrySet()) {
             // Validate the write-attribute operation
-            ModelNode op = Operations.createWriteAttributeOperation(handlerAddress, CommonAttributes.FILTER, entry.getValue());
+            ModelNode op = SubsystemOperations.createWriteAttributeOperation(handlerAddress, CommonAttributes.FILTER, entry.getValue());
             executeOperation(kernelServices, op);
             // Read the current value
-            op = Operations.createReadAttributeOperation(handlerAddress, CommonAttributes.FILTER_SPEC);
-            String filterSpecResult = Operations.readResultAsString(executeOperation(kernelServices, op));
+            op = SubsystemOperations.createReadAttributeOperation(handlerAddress, CommonAttributes.FILTER_SPEC);
+            String filterSpecResult = SubsystemOperations.readResultAsString(executeOperation(kernelServices, op));
             assertEquals(entry.getKey(), filterSpecResult);
 
             // Validate an add operation
             final ModelNode tempHandlerAddress = createConsoleHandlerAddress("temp").toModelNode();
-            op = Operations.createAddOperation(tempHandlerAddress);
+            op = SubsystemOperations.createAddOperation(tempHandlerAddress);
             op.get(CommonAttributes.FILTER.getName()).set(entry.getValue());
             executeOperation(kernelServices, op);
             // Read the current value
-            op = Operations.createReadAttributeOperation(tempHandlerAddress, CommonAttributes.FILTER_SPEC);
-            filterSpecResult = Operations.readResultAsString(executeOperation(kernelServices, op));
+            op = SubsystemOperations.createReadAttributeOperation(tempHandlerAddress, CommonAttributes.FILTER_SPEC);
+            filterSpecResult = SubsystemOperations.readResultAsString(executeOperation(kernelServices, op));
             assertEquals(entry.getKey(), filterSpecResult);
             // Remove the temp handler
-            op = Operations.createRemoveOperation(tempHandlerAddress, true);
+            op = SubsystemOperations.createRemoveOperation(tempHandlerAddress, true);
             executeOperation(kernelServices, op);
 
             // Add to a logger
             final ModelNode loggerAddress = createLoggerAddress("test-logger").toModelNode();
-            op = Operations.createAddOperation(loggerAddress);
+            op = SubsystemOperations.createAddOperation(loggerAddress);
             op.get(CommonAttributes.FILTER.getName()).set(entry.getValue());
             executeOperation(kernelServices, op);
             // Read the current value
-            op = Operations.createReadAttributeOperation(loggerAddress, CommonAttributes.FILTER_SPEC);
-            filterSpecResult = Operations.readResultAsString(executeOperation(kernelServices, op));
+            op = SubsystemOperations.createReadAttributeOperation(loggerAddress, CommonAttributes.FILTER_SPEC);
+            filterSpecResult = SubsystemOperations.readResultAsString(executeOperation(kernelServices, op));
             assertEquals(entry.getKey(), filterSpecResult);
 
             // Remove the attribute
-            op = Operations.createUndefineAttributeOperation(loggerAddress, CommonAttributes.FILTER_SPEC);
+            op = SubsystemOperations.createUndefineAttributeOperation(loggerAddress, CommonAttributes.FILTER_SPEC);
             executeOperation(kernelServices, op);
-            op = Operations.createReadAttributeOperation(loggerAddress, CommonAttributes.FILTER);
+            op = SubsystemOperations.createReadAttributeOperation(loggerAddress, CommonAttributes.FILTER);
             // Filter and filter spec should be undefined
-            assertEquals("Filter was not undefined", Operations.UNDEFINED, Operations.readResult(executeOperation(kernelServices, op)));
-            op = Operations.createReadAttributeOperation(loggerAddress, CommonAttributes.FILTER_SPEC);
-            assertEquals("Filter was not undefined", Operations.UNDEFINED, Operations.readResult(executeOperation(kernelServices, op)));
+            assertEquals("Filter was not undefined", SubsystemOperations.UNDEFINED, SubsystemOperations.readResult(executeOperation(kernelServices, op)));
+            op = SubsystemOperations.createReadAttributeOperation(loggerAddress, CommonAttributes.FILTER_SPEC);
+            assertEquals("Filter was not undefined", SubsystemOperations.UNDEFINED, SubsystemOperations.readResult(executeOperation(kernelServices, op)));
 
             // Test writing the attribute to the logger
-            op = Operations.createWriteAttributeOperation(loggerAddress, CommonAttributes.FILTER, entry.getValue());
+            op = SubsystemOperations.createWriteAttributeOperation(loggerAddress, CommonAttributes.FILTER, entry.getValue());
             executeOperation(kernelServices, op);
             // Read the current value
-            op = Operations.createReadAttributeOperation(loggerAddress, CommonAttributes.FILTER_SPEC);
-            filterSpecResult = Operations.readResultAsString(executeOperation(kernelServices, op));
+            op = SubsystemOperations.createReadAttributeOperation(loggerAddress, CommonAttributes.FILTER_SPEC);
+            filterSpecResult = SubsystemOperations.readResultAsString(executeOperation(kernelServices, op));
             assertEquals(entry.getKey(), filterSpecResult);
 
             // Remove the logger
-            op = Operations.createRemoveOperation(loggerAddress, true);
+            op = SubsystemOperations.createRemoveOperation(loggerAddress, true);
             executeOperation(kernelServices, op);
         }
 
         // Write new filters
         for (Map.Entry<String, ModelNode> entry : FilterConversionTestCase.MAP.entrySet()) {
             // Write to a handler
-            ModelNode op = Operations.createWriteAttributeOperation(handlerAddress, CommonAttributes.FILTER_SPEC, entry.getKey());
+            ModelNode op = SubsystemOperations.createWriteAttributeOperation(handlerAddress, CommonAttributes.FILTER_SPEC, entry.getKey());
             executeOperation(kernelServices, op);
             // Read the current value
-            op = Operations.createReadAttributeOperation(handlerAddress, CommonAttributes.FILTER);
-            ModelNode filterResult = Operations.readResult(executeOperation(kernelServices, op));
+            op = SubsystemOperations.createReadAttributeOperation(handlerAddress, CommonAttributes.FILTER);
+            ModelNode filterResult = SubsystemOperations.readResult(executeOperation(kernelServices, op));
             ModelTestUtils.compare(entry.getValue(), filterResult);
 
             // Validate an add operation
             final ModelNode tempHandlerAddress = createConsoleHandlerAddress("temp").toModelNode();
-            op = Operations.createAddOperation(tempHandlerAddress);
+            op = SubsystemOperations.createAddOperation(tempHandlerAddress);
             op.get(CommonAttributes.FILTER_SPEC.getName()).set(entry.getKey());
             executeOperation(kernelServices, op);
             // Read the current value
-            op = Operations.createReadAttributeOperation(tempHandlerAddress, CommonAttributes.FILTER);
-            filterResult = Operations.readResult(executeOperation(kernelServices, op));
+            op = SubsystemOperations.createReadAttributeOperation(tempHandlerAddress, CommonAttributes.FILTER);
+            filterResult = SubsystemOperations.readResult(executeOperation(kernelServices, op));
             ModelTestUtils.compare(entry.getValue(), filterResult);
             // Remove the temp handler
-            op = Operations.createRemoveOperation(tempHandlerAddress, true);
+            op = SubsystemOperations.createRemoveOperation(tempHandlerAddress, true);
             executeOperation(kernelServices, op);
 
             // Add to a logger
             final ModelNode loggerAddress = createLoggerAddress("test-logger").toModelNode();
-            op = Operations.createAddOperation(loggerAddress);
+            op = SubsystemOperations.createAddOperation(loggerAddress);
             op.get(CommonAttributes.FILTER_SPEC.getName()).set(entry.getKey());
             executeOperation(kernelServices, op);
             // Read the current value
-            op = Operations.createReadAttributeOperation(loggerAddress, CommonAttributes.FILTER);
-            filterResult = Operations.readResult(executeOperation(kernelServices, op));
+            op = SubsystemOperations.createReadAttributeOperation(loggerAddress, CommonAttributes.FILTER);
+            filterResult = SubsystemOperations.readResult(executeOperation(kernelServices, op));
             ModelTestUtils.compare(entry.getValue(), filterResult);
 
             // Test writing the attribute to the logger
-            op = Operations.createWriteAttributeOperation(loggerAddress, CommonAttributes.FILTER_SPEC, entry.getKey());
+            op = SubsystemOperations.createWriteAttributeOperation(loggerAddress, CommonAttributes.FILTER_SPEC, entry.getKey());
             executeOperation(kernelServices, op);
             // Read the current value
-            op = Operations.createReadAttributeOperation(loggerAddress, CommonAttributes.FILTER);
-            filterResult = Operations.readResult(executeOperation(kernelServices, op));
+            op = SubsystemOperations.createReadAttributeOperation(loggerAddress, CommonAttributes.FILTER);
+            filterResult = SubsystemOperations.readResult(executeOperation(kernelServices, op));
             ModelTestUtils.compare(entry.getValue(), filterResult);
 
             // Remove the logger
-            op = Operations.createRemoveOperation(loggerAddress, true);
+            op = SubsystemOperations.createRemoveOperation(loggerAddress, true);
             executeOperation(kernelServices, op);
         }
         removeFileHandler(kernelServices, null, fileHandlerName, true);
@@ -278,13 +280,13 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
         addFileHandler(kernelServices, PROFILE, handlerName, org.jboss.logmanager.Level.INFO, profileLogFile, true);
 
         // Change the format
-        ModelNode op = Operations.createReadAttributeOperation(handlerAddress, CommonAttributes.FORMATTER);
-        final String defaultHandlerFormat = Operations.readResultAsString(executeOperation(kernelServices, op));
-        op = Operations.createReadAttributeOperation(profileHandlerAddress, CommonAttributes.FORMATTER);
-        final String defaultProfileHandlerFormat = Operations.readResultAsString(executeOperation(kernelServices, op));
-        op = Operations.createWriteAttributeOperation(handlerAddress, CommonAttributes.FORMATTER, "%m%n");
+        ModelNode op = SubsystemOperations.createReadAttributeOperation(handlerAddress, CommonAttributes.FORMATTER);
+        final String defaultHandlerFormat = SubsystemOperations.readResultAsString(executeOperation(kernelServices, op));
+        op = SubsystemOperations.createReadAttributeOperation(profileHandlerAddress, CommonAttributes.FORMATTER);
+        final String defaultProfileHandlerFormat = SubsystemOperations.readResultAsString(executeOperation(kernelServices, op));
+        op = SubsystemOperations.createWriteAttributeOperation(handlerAddress, CommonAttributes.FORMATTER, "%m%n");
         executeOperation(kernelServices, op);
-        op = Operations.createWriteAttributeOperation(profileHandlerAddress, CommonAttributes.FORMATTER, "%m%n");
+        op = SubsystemOperations.createWriteAttributeOperation(profileHandlerAddress, CommonAttributes.FORMATTER, "%m%n");
         executeOperation(kernelServices, op);
 
         // Log with and without profile
@@ -293,9 +295,9 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
         doLog(PROFILE, LEVELS, msg);
 
         // Reset the formatters
-        op = Operations.createWriteAttributeOperation(handlerAddress, CommonAttributes.FORMATTER, defaultHandlerFormat);
+        op = SubsystemOperations.createWriteAttributeOperation(handlerAddress, CommonAttributes.FORMATTER, defaultHandlerFormat);
         executeOperation(kernelServices, op);
-        op = Operations.createWriteAttributeOperation(profileHandlerAddress, CommonAttributes.FORMATTER, defaultProfileHandlerFormat);
+        op = SubsystemOperations.createWriteAttributeOperation(profileHandlerAddress, CommonAttributes.FORMATTER, defaultProfileHandlerFormat);
         executeOperation(kernelServices, op);
 
         // Remove the handler
@@ -342,7 +344,7 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
         final ModelNode address = createRootLoggerAddress(loggingProfile).toModelNode();
         for (Level level : levels) {
             // change root log level
-            final ModelNode op = Operations.createWriteAttributeOperation(address, CommonAttributes.LEVEL, level.getName());
+            final ModelNode op = SubsystemOperations.createWriteAttributeOperation(address, CommonAttributes.LEVEL, level.getName());
             executeOperation(kernelServices, op);
             doLog(loggingProfile, levels, "RootLoggerTestCaseTST %s", level);
         }
@@ -388,16 +390,16 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
 
         // Read root logger
         final ModelNode rootLoggerAddress = createRootLoggerAddress(loggingProfile).toModelNode();
-        ModelNode op = Operations.createOperation(Operations.READ_RESOURCE, rootLoggerAddress);
+        ModelNode op = SubsystemOperations.createOperation(ClientConstants.READ_RESOURCE_OPERATION, rootLoggerAddress);
         final ModelNode rootLoggerResult = executeOperation(kernelServices, op);
         final List<String> handlers = modelNodeAsStringList(rootLoggerResult.get(CommonAttributes.HANDLERS.getName()));
 
         // Remove the root logger
-        op = Operations.createRemoveOperation(rootLoggerAddress, false);
+        op = SubsystemOperations.createRemoveOperation(rootLoggerAddress);
         executeOperation(kernelServices, op);
 
         // Set a new root logger
-        op = Operations.createOperation(ModelDescriptionConstants.ADD, rootLoggerAddress);
+        op = SubsystemOperations.createOperation(ModelDescriptionConstants.ADD, rootLoggerAddress);
         op.get(CommonAttributes.LEVEL.getName()).set(rootLoggerResult.get(CommonAttributes.LEVEL.getName()));
         for (String handler : handlers) op.get(CommonAttributes.HANDLERS.getName()).add(handler);
         op.get(CommonAttributes.HANDLERS.getName()).add(fileHandlerName);
@@ -405,12 +407,12 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
         doLog(loggingProfile, LEVELS, "Test123");
 
         // Remove the root logger
-        op = Operations.createRemoveOperation(rootLoggerAddress, false);
+        op = SubsystemOperations.createRemoveOperation(rootLoggerAddress);
         executeOperation(kernelServices, op);
 
 
         // Revert root logger
-        op = Operations.createOperation(ModelDescriptionConstants.ADD, rootLoggerAddress);
+        op = SubsystemOperations.createOperation(ModelDescriptionConstants.ADD, rootLoggerAddress);
         op.get(CommonAttributes.LEVEL.getName()).set(rootLoggerResult.get(CommonAttributes.LEVEL.getName()));
         op.get(CommonAttributes.HANDLERS.getName()).set(rootLoggerResult.get(CommonAttributes.HANDLERS.getName()));
         executeOperation(kernelServices, op);
@@ -434,21 +436,21 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
 
         // Ensure the handler is listed
         final ModelNode rootLoggerAddress = createRootLoggerAddress(loggingProfile).toModelNode();
-        ModelNode op = Operations.createReadAttributeOperation(rootLoggerAddress, CommonAttributes.HANDLERS);
+        ModelNode op = SubsystemOperations.createReadAttributeOperation(rootLoggerAddress, CommonAttributes.HANDLERS);
         ModelNode handlerResult = executeOperation(kernelServices, op);
-        List<String> handlerList = Operations.readResultAsList(handlerResult);
+        List<String> handlerList = SubsystemOperations.readResultAsList(handlerResult);
         assertTrue(String.format("Handler '%s' was not found. Result: %s", fileHandlerName, handlerResult), handlerList.contains(fileHandlerName));
         doLog(loggingProfile, LEVELS, "Test123");
 
         // Remove handler from logger
-        op = Operations.createOperation(RootLoggerResourceDefinition.ROOT_LOGGER_REMOVE_HANDLER_OPERATION_NAME, rootLoggerAddress);
+        op = SubsystemOperations.createOperation(RootLoggerResourceDefinition.ROOT_LOGGER_REMOVE_HANDLER_OPERATION_NAME, rootLoggerAddress);
         op.get(CommonAttributes.NAME.getName()).set(fileHandlerName);
         executeOperation(kernelServices, op);
 
         // Ensure the handler is not listed
-        op = Operations.createReadAttributeOperation(rootLoggerAddress, CommonAttributes.HANDLERS);
+        op = SubsystemOperations.createReadAttributeOperation(rootLoggerAddress, CommonAttributes.HANDLERS);
         handlerResult = executeOperation(kernelServices, op);
-        handlerList = Operations.readResultAsList(handlerResult);
+        handlerList = SubsystemOperations.readResultAsList(handlerResult);
         assertFalse(String.format("Handler '%s' was not removed. Result: %s", fileHandlerName, handlerResult), handlerList.contains(fileHandlerName));
 
         // Remove the handler
@@ -474,9 +476,9 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
 
         // Ensure the handler is listed
         final ModelNode rootLoggerAddress = createRootLoggerAddress(profileName).toModelNode();
-        ModelNode op = Operations.createReadAttributeOperation(rootLoggerAddress, CommonAttributes.HANDLERS);
+        ModelNode op = SubsystemOperations.createReadAttributeOperation(rootLoggerAddress, CommonAttributes.HANDLERS);
         ModelNode handlerResult = executeOperation(kernelServices, op);
-        List<String> handlerList = Operations.readResultAsList(handlerResult);
+        List<String> handlerList = SubsystemOperations.readResultAsList(handlerResult);
         assertTrue(String.format("Handler '%s' was not found. Result: %s", fileHandlerName, handlerResult), handlerList.contains(fileHandlerName));
 
         // Get the logger
@@ -489,7 +491,7 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
 
         // Disable the handler
         final ModelNode handlerAddress = createFileHandlerAddress(profileName, fileHandlerName).toModelNode();
-        executeOperation(kernelServices, Operations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, false));
+        executeOperation(kernelServices, SubsystemOperations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, false));
 
         // Log 3 more lines
         logger.info("Test message 4");
@@ -501,7 +503,7 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
         assertEquals("Handler was not disable.", 3, lines.size());
 
         // Re-enable the handler
-        executeOperation(kernelServices, Operations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, true));
+        executeOperation(kernelServices, SubsystemOperations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, true));
 
         // Log 3 more lines
         logger.info("Test message 7");
@@ -519,7 +521,7 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
                                 final Level level, final File file, final boolean assign) throws Exception {
 
         // add file handler
-        ModelNode op = Operations.createAddOperation(createFileHandlerAddress(loggingProfile, name).toModelNode());
+        ModelNode op = SubsystemOperations.createAddOperation(createFileHandlerAddress(loggingProfile, name).toModelNode());
         op.get(CommonAttributes.NAME.getName()).set(name);
         op.get(CommonAttributes.LEVEL.getName()).set(level.getName());
         op.get(CommonAttributes.FILE.getName()).get(PathResourceDefinition.PATH.getName()).set(file.getAbsolutePath());
@@ -528,7 +530,7 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
         if (!assign) return;
 
         // register it with root logger
-        op = Operations.createOperation(RootLoggerResourceDefinition.ROOT_LOGGER_ADD_HANDLER_OPERATION_NAME, createRootLoggerAddress(loggingProfile).toModelNode());
+        op = SubsystemOperations.createOperation(RootLoggerResourceDefinition.ROOT_LOGGER_ADD_HANDLER_OPERATION_NAME, createRootLoggerAddress(loggingProfile).toModelNode());
         op.get(CommonAttributes.NAME.getName()).set(name);
         executeOperation(kernelServices, op);
     }
@@ -538,13 +540,13 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
 
         if (unassign) {
             // Remove the handler from the logger
-            final ModelNode op = Operations.createOperation(RootLoggerResourceDefinition.ROOT_LOGGER_REMOVE_HANDLER_OPERATION_NAME, createRootLoggerAddress(loggingProfile).toModelNode());
+            final ModelNode op = SubsystemOperations.createOperation(RootLoggerResourceDefinition.ROOT_LOGGER_REMOVE_HANDLER_OPERATION_NAME, createRootLoggerAddress(loggingProfile).toModelNode());
             op.get(CommonAttributes.NAME.getName()).set(name);
             executeOperation(kernelServices, op);
         }
 
         // Remove the handler
-        final ModelNode op = Operations.createRemoveOperation(createFileHandlerAddress(loggingProfile, name).toModelNode(), false);
+        final ModelNode op = SubsystemOperations.createRemoveOperation(createFileHandlerAddress(loggingProfile, name).toModelNode());
         executeOperation(kernelServices, op);
     }
 
@@ -554,14 +556,14 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
 
     private ModelNode executeOperation(final KernelServices kernelServices, final ModelNode op, final boolean validateResult) {
         final ModelNode result = kernelServices.executeOperation(op);
-        if (validateResult) assertTrue(Operations.getFailureDescription(result), Operations.successful(result));
+        if (validateResult) assertTrue(SubsystemOperations.getFailureDescriptionAsString(result), SubsystemOperations.isSuccessfulOutcome(result));
         return result;
     }
 
     private static ModelNode executeTransformOperation(final KernelServices kernelServices, final ModelVersion modelVersion, final ModelNode op) throws OperationFailedException {
         TransformedOperation transformedOp = kernelServices.transformOperation(modelVersion, op);
         ModelNode result = kernelServices.executeOperation(modelVersion, transformedOp);
-        Assert.assertTrue(result.asString(), Operations.successful(result));
+        Assert.assertTrue(result.asString(), SubsystemOperations.isSuccessfulOutcome(result));
         return result;
     }
 

@@ -33,6 +33,7 @@ import java.util.Set;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.logging.logmanager.ConfigurationPersistence;
@@ -40,6 +41,7 @@ import org.jboss.as.logging.resolvers.SizeResolver;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.subsystem.test.SubsystemOperations;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.logmanager.LogContext;
@@ -396,7 +398,7 @@ public abstract class AbstractLoggingSubsystemTest extends AbstractSubsystemBase
                 }
             }
         }
-        return Operations.UNDEFINED;
+        return SubsystemOperations.UNDEFINED;
     }
 
     protected List<String> getHandlerNames(final ModelNode currentModel) {
@@ -419,18 +421,18 @@ public abstract class AbstractLoggingSubsystemTest extends AbstractSubsystemBase
     }
 
     static ModelNode getSubsystemModel(final KernelServices kernelServices) throws OperationFailedException {
-        final ModelNode op = Operations.createReadResourceOperation(SUBSYSTEM_ADDRESS.toModelNode(), true);
+        final ModelNode op = SubsystemOperations.createReadResourceOperation(SUBSYSTEM_ADDRESS.toModelNode(), true);
         final ModelNode result = kernelServices.executeOperation(op);
-        Assert.assertTrue(Operations.getFailureDescription(result), Operations.successful(result));
-        return Operations.readResult(result);
+        Assert.assertTrue(SubsystemOperations.getFailureDescriptionAsString(result), SubsystemOperations.isSuccessfulOutcome(result));
+        return SubsystemOperations.readResult(result);
     }
 
     static String resolveRelativePath(final KernelServices kernelServices, final String relativeTo) throws OperationFailedException {
-        final PathAddress address = PathAddress.pathAddress(PathElement.pathElement(Operations.PATH, relativeTo));
-        final ModelNode op = Operations.createReadAttributeOperation(address.toModelNode(), Operations.PATH);
+        final PathAddress address = PathAddress.pathAddress(PathElement.pathElement(ClientConstants.PATH, relativeTo));
+        final ModelNode op = SubsystemOperations.createReadAttributeOperation(address.toModelNode(), ClientConstants.PATH);
         final ModelNode result = kernelServices.executeOperation(op);
-        if (Operations.successful(result)) {
-            return Operations.readResultAsString(result);
+        if (SubsystemOperations.isSuccessfulOutcome(result)) {
+            return SubsystemOperations.readResultAsString(result);
         }
         return null;
     }
