@@ -40,7 +40,7 @@ import org.jboss.dmr.ModelType;
  */
 public class StorePropertyResource extends SimpleResourceDefinition {
 
-    private static final PathElement STORE_PROPERTY_PATH = PathElement.pathElement(ModelKeys.PROPERTY);
+    public static final PathElement STORE_PROPERTY_PATH = PathElement.pathElement(ModelKeys.PROPERTY);
 
     // attributes
     static final SimpleAttributeDefinition VALUE =

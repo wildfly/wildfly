@@ -28,7 +28,7 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
-import org.junit.Ignore;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -48,7 +48,6 @@ public class InfinispanSubsystemTransformerTestCase extends AbstractSubsystemBas
         return readResource("infinispan-transformer_1_4.xml");
     }
 
-    @Ignore
     @Test
 //    @BMRule(name="Debugging support",
 //            targetClass="^org.jboss.as.subsystem.test.SubsystemTestDelegate",
@@ -65,6 +64,7 @@ public class InfinispanSubsystemTransformerTestCase extends AbstractSubsystemBas
             .addMavenResourceURL("org.jboss.as:jboss-as-clustering-infinispan:7.1.2.Final");
 
         KernelServices mainServices = builder.build();
+        Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot()); ;
 
         checkSubsystemModelTransformation(mainServices, version);
     }
