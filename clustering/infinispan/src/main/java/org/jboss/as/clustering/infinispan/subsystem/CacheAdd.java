@@ -512,10 +512,15 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
             final Properties properties = new TypedProperties();
             if (store.hasDefined(ModelKeys.PROPERTY)) {
                 for (Property property : store.get(ModelKeys.PROPERTY).asPropertyList()) {
+                    // format of properties
+                    // "property" => {
+                    //   "property-name" => {"value => "property-value"}
+                    // }
                     String propertyName = property.getName();
-                    Property complexValue = property.getValue().asProperty();
-                    String propertyValue = complexValue.getValue().asString();
-                    properties.setProperty(propertyName, propertyValue);
+                    // get the value from ModelNode {"value" => "property-value"}
+                    ModelNode propertyValue = null ;
+                    propertyValue = StorePropertyResource.VALUE.resolveModelAttribute(context,property.getValue());
+                    properties.setProperty(propertyName, propertyValue.asString());
                 }
             }
             storeBuilder.withProperties(properties);

@@ -41,6 +41,7 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.controller.transform.AbstractOperationTransformer;
+import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.dmr.ModelNode;
@@ -59,7 +60,7 @@ public class InfinispanExtension implements Extension {
     public static final String RESOURCE_NAME = InfinispanExtension.class.getPackage().getName() + "." +"LocalDescriptions";
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 4;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 5;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
@@ -95,13 +96,21 @@ public class InfinispanExtension implements Extension {
         subsystem.registerXMLElementWriter(new InfinispanSubsystemXMLWriter());
 
         // Register the model transformers
-        TransformersSubRegistration reg = subsystem.registerModelTransformers(ModelVersion.create(1, 3), new InfinispanSubsystemTransformer_1_3());
-        TransformersSubRegistration containerReg = reg.registerSubResource(CacheContainerResource.CONTAINER_PATH);
-        InfinispanOperationTransformer_1_3 ot = new InfinispanOperationTransformer_1_3();
-        containerReg.registerSubResource(LocalCacheResource.LOCAL_CACHE_PATH).registerOperationTransformer(ADD, ot);
-        containerReg.registerSubResource(InvalidationCacheResource.INVALIDATION_CACHE_PATH).registerOperationTransformer(ADD, ot);
-        containerReg.registerSubResource(ReplicatedCacheResource.REPLICATED_CACHE_PATH).registerOperationTransformer(ADD, ot);
-        containerReg.registerSubResource(DistributedCacheResource.DISTRIBUTED_CACHE_PATH).registerOperationTransformer(ADD, ot);
+        registerTransformers(subsystem);
+    }
+
+    /**
+     * {@inheritDoc}
+     * @see org.jboss.as.controller.Extension#initializeParsers(org.jboss.as.controller.parsing.ExtensionParsingContext)
+     */
+    @Override
+    public void initializeParsers(ExtensionParsingContext context) {
+        for (Namespace namespace: Namespace.values()) {
+            XMLElementReader<List<ModelNode>> reader = namespace.getXMLReader();
+            if (reader != null) {
+                context.setSubsystemXmlMapping(SUBSYSTEM_NAME, namespace.getUri(), reader);
+            }
+        }
     }
 
     private static class InfinispanOperationTransformer_1_3 extends AbstractOperationTransformer {
@@ -118,17 +127,22 @@ public class InfinispanExtension implements Extension {
     }
 
     /**
-     * {@inheritDoc}
-     * @see org.jboss.as.controller.Extension#initializeParsers(org.jboss.as.controller.parsing.ExtensionParsingContext)
+     * Register the transformers for older model versions.
+     *
+     * @param subsystem the subsystems registration
      */
-    @Override
-    public void initializeParsers(ExtensionParsingContext context) {
-        for (Namespace namespace: Namespace.values()) {
-            XMLElementReader<List<ModelNode>> reader = namespace.getXMLReader();
-            if (reader != null) {
-                context.setSubsystemXmlMapping(SUBSYSTEM_NAME, namespace.getUri(), reader);
-            }
-        }
+    private static void registerTransformers(final SubsystemRegistration subsystem) {
+
+        final InfinispanOperationTransformer_1_3 ot = new InfinispanOperationTransformer_1_3();
+        final RejectExpressionValuesTransformer ret = new RejectExpressionValuesTransformer(StorePropertyResource.VALUE);
+
+        // Register the model transformers
+        TransformersSubRegistration registration = subsystem.registerModelTransformers(ModelVersion.create(1, 3), new InfinispanSubsystemTransformer_1_3());
+        TransformersSubRegistration containerRegistration = registration.registerSubResource(CacheContainerResource.CONTAINER_PATH);
+        containerRegistration.registerSubResource(LocalCacheResource.LOCAL_CACHE_PATH).registerOperationTransformer(ADD, ot);
+        containerRegistration.registerSubResource(InvalidationCacheResource.INVALIDATION_CACHE_PATH).registerOperationTransformer(ADD, ot);
+        containerRegistration.registerSubResource(ReplicatedCacheResource.REPLICATED_CACHE_PATH).registerOperationTransformer(ADD, ot);
+        containerRegistration.registerSubResource(DistributedCacheResource.DISTRIBUTED_CACHE_PATH).registerOperationTransformer(ADD, ot);
     }
 
 
