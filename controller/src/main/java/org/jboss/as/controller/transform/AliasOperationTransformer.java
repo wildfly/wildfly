@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.transform;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -52,11 +53,16 @@ public class AliasOperationTransformer implements OperationTransformer {
     }
 
     @Override
-    public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode original) {
+    public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode original) throws OperationFailedException{
         final ModelNode operation = original.clone();
         final PathAddress transformedAddress = transformer.transformAddress(address);
         operation.get(ModelDescriptionConstants.OP_ADDR).set(transformedAddress.toModelNode());
-        return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
+
+        // Hand-off to a local operation transformer at the right address
+        final String operationName = operation.get(ModelDescriptionConstants.OP).asString();
+        final OperationTransformer aliasTransformer = context.getTarget().resolveTransformer(transformedAddress, operationName);
+        return aliasTransformer.transformOperation(context, transformedAddress, operation);
+        // return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
     }
 
     /**
