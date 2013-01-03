@@ -753,7 +753,7 @@ public final class InfinispanSubsystemXMLReader_1_4 implements XMLElementReader<
                     break;
                 }
                 default: {
-                    this.parseStoreProperty(reader, store);
+                    this.parseStoreProperty(reader, store, additionalConfigurationOperations);
                 }
             }
         }
@@ -819,7 +819,7 @@ public final class InfinispanSubsystemXMLReader_1_4 implements XMLElementReader<
                     break;
                 }
                 default: {
-                    this.parseStoreProperty(reader, store);
+                    this.parseStoreProperty(reader, store, additionalConfigurationOperations);
                 }
             }
         }
@@ -864,7 +864,7 @@ public final class InfinispanSubsystemXMLReader_1_4 implements XMLElementReader<
                     break;
                 }
                 default: {
-                    this.parseStoreProperty(reader, store);
+                    this.parseStoreProperty(reader, store, additionalConfigurationOperations);
                 }
             }
         }
@@ -913,7 +913,7 @@ public final class InfinispanSubsystemXMLReader_1_4 implements XMLElementReader<
                     break;
                 }
                 case PROPERTY: {
-                    parseStoreProperty(reader, store);
+                    parseStoreProperty(reader, store, additionalConfigurationOperations);
                     break;
                 }
                 default:
@@ -1031,7 +1031,7 @@ public final class InfinispanSubsystemXMLReader_1_4 implements XMLElementReader<
                     break;
                 }
                 case PROPERTY: {
-                    parseStoreProperty(reader, store);
+                    parseStoreProperty(reader, store, operations);
                     break;
                 }
                 default:
@@ -1073,15 +1073,16 @@ public final class InfinispanSubsystemXMLReader_1_4 implements XMLElementReader<
         operations.add(writeBehind);
     }
 
-    private void parseStoreProperty(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
+    private void parseStoreProperty(XMLExtendedStreamReader reader, ModelNode node, final List<ModelNode> operations) throws XMLStreamException {
+
         int attributes = reader.getAttributeCount();
-        String property = null;
+        String propertyName = null;
         for (int i = 0; i < attributes; i++) {
             String value = reader.getAttributeValue(i);
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case NAME: {
-                    property = value;
+                    propertyName = value;
                     break;
                 }
                 default: {
@@ -1089,11 +1090,18 @@ public final class InfinispanSubsystemXMLReader_1_4 implements XMLElementReader<
                 }
             }
         }
-        if (property == null) {
+        if (propertyName == null) {
             throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
         }
-        String value = reader.getElementText();
-        node.get(ModelKeys.PROPERTIES).add(property, value);
+        String propertyValue = reader.getElementText();
+
+        PathAddress propertyAddress = PathAddress.pathAddress(node.get(OP_ADDR)).append(ModelKeys.PROPERTY, propertyName);
+        ModelNode property = Util.createAddOperation(propertyAddress);
+
+        // represent the value as a ModelNode to cater for expressions
+        StorePropertyResource.VALUE.parseAndSetParameter(propertyValue, property, reader);
+
+        operations.add(property);
     }
 
     private void parseIndexing(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {

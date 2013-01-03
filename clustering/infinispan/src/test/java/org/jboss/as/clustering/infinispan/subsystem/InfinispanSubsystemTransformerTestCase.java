@@ -28,12 +28,14 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
  * @author <a href="tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
 
+//@RunWith(BMUnitRunner.class)
 public class InfinispanSubsystemTransformerTestCase extends AbstractSubsystemBaseTest {
 
 
@@ -46,7 +48,15 @@ public class InfinispanSubsystemTransformerTestCase extends AbstractSubsystemBas
         return readResource("infinispan-transformer_1_4.xml");
     }
 
+    @Ignore
     @Test
+//    @BMRule(name="Debugging support",
+//            targetClass="^org.jboss.as.subsystem.test.SubsystemTestDelegate",
+//            targetMethod="checkSubsystemModelTransformation",
+//            targetLocation="AT INVOKE ModelTestUtils.compare",
+//            binding="legacy:ModelNode = $1; transformed:ModelNode = $2",
+//            condition="TRUE",
+//            action="traceln(\"legacy = \" + legacy.toString() + \" transformed = \" + transformed.toString()")
     public void testTransformer_1_3_0() throws Exception {
         ModelVersion version = ModelVersion.create(1, 3);
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)

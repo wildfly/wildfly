@@ -22,13 +22,13 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.subsystem.TransportResource.TRANSPORT_ATTRIBUTES;
 import static org.jboss.as.clustering.infinispan.subsystem.EvictionResource.EVICTION_ATTRIBUTES;
 import static org.jboss.as.clustering.infinispan.subsystem.ExpirationResource.EXPIRATION_ATTRIBUTES;
 import static org.jboss.as.clustering.infinispan.subsystem.LockingResource.LOCKING_ATTRIBUTES;
 import static org.jboss.as.clustering.infinispan.subsystem.StateTransferResource.STATE_TRANSFER_ATTRIBUTES;
 import static org.jboss.as.clustering.infinispan.subsystem.StoreWriteBehindResource.WRITE_BEHIND_ATTRIBUTES;
 import static org.jboss.as.clustering.infinispan.subsystem.TransactionResource.TRANSACTION_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.TransportResource.TRANSPORT_ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.List;
@@ -42,7 +42,6 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -147,7 +146,7 @@ public class CacheConfigOperationHandlers {
                         throw InfinispanMessages.MESSAGES.propertyValueNotDefined(property.getName());
                     }
                     // set the value of the property
-                    param.getModel().get(ModelDescriptionConstants.VALUE).set(value);
+                    StorePropertyResource.VALUE.validateAndSet(value, param.getModel());
                 }
             }
         }
