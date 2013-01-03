@@ -22,15 +22,10 @@
 package org.jboss.as.threads;
 
 
-import java.util.concurrent.TimeUnit;
-
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ObjectTypeAttributeDefinition;
-import org.jboss.as.controller.PropagatingCorrector;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
-import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
@@ -54,19 +49,6 @@ public interface PoolAttributeDefinitions {
             .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, false, true)).setAllowExpression(true).build();
 
     KeepAliveTimeAttributeDefinition KEEPALIVE_TIME = new KeepAliveTimeAttributeDefinition();
-//    SimpleAttributeDefinition KEEPALIVE_TIME_TIME = new SimpleAttributeDefinitionBuilder(CommonAttributes.TIME, ModelType.LONG, false)
-//            .setAllowExpression(true)
-//            .build();
-//
-//    SimpleAttributeDefinition KEEPALIVE_TIME_UNIT = new SimpleAttributeDefinitionBuilder(CommonAttributes.UNIT, ModelType.STRING, false)
-//            .setAllowExpression(true)
-//            .setValidator(new EnumValidator<TimeUnit>(TimeUnit.class, false, true))
-//            .build();
-//
-//    ObjectTypeAttributeDefinition KEEPALIVE_TIME = ObjectTypeAttributeDefinition.Builder.of(CommonAttributes.KEEPALIVE_TIME, KEEPALIVE_TIME_TIME, KEEPALIVE_TIME_UNIT)
-//            .setAllowNull(true)
-//            .setCorrector(PropagatingCorrector.INSTANCE)
-//            .build();
 
     SimpleAttributeDefinition CORE_THREADS = new SimpleAttributeDefinitionBuilder(CommonAttributes.CORE_THREADS, ModelType.INT, true)
             .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, true, true)).setAllowExpression(true).build();
