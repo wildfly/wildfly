@@ -50,13 +50,14 @@ public class VaultToolTestCase {
     String[] outputLines = ouput.split(System.getProperty("line.separator"));
 
     String vaultSharedKey = getStoredAttributeSharedKey(outputLines);
-    Assert.assertNotNull("VaultTool returned a line starting with VAULT::", vaultSharedKey);
+    Assert.assertNotNull("VaultTool did not return a line starting with VAULT::", vaultSharedKey);
 
     MockRuntimeVaultReader rvr = new MockRuntimeVaultReader();
     Map<String, Object> options = generateVaultOptionsMap();
     rvr.createVault("", options);
     String retrievedValueFromVault = rvr.retrieveFromVault(vaultSharedKey);
-    Assert.assertEquals("The value retrieved from vault is the same as the one initially stored", VALUE_TO_STORE, retrievedValueFromVault);
+    Assert.assertEquals("The value retrieved from vault is not the same as the one initially stored", VALUE_TO_STORE,
+        retrievedValueFromVault);
   }
 
   private Map<String, Object> generateVaultOptionsMap() {
@@ -84,6 +85,7 @@ public class VaultToolTestCase {
   private String[] generateArgs() {
     List<String> args = new ArrayList<String>();
     addAll(args, "-k", "/tmp/vault.keystore");
+    // addAll(args, "-v", KEYSTORE_ALIAS_VALUE);
     addAll(args, "-p", KEYSTORE_PASSWORD);
     addAll(args, "-e", ENC_FILE_DIR_VALUE);
     addAll(args, "-s", SALT_VALUE);
