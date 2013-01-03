@@ -90,6 +90,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
 
     static final SimpleAttributeDefinition ENABLE_STATISTICS =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.ENABLE_STATISTICS, ModelType.BOOLEAN, true)
+                    .setAllowExpression(true)
                     .build();
 
     static final SimpleAttributeDefinition DEFAULT_DISTINCT_NAME =

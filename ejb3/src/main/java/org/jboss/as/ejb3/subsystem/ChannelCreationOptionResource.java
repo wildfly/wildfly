@@ -61,7 +61,9 @@ class ChannelCreationOptionResource extends SimpleResourceDefinition {
      * Attribute definition of the channel creation option "value"
      */
     static final SimpleAttributeDefinition CHANNEL_CREATION_OPTION_VALUE = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.VALUE, ModelType.STRING, true)
-            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .build();
 
     /**
      * Attribute definition of the channel creation option "type"
