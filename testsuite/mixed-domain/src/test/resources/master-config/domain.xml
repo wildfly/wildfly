@@ -195,6 +195,7 @@
             <subsystem xmlns="urn:jboss:domain:naming:1.2">
                 <remote-naming/>
             </subsystem>
+            <!-- OSGi does not work on the older slaves with deployments https://issues.jboss.org/browse/AS7-6202
             <subsystem xmlns="urn:jboss:domain:osgi:1.2" activation="lazy">
                 <properties>
                     <property name="org.osgi.framework.startlevel.beginning">1</property>
@@ -215,6 +216,7 @@
                     <capability name="org.jboss.as.osgi.http" startlevel="1"/>
                 </capabilities>
             </subsystem>
+            -->
             <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
             <subsystem xmlns="urn:jboss:domain:remoting:1.1">
                 <connector name="remoting-connector" socket-binding="remoting" security-realm="ApplicationRealm"/>
@@ -520,6 +522,7 @@
             <subsystem xmlns="urn:jboss:domain:naming:1.2">
                 <remote-naming/>
             </subsystem>
+            <!-- OSGi does not work on the older slaves with deployments https://issues.jboss.org/browse/AS7-6202
             <subsystem xmlns="urn:jboss:domain:osgi:1.2" activation="lazy">
                 <properties>
                     <property name="org.osgi.framework.startlevel.beginning">1</property>
@@ -540,6 +543,7 @@
                     <capability name="org.jboss.as.osgi.http" startlevel="1"/>
                 </capabilities>
             </subsystem>
+            -->
             <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
             <subsystem xmlns="urn:jboss:domain:remoting:1.1">
                 <connector name="remoting-connector" socket-binding="remoting" security-realm="ApplicationRealm"/>
@@ -843,6 +847,7 @@
             <subsystem xmlns="urn:jboss:domain:naming:1.2">
                 <remote-naming/>
             </subsystem>
+            <!-- OSGi does not work on the older slaves with deployments https://issues.jboss.org/browse/AS7-6202
             <subsystem xmlns="urn:jboss:domain:osgi:1.2" activation="lazy">
                 <properties>
                     <property name="org.osgi.framework.startlevel.beginning">1</property>
@@ -863,6 +868,7 @@
                     <capability name="org.jboss.as.osgi.http" startlevel="1"/>
                 </capabilities>
             </subsystem>
+            -->
             <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
             <subsystem xmlns="urn:jboss:domain:remoting:1.1">
                 <connector name="remoting-connector" socket-binding="remoting" security-realm="ApplicationRealm"/>
@@ -1273,6 +1279,7 @@
             <subsystem xmlns="urn:jboss:domain:naming:1.2">
                 <remote-naming/>
             </subsystem>
+            <!-- OSGi does not work on the older slaves with deployments https://issues.jboss.org/browse/AS7-6202
             <subsystem xmlns="urn:jboss:domain:osgi:1.2" activation="lazy">
                 <properties>
                     <property name="org.osgi.framework.startlevel.beginning">1</property>
@@ -1293,6 +1300,7 @@
                     <capability name="org.jboss.as.osgi.http" startlevel="1"/>
                 </capabilities>
             </subsystem>
+            -->
             <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
             <subsystem xmlns="urn:jboss:domain:remoting:1.1">
                 <connector name="remoting-connector" socket-binding="remoting" security-realm="ApplicationRealm"/>
