@@ -220,7 +220,6 @@ public final class VaultSession {
       throw new Exception("addSecuredAttribute method has to be called after successful startVaultSession() call.");
     }
     vault.store(vaultBlock, attributeName, attributeValue, handshakeKey);
-    addSecuredAttributeWithDisplay(vaultBlock, attributeName, attributeValue);
     return securedAttributeConfigurationString(vaultBlock, attributeName, null);
   }
 
