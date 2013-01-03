@@ -18,6 +18,8 @@
  */
 package org.jboss.as.controller.operations.validation;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.EnumSet;
 
 import org.jboss.as.controller.OperationFailedException;
@@ -152,26 +154,33 @@ public class ModelTypeValidator implements ParameterValidator {
 
     private boolean matches(ModelNode value, ModelType validType) {
         try {
+            if (validType == value.getType())
+                return true;
             switch (validType) {
             case BIG_DECIMAL: {
-                value.asBigDecimal();
-                return true;
+                BigDecimal dataBigDecimal = value.asBigDecimal();
+                BigDecimal data = new BigDecimal(checkNumericType(value));
+                return dataBigDecimal.compareTo(data) == 0;
             }
             case BIG_INTEGER: {
-                value.asBigInteger();
-                return true;
+                BigInteger dataBigInteger = value.asBigInteger();
+                BigInteger data = new BigInteger(checkNumericType(value));
+                return dataBigInteger.compareTo(data) == 0;
             }
             case DOUBLE: {
-                value.asDouble();
-                return true;
+                Double dataDouble = value.asDouble();
+                Double data = new Double(checkNumericType(value));
+                return dataDouble.compareTo(data) == 0;
             }
             case INT: {
-                value.asInt();
-                return true;
+                Integer dataInt = value.asInt();
+                Integer data = new Integer(checkNumericType(value));
+                return dataInt.compareTo(data) == 0;
             }
             case LONG: {
-                value.asLong();
-                return true;
+                Long dataLong = value.asLong();
+                Long data = new Long(checkNumericType(value));
+                return dataLong.compareTo(data) == 0;
             }
             case PROPERTY: {
                 value.asProperty();
@@ -231,7 +240,7 @@ public class ModelTypeValidator implements ParameterValidator {
             case TYPE:
             case UNDEFINED:
             default:
-                return validType == value.getType();
+                return false;
             }
         }
         catch (RuntimeException e) {
@@ -239,4 +248,22 @@ public class ModelTypeValidator implements ParameterValidator {
         }
     }
 
+    private String checkNumericType(ModelNode value) {
+        // TODO Auto-generated method stub
+        ModelType type = value.getType();
+        switch (type){
+            case BIG_DECIMAL:
+                return value.asBigDecimal().toString();
+            case BIG_INTEGER:
+                return value.asBigInteger().toString();
+            case DOUBLE:
+                return String.valueOf((int)value.asDouble());
+            case INT:
+                return String.valueOf(value.asInt());
+            case LONG:
+                return String.valueOf(value.asLong());
+            default :
+                return value.asString();
+        }
+    }
 }
