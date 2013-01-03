@@ -23,7 +23,6 @@ package org.jboss.as.security;
 
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
@@ -35,26 +34,29 @@ public class LoginModuleStackResourceDefinition extends SimpleResourceDefinition
 
     public static final LoginModuleStackResourceDefinition INSTANCE = new LoginModuleStackResourceDefinition();
 
-    public static final ListAttributeDefinition LOGIN_MODULES = new LoginModulesAttributeDefinition(Constants.LOGIN_MODULES, Constants.LOGIN_MODULE);
+    public static final ListAttributeDefinition LOGIN_MODULES = new LegacySupport.LoginModulesAttributeDefinition(Constants.LOGIN_MODULES, Constants.LOGIN_MODULE);
 
     private LoginModuleStackResourceDefinition() {
-        super(PathElement.pathElement(Constants.LOGIN_MODULE_STACK),
+        super(SecurityExtension.PATH_LOGIN_MODULE_STACK,
               SecurityExtension.getResourceDescriptionResolver(Constants.LOGIN_MODULE_STACK),
               LoginModuleStackResourceDefinitionAdd.INSTANCE, new SecurityDomainReloadRemoveHandler());
     }
 
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadWriteAttribute(LOGIN_MODULES, null, new SecurityDomainReloadWriteHandler(LOGIN_MODULES));
+        resourceRegistration.registerReadWriteAttribute(LOGIN_MODULES, new LegacySupport.LegacyModulesAttributeReader(Constants.LOGIN_MODULE), new LegacySupport.LegacyModulesAttributeWriter(Constants.LOGIN_MODULE));
     }
+
+    @Override
+        public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+            super.registerChildren(resourceRegistration);
+            resourceRegistration.registerSubModel(new LoginModuleResourceDefinition(Constants.LOGIN_MODULE));
+        }
 
     static class LoginModuleStackResourceDefinitionAdd extends SecurityDomainReloadAddHandler {
         static final LoginModuleStackResourceDefinitionAdd INSTANCE = new LoginModuleStackResourceDefinitionAdd();
 
         @Override
         protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-            LOGIN_MODULES.validateAndSet(operation, model);
         }
-
     }
-
 }

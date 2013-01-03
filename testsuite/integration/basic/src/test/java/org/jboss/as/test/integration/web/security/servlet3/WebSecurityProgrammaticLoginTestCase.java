@@ -21,7 +21,21 @@
  */
 package org.jboss.as.test.integration.web.security.servlet3;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.security.Constants.CODE;
+import static org.jboss.as.security.Constants.FLAG;
+import static org.jboss.as.security.Constants.LOGIN_MODULE;
+import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
+import static org.junit.Assert.assertEquals;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.http.HttpEntity;
@@ -35,6 +49,8 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.security.Constants;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
@@ -45,18 +61,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.security.Constants.AUTHENTICATION;
-import static org.jboss.as.security.Constants.CODE;
-import static org.jboss.as.security.Constants.FLAG;
-import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
-import static org.junit.Assert.assertEquals;
-
 /**
  * Unit Test the programmatic login feature of Servlet 3
  *
@@ -64,7 +68,7 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Arquillian.class)
 @ServerSetup(WebSecurityProgrammaticLoginTestCase.SecurityDomainSetup.class)
-@Category( CommonCriteria.class)
+@Category(CommonCriteria.class)
 public class WebSecurityProgrammaticLoginTestCase {
 
     @ArquillianResource
@@ -82,7 +86,7 @@ public class WebSecurityProgrammaticLoginTestCase {
         war.addClass(SecuredServlet.class);
         war.addClass(AbstractSecurityDomainSetup.class);
         war.addPackage(CommonCriteria.class.getPackage());
-        
+
         return war;
     }
 
@@ -115,7 +119,7 @@ public class WebSecurityProgrammaticLoginTestCase {
         DefaultHttpClient httpclient = new DefaultHttpClient();
         try {
             // test hitting programmatic login servlet
-            HttpGet httpget = new HttpGet(managementClient.getWebUri() + "/" + getContextPath()  + "/login/?username=" + user + "&password=" + pass);
+            HttpGet httpget = new HttpGet(managementClient.getWebUri() + "/" + getContextPath() + "/login/?username=" + user + "&password=" + pass);
 
             System.out.println("executing request" + httpget.getRequestLine());
             HttpResponse response = httpclient.execute(httpget);
@@ -150,28 +154,29 @@ public class WebSecurityProgrammaticLoginTestCase {
 
         @Override
         public void setup(final ManagementClient managementClient, final String containerId) {
-            final List<ModelNode> updates = new ArrayList<ModelNode>();
-            ModelNode op = new ModelNode();
+            final ModelNode compositeOp = new ModelNode();
+                    compositeOp.get(OP).set(COMPOSITE);
+                    compositeOp.get(OP_ADDR).setEmptyList();
+
+                    ModelNode steps = compositeOp.get(STEPS);
             String securityDomain = "web-programmatic-login";
 
-            op.get(OP).set(ADD);
-            op.get(OP_ADDR).add(SUBSYSTEM, "security");
-            op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
-            updates.add(op);
+            PathAddress address = PathAddress.pathAddress()
+                    .append(SUBSYSTEM, "security")
+                    .append(SECURITY_DOMAIN, securityDomain);
 
-            op = new ModelNode();
-            op.get(OP).set(ADD);
-            op.get(OP_ADDR).add(SUBSYSTEM, "security");
-            op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
-            op.get(OP_ADDR).add(AUTHENTICATION, Constants.CLASSIC);
+            steps.add(Util.createAddOperation(address));
+            address = address.append(Constants.AUTHENTICATION, Constants.CLASSIC);
+            steps.add(Util.createAddOperation(address));
 
-            ModelNode loginModule = op.get(Constants.LOGIN_MODULES).add();
+            ModelNode loginModule = Util.createAddOperation(address.append(LOGIN_MODULE, "UsersRoles"));
+
+
             loginModule.get(CODE).set("UsersRoles");
             loginModule.get(FLAG).set("required");
-            op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-            updates.add(op);
-
-            applyUpdates(managementClient.getControllerClient(), updates);
+            loginModule.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+            steps.add(loginModule);
+            applyUpdates(managementClient.getControllerClient(), Arrays.asList(compositeOp));
         }
     }
 

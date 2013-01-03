@@ -1750,7 +1750,6 @@
                     <groupId>org.picketbox</groupId>
                     <artifactId>picketbox</artifactId>
                 </dependency>
-
                 <dependency>
                     <groupId>org.picketbox</groupId>
                     <artifactId>picketbox-commons</artifactId>

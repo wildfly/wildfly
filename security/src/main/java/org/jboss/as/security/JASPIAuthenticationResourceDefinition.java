@@ -21,9 +21,10 @@
  */
 package org.jboss.as.security;
 
+import static org.jboss.as.security.Constants.AUTH_MODULE;
+
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
@@ -35,16 +36,22 @@ public class JASPIAuthenticationResourceDefinition extends SimpleResourceDefinit
 
     public static final JASPIAuthenticationResourceDefinition INSTANCE = new JASPIAuthenticationResourceDefinition();
 
-    public static final ListAttributeDefinition AUTH_MODULES = new JASPIAuthenticationModulesAttributeDefinition();
+    public static final ListAttributeDefinition AUTH_MODULES = new LegacySupport.JASPIAuthenticationModulesAttributeDefinition();
 
     private JASPIAuthenticationResourceDefinition() {
-        super(PathElement.pathElement(Constants.AUTHENTICATION, Constants.JASPI),
+        super(SecurityExtension.PATH_JASPI_AUTH,
                 SecurityExtension.getResourceDescriptionResolver(Constants.AUTHENTICATION + "." + Constants.JASPI),
                 JASPIAuthenticationResourceDefinitionAdd.INSTANCE, new SecurityDomainReloadRemoveHandler());
     }
 
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadWriteAttribute(AUTH_MODULES, null, new SecurityDomainReloadWriteHandler(AUTH_MODULES));
+        resourceRegistration.registerReadWriteAttribute(AUTH_MODULES, new LegacySupport.LegacyModulesAttributeReader(Constants.AUTH_MODULE), new LegacySupport.LegacyModulesAttributeWriter(AUTH_MODULE));
+    }
+
+    @Override
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        super.registerChildren(resourceRegistration);
+        resourceRegistration.registerSubModel(new JASPIMappingModuleDefinition());
     }
 
     static class JASPIAuthenticationResourceDefinitionAdd extends SecurityDomainReloadAddHandler {
@@ -52,8 +59,6 @@ public class JASPIAuthenticationResourceDefinition extends SimpleResourceDefinit
 
         @Override
         protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-            AUTH_MODULES.validateAndSet(operation, model);
         }
-
     }
 }

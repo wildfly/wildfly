@@ -22,12 +22,19 @@
 package org.jboss.as.security.test;
 
 import java.io.IOException;
+import java.util.List;
 
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.security.SecurityExtension;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -41,31 +48,66 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
         super(SecurityExtension.SUBSYSTEM_NAME, new SecurityExtension());
     }
 
-    @Test
-    public void testParseAndMarshalModel() throws Exception {
-        //Parse the subsystem xml and install into the first controller
-        String subsystemXml = readResource("securitysubsystemv12.xml");
-
-        KernelServices servicesA = super.installInController(AdditionalInitialization.MANAGEMENT, subsystemXml);
-        //Get the model and the persisted xml from the first controller
-        ModelNode modelA = servicesA.readWholeModel();
-        String marshalled = servicesA.getPersistedSubsystemXml();
-        servicesA.shutdown();
-
-        System.out.println(marshalled);
-
-        //Install the persisted xml from the first controller into a second controller
-        KernelServices servicesB = super.installInController(AdditionalInitialization.MANAGEMENT, marshalled);
-        ModelNode modelB = servicesB.readWholeModel();
-
-        //Make sure the models from the two controllers are identical
-        super.compare(modelA, modelB);
-
-        assertRemoveSubsystemResources(servicesB);
+    @Override
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return new AdditionalInitialization(){
+            @Override
+            protected RunningMode getRunningMode() {
+                return RunningMode.NORMAL;
+            }
+        };
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
         return readResource("securitysubsystemv12.xml");
+    }
+
+    @Test
+    public void testOrder() throws Exception {
+        KernelServices service = createKernelServicesBuilder(createAdditionalInitialization())
+                .setSubsystemXmlResource("securitysubsystemv12.xml")
+                .build();
+        PathAddress address = PathAddress.pathAddress().append("subsystem", "security").append("security-domain", "ordering");
+        address = address.append("authentication", "classic");
+
+        ModelNode writeOp = Util.createOperation("write-attribute", address);
+        writeOp.get("name").set("login-modules");
+        for (int i = 1; i <= 5; i++) {
+            ModelNode module = writeOp.get("value").add();
+            module.get("code").set("module-" + i);
+            module.get("flag").set("optional");
+            module.get("module-options");
+
+        }
+        service.executeOperation(writeOp);
+        ModelNode readOp = Util.createOperation("read-attribute", address);
+        readOp.get("name").set("login-modules");
+        ModelNode result = service.executeForResult(readOp);
+        List<ModelNode> modules = result.asList();
+        Assert.assertEquals("There should be exactly 5 modules but there are not", 5, modules.size());
+        for (int i = 1; i <= 5; i++) {
+            ModelNode module = modules.get(i-1);
+            Assert.assertEquals(module.get("code").asString(), "module-" + i);
+        }
+    }
+
+    @Test
+    public void testTransformers() throws Exception {
+        ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
+        KernelServicesBuilder builder = createKernelServicesBuilder(null)
+                .setSubsystemXml(getSubsystemXml());
+
+        //which is why we need to include the jboss-as-controller artifact.
+        builder.createLegacyKernelServicesBuilder(null, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-security:7.1.2.Final")
+                .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.2.Final")
+                .addParentFirstClassPattern("org.jboss.as.controller.*");
+
+        KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        Assert.assertTrue(mainServices.getLegacyServices(modelVersion).isSuccessfulBoot());
+        checkSubsystemModelTransformation(mainServices,modelVersion);
+
     }
 }

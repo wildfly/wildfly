@@ -22,53 +22,49 @@
 
 package org.jboss.as.security;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.security.Constants.ACL;
-import static org.jboss.as.security.Constants.ACL_MODULES;
+import static org.jboss.as.security.Constants.ACL_MODULE;
 import static org.jboss.as.security.Constants.ADDITIONAL_PROPERTIES;
 import static org.jboss.as.security.Constants.ALGORITHM;
 import static org.jboss.as.security.Constants.AUDIT;
 import static org.jboss.as.security.Constants.AUTHORIZATION;
-import static org.jboss.as.security.Constants.AUTH_MODULES;
+import static org.jboss.as.security.Constants.AUTH_MODULE;
 import static org.jboss.as.security.Constants.CACHE_TYPE;
 import static org.jboss.as.security.Constants.CIPHER_SUITES;
 import static org.jboss.as.security.Constants.CLASSIC;
 import static org.jboss.as.security.Constants.CLIENT_ALIAS;
 import static org.jboss.as.security.Constants.CLIENT_AUTH;
-import static org.jboss.as.security.Constants.CODE;
 import static org.jboss.as.security.Constants.FLAG;
 import static org.jboss.as.security.Constants.IDENTITY_TRUST;
 import static org.jboss.as.security.Constants.JASPI;
 import static org.jboss.as.security.Constants.JSSE;
 import static org.jboss.as.security.Constants.KEYSTORE;
-import static org.jboss.as.security.Constants.LOGIN_MODULES;
+import static org.jboss.as.security.Constants.LOGIN_MODULE;
 import static org.jboss.as.security.Constants.LOGIN_MODULE_STACK;
 import static org.jboss.as.security.Constants.LOGIN_MODULE_STACK_REF;
 import static org.jboss.as.security.Constants.MAPPING;
-import static org.jboss.as.security.Constants.MAPPING_MODULES;
-import static org.jboss.as.security.Constants.MODULE;
-import static org.jboss.as.security.Constants.MODULE_OPTIONS;
+import static org.jboss.as.security.Constants.MAPPING_MODULE;
 import static org.jboss.as.security.Constants.PASSWORD;
-import static org.jboss.as.security.Constants.POLICY_MODULES;
+import static org.jboss.as.security.Constants.POLICY_MODULE;
 import static org.jboss.as.security.Constants.PROTOCOLS;
 import static org.jboss.as.security.Constants.PROVIDER;
 import static org.jboss.as.security.Constants.PROVIDER_ARGUMENT;
-import static org.jboss.as.security.Constants.PROVIDER_MODULES;
+import static org.jboss.as.security.Constants.PROVIDER_MODULE;
 import static org.jboss.as.security.Constants.SERVER_ALIAS;
 import static org.jboss.as.security.Constants.SERVICE_AUTH_TOKEN;
-import static org.jboss.as.security.Constants.TRUST_MODULES;
+import static org.jboss.as.security.Constants.TRUST_MODULE;
 import static org.jboss.as.security.Constants.TYPE;
 import static org.jboss.as.security.Constants.URL;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
-
 import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 import javax.security.auth.login.Configuration;
@@ -77,12 +73,12 @@ import javax.transaction.TransactionManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.JaasConfigurationService;
@@ -127,14 +123,7 @@ import org.jboss.security.plugins.TransactionManagerLocator;
  * @author Jason T. Greene
  */
 class SecurityDomainAdd extends AbstractAddStepHandler {
-
-    static final String OPERATION_NAME = ADD;
-
     private static final String CACHE_CONTAINER_NAME = "security";
-
-    static final ModelNode getRecreateOperation(ModelNode address, ModelNode securityDomain) {
-        return Util.getOperation(OPERATION_NAME, address, securityDomain);
-    }
 
     static final SecurityDomainAdd INSTANCE = new SecurityDomainAdd();
 
@@ -215,9 +204,9 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
 
         boolean create;
 
-        create  = processClassicAuth(context, securityDomain, model, applicationPolicy);
+        create = processClassicAuth(context, securityDomain, model, applicationPolicy);
         create |= processJASPIAuth(context, securityDomain, model, applicationPolicy);
-        create |= processAuthorization(context, securityDomain, model,applicationPolicy);
+        create |= processAuthorization(context, securityDomain, model, applicationPolicy);
         create |= processACL(context, securityDomain, model, applicationPolicy);
         create |= processAudit(context, securityDomain, model, applicationPolicy);
         create |= processIdentityTrust(context, securityDomain, model, applicationPolicy);
@@ -228,30 +217,29 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
 
     private boolean processMapping(OperationContext context, String securityDomain, ModelNode node, ApplicationPolicy applicationPolicy)
             throws OperationFailedException {
-        node = peek(node, MAPPING, CLASSIC);
-        if (node == null)
-            return false;
+        node = peek(node, MAPPING, CLASSIC, MAPPING_MODULE);
+        if (node == null) { return false; }
 
-        List<ModelNode> modules = node.get(MAPPING_MODULES).asList();
-
-        for (ModelNode module : modules) {
+        for (Property moduleProperty : node.asPropertyList()) {
+            ModelNode module = moduleProperty.getValue();
             MappingInfo mappingInfo = new MappingInfo(securityDomain);
             String codeName = extractCode(module, ModulesMap.MAPPING_MAP);
 
             String mappingType;
-            if (module.hasDefined(TYPE))
-                mappingType = module.get(TYPE).asString();
-            else
+            if (module.hasDefined(TYPE)) {
+                mappingType = MappingModuleDefinition.TYPE.resolveModelAttribute(context, module).asString();
+            } else {
                 mappingType = MappingType.ROLE.toString();
+            }
 
             Map<String, Object> options = extractOptions(context, module);
             MappingModuleEntry entry = new MappingModuleEntry(codeName, options, mappingType);
             mappingInfo.add(entry);
             applicationPolicy.setMappingInfo(mappingType, mappingInfo);
 
-            String moduleName = module.get(MODULE).asString();
-            if(module.hasDefined(MODULE) && moduleName != null &&  moduleName.length() > 0 ) {
-                mappingInfo.setJBossModuleName(moduleName);
+            ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, module);
+            if (moduleName.isDefined() && moduleName.asString().length() > 0) {
+                mappingInfo.setJBossModuleName(moduleName.asString());
             }
         }
 
@@ -259,24 +247,24 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
     }
 
     private boolean processIdentityTrust(OperationContext context, String securityDomain, ModelNode node, ApplicationPolicy applicationPolicy)
-            throws OperationFailedException{
-        node = peek(node, IDENTITY_TRUST, CLASSIC);
-        if (node == null)
-            return false;
+            throws OperationFailedException {
+        node = peek(node, IDENTITY_TRUST, CLASSIC, TRUST_MODULE);
+        if (node == null) { return false; }
 
         IdentityTrustInfo identityTrustInfo = new IdentityTrustInfo(securityDomain);
-        List<ModelNode> modules = node.get(TRUST_MODULES).asList();
-        for (ModelNode module : modules) {
-            String codeName = module.require(CODE).asString();
-            ControlFlag controlFlag = ControlFlag.valueOf(module.require(FLAG).asString());
+        for (Property moduleProperty : node.asPropertyList()) {
+            ModelNode module = moduleProperty.getValue();
+            String codeName = LoginModuleResourceDefinition.CODE.resolveModelAttribute(context, module).asString();
+            String flag = LoginModuleResourceDefinition.FLAG.resolveModelAttribute(context, module).asString();
+            ControlFlag controlFlag = ControlFlag.valueOf(flag);
             Map<String, Object> options = extractOptions(context, module);
             IdentityTrustModuleEntry entry = new IdentityTrustModuleEntry(codeName, options);
             entry.setControlFlag(controlFlag);
             identityTrustInfo.add(entry);
 
-            String moduleName = module.get(MODULE).asString();
-            if(module.hasDefined(MODULE) && moduleName != null &&  moduleName.length() > 0 ) {
-                identityTrustInfo.setJBossModuleName(moduleName);
+            ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, module);
+            if (moduleName.isDefined() && moduleName.asString().length() > 0) {
+                identityTrustInfo.setJBossModuleName(moduleName.asString());
             }
         }
         applicationPolicy.setIdentityTrustInfo(identityTrustInfo);
@@ -285,21 +273,20 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
 
     private boolean processAudit(OperationContext context, String securityDomain, ModelNode node, ApplicationPolicy applicationPolicy)
             throws OperationFailedException {
-        node = peek(node, AUDIT, CLASSIC);
-        if (node == null)
-            return false;
+        node = peek(node, AUDIT, CLASSIC, PROVIDER_MODULE);
+        if (node == null) { return false; }
 
         AuditInfo auditInfo = new AuditInfo(securityDomain);
-        List<ModelNode> modules = node.get(PROVIDER_MODULES).asList();
-        for (ModelNode module : modules) {
-            String codeName = module.require(CODE).asString();
+        for (Property moduleProperty : node.asPropertyList()) {
+            ModelNode module = moduleProperty.getValue();
+            String codeName = LoginModuleResourceDefinition.CODE.resolveModelAttribute(context, module).asString();
             Map<String, Object> options = extractOptions(context, module);
             AuditProviderEntry entry = new AuditProviderEntry(codeName, options);
             auditInfo.add(entry);
 
-            String moduleName = module.get(MODULE).asString();
-            if(module.hasDefined(MODULE) && moduleName != null &&  moduleName.length() > 0 ) {
-                auditInfo.setJBossModuleName(moduleName);
+            ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, module);
+            if (moduleName.isDefined() && moduleName.asString().length() > 0) {
+                auditInfo.setJBossModuleName(moduleName.asString());
             }
         }
         applicationPolicy.setAuditInfo(auditInfo);
@@ -308,23 +295,23 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
 
     private boolean processACL(OperationContext context, String securityDomain, ModelNode node, ApplicationPolicy applicationPolicy)
             throws OperationFailedException {
-        node = peek(node, ACL, CLASSIC);
-        if (node == null)
-            return false;
+        node = peek(node, ACL, CLASSIC, ACL_MODULE);
+        if (node == null) { return false; }
 
         ACLInfo aclInfo = new ACLInfo(securityDomain);
-        List<ModelNode> modules = node.get(ACL_MODULES).asList();
-        for (ModelNode module : modules) {
-            String codeName = module.require(CODE).asString();
-            ControlFlag controlFlag = ControlFlag.valueOf(module.require(FLAG).asString());
+        for (Property moduleProperty : node.asPropertyList()) {
+            ModelNode module = moduleProperty.getValue();
+            String codeName = LoginModuleResourceDefinition.CODE.resolveModelAttribute(context, module).asString();
+            String flag = LoginModuleResourceDefinition.FLAG.resolveModelAttribute(context, module).asString();
+            ControlFlag controlFlag = ControlFlag.valueOf(flag);
             Map<String, Object> options = extractOptions(context, module);
             ACLProviderEntry entry = new ACLProviderEntry(codeName, options);
             entry.setControlFlag(controlFlag);
             aclInfo.add(entry);
 
-            String moduleName = module.get(MODULE).asString();
-            if(module.hasDefined(MODULE) && moduleName != null &&  moduleName.length() > 0 ) {
-                aclInfo.setJBossModuleName(moduleName);
+            ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, module);
+            if (moduleName.isDefined() && moduleName.asString().length() > 0) {
+                aclInfo.setJBossModuleName(moduleName.asString());
             }
 
         }
@@ -334,23 +321,23 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
 
     private boolean processAuthorization(OperationContext context, String securityDomain, ModelNode node, ApplicationPolicy applicationPolicy)
             throws OperationFailedException {
-        node = peek(node, AUTHORIZATION, CLASSIC);
-        if (node == null)
-            return false;
+        node = peek(node, AUTHORIZATION, CLASSIC, POLICY_MODULE);
+        if (node == null) { return false; }
 
         AuthorizationInfo authzInfo = new AuthorizationInfo(securityDomain);
-        List<ModelNode> modules = node.get(POLICY_MODULES).asList();
-        for (ModelNode module : modules) {
-            String codeName = this.extractCode(module, ModulesMap.AUTHORIZATION_MAP);
-            ControlFlag controlFlag = ControlFlag.valueOf(module.require(FLAG).asString());
+        for (Property moduleProperty : node.asPropertyList()) {
+            ModelNode module = moduleProperty.getValue();
+            String codeName = extractCode(module, ModulesMap.AUTHORIZATION_MAP);
+            String flag = LoginModuleResourceDefinition.FLAG.resolveModelAttribute(context, module).asString();
+            ControlFlag controlFlag = ControlFlag.valueOf(flag);
             Map<String, Object> options = extractOptions(context, module);
             AuthorizationModuleEntry authzModuleEntry = new AuthorizationModuleEntry(codeName, options);
             authzModuleEntry.setControlFlag(controlFlag);
             authzInfo.add(authzModuleEntry);
 
-            String moduleName = module.get(MODULE).asString();
-            if(module.hasDefined(MODULE) && moduleName != null &&  moduleName.length() > 0 ) {
-                authzInfo.setJBossModuleName(moduleName);
+            ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, module);
+            if (moduleName.isDefined() && moduleName.asString().length() > 0) {
+                authzInfo.setJBossModuleName(moduleName.asString());
             }
         }
 
@@ -361,8 +348,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
     private boolean processJASPIAuth(OperationContext context, String securityDomain, ModelNode node, ApplicationPolicy applicationPolicy)
             throws OperationFailedException {
         node = peek(node, AUTHENTICATION, JASPI);
-        if (node == null)
-            return false;
+        if (node == null) { return false; }
 
         JASPIAuthenticationInfo authenticationInfo = new JASPIAuthenticationInfo(securityDomain);
         Map<String, LoginModuleStackHolder> holders = new HashMap<String, LoginModuleStackHolder>();
@@ -374,24 +360,26 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             final LoginModuleStackHolder holder = new LoginModuleStackHolder(name, null);
             holders.put(name, holder);
             authenticationInfo.add(holder);
-            if (stackNode.hasDefined(LOGIN_MODULES)) {
-                processLoginModules(context, stackNode.get(LOGIN_MODULES), authenticationInfo, new LoginModuleContainer() {
+            if (stackNode.hasDefined(LOGIN_MODULE)) {
+                processLoginModules(context, stackNode.get(LOGIN_MODULE), authenticationInfo, new LoginModuleContainer() {
                     public void addAppConfigurationEntry(AppConfigurationEntry entry) {
                         holder.addAppConfigurationEntry(entry);
                     }
                 });
             }
         }
-        List<ModelNode> authModules = node.get(AUTH_MODULES).asList();
-        for (ModelNode authModule : authModules) {
+        for (Property moduleProperty : node.get(AUTH_MODULE).asPropertyList()) {
+            ModelNode authModule = moduleProperty.getValue();
             String code = extractCode(authModule, ModulesMap.AUTHENTICATION_MAP);
             String loginStackRef = null;
-            if (authModule.hasDefined(LOGIN_MODULE_STACK_REF))
-                loginStackRef = authModule.get(LOGIN_MODULE_STACK_REF).asString();
-            Map<String, Object> options = extractOptions(context, authModule) ;
+            if (authModule.hasDefined(LOGIN_MODULE_STACK_REF)) {
+                loginStackRef = JASPIMappingModuleDefinition.LOGIN_MODULE_STACK_REF.resolveModelAttribute(context, authModule).asString();
+            }
+            Map<String, Object> options = extractOptions(context, authModule);
             AuthModuleEntry entry = new AuthModuleEntry(code, options, loginStackRef);
             if (authModule.hasDefined(FLAG)) {
-                entry.setControlFlag(ControlFlag.valueOf(authModule.get(FLAG).asString()));
+                String flag = LoginModuleResourceDefinition.FLAG.resolveModelAttribute(context, authModule).asString();
+                entry.setControlFlag(ControlFlag.valueOf(flag));
             }
             if (loginStackRef != null) {
                 if (!holders.containsKey(loginStackRef)) {
@@ -401,43 +389,37 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             }
             authenticationInfo.add(entry);
 
-            String moduleName = authModule.get(MODULE).asString();
-            if(authModule.hasDefined(MODULE) && moduleName != null &&  moduleName.length() > 0 ) {
-                authenticationInfo.setJBossModuleName(moduleName);
+            ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, authModule);
+            if (moduleName.isDefined() && moduleName.asString().length() > 0) {
+                authenticationInfo.setJBossModuleName(moduleName.asString());
             }
         }
         applicationPolicy.setAuthenticationInfo(authenticationInfo);
         return true;
     }
 
-    private String extractCode(ModelNode node, Map<String, String> substitutions) {
-        String code = node.require(CODE).asString();
-        if (substitutions.containsKey(code))
-            code = substitutions.get(code);
+    private static String extractCode(ModelNode node, Map<String, String> substitutions) throws OperationFailedException {
+        String code = LoginModuleResourceDefinition.CODE.resolveModelAttribute(ExpressionResolver.DEFAULT, node).asString();
+        if (substitutions.containsKey(code)) { code = substitutions.get(code); }
         return code;
     }
 
     private ModelNode peek(ModelNode node, String... args) {
-
         for (String arg : args) {
-            if (!node.hasDefined(arg))
-                return null;
-
+            if (!node.hasDefined(arg)) { return null; }
             node = node.get(arg);
         }
-
         return node;
     }
 
     private boolean processClassicAuth(OperationContext context, String securityDomain, ModelNode node, ApplicationPolicy applicationPolicy)
             throws OperationFailedException {
         node = peek(node, AUTHENTICATION, CLASSIC);
-        if (node == null)
-            return false;
+        if (node == null) { return false; }
 
         final AuthenticationInfo authenticationInfo = new AuthenticationInfo(securityDomain);
-        if (node.hasDefined(Constants.LOGIN_MODULES)) {
-            processLoginModules(context, node.get(LOGIN_MODULES), authenticationInfo, new LoginModuleContainer() {
+        if (node.hasDefined(Constants.LOGIN_MODULE)) {
+            processLoginModules(context, node.get(LOGIN_MODULE), authenticationInfo, new LoginModuleContainer() {
                 public void addAppConfigurationEntry(AppConfigurationEntry entry) {
                     authenticationInfo.add(entry);
                 }
@@ -455,55 +437,52 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
 
     private void processLoginModules(OperationContext context, ModelNode node, BaseAuthenticationInfo authInfo, LoginModuleContainer container)
             throws OperationFailedException {
-        List<ModelNode> modules;
-        modules = node.asList();
-        for (ModelNode module : modules) {
+        for (Property moduleProperty : node.asPropertyList()) {
+            ModelNode module = moduleProperty.getValue();
             String codeName = extractCode(module, ModulesMap.AUTHENTICATION_MAP);
-            LoginModuleControlFlag controlFlag = getControlFlag(module.require(FLAG).asString());
+            String flag = LoginModuleResourceDefinition.FLAG.resolveModelAttribute(context, module).asString();
+            LoginModuleControlFlag controlFlag = getControlFlag(flag);
             Map<String, Object> options = extractOptions(context, module);
             AppConfigurationEntry entry = new AppConfigurationEntry(codeName, controlFlag, options);
             container.addAppConfigurationEntry(entry);
-            String moduleName = module.get(MODULE).asString();
-            if(module.hasDefined(MODULE) && moduleName != null && moduleName.length() > 0 ) {
-                authInfo.setJBossModuleName(moduleName);
+            ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, module);
+            if (moduleName.isDefined() && moduleName.asString().length() > 0) {
+                authInfo.setJBossModuleName(moduleName.asString());
             }
         }
     }
 
     private Map<String, Object> extractOptions(OperationContext context, ModelNode module) throws OperationFailedException {
-        Map<String, Object> options = new HashMap<String, Object>();
-        if (module.hasDefined(MODULE_OPTIONS)) {
-            for (Property prop : module.get(MODULE_OPTIONS).asPropertyList()) {
-                options.put(prop.getName(), context.resolveExpressions(prop.getValue()).asString());
-            }
-        }
-        return options;
+        return new LinkedHashMap<String, Object>(MappingModuleDefinition.MODULE_OPTIONS.unwrap(context, module));
     }
 
     private JSSESecurityDomain createJSSESecurityDomain(OperationContext context, String securityDomain, ModelNode node)
             throws OperationFailedException {
         node = peek(node, JSSE, CLASSIC);
-        if (node == null)
-            return null;
+        if (node == null) { return null; }
 
         final JBossJSSESecurityDomain jsseSecurityDomain = new JBossJSSESecurityDomain(securityDomain);
-        String value = null;
+
 
         processKeyStore(context, node, KEYSTORE, new KeyStoreConfig() {
             public void setKeyStorePassword(String value) throws Exception {
                 jsseSecurityDomain.setKeyStorePassword(value);
             }
+
             public void setKeyStoreType(String value) {
-                 jsseSecurityDomain.setKeyStoreType(value);
+                jsseSecurityDomain.setKeyStoreType(value);
             }
+
             public void setKeyStoreURL(String value) throws IOException {
-                 jsseSecurityDomain.setKeyStoreURL(value);
+                jsseSecurityDomain.setKeyStoreURL(value);
             }
+
             public void setKeyStoreProvider(String value) {
                 jsseSecurityDomain.setKeyStoreProvider(value);
             }
+
             public void setKeyStoreProviderArgument(String value) {
-                 jsseSecurityDomain.setKeyStoreProviderArgument(value);
+                jsseSecurityDomain.setKeyStoreProviderArgument(value);
             }
         });
 
@@ -511,17 +490,21 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             public void setKeyStorePassword(String value) throws Exception {
                 jsseSecurityDomain.setTrustStorePassword(value);
             }
+
             public void setKeyStoreType(String value) {
-                 jsseSecurityDomain.setTrustStoreType(value);
+                jsseSecurityDomain.setTrustStoreType(value);
             }
+
             public void setKeyStoreURL(String value) throws IOException {
-                 jsseSecurityDomain.setTrustStoreURL(value);
+                jsseSecurityDomain.setTrustStoreURL(value);
             }
+
             public void setKeyStoreProvider(String value) {
                 jsseSecurityDomain.setTrustStoreProvider(value);
             }
+
             public void setKeyStoreProviderArgument(String value) {
-                 jsseSecurityDomain.setTrustStoreProviderArgument(value);
+                jsseSecurityDomain.setTrustStoreProviderArgument(value);
             }
         });
 
@@ -529,34 +512,36 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             public void setKeyManagerFactoryAlgorithm(String value) {
                 jsseSecurityDomain.setKeyManagerFactoryAlgorithm(value);
             }
+
             public void setKeyManagerFactoryProvider(String value) {
                 jsseSecurityDomain.setKeyManagerFactoryProvider(value);
             }
         });
 
-         processKeyManager(context, node, Constants.TRUST_MANAGER, new KeyManagerConfig() {
+        processKeyManager(context, node, Constants.TRUST_MANAGER, new KeyManagerConfig() {
             public void setKeyManagerFactoryAlgorithm(String value) {
                 jsseSecurityDomain.setTrustManagerFactoryAlgorithm(value);
             }
+
             public void setKeyManagerFactoryProvider(String value) {
                 jsseSecurityDomain.setTrustManagerFactoryProvider(value);
             }
         });
-
+        String value;
         if (node.hasDefined(CLIENT_ALIAS)) {
-            value = context.resolveExpressions(node.get(CLIENT_ALIAS)).asString();
+            value = JSSEResourceDefinition.CLIENT_ALIAS.resolveModelAttribute(context, node).asString();
             jsseSecurityDomain.setClientAlias(value);
         }
         if (node.hasDefined(SERVER_ALIAS)) {
-            value = context.resolveExpressions(node.get(SERVER_ALIAS)).asString();
+            value = JSSEResourceDefinition.SERVER_ALIAS.resolveModelAttribute(context, node).asString();
             jsseSecurityDomain.setServerAlias(value);
         }
         if (node.hasDefined(CLIENT_AUTH)) {
-            boolean clientAuth = context.resolveExpressions(node.get(CLIENT_AUTH)).asBoolean();
+            boolean clientAuth = JSSEResourceDefinition.CLIENT_AUTH.resolveModelAttribute(context, node).asBoolean();
             jsseSecurityDomain.setClientAuth(clientAuth);
         }
         if (node.hasDefined(SERVICE_AUTH_TOKEN)) {
-            value = context.resolveExpressions(node.get(SERVICE_AUTH_TOKEN)).asString();
+            value = JSSEResourceDefinition.SERVICE_AUTH_TOKEN.resolveModelAttribute(context, node).asString();
             try {
                 jsseSecurityDomain.setServiceAuthToken(value);
             } catch (Exception e) {
@@ -564,18 +549,16 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             }
         }
         if (node.hasDefined(CIPHER_SUITES)) {
-            value = context.resolveExpressions(node.get(CIPHER_SUITES)).asString();
+            value = JSSEResourceDefinition.CIPHER_SUITES.resolveModelAttribute(context, node).asString();
             jsseSecurityDomain.setCipherSuites(value);
         }
         if (node.hasDefined(PROTOCOLS)) {
-            value = context.resolveExpressions(node.get(PROTOCOLS)).asString();
+            value = JSSEResourceDefinition.PROTOCOLS.resolveModelAttribute(context, node).asString();
             jsseSecurityDomain.setProtocols(value);
         }
         if (node.hasDefined(ADDITIONAL_PROPERTIES)) {
             Properties properties = new Properties();
-            for (Property prop : node.get(ADDITIONAL_PROPERTIES).asPropertyList()) {
-                properties.setProperty(prop.getName(), prop.getValue().asString());
-            }
+            properties.putAll(JSSEResourceDefinition.ADDITIONAL_PROPERTIES.unwrap(context, node));
             jsseSecurityDomain.setAdditionalProperties(properties);
         }
 
@@ -584,14 +567,18 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
 
     private interface KeyStoreConfig {
         void setKeyStorePassword(String value) throws Exception;
+
         void setKeyStoreType(String value);
+
         void setKeyStoreURL(String value) throws IOException;
+
         void setKeyStoreProvider(String value);
+
         void setKeyStoreProviderArgument(String value);
     }
 
     private void processKeyStore(OperationContext context, ModelNode node, String name, KeyStoreConfig config)
-            throws OperationFailedException{
+            throws OperationFailedException {
 
         final ModelNode value = peek(node, name, PASSWORD);
         final ModelNode type = peek(node, name, TYPE);
@@ -630,6 +617,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
 
     private interface KeyManagerConfig {
         void setKeyManagerFactoryAlgorithm(String value);
+
         void setKeyManagerFactoryProvider(String value);
     }
 

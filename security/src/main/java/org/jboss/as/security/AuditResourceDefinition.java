@@ -23,7 +23,6 @@ package org.jboss.as.security;
 
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
@@ -35,17 +34,23 @@ public class AuditResourceDefinition extends SimpleResourceDefinition {
 
     public static final AuditResourceDefinition INSTANCE = new AuditResourceDefinition();
 
-    public static final ListAttributeDefinition PROVIDER_MODULES = new ProviderModulesAttributeDefinition(Constants.PROVIDER_MODULES, Constants.PROVIDER_MODULE);
+    public static final ListAttributeDefinition PROVIDER_MODULES = new LegacySupport.ProviderModulesAttributeDefinition(Constants.PROVIDER_MODULES, Constants.PROVIDER_MODULE);
 
     private AuditResourceDefinition() {
-        super(PathElement.pathElement(Constants.AUDIT, Constants.CLASSIC),
+        super(SecurityExtension.PATH_AUDIT_CLASSIC,
                 SecurityExtension.getResourceDescriptionResolver(Constants.AUDIT),
                 AuditResourceDefinitionAdd.INSTANCE, new SecurityDomainReloadRemoveHandler());
 
     }
 
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadWriteAttribute(PROVIDER_MODULES, null, new SecurityDomainReloadWriteHandler(PROVIDER_MODULES));
+        resourceRegistration.registerReadWriteAttribute(PROVIDER_MODULES, new LegacySupport.LegacyModulesAttributeReader(Constants.PROVIDER_MODULE), new LegacySupport.LegacyModulesAttributeWriter(Constants.PROVIDER_MODULE));
+    }
+
+    @Override
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        super.registerChildren(resourceRegistration);
+        resourceRegistration.registerSubModel(new MappingProviderModuleDefinition(Constants.PROVIDER_MODULE));
     }
 
     static class AuditResourceDefinitionAdd extends SecurityDomainReloadAddHandler {
@@ -53,9 +58,9 @@ public class AuditResourceDefinition extends SimpleResourceDefinition {
 
         @Override
         protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-            PROVIDER_MODULES.validateAndSet(operation, model);
-        }
 
+        }
     }
+
 
 }

@@ -22,24 +22,29 @@
 
 package org.jboss.as.test.integration.ejb.security;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.security.Constants;
-import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
-import org.jboss.dmr.ModelNode;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.security.Constants.AUTHENTICATION;
 import static org.jboss.as.security.Constants.CODE;
 import static org.jboss.as.security.Constants.FLAG;
 import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.security.Constants;
+import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Utility methods to create/remove simple security domains
@@ -62,37 +67,38 @@ public class EjbSecurityDomainSetup extends AbstractSecurityDomainSetup {
     @Override
     public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
 
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
-        ModelNode op = new ModelNode();
-        op.get(OP).set(ADD);
-        op.get(OP_ADDR).add(SUBSYSTEM, "security");
-        op.get(OP_ADDR).add(SECURITY_DOMAIN, getSecurityDomainName());
-        updates.add(op);
+        final ModelNode compositeOp = new ModelNode();
+        compositeOp.get(OP).set(COMPOSITE);
+        compositeOp.get(OP_ADDR).setEmptyList();
 
-        op = new ModelNode();
-        op.get(OP).set(ADD);
-        op.get(OP_ADDR).add(SUBSYSTEM, "security");
-        op.get(OP_ADDR).add(SECURITY_DOMAIN, getSecurityDomainName());
-        op.get(OP_ADDR).add(AUTHENTICATION, Constants.CLASSIC);
-
-        ModelNode loginModule = op.get(Constants.LOGIN_MODULES).add();
-        loginModule.get(CODE).set("Remoting");
+        ModelNode steps = compositeOp.get(STEPS);
+        PathAddress securityDomainAddress = PathAddress.pathAddress()
+                .append(SUBSYSTEM, "security")
+                .append(SECURITY_DOMAIN, getSecurityDomainName());
+        steps.add(Util.createAddOperation(securityDomainAddress));
+        PathAddress authAddress = securityDomainAddress.append(AUTHENTICATION, Constants.CLASSIC);
+        steps.add(Util.createAddOperation(authAddress));
+        ModelNode op = Util.createAddOperation(authAddress.append(Constants.LOGIN_MODULE, "Remoting"));
+        op.get(CODE).set("Remoting");
         if (isUsersRolesRequired()) {
-            loginModule.get(FLAG).set("optional");
+            op.get(FLAG).set("optional");
         } else {
-            loginModule.get(FLAG).set("required");
+            op.get(FLAG).set("required");
         }
-        loginModule.get(Constants.MODULE_OPTIONS).add("password-stacking", "useFirstPass");
-
+        op.get(Constants.MODULE_OPTIONS).add("password-stacking", "useFirstPass");
+        steps.add(op);
         if (isUsersRolesRequired()) {
-            loginModule = op.get(Constants.LOGIN_MODULES).add();
+
+            ModelNode loginModule = Util.createAddOperation(authAddress.append(Constants.LOGIN_MODULE, "UsersRoles"));
             loginModule.get(CODE).set("UsersRoles");
             loginModule.get(FLAG).set("required");
             loginModule.get(Constants.MODULE_OPTIONS).add("password-stacking", "useFirstPass");
+            loginModule.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+            loginModule.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+            steps.add(loginModule);
         }
-        op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        updates.add(op);
 
-        applyUpdates(managementClient.getControllerClient(), updates);
+        System.out.println(compositeOp);
+        applyUpdates(managementClient.getControllerClient(), Arrays.asList(compositeOp));
     }
 }

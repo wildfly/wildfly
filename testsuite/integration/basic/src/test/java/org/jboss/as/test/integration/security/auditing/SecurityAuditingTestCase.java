@@ -23,7 +23,11 @@
 package org.jboss.as.test.integration.security.auditing;
 
 import static junit.framework.Assert.assertTrue;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -38,7 +42,6 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.ejb.security.AnnSBTest;
 import org.jboss.as.test.integration.ejb.security.authorization.SingleMethodsAnnOnlyCheckSFSB;
@@ -58,31 +61,31 @@ import org.junit.runner.RunWith;
 
 /**
  * This class tests Security auditing functionality
- * 
+ *
  * @author <a href="mailto:jlanik@redhat.com">Jan Lanik</a>.
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({ SecurityAuditingTestCase.SecurityDomainsSetup.class, // 
-        SecurityAuditingTestCase.SecurityAuditingTestCaseSetup.class })
+@ServerSetup({SecurityAuditingTestCase.SecurityDomainsSetup.class,
+        SecurityAuditingTestCase.SecurityAuditingTestCaseSetup.class})
 public class SecurityAuditingTestCase extends AnnSBTest {
 
     private static final Logger log = Logger.getLogger(testClass());
 
-    private static File auditLog = new File(System.getProperty("jboss.home", null), "standalone/log/audit.log");
+    private static File auditLog = new File(System.getProperty("jboss.home", null), "standalone" + File.separator + "log" + File.separator + "audit.log");
 
     static class SecurityAuditingTestCaseSetup extends AbstractMgmtServerSetupTask {
 
-        /** The LOGGING */
+        /**
+         * The LOGGING
+         */
         private static final String LOGGING = "logging";
 
         @Override
         protected void doSetup(final ManagementClient managementClient) throws Exception {
             final List<ModelNode> updates = new ArrayList<ModelNode>();
 
-            ModelNode op;
-
-            op = new ModelNode();
+            ModelNode op = new ModelNode();
             op.get(OP).set(ADD);
             op.get(OP_ADDR).add(SUBSYSTEM, LOGGING);
             op.get(OP_ADDR).add("periodic-rotating-file-handler", "AUDIT");
@@ -104,7 +107,6 @@ public class SecurityAuditingTestCase extends AnnSBTest {
             ModelNode list = op.get("handlers");
             list.add("AUDIT");
             updates.add(op);
-
             executeOperations(updates);
         }
 
@@ -125,7 +127,6 @@ public class SecurityAuditingTestCase extends AnnSBTest {
             op.get(OP_ADDR).add(SUBSYSTEM, LOGGING);
             op.get(OP_ADDR).add("periodic-rotating-file-handler", "AUDIT");
             updates.add(op);
-
             executeOperations(updates);
 
         }
@@ -162,7 +163,7 @@ public class SecurityAuditingTestCase extends AnnSBTest {
 
     /**
      * Basic test if auditing works in EJB module.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -185,7 +186,7 @@ public class SecurityAuditingTestCase extends AnnSBTest {
 
     /**
      * Basic test if auditing works for web module.
-     * 
+     *
      * @param url
      * @throws Exception
      */
@@ -214,7 +215,8 @@ public class SecurityAuditingTestCase extends AnnSBTest {
         final long INTERVAL = 5000;
         long startTime = System.currentTimeMillis();
         String line;
-        search_for_log: while (true) {
+        search_for_log:
+        while (true) {
             // some new lines were added -> go trough those and check whether our record is present
             while (null != (line = reader.readLine())) {
                 if (successPattern.matcher(line).find()) {
@@ -231,14 +233,14 @@ public class SecurityAuditingTestCase extends AnnSBTest {
 
     }
 
-    /**
+    /*
      * A {@link ServerSetupTask} instance which creates security domains for this test case.
      * 
      * @author Josef Cacek
      */
     static class SecurityDomainsSetup extends AbstractSecurityDomainsServerSetupTask {
 
-        /**
+        /*
          * Returns SecurityDomains configuration for this testcase.
          * 
          * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask#getSecurityDomains()
@@ -247,7 +249,7 @@ public class SecurityAuditingTestCase extends AnnSBTest {
         protected SecurityDomain[] getSecurityDomains() {
             final SecurityDomain sd = new SecurityDomain.Builder().name("form-auth")
                     .loginModules(new SecurityModule.Builder().name("UsersRoles").build()).build();
-            return new SecurityDomain[] { sd };
+            return new SecurityDomain[]{sd};
         }
     }
 }

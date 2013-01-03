@@ -4241,6 +4241,10 @@
                         <groupId>org.jboss.logging</groupId>
                         <artifactId>jboss-logging-processor</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.hornetq</groupId>
+                        <artifactId>hornetq-core</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -4445,6 +4449,10 @@
                         <groupId>tanukisoft</groupId>
                         <artifactId>wrapper</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.hornetq</groupId>
+                        <artifactId>hornetq-core</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -4505,6 +4513,10 @@
                     <exclusion>
                         <groupId>tanukisoft</groupId>
                         <artifactId>wrapper</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.hornetq</groupId>
+                        <artifactId>hornetq-core</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -4637,6 +4649,10 @@
                     <exclusion>
                         <groupId>org.jboss.logging</groupId>
                         <artifactId>jboss-logging-processor</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.hornetq</groupId>
+                        <artifactId>hornetq-core</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -6034,7 +6050,6 @@
                 <artifactId>picketbox</artifactId>
                 <version>${version.org.picketbox}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.picketbox</groupId>
                 <artifactId>picketbox-commons</artifactId>

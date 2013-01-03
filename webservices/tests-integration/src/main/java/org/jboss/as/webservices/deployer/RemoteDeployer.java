@@ -75,6 +75,7 @@ import static org.jboss.as.security.Constants.AUTHENTICATION;
 import static org.jboss.as.security.Constants.CLASSIC;
 import static org.jboss.as.security.Constants.CODE;
 import static org.jboss.as.security.Constants.FLAG;
+import static org.jboss.as.security.Constants.LOGIN_MODULE;
 import static org.jboss.as.security.Constants.LOGIN_MODULES;
 import static org.jboss.as.security.Constants.MODULE_OPTIONS;
 import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
@@ -219,14 +220,13 @@ public final class RemoteDeployer implements Deployer {
             op.get(OP_ADDR).add(SUBSYSTEM, "security");
             op.get(OP_ADDR).add(SECURITY_DOMAIN, name);
             op.get(OP_ADDR).add(AUTHENTICATION, CLASSIC);
-
-            final ModelNode loginModule = op.get(LOGIN_MODULES).add();
-            loginModule.get(CODE).set("UsersRoles");
-            loginModule.get(FLAG).set(REQUIRED);
+            op.get(OP_ADDR).add(LOGIN_MODULE, "UsersRoles");
+            op.get(CODE).set("UsersRoles");
+            op.get(FLAG).set(REQUIRED);
             op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             updates.add(op);
 
-            final ModelNode moduleOptions = loginModule.get(MODULE_OPTIONS);
+            final ModelNode moduleOptions = op.get(MODULE_OPTIONS);
             if (authenticationOptions != null) {
                 for (final String k : authenticationOptions.keySet()) {
                     moduleOptions.add(k, authenticationOptions.get(k));

@@ -39,16 +39,18 @@ public class SecurityDomainModelv11UnitTestCase extends AbstractSubsystemTest {
         //Parse the subsystem xml and install into the first controller
         String subsystemXml = readResource("securitysubsystemv11.xml");
 
-        KernelServices servicesA = super.installInController(AdditionalInitialization.MANAGEMENT, subsystemXml);
+        KernelServices servicesA = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXml(subsystemXml)
+                .build();
         //Get the model and the persisted xml from the first controller
         ModelNode modelA = servicesA.readWholeModel();
         String marshalled = servicesA.getPersistedSubsystemXml();
         servicesA.shutdown();
 
-        System.out.println(marshalled);
-
         //Install the persisted xml from the first controller into a second controller
-        KernelServices servicesB = super.installInController(AdditionalInitialization.MANAGEMENT, marshalled);
+        KernelServices servicesB = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXml(marshalled)
+                .build();
         ModelNode modelB = servicesB.readWholeModel();
 
         //Make sure the models from the two controllers are identical
@@ -63,16 +65,18 @@ public class SecurityDomainModelv11UnitTestCase extends AbstractSubsystemTest {
         //Parse the subsystem xml and install into the first controller
         String subsystemXml = readResource("securitysubsystemJASPIv11.xml");
 
-        KernelServices servicesA = super.installInController(AdditionalInitialization.MANAGEMENT, subsystemXml);
+        KernelServices servicesA = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXml(subsystemXml)
+                .build();
         //Get the model and the persisted xml from the first controller
         ModelNode modelA = servicesA.readWholeModel();
         String marshalled = servicesA.getPersistedSubsystemXml();
         servicesA.shutdown();
 
-        System.out.println(marshalled);
-
         //Install the persisted xml from the first controller into a second controller
-        KernelServices servicesB = super.installInController(AdditionalInitialization.MANAGEMENT, marshalled);
+        KernelServices servicesB = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXml(marshalled)
+                .build();
         ModelNode modelB = servicesB.readWholeModel();
 
         //Make sure the models from the two controllers are identical
@@ -80,45 +84,4 @@ public class SecurityDomainModelv11UnitTestCase extends AbstractSubsystemTest {
 
         assertRemoveSubsystemResources(servicesB);
     }
-
-//    @Override
-//    protected String getSubsystemXml() throws IOException {
-//        return readResource("securitysubsystemv11.xml");
-        /*return "<subsystem xmlns=\"urn:jboss:domain:security:1.1\">" +
-                " <security-domains> " +
-                  " <security-domain name=\"other\" cache-type=\"default\">" +
-                  "  <authentication>" +
-                   "     <login-module code=\"Remoting\" flag=\"optional\">" +
-                    "        <module-option name=\"password-stacking\" value=\"useFirstPass\"/>" +
-                     "   </login-module>" +
-                      "  <login-module code=\"RealmUsersRoles\" flag=\"required\">" +
-                       "     <module-option name=\"usersProperties\" value=\"${jboss.server.config.dir}/application-users.properties\"/>" +
-                        "    <module-option name=\"rolesProperties\" value=\"${jboss.server.config.dir}/application-roles.properties\"/>" +
-                         "   <module-option name=\"realm\" value=\"ApplicationRealm\"/>" +
-                          "  <module-option name=\"password-stacking\" value=\"useFirstPass\"/> " +
-                       " </login-module>" +
-                    "</authentication>" +
-                "</security-domain>" +
-                "<security-domain name=\"jboss-web-policy\" cache-type=\"default\">" +
-                 "   <authorization>" +
-                  "      <policy-module code=\"Delegating\" flag=\"required\"/>" +
-                   " </authorization>" +
-                "</security-domain>" +
-                "<security-domain name=\"jboss-ejb-policy\" cache-type=\"default\">" +
-                 "   <authorization>" +
-                  "      <policy-module code=\"Delegating\" flag=\"required\"/>" +
-                   " </authorization>" +
-                "</security-domain>" +
-                "<security-domain name=\"DsRealm\" cache-type=\"default\">" +
-                     "<authentication>" +
-                           "<login-module code=\"ConfiguredIdentity\" flag=\"required\">" +
-                               "<module-option name=\"userName\" value=\"sa\"/>" +
-                               "<module-option name=\"principal\" value=\"sa\"/>" +
-                               "<module-option name=\"password\" value=\"sa\"/>" +
-                            "</login-module>" +
-                     "</authentication>" +
-                "</security-domain>" +
-            "</security-domains>" +
-        "</subsystem>";*/
-//    }
 }

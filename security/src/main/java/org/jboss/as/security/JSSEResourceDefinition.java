@@ -21,6 +21,8 @@
  */
 package org.jboss.as.security;
 
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
@@ -33,49 +35,64 @@ import org.jboss.dmr.ModelType;
 
 /**
  * @author Jason T. Greene
+ * @author Tomaz Cerar
  */
 public class JSSEResourceDefinition extends SimpleResourceDefinition {
 
+
+    static final ObjectTypeAttributeDefinition KEYSTORE = new ObjectTypeAttributeDefinition.Builder(Constants.KEYSTORE, ComplexAttributes.KEY_STORE_FIELDS)
+            .setAttributeMarshaller(new ComplexAttributes.KeyStoreAttributeMarshaller())
+            .build();
+
+    static final ObjectTypeAttributeDefinition TRUSTSTORE = new ObjectTypeAttributeDefinition.Builder(Constants.TRUSTSTORE, ComplexAttributes.KEY_STORE_FIELDS)
+            .setAttributeMarshaller(new ComplexAttributes.KeyStoreAttributeMarshaller())
+            .build();
+
+    static final ObjectTypeAttributeDefinition KEYMANAGER = new ObjectTypeAttributeDefinition.Builder(Constants.KEY_MANAGER, ComplexAttributes.KEY_MANAGER_FIELDS)
+            .setAttributeMarshaller(new ComplexAttributes.KeyManagerAttributeMarshaller())
+            .build();
+
+    static final ObjectTypeAttributeDefinition TRUSTMANAGER = new ObjectTypeAttributeDefinition.Builder(Constants.TRUST_MANAGER, ComplexAttributes.KEY_MANAGER_FIELDS)
+            .setAttributeMarshaller(new ComplexAttributes.KeyManagerAttributeMarshaller())
+            .build();
+    static final SimpleAttributeDefinition CLIENT_ALIAS = new SimpleAttributeDefinitionBuilder(Constants.CLIENT_ALIAS, ModelType.STRING, true)
+            .setAllowExpression(true)
+            .build();
+    static final SimpleAttributeDefinition SERVER_ALIAS = new SimpleAttributeDefinitionBuilder(Constants.SERVER_ALIAS, ModelType.STRING, true)
+            .setAllowExpression(true)
+            .build();
+    static final SimpleAttributeDefinition SERVICE_AUTH_TOKEN = new SimpleAttributeDefinitionBuilder(Constants.SERVICE_AUTH_TOKEN, ModelType.STRING, true)
+            .setAllowExpression(true)
+            .build();
+    static final SimpleAttributeDefinition CLIENT_AUTH = new SimpleAttributeDefinitionBuilder(Constants.CLIENT_AUTH, ModelType.BOOLEAN, true)
+            .setAllowExpression(true)
+            .build();
+    static final SimpleAttributeDefinition PROTOCOLS = new SimpleAttributeDefinitionBuilder(Constants.PROTOCOLS, ModelType.STRING, true)
+            .setAllowExpression(true)
+            .build();
+    static final SimpleAttributeDefinition CIPHER_SUITES = new SimpleAttributeDefinitionBuilder(Constants.CIPHER_SUITES, ModelType.STRING, true)
+            .setAllowExpression(true)
+            .build();
+    static final PropertiesAttributeDefinition ADDITIONAL_PROPERTIES = new PropertiesAttributeDefinition.Builder(Constants.ADDITIONAL_PROPERTIES, true)
+            .setXmlName(Constants.PROPERTY)
+            .build();
+
+    private static final AttributeDefinition[] ATTRIBUTES = {KEYSTORE, TRUSTSTORE, KEYMANAGER, TRUSTMANAGER, CLIENT_ALIAS, SERVER_ALIAS, SERVICE_AUTH_TOKEN,
+            CLIENT_AUTH, PROTOCOLS, CIPHER_SUITES, ADDITIONAL_PROPERTIES};
+
     public static final JSSEResourceDefinition INSTANCE = new JSSEResourceDefinition();
-
-    public static final KeyStoreAttributeDefinition KEYSTORE = new KeyStoreAttributeDefinition(Constants.KEYSTORE);
-    public static final KeyStoreAttributeDefinition TRUSTSTORE = new KeyStoreAttributeDefinition(Constants.TRUSTSTORE);
-    public static final KeyManagerAttributeDefinition KEYMANAGER = new KeyManagerAttributeDefinition(Constants.KEY_MANAGER);
-    public static final KeyManagerAttributeDefinition TRUSTMANAGER = new KeyManagerAttributeDefinition(Constants.TRUST_MANAGER);
-    public static final SimpleAttributeDefinition CLIENT_ALIAS =
-            new SimpleAttributeDefinitionBuilder(Constants.CLIENT_ALIAS, ModelType.STRING, true).setAllowExpression(true).build();
-    public static final SimpleAttributeDefinition SERVER_ALIAS =
-            new SimpleAttributeDefinitionBuilder(Constants.SERVER_ALIAS, ModelType.STRING, true).setAllowExpression(true).build();
-    public static final SimpleAttributeDefinition SERVICE_AUTH_TOKEN =
-            new SimpleAttributeDefinitionBuilder(Constants.SERVICE_AUTH_TOKEN, ModelType.STRING, true).setAllowExpression(true).build();
-    public static final SimpleAttributeDefinition CLIENT_AUTH =
-            new SimpleAttributeDefinitionBuilder(Constants.CLIENT_AUTH, ModelType.BOOLEAN, true).setAllowExpression(true).build();
-    public static final SimpleAttributeDefinition PROTOCOLS =
-            new SimpleAttributeDefinitionBuilder(Constants.PROTOCOLS, ModelType.STRING, true).setAllowExpression(true).build();
-    public static final SimpleAttributeDefinition CIPHER_SUITES =
-            new SimpleAttributeDefinitionBuilder(Constants.CIPHER_SUITES, ModelType.STRING, true).setAllowExpression(true).build();
-
-    public static final PropertiesAttributeDefinition ADDITIONAL_PROPERTIES = new PropertiesAttributeDefinition(Constants.ADDITIONAL_PROPERTIES, Constants.PROPERTY, true);
 
     private JSSEResourceDefinition() {
         super(PathElement.pathElement(Constants.JSSE, Constants.CLASSIC),
               SecurityExtension.getResourceDescriptionResolver(Constants.JSSE),
-              JSSEResourceDefinitionAdd.INSTANCE, new SecurityDomainReloadRemoveHandler());
+                JSSEResourceDefinitionAdd.INSTANCE,
+                new SecurityDomainReloadRemoveHandler());
     }
 
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadWriteAttribute(KEYSTORE, null, new SecurityDomainReloadWriteHandler(KEYSTORE));
-        resourceRegistration.registerReadWriteAttribute(TRUSTSTORE, null, new SecurityDomainReloadWriteHandler(TRUSTSTORE));
-        resourceRegistration.registerReadWriteAttribute(KEYMANAGER, null, new SecurityDomainReloadWriteHandler(KEYMANAGER));
-        resourceRegistration.registerReadWriteAttribute(TRUSTMANAGER, null, new SecurityDomainReloadWriteHandler(TRUSTMANAGER));
-        resourceRegistration.registerReadWriteAttribute(CLIENT_ALIAS, null, new SecurityDomainReloadWriteHandler(CLIENT_ALIAS));
-        resourceRegistration.registerReadWriteAttribute(SERVER_ALIAS, null, new SecurityDomainReloadWriteHandler(SERVER_ALIAS));
-        resourceRegistration.registerReadWriteAttribute(SERVICE_AUTH_TOKEN, null, new SecurityDomainReloadWriteHandler(SERVICE_AUTH_TOKEN));
-        resourceRegistration.registerReadWriteAttribute(CLIENT_AUTH, null, new SecurityDomainReloadWriteHandler(CLIENT_AUTH));
-        resourceRegistration.registerReadWriteAttribute(PROTOCOLS, null, new SecurityDomainReloadWriteHandler(PROTOCOLS));
-        resourceRegistration.registerReadWriteAttribute(CIPHER_SUITES, null, new SecurityDomainReloadWriteHandler(CIPHER_SUITES));
-        resourceRegistration.registerReadWriteAttribute(ADDITIONAL_PROPERTIES, null, new SecurityDomainReloadWriteHandler(ADDITIONAL_PROPERTIES));
-
+        for (AttributeDefinition attr : ATTRIBUTES) {
+            resourceRegistration.registerReadWriteAttribute(attr, null, new SecurityDomainReloadWriteHandler(attr));
+        }
     }
 
     static class JSSEResourceDefinitionAdd extends SecurityDomainReloadAddHandler {
@@ -83,17 +100,9 @@ public class JSSEResourceDefinition extends SimpleResourceDefinition {
 
         @Override
         protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-            KEYSTORE.validateAndSet(operation, model);
-            TRUSTSTORE.validateAndSet(operation, model);
-            KEYMANAGER.validateAndSet(operation, model);
-            TRUSTMANAGER.validateAndSet(operation, model);
-            CLIENT_ALIAS.validateAndSet(operation, model);
-            SERVER_ALIAS.validateAndSet(operation, model);
-            SERVICE_AUTH_TOKEN.validateAndSet(operation, model);
-            CLIENT_AUTH.validateAndSet(operation, model);
-            PROTOCOLS.validateAndSet(operation, model);
-            CIPHER_SUITES.validateAndSet(operation, model);
-            ADDITIONAL_PROPERTIES.validateAndSet(operation, model);
+            for (AttributeDefinition attr : ATTRIBUTES) {
+                attr.validateAndSet(operation, model);
+            }
         }
     }
 

@@ -22,6 +22,23 @@
 
 package org.jboss.as.test.integration.security.loginmodules;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CODE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.security.Constants.FLAG;
+import static org.jboss.as.security.Constants.LOGIN_MODULE;
+import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.net.URL;
+import java.util.Arrays;
+
 import junit.framework.Assert;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -33,6 +50,10 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.security.Constants;
+import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.loginmodules.common.CustomEjbAccessingLoginModule;
@@ -41,27 +62,13 @@ import org.jboss.as.test.integration.security.loginmodules.common.SimpleSecuredE
 import org.jboss.as.test.integration.security.loginmodules.common.servlets.PrincipalPrintingServlet;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+import org.jboss.security.auth.spi.RunAsLoginModule;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.util.Base64;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.jboss.security.auth.spi.RunAsLoginModule;
-
-
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
-import static org.jboss.as.security.Constants.CLASSIC;
-import static org.jboss.as.security.Constants.LOGIN_MODULES;
-import static org.jboss.as.security.Constants.FLAG;
-import org.jboss.as.test.categories.CommonCriteria;
-import static org.junit.Assert.assertTrue;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 
 /**
  * This is a test case for RunAsLoginModule
@@ -74,96 +81,95 @@ import org.junit.experimental.categories.Category;
 @Category(CommonCriteria.class)
 public class RunAsLoginModuleTestCase {
 
-   public static class SecurityDomainSetup extends AbstractSecurityDomainSetup {
+    public static class SecurityDomainSetup extends AbstractSecurityDomainSetup {
 
-       protected String getSecurityDomainName() {
-           return "RunAsLoginModuleTest";
-       }
+        protected String getSecurityDomainName() {
+            return "RunAsLoginModuleTest";
+        }
 
-       public void setup(ManagementClient managementClient, String containerId) throws Exception {
+        public void setup(ManagementClient managementClient, String containerId) throws Exception {
+            final ModelNode compositeOp = new ModelNode();
+            compositeOp.get(OP).set(COMPOSITE);
+            compositeOp.get(OP_ADDR).setEmptyList();
+            ModelNode updates = compositeOp.get(STEPS);
+            PathAddress address = PathAddress.pathAddress()
+                    .append(SUBSYSTEM, "security")
+                    .append(SECURITY_DOMAIN, getSecurityDomainName());
 
-           List<ModelNode> updates = new ArrayList<ModelNode>();
-           ModelNode op = new ModelNode();
+            updates.add(Util.createAddOperation(address));
+            address = address.append(Constants.AUTHENTICATION, Constants.CLASSIC);
+            updates.add(Util.createAddOperation(address));
 
-           op.get(OP).set(ADD);
-           op.get(OP_ADDR).add(SUBSYSTEM, "security");
-           op.get(OP_ADDR).add(SECURITY_DOMAIN, getSecurityDomainName());
-           updates.add(op);
+            ModelNode loginModule = Util.createAddOperation(address.append(LOGIN_MODULE, RunAsLoginModule.class.getName()));
+            loginModule.get(CODE).set(RunAsLoginModule.class.getName());
+            loginModule.get(FLAG).set("optional");
+            ModelNode moduleOptions = loginModule.get("module-options");
+            moduleOptions.get("roleName").set("RunAsLoginModuleRole");
 
-           op = new ModelNode();
-           op.get(OP).set(ADD);
-           op.get(OP_ADDR).add(SUBSYSTEM, "security");
-           op.get(OP_ADDR).add(SECURITY_DOMAIN, getSecurityDomainName());
-           op.get(OP_ADDR).add(AUTHENTICATION, CLASSIC);
+            ModelNode loginModule2 = Util.createAddOperation(address.append(LOGIN_MODULE, CustomEjbAccessingLoginModule.class.getName()));
+            loginModule2.get(CODE).set(CustomEjbAccessingLoginModule.class.getName());
+            loginModule2.get(FLAG).set("required");
 
-           ModelNode loginModule = op.get(LOGIN_MODULES).add();
-           loginModule.get(CODE).set(RunAsLoginModule.class.getName());
-           loginModule.get(FLAG).set("optional");
-           ModelNode moduleOptions = loginModule.get("module-options");
-           moduleOptions.get("roleName").set("RunAsLoginModuleRole");
+            loginModule.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+            loginModule2.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
 
-           ModelNode loginModule2 = op.get(LOGIN_MODULES).add();
-           loginModule2.get(CODE).set(CustomEjbAccessingLoginModule.class.getName());
-           loginModule2.get(FLAG).set("required");
+            updates.add(loginModule);
+            updates.add(loginModule2);
 
-           op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+            applyUpdates(managementClient.getControllerClient(), Arrays.asList(compositeOp));
 
-           updates.add(op);
+        }
+    }
 
-           applyUpdates(managementClient.getControllerClient(), updates);
+    private static Logger log = Logger.getLogger(RunAsLoginModuleTestCase.class);
 
-       }
-   }
+    private static final String DEP1 = "RunAsLoginModule";
 
-   private static Logger log = Logger.getLogger(RunAsLoginModuleTestCase.class);
+    /**
+     * Test deployment
+     */
+    @Deployment(name = DEP1, order = 1)
+    public static WebArchive appDeployment1() {
+        log.info("start" + DEP1 + "deployment");
 
-   private static final String DEP1 = "RunAsLoginModule";
+        WebArchive war = ShrinkWrap.create(WebArchive.class, DEP1 + ".war");
+        war.addClass(PrincipalPrintingServlet.class);
+        war.setWebXML(Utils.getResource("org/jboss/as/test/integration/security/loginmodules/deployments/RunAsLoginModule/web.xml"));
+        war.addAsWebInfResource(Utils.getResource("org/jboss/as/test/integration/security/loginmodules/deployments/RunAsLoginModule/jboss-web.xml"), "jboss-web.xml");
 
-   /**
-    * Test deployment
-    */
-   @Deployment(name = DEP1, order = 1)
-   public static WebArchive appDeployment1() {
-      log.info("start" + DEP1 + "deployment");
+        war.addClasses(SimpleSecuredEJB.class, SimpleSecuredEJBImpl.class, CustomEjbAccessingLoginModule.class);
 
-      WebArchive war = ShrinkWrap.create(WebArchive.class, DEP1 + ".war");
-      war.addClass(PrincipalPrintingServlet.class);
-      war.setWebXML(Utils.getResource("org/jboss/as/test/integration/security/loginmodules/deployments/RunAsLoginModule/web.xml"));
-      war.addAsWebInfResource(Utils.getResource("org/jboss/as/test/integration/security/loginmodules/deployments/RunAsLoginModule/jboss-web.xml"),"jboss-web.xml");
+        log.debug(war.toString(true));
 
-      war.addClasses(SimpleSecuredEJB.class, SimpleSecuredEJBImpl.class, CustomEjbAccessingLoginModule.class);
+        return war;
+    }
 
-      log.debug(war.toString(true));
+    /**
+     * Correct login
+     *
+     * @throws Exception
+     */
+    @OperateOnDeployment(DEP1)
+    @Test
+    public void testCleartextPassword1(@ArquillianResource URL url) throws Exception {
+        DefaultHttpClient httpclient = new DefaultHttpClient();
+        HttpResponse response;
+        log.debug("URL: " + url.toString());
 
-      return war;
-   }
+        HttpGet httpget = new HttpGet(url.toString());
+        String headerValue = Base64.encodeBytes("anil:anil".getBytes());
+        Assert.assertNotNull(headerValue);
+        httpget.addHeader("Authorization", "Basic " + headerValue);
+        String text;
 
-   /**
-    * Correct login
-    *
-    * @throws Exception
-    */
-   @OperateOnDeployment(DEP1)
-   @Test
-   public void testCleartextPassword1(@ArquillianResource URL url) throws Exception {
-      DefaultHttpClient httpclient = new DefaultHttpClient();
-      HttpResponse response;
-      log.debug("URL: " + url.toString());
+        try {
+            response = httpclient.execute(httpget);
+            text = Utils.getContent(response);
+        } catch (IOException e) {
+            throw new RuntimeException("Servlet response IO exception", e);
+        }
 
-      HttpGet httpget = new HttpGet(url.toString());
-      String headerValue = Base64.encodeBytes("anil:anil".getBytes());
-      Assert.assertNotNull(headerValue);
-      httpget.addHeader("Authorization", "Basic " + headerValue);
-      String text;
-
-      try {
-         response = httpclient.execute(httpget);
-         text = Utils.getContent(response);
-      } catch (IOException e) {
-         throw new RuntimeException("Servlet response IO exception", e);
-      }
-
-      assertTrue("An unexpected response: " + text, text.contains("anil"));
-   }
+        assertTrue("An unexpected response: " + text, text.contains("anil"));
+    }
 
 }

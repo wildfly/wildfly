@@ -2,7 +2,7 @@
     <security-domains>
         <security-domain name="other" cache-type="default">
             <authentication>
-                <login-module code="UsersRoles" flag="required">
+                <login-module code="UsersRoles" flag="${prop.flag:required}">
                     <module-option name="env.option" value="${env.value:myvalue}"/>
                 </login-module>
             </authentication>
@@ -27,6 +27,26 @@
                   cipher-suites="${cipher-suites:cipher-suites}"
                   protocols="${protocols:protocols}"
                     />
+        </security-domain>
+        <security-domain name="other2" cache-type="default">
+            <authentication>
+                <login-module code="Remoting" flag="${prop.flag-optional:optional}">
+                    <module-option name="password-stacking" value="useFirstPass"/>
+                </login-module>
+                <login-module code="RealmDirect" flag="${prop.flag:required}">
+                    <module-option name="password-stacking" value="useFirstPass"/>
+                </login-module>
+            </authentication>
+        </security-domain>
+        <security-domain name="jboss-web-policy" cache-type="default">
+            <authorization>
+                <policy-module code="Delegating" flag="${prop.flag:required}"/>
+            </authorization>
+        </security-domain>
+        <security-domain name="jboss-ejb-policy" cache-type="default">
+            <authorization>
+                <policy-module code="Delegating" flag="${prop.flag:required}"/>
+            </authorization>
         </security-domain>
     </security-domains>
 </subsystem>
