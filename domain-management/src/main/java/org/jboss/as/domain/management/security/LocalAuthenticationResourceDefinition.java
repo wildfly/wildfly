@@ -44,14 +44,17 @@ import org.jboss.dmr.ModelType;
  */
 public class LocalAuthenticationResourceDefinition extends SimpleResourceDefinition {
 
-    public static final SimpleAttributeDefinition DEFAULT_USER = new SimpleAttributeDefinitionBuilder(
-            ModelDescriptionConstants.DEFAULT_USER, ModelType.STRING, false)
-            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false)).setAllowNull(true)
-            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
+    public static final SimpleAttributeDefinition DEFAULT_USER = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.DEFAULT_USER, ModelType.STRING)
+            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .build();
 
-    public static final SimpleAttributeDefinition ALLOWED_USERS = new SimpleAttributeDefinitionBuilder(
-            ModelDescriptionConstants.ALLOWED_USERS, ModelType.STRING, false)
-            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false)).setAllowNull(true)
+    public static final SimpleAttributeDefinition ALLOWED_USERS = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.ALLOWED_USERS, ModelType.STRING)
+            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
+            .setAllowNull(true)
+            .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
     public static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = { DEFAULT_USER, ALLOWED_USERS };

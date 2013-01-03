@@ -45,7 +45,8 @@ import org.jboss.dmr.ModelType;
 public class SSLServerIdentityResourceDefinition extends SimpleResourceDefinition {
 
     public static final SimpleAttributeDefinition PROTOCOL = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PROTOCOL, ModelType.STRING, true)
-            .setDefaultValue(new ModelNode("TLS")).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
+            .setDefaultValue(new ModelNode("TLS")).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
+            .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
     public static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = {
