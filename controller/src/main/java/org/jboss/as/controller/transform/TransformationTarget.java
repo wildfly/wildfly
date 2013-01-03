@@ -25,7 +25,6 @@ package org.jboss.as.controller.transform;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.extension.ExtensionRegistry;
-import org.jboss.as.controller.extension.SubsystemInformation;
 
 /**
  * A potentially remote target requiring transformation.
@@ -97,6 +96,11 @@ public interface TransformationTarget {
      */
     ExtensionRegistry getExtensionRegistry();
 
+    /**
+     * Get the name of the host we are talking to
+     */
+    String getHostName();
+
     public enum TransformationTargetType {
 
         DOMAIN,
@@ -133,6 +137,8 @@ public interface TransformationTarget {
          * @return {@code true} if the resource should be excluded from operation transformation
          */
         boolean isOperationTransformationIgnored(final PathAddress address);
+
+        String getHostName();
     }
 
 }

@@ -22,7 +22,6 @@
 package org.jboss.as.model.test;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_TRANSFORMED_RESOURCE_OPERATION;
 
 import java.util.List;
 import java.util.Locale;
@@ -54,7 +53,6 @@ import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.ReadTransformedResourceOperation;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.StartContext;
@@ -70,7 +68,7 @@ public abstract class ModelTestModelControllerService extends AbstractController
 
     private final CountDownLatch latch = new CountDownLatch(1);
     private final StringConfigurationPersister persister;
-    protected final TransformerRegistry transformerRegistry;
+    private final TransformerRegistry transformerRegistry;
     private final boolean validateOps;
     private final RunningModeControl runningModeControl;
     private volatile ManagementResourceRegistration rootRegistration;
@@ -122,15 +120,16 @@ public abstract class ModelTestModelControllerService extends AbstractController
     }
 
     protected void initCoreModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
-        if (transformerRegistry != null) {
-            rootRegistration.registerOperationHandler(READ_TRANSFORMED_RESOURCE_OPERATION, new ReadTransformedResourceOperation(transformerRegistry), ReadTransformedResourceOperation.DESCRIPTION, true);
-        }
         GlobalOperationHandlers.registerGlobalOperations(rootRegistration, ProcessType.STANDALONE_SERVER);
 
         rootRegistration.registerOperationHandler(CompositeOperationHandler.DEFINITION, CompositeOperationHandler.INSTANCE);
     }
 
     protected void initExtraModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
+    }
+
+    TransformerRegistry getTransformersRegistry() {
+        return transformerRegistry;
     }
 
     @Override

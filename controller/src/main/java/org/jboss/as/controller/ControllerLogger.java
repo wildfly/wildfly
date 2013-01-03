@@ -28,6 +28,7 @@ import static org.jboss.logging.Logger.Level.WARN;
 import java.io.Closeable;
 import java.net.InetAddress;
 import java.util.Set;
+
 import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.dmr.ModelNode;
@@ -78,6 +79,11 @@ public interface ControllerLogger extends BasicLogger {
      * A logger for logging deprecated resources usage
      */
     ControllerLogger DEPRECATED_LOGGER = Logger.getMessageLogger(ControllerLogger.class, ControllerLogger.class.getPackage().getName() + ".management-deprecated");
+
+    /**
+     * A logger for logging problems in the transformers
+     */
+    ControllerLogger TRANSFORMER_LOGGER = Logger.getMessageLogger(ControllerLogger.class, ControllerLogger.class.getPackage().getName() + ".transformer");
 
     /**
      * Logs a warning message indicating the address, represented by the {@code address} parameter, could not be
@@ -430,4 +436,12 @@ public interface ControllerLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 13400, value = "No operation named '%s' exists at address %s")
     void noHandlerForOperation(String operationName, PathAddress address);
+
+    @LogMessage(level = WARN)
+    @Message(id = 13401, value = "Transforming resource %s for host controller '%s' to core model version '%s' -- attributes %s do not support expressions in that model version and this resource will need to be ignored on that host.")
+    void rejectExpressionCoreModelResourceTransformerFoundExpressions(PathAddress pathAddress, String legacyHostName, ModelVersion modelVersion, Set<String> attributeNames);
+
+    @LogMessage(level = WARN)
+    @Message(id = 13402, value = "Transforming resource %s for host controller '%s' to subsystem '%s' model version '%s' -- attributes %s do not support expressions in that model version and this resource will need to be ignored on that host.")
+    void rejectExpressionSubsystemModelResourceTransformerFoundExpressions(PathAddress pathAddress, String legacyHostName, String subsystem, ModelVersion modelVersion, Set<String> attributeNames);
 }

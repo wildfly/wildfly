@@ -136,4 +136,12 @@ public class TransformationTargetImpl implements TransformationTarget {
     public ExtensionRegistry getExtensionRegistry() {
         return extensionRegistry;
     }
+
+    @Override
+    public String getHostName() {
+        if (transformationExclusion == null) {
+            return null;
+        }
+        return transformationExclusion.getHostName();
+    }
 }

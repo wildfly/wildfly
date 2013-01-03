@@ -19,21 +19,26 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.core.model.test.systemproperty;
+package org.jboss.as.controller.transform.chained;
 
-import org.jboss.as.core.model.test.util.TransformersTestParameters;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.ResourceTransformationContext;
+import org.jboss.as.controller.transform.ResourceTransformer;
 
 /**
+ * Provides chained transformation of resources.
  *
- * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @deprecated Experimental and likely to change
+ * @author Kabir Khan
  */
-@RunWith(Parameterized.class)
-public class DomainServerGroupSystemPropertyTransformersTestCase extends AbstractSystemPropertyTransformersTest {
+@Deprecated
+public interface ChainedResourceTransformerEntry {
 
-    public DomainServerGroupSystemPropertyTransformersTestCase(TransformersTestParameters params) {
-        super(params, true);
-    }
+    /**
+     * Similar to {@link ResourceTransformer#transformResource(ResourceTransformationContext, PathAddress, Resource)} but for use with {@link ChainedOperationTransformer}
+     */
+    @SuppressWarnings("deprecation")
+    void transformResource(ChainedResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException;
 }

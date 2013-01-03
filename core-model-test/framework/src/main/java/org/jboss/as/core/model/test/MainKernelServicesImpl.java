@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -48,7 +49,7 @@ import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.TransformationTargetImpl;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.controller.transform.Transformers;
-import org.jboss.as.core.model.bridge.local.LegacyControllerKernelServicesProxy;
+import org.jboss.as.core.model.bridge.impl.LegacyControllerKernelServicesProxy;
 import org.jboss.as.domain.controller.operations.ReadMasterDomainModelHandler;
 import org.jboss.as.host.controller.ignored.IgnoreDomainResourceTypeResource;
 import org.jboss.as.model.test.ModelTestModelControllerService;
@@ -134,9 +135,36 @@ public class MainKernelServicesImpl extends AbstractKernelServicesImpl {
 
     }
 
+    /**
+     * Execute an operation in the  controller containg the passed in version.
+     * The operation and results will be translated from the format for the main controller to the
+     * legacy controller's format.
+     *
+     * @param modelVersion the subsystem model version of the legacy subsystem model controller
+     * @param op the operation for the main controller
+     * @throws IllegalStateException if this is not the test's main model controller
+     * @throws IllegalStateException if there is no legacy controller containing the version of the subsystem
+     */
     public ModelNode executeOperation(final ModelVersion modelVersion, final TransformedOperation op) {
-
-        throw new IllegalStateException("NYI");
+        KernelServices legacy = getLegacyServices(modelVersion);
+        ModelNode result = new ModelNode();
+         if (op.getTransformedOperation() != null) {
+            result = legacy.executeOperation(op.getTransformedOperation(), new ModelController.OperationTransactionControl() {
+                    @Override
+                    public void operationPrepared(ModelController.OperationTransaction transaction, ModelNode result) {
+                        if(op.rejectOperation(result)) {
+                            transaction.rollback();
+                        } else {
+                            transaction.commit();
+                        }
+                    }
+                });
+        }
+        OperationResultTransformer resultTransformer = op.getResultTransformer();
+        if (resultTransformer != null) {
+            result = resultTransformer.transformResult(result);
+        }
+        return result;
     }
 
     private static  TransformationTarget.IgnoredTransformationRegistry MOCK_IGNORED_DOMAIN_RESOURCE_REGISTRY = new  TransformationTarget.IgnoredTransformationRegistry() {
@@ -149,6 +177,11 @@ public class MainKernelServicesImpl extends AbstractKernelServicesImpl {
         @Override
         public boolean isOperationTransformationIgnored(PathAddress address) {
             return false;
+        }
+
+        @Override
+        public String getHostName() {
+            return null;
         }
     };
 }
