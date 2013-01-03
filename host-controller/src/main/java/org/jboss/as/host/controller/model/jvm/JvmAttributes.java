@@ -72,7 +72,7 @@ public class JvmAttributes {
             .build();
     public static final SimpleAttributeDefinition AGENT_PATH =
             SimpleAttributeDefinitionBuilder.create(JvmAttributes.JVM_AGENT_PATH, ModelType.STRING, true)
-            .setAllowExpression(false)
+            .setAllowExpression(true)
             .setXmlName(JvmAttributes.VALUE)
             .build();
     public static final SimpleAttributeDefinition ENV_CLASSPATH_IGNORED =
@@ -96,7 +96,7 @@ public class JvmAttributes {
 
     public static final SimpleAttributeDefinition JAVA_HOME =
             SimpleAttributeDefinitionBuilder.create(JvmAttributes.JVM_JAVA_HOME, ModelType.STRING, true)
-            .setAllowExpression(false)
+            .setAllowExpression(true)
             .build();
 
     /**
