@@ -8,6 +8,8 @@ target
 .classpath
 .settings
 .metadata
+# ignore m2e annotation processing files
+.factorypath
 # ignore IDEA files
 *.iml
 *.ipr
