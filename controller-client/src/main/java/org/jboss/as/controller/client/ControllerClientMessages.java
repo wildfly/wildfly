@@ -24,6 +24,7 @@ package org.jboss.as.controller.client;
 
 import org.jboss.as.controller.client.helpers.domain.DeploymentAction.Type;
 import org.jboss.as.controller.client.helpers.domain.RollbackCancelledException;
+import org.jboss.dmr.ModelNode;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
@@ -339,6 +340,30 @@ public interface ControllerClientMessages {
      */
     @Message(id = 10649, value = "Allocation stack trace:")
     LeakDescription controllerClientNotClosed();
+
+    /**
+     * Creates an exception indicating the operation was successful and no failure description exists.
+     *
+     * @return a {@link IllegalArgumentException} for the error
+     */
+    @Message(id = 10650, value = "No failure description as the operation was successful.")
+    IllegalArgumentException noFailureDescription();
+
+    /**
+     * Creates an exception indicating the operation name was not defined.
+     *
+     * @return a {@link IllegalArgumentException} for the error
+     */
+    @Message(id = 10651, value = "The operation name was not defined.")
+    IllegalArgumentException operationNameNotFound();
+
+    /**
+     * Creates an exception indicating the address must be of type {@link org.jboss.dmr.ModelType#LIST list}.
+     *
+     * @return an {@link IllegalArgumentException} for the error
+     */
+    @Message(id = 10652, value = "The address must be of type ModelType.LIST.")
+    IllegalArgumentException invalidAddressType();
 
     class LeakDescription extends Throwable {
         private static final long serialVersionUID = -7193498784746897578L;
