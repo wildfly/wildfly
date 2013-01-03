@@ -50,22 +50,14 @@ public class VaultToolTestCase {
     String[] outputLines = ouput.split(System.getProperty("line.separator"));
 
     String vaultSharedKey = getStoredAttributeSharedKey(outputLines);
-<<<<<<< HEAD
     Assert.assertNotNull("VaultTool did not return a line starting with VAULT::", vaultSharedKey);
-=======
-    Assert.assertNotNull("VaultTool returned a line starting with VAULT::", vaultSharedKey);
->>>>>>> AS7-4654: Reopened: Instead of storing attribute's value in the vault,
 
     MockRuntimeVaultReader rvr = new MockRuntimeVaultReader();
     Map<String, Object> options = generateVaultOptionsMap();
     rvr.createVault("", options);
     String retrievedValueFromVault = rvr.retrieveFromVault(vaultSharedKey);
-<<<<<<< HEAD
     Assert.assertEquals("The value retrieved from vault is not the same as the one initially stored", VALUE_TO_STORE,
         retrievedValueFromVault);
-=======
-    Assert.assertEquals("The value retrieved from vault is the same as the one initially stored", VALUE_TO_STORE, retrievedValueFromVault);
->>>>>>> AS7-4654: Reopened: Instead of storing attribute's value in the vault,
   }
 
   private Map<String, Object> generateVaultOptionsMap() {
@@ -93,10 +85,6 @@ public class VaultToolTestCase {
   private String[] generateArgs() {
     List<String> args = new ArrayList<String>();
     addAll(args, "-k", "/tmp/vault.keystore");
-<<<<<<< HEAD
-    // addAll(args, "-v", KEYSTORE_ALIAS_VALUE);
-=======
->>>>>>> AS7-4654: Reopened: Instead of storing attribute's value in the vault,
     addAll(args, "-p", KEYSTORE_PASSWORD);
     addAll(args, "-e", ENC_FILE_DIR_VALUE);
     addAll(args, "-s", SALT_VALUE);
