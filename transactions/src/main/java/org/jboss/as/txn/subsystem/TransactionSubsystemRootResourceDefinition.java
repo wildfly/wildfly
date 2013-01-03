@@ -149,20 +149,22 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setAllowExpression(false).build();
 
     public static final SimpleAttributeDefinition USE_JDBC_STORE = new SimpleAttributeDefinitionBuilder(CommonAttributes.USE_JDBC_STORE, ModelType.BOOLEAN, true)
-                .setDefaultValue(new ModelNode().set(false))
+                .setDefaultValue(new ModelNode(false))
                 .setFlags(AttributeAccess.Flag.RESTART_JVM)
                 .setAlternatives(CommonAttributes.USEHORNETQSTORE)
                 .setAllowExpression(true).build();
     public static final SimpleAttributeDefinition JDBC_STORE_DATASOURCE = new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_STORE_DATASOURCE, ModelType.STRING, true)
                 .setFlags(AttributeAccess.Flag.RESTART_JVM)
                 .setXmlName(Attribute.RELATIVE_TO.getLocalName())
-                .setAllowExpression(true).build();
+                .setAllowExpression(true)
+                .setRequires(CommonAttributes.USE_JDBC_STORE).build();
     public static final SimpleAttributeDefinition JDBC_ACTION_STORE_TABLE_PREFIX = new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_ACTION_STORE_TABLE_PREFIX, ModelType.STRING, true)
+
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setXmlName(Attribute.PATH.getLocalName())
             .setAllowExpression(true).build();
     public static final SimpleAttributeDefinition JDBC_ACTION_STORE_DROP_TABLE = new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_ACTION_STORE_DROP_TABLE, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode().set(false))
+            .setDefaultValue(new ModelNode(false))
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setAllowExpression(true).build();
     public static final SimpleAttributeDefinition JDBC_COMMUNICATION_STORE_TABLE_PREFIX = new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_COMMUNICATION_STORE_TABLE_PREFIX, ModelType.STRING, true)
@@ -170,7 +172,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setXmlName(Attribute.PATH.getLocalName())
             .setAllowExpression(true).build();
     public static final SimpleAttributeDefinition JDBC_COMMUNICATION_STORE_DROP_TABLE = new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_COMMUNICATION_STORE_DROP_TABLE, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode().set(false))
+            .setDefaultValue(new ModelNode(false))
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setAllowExpression(true).build();
     public static final SimpleAttributeDefinition JDBC_STATE_STORE_TABLE_PREFIX = new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_STATE_STORE_TABLE_PREFIX, ModelType.STRING, true)
@@ -178,7 +180,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setXmlName(Attribute.PATH.getLocalName())
             .setAllowExpression(true).build();
     public static final SimpleAttributeDefinition JDBC_STATE_STORE_DROP_TABLE = new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_STATE_STORE_DROP_TABLE, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode().set(false))
+            .setDefaultValue(new ModelNode(false))
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setAllowExpression(true).build();
 
