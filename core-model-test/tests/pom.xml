@@ -40,6 +40,15 @@
           <plugin>
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-surefire-plugin</artifactId>
+              <executions>
+                 <execution>
+                    <id>default-test</id>
+                    <configuration>
+                       <argLine>${maven.test.jvmargs}</argLine>
+                       <forkMode>always</forkMode> 
+                    </configuration>
+                 </execution>
+              </executions>
               <configuration>
                   <redirectTestOutputToFile>true</redirectTestOutputToFile>
                   <enableAssertions>true</enableAssertions>

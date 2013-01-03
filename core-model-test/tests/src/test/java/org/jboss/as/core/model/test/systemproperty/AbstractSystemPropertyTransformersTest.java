@@ -40,6 +40,7 @@ import org.jboss.as.core.model.test.util.TransformersTestParameters;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  *
@@ -53,14 +54,18 @@ public abstract class AbstractSystemPropertyTransformersTest extends AbstractCor
     private final boolean serverGroup;
     private final ModelNode expectedUndefined;
 
-    public AbstractSystemPropertyTransformersTest(SystemPropertyTransformersTestParameters params, String xmlResource, boolean serverGroup) {
+    public AbstractSystemPropertyTransformersTest(TransformersTestParameters params, String xmlResource, boolean serverGroup) {
         this.modelVersion = params.getModelVersion();
         this.testControllerVersion = params.getTestControllerVersion();
         this.xmlResource = xmlResource;
         this.serverGroup = serverGroup;
-        this.expectedUndefined = params.getExpectedUndefined();
+        this.expectedUndefined = getExpectedUndefined(params.getModelVersion());
     }
 
+    @Parameters
+    public static List<Object[]> parameters(){
+        return TransformersTestParameters.setupVersions();
+    }
 
     @Test
     public void testSystemPropertyTransformer() throws Exception {
@@ -97,33 +102,14 @@ public abstract class AbstractSystemPropertyTransformersTest extends AbstractCor
         Assert.assertFalse(properties.get("sys.prop.test.four", VALUE).isDefined());
     }
 
-    static class SystemPropertyTransformersTestParameters extends TransformersTestParameters {
-        private ModelNode expectedUndefined;
-        public SystemPropertyTransformersTestParameters(TransformersTestParameters delegate, ModelNode expectedUndefined) {
-            super(delegate);
-            this.expectedUndefined = expectedUndefined;
+    private ModelNode getExpectedUndefined(ModelVersion modelVersion){
+        if (modelVersion.equals(ModelVersion.create(1, 4, 0))) {
+            return new ModelNode();
+        } else if (modelVersion.equals(ModelVersion.create(1, 2, 0)) || modelVersion.equals(ModelVersion.create(1, 3, 0))) {
+            return new ModelNode(true);
+        } else {
+            throw new IllegalStateException("Not known model version " + modelVersion);
         }
-
-        public ModelNode getExpectedUndefined() {
-            return expectedUndefined;
-        }
-
     }
 
-    static List<Object[]> createSystemPropertyTestTransformerParameters(){
-        List<Object[]> params = TransformersTestParameters.setupVersions();
-        for (Object[] element : params) {
-            TransformersTestParameters param = (TransformersTestParameters)element[0];
-            ModelNode expectedUndefined;
-            if (param.getModelVersion().equals(ModelVersion.create(1, 4, 0))) {
-                expectedUndefined = new ModelNode();
-            } else if (param.getModelVersion().equals(ModelVersion.create(1, 2, 0))) {
-                expectedUndefined = new ModelNode(true);
-            } else {
-                throw new IllegalStateException("Not known model version " + param.getModelVersion());
-            }
-            element[0] = new SystemPropertyTransformersTestParameters(param, expectedUndefined);
-        }
-        return params;
-    }
 }
