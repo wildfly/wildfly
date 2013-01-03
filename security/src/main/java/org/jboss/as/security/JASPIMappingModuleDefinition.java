@@ -1,7 +1,7 @@
 /*
  *
  *  JBoss, Home of Professional Open Source.
- *  Copyright 2012, Red Hat, Inc., and individual contributors
+ *  Copyright 2013, Red Hat, Inc., and individual contributors
  *  as indicated by the @author tags. See the copyright.txt file in the
  *  distribution for a full listing of individual contributors.
  *
@@ -46,7 +46,8 @@ public class JASPIMappingModuleDefinition extends MappingModuleDefinition {
 
     private static final SimpleAttributeDefinition FLAG = new SimpleAttributeDefinitionBuilder(Constants.FLAG, ModelType.STRING)
             .setAllowNull(true)
-            .setValidator(new EnumValidator<ModuleFlag>(ModuleFlag.class, true, false))
+            .setValidator(new EnumValidator<ModuleFlag>(ModuleFlag.class, true, true))
+            .setAllowExpression(true)
             .build();
 
 

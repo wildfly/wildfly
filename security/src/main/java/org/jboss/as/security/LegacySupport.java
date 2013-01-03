@@ -71,7 +71,7 @@ import org.jboss.dmr.Property;
  *
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
-public class LegacySupport {
+class LegacySupport {
 
     private LegacySupport() {
 

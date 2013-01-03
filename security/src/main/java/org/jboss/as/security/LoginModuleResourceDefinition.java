@@ -49,7 +49,7 @@ public class LoginModuleResourceDefinition extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition FLAG = new SimpleAttributeDefinitionBuilder(Constants.FLAG, ModelType.STRING)
             .setAllowNull(false)
             .setAllowExpression(true)
-            .setValidator(new EnumValidator<ModuleFlag>(ModuleFlag.class, false, false))
+            .setValidator(new EnumValidator<ModuleFlag>(ModuleFlag.class, false, true))
             .build();
 
     static final SimpleAttributeDefinition MODULE = new SimpleAttributeDefinitionBuilder(Constants.MODULE, ModelType.STRING)
