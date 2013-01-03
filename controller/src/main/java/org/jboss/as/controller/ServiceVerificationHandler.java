@@ -44,6 +44,7 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
  * if the service has a problme starting.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public final class ServiceVerificationHandler extends AbstractServiceListener<Object> implements ServiceListener<Object>, OperationStepHandler {
     private final StabilityMonitor monitor = new StabilityMonitor();
