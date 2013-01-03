@@ -36,8 +36,8 @@ import javax.naming.NameClassPair;
 import javax.naming.NameParser;
 import javax.naming.NamingEnumeration;
 
+import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
-import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.security.SecurityMessages;
 import org.jboss.as.security.plugins.DefaultAuthenticationCacheFactory;
@@ -55,9 +55,19 @@ import org.jboss.security.SecurityConstants;
  *
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  */
-public class SecurityDomainJndiInjectable implements InvocationHandler, ManagedReferenceFactory {
+public class SecurityDomainJndiInjectable implements InvocationHandler, ContextListAndJndiViewManagedReferenceFactory {
 
     private final InjectedValue<ISecurityManagement> securityManagementValue = new InjectedValue<ISecurityManagement>();
+
+    @Override
+    public String getInstanceClassName() {
+        return getReference().getInstance().getClass().getName();
+    }
+
+    @Override
+    public String getJndiViewInstanceValue() {
+        return String.valueOf(getReference().getInstance());
+    }
 
     /**
      * {@inheritDoc}

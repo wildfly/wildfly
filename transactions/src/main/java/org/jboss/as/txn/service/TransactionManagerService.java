@@ -47,9 +47,6 @@ public class TransactionManagerService extends AbstractService<TransactionManage
     public static ServiceController<TransactionManager> addService(final ServiceTarget target, final ServiceVerificationHandler verificationHandler) {
         TransactionManagerService service = new TransactionManagerService();
         ServiceBuilder<TransactionManager> serviceBuilder = target.addService(SERVICE_NAME, service);
-        // The 'jbosgi' prefix followed by the FQN of the service interface allows the OSGi layer
-        // to find the service using context.getServiceReference(TransactionManager.class.getName())
-        serviceBuilder.addAliases(ServiceName.of("jbosgi", "xservice", TransactionManager.class.getName()));
         serviceBuilder.addDependency(ArjunaTransactionManagerService.SERVICE_NAME, com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, service.injectedArjunaTM);
         serviceBuilder.addListener(verificationHandler);
         return serviceBuilder.install();

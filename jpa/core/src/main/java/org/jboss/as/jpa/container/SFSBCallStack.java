@@ -38,89 +38,81 @@ public class SFSBCallStack {
     /**
      * Each thread will have its own list of SFSB invocations in progress.
      */
-    private static ThreadLocal<ArrayList<Map<String, ReferenceCountedEntityManager>>> SFSBInvocationStack = new ThreadLocal<ArrayList<Map<String, ReferenceCountedEntityManager>>>() {
-        protected ArrayList<Map<String, ReferenceCountedEntityManager>> initialValue() {
-            return new ArrayList<Map<String, ReferenceCountedEntityManager>>();
+    private static ThreadLocal<ArrayList<Map<String, ExtendedEntityManager>>> SFSBInvocationStack = new ThreadLocal<ArrayList<Map<String, ExtendedEntityManager>>>() {
+        protected ArrayList<Map<String, ExtendedEntityManager>> initialValue() {
+            return new ArrayList<Map<String, ExtendedEntityManager>>();
         }
     };
 
     /**
-     * Entity managers that form part of the
+     * During SFSB creation, track the injected extended persistence contexts
      */
-    private static ThreadLocal<Map<String, ReferenceCountedEntityManager>> sfsbCreationMap = new ThreadLocal<Map<String, ReferenceCountedEntityManager>>();
+    private static ThreadLocal<Map<String, ExtendedEntityManager>> sfsbCreationTimeXPCRegistration = new ThreadLocal<Map<String, ExtendedEntityManager>>();
 
-    private static ThreadLocal<Integer> sfsbCreationCallStackCount = new ThreadLocal<Integer>() {
+    private static ThreadLocal<SFSBInjectedXPCs> sfsbCreationTimeInjectedXPCs = new ThreadLocal<SFSBInjectedXPCs>();
+    /**
+     * Track the SFSB bean injection nesting level.  Zero indicates the top level bean, one is the first level of SFSBs injected,
+     * two is the second level of SFSBs injected...
+     */
+    private static ThreadLocal<Integer> sfsbCreationBeanNestingLevel = new ThreadLocal<Integer>() {
         @Override
         protected Integer initialValue() {
             return 0;
         }
     };
 
+    public static int getSFSBCreationBeanNestingLevel() {
+        return sfsbCreationBeanNestingLevel.get();
+    }
+
     /**
      * called from SFSBPreCreateInterceptor, before bean creation
      */
     public static void beginSfsbCreation() {
-        int no = sfsbCreationCallStackCount.get();
+        int no = sfsbCreationBeanNestingLevel.get();
         if (no == 0) {
-            sfsbCreationMap.set(new HashMap<String, ReferenceCountedEntityManager>());
+            sfsbCreationTimeXPCRegistration.set(new HashMap<String, ExtendedEntityManager>());
+            // create new tracking structure (passing in parent levels tracking structure or null if toplevel)
+            sfsbCreationTimeInjectedXPCs.set(new SFSBInjectedXPCs(sfsbCreationTimeInjectedXPCs.get(), null));
         }
-        sfsbCreationCallStackCount.set(no + 1);
+        else {
+            // create new tracking structure (passing in parent levels tracking structure or null if toplevel)
+            SFSBInjectedXPCs parent = sfsbCreationTimeInjectedXPCs.get();
+            sfsbCreationTimeInjectedXPCs.set(new SFSBInjectedXPCs(parent, parent.getTopLevel()));
+        }
+        sfsbCreationBeanNestingLevel.set(no + 1);
     }
 
     /**
      * called from SFSBPreCreateInterceptor, after bean creation
      */
     public static void endSfsbCreation() {
-        int no = sfsbCreationCallStackCount.get();
+        int no = sfsbCreationBeanNestingLevel.get();
         no--;
-        sfsbCreationCallStackCount.set(no);
+        sfsbCreationBeanNestingLevel.set(no);
+
         if (no == 0) {
-            sfsbCreationMap.remove();
+            // Completed creating top level bean, remove 'xpc creation tracking' thread local
+            sfsbCreationTimeXPCRegistration.remove();
+            sfsbCreationTimeInjectedXPCs.remove();
+        }
+        else {
+            // finished creating a sub-bean, switch to parent level 'xpc creation tracking'
+            sfsbCreationTimeInjectedXPCs.set(sfsbCreationTimeInjectedXPCs.get().getParent());
         }
     }
 
-    /**
-     * register the entity manager map so it is accessible to other SFSB's during the creation process
-     *
-     * @param scopedPuName
-     * @param entityManager
-     */
-    public static void extendedPersistenceContextCreated(String scopedPuName, ReferenceCountedEntityManager entityManager) {
-        if (sfsbCreationCallStackCount.get() > 0) {
-            Map<String, ReferenceCountedEntityManager> map = sfsbCreationMap.get();
-            if (!map.containsKey(scopedPuName)) {
-                map.put(scopedPuName, entityManager);
-            }
-        }
+    static SFSBInjectedXPCs getSFSBCreationTimeInjectedXPCs() {
+        return sfsbCreationTimeInjectedXPCs.get();
     }
 
-    /**
-     * For the current thread, look at the call stack (containing entity manager maps) and return the first extended
-     * persistence context that is based on puScopedName.
-     *
-     * @param puScopedName Scoped pu name
-     * @return the found ReferenceCountedEntityManager (XPC) that matches puScopedName or null if not found
-     */
-    public static ReferenceCountedEntityManager findPersistenceContext(String puScopedName) {
-        for (Map<String, ReferenceCountedEntityManager> handle : currentSFSBCallStack()) {
-            final ReferenceCountedEntityManager res = handle.get(puScopedName);
-            if(res != null) {
-                return res;
-            }
-        }
-        Map<String, ReferenceCountedEntityManager> map = sfsbCreationMap.get();
-        if (map != null) {
-            return map.get(puScopedName);
-        }
-        return null;
-    }
 
     /**
      * Return the current entity manager call stack
      *
      * @return call stack (may be empty but never null)
      */
-    public static ArrayList<Map<String, ReferenceCountedEntityManager>> currentSFSBCallStack() {
+    public static ArrayList<Map<String, ExtendedEntityManager>> currentSFSBCallStack() {
         return SFSBInvocationStack.get();
     }
 
@@ -129,8 +121,8 @@ public class SFSBCallStack {
      *
      * @return
      */
-    public static Map<String, ReferenceCountedEntityManager> currentSFSBCallStackInvocation() {
-        ArrayList<Map<String, ReferenceCountedEntityManager>> stack = SFSBInvocationStack.get();
+    public static Map<String, ExtendedEntityManager> currentSFSBCallStackInvocation() {
+        ArrayList<Map<String, ExtendedEntityManager>> stack = SFSBInvocationStack.get();
         if ( stack != null && stack.size() > 0) {
             return stack.get(stack.size() - 1);
         }
@@ -142,7 +134,7 @@ public class SFSBCallStack {
      *
      * @param entityManagers the entity manager map
      */
-    public static void pushCall(Map<String, ReferenceCountedEntityManager> entityManagers) {
+    public static void pushCall(Map<String, ExtendedEntityManager> entityManagers) {
         currentSFSBCallStack().add(entityManagers);
 
         if (entityManagers != null) {
@@ -155,8 +147,8 @@ public class SFSBCallStack {
              *  calls EntityManager.joinTransaction.
              *  "
              */
-            for(ReferenceCountedEntityManager referenceCountedEntityManager: entityManagers.values()) {
-                referenceCountedEntityManager.getEntityManager().internalAssociateWithJtaTx();
+            for(ExtendedEntityManager extendedEntityManager: entityManagers.values()) {
+                extendedEntityManager.internalAssociateWithJtaTx();
             }
         }
 
@@ -167,10 +159,26 @@ public class SFSBCallStack {
      *
      * @return the entity manager map
      */
-    public static Map<String, ReferenceCountedEntityManager> popCall() {
-        ArrayList<Map<String, ReferenceCountedEntityManager>> stack = currentSFSBCallStack();
-        Map<String, ReferenceCountedEntityManager> result = stack.remove(stack.size() - 1);
+    public static Map<String, ExtendedEntityManager> popCall() {
+        ArrayList<Map<String, ExtendedEntityManager>> stack = currentSFSBCallStack();
+        Map<String, ExtendedEntityManager> result = stack.remove(stack.size() - 1);
         stack.trimToSize();
         return result;
     }
+
+    /**
+     * gets the current SFSB invocation off the invocation call stack
+     *
+     * @return the entity manager map
+     */
+    static Map<String, ExtendedEntityManager> getCurrentCall() {
+        ArrayList<Map<String, ExtendedEntityManager>> stack = currentSFSBCallStack();
+        Map<String, ExtendedEntityManager> result = null;
+        if (stack != null) {
+            result = stack.get(stack.size() - 1);
+        }
+        return result;
+    }
+
+
 }

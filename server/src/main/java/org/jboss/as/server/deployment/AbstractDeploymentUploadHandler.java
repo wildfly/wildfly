@@ -21,10 +21,10 @@ package org.jboss.as.server.deployment;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerMessages;
@@ -39,10 +39,11 @@ public abstract class AbstractDeploymentUploadHandler implements OperationStepHa
 
     private final ContentRepository contentRepository;
 
-    private final ParametersValidator validator = new ParametersValidator();
+    protected final AttributeDefinition attribute;
 
-    protected AbstractDeploymentUploadHandler(final ContentRepository contentRepository) {
+    protected AbstractDeploymentUploadHandler(final ContentRepository contentRepository, final AttributeDefinition attribute) {
         this.contentRepository = contentRepository;
+        this.attribute = attribute;
     }
 
     /**
@@ -51,7 +52,7 @@ public abstract class AbstractDeploymentUploadHandler implements OperationStepHa
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         try {
-            validator.validate(operation);
+            attribute.validateOperation(operation);
 
             InputStream is = getContentInputStream(context, operation);
             try {
@@ -66,7 +67,7 @@ public abstract class AbstractDeploymentUploadHandler implements OperationStepHa
             throw ServerMessages.MESSAGES.caughtIOExceptionUploadingContent(e);
         }
 
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.stepCompleted();
     }
 
     protected abstract InputStream getContentInputStream(OperationContext context, ModelNode operation) throws IOException, OperationFailedException;

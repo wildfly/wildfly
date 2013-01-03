@@ -22,44 +22,37 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import org.jboss.as.subsystem.test.AbstractSubsystemTest;
+import java.io.IOException;
+
+import org.jboss.as.controller.RunningMode;
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.subsystem.test.KernelServices;
-import org.jboss.dmr.ModelNode;
-import org.junit.Test;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public class SubsystemParsingUnitTestCase extends AbstractSubsystemTest {
+public class SubsystemParsingUnitTestCase extends AbstractSubsystemBaseTest {
 
     public SubsystemParsingUnitTestCase() {
         super(EJB3Extension.SUBSYSTEM_NAME, new EJB3Extension());
     }
 
 
-    @Test
-    public void testParseAndMarshalModel() throws Exception {
-        //Parse the subsystem xml and install into the first controller
-        String subsystemXml = readResource("subsystem.xml");
-
-        AdditionalInitialization additionalInit = AdditionalInitialization.MANAGEMENT;
-
-        KernelServices servicesA = super.installInController(additionalInit, subsystemXml);
-        //Get the model and the persisted xml from the first controller
-        ModelNode modelA = servicesA.readWholeModel();
-        String marshalled = servicesA.getPersistedSubsystemXml();
-        servicesA.shutdown();
-
-        System.out.println(marshalled);
-
-        //Install the persisted xml from the first controller into a second controller
-        KernelServices servicesB = super.installInController(additionalInit, marshalled);
-        ModelNode modelB = servicesB.readWholeModel();
-
-        //Make sure the models from the two controllers are identical
-        super.compare(modelA, modelB);
-
-        assertRemoveSubsystemResources(servicesA);
+    @Override
+    protected String getSubsystemXml() throws IOException {
+        return readResource("subsystem.xml");
     }
+
+  /*  @Override
+    protected AdditionalInitialization createAdditionalInitialization() {
+        System.setProperty(ServerEnvironment.NODE_NAME, "myNode");
+        return new AdditionalInitialization() {
+            @Override
+            protected RunningMode getRunningMode() {
+                return RunningMode.NORMAL;
+            }
+        };
+
+    }*/
 }

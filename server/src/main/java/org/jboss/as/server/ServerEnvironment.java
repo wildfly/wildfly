@@ -490,23 +490,8 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         // Create a separate copy for tracking later changes
         this.providedProperties = new Properties();
         copyProperties(primordialProperties, providedProperties);
-    }
 
-    private static void copyProperties(Properties src, Properties dest) {
-        for (Map.Entry<Object, Object> entry : src.entrySet()) {
-            Object key = entry.getKey();
-            if (key instanceof String) {
-                Object val = entry.getValue();
-                if (val == null || val instanceof String) {
-                    dest.setProperty((String) key, (String) val);
-                }
-            }
-        }
-    }
-
-    // TODO AS7-3617 why is this not done in the constructor?
-    @SuppressWarnings("deprecation")
-    void install() {
+        // Provide standard system properties for environment items
         SecurityActions.setSystemProperty(QUALIFIED_HOST_NAME, qualifiedHostName);
         SecurityActions.setSystemProperty(HOST_NAME, hostName);
         SecurityActions.setSystemProperty(SERVER_NAME, serverName);
@@ -536,6 +521,18 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
             Module.registerURLStreamHandlerFactoryModule(vfsModule);
         } catch (Exception ex) {
             ServerLogger.ROOT_LOGGER.cannotAddURLStreamHandlerFactory(ex, VFS_MODULE_IDENTIFIER);
+        }
+    }
+
+    private static void copyProperties(Properties src, Properties dest) {
+        for (Map.Entry<Object, Object> entry : src.entrySet()) {
+            Object key = entry.getKey();
+            if (key instanceof String) {
+                Object val = entry.getValue();
+                if (val == null || val instanceof String) {
+                    dest.setProperty((String) key, (String) val);
+                }
+            }
         }
     }
 

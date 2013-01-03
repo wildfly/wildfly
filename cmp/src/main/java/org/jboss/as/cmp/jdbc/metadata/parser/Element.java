@@ -50,6 +50,7 @@ enum Element {
     CMR_FIELD("cmr-field-name"),
     COLUMN_NAME("column-name"),
     CREATE_TABLE("create-table"),
+    CREATE_TABLE_IF_NOT_EXISTS_SUPPORTED("create-table-if-not-exists-supported"),
     CREATED_BY("created-by"),
     CREATED_TIME("created-time"),
     DATASOURCE("datasource"),

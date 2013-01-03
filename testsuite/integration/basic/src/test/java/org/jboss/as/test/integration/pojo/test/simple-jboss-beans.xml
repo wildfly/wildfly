@@ -51,6 +51,15 @@
         <depends>Blocker</depends>
     </bean>
 
+    <bean name="ParamTextValue" class="org.jboss.as.test.integration.pojo.support.TInjectee">
+        <constructor>
+            <parameter>Wazup, </parameter>
+        </constructor>
+        <install method="sayHello">
+            <parameter><value>POJO subsystem!</value></parameter>
+        </install>
+    </bean>
+
     <bean name="Blocker" class="org.jboss.as.test.integration.pojo.support.TInjectee"/>
 
     <bean name="B2" class="org.jboss.as.test.integration.pojo.support.TBean">

@@ -22,18 +22,13 @@
 
 package org.jboss.as.messaging.jms.bridge;
 
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
-
-import java.util.HashMap;
-import java.util.Map;
+import static org.jboss.as.controller.OperationContext.Stage.MODEL;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
-import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.messaging.AlternativeAttributeCheckHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -41,50 +36,33 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Jeff Mesnil (c) 2012 Red Hat Inc.
  */
-public class JMSBridgeWriteAttributeHandler extends WriteAttributeHandlers.WriteAttributeOperationHandler {
+public class JMSBridgeWriteAttributeHandler extends ReloadRequiredWriteAttributeHandler {
+
+    private static final AttributeDefinition[] ATTRIBUTES = mergeAttributes();
+
+    private static AttributeDefinition[] mergeAttributes() {
+        AttributeDefinition[] merged = new AttributeDefinition[JMSBridgeDefinition.JMS_BRIDGE_ATTRIBUTES.length
+                + JMSBridgeDefinition.JMS_SOURCE_ATTRIBUTES.length
+                + JMSBridgeDefinition.JMS_TARGET_ATTRIBUTES.length];
+        System.arraycopy(JMSBridgeDefinition.JMS_BRIDGE_ATTRIBUTES, 0, merged, 0, JMSBridgeDefinition.JMS_BRIDGE_ATTRIBUTES.length);
+        System.arraycopy(JMSBridgeDefinition.JMS_SOURCE_ATTRIBUTES, 0, merged,
+                JMSBridgeDefinition.JMS_BRIDGE_ATTRIBUTES.length, JMSBridgeDefinition.JMS_SOURCE_ATTRIBUTES.length);
+        System.arraycopy(JMSBridgeDefinition.JMS_TARGET_ATTRIBUTES, 0, merged,
+                JMSBridgeDefinition.JMS_BRIDGE_ATTRIBUTES.length + JMSBridgeDefinition.JMS_SOURCE_ATTRIBUTES.length,
+                JMSBridgeDefinition.JMS_TARGET_ATTRIBUTES.length);
+        return merged;
+    }
 
     public static final JMSBridgeWriteAttributeHandler INSTANCE = new JMSBridgeWriteAttributeHandler();
 
-    private final Map<String, AttributeDefinition> attributes = new HashMap<String, AttributeDefinition>();
-
     private JMSBridgeWriteAttributeHandler() {
-        for (AttributeDefinition attr : JMSBridgeDefinition.JMS_BRIDGE_ATTRIBUTES) {
-            attributes.put(attr.getName(), attr);
-        }
-        for (AttributeDefinition attr : JMSBridgeDefinition.JMS_SOURCE_ATTRIBUTES) {
-            attributes.put(attr.getName(), attr);
-        }
-        for (AttributeDefinition attr : JMSBridgeDefinition.JMS_TARGET_ATTRIBUTES) {
-            attributes.put(attr.getName(), attr);
-        }
+        super(ATTRIBUTES);
     }
 
     @Override
-    protected void modelChanged(final OperationContext context, final ModelNode operation, final String attributeName,
-                                final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
-        context.addStep(new OperationStepHandler() {
-            @Override
-            public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-                final AttributeDefinition attr = attributes.get(attributeName);
-                final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
-                if(attr.hasAlternative(resource.getModel())) {
-                    context.setRollbackOnly();
-                    throw new OperationFailedException(new ModelNode().set(MESSAGES.altAttributeAlreadyDefined(attributeName)));
-                }
-                context.completeStep();
-            }
-        }, OperationContext.Stage.VERIFY);
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        context.addStep(new AlternativeAttributeCheckHandler(ATTRIBUTES), MODEL);
 
-        context.reloadRequired();
-
-        if (context.completeStep() != OperationContext.ResultAction.KEEP) {
-            context.revertReloadRequired();
-        }
-    }
-
-    @Override
-    protected void validateValue(String name, ModelNode value) throws OperationFailedException {
-        AttributeDefinition attr = attributes.get(name);
-        attr.getValidator().validateParameter(name, value);
+        super.execute(context, operation);
     }
 }

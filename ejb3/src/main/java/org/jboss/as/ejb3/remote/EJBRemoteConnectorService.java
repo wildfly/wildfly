@@ -35,7 +35,6 @@ import org.jboss.as.server.ServerEnvironment;
 import org.jboss.ejb.client.ConstantContextSelector;
 import org.jboss.ejb.client.EJBClientTransactionContext;
 import org.jboss.ejb.client.remoting.PackedInteger;
-import org.jboss.logging.Logger;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.msc.inject.Injector;
@@ -71,7 +70,6 @@ import java.util.concurrent.ExecutorService;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorService> {
-    private static final Logger log = Logger.getLogger(EJBRemoteConnectorService.class);
 
     // TODO: Should this be exposed via the management APIs?
     private static final String EJB_CHANNEL_NAME = "jboss.ejb";
@@ -84,6 +82,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
     private final InjectedValue<EJBRemoteTransactionsRepository> ejbRemoteTransactionsRepositoryInjectedValue = new InjectedValue<EJBRemoteTransactionsRepository>();
     private final InjectedValue<RegistryCollector> clusterRegistryCollector = new InjectedValue<RegistryCollector>();
     private final InjectedValue<ServerEnvironment> serverEnvironment = new InjectedValue<ServerEnvironment>();
+    private final InjectedValue<RemoteAsyncInvocationCancelStatusService> remoteAsyncInvocationCancelStatus = new InjectedValue<RemoteAsyncInvocationCancelStatusService>();
     private final InjectedValue<TransactionManager> txManager = new InjectedValue<TransactionManager>();
     private final InjectedValue<TransactionSynchronizationRegistry> txSyncRegistry = new InjectedValue<TransactionSynchronizationRegistry>();
     private final ServiceName remotingConnectorServiceName;
@@ -198,12 +197,12 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
         public void channelOpened(Channel channel) {
             final ChannelAssociation channelAssociation = new ChannelAssociation(channel);
 
-            log.tracef("Welcome %s to the " + EJB_CHANNEL_NAME + " channel", channel);
+            EjbLogger.ROOT_LOGGER.tracef("Welcome %s to the " + EJB_CHANNEL_NAME + " channel", channel);
             channel.addCloseHandler(new CloseHandler<Channel>() {
                 @Override
                 public void handleClose(Channel closed, IOException exception) {
                     // do nothing
-                    log.tracef("channel %s closed", closed);
+                    EjbLogger.ROOT_LOGGER.tracef("channel %s closed", closed);
                 }
             });
             // send the server version and supported marshalling types to the client
@@ -259,7 +258,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
             try {
                 final byte version = dataInputStream.readByte();
                 final String clientMarshallingStrategy = dataInputStream.readUTF();
-                log.debug("Client with protocol version " + version + " and marshalling strategy " + clientMarshallingStrategy +
+                EjbLogger.ROOT_LOGGER.debug("Client with protocol version " + version + " and marshalling strategy " + clientMarshallingStrategy +
                         " trying to communicate on " + channel);
                 if (!EJBRemoteConnectorService.this.isSupportedMarshallingStrategy(clientMarshallingStrategy)) {
                     EjbLogger.EJB3_LOGGER.unsupportedClientMarshallingStrategy(clientMarshallingStrategy, channel);
@@ -272,9 +271,10 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
                         // enroll VersionOneProtocolChannelReceiver for handling subsequent messages on this channel
                         final DeploymentRepository deploymentRepository = EJBRemoteConnectorService.this.deploymentRepositoryInjectedValue.getValue();
                         final RegistryCollector<String, List<ClientMapping>> clientMappingRegistryCollector = EJBRemoteConnectorService.this.clusterRegistryCollector.getValue();
+                        final RemoteAsyncInvocationCancelStatusService asyncInvocationCancelStatus = EJBRemoteConnectorService.this.remoteAsyncInvocationCancelStatus.getValue();
                         final VersionOneProtocolChannelReceiver receiver = new VersionOneProtocolChannelReceiver(this.channelAssociation, deploymentRepository,
                                 EJBRemoteConnectorService.this.ejbRemoteTransactionsRepositoryInjectedValue.getValue(), clientMappingRegistryCollector,
-                                marshallerFactory, executorService.getValue());
+                                marshallerFactory, executorService.getValue(), asyncInvocationCancelStatus);
                         // trigger the receiving
                         receiver.startReceiving();
                         break;
@@ -285,7 +285,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
             } catch (IOException e) {
                 // log it
-                log.errorf(e, "Exception on channel %s from message %s", channel, messageInputStream);
+                EjbLogger.ROOT_LOGGER.exceptionOnChannel(e, channel, messageInputStream);
                 IoUtils.safeClose(channel);
             } finally {
                 IoUtils.safeClose(messageInputStream);
@@ -313,6 +313,10 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
     public Injector<ServerEnvironment> getServerEnvironmentInjector() {
         return this.serverEnvironment;
+    }
+
+    public Injector<RemoteAsyncInvocationCancelStatusService> getAsyncInvocationCancelStatusInjector() {
+        return this.remoteAsyncInvocationCancelStatus;
     }
 
     private boolean isSupportedMarshallingStrategy(final String strategy) {

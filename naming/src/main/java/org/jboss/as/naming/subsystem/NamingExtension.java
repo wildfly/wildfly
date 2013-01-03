@@ -22,10 +22,15 @@
 
 package org.jboss.as.naming.subsystem;
 
-import java.util.EnumSet;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
@@ -33,15 +38,9 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.controller.registry.OperationEntry.Flag;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.naming.management.JndiViewOperation;
 import org.jboss.dmr.ModelNode;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 /**
  * Domain extension used to initialize the naming subsystem element handlers.
@@ -55,9 +54,10 @@ public class NamingExtension implements Extension {
     public static final String NAMESPACE_1_0 = "urn:jboss:domain:naming:1.0";
     public static final String NAMESPACE_1_1 = "urn:jboss:domain:naming:1.1";
     public static final String NAMESPACE_1_2 = "urn:jboss:domain:naming:1.2";
+    public static final String NAMESPACE_1_3 = "urn:jboss:domain:naming:1.3";
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 1;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 2;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     public static final String RESOURCE_NAME = NamingExtension.class.getPackage().getName() + ".LocalDescriptions";
@@ -76,16 +76,20 @@ public class NamingExtension implements Extension {
 
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(NamingSubsystemRootResourceDefinition.INSTANCE);
 
-        registration.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE, GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
         registration.registerSubModel(NamingBindingResourceDefinition.INSTANCE);
         registration.registerSubModel(RemoteNamingResourceDefinition.INSTANCE);
 
         if (context.isRuntimeOnlyRegistrationValid()) {
-            registration.registerOperationHandler(JndiViewOperation.OPERATION_NAME, JndiViewOperation.INSTANCE, NamingSubsystemRootResourceDefinition.JNDI_VIEW, false, EnumSet.of(Flag.RUNTIME_ONLY));
+            registration.registerOperationHandler(NamingSubsystemRootResourceDefinition.JNDI_VIEW, JndiViewOperation.INSTANCE, false);
         }
 
-        subsystem.registerXMLElementWriter(NamingSubsystem12Parser.INSTANCE);
+        subsystem.registerXMLElementWriter(NamingSubsystem13Parser.INSTANCE);
+
+        // register 1.1.0 transformer
+        final TransformersSubRegistration transformersSubRegistration110 = subsystem.registerModelTransformers(ModelVersion.create(1, 1, 0), new Naming110SubsystemTransformer());
+        transformersSubRegistration110.registerSubResource(NamingSubsystemModel.BINDING_PATH,new NameBindingAdd110OperationTransformer());
     }
 
     /**
@@ -96,6 +100,7 @@ public class NamingExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_0, NamingSubsystem10Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_1, NamingSubsystem11Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_2, NamingSubsystem12Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_3, NamingSubsystem13Parser.INSTANCE);
     }
 
     static ModelNode createAddOperation() {

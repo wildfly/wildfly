@@ -72,12 +72,14 @@ public class LogStoreTransactionDeleteHandler implements OperationStepHandler {
 
                 context.acquireControllerLock();
                 logStoreResource.removeChild(element);
-
-                context.completeStep();
             }
+        } catch (OperationFailedException e) {
+            throw e;
         } catch (Exception e) {
             throw new OperationFailedException(e.getMessage());
         }
+
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
 
     }
 }

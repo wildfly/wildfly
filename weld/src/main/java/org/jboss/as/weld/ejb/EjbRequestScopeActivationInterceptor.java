@@ -27,7 +27,7 @@ import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
 
 import org.jboss.as.server.CurrentServiceContainer;
-import org.jboss.as.weld.WeldContainer;
+import org.jboss.as.weld.WeldBootstrapService;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
@@ -64,7 +64,7 @@ public class EjbRequestScopeActivationInterceptor implements Serializable, org.j
     public Object processInvocation(final InterceptorContext context) throws Exception {
         //get the reference to the bean manager on the first invocation
         if(beanManager == null) {
-            final WeldContainer weldContainer = (WeldContainer) currentServiceContainer().getRequiredService(weldContainerServiceName).getValue();
+            final WeldBootstrapService weldContainer = (WeldBootstrapService) currentServiceContainer().getRequiredService(weldContainerServiceName).getValue();
             beanManager = (BeanManagerImpl) weldContainer.getBeanManager();
         }
 

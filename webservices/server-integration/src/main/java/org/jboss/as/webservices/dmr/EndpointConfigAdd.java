@@ -54,6 +54,14 @@ final class EndpointConfigAdd extends AbstractAddStepHandler {
     }
 
     @Override
+    protected void rollbackRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final List<ServiceController<?>> controllers) {
+        super.rollbackRuntime(context, operation, model, controllers);
+        if (!context.isBooting()) {
+            context.revertReloadRequired();
+        }
+    }
+
+    @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         final ServerConfig config = getServerConfig(context);
         if (config != null) {
@@ -64,7 +72,7 @@ final class EndpointConfigAdd extends AbstractAddStepHandler {
             endpointConfig.setConfigName(name);
             config.addEndpointConfig(endpointConfig);
             if (!context.isBooting()) {
-                context.restartRequired();
+                context.reloadRequired();
             }
         }
     }

@@ -29,9 +29,8 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 
 /**
- * Runs early in the SFSB chain, to make sure that SFSB create operations inherit extended persistence contexts properly
+ * Runs early in the SFSB chain, to make sure that SFSB creation operations can inherit extended persistence contexts properly
  * <p/>
- * TODO: This is a hack, SFSB XPC inheritance needs a big refactor
  *
  * @author Stuart Douglas
  */
@@ -42,9 +41,14 @@ public class SFSBPreCreateInterceptor implements Interceptor {
     @Override
     public Object processInvocation(InterceptorContext interceptorContext) throws Exception {
         try {
+            // beginSfsbCreation() will setup a "creation time" thread local store for tracking references to extended
+            // persistence contexts.
             SFSBCallStack.beginSfsbCreation();
             return interceptorContext.proceed();
         } finally {
+            // bean PostCreate event lifecycle has already completed.
+            // endSfsbCreation() will clear the thread local knowledge of "creation time" referenced extended
+            // persistence contexts.
             SFSBCallStack.endSfsbCreation();
         }
     }

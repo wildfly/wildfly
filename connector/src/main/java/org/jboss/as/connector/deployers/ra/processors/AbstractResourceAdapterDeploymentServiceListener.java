@@ -22,17 +22,22 @@
 
 package org.jboss.as.connector.deployers.ra.processors;
 
+import java.util.Collections;
+import java.util.Locale;
+import java.util.Map;
+
 import org.jboss.as.connector.dynamicresource.descriptionproviders.StatisticsDescriptionProvider;
 import org.jboss.as.connector.dynamicresource.descriptionproviders.StatisticsElementDescriptionProvider;
 import org.jboss.as.connector.dynamicresource.descriptionproviders.SubSystemExtensionDescriptionProvider;
 import org.jboss.as.connector.dynamicresource.operations.ClearStatisticsHandler;
 import org.jboss.as.connector.subsystems.common.pool.PoolMetrics;
+import org.jboss.as.connector.subsystems.resourceadapters.CommonAttributes;
 import org.jboss.as.connector.subsystems.resourceadapters.Constants;
 import org.jboss.as.connector.subsystems.resourceadapters.IronJacamarResource;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension;
-import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
@@ -44,10 +49,6 @@ import org.jboss.jca.core.spi.statistics.StatisticsPlugin;
 import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
-
-import java.util.Collections;
-import java.util.Locale;
-import java.util.Map;
 
 /**
 *
@@ -78,7 +79,7 @@ public abstract class AbstractResourceAdapterDeploymentServiceListener extends A
                             StatisticsPlugin poolStats = cm.getPool().getStatistics();
 
                             if (poolStats.getNames().size() != 0) {
-                                DescriptionProvider statsResourceDescriptionProvider = new StatisticsDescriptionProvider(ResourceAdaptersSubsystemProviders.RESOURCE_NAME, "statistics", poolStats);
+                                DescriptionProvider statsResourceDescriptionProvider = new StatisticsDescriptionProvider(CommonAttributes.RESOURCE_NAME, "statistics", poolStats);
                                 PathElement pe = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ResourceAdaptersExtension.SUBSYSTEM_NAME);
                                 PathElement peStats = PathElement.pathElement(Constants.STATISTICS_NAME, Constants.STATISTICS_NAME);
                                 PathElement peCD = PathElement.pathElement(Constants.CONNECTIONDEFINITIONS_NAME, cm.getJndiName());
@@ -86,25 +87,31 @@ public abstract class AbstractResourceAdapterDeploymentServiceListener extends A
                                 //when you are in deploy you have a registration pointing to deployment=*
                                 //when you are in re-deploy it points to specific deploymentUnit
                                 synchronized (this) {
-                                    if (registration.isAllowsOverride() && registration.getOverrideModel(deploymentUnitName) == null) {
-                                        overrideRegistration = registration.registerOverrideModel(deploymentUnitName, new OverrideDescriptionProvider() {
-                                            @Override
-                                            public Map<String, ModelNode> getAttributeOverrideDescriptions(Locale locale) {
-                                                return Collections.emptyMap();
-                                            }
+                                    if (registration.isAllowsOverride()) {
 
-                                            @Override
-                                            public Map<String, ModelNode> getChildTypeOverrideDescriptions(Locale locale) {
-                                                return Collections.emptyMap();
-                                            }
-                                        });
-                                    } else {
-                                        overrideRegistration = registration.getOverrideModel(deploymentUnitName);
+                                        if (registration.getOverrideModel(deploymentUnitName) != null) {
+                                            overrideRegistration = registration.getOverrideModel(deploymentUnitName);
+                                        } else {
+                                            overrideRegistration = registration.registerOverrideModel(deploymentUnitName, new OverrideDescriptionProvider() {
+                                                @Override
+                                                public Map<String, ModelNode> getAttributeOverrideDescriptions(Locale locale) {
+                                                    return Collections.emptyMap();
+                                                }
+
+                                                @Override
+                                                public Map<String, ModelNode> getChildTypeOverrideDescriptions(Locale locale) {
+                                                    return Collections.emptyMap();
+                                                }
+                                            });
+                                        }
+
                                     }
 
-                                ManagementResourceRegistration subRegistration = overrideRegistration.getSubModel(PathAddress.pathAddress(pe));
-                                if (subRegistration == null) {
-                                    subRegistration = overrideRegistration.registerSubModel(pe, new SubSystemExtensionDescriptionProvider(ResourceAdaptersSubsystemProviders.RESOURCE_NAME, "deployment-subsystem"));
+                                ManagementResourceRegistration subRegistration;
+                                try {
+                                    subRegistration = overrideRegistration.registerSubModel(new SimpleResourceDefinition(pe, new SubSystemExtensionDescriptionProvider(CommonAttributes.RESOURCE_NAME, "deployment-subsystem")));
+                                } catch (IllegalArgumentException iae) {
+                                    subRegistration = overrideRegistration.getSubModel(PathAddress.pathAddress(pe));
                                 }
                                 Resource subsystemResource;
 
@@ -115,10 +122,12 @@ public abstract class AbstractResourceAdapterDeploymentServiceListener extends A
                                     subsystemResource = deploymentResource.getChild(pe);
                                 }
 
-                                ManagementResourceRegistration statsRegistration = subRegistration.getSubModel(PathAddress.pathAddress(peStats));
-                                if (statsRegistration == null) {
-                                    statsRegistration = subRegistration.registerSubModel(peStats, new StatisticsElementDescriptionProvider(ResourceAdaptersSubsystemProviders.RESOURCE_NAME, "statistics"));
-                                }
+                                ManagementResourceRegistration statsRegistration;
+                                    try {
+                                        statsRegistration = subRegistration.registerSubModel(new SimpleResourceDefinition(peStats, new StatisticsElementDescriptionProvider(CommonAttributes.RESOURCE_NAME, "statistics")));
+                                    } catch (IllegalArgumentException iae) {
+                                        statsRegistration = subRegistration.getSubModel(PathAddress.pathAddress(peStats));
+                                    }
                                 Resource statisticsResource;
 
                                 if (!subsystemResource.hasChild(peStats)) {
@@ -138,7 +147,7 @@ public abstract class AbstractResourceAdapterDeploymentServiceListener extends A
                                     for (String statName : poolStats.getNames()) {
                                         cdSubRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
                                     }
-                                    cdSubRegistration.registerOperationHandler("clear-statistics", new ClearStatisticsHandler(poolStats), ResourceAdaptersSubsystemProviders.CLEAR_STATISTICS_DESC, false);
+                                    cdSubRegistration.registerOperationHandler(ClearStatisticsHandler.DEFINITION, new ClearStatisticsHandler(poolStats));
                                 }
 
                                 registerIronjacamar(controller, subRegistration, subsystemResource);

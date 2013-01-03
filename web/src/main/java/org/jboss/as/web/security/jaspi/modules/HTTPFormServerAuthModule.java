@@ -30,13 +30,13 @@ import org.apache.catalina.authenticator.SavedRequest;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.deploy.LoginConfig;
-import org.apache.catalina.util.StringManager;
 import org.apache.coyote.ActionCode;
 import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.buf.CharChunk;
 import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.http.MimeHeaders;
 import org.jboss.as.web.WebLogger;
+import org.jboss.web.CatalinaMessages;
 
 import javax.security.auth.Subject;
 import javax.security.auth.message.AuthException;
@@ -67,8 +67,6 @@ public class HTTPFormServerAuthModule extends WebServerAuthModule {
     protected Context context;
 
     protected boolean cache = false;
-
-    protected static final StringManager sm = StringManager.getManager(Constants.Package);
 
     protected String delegatingLoginContextName = null;
 
@@ -186,7 +184,7 @@ public class HTTPFormServerAuthModule extends WebServerAuthModule {
             } catch (IOException ioe) {
                 WebLogger.WEB_SECURITY_LOGGER.tracef("Request body too big to save during authentication");
                 try {
-                    response.sendError(HttpServletResponse.SC_FORBIDDEN, sm.getString("authenticator.requestBodyTooBig"));
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN, CatalinaMessages.MESSAGES.requestBodyTooLarge());
                 } catch (IOException e) {
                  // Ignore IOException here (client disconnect)
                     throw new AuthException(e.getLocalizedMessage());
@@ -223,7 +221,7 @@ public class HTTPFormServerAuthModule extends WebServerAuthModule {
         if (session == null) {
             WebLogger.WEB_SECURITY_LOGGER.tracef("User took so long to log on the session expired");
             try {
-                response.sendError(HttpServletResponse.SC_REQUEST_TIMEOUT, sm.getString("authenticator.sessionExpired"));
+                response.sendError(HttpServletResponse.SC_REQUEST_TIMEOUT, CatalinaMessages.MESSAGES.sessionTimeoutDuringAuthentication());
             } catch (IOException e) {
              // Ignore IOException here (client disconnect)
             }
@@ -242,7 +240,7 @@ public class HTTPFormServerAuthModule extends WebServerAuthModule {
         WebLogger.WEB_SECURITY_LOGGER.tracef("Redirecting to original '%s'", requestURI);
         try {
             if (requestURI == null)
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, sm.getString("authenticator.formlogin"));
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, CatalinaMessages.MESSAGES.invalidFormLoginDirectReference());
             else
                 response.sendRedirect(response.encodeRedirectURL(requestURI));
         } catch (IOException ioe) {

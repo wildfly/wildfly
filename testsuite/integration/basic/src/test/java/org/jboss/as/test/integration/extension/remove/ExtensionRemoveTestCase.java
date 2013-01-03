@@ -223,6 +223,8 @@ public class ExtensionRemoveTestCase {
                 throw new IllegalStateException("Neither -Dmodule.path nor -Djboss.home were set");
             }
             modulePath = jbossHome + File.separatorChar + "modules";
+        }else{
+           modulePath = modulePath.split(File.pathSeparator)[0];
         }
         File moduleDir = new File(modulePath);
         if (!moduleDir.exists()) {

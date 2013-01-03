@@ -35,8 +35,6 @@ import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.dmr.ModelType;
 
 /**
  * A registration for a management resource which consists of a resource description plus registered operation handlers.
@@ -52,9 +50,11 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param name the specific name of the resource. Cannot be {@code null} or {@link PathElement#WILDCARD_VALUE}
      *
      * @return the resource registration, <code>null</code> if there is none
+     *
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
      */
-
     ManagementResourceRegistration getOverrideModel(String name);
+
     /**
      * Get a sub model registration.
      * <p>This method overrides the superinterface method of the same name in order to require
@@ -63,6 +63,8 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      *
      * @param address the address, relative to this node
      * @return the resource registration, <code>null</code> if there is none
+     *
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
      */
     @Override
     ManagementResourceRegistration getSubModel(PathAddress address);
@@ -77,9 +79,12 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      *
      * @throws IllegalArgumentException if a submodel is already registered at {@code address}
      * @throws IllegalStateException if {@link #isRuntimeOnly()} returns {@code true}
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
+     *
      * @deprecated use {@link ManagementResourceRegistration#registerSubModel(org.jboss.as.controller.ResourceDefinition)}
      */
     @Deprecated
+    @SuppressWarnings("deprecation")
     ManagementResourceRegistration registerSubModel(PathElement address, DescriptionProvider descriptionProvider);
 
     /**
@@ -94,6 +99,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      *
      * @throws IllegalArgumentException if a submodel is already registered at {@code address}
      * @throws IllegalStateException if {@link #isRuntimeOnly()} returns {@code true}
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
      */
     ManagementResourceRegistration registerSubModel(ResourceDefinition resourceDefinition);
 
@@ -101,6 +107,8 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * Unregister the existence of an addressable sub-resource of this resource.
      *
      * @param address the child of this registry that should no longer be available
+     *
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
      */
     void unregisterSubModel(PathElement address);
 
@@ -111,6 +119,8 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * {@link #isRemote() remote registrations}.
      *
      * @return {@code true} if an exception will not always be thrown; {@code false} if it will
+     *
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
      */
     boolean isAllowsOverride();
 
@@ -121,6 +131,8 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      *
      * @param runtimeOnly {@code true} if the model node will have no representation in the
      * persistent configuration model; {@code false} otherwise
+     *
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
      */
     void setRuntimeOnly(final boolean runtimeOnly);
 
@@ -135,6 +147,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      *
      * @throws IllegalArgumentException if either parameter is null or if there is already a registration under {@code name}
      * @throws IllegalStateException if {@link #isRuntimeOnly()} returns {@code true} or if {@link #isAllowsOverride()} returns false
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
      */
     ManagementResourceRegistration registerOverrideModel(final String name, final OverrideDescriptionProvider descriptionProvider);
 
@@ -143,6 +156,8 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * by adding additional attributes, operations or child types.
      *
      * @param name the specific name of the resource. Cannot be {@code null} or {@link PathElement#WILDCARD_VALUE}
+     *
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
      */
     void unregisterOverrideModel(final String name);
 
@@ -153,7 +168,9 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param handler the operation handler
      * @param descriptionProvider the description provider for this operation
      * @throws IllegalArgumentException if either parameter is {@code null}
+     * @deprecated use {@link #registerOperationHandler(org.jboss.as.controller.OperationDefinition, org.jboss.as.controller.OperationStepHandler)}
      */
+     @Deprecated
     void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider);
 
     /**
@@ -164,7 +181,9 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param descriptionProvider the description provider for this operation
      * @param flags operational modifier flags for this operation (e.g. read-only)
      * @throws IllegalArgumentException if either parameter is {@code null}
+     * @deprecated use {@link #registerOperationHandler(org.jboss.as.controller.OperationDefinition, org.jboss.as.controller.OperationStepHandler)}
      */
+    @Deprecated
     void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, EnumSet<OperationEntry.Flag> flags);
 
     /**
@@ -175,7 +194,10 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param descriptionProvider the description provider for this operation
      * @param inherited {@code true} if the operation is inherited to child nodes, {@code false} otherwise
      * @throws IllegalArgumentException if either parameter is {@code null}
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
+     * @deprecated use {@link #registerOperationHandler(org.jboss.as.controller.OperationDefinition, org.jboss.as.controller.OperationStepHandler)}
      */
+    @Deprecated
     void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited);
 
     /**
@@ -187,7 +209,10 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param inherited {@code true} if the operation is inherited to child nodes, {@code false} otherwise
      * @param entryType the operation entry type
      * @throws IllegalArgumentException if either parameter is {@code null}
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
+     * @deprecated use {@link #registerOperationHandler(org.jboss.as.controller.OperationDefinition, org.jboss.as.controller.OperationStepHandler)}
      */
+    @Deprecated
     void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, OperationEntry.EntryType entryType);
 
 
@@ -200,7 +225,10 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param inherited {@code true} if the operation is inherited to child nodes, {@code false} otherwise
      * @param flags operational modifier flags for this operation (e.g. read-only)
      * @throws IllegalArgumentException if either parameter is {@code null}
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
+     * @deprecated use {@link #registerOperationHandler(org.jboss.as.controller.OperationDefinition, org.jboss.as.controller.OperationStepHandler)}
      */
+    @Deprecated
     void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, EnumSet<OperationEntry.Flag> flags);
 
     /**
@@ -213,7 +241,10 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param entryType the operation entry type
      * @param flags operational modifier flags for this operation (e.g. read-only)
      * @throws IllegalArgumentException if either parameter is {@code null}
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
+     * @deprecated use {@link #registerOperationHandler(org.jboss.as.controller.OperationDefinition, org.jboss.as.controller.OperationStepHandler)}
      */
+    @Deprecated
     void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, OperationEntry.EntryType entryType, EnumSet<OperationEntry.Flag> flags);
 
     /**
@@ -221,6 +252,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      *
      * @param definition the definition of operation
      * @param handler    the operation handler
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
      */
     void registerOperationHandler(OperationDefinition definition, OperationStepHandler handler);
 
@@ -230,6 +262,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param definition the definition of operation
      * @param handler    the operation handler
      * @param inherited  {@code true} if the operation is inherited to child nodes, {@code false} otherwise
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
      */
     void registerOperationHandler(OperationDefinition definition, OperationStepHandler handler, boolean inherited);
 
@@ -238,6 +271,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      *
      * @param operationName       the operation name
      * @throws IllegalArgumentException if operationName is not registered
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
      */
     void unregisterOperationHandler(final String operationName);
 
@@ -252,6 +286,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param writeHandler the handler for attribute writes. Cannot be {@code null}
      * @param storage the storage type for this attribute
      * @throws IllegalArgumentException if {@code attributeName} or {@code writeHandler} are {@code null}
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
      * @deprecated use {@link ManagementResourceRegistration#registerReadWriteAttribute(org.jboss.as.controller.AttributeDefinition, org.jboss.as.controller.OperationStepHandler, org.jboss.as.controller.OperationStepHandler)}
      */
     @Deprecated
@@ -269,6 +304,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param writeHandler the handler for attribute writes. Cannot be {@code null}
      * @param flags additional flags describing this attribute
      * @throws IllegalArgumentException if {@code attributeName} or {@code writeHandler} are {@code null}
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
      * @deprecated use {@link ManagementResourceRegistration#registerReadWriteAttribute(org.jboss.as.controller.AttributeDefinition, org.jboss.as.controller.OperationStepHandler, org.jboss.as.controller.OperationStepHandler)}
      */
      @Deprecated
@@ -287,6 +323,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param writeHandler the handler for attribute writes. Cannot be {@code null}
      *
      * @throws IllegalArgumentException if {@code definition} or {@code writeHandler} are {@code null}
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
      */
     void registerReadWriteAttribute(AttributeDefinition definition, OperationStepHandler readHandler, OperationStepHandler writeHandler);
 
@@ -300,6 +337,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      *                    in which case the default handling is used
      * @param storage the storage type for this attribute
      * @throws IllegalArgumentException if {@code attributeName} is {@code null}
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
      * @deprecated use {@link ManagementResourceRegistration#registerReadOnlyAttribute(org.jboss.as.controller.AttributeDefinition, org.jboss.as.controller.OperationStepHandler)}
      */
     @Deprecated
@@ -316,6 +354,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      *                    in which case the default handling is used
      * @param flags additional flags describing this attribute
      * @throws IllegalArgumentException if {@code attributeName} is {@code null}
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
      * @deprecated use {@link ManagementResourceRegistration#registerReadOnlyAttribute(org.jboss.as.controller.AttributeDefinition, org.jboss.as.controller.OperationStepHandler)}
       */
     @Deprecated
@@ -332,6 +371,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      *                    in which case the default handling is used
      *
      * @throws IllegalArgumentException if {@code definition} is {@code null}
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
      */
     void registerReadOnlyAttribute(AttributeDefinition definition, OperationStepHandler readHandler);
 
@@ -342,6 +382,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param metricHandler the handler for attribute reads. Cannot be {@code null}
      *
      * @throws IllegalArgumentException if {@code attributeName} or {@code metricHandler} are {@code null}
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
      * @deprecated use {@link ManagementResourceRegistration#registerMetric(org.jboss.as.controller.AttributeDefinition, org.jboss.as.controller.OperationStepHandler)}
      */
     @Deprecated
@@ -354,6 +395,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param metricHandler the handler for attribute reads. Cannot be {@code null}
      *
      * @throws IllegalArgumentException if {@code definition} or {@code metricHandler} are {@code null}
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
      */
     void registerMetric(AttributeDefinition definition, OperationStepHandler metricHandler);
 
@@ -365,6 +407,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param flags additional flags describing this attribute
      *
      * @throws IllegalArgumentException if {@code attributeName} or {@code metricHandler} are {@code null}
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
      * @deprecated use {@link ManagementResourceRegistration#registerMetric(org.jboss.as.controller.AttributeDefinition, org.jboss.as.controller.OperationStepHandler)}
      */
     void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags);
@@ -375,6 +418,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      *
      * @param attributeName the name of the attribute. Cannot be {@code null}
      *
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
      */
     void unregisterAttribute(String attributeName);
 
@@ -383,6 +427,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      *
      * @param address the child of this registry that should be proxied
      * @param proxyController the proxy controller
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
      */
     void registerProxyController(PathElement address, ProxyController proxyController);
 
@@ -390,10 +435,26 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * Unregister a proxy controller
      *
      * @param address the child of this registry that should no longer be proxied
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
      */
     void unregisterProxyController(PathElement address);
 
-    //String getValueString();
+    /**
+     * Register an alias registration to another part of the model
+     *
+     * @param address the child of this registry that is an alias
+     * @param aliasEntry the target model
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
+     */
+    void registerAlias(PathElement address, AliasEntry aliasEntry);
+
+    /**
+     * Unregister an alias
+     *
+     * @param address the child of this registry that is an alias
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
+     */
+    void unregisterAlias(PathElement address);
 
     /**
      * A factory for creating a new, root model node registration.
@@ -408,6 +469,8 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
          *
          * @param rootModelDescriptionProvider the model description provider for the root model node
          * @return the new root model node registration
+         *
+         * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
          */
         public static ManagementResourceRegistration create(final DescriptionProvider rootModelDescriptionProvider) {
             if (rootModelDescriptionProvider == null) {
@@ -448,6 +511,8 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
          *
          * @param resourceDefinition the facotry for the model description provider for the root model node
          * @return the new root model node registration
+         *
+         * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
          */
         public static ManagementResourceRegistration create(final ResourceDefinition resourceDefinition) {
             if (resourceDefinition == null) {

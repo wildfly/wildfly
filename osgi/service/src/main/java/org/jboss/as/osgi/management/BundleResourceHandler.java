@@ -24,26 +24,16 @@ package org.jboss.as.osgi.management;
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 
-import java.util.EnumSet;
-import java.util.Locale;
-import java.util.ResourceBundle;
-
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.osgi.parser.ModelConstants;
-import org.jboss.as.osgi.parser.OSGiDescriptionProviders;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.osgi.framework.BundleManager;
 import org.jboss.osgi.framework.Services;
+import org.jboss.osgi.framework.spi.BundleManager;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
@@ -56,38 +46,7 @@ import org.osgi.service.startlevel.StartLevel;
 public class BundleResourceHandler extends AbstractRuntimeOnlyHandler {
 
     public static final BundleResourceHandler INSTANCE = new BundleResourceHandler();
-
-    static final String [] ATTRIBUTES = {
-        ModelConstants.ID,
-        ModelConstants.LOCATION,
-        ModelConstants.STARTLEVEL,
-        ModelConstants.STATE,
-        ModelConstants.SYMBOLIC_NAME,
-        ModelConstants.TYPE,
-        ModelConstants.VERSION
-        };
-
-    static final String [] OPERATIONS = {
-        ModelConstants.START,
-        ModelConstants.STOP
-        };
-
     private BundleResourceHandler() {
-    }
-
-    public void register(ManagementResourceRegistration registry) {
-        for (String attr : ATTRIBUTES) {
-            registry.registerReadOnlyAttribute(attr, this, AttributeAccess.Storage.RUNTIME);
-        }
-        for (final String op : OPERATIONS) {
-            registry.registerOperationHandler(op, this, new DescriptionProvider() {
-                @Override
-                public ModelNode getModelDescription(Locale locale) {
-                    ResourceBundle resourceBundle = OSGiDescriptionProviders.getResourceBundle(locale);
-                    return CommonDescriptions.getDescriptionOnlyOperation(resourceBundle, op, ModelConstants.BUNDLE);
-                }
-            }, EnumSet.of(OperationEntry.Flag.RESTART_NONE));
-        }
     }
 
     @Override
@@ -96,7 +55,7 @@ public class BundleResourceHandler extends AbstractRuntimeOnlyHandler {
         if (ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION.equals(operationName)) {
             handleReadAttributeOperation(context, operation);
         } else {
-            handleOperation(operationName, context, operation);
+            handleOperation(context, operationName, operation);
         }
     }
 
@@ -138,11 +97,16 @@ public class BundleResourceHandler extends AbstractRuntimeOnlyHandler {
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
-    private void handleOperation(String operationName, OperationContext context, ModelNode operation) {
+    private void handleOperation(OperationContext context, String operationName, ModelNode operation) {
         try {
             if (ModelConstants.START.equals(operationName)) {
-                Bundle bundle = getTargetBundle(context, operation);
-                bundle.start();
+                OperationAssociation.INSTANCE.setAssociation(operation);
+                try {
+                    Bundle bundle = getTargetBundle(context, operation);
+                    bundle.start();
+                } finally {
+                    OperationAssociation.INSTANCE.removeAssociation();
+                }
             } else if (ModelConstants.STOP.equals(operationName)) {
                 Bundle bundle = getTargetBundle(context, operation);
                 bundle.stop();
@@ -196,7 +160,7 @@ public class BundleResourceHandler extends AbstractRuntimeOnlyHandler {
     }
 
     private BundleContext getSystemContext(OperationContext context) {
-        ServiceController<?> controller = context.getServiceRegistry(false).getService(Services.SYSTEM_CONTEXT);
+        ServiceController<?> controller = context.getServiceRegistry(false).getService(Services.FRAMEWORK_CREATE);
         return controller != null ? (BundleContext)controller.getValue() : null;
     }
 

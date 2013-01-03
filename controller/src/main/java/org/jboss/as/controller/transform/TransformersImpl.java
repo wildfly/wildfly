@@ -24,6 +24,7 @@ package org.jboss.as.controller.transform;
 
 import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
@@ -58,7 +59,7 @@ public class TransformersImpl implements Transformers {
     }
 
     @Override
-    public OperationTransformer.TransformedOperation transformOperation(final TransformationContext context, final ModelNode operation) {
+    public OperationTransformer.TransformedOperation transformOperation(final TransformationContext context, final ModelNode operation) throws OperationFailedException {
 //        if (!target.isTransformationNeeded()) {
 //            return operation;
 //        }
@@ -75,103 +76,18 @@ public class TransformersImpl implements Transformers {
     }
 
     @Override
-    public Resource transformResource(final TransformationContext context, Resource resource) {
-        if (!target.isTransformationNeeded()) {
+    public Resource transformResource(final ResourceTransformationContext context, Resource resource) throws OperationFailedException {
+//        if (!target.isTransformationNeeded()) {
+//            return resource;
+//        }
+
+        final ResourceTransformer transformer = target.resolveTransformer(PathAddress.EMPTY_ADDRESS);
+        if(transformer == null) {
+            ControllerLogger.ROOT_LOGGER.tracef("resource %s does not need transformation", resource);
             return resource;
         }
-        return resolveRecursive(resource, context.getResourceRegistration(PathAddress.EMPTY_ADDRESS), PathAddress.EMPTY_ADDRESS);
-    }
-
-
-    private Resource resolveRecursive(final Resource resource, final ImmutableManagementResourceRegistration registration, final PathAddress address) {
-        boolean isSubsystem = address.size() > 0
-                && !ModelDescriptionConstants.EXTENSION.equals(address.getElement(0).getKey())
-                && ModelDescriptionConstants.SUBSYSTEM.equals(address.getLastElement().getKey());
-        if (isSubsystem) {
-            String subsystemName = address.getLastElement().getValue();
-            SubsystemTransformer transformer = target.getSubsystemTransformer(subsystemName);
-            if (transformer != null) {
-                log.debug("transforming subsystem: " + subsystemName + ", to model version: " + transformer.getMajorManagementVersion() + "." + transformer.getMinorManagementVersion());
-                ResourceDefinition rd = TransformerRegistry.loadSubsystemDefinition(subsystemName, transformer.getMajorManagementVersion(), transformer.getMinorManagementVersion());
-                ManagementResourceRegistration targetDefinition = ManagementResourceRegistration.Factory.create(rd);
-                ModelNode fullSubsystemModel = Resource.Tools.readModel(resource);
-                ModelNode transformed = transformer.transformModel(null, fullSubsystemModel);
-                return TransformerRegistry.modelToResource(targetDefinition, transformed);
-            }
-
-            return resource;
-        }
-        for (PathElement element : registration.getChildAddresses(PathAddress.EMPTY_ADDRESS)) {
-            if (element.isMultiTarget()) {
-                final String childType = element.getKey();
-                for (final Resource.ResourceEntry entry : resource.getChildren(childType)) {
-                    final ImmutableManagementResourceRegistration childRegistration = registration.getSubModel(PathAddress.pathAddress(PathElement.pathElement(childType, entry.getName())));
-                    Resource res = resolveRecursive(entry, childRegistration, address.append(entry.getPathElement()));
-                    if (!res.equals(entry)) {
-                        resource.removeChild(entry.getPathElement());
-                        resource.registerChild(entry.getPathElement(), res);
-                    }
-                }
-            } else {
-                final Resource child = resource.getChild(element);
-                final ImmutableManagementResourceRegistration childRegistration = registration.getSubModel(PathAddress.pathAddress(element));
-                if (child != null) {
-                    Resource res = resolveRecursive(child, childRegistration, address.append(element));
-                    if (!res.equals(child)) {
-                        resource.removeChild(element);
-                        resource.registerChild(element, res);
-                    }
-                }
-            }
-        }
-        return resource;
-    }
-
-
-    static class DelegateTransformContext implements TransformationContext {
-
-        private final TransformationTarget target;
-        private final OperationContext context;
-
-        DelegateTransformContext(final OperationContext context, final TransformationTarget target) {
-            this.context = context;
-            this.target = target;
-        }
-
-        @Override
-        public TransformationTarget getTarget() {
-            return target;
-        }
-
-        @Override
-        public ProcessType getProcessType() {
-            return context.getProcessType();
-        }
-
-        @Override
-        public RunningMode getRunningMode() {
-            return context.getRunningMode();
-        }
-
-        @Override
-        public ImmutableManagementResourceRegistration getResourceRegistration(final PathAddress address) {
-            return context.getResourceRegistration().getSubModel(address);
-        }
-
-        @Override
-        public ImmutableManagementResourceRegistration getResourceRegistrationFromRoot(final PathAddress address) {
-            return context.getRootResourceRegistration().getSubModel(address);
-        }
-
-        @Override
-        public Resource readResource(PathAddress address) {
-            return context.readResource(address);
-        }
-
-        @Override
-        public Resource readResourceFromRoot(PathAddress address) {
-            return context.readResourceFromRoot(address);
-        }
+        transformer.transformResource(context, PathAddress.EMPTY_ADDRESS, resource);
+        return context.getTransformedRoot();
     }
 
 }

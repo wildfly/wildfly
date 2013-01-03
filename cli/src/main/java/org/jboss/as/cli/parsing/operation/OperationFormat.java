@@ -51,4 +51,14 @@ public class OperationFormat implements CommandLineFormat {
     public boolean isPropertySeparator(char ch) {
         return ch == ',';
     }
+
+    @Override
+    public String getNodeSeparator() {
+        return "/";
+    }
+
+    @Override
+    public String getAddressOperationSeparator() {
+        return ":";
+    }
 }

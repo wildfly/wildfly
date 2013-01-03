@@ -76,7 +76,7 @@ public final class JDBCPostCreateEntityCommand {
                         if (cmrField.isForeignKeyValid(relatedId)) {
                             cmrField.createRelationLinks(ctx, relatedId);
                         } else {
-                            relatedCMRField.addRelatedPKWaitingForMyPK(relatedId, ctx.getPrimaryKey());
+                            relatedCMRField.addRelatedPKWaitingForMyPK(relatedId, ctx.getPrimaryKeyUnchecked());
                         }
                     } catch (Exception e) {
                         // no such object

@@ -31,9 +31,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.Assert;
-import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
@@ -103,7 +103,9 @@ public class ExtraSubsystemTestCase extends AbstractSubsystemTest {
                 "</subsystem>" +
                 "<subsystem xmlns=\"" + MainSubsystemExtension.NAMESPACE + "\">" +
                 "</subsystem>";
-        KernelServices services = super.installInController(new DependencyAdditionalInitialization(), subsystemXml);
+        KernelServices services = createKernelServicesBuilder(new DependencyAdditionalInitialization())
+                .setSubsystemXml(subsystemXml)
+                .build();
 
         //Read the whole model and make sure it looks as expected
         ModelNode model = services.readWholeModel();
@@ -129,7 +131,9 @@ public class ExtraSubsystemTestCase extends AbstractSubsystemTest {
                 "</subsystem>" +
                 "<subsystem xmlns=\"" + MainSubsystemExtension.NAMESPACE + "\">" +
                 "</subsystem>";
-        KernelServices servicesA = super.installInController(new DependencyAdditionalInitialization(), subsystemXml);
+        KernelServices servicesA = createKernelServicesBuilder(new DependencyAdditionalInitialization())
+                .setSubsystemXml(subsystemXml)
+                .build();
         //Get the model and the persisted xml from the first controller
         ModelNode modelA = servicesA.readWholeModel();
         String marshalled = servicesA.getPersistedSubsystemXml();
@@ -137,7 +141,9 @@ public class ExtraSubsystemTestCase extends AbstractSubsystemTest {
                 "</subsystem>" + marshalled;
 
         //Install the persisted xml from the first controller into a second controller
-        KernelServices servicesB = super.installInController(new DependencyAdditionalInitialization(), marshalled);
+        KernelServices servicesB = createKernelServicesBuilder(new DependencyAdditionalInitialization())
+                .setSubsystemXml(marshalled)
+                .build();
         ModelNode modelB = servicesB.readWholeModel();
 
         //Make sure the models from the two controllers are identical
@@ -156,7 +162,9 @@ public class ExtraSubsystemTestCase extends AbstractSubsystemTest {
                 "</subsystem>" +
                 "<subsystem xmlns=\"" + MainSubsystemExtension.NAMESPACE + "\">" +
                 "</subsystem>";
-        KernelServices servicesA = super.installInController(new DependencyAdditionalInitialization(), subsystemXml);
+        KernelServices servicesA = createKernelServicesBuilder(new DependencyAdditionalInitialization())
+                .setSubsystemXml(subsystemXml)
+                .build();
         //Get the model and the describe operations from the first controller
         ModelNode modelA = servicesA.readWholeModel();
         ModelNode describeOp = new ModelNode();
@@ -165,15 +173,17 @@ public class ExtraSubsystemTestCase extends AbstractSubsystemTest {
                 PathAddress.pathAddress(
                         PathElement.pathElement(SUBSYSTEM, DependencySubsystemExtension.SUBSYSTEM_NAME)).toModelNode());
         ArrayList<ModelNode> allOps = new ArrayList<ModelNode>();
-        allOps.addAll(super.checkResultAndGetContents(servicesA.executeOperation(describeOp)).asList());
+        allOps.addAll(checkResultAndGetContents(servicesA.executeOperation(describeOp)).asList());
         describeOp.get(OP_ADDR).set(
                 PathAddress.pathAddress(
                         PathElement.pathElement(SUBSYSTEM, MainSubsystemExtension.SUBSYSTEM_NAME)).toModelNode());
-        allOps.addAll(super.checkResultAndGetContents(servicesA.executeOperation(describeOp)).asList());
+        allOps.addAll(checkResultAndGetContents(servicesA.executeOperation(describeOp)).asList());
 
 
         //Install the describe options from the first controller into a second controller
-        KernelServices servicesB = super.installInController(new DependencyAdditionalInitialization(), allOps);
+        KernelServices servicesB = createKernelServicesBuilder(new DependencyAdditionalInitialization())
+                .setBootOperations(allOps)
+                .build();
         ModelNode modelB = servicesB.readWholeModel();
 
         //Make sure the models from the two controllers are identical

@@ -29,8 +29,9 @@ import java.util.UUID;
 /**
  * @author Paul Ferraro
  */
-@SuppressWarnings("serial")
 public class UUIDExternalizer extends AbstractSimpleExternalizer<UUID> {
+    private static final long serialVersionUID = 1573490528896326863L;
+
     public UUIDExternalizer() {
         super(UUID.class);
     }

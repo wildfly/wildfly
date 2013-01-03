@@ -25,9 +25,9 @@ package org.jboss.as.jaxrs;
 import javax.ws.rs.core.Application;
 
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.logging.Cause;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageBundle;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.Messages;
 
 /**

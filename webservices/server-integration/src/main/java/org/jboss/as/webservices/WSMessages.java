@@ -30,9 +30,9 @@ import javax.xml.ws.WebServiceException;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.logging.Cause;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageBundle;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.Messages;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.vfs.VirtualFile;
@@ -94,11 +94,11 @@ public interface WSMessages {
     @Message(id = 15518, value = "No metrics available")
     String noMetricsAvailable();
 
-    @Message(id = 15519, value = "EJB component view name cannot be null")
-    IllegalStateException missingEjbComponentViewName();
+    @Message(id = 15519, value = "Component view name cannot be null")
+    IllegalStateException missingComponentViewName();
 
-    @Message(id = 15520, value = "Cannot find ejb view: %s")
-    IllegalStateException cannotFindEjbView(ServiceName viewName);
+    @Message(id = 15520, value = "Cannot find component view: %s")
+    IllegalStateException cannotFindComponentView(ServiceName viewName);
 
     @Message(id = 15521, value = "Null root url")
     IllegalArgumentException nullRootUrl();

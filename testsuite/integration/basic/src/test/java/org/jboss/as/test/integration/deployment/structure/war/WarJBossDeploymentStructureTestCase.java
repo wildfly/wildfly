@@ -1,7 +1,5 @@
 package org.jboss.as.test.integration.deployment.structure.war;
 
-import static org.junit.Assert.assertEquals;
-
 import javax.ejb.EJB;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -15,6 +13,8 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.junit.Assert.assertEquals;
 
 
 /**
@@ -36,7 +36,7 @@ public class WarJBossDeploymentStructureTestCase {
     @Deployment
     public static Archive<?> createDeployment() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "deployment-structure.war");
-        war.addAsManifestResource(WarJBossDeploymentStructureTestCase.class.getPackage(), "jboss-deployment-structure.xml", "jboss-deployment-structure.xml");
+        war.addAsManifestResource(WarJBossDeploymentStructureTestCase.class.getPackage(), "jboss-all.xml", "jboss-all.xml");
 
         final JavaArchive jarOne = ShrinkWrap.create(JavaArchive.class, "available.jar");
         jarOne.addClass(Available.class);
@@ -90,7 +90,7 @@ public class WarJBossDeploymentStructureTestCase {
        result = ejb.getResourceModuleName();
        assertEquals("deployment-structure", result);
     }
-    
+
     @Test
     public void testAppName() throws Exception
     {

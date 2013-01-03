@@ -1,11 +1,62 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 /**
  *
  */
 package org.jboss.as.domain.controller.operations.coordination;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationContext.AttachmentKey;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.DomainOperationTransformer;
+import org.jboss.as.controller.operations.OperationAttachments;
+import org.jboss.as.controller.operations.common.ResolveExpressionHandler;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.resource.InterfaceDefinition;
+import org.jboss.as.domain.controller.ServerIdentity;
+import org.jboss.as.domain.controller.operations.ResolveExpressionOnDomainHandler;
+import org.jboss.as.domain.controller.operations.deployment.DeploymentFullReplaceHandler;
+import org.jboss.as.server.operations.ServerRestartRequiredHandler;
+import org.jboss.as.server.operations.SystemPropertyAddHandler;
+import org.jboss.as.server.operations.SystemPropertyRemoveHandler;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
@@ -32,31 +83,6 @@ import static org.jboss.as.domain.controller.operations.coordination.DomainServe
 import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getServersForGroup;
 import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getServersForType;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationContext.AttachmentKey;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ProxyController;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.InterfaceDescription;
-import org.jboss.as.controller.operations.common.ResolveExpressionHandler;
-import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
-import org.jboss.as.controller.operations.common.SystemPropertyRemoveHandler;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.controller.ServerIdentity;
-import org.jboss.as.domain.controller.operations.ResolveExpressionOnDomainHandler;
-import org.jboss.as.domain.controller.operations.deployment.DeploymentFullReplaceHandler;
-import org.jboss.as.server.operations.ServerRestartRequiredHandler;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-
 /**
  * Logic for creating a server-level operation that realizes the effect
  * of a domain or host level change on the server.
@@ -79,7 +105,8 @@ public class ServerOperationResolver {
         DEPLOYMENT("deployment"),
         SERVER_GROUP("server-group"),
         MANAGMENT_CLIENT_CONTENT("management-client-content"),
-        HOST("host");
+        HOST("host"),
+        DEPLOYMENT_OVERLAY("deployment-overlay"),;
 
         private final String name;
 
@@ -145,7 +172,7 @@ public class ServerOperationResolver {
     }
 
     private final String localHostName;
-    private final Map<String,ProxyController> serverProxies;
+    private final Map<String, ProxyController> serverProxies;
 
     public ServerOperationResolver(final String localHostName, final Map<String, ProxyController> serverProxies) {
         this.localHostName = localHostName;
@@ -161,9 +188,17 @@ public class ServerOperationResolver {
         ops.add(op);
     }
 
-    public Map<Set<ServerIdentity>, ModelNode> getServerOperations(OperationContext context, ModelNode operation, PathAddress address) {
+    public Map<Set<ServerIdentity>, ModelNode> getServerOperations(OperationContext context, ModelNode originalOperation, PathAddress address) {
         if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {
-            HOST_CONTROLLER_LOGGER.tracef("Resolving %s", operation);
+            HOST_CONTROLLER_LOGGER.tracef("Resolving %s", originalOperation);
+        }
+
+        List<DomainOperationTransformer> transformers = context.getAttachment(OperationAttachments.SLAVE_SERVER_OPERATION_TRANSFORMERS);
+        ModelNode operation = originalOperation;
+        if(transformers != null) {
+            for(DomainOperationTransformer transformer : transformers) {
+                operation = transformer.transform(context, operation);
+            }
         }
 
         Set<ModelNode> dontPropagate = context.getAttachment(DONT_PROPAGATE_TO_SERVERS_ATTACHMENT);
@@ -175,8 +210,7 @@ public class ServerOperationResolver {
         final ModelNode host = domain.get(HOST, localHostName);
         if (address.size() == 0) {
             return resolveDomainRootOperation(operation, domain, host);
-        }
-        else {
+        } else {
             DomainKey domainKey = DomainKey.forName(address.getElement(0).getKey());
             switch (domainKey) {
                 case EXTENSION: {
@@ -210,14 +244,18 @@ public class ServerOperationResolver {
                 case HOST: {
                     return getServerHostOperations(operation, address, domain, host);
                 }
+                case DEPLOYMENT_OVERLAY: {
+                    return getDeploymentOverlayOperations(operation, host);
+                }
                 default:
                     throw MESSAGES.unexpectedInitialPathKey(address.getElement(0).getKey());
             }
         }
     }
 
+
     private Map<Set<ServerIdentity>, ModelNode> getServerProfileOperations(ModelNode operation, PathAddress address,
-            ModelNode domain, ModelNode host) {
+                                                                           ModelNode domain, ModelNode host) {
         if (address.size() == 1) {
             return Collections.emptyMap();
         }
@@ -233,14 +271,20 @@ public class ServerOperationResolver {
         return Collections.singletonMap(allServers, serverOp);
     }
 
+    private Map<Set<ServerIdentity>, ModelNode> getDeploymentOverlayOperations(ModelNode operation,
+                                                                               ModelNode host) {
+        final Set<ServerIdentity> allServers = getAllRunningServers(host, localHostName, serverProxies);
+        return Collections.singletonMap(allServers, operation.clone());
+    }
+
     private Map<Set<ServerIdentity>, ModelNode> getServerInterfaceOperations(ModelNode operation, PathAddress address,
-            ModelNode hostModel, boolean forDomain) {
+                                                                             ModelNode hostModel, boolean forDomain) {
         String pathName = address.getElement(0).getValue();
         Map<Set<ServerIdentity>, ModelNode> result;
         if (forDomain && hostModel.hasDefined(INTERFACE) && hostModel.get(INTERFACE).keys().contains(pathName)) {
             // Host will take precedence; ignore the domain
             result = Collections.emptyMap();
-        } else if (forDomain && ADD.equals(operation.get(OP).asString()) && InterfaceDescription.isOperationDefined(operation)) {
+        } else if (forDomain && ADD.equals(operation.get(OP).asString()) && InterfaceDefinition.isOperationDefined(operation)) {
             // don't create named interfaces
             result = Collections.emptyMap();
         } else if (hostModel.hasDefined(SERVER_CONFIG)) {
@@ -268,12 +312,38 @@ public class ServerOperationResolver {
             ModelNode serverOp = operation.clone();
             serverOp.get(OP_ADDR).setEmptyList().add(INTERFACE, pathName);
             result = Collections.singletonMap(servers, serverOp);
-        }
-        else {
+        } else {
             result = Collections.emptyMap();
         }
         return result;
     }
+
+    private Map<Set<ServerIdentity>, ModelNode> getJVMRestartOperations(final PathAddress address, final ModelNode hostModel) {
+        // See which servers are affected by this JVM change
+        final String pathName = address.getElement(0).getValue();
+        final Map<Set<ServerIdentity>, ModelNode> result;
+        if (hostModel.hasDefined(SERVER_CONFIG)) {
+            final Set<ServerIdentity> servers = new HashSet<ServerIdentity>();
+            for (Property prop : hostModel.get(SERVER_CONFIG).asPropertyList()) {
+                final String serverName = prop.getName();
+                if (serverProxies.get(serverName) == null) {
+                    // No running server
+                    continue;
+                }
+                final ModelNode server = prop.getValue();
+                if (server.hasDefined(JVM) && server.get(JVM).keys().contains(pathName)) {
+                    final String serverGroupName = server.require(GROUP).asString();
+                    final ServerIdentity groupedServer = new ServerIdentity(localHostName, serverGroupName, serverName);
+                    servers.add(groupedServer);
+                }
+            }
+            result = getServerRestartRequiredOperations(servers);
+        } else {
+            result = Collections.emptyMap();
+        }
+        return result;
+    }
+
 
     private Map<Set<ServerIdentity>, ModelNode> getServerPathOperations(ModelNode operation, PathAddress address, ModelNode hostModel, boolean forDomain) {
         String pathName = address.getElement(0).getValue();
@@ -281,11 +351,10 @@ public class ServerOperationResolver {
         if (forDomain && hostModel.hasDefined(PATH) && hostModel.get(PATH).keys().contains(pathName)) {
             // Host will take precedence; ignore the domain
             result = Collections.emptyMap();
-        } else if (ADD.equals(operation.get(OP).asString()) && ! operation.hasDefined(PATH)) {
+        } else if (ADD.equals(operation.get(OP).asString()) && !operation.hasDefined(PATH)) {
             // don't push named only paths
             result = Collections.emptyMap();
-        }
-        else if (hostModel.hasDefined(SERVER_CONFIG)) {
+        } else if (hostModel.hasDefined(SERVER_CONFIG)) {
             Set<ServerIdentity> servers = new HashSet<ServerIdentity>();
             for (Property prop : hostModel.get(SERVER_CONFIG).asPropertyList()) {
 
@@ -310,22 +379,21 @@ public class ServerOperationResolver {
             ModelNode serverOp = operation.clone();
             serverOp.get(OP_ADDR).setEmptyList().add(PATH, pathName);
             result = Collections.singletonMap(servers, serverOp);
-        }
-        else {
+        } else {
             result = Collections.emptyMap();
         }
         return result;
     }
 
     private Map<Set<ServerIdentity>, ModelNode> getServerSocketBindingGroupOperations(ModelNode operation,
-            PathAddress address, ModelNode domain, ModelNode host) {
+                                                                                      PathAddress address, ModelNode domain, ModelNode host) {
         String bindingGroupName = address.getElement(0).getValue();
         Set<String> relatedBindingGroups = getRelatedElements(SOCKET_BINDING_GROUP, bindingGroupName, domain);
         Set<ServerIdentity> result = new HashSet<ServerIdentity>();
         for (String bindingGroup : relatedBindingGroups) {
-            result.addAll(getServersForType(SOCKET_BINDING_GROUP,bindingGroup, domain, host, localHostName, serverProxies));
+            result.addAll(getServersForType(SOCKET_BINDING_GROUP, bindingGroup, domain, host, localHostName, serverProxies));
         }
-        for (Iterator<ServerIdentity> iter = result.iterator(); iter.hasNext();) {
+        for (Iterator<ServerIdentity> iter = result.iterator(); iter.hasNext(); ) {
             ServerIdentity gs = iter.next();
             ModelNode server = host.get(SERVER_CONFIG, gs.getServerName());
             if (server.hasDefined(SOCKET_BINDING_GROUP) && !bindingGroupName.equals(server.get(SOCKET_BINDING_GROUP).asString())) {
@@ -337,15 +405,16 @@ public class ServerOperationResolver {
     }
 
     private Map<Set<ServerIdentity>, ModelNode> getServerGroupOperations(ModelNode operation, PathAddress address,
-            ModelNode domain, ModelNode host) {
+                                                                         ModelNode domain, ModelNode host) {
         Map<Set<ServerIdentity>, ModelNode> result = null;
         if (address.size() > 1) {
             String type = address.getElement(1).getKey();
             if (JVM.equals(type)) {
-                // TODO need to reflect that affected servers are out of date. Perhaps an op for this?
-                result = Collections.emptyMap();
-            }
-            else if (DEPLOYMENT.equals(type)) {
+                // Changes to the JVM require a restart
+                String groupName = address.getElement(0).getValue();
+                Set<ServerIdentity> servers = getServersForGroup(groupName, host, localHostName, serverProxies);
+                return getServerRestartRequiredOperations(servers);
+            } else if (DEPLOYMENT.equals(type)) {
                 String groupName = address.getElement(0).getValue();
                 Set<ServerIdentity> servers = getServersForGroup(groupName, host, localHostName, serverProxies);
                 ModelNode serverOp = operation.clone();
@@ -360,10 +429,16 @@ public class ServerOperationResolver {
                 PathAddress serverAddress = address.subAddress(1);
                 serverOp.get(OP_ADDR).set(serverAddress.toModelNode());
                 result = Collections.singletonMap(servers, serverOp);
-            }
-            else if (SYSTEM_PROPERTY.equals(type)) {
+            } else if (SYSTEM_PROPERTY.equals(type)) {
                 String affectedGroup = address.getElement(0).getValue();
                 result = getServerSystemPropertyOperations(operation, address, Level.SERVER_GROUP, domain, affectedGroup, host);
+            } else if (DEPLOYMENT_OVERLAY.equals(type) && address.getLastElement().getKey().equals(DEPLOYMENT)) {
+                String groupName = address.getElement(0).getValue();
+                Set<ServerIdentity> servers = getServersForGroup(groupName, host, localHostName, serverProxies);
+                ModelNode serverOp = operation.clone();
+                PathAddress serverAddress = address.subAddress(1);
+                serverOp.get(OP_ADDR).set(serverAddress.toModelNode());
+                result = Collections.singletonMap(servers, serverOp);
             }
         } else if (REPLACE_DEPLOYMENT.equals(operation.require(OP).asString())) {
             String groupName = address.getElement(0).getValue();
@@ -424,8 +499,7 @@ public class ServerOperationResolver {
                     groups.add(prop.getName());
                 }
             }
-        }
-        else {
+        } else {
             groups = Collections.emptySet();
         }
         return groups;
@@ -436,11 +510,10 @@ public class ServerOperationResolver {
     }
 
     private Map<Set<ServerIdentity>, ModelNode> getServerHostOperations(ModelNode operation, PathAddress address,
-            ModelNode domain, ModelNode host) {
+                                                                        ModelNode domain, ModelNode host) {
         if (address.size() == 1) {
             return resolveHostRootOperation(operation, domain, host);
-        }
-        else {
+        } else {
             HostKey hostKey = HostKey.forName(address.getElement(1).getKey());
             address = address.subAddress(1); // Get rid of the host=hostName
             switch (hostKey) {
@@ -448,7 +521,7 @@ public class ServerOperationResolver {
                     return getServerPathOperations(operation, address, host, false);
                 }
                 case SYSTEM_PROPERTY: {
-                    return getServerSystemPropertyOperations(operation, address, Level.HOST,  domain, null, host);
+                    return getServerSystemPropertyOperations(operation, address, Level.HOST, domain, null, host);
                 }
                 case CORE_SERVICE: {
                     // TODO does server need to know about change?
@@ -458,8 +531,7 @@ public class ServerOperationResolver {
                     return getServerInterfaceOperations(operation, address, host, false);
                 }
                 case JVM: {
-                    // TODO does server need to know about change?
-                    return Collections.emptyMap();
+                    return getJVMRestartOperations(address, host);
                 }
                 case SERVER_CONFIG: {
                     return resolveServerConfigOperation(operation, address, domain, host);
@@ -492,16 +564,16 @@ public class ServerOperationResolver {
     /**
      * Get server operations to affect a change to a system property.
      *
-     * @param operation the domain or host level operation
-     * @param address   address associated with {@code operation}
-     * @param domain the domain model, or {@code null} if {@code address} isn't for a domain level resource
+     * @param operation     the domain or host level operation
+     * @param address       address associated with {@code operation}
+     * @param domain        the domain model, or {@code null} if {@code address} isn't for a domain level resource
      * @param affectedGroup the name of the server group affected by the operation, or {@code null}
      *                      if {@code address} isn't for a server group level resource
-     * @param host the host model
+     * @param host          the host model
      * @return the server operations
      */
-    private Map<Set<ServerIdentity>,ModelNode> getServerSystemPropertyOperations(ModelNode operation, PathAddress address, Level level,
-                                                                                 ModelNode domain, String affectedGroup, ModelNode host) {
+    private Map<Set<ServerIdentity>, ModelNode> getServerSystemPropertyOperations(ModelNode operation, PathAddress address, Level level,
+                                                                                  ModelNode domain, String affectedGroup, ModelNode host) {
 
         Map<Set<ServerIdentity>, ModelNode> result = null;
 
@@ -516,8 +588,7 @@ public class ServerOperationResolver {
                     overridden = true;
                 } else if (affectedGroup != null) {
                     groups = Collections.singleton(affectedGroup);
-                }
-                else if (domain.hasDefined(SERVER_GROUP)) {
+                } else if (domain.hasDefined(SERVER_GROUP)) {
                     // Top level domain update applies to all groups where it was not overridden
                     groups = new HashSet<String>();
                     for (Property groupProp : domain.get(SERVER_GROUP).asPropertyList()) {
@@ -581,7 +652,7 @@ public class ServerOperationResolver {
             // See if there is a higher level value
             ModelNode value = null;
             switch (level) {
-                case SERVER : {
+                case SERVER: {
                     value = getSystemPropertyValue(host, propName);
                     if (value == null) {
                         value = getSystemPropertyValue(domain.get(SERVER_GROUP, server.getServerGroupName()), propName);
@@ -646,7 +717,7 @@ public class ServerOperationResolver {
 
 
     private Map<Set<ServerIdentity>, ModelNode> resolveServerConfigOperation(ModelNode operation, PathAddress address,
-            ModelNode domain, ModelNode host) {
+                                                                             ModelNode domain, ModelNode host) {
         Map<Set<ServerIdentity>, ModelNode> result;
         ModelNode serverOp = null;
         if (address.size() > 1) {
@@ -655,33 +726,41 @@ public class ServerOperationResolver {
                 serverOp = operation.clone();
                 PathAddress serverAddress = address.subAddress(1);
                 serverOp.get(OP_ADDR).set(serverAddress.toModelNode());
-            }
-            else if (SYSTEM_PROPERTY.equals(type) && isServerAffectingSystemPropertyOperation(operation)) {
+            } else if(JVM.equals(type)) {
+                final String serverName = address.getElement(0).getValue();
+                // If the server is running require a restart
+                if(serverProxies.containsKey(serverName)) {
+                    final String group = host.get(address.getLastElement().getKey(), address.getLastElement().getValue(), GROUP).asString();
+                    final ServerIdentity id = new ServerIdentity(localHostName, group, serverName);
+                    return getServerRestartRequiredOperations(Collections.singleton(id));
+                }
+            } else if (SYSTEM_PROPERTY.equals(type) && isServerAffectingSystemPropertyOperation(operation)) {
                 String propName = address.getLastElement().getValue();
                 String serverName = address.getElement(0).getValue();
                 ServerIdentity serverId = getServerIdentity(serverName, host);
-                serverOp = getServerSystemPropertyOperation(operation, propName, serverId, Level.SERVER, domain,  host);
+                serverOp = getServerSystemPropertyOperation(operation, propName, serverId, Level.SERVER, domain, host);
             }
 
-        }
-        else if (address.size() == 1) {
+        } else if (address.size() == 1) {
             // TODO - deal with "add", "remove" and changing "auto-start" attribute
             if (ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION.equals(operation.require(OP).asString())) {
                 final String attr = operation.get(NAME).asString();
                 if (GROUP.equals(attr) || SOCKET_BINDING_GROUP.equals(attr) || SOCKET_BINDING_PORT_OFFSET.equals(attr)) {
                     final String serverName = address.getElement(0).getValue();
-                    final String group = host.get(address.getLastElement().getKey(), address.getLastElement().getValue(), GROUP).asString();
-                    final ServerIdentity id = new ServerIdentity(localHostName, group, serverName);
-                    result = getServerRestartRequiredOperations(Collections.singleton(id));
-                    return result;
+                    // If the server is running require a restart
+                    if(serverProxies.containsKey(serverName)) {
+                        final String group = host.get(address.getLastElement().getKey(), address.getLastElement().getValue(), GROUP).asString();
+                        final ServerIdentity id = new ServerIdentity(localHostName, group, serverName);
+                        result = getServerRestartRequiredOperations(Collections.singleton(id));
+                        return result;
+                    }
                 }
-           }
+            }
         }
 
         if (serverOp == null) {
             result = Collections.emptyMap();
-        }
-        else {
+        } else {
             String serverName = address.getElement(0).getValue();
             ServerIdentity gs = getServerIdentity(serverName, host);
             Set<ServerIdentity> set = Collections.singleton(gs);
@@ -690,7 +769,7 @@ public class ServerOperationResolver {
         return result;
     }
 
-    private Map<Set<ServerIdentity>, ModelNode> getServerRestartRequiredOperations(Set<ServerIdentity> servers){
+    private Map<Set<ServerIdentity>, ModelNode> getServerRestartRequiredOperations(Set<ServerIdentity> servers) {
         ModelNode op = new ModelNode();
         op.get(OP).set(ServerRestartRequiredHandler.OPERATION_NAME);
         op.get(OP_ADDR).setEmptyList();

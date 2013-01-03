@@ -44,10 +44,10 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class BMPEntityBeanTimerTestCase {
 
-    private static int TIMER_CALL_WAITING_S = 10;
-    private static int TIMER_FOR_REMOVING_TIMEOUT_MS = 800;
+    private static final int TIMER_CALL_WAITING_S = 10;
+    private static final int TIMER_FOR_REMOVING_TIMEOUT_MS = 800;
     // has to be greater than timer for removing timeout
-    private static int TIMER_REMOVED_CALL_WAITING_MS = 1600;
+    private static final int TIMER_REMOVED_CALL_WAITING_MS = 1600;
     private static final String ARCHIVE_NAME = "SimpleLocalHomeTest.war";
 
     @ArquillianResource
@@ -74,7 +74,8 @@ public class BMPEntityBeanTimerTestCase {
         ejbInstance = home.findByPrimaryKey(20);
         ejbInstance.setupTimer();
         // getTimers returns only timer connected to particular entity id
-        Assert.assertEquals(1, ejbInstance.getTimers().size());
+        //we can't actually test for the size of this collection, as on a slow machine the timer may have gone off in the meantime
+        //Assert.assertEquals(1, ejbInstance.getTimers().size());
         SimpleBMPBean.getLatch().await(TIMER_CALL_WAITING_S, TimeUnit.SECONDS);
         Map<Integer, String> data = SimpleBMPBean.getTimerData();
 
@@ -83,23 +84,23 @@ public class BMPEntityBeanTimerTestCase {
         Assert.assertEquals("Hello", data.get(createdPk));
         Assert.assertEquals("Existing", data.get(20));
     }
-    
+
     /**
      * Aimed to test EJB3.1 18.4.5.
      */
     @Test
     public void testExistenceAfterDelete() throws Exception {
         DataStore.DATA.clear();
-        
+
         BMPLocalHome home = getHome();
         BMPLocalInterface ejbInstance = home.createWithValue("Bye");
         Integer createdPk = (Integer) ejbInstance.getPrimaryKey();
-               
+
         // this one not should tick - bean will be removed
         SimpleBMPBean.redefineLatch(1);
         ejbInstance.setupTimerDefined(TIMER_FOR_REMOVING_TIMEOUT_MS);
         // wait of 0.8 sec should be long enough for timer be removed before its tick
-        ejbInstance.remove(); 
+        ejbInstance.remove();
         // supposing this timeout expriration
         SimpleBMPBean.getLatch().await(TIMER_REMOVED_CALL_WAITING_MS, TimeUnit.MILLISECONDS);
         Assert.assertFalse(SimpleBMPBean.getTimerData().containsKey(createdPk));

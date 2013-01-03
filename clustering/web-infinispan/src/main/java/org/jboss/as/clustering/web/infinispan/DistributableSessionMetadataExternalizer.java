@@ -27,8 +27,9 @@ import org.jboss.as.clustering.web.DistributableSessionMetadata;
 /**
  * @author Paul Ferraro
  */
-@SuppressWarnings("serial")
 public class DistributableSessionMetadataExternalizer extends ExternalizableExternalizer<DistributableSessionMetadata> {
+    private static final long serialVersionUID = -7424784160469548551L;
+
     public DistributableSessionMetadataExternalizer() {
         super(DistributableSessionMetadata.class);
     }

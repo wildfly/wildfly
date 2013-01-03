@@ -22,7 +22,9 @@
 
 package org.jboss.as.test.integration.domain.suites;
 
-import org.jboss.as.test.integration.domain.DomainTestSupport;
+import org.jboss.as.test.integration.domain.AdminOnlyModeTestCase;
+import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
+import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfigurationParameters;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
@@ -37,15 +39,23 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses ({
         CoreResourceManagementTestCase.class,
-        ManagementReadsTestCase.class,
+        DatasourceTestCase.class,
         DeploymentManagementTestCase.class,
-        ServerManagementTestCase.class,
-        ServerRestartRequiredTestCase.class,
+        DeploymentOverlayTestCase.class,
+        DirectoryGroupingByTypeTestCase.class,
+        ExtensionManagementTestCase.class,
+        IgnoredResourcesTestCase.class,
         ManagementAccessTestCase.class,
         ManagementClientContentTestCase.class,
-        ValidateOperationOperationTestCase.class,
+        ManagementReadsTestCase.class,
+        ManagementVersionTestCase.class,
+        ModelPersistenceTestCase.class,
+        OperationTransformationTestCase.class,
         ReadEnvironmentVariablesTestCase.class,
-        ExtensionManagementTestCase.class
+        ServerManagementTestCase.class,
+        ServerRestartRequiredTestCase.class,
+        ValidateAddressOperationTestCase.class,
+        ValidateOperationOperationTestCase.class
 })
 public class DomainTestSuite {
 
@@ -54,17 +64,17 @@ public class DomainTestSuite {
     private static volatile DomainTestSupport support;
 
     static {
-        CONFIGURATION = DomainTestSupport.Configuration.create("domain-configs/domain-standard.xml", "host-configs/host-master.xml", "host-configs/host-slave.xml");
+        CONFIGURATION = DomainTestSupport.Configuration.create("domain-configs/domain-standard.xml", "host-configs/host-master.xml", "host-configs/host-slave.xml", JBossAsManagedConfigurationParameters.STANDARD, JBossAsManagedConfigurationParameters.STANDARD);
     }
 
-    static synchronized DomainTestSupport createSupport(final String testName) {
+    public static synchronized DomainTestSupport createSupport(final String testName) {
         if(support == null) {
             start(testName);
         }
         return support;
     }
 
-    static synchronized void stopSupport() {
+    public static synchronized void stopSupport() {
         if(! initializedLocally) {
             stop();
         }
@@ -72,7 +82,7 @@ public class DomainTestSuite {
 
     private synchronized static void start(final String name) {
         try {
-            final DomainTestSupport testSupport = new DomainTestSupport(name, CONFIGURATION);
+            final DomainTestSupport testSupport = DomainTestSupport.create(name, CONFIGURATION);
             // Start!
             testSupport.start();
             support = testSupport;

@@ -45,8 +45,8 @@ rem #
 rem # JVM memory allocation pool parameters - modify as appropriate.
 set "JAVA_OPTS=-Xms64M -Xmx512M -XX:MaxPermSize=256M"
 
-rem # Reduce the RMI GCs to once per hour for Sun JVMs.
-set "JAVA_OPTS=%JAVA_OPTS% -Dsun.rmi.dgc.client.gcInterval=3600000 -Dsun.rmi.dgc.server.gcInterval=3600000 -Djava.net.preferIPv4Stack=true"
+rem # Prefer IPv4
+set "JAVA_OPTS=%JAVA_OPTS% -Djava.net.preferIPv4Stack=true"
 
 rem # Warn when resolving remote XML DTDs or schemas.
 set "JAVA_OPTS=%JAVA_OPTS% -Dorg.jboss.resolver.warning=true"
@@ -68,12 +68,12 @@ rem The HostController process uses its own set of java options
 set "HOST_CONTROLLER_JAVA_OPTS=%JAVA_OPTS%"
 
 rem # Sample JPDA settings for remote socket debugging
-rem set "PROCESS_CONTROLLER_JAVA_OPTS=%PROCESS_CONTROLLER_JAVA_OPTS% -Xrunjdwp:transport=dt_socket,address=8788,server=y,suspend=n"
-rem set "HOST_CONTROLLER_JAVA_OPTS=%HOST_CONTROLLER_JAVA_OPTS% -Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=n"
+rem set "PROCESS_CONTROLLER_JAVA_OPTS=%PROCESS_CONTROLLER_JAVA_OPTS% -agentlib:jdwp=transport=dt_socket,address=8788,server=y,suspend=n"
+rem set "HOST_CONTROLLER_JAVA_OPTS=%HOST_CONTROLLER_JAVA_OPTS% -agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=n"
 
 rem # Sample JPDA settings for shared memory debugging
-rem set "PROCESS_CONTROLLER_JAVA_OPTS=%PROCESS_CONTROLLER_JAVA_OPTS% -Xrunjdwp:transport=dt_shmem,address=jboss,server=y,suspend=n"
-rem set "HOST_CONTROLLER_JAVA_OPTS=%HOST_CONTROLLER_JAVA_OPTS% -Xrunjdwp:transport=dt_shmem,address=jboss,server=y,suspend=n"
+rem set "PROCESS_CONTROLLER_JAVA_OPTS=%PROCESS_CONTROLLER_JAVA_OPTS% -agentlib:jdwp=transport=dt_shmem,address=jboss,server=y,suspend=n"
+rem set "HOST_CONTROLLER_JAVA_OPTS=%HOST_CONTROLLER_JAVA_OPTS% -agentlib:jdwp=transport=dt_shmem,address=jboss,server=y,suspend=n"
 
 :JAVA_OPTS_SET
 

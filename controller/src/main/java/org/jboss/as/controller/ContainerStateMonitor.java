@@ -102,27 +102,26 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
                 }
                 break;
             }
+            case START_REQUESTED_to_PROBLEM: {
+                synchronized (this) {
+                    servicesWithMissingDeps.add(controller);
+                }
+                break;
+            }
+            case PROBLEM_to_START_REQUESTED: {
+                synchronized (this) {
+                    servicesWithMissingDeps.remove(controller);
+                }
+                break;
+            }
         }
         final ServiceController.Substate before = transition.getBefore();
         final ServiceController.Substate after = transition.getAfter();
+
         if (before.isRestState() && ! after.isRestState()) {
             untick();
         } else if (! before.isRestState() && after.isRestState()) {
             tick();
-        }
-    }
-
-    @Override
-    public void immediateDependencyAvailable(final ServiceController<?> controller) {
-        synchronized (this) {
-            servicesWithMissingDeps.remove(controller);
-        }
-    }
-
-    @Override
-    public void immediateDependencyUnavailable(final ServiceController<?> controller) {
-        synchronized (this) {
-            servicesWithMissingDeps.add(controller);
         }
     }
 
@@ -217,7 +216,7 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
         for (ServiceName name : previousMissing) {
             if (! missingDeps.containsKey(name)) {
                 ServiceController<?> controller = serviceRegistry.getService(name);
-                noLongerMissingServices.put(name, controller == null);
+                noLongerMissingServices.put(name, controller != null);
             }
         }
 
@@ -261,10 +260,10 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
         if (!changeReport.getNoLongerMissingServices().isEmpty()) {
             msg.append(MESSAGES.serviceStatusReportCorrected());
             for (Map.Entry<ServiceName, Boolean> entry : changeReport.getNoLongerMissingServices().entrySet()) {
-                if (!entry.getValue()) {
-                    msg.append(MESSAGES.serviceStatusReportNoLongerRequired(entry.getKey()));
-                } else {
+                if (entry.getValue()) {
                     msg.append(MESSAGES.serviceStatusReportAvailable(entry.getKey()));
+                } else {
+                    msg.append(MESSAGES.serviceStatusReportNoLongerRequired(entry.getKey()));
                 }
             }
         }
@@ -300,6 +299,12 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
             return missingServices;
         }
 
+        /**
+         * Gets services that are no longer considered to be missing.
+         * @return a map of the service name of the no-longer-missing service to a boolean indicating
+         *          whether or not the service now exists ({@code true} if it does.) If {@code false}
+         *          the service is no longer "missing" because it is no longer depended upon
+         */
         public Map<ServiceName, Boolean> getNoLongerMissingServices() {
             return noLongerMissingServices;
         }

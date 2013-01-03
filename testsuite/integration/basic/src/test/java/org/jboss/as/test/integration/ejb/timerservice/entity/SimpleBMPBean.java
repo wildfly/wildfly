@@ -23,6 +23,7 @@ package org.jboss.as.test.integration.ejb.timerservice.entity;
 
 import java.rmi.RemoteException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -47,15 +48,15 @@ public class SimpleBMPBean implements EntityBean, TimedObject {
     private static final long serialVersionUID = 1L;
     private static final AtomicInteger ID = new AtomicInteger();
     public static final int HOME_METHOD_RETURN = 100;
-    private static int TIMER_TIMEOUT_TIME_MS = 100;
+    private static final int TIMER_TIMEOUT_TIME_MS = 100;
 
     private String myField;
     private EntityContext entityContext;
     private boolean ejbPostCreateCalled;
-   
-    private static CountDownLatch latch = new CountDownLatch(2);
-    private static final Map<Integer, String> timerData = new HashMap<Integer, String>();
-    
+
+    private static volatile CountDownLatch latch = new CountDownLatch(2);
+    private static final Map<Integer, String> timerData = Collections.synchronizedMap(new HashMap<Integer, String>());
+
     public Integer ejbCreateEmpty() {
         int primaryKey = ID.incrementAndGet();
         DataStore.DATA.put(primaryKey, myField);
@@ -156,8 +157,8 @@ public class SimpleBMPBean implements EntityBean, TimedObject {
 
     public void setupTimerDefined(int time) {
         entityContext.getTimerService().createTimer(time, null);
-    }    
-    
+    }
+
     public String getMyField() {
         return myField;
     }
@@ -183,11 +184,11 @@ public class SimpleBMPBean implements EntityBean, TimedObject {
     public static CountDownLatch getLatch() {
         return latch;
     }
-    
+
     public static void redefineLatch(int countDownLatchNumber) {
         latch = new CountDownLatch(countDownLatchNumber);
     }
-    
+
     public Collection<Timer> getTimers() {
         return entityContext.getTimerService().getTimers();
     }

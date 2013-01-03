@@ -24,6 +24,7 @@ package org.jboss.as.naming.subsystem;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -78,7 +79,11 @@ public class NamingBindingResourceDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
 
-    private static final AttributeDefinition[] ATTRIBUTES = {BINDING_TYPE, VALUE, TYPE, CLASS, MODULE, LOOKUP};
+    public static final PropertiesAttributeDefinition OBJECT_FACTORY_ENV =
+            new PropertiesAttributeDefinition(NamingSubsystemModel.OBJECT_FACTORY_ENV,
+                    NamingSubsystemModel.OBJECT_FACTORY_ENV, true);
+
+    private static final AttributeDefinition[] ATTRIBUTES = {BINDING_TYPE, VALUE, TYPE, CLASS, MODULE, LOOKUP, OBJECT_FACTORY_ENV};
 
     private NamingBindingResourceDefinition() {
         super(NamingSubsystemModel.BINDING_PATH,

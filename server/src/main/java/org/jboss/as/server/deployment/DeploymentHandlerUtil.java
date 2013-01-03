@@ -18,12 +18,11 @@
  */
 package org.jboss.as.server.deployment;
 
-import org.jboss.as.controller.VaultReader;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
-import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getContents;
+import static org.jboss.as.server.deployment.DeploymentHandlerUtils.getContents;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import static org.jboss.msc.service.ServiceController.Mode.REMOVE;
 
@@ -43,6 +42,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.ServerLogger;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceListener;
@@ -59,8 +59,6 @@ import org.jboss.vfs.VirtualFile;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class DeploymentHandlerUtil {
-
-    private static final ServerLogger log = ServerLogger.DEPLOYMENT_LOGGER;
 
     static class ContentItem {
         // either hash or <path, relativeTo, isArchive>
@@ -111,27 +109,35 @@ public class DeploymentHandlerUtil {
                         deploymentController.setMode(ServiceController.Mode.ACTIVE);
                         context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
 
-                        if(context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-                            deploymentController.setMode(ServiceController.Mode.NEVER);
-                        }
+                        context.completeStep(new OperationContext.RollbackHandler() {
+                            @Override
+                            public void handleRollback(OperationContext context, ModelNode operation) {
+                                deploymentController.setMode(ServiceController.Mode.NEVER);
+                            }
+                        });
                     } else {
                         final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
                         final Collection<ServiceController<?>> controllers = doDeploy(context, deploymentUnitName, managementName, verificationHandler, deployment, registration, mutableRegistration, vaultReader, contents);
 
                         context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
 
-                        if(context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-                            for(ServiceController<?> controller : controllers) {
-                                context.removeService(controller.getName());
+                        context.completeStep(new OperationContext.ResultHandler() {
+                            @Override
+                            public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
+                                if(resultAction == OperationContext.ResultAction.ROLLBACK) {
+                                    for(ServiceController<?> controller : controllers) {
+                                        context.removeService(controller.getName());
+                                    }
+                                    if (context.hasFailureDescription()) {
+                                        ServerLogger.ROOT_LOGGER.deploymentRolledBack(deploymentUnitName, getFormattedFailureDescription(context));
+                                    } else {
+                                        ServerLogger.ROOT_LOGGER.deploymentRolledBackWithNoMessage(deploymentUnitName);
+                                    }
+                                } else {
+                                    ServerLogger.ROOT_LOGGER.deploymentDeployed(deploymentUnitName);
+                                }
                             }
-                            if (context.hasFailureDescription()) {
-                                ServerLogger.ROOT_LOGGER.deploymentRolledBack(deploymentUnitName, context.getFailureDescription().asString());
-                            } else {
-                                ServerLogger.ROOT_LOGGER.deploymentRolledBackWithNoMessage(deploymentUnitName);
-                            }
-                        } else {
-                            ServerLogger.ROOT_LOGGER.deploymentDeployed(deploymentUnitName);
-                        }
+                        });
                     }
                 }
             }, OperationContext.Stage.RUNTIME);
@@ -168,7 +174,7 @@ public class DeploymentHandlerUtil {
 
         contentService.addListener(new AbstractServiceListener<Object>() {
             @Override
-            public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
+            public void transition(final ServiceController<?> controller, final ServiceController.Transition transition) {
                 if (transition == ServiceController.Transition.REMOVING_to_REMOVED) {
                     deploymentUnitController.setMode(REMOVE);
                 }
@@ -200,36 +206,44 @@ public class DeploymentHandlerUtil {
                         @Override
                         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                             ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
+                            context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
                             doDeploy(context, deploymentUnitName, managementName, verificationHandler, deployment, registration, mutableRegistration, vaultReader, contents);
-                            if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-                                if (context.hasFailureDescription()) {
-                                    ServerLogger.ROOT_LOGGER.redeployRolledBack(deploymentUnitName, context.getFailureDescription().asString());
-                                    logged.set(true);
-                                } else {
-                                    ServerLogger.ROOT_LOGGER.redeployRolledBackWithNoMessage(deploymentUnitName);
-                                    logged.set(true);
+                            context.completeStep(new OperationContext.ResultHandler() {
+                                @Override
+                                public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
+                                    if (resultAction == OperationContext.ResultAction.ROLLBACK) {
+                                        if (context.hasFailureDescription()) {
+                                            ServerLogger.ROOT_LOGGER.redeployRolledBack(deploymentUnitName, getFormattedFailureDescription(context));
+                                            logged.set(true);
+                                        } else {
+                                            ServerLogger.ROOT_LOGGER.redeployRolledBackWithNoMessage(deploymentUnitName);
+                                            logged.set(true);
+                                        }
+                                    } else {
+                                        ServerLogger.ROOT_LOGGER.deploymentRedeployed(deploymentUnitName);
+                                    }
                                 }
-                            } else {
-                                ServerLogger.ROOT_LOGGER.deploymentRedeployed(deploymentUnitName);
-                            }
+                            });
                         }
                     }, OperationContext.Stage.IMMEDIATE);
 
-                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-                        ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-                        doDeploy(context, deploymentUnitName, managementName, verificationHandler, deployment, registration, mutableRegistration, vaultReader, contents);
-                        if (!logged.get()) {
-                            if (context.hasFailureDescription()) {
-                                ServerLogger.ROOT_LOGGER.undeploymentRolledBack(deploymentUnitName, context.getFailureDescription().asString());
-                            } else {
-                                ServerLogger.ROOT_LOGGER.undeploymentRolledBackWithNoMessage(deploymentUnitName);
+                    context.completeStep(new OperationContext.RollbackHandler() {
+                        @Override
+                        public void handleRollback(OperationContext context, ModelNode operation) {
+                            ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
+                            doDeploy(context, deploymentUnitName, managementName, verificationHandler, deployment, registration, mutableRegistration, vaultReader, contents);
+                            if (!logged.get()) {
+                                if (context.hasFailureDescription()) {
+                                    ServerLogger.ROOT_LOGGER.undeploymentRolledBack(deploymentUnitName, context.getFailureDescription().asString());
+                                } else {
+                                    ServerLogger.ROOT_LOGGER.undeploymentRolledBackWithNoMessage(deploymentUnitName);
+                                }
                             }
                         }
-                    }
+                    });
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-        context.completeStep();
     }
 
     public static void replace(final OperationContext context, final ModelNode originalDeployment, final String deploymentUnitName, final String managementName,
@@ -256,26 +270,31 @@ public class DeploymentHandlerUtil {
                     final Collection<ServiceController<?>> controllers = doDeploy(context, deploymentUnitName, managementName, verificationHandler, deployment, registration, mutableRegistration, vaultReader, contents);
                     context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
 
-                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-                        for (ServiceController<?> controller : controllers) {
-                            context.removeService(controller.getName());
-                        }
+                    context.completeStep(new OperationContext.ResultHandler() {
+                        @Override
+                        public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
+                            if (resultAction == OperationContext.ResultAction.ROLLBACK) {
+                                for (ServiceController<?> controller : controllers) {
+                                    context.removeService(controller.getName());
+                                }
 
-                        DeploymentModelUtils.cleanup(deployment);
-                        final String name = originalDeployment.require(NAME).asString();
-                        final String runtimeName = originalDeployment.require(RUNTIME_NAME).asString();
-                        final DeploymentHandlerUtil.ContentItem[] contents = getContents(originalDeployment.require(CONTENT));
-                        verificationHandler = new ServiceVerificationHandler();
-                        doDeploy(context, runtimeName, name, verificationHandler, deployment, registration, mutableRegistration, vaultReader, contents);
+                                DeploymentModelUtils.cleanup(deployment);
+                                final String name = originalDeployment.require(NAME).asString();
+                                final String runtimeName = originalDeployment.require(RUNTIME_NAME).asString();
+                                final DeploymentHandlerUtil.ContentItem[] contents = getContents(originalDeployment.require(CONTENT));
+                                final ServiceVerificationHandler svh = new ServiceVerificationHandler();
+                                doDeploy(context, runtimeName, name, svh, deployment, registration, mutableRegistration, vaultReader, contents);
 
-                        if (context.hasFailureDescription()) {
-                            ServerLogger.ROOT_LOGGER.replaceRolledBack(replacedDeploymentUnitName, deploymentUnitName, context.getFailureDescription().asString());
-                        } else {
-                            ServerLogger.ROOT_LOGGER.replaceRolledBackWithNoMessage(replacedDeploymentUnitName, deploymentUnitName);
+                                if (context.hasFailureDescription()) {
+                                    ServerLogger.ROOT_LOGGER.replaceRolledBack(replacedDeploymentUnitName, deploymentUnitName, getFormattedFailureDescription(context));
+                                } else {
+                                    ServerLogger.ROOT_LOGGER.replaceRolledBackWithNoMessage(replacedDeploymentUnitName, deploymentUnitName);
+                                }
+                            } else {
+                                ServerLogger.ROOT_LOGGER.deploymentReplaced(replacedDeploymentUnitName, deploymentUnitName);
+                            }
                         }
-                    } else {
-                        ServerLogger.ROOT_LOGGER.deploymentReplaced(replacedDeploymentUnitName, deploymentUnitName);
-                    }
+                    });
                 }
             }, OperationContext.Stage.RUNTIME);
         }
@@ -295,24 +314,44 @@ public class DeploymentHandlerUtil {
                     context.removeService(deploymentUnitServiceName);
                     context.removeService(deploymentUnitServiceName.append("contents"));
 
-                    if(context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-                        final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
-                        final String name = model.require(NAME).asString();
-                        final String runtimeName = model.require(RUNTIME_NAME).asString();
-                        final DeploymentHandlerUtil.ContentItem[] contents = getContents(model.require(CONTENT));
-                        final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-                        doDeploy(context, runtimeName, name, verificationHandler, deployment, registration, mutableRegistration, vaultReader, contents);
+                    context.completeStep(new OperationContext.ResultHandler() {
+                        @Override
+                        public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
+                            if(resultAction == OperationContext.ResultAction.ROLLBACK) {
+                                final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+                                final String name = model.require(NAME).asString();
+                                final String runtimeName = model.require(RUNTIME_NAME).asString();
+                                final DeploymentHandlerUtil.ContentItem[] contents = getContents(model.require(CONTENT));
+                                final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
+                                doDeploy(context, runtimeName, name, verificationHandler, deployment, registration, mutableRegistration, vaultReader, contents);
 
-                        if (context.hasFailureDescription()) {
-                            ServerLogger.ROOT_LOGGER.undeploymentRolledBack(deploymentUnitName, context.getFailureDescription().asString());
-                        } else {
-                            ServerLogger.ROOT_LOGGER.undeploymentRolledBackWithNoMessage(deploymentUnitName);
+                                if (context.hasFailureDescription()) {
+                                    ServerLogger.ROOT_LOGGER.undeploymentRolledBack(deploymentUnitName, getFormattedFailureDescription(context));
+                                } else {
+                                    ServerLogger.ROOT_LOGGER.undeploymentRolledBackWithNoMessage(deploymentUnitName);
+                                }
+                            } else {
+                                ServerLogger.ROOT_LOGGER.deploymentUndeployed(deploymentUnitName);
+                            }
                         }
-                    } else {
-                        ServerLogger.ROOT_LOGGER.deploymentUndeployed(deploymentUnitName);
-                    }
+                    });
                 }
             }, OperationContext.Stage.RUNTIME);
         }
+    }
+
+    private static String getFormattedFailureDescription(OperationContext context) {
+        ModelNode failureDescNode = context.getFailureDescription();
+        String failureDesc = failureDescNode.toString();
+//        // Strip the wrapping {} from ModelType.OBJECT types
+//        if (failureDescNode.getType() == ModelType.OBJECT && failureDesc.length() > 2
+//                && failureDesc.charAt(0) == '{' && failureDesc.charAt(failureDesc.length() - 1) == '}') {
+//            failureDesc = failureDesc.substring(1, failureDesc.length() - 1);
+//        }
+
+        if (failureDesc.contains("\n") && failureDesc.charAt(0) != '\n') {
+            failureDesc = "\n" + failureDesc;
+        }
+        return failureDesc;
     }
 }

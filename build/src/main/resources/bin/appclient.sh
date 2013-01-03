@@ -117,7 +117,7 @@ CLASSPATH="$CLASSPATH:$JBOSS_HOME/jboss-modules.jar"
 # Execute the JVM in the foreground
 eval \"$JAVA\" $JAVA_OPTS \
  -cp "$CLASSPATH" \
- \"-Dorg.jboss.boot.log.file=$JBOSS_HOME/appclient/log/boot.log\" \
+ \"-Dorg.jboss.server.log.file=$JBOSS_HOME/appclient/log/appclient.log\" \
  \"-Dlogging.configuration=file:$JBOSS_HOME/appclient/configuration/logging.properties\" \
  org.jboss.modules.Main \
  -mp \"${JBOSS_MODULEPATH}\" \
@@ -125,6 +125,6 @@ eval \"$JAVA\" $JAVA_OPTS \
  org.jboss.as.appclient \
  -Djboss.home.dir=\"$JBOSS_HOME\" \
  -Djboss.server.base.dir=\"$JBOSS_HOME/appclient\" \
- "$@"
+ '"$@"'
 JBOSS_STATUS=$?
 exit $JBOSS_STATUS

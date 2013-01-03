@@ -24,6 +24,8 @@ package org.jboss.as.naming.service;
 
 import static org.jboss.as.naming.NamingLogger.ROOT_LOGGER;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.msc.inject.Injector;
@@ -39,6 +41,7 @@ import org.jboss.msc.value.InjectedValue;
  * any service that needs to retrieve this entry from the context.
  *
  * @author John E. Bailey
+ * @author Eduardo Martins
  */
 public class BinderService implements Service<ManagedReferenceFactory> {
 
@@ -46,7 +49,7 @@ public class BinderService implements Service<ManagedReferenceFactory> {
     private final String name;
     private final InjectedValue<ManagedReferenceFactory> managedReferenceFactory = new InjectedValue<ManagedReferenceFactory>();
     private final Object source;
-    private short refcnt = 0;
+    private final AtomicInteger refcnt = new AtomicInteger(0);
     private ServiceController<?> controller;
 
     /**
@@ -72,12 +75,12 @@ public class BinderService implements Service<ManagedReferenceFactory> {
         return source;
     }
 
-    public synchronized void acquire() {
-        refcnt++;
+    public void acquire() {
+        refcnt.incrementAndGet();
     }
 
-    public synchronized void release() {
-        if (--refcnt <= 0)
+    public void release() {
+        if (refcnt.decrementAndGet() <= 0)
             controller.setMode(ServiceController.Mode.REMOVE);
     }
 
@@ -111,7 +114,6 @@ public class BinderService implements Service<ManagedReferenceFactory> {
      * @return The value of the named entry
      * @throws IllegalStateException
      */
-    @SuppressWarnings("unchecked")
     public synchronized ManagedReferenceFactory getValue() throws IllegalStateException {
         return managedReferenceFactory.getValue();
     }

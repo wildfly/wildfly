@@ -23,8 +23,8 @@ package org.jboss.as.webservices.dmr;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.webservices.WSMessages.MESSAGES;
-import static org.jboss.as.webservices.dmr.PackageUtils.getServerConfig;
 import static org.jboss.as.webservices.dmr.PackageUtils.getConfigs;
+import static org.jboss.as.webservices.dmr.PackageUtils.getServerConfig;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -60,7 +60,7 @@ final class PropertyRemove extends AbstractRemoveStepHandler {
                 if (configName.equals(commonConfig.getConfigName())) {
                     if (commonConfig.getProperties().containsKey(propertyName)) {
                         commonConfig.getProperties().remove(propertyName);
-                        context.restartRequired();
+                        context.reloadRequired();
                     }
                     return;
                 }

@@ -57,6 +57,14 @@ final class HandlerAdd extends AbstractAddStepHandler {
     }
 
     @Override
+    protected void rollbackRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final List<ServiceController<?>> controllers) {
+        super.rollbackRuntime(context, operation, model, controllers);
+        if (!context.isBooting()) {
+            context.revertReloadRequired();
+        }
+    }
+
+    @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         final ServerConfig config = getServerConfig(context);
         if (config != null) {
@@ -87,7 +95,7 @@ final class HandlerAdd extends AbstractAddStepHandler {
                     handler.setHandlerClass(handlerClass);
                     handlerChain.addHandler(handler);
                     if (!context.isBooting()) {
-                        context.restartRequired();
+                        context.reloadRequired();
                     }
                     return;
                 }
@@ -99,7 +107,7 @@ final class HandlerAdd extends AbstractAddStepHandler {
     private static UnifiedHandlerChainMetaData getChain(final List<UnifiedHandlerChainMetaData> handlerChains, final String handlerChainId) {
         if (handlerChains != null) {
             for (final UnifiedHandlerChainMetaData handlerChain : handlerChains) {
-                if (handlerChainId.equals(handlerChain.getId())) return handlerChain;
+                if (handlerChainId.equals(handlerChain.getId())) { return handlerChain; }
             }
         }
         return null;
@@ -107,9 +115,7 @@ final class HandlerAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        if (operation.hasDefined(CLASS)) {
-            model.get(CLASS).set(operation.get(CLASS));
-        }
+        Attributes.CLASS.validateAndSet(operation, model);
     }
 
 }

@@ -27,20 +27,17 @@ import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-
-import java.util.Locale;
 
 /**
  * {@code OperationStepHandler} for removing an existing security setting.
  *
  * @author Emanuel Muckenhuber
  */
-class SecuritySettingRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
+class SecuritySettingRemove extends AbstractRemoveStepHandler {
 
     static final SecuritySettingRemove INSTANCE = new SecuritySettingRemove();
 
@@ -52,11 +49,6 @@ class SecuritySettingRemove extends AbstractRemoveStepHandler implements Descrip
             final String match = address.getLastElement().getValue();
             server.getSecurityRepository().removeMatch(match);
         }
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return MessagingDescriptions.getSecuritySettingRemove(locale);
     }
 
     static HornetQServer getServer(final OperationContext context, ModelNode operation) {

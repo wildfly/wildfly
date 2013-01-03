@@ -22,16 +22,14 @@
 
 package org.jboss.as.domain.controller.operations;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.operations.common.ResolveExpressionHandler;
-import org.jboss.as.domain.controller.descriptions.DomainRootDescription;
+import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.domain.controller.descriptions.DomainResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -40,11 +38,20 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ResolveExpressionOnDomainHandler implements OperationStepHandler, DescriptionProvider {
+public class ResolveExpressionOnDomainHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = "resolve-expression-on-domain";
 
     public static final ResolveExpressionOnDomainHandler INSTANCE = new ResolveExpressionOnDomainHandler();
+
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, DomainResolver.getResolver("domain"))
+            .addParameter(ResolveExpressionHandler.EXPRESSION)
+            .setReplyType(ModelType.STRING)
+            .allowReturnNull()
+            .setReadOnly()
+            .withFlag(OperationEntry.Flag.DOMAIN_PUSH_TO_SERVERS)
+            .build();
+
 
     private ResolveExpressionOnDomainHandler() {
     }
@@ -55,16 +62,6 @@ public class ResolveExpressionOnDomainHandler implements OperationStepHandler, D
         // Just validate. The real work happens on the servers
         ResolveExpressionHandler.EXPRESSION.validateOperation(operation);
 
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        ModelType valueType = null;
-        DescriptionProvider delegate = new DefaultOperationDescriptionProvider(OPERATION_NAME,
-                DomainRootDescription.getResourceDescriptionResolver("domain"), ModelType.STRING, valueType, ResolveExpressionHandler.EXPRESSION);
-        ModelNode result = delegate.getModelDescription(locale);
-        result.get(ModelDescriptionConstants.REPLY_PROPERTIES, ModelDescriptionConstants.NILLABLE).set(true);
-        return result;
+        context.stepCompleted();
     }
 }

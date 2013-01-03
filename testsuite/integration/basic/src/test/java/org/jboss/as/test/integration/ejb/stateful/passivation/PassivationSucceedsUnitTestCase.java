@@ -31,6 +31,7 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
@@ -54,6 +55,7 @@ public class PassivationSucceedsUnitTestCase {
     public static Archive<?> deploy() throws Exception {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "passivation-test.jar");
         jar.addPackage(PassivationSucceedsUnitTestCase.class.getPackage());
+        jar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
         jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"),
                 "MANIFEST.MF");
         jar.addAsManifestResource(PassivationSucceedsUnitTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
@@ -69,6 +71,7 @@ public class PassivationSucceedsUnitTestCase {
         Assert.assertEquals("Returned remote1 result was not expected", TestPassivationRemote.EXPECTED_RESULT,
                 remote1.returnTrueString());
         remote1.addEntity(1, "Bob");
+        remote1.setManagedBeanMessage("bar");
         Assert.assertTrue(remote1.isPersistenceContextSame());
 
         TestPassivationRemote remote2 = (TestPassivationRemote) ctx.lookup("java:module/"
@@ -88,6 +91,8 @@ public class PassivationSucceedsUnitTestCase {
         Assert.assertTrue(remote2.isPersistenceContextSame());
         Assert.assertEquals("Super", remote1.getSuperEmployee().getName());
         Assert.assertEquals("Super", remote2.getSuperEmployee().getName());
+        Assert.assertEquals("bar", remote1.getManagedBeanMessage());
+        Assert.assertEquals("bar", remote2.getManagedBeanMessage());
 
         remote1.remove();
         remote2.remove();

@@ -24,8 +24,11 @@ package org.jboss.as.controller.resource;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 
-import java.util.Locale;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -33,17 +36,18 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.DefaultResourceAddDescriptionProvider;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.parsing.Attribute;
+import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -60,7 +64,10 @@ public class SocketBindingGroupResourceDefinition extends SimpleResourceDefiniti
 
     // Common attributes
 
+    public static final PathElement PATH = PathElement.pathElement(ModelDescriptionConstants.SOCKET_BINDING_GROUP);
+
     public static final SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.NAME, ModelType.STRING, false)
+            .setResourceOnly()
             .setValidator(new StringLengthValidator(1)).build();
 
     public static final SimpleAttributeDefinition DEFAULT_INTERFACE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.DEFAULT_INTERFACE, ModelType.STRING, false)
@@ -70,20 +77,40 @@ public class SocketBindingGroupResourceDefinition extends SimpleResourceDefiniti
     // Server-only attributes.
 
     public static final SimpleAttributeDefinition PORT_OFFSET = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PORT_OFFSET, ModelType.INT, true)
-            .setAllowExpression(true).setValidator(new IntRangeValidator(0, 65535, true, true))
+            .setAllowExpression(true).setValidator(new IntRangeValidator(-65535, 65535, true, true))
             .setDefaultValue(new ModelNode().set(0)).setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
 
     // Domain-only attributes
-
-    public static final ListAttributeDefinition INCLUDES = SocketBindingGroupIncludesAttribute.INSTANCE;
+    public static final ListAttributeDefinition INCLUDES = new PrimitiveListAttributeDefinition.Builder(ModelDescriptionConstants.INCLUDES, ModelType.STRING)
+            .setXmlName(Element.INCLUDE.getLocalName())
+            .setAllowNull(true)
+            .setMinSize(0)
+            .setMaxSize(Integer.MAX_VALUE)
+            .setValidator(new StringLengthValidator(1, true))
+            .setAttributeMarshaller(new AttributeMarshaller() {
+                @Override
+                public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+                    if (isMarshallable(attribute, resourceModel)) {
+                        for (ModelNode included : resourceModel.get(attribute.getName()).asList()) {
+                            writer.writeEmptyElement(attribute.getXmlName());
+                            writer.writeAttribute(Attribute.SOCKET_BINDING_GROUP.getLocalName(), included.asString());
+                        }
+                    }
+                }
+            })
+            .setFlags(AttributeAccess.Flag.RESTART_JVM)
+            .build();
 
     private final boolean forDomainModel;
+    private final ResourceDefinition[] children;
 
-    public SocketBindingGroupResourceDefinition(final OperationStepHandler addHandler, final OperationStepHandler removeHandler, final boolean forDomainModel) {
-        super(PathElement.pathElement(ModelDescriptionConstants.SOCKET_BINDING_GROUP),
-                CommonDescriptions.getResourceDescriptionResolver(ModelDescriptionConstants.SOCKET_BINDING_GROUP),
+
+    public SocketBindingGroupResourceDefinition(final OperationStepHandler addHandler, final OperationStepHandler removeHandler, final boolean forDomainModel, ResourceDefinition...children) {
+        super(PATH,
+                ControllerResolver.getResolver(ModelDescriptionConstants.SOCKET_BINDING_GROUP),
                 addHandler, removeHandler, OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
         this.forDomainModel = forDomainModel;
+        this.children = children;
     }
 
     @Override
@@ -117,20 +144,11 @@ public class SocketBindingGroupResourceDefinition extends SimpleResourceDefiniti
         */
     }
 
-    protected void registerAddOperation(final ManagementResourceRegistration registration, final OperationStepHandler handler,
-                                        OperationEntry.Flag... flags) {
-        DescriptionProvider provider = new DefaultResourceAddDescriptionProvider(registration, getResourceDescriptionResolver()) {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                // "name" is not an operation parameter
-                final ModelNode result = super.getModelDescription(locale);
-                if (result.get(ModelDescriptionConstants.REQUEST_PROPERTIES).hasDefined(NAME.getName())) {
-                    result.get(ModelDescriptionConstants.REQUEST_PROPERTIES).remove(NAME.getName());
-                }
-                return result;
-            }
-        };
-        registration.registerOperationHandler(ModelDescriptionConstants.ADD, handler, provider, getFlagsSet(flags));
+    @Override
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        for (ResourceDefinition child : children) {
+            resourceRegistration.registerSubModel(child);
+        }
     }
 
     public static void validateDefaultInterfaceReference(final OperationContext context, final ModelNode bindingGroup) throws OperationFailedException {

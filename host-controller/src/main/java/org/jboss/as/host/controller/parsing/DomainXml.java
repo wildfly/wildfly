@@ -27,6 +27,7 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
@@ -89,7 +90,8 @@ import org.jboss.as.controller.parsing.ProfileParsingCompletionHandler;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
-import org.jboss.as.domain.controller.descriptions.DomainAttributes;
+import org.jboss.as.domain.controller.resources.DomainRootDefinition;
+import org.jboss.as.domain.controller.resources.ServerGroupResourceDefinition;
 import org.jboss.as.server.parsing.CommonXml;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -131,8 +133,11 @@ public class DomainXml extends CommonXml {
             case DOMAIN_1_2:
                 readDomainElement1_1(reader, new ModelNode(), readerNS, nodes);
                 break;
-            case DOMAIN_1_3:{
+            case DOMAIN_1_3:
                 readDomainElement1_3(reader, new ModelNode(), readerNS, nodes);
+                break;
+            case DOMAIN_1_4: {
+                readDomainElement1_4(reader, new ModelNode(), readerNS, nodes);
                 break;
             }
             default: {
@@ -152,7 +157,7 @@ public class DomainXml extends CommonXml {
         writeNamespaces(writer, modelNode);
         writeSchemaLocation(writer, modelNode);
 
-        DomainAttributes.NAME.marshallAsAttribute(modelNode, false, writer);
+        DomainRootDefinition.NAME.marshallAsAttribute(modelNode, false, writer);
 
         writeNewLine(writer);
 
@@ -160,41 +165,45 @@ public class DomainXml extends CommonXml {
             extensionXml.writeExtensions(writer, modelNode.get(EXTENSION));
             writeNewLine(writer);
         }
-        if(modelNode.hasDefined(SYSTEM_PROPERTY)) {
+        if (modelNode.hasDefined(SYSTEM_PROPERTY)) {
             writeProperties(writer, modelNode.get(SYSTEM_PROPERTY), Element.SYSTEM_PROPERTIES, false);
             writeNewLine(writer);
         }
-        if(modelNode.hasDefined(PATH)) {
-            writePaths(writer, modelNode.get(PATH));
+        if (modelNode.hasDefined(PATH)) {
+            writePaths(writer, modelNode.get(PATH), true);
             writeNewLine(writer);
         }
-        if(modelNode.hasDefined(PROFILE)) {
+        if (modelNode.hasDefined(PROFILE)) {
             writer.writeStartElement(Element.PROFILES.getLocalName());
-            for(final Property profile : modelNode.get(PROFILE).asPropertyList()) {
+            for (final Property profile : modelNode.get(PROFILE).asPropertyList()) {
                 writeProfile(writer, profile.getName(), profile.getValue(), context);
             }
             writer.writeEndElement();
             writeNewLine(writer);
         }
-        if(modelNode.hasDefined(INTERFACE)) {
+        if (modelNode.hasDefined(INTERFACE)) {
             writeInterfaces(writer, modelNode.get(INTERFACE));
             writeNewLine(writer);
         }
-        if(modelNode.hasDefined(SOCKET_BINDING_GROUP)) {
+        if (modelNode.hasDefined(SOCKET_BINDING_GROUP)) {
             writer.writeStartElement(Element.SOCKET_BINDING_GROUPS.getLocalName());
-            for(final Property property : modelNode.get(SOCKET_BINDING_GROUP).asPropertyList()) {
+            for (final Property property : modelNode.get(SOCKET_BINDING_GROUP).asPropertyList()) {
                 writeSocketBindingGroup(writer, property.getValue(), false);
             }
             writer.writeEndElement();
             writeNewLine(writer);
         }
-        if(modelNode.hasDefined(DEPLOYMENT)) {
+        if (modelNode.hasDefined(DEPLOYMENT)) {
             writeDomainDeployments(writer, modelNode.get(DEPLOYMENT));
             writeNewLine(writer);
         }
-        if(modelNode.hasDefined(SERVER_GROUP)) {
+        if (modelNode.hasDefined(DEPLOYMENT_OVERLAY)) {
+            writeDeploymentOverlays(writer, modelNode.get(DEPLOYMENT_OVERLAY));
+            writeNewLine(writer);
+        }
+        if (modelNode.hasDefined(SERVER_GROUP)) {
             writer.writeStartElement(Element.SERVER_GROUPS.getLocalName());
-            for(final Property property : modelNode.get(SERVER_GROUP).asPropertyList()) {
+            for (final Property property : modelNode.get(SERVER_GROUP).asPropertyList()) {
                 writeServerGroup(writer, property.getName(), property.getValue());
             }
             writer.writeEndElement();
@@ -373,6 +382,67 @@ public class DomainXml extends CommonXml {
             throw unexpectedElement(reader);
         }
     }
+
+    void readDomainElement1_4(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+
+        parseNamespaces(reader, address, list);
+
+        // attributes
+        readDomainElementAttributes_1_3(reader, expectedNs, address, list);
+
+        // Content
+        // Handle elements: sequence
+
+        Element element = nextElement(reader, expectedNs);
+        if (element == Element.EXTENSIONS) {
+            extensionXml.parseExtensions(reader, address, expectedNs, list);
+            element = nextElement(reader, expectedNs);
+        }
+        if (element == Element.SYSTEM_PROPERTIES) {
+            parseSystemProperties(reader, address, expectedNs, list, false);
+            element = nextElement(reader, expectedNs);
+        }
+        if (element == Element.PATHS) {
+            parsePaths(reader, address, expectedNs, list, false);
+            element = nextElement(reader, expectedNs);
+        }
+        if (element == Element.PROFILES) {
+            parseProfiles(reader, address, expectedNs, list);
+            element = nextElement(reader, expectedNs);
+        }
+        final Set<String> interfaceNames = new HashSet<String>();
+        if (element == Element.INTERFACES) {
+            parseInterfaces(reader, interfaceNames, address, expectedNs, list, false);
+            element = nextElement(reader, expectedNs);
+        }
+        if (element == Element.SOCKET_BINDING_GROUPS) {
+            parseDomainSocketBindingGroups(reader, address, expectedNs, list, interfaceNames);
+            element = nextElement(reader, expectedNs);
+        }
+        if (element == Element.DEPLOYMENTS) {
+            parseDeployments(reader, address, expectedNs, list, EnumSet.of(Attribute.NAME, Attribute.RUNTIME_NAME),
+                    EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED));
+            element = nextElement(reader, expectedNs);
+        }
+        if (element == Element.DEPLOYMENT_OVERLAYS) {
+            parseDeploymentOverlays(reader, expectedNs, new ModelNode(), list, true, false);
+            element = nextElement(reader, expectedNs);
+        }
+        if (element == Element.SERVER_GROUPS) {
+            parseServerGroups(reader, address, expectedNs, list);
+            element = nextElement(reader, expectedNs);
+        }
+        if (element == Element.MANAGEMENT_CLIENT_CONTENT) {
+            parseManagementClientContent(reader, address, expectedNs, list);
+            element = nextElement(reader, expectedNs);
+        } else if (element == null) {
+            // Always add op(s) to set up management-client-content resources
+            initializeRolloutPlans(address, list);
+        } else {
+            throw unexpectedElement(reader);
+        }
+    }
+
     protected void readDomainElementAttributes_1_0(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> list) throws XMLStreamException {
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -432,7 +502,7 @@ public class DomainXml extends CommonXml {
                             op.get(NAME).set(NAME);
                             op.get(VALUE).set(ParseUtils.parsePossibleExpression(reader.getAttributeValue(i)));
                             list.add(op);
-                        break;
+                            break;
                         default:
                             throw unexpectedAttribute(reader, i);
                     }
@@ -467,7 +537,7 @@ public class DomainXml extends CommonXml {
     }
 
     void parseSocketBindingGroup_1_0(final XMLExtendedStreamReader reader, final Set<String> interfaces, final ModelNode address,
-                                 final Namespace expectedNs, final List<ModelNode> updates) throws XMLStreamException {
+                                     final Namespace expectedNs, final List<ModelNode> updates) throws XMLStreamException {
         final Set<String> includedGroups = new HashSet<String>();
         // unique socket-binding names
         final Set<String> uniqueBindingNames = new HashSet<String>();
@@ -527,7 +597,7 @@ public class DomainXml extends CommonXml {
     }
 
     void parseSocketBindingGroup_1_1(final XMLExtendedStreamReader reader, final Set<String> interfaces, final ModelNode address,
-                                 final Namespace expectedNs, final List<ModelNode> updates) throws XMLStreamException {
+                                     final Namespace expectedNs, final List<ModelNode> updates) throws XMLStreamException {
         final Set<String> includedGroups = new HashSet<String>();
         // both outbound-socket-bindings and socket-binding names
         final Set<String> uniqueBindingNames = new HashSet<String>();
@@ -551,8 +621,10 @@ public class DomainXml extends CommonXml {
                     Element.INTERFACES.getLocalName(), reader.getLocation());
         }
 
+        /*This will be reintroduced for 7.2.0, leave commented out
         final ModelNode includes = bindingGroupUpdate.get(INCLUDES);
         includes.setEmptyList();
+        */
         updates.add(bindingGroupUpdate);
 
         // Handle elements
@@ -560,7 +632,7 @@ public class DomainXml extends CommonXml {
             requireNamespace(reader, expectedNs);
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
-               /* This will be reintroduced for 7.2.0, leave commented out
+                /* This will be reintroduced for 7.2.0, leave commented out
                 case INCLUDE: {
                     final String includedGroup = readStringAttributeElement(reader, Attribute.SOCKET_BINDING_GROUP.getLocalName());
                     if (!includedGroups.add(includedGroup)) {
@@ -634,7 +706,8 @@ public class DomainXml extends CommonXml {
                             }
                             profile = value;
                             break;
-                        } case MANAGEMENT_SUBSYSTEM_ENDPOINT: {
+                        }
+                        case MANAGEMENT_SUBSYSTEM_ENDPOINT: {
                             if (managementSubsystemEndpoint != null) {
                                 throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
                             }
@@ -677,7 +750,8 @@ public class DomainXml extends CommonXml {
                         break;
                     }
                     case SOCKET_BINDING_GROUP: {
-                        parseSocketBindingGroupRef(reader, groupAddress, list);
+                        parseSocketBindingGroupRef(reader, group, ServerGroupResourceDefinition.SOCKET_BINDING_GROUP,
+                                ServerGroupResourceDefinition.SOCKET_BINDING_PORT_OFFSET);
                         break;
                     }
                     case DEPLOYMENTS: {
@@ -686,6 +760,10 @@ public class DomainXml extends CommonXml {
                         }
                         sawDeployments = true;
                         parseDeployments(reader, groupAddress, expectedNs, list, EnumSet.of(Attribute.NAME, Attribute.RUNTIME_NAME, Attribute.ENABLED), Collections.<Element>emptySet());
+                        break;
+                    }
+                    case DEPLOYMENT_OVERLAYS: {
+                        parseDeploymentOverlays(reader, expectedNs, groupAddress, list, false, true);
                         break;
                     }
                     case SYSTEM_PROPERTIES: {
@@ -715,7 +793,7 @@ public class DomainXml extends CommonXml {
             // Attributes
             requireSingleAttribute(reader, Attribute.NAME.getLocalName());
             final String name = reader.getAttributeValue(0);
-            if (! names.add(name)) {
+            if (!names.add(name)) {
                 throw MESSAGES.duplicateDeclaration("profile", name, reader.getLocation());
             }
 
@@ -748,7 +826,7 @@ public class DomainXml extends CommonXml {
                     case DOMAIN_1_0:
                     case DOMAIN_1_1:
                     case DOMAIN_1_2:
-                    case DOMAIN_1_3:{
+                    case DOMAIN_1_3: {
                         requireNamespace(reader, expectedNs);
                         // include should come first
                         if (profileOps.size() > 0) {
@@ -796,19 +874,15 @@ public class DomainXml extends CommonXml {
 
             // Process subsystems
             for (List<ModelNode> subsystems : profileOps.values()) {
-                for(final ModelNode update : subsystems) {
+                for (final ModelNode update : subsystems) {
                     // Process relative subsystem path address
                     final ModelNode subsystemAddress = address.clone().set(address).add(ModelDescriptionConstants.PROFILE, name);
-                    for(final Property path : update.get(OP_ADDR).asPropertyList()) {
+                    for (final Property path : update.get(OP_ADDR).asPropertyList()) {
                         subsystemAddress.add(path.getName(), path.getValue().asString());
                     }
                     update.get(OP_ADDR).set(subsystemAddress);
                     list.add(update);
                 }
-            }
-
-            if (profileOps.size() == 0) {
-                throw MESSAGES.profileHasNoSubsystems(reader.getLocation());
             }
         }
     }
@@ -869,13 +943,13 @@ public class DomainXml extends CommonXml {
         writer.writeStartElement(Element.PROFILE.getLocalName());
         writer.writeAttribute(Attribute.NAME.getLocalName(), profileName);
 
-        if(profileNode.hasDefined(INCLUDES)) {
-            for(final ModelNode include : profileNode.get(INCLUDES).asList()) {
+        if (profileNode.hasDefined(INCLUDES)) {
+            for (final ModelNode include : profileNode.get(INCLUDES).asList()) {
                 writer.writeEmptyElement(INCLUDE);
                 writer.writeAttribute(PROFILE, include.asString());
             }
         }
-        if(profileNode.hasDefined(SUBSYSTEM)) {
+        if (profileNode.hasDefined(SUBSYSTEM)) {
             final Set<String> subsystemNames = profileNode.get(SUBSYSTEM).keys();
             if (subsystemNames.size() > 0) {
                 String defaultNamespace = writer.getNamespaceContext().getNamespaceURI(XMLConstants.DEFAULT_NS_PREFIX);
@@ -886,8 +960,7 @@ public class DomainXml extends CommonXml {
                         if (subsystemWriter != null) { // FIXME -- remove when extensions are doing the registration
                             subsystemWriter.writeContent(writer, new SubsystemMarshallingContext(subsystem, writer));
                         }
-                    }
-                    finally {
+                    } finally {
                         writer.setDefaultNamespace(defaultNamespace);
                     }
                 }
@@ -944,8 +1017,8 @@ public class DomainXml extends CommonXml {
         writer.writeAttribute(Attribute.PROFILE.getLocalName(), group.get(PROFILE).asString());
 
         // JVM
-        if(group.hasDefined(JVM)) {
-            for(final Property jvm : group.get(JVM).asPropertyList()) {
+        if (group.hasDefined(JVM)) {
+            for (final Property jvm : group.get(JVM).asPropertyList()) {
                 JvmXml.writeJVMElement(writer, jvm.getName(), jvm.getValue());
                 break; // TODO just write the first !?
             }
@@ -955,25 +1028,25 @@ public class DomainXml extends CommonXml {
         String bindingGroupRef = group.hasDefined(SOCKET_BINDING_GROUP) ? group.get(SOCKET_BINDING_GROUP).asString() : null;
         String portOffset = group.hasDefined(SOCKET_BINDING_PORT_OFFSET) ? group.get(SOCKET_BINDING_PORT_OFFSET).asString() : null;
         Boolean managementSubsystemEndpoint = group.hasDefined(MANAGEMENT_SUBSYSTEM_ENDPOINT) ? group.get(MANAGEMENT_SUBSYSTEM_ENDPOINT).asBoolean() : null;
-        if (bindingGroupRef != null || portOffset != null) {
+        if (managementSubsystemEndpoint != null) {
+            writeAttribute(writer, Attribute.MANAGEMENT_SUBSYSTEM_ENDPOINT, managementSubsystemEndpoint.toString());
+        }
+        if (group.hasDefined(SOCKET_BINDING_GROUP) || group.hasDefined(SOCKET_BINDING_PORT_OFFSET)) {
             writer.writeStartElement(Element.SOCKET_BINDING_GROUP.getLocalName());
-            if (bindingGroupRef != null) {
-                writeAttribute(writer, Attribute.REF, bindingGroupRef);
-            }
-            if (portOffset != null) {
-                writeAttribute(writer, Attribute.PORT_OFFSET, portOffset);
-            }
-            if (managementSubsystemEndpoint != null) {
-                writeAttribute(writer, Attribute.MANAGEMENT_SUBSYSTEM_ENDPOINT, managementSubsystemEndpoint.toString());
-            }
+            ServerGroupResourceDefinition.SOCKET_BINDING_GROUP.marshallAsAttribute(group, writer);
+            ServerGroupResourceDefinition.SOCKET_BINDING_PORT_OFFSET.marshallAsAttribute(group, writer);
             writer.writeEndElement();
         }
 
-        if(group.hasDefined(DEPLOYMENT)) {
+        if (group.hasDefined(DEPLOYMENT)) {
             writeServerGroupDeployments(writer, group.get(DEPLOYMENT));
         }
+        if (group.hasDefined(DEPLOYMENT_OVERLAY)) {
+            writeDeploymentOverlays(writer, group.get(DEPLOYMENT_OVERLAY));
+            writeNewLine(writer);
+        }
         // System properties
-        if(group.hasDefined(SYSTEM_PROPERTY)) {
+        if (group.hasDefined(SYSTEM_PROPERTY)) {
             writeProperties(writer, group.get(SYSTEM_PROPERTY), Element.SYSTEM_PROPERTIES, false);
         }
 

@@ -31,8 +31,8 @@ import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.DeploymentRepositoryListener;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
+import org.jboss.as.ejb3.remote.RemoteAsyncInvocationCancelStatusService;
 import org.jboss.as.network.ClientMapping;
-import org.jboss.logging.Logger;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
@@ -56,13 +56,9 @@ import java.util.concurrent.ExecutorService;
 public class VersionOneProtocolChannelReceiver implements Channel.Receiver, DeploymentRepositoryListener,
         RegistryCollector.Listener<String, List<ClientMapping>> {
 
-    /**
-     * Logger
-     */
-    private static final Logger logger = Logger.getLogger(VersionOneProtocolChannelReceiver.class);
-
     private static final byte HEADER_SESSION_OPEN_REQUEST = 0x01;
     private static final byte HEADER_INVOCATION_REQUEST = 0x03;
+    private static final byte HEADER_INVOCATION_CANCELLATION_REQUEST = 0x04;
     private static final byte HEADER_TX_COMMIT_REQUEST = 0x0F;
     private static final byte HEADER_TX_ROLLBACK_REQUEST = 0x10;
     private static final byte HEADER_TX_PREPARE_REQUEST = 0x11;
@@ -76,16 +72,18 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
     private final ExecutorService executorService;
     private final RegistryCollector<String, List<ClientMapping>> clientMappingRegistryCollector;
     private final Set<ClusterTopologyUpdateListener> clusterTopologyUpdateListeners = Collections.synchronizedSet(new HashSet<ClusterTopologyUpdateListener>());
+    private final RemoteAsyncInvocationCancelStatusService remoteAsyncInvocationCancelStatus;
 
     public VersionOneProtocolChannelReceiver(final ChannelAssociation channelAssociation, final DeploymentRepository deploymentRepository,
                                              final EJBRemoteTransactionsRepository transactionsRepository, final RegistryCollector<String, List<ClientMapping>> clientMappingRegistryCollector,
-                                             final MarshallerFactory marshallerFactory, final ExecutorService executorService) {
+                                             final MarshallerFactory marshallerFactory, final ExecutorService executorService, final RemoteAsyncInvocationCancelStatusService asyncInvocationCancelStatusService) {
         this.marshallerFactory = marshallerFactory;
         this.channelAssociation = channelAssociation;
         this.executorService = executorService;
         this.deploymentRepository = deploymentRepository;
         this.transactionsRepository = transactionsRepository;
         this.clientMappingRegistryCollector = clientMappingRegistryCollector;
+        this.remoteAsyncInvocationCancelStatus = asyncInvocationCancelStatusService;
     }
 
     public void startReceiving() {
@@ -145,13 +143,16 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         try {
             // read the first byte to see what type of a message it is
             final int header = messageInputStream.read();
-            if (logger.isTraceEnabled()) {
-                logger.trace("Got message with header 0x" + Integer.toHexString(header) + " on channel " + channel);
+            if (EjbLogger.ROOT_LOGGER.isTraceEnabled()) {
+                EjbLogger.ROOT_LOGGER.trace("Got message with header 0x" + Integer.toHexString(header) + " on channel " + channel);
             }
             MessageHandler messageHandler = null;
             switch (header) {
                 case HEADER_INVOCATION_REQUEST:
-                    messageHandler = new MethodInvocationMessageHandler(this.deploymentRepository, this.marshallerFactory, this.executorService);
+                    messageHandler = new MethodInvocationMessageHandler(this.deploymentRepository, this.marshallerFactory, this.executorService, this.remoteAsyncInvocationCancelStatus);
+                    break;
+                case HEADER_INVOCATION_CANCELLATION_REQUEST:
+                    messageHandler = new InvocationCancellationMessageHandler(this.remoteAsyncInvocationCancelStatus);
                     break;
                 case HEADER_SESSION_OPEN_REQUEST:
                     messageHandler = new SessionOpenRequestHandler(this.deploymentRepository, this.marshallerFactory, this.executorService);
@@ -172,7 +173,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
                     messageHandler = new TransactionRequestHandler(this.transactionsRepository, this.marshallerFactory, this.executorService, TransactionRequestHandler.TransactionRequestType.BEFORE_COMPLETION);
                     break;
                 default:
-                    logger.warn("Received unsupported message header 0x" + Integer.toHexString(header) + " on channel " + channel);
+                    EjbLogger.ROOT_LOGGER.unsupportedMessageHeader(Integer.toHexString(header), channel);
                     return;
             }
             // process the message
@@ -182,7 +183,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
 
         } catch (IOException e) {
             // log it
-            logger.errorf(e, "Exception on channel %s from message %s", channel, messageInputStream);
+            EjbLogger.ROOT_LOGGER.exceptionOnChannel(e, channel, messageInputStream);
             // no more messages can be sent or received on this channel
             IoUtils.safeClose(channel);
         } finally {
@@ -196,10 +197,10 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         final Map<DeploymentModuleIdentifier, ModuleDeployment> availableModules = this.deploymentRepository.getModules();
         if (availableModules != null && !availableModules.isEmpty()) {
             try {
-                logger.debug("Sending initial module availability message, containing " + availableModules.size() + " module(s) to channel " + this.channelAssociation.getChannel());
+                EjbLogger.ROOT_LOGGER.debug("Sending initial module availability message, containing " + availableModules.size() + " module(s) to channel " + this.channelAssociation.getChannel());
                 this.sendModuleAvailability(availableModules.keySet().toArray(new DeploymentModuleIdentifier[availableModules.size()]));
             } catch (IOException e) {
-                logger.warn("Could not send initial module availability report to channel " + this.channelAssociation.getChannel(), e);
+                EjbLogger.ROOT_LOGGER.failedToSendModuleAvailabilityMessageToClient(e, this.channelAssociation.getChannel());
             }
         }
     }
@@ -261,7 +262,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
     @Override
     public void registryAdded(Registry<String, List<ClientMapping>> cluster) {
         try {
-            logger.debug("Received new cluster formation notification for cluster " + cluster.getName());
+            EjbLogger.ROOT_LOGGER.debug("Received new cluster formation notification for cluster " + cluster.getName());
             this.sendNewClusterFormedMessage(Collections.singleton(cluster));
         } catch (IOException ioe) {
             EjbLogger.EJB3_LOGGER.failedToSendClusterFormationMessageToClient(ioe, cluster.getName(), channelAssociation.getChannel());
@@ -306,7 +307,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         outputStream = new DataOutputStream(messageOutputStream);
         final ClusterTopologyWriter clusterTopologyWriter = new ClusterTopologyWriter();
         try {
-            logger.debug("Writing out cluster formation message for " + clientMappingRegistries.size() + " clusters, to channel " + this.channelAssociation.getChannel());
+            EjbLogger.ROOT_LOGGER.debug("Writing out cluster formation message for " + clientMappingRegistries.size() + " clusters, to channel " + this.channelAssociation.getChannel());
             clusterTopologyWriter.writeCompleteClusterTopology(outputStream, clientMappingRegistries);
         } finally {
             channelAssociation.releaseChannelMessageOutputStream(messageOutputStream);
@@ -331,7 +332,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         outputStream = new DataOutputStream(messageOutputStream);
         final ClusterTopologyWriter clusterTopologyWriter = new ClusterTopologyWriter();
         try {
-            logger.debug("Cluster " + registry.getName() + " removed, writing cluster removal message to channel " + this.channelAssociation.getChannel());
+            EjbLogger.ROOT_LOGGER.debug("Cluster " + registry.getName() + " removed, writing cluster removal message to channel " + this.channelAssociation.getChannel());
             clusterTopologyWriter.writeClusterRemoved(outputStream, Collections.singleton(registry));
         } finally {
             channelAssociation.releaseChannelMessageOutputStream(messageOutputStream);
@@ -355,7 +356,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
 
         @Override
         public void handleClose(Channel closedChannel, IOException exception) {
-            logger.debug("Channel " + closedChannel + " closed");
+            EjbLogger.ROOT_LOGGER.debug("Channel " + closedChannel + " closed");
             VersionOneProtocolChannelReceiver.this.cleanupOnChannelDown();
         }
     }
@@ -413,7 +414,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             outputStream = new DataOutputStream(messageOutputStream);
             final ClusterTopologyWriter clusterTopologyWriter = new ClusterTopologyWriter();
             try {
-                logger.debug(removedNodes.size() + " nodes removed from cluster " + clusterName + ", writing a protocol message to channel " + this.channelReceiver.channelAssociation.getChannel());
+                EjbLogger.ROOT_LOGGER.debug(removedNodes.size() + " nodes removed from cluster " + clusterName + ", writing a protocol message to channel " + this.channelReceiver.channelAssociation.getChannel());
                 clusterTopologyWriter.writeNodesRemoved(outputStream, clusterName, removedNodes);
             } finally {
                 channelAssociation.releaseChannelMessageOutputStream(messageOutputStream);
@@ -432,7 +433,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             outputStream = new DataOutputStream(messageOutputStream);
             final ClusterTopologyWriter clusterTopologyWriter = new ClusterTopologyWriter();
             try {
-                logger.debug(addedNodes.size() + " nodes added to cluster " + clusterName + ", writing a protocol message to channel " + this.channelReceiver.channelAssociation.getChannel());
+                EjbLogger.ROOT_LOGGER.debug(addedNodes.size() + " nodes added to cluster " + clusterName + ", writing a protocol message to channel " + this.channelReceiver.channelAssociation.getChannel());
                 clusterTopologyWriter.writeNewNodesAdded(outputStream, clusterName, addedNodes);
             } finally {
                 channelAssociation.releaseChannelMessageOutputStream(messageOutputStream);

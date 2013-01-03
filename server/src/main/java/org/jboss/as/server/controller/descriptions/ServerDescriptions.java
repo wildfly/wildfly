@@ -18,61 +18,34 @@
  */
 package org.jboss.as.server.controller.descriptions;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADMIN_ONLY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
-import java.util.Locale;
-import java.util.ResourceBundle;
-
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.controller.operations.common.ProcessReloadHandler;
-import org.jboss.as.server.deployment.DeploymentRemoveHandler;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * Model descriptions for deployment resources.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ServerDescriptions {
+public final class ServerDescriptions {
 
-    private static final String RESOURCE_NAME = ServerDescriptions.class.getPackage().getName() + ".LocalDescriptions";
+    public static final String RESOURCE_NAME = ServerDescriptions.class.getPackage().getName() + ".LocalDescriptions";
 
-    public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
-        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, ServerDescriptions.class.getClassLoader(), true, true);
+    public static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
+        StringBuilder prefix = new StringBuilder();
+        for (String kp : keyPrefix) {
+            if (prefix.length() > 0) {
+                prefix.append('.').append(kp);
+            } else {
+                prefix.append(kp);
+            }
+        }
+        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, ServerDescriptions.class.getClassLoader(), true, true);
+    }
+
+    public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix, final boolean useUnprefixedChildTypes) {
+        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, ServerDescriptions.class.getClassLoader(), true, useUnprefixedChildTypes);
     }
 
     private ServerDescriptions() {
-    }
-
-    public static final ModelNode getRemoveDeploymentOperation(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(DeploymentRemoveHandler.OPERATION_NAME);
-        root.get(DESCRIPTION).set(bundle.getString("deployment.remove"));
-        root.get(REPLY_PROPERTIES).setEmptyObject();
-        return root;
-    }
-
-    public static final ModelNode getServerReloadOperation(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        return CommonDescriptions.getSingleParamOnlyOperation(bundle, ProcessReloadHandler.OPERATION_NAME, null,
-                ADMIN_ONLY, ModelType.BOOLEAN, true);
-    }
-
-    public static final ModelNode getSystemPropertyDescription(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        return CommonDescriptions.getSystemPropertyDescription(locale, bundle.getString("server.system-property"), false);
-    }
-
-    private static ResourceBundle getResourceBundle(Locale locale) {
-        if (locale == null) {
-            locale = Locale.getDefault();
-        }
-        return ResourceBundle.getBundle(RESOURCE_NAME, locale);
     }
 }

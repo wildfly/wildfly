@@ -67,6 +67,10 @@
 
       <!-- Example configs -->
       <generate-server-config 
+		   paramTemplateFile="configuration/standalone/template-osgi.xml" 
+		   paramSubsystemsFile="configuration/examples/subsystems-osgi-only.xml"
+		   paramOutputFile="${generated.configs.examples}/standalone-osgi-only.xml"/>
+      <generate-server-config 
            paramTemplateFile="configuration/standalone/template.xml" 
            paramSubsystemsFile="configuration/examples/subsystems-hornetq-colocated.xml"
            paramOutputFile="${generated.configs.examples}/standalone-hornetq-colocated.xml"/>
@@ -74,10 +78,6 @@
            paramTemplateFile="configuration/standalone/template.xml" 
            paramSubsystemsFile="configuration/examples/subsystems-jts.xml"
            paramOutputFile="${generated.configs.examples}/standalone-jts.xml"/>
-      <generate-server-config 
-           paramTemplateFile="configuration/standalone/template.xml" 
-           paramSubsystemsFile="configuration/examples/subsystems-osgi-only.xml"
-           paramOutputFile="${generated.configs.examples}/standalone-osgi-only.xml"/>
       <generate-server-config 
            paramTemplateFile="configuration/standalone/template.xml" 
            paramSubsystemsFile="configuration/examples/subsystems-xts.xml"

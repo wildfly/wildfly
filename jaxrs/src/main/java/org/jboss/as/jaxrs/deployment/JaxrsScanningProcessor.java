@@ -21,12 +21,6 @@
  */
 package org.jboss.as.jaxrs.deployment;
 
-import static org.jboss.as.jaxrs.JaxrsLogger.JAXRS_LOGGER;
-import static org.jboss.as.jaxrs.JaxrsMessages.MESSAGES;
-import static org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters.RESTEASY_SCAN;
-import static org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters.RESTEASY_SCAN_PROVIDERS;
-import static org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters.RESTEASY_SCAN_RESOURCES;
-
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,14 +35,12 @@ import javax.ws.rs.core.Application;
 
 import org.jboss.as.jaxrs.JaxrsAnnotations;
 import org.jboss.as.jaxrs.JaxrsMessages;
-import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
-import org.jboss.as.server.moduleservice.ModuleIndexService;
 import org.jboss.as.web.deployment.WarMetaData;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
@@ -61,10 +53,15 @@ import org.jboss.metadata.web.spec.ServletMetaData;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrapClasses;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
+
+import static org.jboss.as.jaxrs.JaxrsLogger.JAXRS_LOGGER;
+import static org.jboss.as.jaxrs.JaxrsMessages.MESSAGES;
+import static org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters.RESTEASY_SCAN;
+import static org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters.RESTEASY_SCAN_PROVIDERS;
+import static org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters.RESTEASY_SCAN_RESOURCES;
 
 /**
  * Processor that finds jax-rs classes in the deployment
@@ -74,8 +71,6 @@ import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
 public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
 
     public static final DotName APPLICATION = DotName.createSimple(Application.class.getName());
-
-    private static CompositeIndex[] EMPTY_INDEXES = new CompositeIndex[0];
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -97,17 +92,16 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
         ResteasyDeploymentData resteasyDeploymentData = new ResteasyDeploymentData();
         final WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
-        final ServiceController<ModuleIndexService> serviceController = (ServiceController<ModuleIndexService>) phaseContext.getServiceRegistry().getRequiredService(Services.JBOSS_MODULE_INDEX_SERVICE);
 
         try {
 
             if (warMetaData == null) {
                 resteasyDeploymentData.setScanAll(true);
-                scan(deploymentUnit, module.getClassLoader(), resteasyDeploymentData, serviceController.getValue(), false);
+                scan(deploymentUnit, module.getClassLoader(), resteasyDeploymentData);
                 deploymentData.put(moduleIdentifier, resteasyDeploymentData);
             } else {
                 scanWebDeployment(deploymentUnit, warMetaData.getMergedJBossWebMetaData(), module.getClassLoader(), resteasyDeploymentData);
-                scan(deploymentUnit, module.getClassLoader(), resteasyDeploymentData, serviceController.getValue(), true);
+                scan(deploymentUnit, module.getClassLoader(), resteasyDeploymentData);
             }
             deploymentUnit.putAttachment(JaxrsAttachments.RESTEASY_DEPLOYMENT_DATA, resteasyDeploymentData);
         } catch (ModuleLoadException e) {
@@ -123,9 +117,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
     public static final Set<String> BOOT_CLASSES = new HashSet<String>();
 
     static {
-        for (String clazz : ResteasyBootstrapClasses.BOOTSTRAP_CLASSES) {
-            BOOT_CLASSES.add(clazz);
-        }
+        Collections.addAll(BOOT_CLASSES, ResteasyBootstrapClasses.BOOTSTRAP_CLASSES);
     }
 
     /**
@@ -190,7 +182,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
 
     }
 
-    protected void scan(final DeploymentUnit du, final ClassLoader classLoader, final ResteasyDeploymentData resteasyDeploymentData, final ModuleIndexService moduleIndexService, boolean webDeployment)
+    protected void scan(final DeploymentUnit du, final ClassLoader classLoader, final ResteasyDeploymentData resteasyDeploymentData)
             throws DeploymentUnitProcessingException, ModuleLoadException {
 
         final CompositeIndex index = du.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);

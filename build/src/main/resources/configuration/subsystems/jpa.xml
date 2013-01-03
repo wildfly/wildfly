@@ -2,7 +2,7 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config>
    <extension-module>org.jboss.as.jpa</extension-module>
-   <subsystem xmlns="urn:jboss:domain:jpa:1.0">
-       <jpa default-datasource=""/>
+   <subsystem xmlns="urn:jboss:domain:jpa:1.1">
+       <jpa default-datasource="" default-extended-persistence-inheritance="DEEP"/>
    </subsystem>
 </config>

@@ -29,25 +29,28 @@ import org.jboss.as.ee.component.ResourceInjectionTarget;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
+import org.jboss.as.ejb3.subsystem.deployment.InstalledComponent;
 import org.jboss.as.ejb3.timerservice.TimerImpl;
 import org.jboss.as.ejb3.tx.TimerTransactionRolledBackException;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.ejb.client.EJBLocator;
 import org.jboss.ejb.client.SessionID;
+import org.jboss.ejb.client.XidTransactionID;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jca.core.spi.rar.NotFoundException;
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.Cause;
-import org.jboss.logging.LogMessage;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.Logger;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageLogger;
-import org.jboss.logging.Param;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
+import org.jboss.logging.annotations.Param;
 import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.MessageInputStream;
 
 import javax.ejb.EJBException;
 import javax.ejb.EJBTransactionRequiredException;
@@ -72,7 +75,7 @@ import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
 /**
- * This module is using message IDs in the range 14100-14599. This file is using the subset 14100-14149 for
+ * This module is using message IDs in the range 14100-14599. This file is using the subset 14100-14299 for
  * logger messages. See http://community.jboss.org/docs/DOC-16810 for the full list of currently reserved
  * JBAS message id blocks.
  *
@@ -672,6 +675,10 @@ public interface EjbLogger extends BasicLogger {
     void failedToSendModuleAvailabilityMessageToClient(@Cause Exception e, DeploymentModuleIdentifier deploymentId, Channel channel);
 
     @LogMessage(level = WARN)
+    @Message(id = Message.INHERIT, value = "Could not send initial module availability report to channel %s")
+    void failedToSendModuleAvailabilityMessageToClient(@Cause Exception e, Channel channel);
+
+    @LogMessage(level = WARN)
     @Message(id = 14214, value = "Could not send module un-availability notification of module %s on channel %s")
     void failedToSendModuleUnavailabilityMessageToClient(@Cause Exception e, DeploymentModuleIdentifier deploymentId, Channel channel);
 
@@ -714,6 +721,88 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 14224, value = "Cannot add cluster node %s to cluster %s since none of the client mappings matched for address %s")
     void cannotAddClusterNodeDueToUnresolvableClientMapping(final String nodeName, final String clusterName, final InetAddress bindAddress);
+
+    // Note that 14225-14240 is used in EjbMessages
+
+    @LogMessage(level = ERROR)
+    @Message(id = 14241, value = "Exception calling deployment added listener")
+    void deploymentAddListenerException(@Cause Throwable cause);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 14242, value = "Exception calling deployment removal listener")
+    void deploymentRemoveListenerException(@Cause Throwable cause);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 14243, value = "Failed to remove management resources for %s -- %s")
+    void failedToRemoveManagementResources(InstalledComponent component, String cause);
+
+    @LogMessage(level = INFO)
+    @Message(id = 14244, value = "CORBA interface repository for %s: %s")
+    void cobraInterfaceRepository(String repo, String object);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 14245, value = "Cannot unregister EJBHome from CORBA naming service")
+    void cannotUnregisterEJBHomeFromCobra(@Cause Throwable cause);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 14246, value = "Cannot deactivate home servant")
+    void cannotDeactivateHomeServant(@Cause Throwable cause);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 14247, value = "Cannot deactivate bean servant")
+    void cannotDeactivateBeanServant(@Cause Throwable cause);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 14248, value = "Exception on channel %s from message %s")
+    void exceptionOnChannel(@Cause Throwable cause, Channel channel, MessageInputStream inputStream);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 14249, value = "Error invoking method %s on bean named %s for appname %s modulename %s distinctname %s")
+    void errorInvokingMethod(@Cause Throwable cause, Method invokedMethod, String beanName, String appName, String moduleName, String distinctName);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 14250, value = "Could not write method invocation failure for method %s on bean named %s for appname %s modulename %s distinctname %s due to")
+    void couldNotWriteMethodInvocation(@Cause Throwable cause, Method invokedMethod, String beanName, String appName, String moduleName, String distinctName);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 14251, value = "IOException while generating session id for invocation id: %s on channel %s")
+    void exceptionGeneratingSessionId(@Cause Throwable cause, short invocationId, Channel channel);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 14252, value = "Could not write out message to channel due to")
+    void couldNotWriteOutToChannel(@Cause Throwable cause);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 14253, value = "Could not write out invocation success message to channel due to")
+    void couldNotWriteInvocationSuccessMessage(@Cause Throwable cause);
+
+    @LogMessage(level = WARN)
+    @Message(id = 14254, value = "Received unsupported message header 0x%s on channel %s")
+    void unsupportedMessageHeader(String header, Channel channel);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 14255, value = "Error during transaction management of transaction id %s")
+    void errorDuringTransactionManagement(@Cause Throwable cause, XidTransactionID id);
+
+    @LogMessage(level = WARN)
+    @Message(id = 14256, value = "%s retrying %d")
+    void retrying(String message, int count);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 14257, value = "Failed to get status")
+    void failedToGetStatus(@Cause Throwable cause);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 14258, value = "Failed to rollback")
+    void failedToRollback(@Cause Throwable cause);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 14259, value = "BMT stateful bean '%s' did not complete user transaction properly status=%s")
+    void transactionNotComplete(String componentName, String status);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 14260, value = "Cannot delete cache %s %s, will be deleted on exit")
+    void cannotDeleteCacheFile(String fileType, String fileName);
 
 
     // Don't add message ids greater that 14299!!! If you need more first check what EjbMessages is

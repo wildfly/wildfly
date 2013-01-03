@@ -29,6 +29,7 @@ import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.util.Map;
 
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -63,7 +64,7 @@ public class OperationSlaveStepHandler {
         operation.get(OPERATION_HEADERS).remove(PrepareStepHandler.EXECUTE_FOR_COORDINATOR);
 
         addSteps(context, operation, null, true);
-        context.completeStep();
+        context.stepCompleted();
     }
 
     void addSteps(final OperationContext context, final ModelNode operation, final ModelNode response, final boolean recordResponse) throws OperationFailedException {
@@ -71,8 +72,7 @@ public class OperationSlaveStepHandler {
         final PathAddress originalAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
         final ImmutableManagementResourceRegistration originalRegistration = context.getResourceRegistration();
         if (originalRegistration == null) {
-            String operationName = operation.require(OP).asString();
-            throw new OperationFailedException(new ModelNode().set(MESSAGES.noHandlerForOperation(operationName, originalAddress)));
+            throw new OperationFailedException(new ModelNode(ControllerMessages.MESSAGES.noSuchResourceType(originalAddress)));
         }
 
         HostControllerExecutionSupport hostControllerExecutionSupport =
@@ -97,12 +97,17 @@ public class OperationSlaveStepHandler {
      */
     private void addBasicStep(OperationContext context, ModelNode operation) throws OperationFailedException {
         final String operationName = operation.require(OP).asString();
+
         final OperationStepHandler stepHandler = context.getResourceRegistration().getOperationHandler(PathAddress.EMPTY_ADDRESS, operationName);
         if(stepHandler != null) {
             context.addStep(operation, stepHandler, OperationContext.Stage.MODEL);
         } else {
-            throw new OperationFailedException(new ModelNode(MESSAGES.noHandlerForOperation(operationName, PathAddress.pathAddress(operation.get(OP_ADDR)))));
+            throw new OperationFailedException(new ModelNode(ControllerMessages.MESSAGES.noHandlerForOperation(operationName, PathAddress.pathAddress(operation.get(OP_ADDR)))));
         }
+    }
+
+    boolean isResourceExcluded(final PathAddress address) {
+        return ignoredDomainResourceRegistry.isResourceExcluded(address);
     }
 
     /** Lazily provides a copy of the domain model */

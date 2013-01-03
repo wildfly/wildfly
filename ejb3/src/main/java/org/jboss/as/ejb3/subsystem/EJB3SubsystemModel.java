@@ -23,7 +23,10 @@
 package org.jboss.as.ejb3.subsystem;
 
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.threads.ThreadsServices;
+import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -31,7 +34,6 @@ import org.jboss.msc.service.ServiceName;
  */
 public interface EJB3SubsystemModel {
     String LITE = "lite";
-    String NAME = "name";
     String ALIASES = "aliases";
 
     String ASYNC = "async";
@@ -41,6 +43,7 @@ public interface EJB3SubsystemModel {
     String IN_VM_REMOTE_INTERFACE_INVOCATION_PASS_BY_VALUE = "in-vm-remote-interface-invocation-pass-by-value";
 
     String DEFAULT_DISTINCT_NAME = "default-distinct-name";
+    String DEFAULT_SECURITY_DOMAIN = "default-security-domain";
     String DEFAULT_MDB_INSTANCE_POOL = "default-mdb-instance-pool";
     String DEFAULT_RESOURCE_ADAPTER_NAME = "default-resource-adapter-name";
     String DEFAULT_SFSB_CACHE = "default-sfsb-cache";

@@ -26,10 +26,11 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES_ONLY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_DEFAULTS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES_ONLY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -76,6 +77,95 @@ public class GlobalOperationsTestCase extends AbstractGlobalOperationsTestCase {
         ModelNode result = executeForResult(operation);
         assertTrue(result.hasDefined("profile"));
         assertTrue(result.get("profile").hasDefined("profileA"));
+
+        //Defaults are included by default
+    }
+
+    @Test
+    public void testRecursiveReadResourceAndReadAttributeWithAndWithoutDefaults() throws Exception {
+
+        //////////////////////////////////////////////////////////////////////
+        // 1) Check that the recursive sub resources don't include defaults
+
+        //Defaults are included by default
+        ModelNode operation = createOperation(READ_RESOURCE_OPERATION);
+        operation.get(RECURSIVE).set(true);
+        ModelNode result = executeForResult(operation);
+        assertTrue(result.get("profile", "profileA", "subsystem", "subsystem1", "type2", "other", "default").isDefined());
+        Assert.assertEquals("Default string", result.get("profile", "profileA", "subsystem", "subsystem1", "type2", "other", "default").asString());
+        Assert.assertEquals("Name2", result.get("profile", "profileA", "subsystem", "subsystem1", "type2", "other", "name").asString());
+
+        //Explicitly say to include defaults
+        operation = createOperation(READ_RESOURCE_OPERATION);
+        operation.get(RECURSIVE).set(true);
+        operation.get(INCLUDE_DEFAULTS).set(true);
+        result = executeForResult(operation);
+        assertTrue(result.get("profile", "profileA", "subsystem", "subsystem1", "type2", "other", "default").isDefined());
+        Assert.assertEquals("Default string", result.get("profile", "profileA", "subsystem", "subsystem1", "type2", "other", "default").asString());
+        Assert.assertEquals("Name2", result.get("profile", "profileA", "subsystem", "subsystem1", "type2", "other", "name").asString());
+
+        //Explicitly say to not include defaults
+        operation = createOperation(READ_RESOURCE_OPERATION);
+        operation.get(RECURSIVE).set(true);
+        operation.get(INCLUDE_DEFAULTS).set(false);
+        result = executeForResult(operation);
+        assertFalse(result.get("profile", "profileA", "subsystem", "subsystem1", "type2", "other", "default").isDefined());
+        Assert.assertEquals("Name2", result.get("profile", "profileA", "subsystem", "subsystem1", "type2", "other", "name").asString());
+
+        //////////////////////////////////////////////////////////////////////
+        // 2) Now check that include-defaults works directly on the resource
+
+        //Defaults should be included by default
+        operation = createOperation(READ_RESOURCE_OPERATION);
+        operation.get(RECURSIVE).set(true);
+        operation.get(OP_ADDR).add("profile", "profileA").add("subsystem", "subsystem1").add( "type2", "other");
+        result = executeForResult(operation);
+        Assert.assertEquals("Name2", result.get("name").asString());
+        Assert.assertEquals("Default string", result.get("default").asString());
+
+        //Explicitly say to include defaults
+        operation = createOperation(READ_RESOURCE_OPERATION);
+        operation.get(RECURSIVE).set(true);
+        operation.get(INCLUDE_DEFAULTS).set(true);
+        operation.get(OP_ADDR).add("profile", "profileA").add("subsystem", "subsystem1").add( "type2", "other");
+        result = executeForResult(operation);
+        Assert.assertEquals("Name2", result.get("name").asString());
+        Assert.assertEquals("Default string", result.get("default").asString());
+
+        //Explicitly say to not include defaults
+        operation = createOperation(READ_RESOURCE_OPERATION);
+        operation.get(RECURSIVE).set(true);
+        operation.get(INCLUDE_DEFAULTS).set(false);
+        operation.get(OP_ADDR).add("profile", "profileA").add("subsystem", "subsystem1").add( "type2", "other");
+        result = executeForResult(operation);
+        Assert.assertEquals("Name2", result.get("name").asString());
+        Assert.assertFalse(result.get("default").isDefined());
+
+        //////////////////////////////////////////////////////////////////////
+        // 2) Read the default attribute
+
+        //Defaults should be included by default
+        operation = createOperation(READ_ATTRIBUTE_OPERATION);
+        operation.get(OP_ADDR).add("profile", "profileA").add("subsystem", "subsystem1").add( "type2", "other");
+        operation.get(NAME).set("default");
+        result = executeForResult(operation);
+        Assert.assertEquals("Default string", result.asString());
+
+        //Explicitly say to include defaults
+        operation = createOperation(READ_ATTRIBUTE_OPERATION);
+        operation.get(OP_ADDR).add("profile", "profileA").add("subsystem", "subsystem1").add( "type2", "other");
+        operation.get(NAME).set("default");
+        operation.get(INCLUDE_DEFAULTS).set(true);
+        result = executeForResult(operation);
+        Assert.assertEquals("Default string", result.asString());
+
+        //Explicitly say to not include defaults
+        operation = createOperation(READ_ATTRIBUTE_OPERATION);
+        operation.get(OP_ADDR).add("profile", "profileA").add("subsystem", "subsystem1").add( "type2", "other");
+        operation.get(NAME).set("default");
+        operation.get(INCLUDE_DEFAULTS).set(false);
+        result = executeForResult(operation);
+        Assert.assertFalse(result.isDefined());
     }
 
     @Test
@@ -159,9 +249,7 @@ public class GlobalOperationsTestCase extends AbstractGlobalOperationsTestCase {
 
         operation = createOperation(READ_ATTRIBUTE_OPERATION, "profile", "profileC", "subsystem", "subsystem4");
         operation.get(NAME).set("name");
-        result = executeForResult(operation);
-        assertNotNull(result);
-        assertFalse(result.isDefined());
+        executeForFailure(operation);
 
         operation = createOperation(READ_ATTRIBUTE_OPERATION, "profile", "profileC", "subsystem", "subsystem5");
         operation.get(NAME).set("name");
@@ -461,7 +549,7 @@ public class GlobalOperationsTestCase extends AbstractGlobalOperationsTestCase {
         ModelNode result = executeForResult(operation);
 
         assertEquals(ModelType.LIST, result.getType());
-        assertEquals(11, result.asList().size());
+        assertEquals(12, result.asList().size());
         List<String> names = modelNodeListToStringList(result.asList());
         assertTrue(names.contains("testA1-1"));
         assertTrue(names.contains("testA1-2"));
@@ -480,7 +568,7 @@ public class GlobalOperationsTestCase extends AbstractGlobalOperationsTestCase {
 
         result = executeForResult(operation);
         assertEquals(ModelType.LIST, result.getType());
-        assertEquals(10, result.asList().size());
+        assertEquals(11, result.asList().size());
         names = modelNodeListToStringList(result.asList());
         assertTrue(names.contains("testA2"));
         assertTrue(names.contains(READ_RESOURCE_OPERATION));
@@ -496,7 +584,7 @@ public class GlobalOperationsTestCase extends AbstractGlobalOperationsTestCase {
         operation = createOperation(READ_OPERATION_NAMES_OPERATION, "profile", "profileB");
         result = executeForResult(operation);
         assertEquals(ModelType.LIST, result.getType());
-        assertEquals(9, result.asList().size());
+        assertEquals(10, result.asList().size());
         assertTrue(names.contains(READ_RESOURCE_OPERATION));
         assertTrue(names.contains(READ_ATTRIBUTE_OPERATION));
         assertTrue(names.contains(READ_RESOURCE_DESCRIPTION_OPERATION));

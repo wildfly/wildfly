@@ -51,13 +51,16 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.web.security.SecuredServlet;
 import org.jboss.as.test.integration.web.security.WebCERTTestsSecurityDomainSetup;
 import org.jboss.as.test.integration.web.security.WebSecurityPasswordBasedBase;
 import org.jboss.security.JBossJSSESecurityDomain;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 /**
@@ -68,6 +71,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup(WebCERTTestsSecurityDomainSetup.class)
+@Category(CommonCriteria.class)
 public class WebSecurityCERTTestCase {
 
     @ArquillianResource
@@ -90,11 +94,13 @@ public class WebSecurityCERTTestCase {
     }
 
     @Test
+    @Ignore
     public void testClientCertSuccessfulAuth() throws Exception {
         makeCall("test", 200);
     }
 
     @Test
+    @Ignore
     public void testClientCertUnsuccessfulAuth() throws Exception {
         makeCall("test2", 403);
     }

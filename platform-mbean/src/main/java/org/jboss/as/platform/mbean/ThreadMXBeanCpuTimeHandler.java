@@ -59,7 +59,7 @@ public class ThreadMXBeanCpuTimeHandler implements OperationStepHandler, Descrip
             throw new OperationFailedException(new ModelNode().set(e.toString()));
         }
 
-        context.completeStep();
+        context.stepCompleted();
     }
 
     @Override

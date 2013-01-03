@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ironjacamar>
+        <connection-definitions>
+        	<connection-definition  class-name="org.jboss.as.test.integration.jca.rar.MultipleManagedConnectionFactory1" jndi-name="java:jboss/ConnectionFactory1">    </connection-definition>
+		</connection-definitions>
+</ironjacamar>

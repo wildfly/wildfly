@@ -25,14 +25,16 @@ package org.jboss.as.clustering.web.impl;
 import static org.jboss.logging.Logger.Level.WARN;
 
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.Cause;
-import org.jboss.logging.LogMessage;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.Logger;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageLogger;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
 
 /**
- * Date: 30.08.2011
+ * ClusteringWebLogger
+ *
+ * logging id range: 10300 - 10309
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */

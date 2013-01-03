@@ -57,7 +57,7 @@ public class CmpEntityBeanJdbcRelationshipInterceptor implements Interceptor {
         if (CMRMessage.GET_RELATED_ID == relationshipMessage) {
             // call getRelateId
             if (log.isTraceEnabled()) {
-                log.trace("Getting related id: field=" + cmrField.getFieldName() + " id=" + ctx.getPrimaryKey());
+                log.trace("Getting related id: field=" + cmrField.getFieldName() + " id=" + ctx.getPrimaryKeyUnchecked());
             }
             return cmrField.getRelatedId(ctx);
 
@@ -66,7 +66,7 @@ public class CmpEntityBeanJdbcRelationshipInterceptor implements Interceptor {
             Object relatedId = context.getParameters()[1];
             if (log.isTraceEnabled()) {
                 log.trace("Add relation: field=" + cmrField.getFieldName() +
-                        " id=" + ctx.getPrimaryKey() +
+                        " id=" + ctx.getPrimaryKeyUnchecked() +
                         " relatedId=" + relatedId);
             }
 
@@ -79,7 +79,7 @@ public class CmpEntityBeanJdbcRelationshipInterceptor implements Interceptor {
             Object relatedId = context.getParameters()[1];
             if (log.isTraceEnabled()) {
                 log.trace("Remove relation: field=" + cmrField.getFieldName() +
-                        " id=" + ctx.getPrimaryKey() +
+                        " id=" + ctx.getPrimaryKeyUnchecked() +
                         " relatedId=" + relatedId);
             }
 

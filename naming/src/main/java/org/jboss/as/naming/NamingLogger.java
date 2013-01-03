@@ -24,12 +24,12 @@ package org.jboss.as.naming;
 
 import java.io.IOException;
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.Cause;
-import org.jboss.logging.LogMessage;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.Logger;
 import static org.jboss.logging.Logger.Level.ERROR;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageLogger;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
 
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
@@ -104,4 +104,23 @@ public interface NamingLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 11810, value = "Unexpected parameter type - expected: %d  received: %d")
     void unexpectedParameterType(byte expected, byte actual);
+
+    /**
+     * Creates an exception indicating that a class is not an {@link ObjectFactory} instance, from the specified module.
+     * @param cause
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 11811, value = "Failed to release binder service, used for a runtime made JNDI binding")
+    void failedToReleaseBinderService(@Cause Throwable cause);
+
+    /**
+     *  A message indicating that the lookup of an entry's JNDI view value failed.
+     *
+     * @param cause the cause of the error.
+     * @param entry the jndi name of the entry
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 11812, value = "Failed to obtain jndi view value for entry %s.")
+    void failedToLookupJndiViewValue(String entry, @Cause Throwable cause);
+
 }

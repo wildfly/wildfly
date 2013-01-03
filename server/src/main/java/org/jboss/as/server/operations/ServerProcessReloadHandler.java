@@ -24,13 +24,15 @@ package org.jboss.as.server.operations;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.ProcessReloadHandler;
+import org.jboss.as.server.controller.descriptions.ServerDescriptions;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
@@ -46,14 +48,13 @@ public class ServerProcessReloadHandler extends ProcessReloadHandler<RunningMode
 
     private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {ADMIN_ONLY, USE_CURRENT_SERVER_CONFIG};
 
-    public ServerProcessReloadHandler(ServiceName rootService, RunningModeControl runningModeControl,
-            ControlledProcessState processState, ResourceDescriptionResolver resourceDescriptionResolver) {
-        super(rootService, runningModeControl, processState, resourceDescriptionResolver);
-    }
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, ServerDescriptions.getResourceDescriptionResolver("server"))
+                                                                .setParameters(ATTRIBUTES)
+                                                                .build();
 
-    @Override
-    protected AttributeDefinition[] getAttributes() {
-        return ATTRIBUTES;
+    public ServerProcessReloadHandler(ServiceName rootService, RunningModeControl runningModeControl,
+            ControlledProcessState processState) {
+        super(rootService, runningModeControl, processState);
     }
 
     @Override
@@ -69,7 +70,7 @@ public class ServerProcessReloadHandler extends ProcessReloadHandler<RunningMode
             @Override
             public void doReload(RunningModeControl runningModeControl) {
                 runningModeControl.setRunningMode(adminOnly ? RunningMode.ADMIN_ONLY : RunningMode.NORMAL);
-                runningModeControl.setReloaded(true);
+                runningModeControl.setReloaded();
                 runningModeControl.setUseCurrentConfig(useCurrentConfig);
             }
         };

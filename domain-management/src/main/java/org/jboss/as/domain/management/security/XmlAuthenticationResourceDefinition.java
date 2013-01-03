@@ -26,7 +26,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.ManagementDescription;
+import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 
@@ -39,9 +39,11 @@ public class XmlAuthenticationResourceDefinition extends SimpleResourceDefinitio
 
     public XmlAuthenticationResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.AUTHENTICATION, ModelDescriptionConstants.USERS),
-                ManagementDescription.getResourceDescriptionResolver("core.management.security-realm.authentication.xml"),
-                new SecurityRealmChildAddHandler(true), new SecurityRealmChildRemoveHandler(true),
-                OperationEntry.Flag.RESTART_RESOURCE_SERVICES, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+                ControllerResolver.getResolver("core.management.security-realm.authentication.xml"),
+                new SecurityRealmChildAddHandler(true),
+                new SecurityRealmChildRemoveHandler(true),
+                OperationEntry.Flag.RESTART_RESOURCE_SERVICES,
+                OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
     }
 
     @Override

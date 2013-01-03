@@ -16,10 +16,13 @@ package org.jboss.as.web;
 
 import static org.jboss.as.web.WebMessages.MESSAGES;
 
+import java.net.MalformedURLException;
+
 import javax.management.MBeanServer;
 
 import org.apache.catalina.Engine;
 import org.apache.catalina.Host;
+import org.apache.catalina.Valve;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.AprLifecycleListener;
 import org.apache.catalina.core.JasperListener;
@@ -55,7 +58,8 @@ class WebServerService implements WebServer, Service<WebServer> {
     private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
     private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<PathManager>();
 
-    public WebServerService(final String defaultHost, final boolean useNative, final String instanceId, final String tempPathName) {
+    public WebServerService(final String defaultHost, final boolean useNative, final String instanceId,
+            final String tempPathName) {
         this.defaultHost = defaultHost;
         this.useNative = useNative;
         this.instanceId = instanceId;
@@ -67,7 +71,7 @@ class WebServerService implements WebServer, Service<WebServer> {
         if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
             // Set the MBeanServer
             final MBeanServer mbeanServer = this.mbeanServer.getOptionalValue();
-            if(mbeanServer != null) {
+            if (mbeanServer != null) {
                 Registry.getRegistry(null, null).setMBeanServer(mbeanServer);
             }
         }
@@ -163,6 +167,18 @@ class WebServerService implements WebServer, Service<WebServer> {
 
     public StandardService getService() {
         return service;
+    }
+
+    @Override
+    public void addValve(Valve valve) {
+        final Engine engine = this.engine;
+        ((StandardEngine) engine).addValve(valve);
+    }
+
+    @Override
+    public void removeValve(Valve valve) {
+        final Engine engine = this.engine;
+        ((StandardEngine) engine).removeValve(valve);
     }
 
 }

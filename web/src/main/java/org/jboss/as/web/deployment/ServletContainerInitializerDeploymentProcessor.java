@@ -46,6 +46,8 @@ import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
+import org.jboss.as.web.WebLogger;
+import org.jboss.as.web.WebMessages;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
@@ -53,7 +55,6 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.MethodParameterInfo;
-import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.vfs.VirtualFile;
@@ -63,6 +64,7 @@ import org.jboss.vfs.VirtualFile;
  *
  * @author Emanuel Muckenhuber
  * @author Remy Maucherat
+ * @author Ales Justin
  */
 public class ServletContainerInitializerDeploymentProcessor implements DeploymentUnitProcessor {
 
@@ -80,7 +82,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
         assert warMetaData != null;
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         if (module == null) {
-            throw new DeploymentUnitProcessingException("failed to resolve module for " + deploymentUnit);
+            throw new DeploymentUnitProcessingException(WebMessages.MESSAGES.failedToResolveModule(deploymentUnit));
         }
         final ClassLoader classLoader = module.getClassLoader();
         ScisMetaData scisMetaData = deploymentUnit.getAttachment(ScisMetaData.ATTACHMENT_KEY);
@@ -100,15 +102,16 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
         }
         // Find the SCIs from shared modules
         for (ModuleDependency dependency : moduleSpecification.getSystemDependencies()) {
-            ServiceLoader<ServletContainerInitializer> serviceLoader;
             try {
                 Module depModule = loader.loadModule(dependency.getIdentifier());
-                serviceLoader = depModule.loadService(ServletContainerInitializer.class);
+                ServiceLoader<ServletContainerInitializer> serviceLoader = depModule.loadService(ServletContainerInitializer.class);
                 for (ServletContainerInitializer service : serviceLoader) {
                     scis.add(service);
                 }
             } catch (ModuleLoadException e) {
-                throw new DeploymentUnitProcessingException("Error loading SCI from module: " + dependency.getIdentifier(), e);
+                if (dependency.isOptional() == false) {
+                    throw WebMessages.MESSAGES.errorLoadingSCIFromModule(dependency.getIdentifier(), e);
+                }
             }
         }
         // Find local ServletContainerInitializer services
@@ -147,8 +150,8 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
         Class<?>[] typesArray = typesMap.keySet().toArray(new Class<?>[0]);
 
         final CompositeIndex index = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
-        if(index == null) {
-            throw new DeploymentUnitProcessingException("Unable to resolve annotation index for deployment unit " + deploymentUnit);
+        if (index == null) {
+            throw WebMessages.MESSAGES.unableToResolveAnnotationIndex(deploymentUnit);
         }
 
         // Find classes which extend, implement, or are annotated by HandlesTypes
@@ -183,9 +186,9 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
             service = (ServletContainerInitializer) classLoader.loadClass(servletContainerInitializerClassName).newInstance();
         } catch (Exception e) {
             if (error) {
-                throw new DeploymentUnitProcessingException("Deployment error processing SCI for JAR: " + jar, e);
+                throw WebMessages.MESSAGES.errorProcessingSCI(jar, e);
             } else {
-                Logger.getLogger("org.jboss.web").info("Skipped SCI for JAR: " + jar, e);
+                WebLogger.WEB_LOGGER.skippedSCI(jar, e);
             }
         } finally {
             try {
@@ -224,12 +227,12 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
     private Set<Class<?>> loadClassInfoSet(Set<ClassInfo> classInfos, ClassLoader classLoader) throws DeploymentUnitProcessingException {
         Set<Class<?>> classes = new HashSet<Class<?>>();
         for (ClassInfo classInfo : classInfos) {
-            Class<?> type = null;
+            Class<?> type;
             try {
                 type = classLoader.loadClass(classInfo.name().toString());
                 classes.add(type);
             } catch (Exception e) {
-                Logger.getLogger("org.jboss.web").info("Could not load class designated by HandlesTypes [" + classInfo + "]: " + e.getMessage());
+                WebLogger.WEB_LOGGER.cannotLoadDesignatedHandleTypes(classInfo, e);
             }
         }
         return classes;

@@ -22,7 +22,10 @@
 
 package org.jboss.as.web.deployment;
 
-import static org.jboss.as.web.WebMessages.MESSAGES;
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
@@ -32,38 +35,34 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.PrivateSubDeploymentMarker;
+import org.jboss.as.server.deployment.module.FilterSpecification;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.MountHandle;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.module.TempFileProviderService;
 import org.jboss.as.web.SharedTldsMetaDataBuilder;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.web.spec.WebMetaData;
+import org.jboss.modules.filter.PathFilters;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilter;
 import org.jboss.vfs.VisitorAttributes;
 import org.jboss.vfs.util.SuffixMatchFilter;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import static org.jboss.as.web.WebMessages.MESSAGES;
 
 /**
  * Create and mount classpath entries in the .war deployment.
  *
  * @author Emanuel Muckenhuber
+ * @author Thomas.Diesler@jboss.com
  */
 public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor {
 
-    private static final Logger logger = Logger.getLogger(WarStructureDeploymentProcessor.class);
-
     public static final String WEB_INF_LIB = "WEB-INF/lib";
     public static final String WEB_INF_CLASSES = "WEB-INF/classes";
-
-    private static final ResourceRoot[] NO_ROOTS = new ResourceRoot[0];
+    public static final String META_INF = "META-INF";
 
     public static final VirtualFileFilter DEFAULT_WEB_INF_LIB_FILTER = new SuffixMatchFilter(".jar", VisitorAttributes.DEFAULT);
 
@@ -75,9 +74,7 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
         this.sharedTldsMetaData = sharedTldsMetaData;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
@@ -101,21 +98,25 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
         // other sub deployments should not have access to classes in the war module
         PrivateSubDeploymentMarker.mark(deploymentUnit);
 
-        // we do not want to index the resource root, only WEB-INF/classes and WEB-INF/lib
-        deploymentResourceRoot.putAttachment(Attachments.INDEX_RESOURCE_ROOT, false);
-        // Make sure the root does not end up in the module
-        ModuleRootMarker.mark(deploymentResourceRoot, false);
+        // OSGi WebApp deployments (WAB) may use the deployment root if they don't use WEB-INF/classes already
+        if (!deploymentUnit.hasAttachment(Attachments.OSGI_MANIFEST) || deploymentRoot.getChild(WEB_INF_CLASSES).exists()) {
+            // we do not want to index the resource root, only WEB-INF/classes and WEB-INF/lib
+            deploymentResourceRoot.putAttachment(Attachments.INDEX_RESOURCE_ROOT, false);
+
+            // Make sure the root does not end up in the module, only META-INF
+            deploymentResourceRoot.getExportFilters().add(new FilterSpecification(PathFilters.getMetaInfFilter(), true));
+            deploymentResourceRoot.getExportFilters().add(new FilterSpecification(PathFilters.acceptAll(), false));
+            ModuleRootMarker.mark(deploymentResourceRoot, true);
+        }
 
         // TODO: This needs to be ported to add additional resource roots the standard way
         final MountHandle mountHandle = deploymentResourceRoot.getMountHandle();
         try {
-
             // add standard resource roots, this should eventually replace ClassPathEntry
             final List<ResourceRoot> resourceRoots = createResourceRoots(deploymentRoot, mountHandle);
             for (ResourceRoot root : resourceRoots) {
                 deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, root);
             }
-
         } catch (Exception e) {
             throw new DeploymentUnitProcessingException(e);
         }
@@ -129,6 +130,7 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
         deploymentUnit.putAttachment(TldsMetaData.ATTACHMENT_KEY, tldsMetaData);
     }
 
+    @Override
     public void undeploy(final DeploymentUnit context) {
     }
 
@@ -140,34 +142,27 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
      * @return the resource roots
      * @throws IOException for any error
      */
-    private List<ResourceRoot> createResourceRoots(final VirtualFile deploymentRoot, MountHandle mountHandle)
-            throws IOException,
-            DeploymentUnitProcessingException {
+    private List<ResourceRoot> createResourceRoots(final VirtualFile deploymentRoot, MountHandle mountHandle) throws IOException, DeploymentUnitProcessingException {
         final List<ResourceRoot> entries = new ArrayList<ResourceRoot>();
         // WEB-INF classes
-        final ResourceRoot webInfClassesRoot = new ResourceRoot(deploymentRoot.getChild(WEB_INF_CLASSES).getName(), deploymentRoot
-                .getChild(WEB_INF_CLASSES), null);
-        ModuleRootMarker.mark(webInfClassesRoot);
-        entries.add(webInfClassesRoot);
+        final VirtualFile webinfClasses = deploymentRoot.getChild(WEB_INF_CLASSES);
+        if (webinfClasses.exists()) {
+            final ResourceRoot webInfClassesRoot = new ResourceRoot(webinfClasses.getName(), webinfClasses, null);
+            ModuleRootMarker.mark(webInfClassesRoot);
+            entries.add(webInfClassesRoot);
+        }
         // WEB-INF lib
-        createWebInfLibResources(deploymentRoot, entries);
-        return entries;
-    }
-
-    /**
-     * Create the ResourceRoots for .jars in the WEB-INF/lib folder.
-     *
-     * @param deploymentRoot the deployment root
-     * @throws IOException for any error
-     */
-    void createWebInfLibResources(final VirtualFile deploymentRoot, List<ResourceRoot> entries) throws IOException,
-            DeploymentUnitProcessingException {
         final VirtualFile webinfLib = deploymentRoot.getChild(WEB_INF_LIB);
         if (webinfLib.exists()) {
             final List<VirtualFile> archives = webinfLib.getChildren(DEFAULT_WEB_INF_LIB_FILTER);
             for (final VirtualFile archive : archives) {
                 try {
-                    final Closeable closable = VFS.mountZip(archive, archive, TempFileProviderService.provider());
+                    final Closeable closable;
+                    if(archive.isFile()) {
+                       closable = VFS.mountZip(archive, archive, TempFileProviderService.provider());
+                    } else {
+                        closable = null;
+                    }
                     final ResourceRoot webInfArchiveRoot = new ResourceRoot(archive.getName(), archive, new MountHandle(closable));
                     ModuleRootMarker.mark(webInfArchiveRoot);
                     entries.add(webInfArchiveRoot);
@@ -176,5 +171,6 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
                 }
             }
         }
+        return entries;
     }
 }

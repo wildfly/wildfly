@@ -139,11 +139,14 @@ public interface DeploymentScanner {
     void setDeploymentTimeout(long timeout);
 
     /**
-     * Perform a scan as part of the server boot operation.
+     * Unused legacy method only retained to avoid breaking any custom implementations of this interface.
      *
-     * @param context
-     * @param verificationHandler
-     * @param newControllers
+     * @param context usage unspecified
+     * @param verificationHandler usage unspecified
+     * @param newControllers usage unspecified
+     *
+     * @deprecated not implemented in the standard implementation of this interface and not used in the server boot
      */
+    @Deprecated
     void bootTimeScan(OperationContext context, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers);
 }

@@ -21,20 +21,29 @@
  */
 package org.jboss.as.test.clustering.cluster.sso;
 
+import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_2;
+
 import java.net.URL;
-import org.jboss.arquillian.container.test.api.*;
+
+import org.jboss.arquillian.container.test.api.ContainerController;
+import org.jboss.arquillian.container.test.api.Deployer;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.clustering.NodeUtil;
+import org.jboss.as.test.integration.web.sso.LogoutServlet;
 import org.jboss.as.test.integration.web.sso.SSOTestBase;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
+import org.junit.Ignore;
 import org.junit.Test;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
-import org.jboss.as.test.clustering.single.web.SimpleServlet;
-import org.jboss.as.test.integration.web.sso.LogoutServlet;
 import org.junit.runner.RunWith;
 
 /**
@@ -43,15 +52,16 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("AS7-5317")
 public class ClusteredSingleSignOnTestCase {
-    
+
     @ArquillianResource
     private ContainerController controller;
     @ArquillianResource
     private Deployer deployer;
-    
+
     private static Logger log = Logger.getLogger(ClusteredSingleSignOnTestCase.class);
-    
+
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
     public static EnterpriseArchive deployment1() {
@@ -63,14 +73,14 @@ public class ClusteredSingleSignOnTestCase {
     public static EnterpriseArchive deployment2() {
         return SSOTestBase.createSsoEar();
     }
-    
+
     @Test
     @InSequence(-2)
     public void startServers() throws Exception {
 
-        controller.start(CONTAINER_1);       
+        controller.start(CONTAINER_1);
         controller.start(CONTAINER_2);
-           
+
     }
 
     @Test
@@ -78,38 +88,38 @@ public class ClusteredSingleSignOnTestCase {
     public void setupSSO(
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2) throws Exception {
-        
+
         // add sso valves
         SSOTestBase.addClusteredSso(client1.getControllerClient());
         SSOTestBase.addClusteredSso(client2.getControllerClient());
-                
+
         controller.stop(CONTAINER_1);
         controller.stop(CONTAINER_2);
 
-        controller.start(CONTAINER_1);       
+        controller.start(CONTAINER_1);
         controller.start(CONTAINER_2);
-        
+
         deployer.deploy(DEPLOYMENT_1);
-        deployer.deploy(DEPLOYMENT_2);        
-        
+        deployer.deploy(DEPLOYMENT_2);
+
     }
-            
+
     @Test
-    @InSequence(1)        
+    @InSequence(1)
     public void stopServers(
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2) throws Exception {
-        
+
         SSOTestBase.removeSso(client1.getControllerClient());
         SSOTestBase.removeSso(client2.getControllerClient());
-        
+
         deployer.undeploy(DEPLOYMENT_1);
         controller.stop(CONTAINER_1);
         deployer.undeploy(DEPLOYMENT_2);
         controller.stop(CONTAINER_2);
     }
-    
-    
+
+
     /**
      * Test single sign-on across two web apps using form based auth
      */
@@ -131,5 +141,5 @@ public class ClusteredSingleSignOnTestCase {
         log.info("+++ testNoAuthSingleSignOn");
         SSOTestBase.executeNoAuthSingleSignOnTest(new URL(baseURL1, "/"), new URL(baseURL2, "/"), log);
     }
-    
+
 }

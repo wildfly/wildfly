@@ -22,7 +22,10 @@
 
 package org.jboss.as.logging;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -34,12 +37,14 @@ public enum Namespace {
 
     LOGGING_1_0("urn:jboss:domain:logging:1.0"),
 
-    LOGGING_1_1("urn:jboss:domain:logging:1.1");
+    LOGGING_1_1("urn:jboss:domain:logging:1.1"),
+
+    LOGGING_1_2("urn:jboss:domain:logging:1.2");
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = LOGGING_1_1;
+    public static final Namespace CURRENT = LOGGING_1_2;
 
     private final String name;
 
@@ -57,14 +62,24 @@ public enum Namespace {
     }
 
     private static final Map<String, Namespace> MAP;
+    private static final List<Namespace> READABLE;
 
     static {
         final Map<String, Namespace> map = new HashMap<String, Namespace>();
+        final List<Namespace> readable = new ArrayList<Namespace>();
         for (Namespace namespace : values()) {
             final String name = namespace.getUriString();
-            if (name != null) map.put(name, namespace);
+            if (name != null) {
+                map.put(name, namespace);
+                readable.add(namespace);
+            }
         }
         MAP = map;
+        READABLE = Collections.unmodifiableList(readable);
+    }
+
+    public static List<Namespace> readable() {
+        return READABLE;
     }
 
     public static Namespace forUri(String uri) {

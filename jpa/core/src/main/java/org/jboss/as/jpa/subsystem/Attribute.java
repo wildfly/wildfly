@@ -31,7 +31,8 @@ import java.util.Map;
 enum Attribute {
 
     UNKNOWN(null),
-    DEFAULT_DATASOURCE_NAME(CommonAttributes.DEFAULT_DATASOURCE),;
+    DEFAULT_DATASOURCE_NAME(CommonAttributes.DEFAULT_DATASOURCE),
+    DEFAULT_EXTENDEDPERSISTENCEINHERITANCE_NAME(CommonAttributes.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE),;
     private final String name;
 
     Attribute(final String name) {

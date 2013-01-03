@@ -19,13 +19,15 @@
 package org.jboss.as.controller.operations.common;
 
 
-import org.jboss.as.controller.AbstractRemoveStepHandler;
-
-import org.jboss.as.controller.OperationContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.dmr.ModelNode;
+
 /**
- * Handler for the socket-binding-group resource's remove operation.
+ * Handler for the socket-binding-group resource's remove operation on a server.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
@@ -43,5 +45,11 @@ public class SocketBindingGroupRemoveHandler extends AbstractRemoveStepHandler {
 
     protected boolean requiresRuntime(OperationContext context) {
         return context.getProcessType().isServer();
+    }
+
+    @Override
+    protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        super.performRemove(context, operation, model);
+        context.reloadRequired();
     }
 }

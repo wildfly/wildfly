@@ -21,6 +21,7 @@
  */
 package org.jboss.as.server.deployment.module;
 
+import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -28,39 +29,43 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 
 /**
  * DUP thats adds dependencies that are availible to all deployments
  *
  * @author Stuart Douglas
+ * @author Thomas.Diesler@jboss.com
  */
 public class ServerDependenciesProcessor implements DeploymentUnitProcessor {
 
-    private static ModuleIdentifier SUN_JDK = ModuleIdentifier.create("sun.jdk");
-    private static ModuleIdentifier IBM_JDK = ModuleIdentifier.create("ibm.jdk");
-    private static ModuleIdentifier JAVAX_API = ModuleIdentifier.create("javax.api");
-    private static ModuleIdentifier JBOSS_LOGGING = ModuleIdentifier.create("org.jboss.logging");
-    private static ModuleIdentifier JBOSS_VFS = ModuleIdentifier.create("org.jboss.vfs");
-    private static ModuleIdentifier COMMONS_LOGGING = ModuleIdentifier.create("org.apache.commons.logging");
-    private static ModuleIdentifier LOG4J = ModuleIdentifier.create("org.apache.log4j");
-    private static ModuleIdentifier SLF4J = ModuleIdentifier.create("org.slf4j");
-    private static ModuleIdentifier JUL_TO_SLF4J = ModuleIdentifier.create("org.jboss.logging.jul-to-slf4j-stub");
+    private static ModuleIdentifier[] DEFAULT_MODULES = new ModuleIdentifier[] {
+        ModuleIdentifier.create("sun.jdk"),
+        ModuleIdentifier.create("ibm.jdk"),
+        ModuleIdentifier.create("javax.api"),
+        ModuleIdentifier.create("org.jboss.logging"),
+        ModuleIdentifier.create("org.jboss.vfs"),
+        ModuleIdentifier.create("org.apache.commons.logging"),
+        ModuleIdentifier.create("org.apache.log4j"),
+        ModuleIdentifier.create("org.slf4j"),
+        ModuleIdentifier.create("org.jboss.logging.jul-to-slf4j-stub")
+    };
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, SUN_JDK, false, false, true, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, IBM_JDK, false, false, true, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAVAX_API, false, false, false, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JBOSS_LOGGING, false, false, false, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JBOSS_VFS, false, false, false, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, COMMONS_LOGGING, false, false, false, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, LOG4J, false, false, false, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, SLF4J, false, false, false, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JUL_TO_SLF4J, false, false, false, false));
+        for (ModuleIdentifier moduleId : DEFAULT_MODULES) {
+            try {
+                moduleLoader.loadModule(moduleId);
+                boolean importServices = moduleId.getName().endsWith("jdk");
+                moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleId, false, false, importServices, false));
+            } catch (ModuleLoadException ex) {
+                ServerLogger.ROOT_LOGGER.debugf("Module not found: %s", moduleId);
+            }
+        }
     }
 
     @Override

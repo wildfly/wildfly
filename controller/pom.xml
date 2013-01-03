@@ -61,6 +61,7 @@
                             <value>${test.level}</value>
                         </property>
                     </systemProperties>
+                    <argLine>-Duser.region=US -Duser.language=en</argLine>
                     <includes>
                         <include>**/*TestCase.java</include>
                     </includes>
@@ -132,7 +133,7 @@
             <groupId>org.jboss.logmanager</groupId>
             <artifactId>jboss-logmanager</artifactId>
             <scope>test</scope>
-        </dependency>        
+        </dependency>
 
     </dependencies>
 

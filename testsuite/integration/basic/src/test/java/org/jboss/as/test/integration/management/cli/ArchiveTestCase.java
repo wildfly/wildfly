@@ -36,7 +36,6 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandContextFactory;
 import org.jboss.as.test.integration.common.HttpRequest;
-import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import org.jboss.as.test.integration.management.util.CLITestUtil;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
 import org.jboss.shrinkwrap.api.Archive;
@@ -68,7 +67,7 @@ public class ArchiveTestCase {
     @Deployment
     public static Archive<?> getDeployment() {
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
-        ja.addClass(DeployTestCase.class);
+        ja.addClass(ArchiveTestCase.class);
         return ja;
     }
 
@@ -133,7 +132,7 @@ public class ArchiveTestCase {
             ctx.terminateSession();
         }
     }
-    
+
     @Test
     public void testUnDeployArchive() throws Exception {
 

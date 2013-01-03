@@ -20,13 +20,9 @@ package org.jboss.as.domain.controller.operations.deployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REDEPLOY;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.DeploymentDescription;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -34,7 +30,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ServerGroupDeploymentRedeployHandler implements OperationStepHandler, DescriptionProvider {
+public class ServerGroupDeploymentRedeployHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = REDEPLOY;
 
@@ -43,17 +39,12 @@ public class ServerGroupDeploymentRedeployHandler implements OperationStepHandle
     private ServerGroupDeploymentRedeployHandler() {
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return DeploymentDescription.getRedeployDeploymentOperation(locale);
-    }
-
     /**
      * {@inheritDoc}
      */
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         // We do nothing. This operation is really handled at the server level.
-        context.completeStep();
+        context.stepCompleted();
     }
 }

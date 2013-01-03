@@ -23,7 +23,6 @@ package org.jboss.as.test.integration.management.cli;
 
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -160,7 +159,7 @@ public class BatchTestCase extends AbstractCliTestBase {
         cli.sendLine("run-batch", true);
 
         String line = cli.readOutput();
-        assertTrue("Batch did not fail.", line.contains("Failed to execute batch"));
+        assertTrue("Batch did not fail.", line.contains("Composite operation failed and was rolled back"));
 
         // check that still none of the archives are deployed
         assertTrue(checkUndeployed(getBaseURL(url) + "deployment0/SimpleServlet"));

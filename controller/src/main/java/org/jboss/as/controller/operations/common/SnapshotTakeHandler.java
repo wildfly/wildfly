@@ -18,16 +18,17 @@
  */
 package org.jboss.as.controller.operations.common;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.SnapshotDescriptions;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * An operation that takes a snapshot of the current configuration
@@ -35,9 +36,14 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class SnapshotTakeHandler implements OperationStepHandler, DescriptionProvider {
+public class SnapshotTakeHandler implements OperationStepHandler {
 
-    public static final String OPERATION_NAME = "take-snapshot";
+    private static final String OPERATION_NAME = "take-snapshot";
+
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, ControllerResolver.getResolver("snapshot"))
+            .setReplyType(ModelType.STRING)
+            .withFlag(OperationEntry.Flag.MASTER_HOST_CONTROLLER_ONLY)
+            .build();
 
     private final ConfigurationPersister persister;
 
@@ -50,14 +56,11 @@ public class SnapshotTakeHandler implements OperationStepHandler, DescriptionPro
         try {
             String name = persister.snapshot();
             context.getResult().set(name);
-            context.completeStep();
+            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         } catch (ConfigurationPersistenceException e) {
             throw new OperationFailedException(e.getMessage(), new ModelNode().set(e.getMessage()));
         }
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return SnapshotDescriptions.getSnapshotTakeModel(locale);
-    }
+
 }

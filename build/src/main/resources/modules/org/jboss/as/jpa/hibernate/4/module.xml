@@ -38,7 +38,7 @@
         <module name="javax.transaction.api"/>
         <module name="org.hibernate" services="import"/>
         <module name="org.hibernate.validator"/>
-        <module name="org.infinispan"/>
+        <module name="org.infinispan" services="import"/>
         <module name="org.jboss.as.clustering.common"/>
         <module name="org.jboss.as.clustering.jgroups"/>
         <module name="org.jboss.as.clustering.infinispan"/>

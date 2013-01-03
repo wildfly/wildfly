@@ -37,20 +37,8 @@ import javax.management.ObjectName;
 
 public class ParticipantWriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {
 
-    public ParticipantWriteAttributeHandler() {
-        super();
-    }
-
-    public ParticipantWriteAttributeHandler(final ParameterValidator validator) {
-        super(validator);
-    }
-
     public ParticipantWriteAttributeHandler(final AttributeDefinition... definitions) {
         super(definitions);
-    }
-
-    public ParticipantWriteAttributeHandler(final ParameterValidator unresolvedValidator, final ParameterValidator resolvedValidator) {
-        super(unresolvedValidator, resolvedValidator);
     }
 
     @Override

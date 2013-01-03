@@ -22,18 +22,16 @@ package org.jboss.as.host.controller.operations;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
 import static org.jboss.dmr.ModelType.STRING;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
@@ -42,9 +40,9 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManagerService;
-import org.jboss.as.domain.controller.DomainModelUtil;
+import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.host.controller.HostControllerConfigurationPersister;
-import org.jboss.as.host.controller.descriptions.HostRootDescription;
+import org.jboss.as.host.controller.descriptions.HostResolver;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
@@ -55,7 +53,7 @@ import org.jboss.dmr.ModelType;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class RemoteDomainControllerAddHandler implements OperationStepHandler, DescriptionProvider {
+public class RemoteDomainControllerAddHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = "write-remote-domain-controller";
 
@@ -70,7 +68,15 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler, D
             .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
             .setFlags(AttributeAccess.Flag.RESTART_JVM).build();
 
+    public static final SimpleAttributeDefinition SECURITY_REALM = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SECURITY_REALM, STRING, true)
+            .setValidator(new StringLengthValidator(1, true))
+            .build();
+
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, HostResolver.getResolver("host"))
+            .setParameters(PORT, HOST, USERNAME, SECURITY_REALM)
+            .build();
     private final ManagementResourceRegistration rootRegistration;
+    private final DomainController domainController;
     private final HostControllerConfigurationPersister overallConfigPersister;
     private final ContentRepository contentRepository;
     private final HostFileRepository fileRepository;
@@ -81,6 +87,7 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler, D
 
     public RemoteDomainControllerAddHandler(final ManagementResourceRegistration rootRegistration,
                                                final LocalHostControllerInfoImpl hostControllerInfo,
+                                               final DomainController domainController,
                                                final HostControllerConfigurationPersister overallConfigPersister,
                                                final ContentRepository contentRepository,
                                                final HostFileRepository fileRepository,
@@ -88,6 +95,7 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler, D
                                                final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
                                                final PathManagerService pathManager) {
         this.rootRegistration = rootRegistration;
+        this.domainController = domainController;
         this.overallConfigPersister = overallConfigPersister;
         this.contentRepository = contentRepository;
         this.fileRepository = fileRepository;
@@ -107,12 +115,11 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler, D
         PORT.validateAndSet(operation, remoteDC);
         HOST.validateAndSet(operation, remoteDC);
         USERNAME.validateAndSet(operation, remoteDC);
-        if (operation.has(SECURITY_REALM)) {
-            ModelNode securityRealm = operation.require(SECURITY_REALM);
-            dc.get(REMOTE, SECURITY_REALM).set(securityRealm);
-            hostControllerInfo.setRemoteDomainControllerSecurityRealm(securityRealm.resolve().asString());
+        if (operation.has(SECURITY_REALM.getName())) {
+            SECURITY_REALM.validateAndSet(operation, remoteDC);
+            hostControllerInfo.setRemoteDomainControllerSecurityRealm(SECURITY_REALM.resolveModelAttribute(context, operation).asString());
         } else {
-            remoteDC.get(SECURITY_REALM).clear();
+            remoteDC.get(SECURITY_REALM.getName()).clear();
         }
 
         if (dc.has(LOCAL)) {
@@ -146,13 +153,7 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler, D
 
         overallConfigPersister.initializeDomainConfigurationPersister(true);
 
-        DomainModelUtil.initializeSlaveDomainRegistry(rootRegistration, overallConfigPersister.getDomainPersister(),
-                contentRepository, fileRepository, hostControllerInfo, extensionRegistry, ignoredDomainResourceRegistry, pathManager);
-    }
-
-    @Override
-    public ModelNode getModelDescription(final Locale locale) {
-        // TODO replace this with a generated description
-        return HostRootDescription.getRemoteDomainControllerAdd(locale);
+        domainController.initializeSlaveDomainRegistry(rootRegistration, overallConfigPersister.getDomainPersister(), contentRepository, fileRepository,
+                hostControllerInfo, extensionRegistry, ignoredDomainResourceRegistry, pathManager);
     }
 }

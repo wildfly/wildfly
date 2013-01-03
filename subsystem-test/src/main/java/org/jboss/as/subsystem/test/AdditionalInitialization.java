@@ -1,8 +1,10 @@
 package org.jboss.as.subsystem.test;
 
-import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
@@ -22,13 +24,37 @@ public class AdditionalInitialization extends AdditionalParsers {
         }
     };
 
+    /**
+     * The process type to be used for the installed controller
+     *
+     * @return the process type
+     */
     protected ProcessType getProcessType() {
         return ProcessType.STANDALONE_SERVER;
     }
 
+    /**
+     * The running mode to be used for the installed controller when deciding whether to
+     * execute the runtime parts of the operation handlers. e.g. if {@link RunningMode#ADMIN_ONLY} the
+     * runtime parts of the operation handlers should not get called since that will make {@link OperationContext#isNormalServer()}
+     * server return {@code false}
+     *
+     * @retun the running mode
+     */
     protected RunningMode getRunningMode() {
         return RunningMode.NORMAL;
     }
+
+    /**
+     * Whether or not the runtime resources should be registered. If {@link RunningMode.ADMIN_ONLY} the runtime resources will not
+     * get registered since {@link ExtensionContext#isRuntimeOnlyRegistrationValid()} will return false.
+     *
+     * @return the running mode
+     */
+    protected RunningMode getExtensionRegistryRunningMode() {
+        return RunningMode.NORMAL;
+    }
+
 
     /**
      * Return {@code true} to validate operations against their description provider when executing in the controller. The default is

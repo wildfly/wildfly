@@ -50,7 +50,7 @@ public abstract class CollectionMetricsHandler extends AbstractRuntimeOnlyHandle
         if (statistics != null) {
             handle(statistics, context, operation.require(ModelDescriptionConstants.NAME).asString());
         }
-        context.completeStep();
+        context.stepCompleted();
     }
 
     protected abstract void handle(CollectionStatistics statistics, OperationContext context, String attributeName);

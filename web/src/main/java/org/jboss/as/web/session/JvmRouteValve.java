@@ -81,6 +81,10 @@ public class JvmRouteValve extends ValveBase implements Lifecycle {
 
     @Override
     public void invoke(Request request, Response response) throws IOException, ServletException {
+        if (log_.isTraceEnabled()) {
+            log_.tracef("handling request %s", request.getRequestURI());
+        }
+
         // Need to check it before let request through.
         checkJvmRoute(request, response);
 

@@ -23,9 +23,11 @@
 package org.jboss.as.test.integration.jca.metrics;
 
 
+import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
+import org.jboss.dmr.ModelNode;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -106,6 +108,23 @@ public class XaDataSourceCfgMetricUnitTestCase extends DsMgmtTestBase {
     @Test(expected = Exception.class)
     public void testWrongXaResTimeoutProperty() throws Exception {
         setBadModel("wrong-xa-res-timeout-property.xml");
+    }
+
+    @Test
+    public void testStatistics() throws Exception {
+        super.testStatistics("xa-basic-attributes.xml");
+    }
+
+    // AS7-5333
+    @Test
+    public void testRollbackCleanup() throws Exception {
+        try {
+            setBadModel("wrong-xa-bogus-driver.xml");
+            Assert.fail("bad model did not produce an exception");
+        } catch (Exception e) {
+            // Confirm a correct model adding the same resources can be added
+            testDefaultXaDsAttributes();
+        }
     }
 
 }

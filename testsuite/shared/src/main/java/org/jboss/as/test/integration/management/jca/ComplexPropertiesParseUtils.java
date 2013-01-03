@@ -139,7 +139,7 @@ public class ComplexPropertiesParseUtils {
         Properties params = new Properties();
         params.put("archive", "some.rar");
         params.put("transaction-support", "XATransaction");
-        params.put("bootstrap-context", "someContext");
+        params.put("bootstrap-context", "default");
 
         return params;
     }
@@ -184,7 +184,8 @@ public class ComplexPropertiesParseUtils {
         params.put("recovery-plugin-class-name", "someClass2");
         params.put("recovery-username", "sa");
         params.put("recovery-password", "sa-pass");
-        params.put("recovery-security-domain", "HsqlDbRealm");
+        //AS7-5300
+        //params.put("recovery-security-domain", "HsqlDbRealm");
 
         return params;
     }

@@ -24,22 +24,29 @@ package org.jboss.as.osgi.deployment;
 
 import java.util.List;
 
+import javax.annotation.ManagedBean;
+
+import org.jboss.as.ee.structure.DeploymentType;
+import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.osgi.OSGiConstants;
-import org.jboss.as.osgi.service.BundleInstallIntegration;
-import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.osgi.service.BundleLifecycleIntegration;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.EjbDeploymentMarker;
+import org.jboss.as.server.deployment.JPADeploymentMarker;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
+import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.DotName;
-import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.jandex.MethodInfo;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.deployment.deployer.DeploymentFactory;
-import org.jboss.osgi.framework.IntegrationServices;
-import org.jboss.osgi.framework.Services;
+import org.jboss.osgi.metadata.OSGiMetaData;
 import org.jboss.osgi.spi.BundleInfo;
 
 /**
@@ -56,10 +63,10 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         final DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        final String contextName = depUnit.getName();
+        final String runtimeName = depUnit.getName();
 
         // Check if {@link BundleInstallIntegration} provided the {@link Deployment}
-        Deployment deployment = BundleInstallIntegration.removeDeployment(contextName);
+        Deployment deployment = BundleLifecycleIntegration.removeDeployment(runtimeName);
         if (deployment != null) {
             deployment.setAutoStart(false);
         }
@@ -69,21 +76,78 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
         if (deployment == null && info != null) {
             deployment = DeploymentFactory.createDeployment(info);
             deployment.addAttachment(BundleInfo.class, info);
+            OSGiMetaData metadata = info.getOSGiMetadata();
+            deployment.setAutoStart(!metadata.isFragment());
 
-            // Prevent autostart of ARQ deployments
-            DotName runWithName = DotName.createSimple("org.junit.runner.RunWith");
-            CompositeIndex compositeIndex = depUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
-            List<AnnotationInstance> runWithList = compositeIndex.getAnnotations(runWithName);
-            deployment.setAutoStart(runWithList.isEmpty());
+            // Set the start level and prevent autostart if greater than the Framwork startlevel
+            AnnotationInstance slAware = getAnnotation(depUnit, "org.jboss.arquillian.osgi.StartLevelAware");
+            if (slAware != null) {
+                MethodInfo slTarget = (MethodInfo) slAware.target();
+                for (AnnotationInstance anDeployment : getAnnotations(depUnit, "org.jboss.arquillian.container.test.api.Deployment")) {
+                    AnnotationValue namevalue = anDeployment.value("name");
+                    Object deploymentName = namevalue != null ? namevalue.value() : null;
+                    if (slTarget == anDeployment.target() && depUnit.getName().equals(deploymentName)) {
+                        int startLevel = slAware.value("startLevel").asInt();
+                        deployment.setStartLevel(startLevel);
+                        deployment.setAutoStart(false);
+                    }
+                }
+            }
+
+            // Prevent autostart for marked deployments
+            AnnotationInstance marker = getAnnotation(depUnit, "org.jboss.as.arquillian.api.DeploymentMarker");
+            if (marker != null) {
+                AnnotationValue value = marker.value("autoStart");
+                if (value != null && deployment.isAutoStart()) {
+                    deployment.setAutoStart(value.asBoolean());
+                }
+                value = marker.value("startLevel");
+                if (value != null && deployment.getStartLevel() == null) {
+                    deployment.setStartLevel(value.asInt());
+                }
+            }
         }
 
-        // Attach the deployment and activate the framework
+        // Attach the deployment
         if (deployment != null) {
-            phaseContext.getServiceRegistry().getRequiredService(Services.FRAMEWORK_ACTIVE).setMode(Mode.ACTIVE);
-            phaseContext.addDependency(IntegrationServices.AUTOINSTALL_COMPLETE, AttachmentKey.create(Object.class));
-            phaseContext.addDeploymentDependency(Services.BUNDLE_MANAGER, OSGiConstants.BUNDLE_MANAGER_KEY);
+
+            // Make sure the framework uses the same module id as the server
+            ModuleIdentifier identifier = depUnit.getAttachment(Attachments.MODULE_IDENTIFIER);
+            deployment.addAttachment(ModuleIdentifier.class, identifier);
+
+            // Allow additional dependencies for the set of supported deployemnt types
+            if (allowAdditionalModuleDependencies(depUnit)) {
+                ModuleSpecification moduleSpec = depUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+                deployment.addAttachment(ModuleSpecification.class, moduleSpec);
+            } else {
+                // Make this module private so that other modules in the deployment don't create a direct dependency
+                ModuleSpecification moduleSpec = depUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+                moduleSpec.setPrivateModule(true);
+            }
+
+            // Attach the bundle deployment
             depUnit.putAttachment(OSGiConstants.DEPLOYMENT_KEY, deployment);
+            deployment.addAttachment(DeploymentUnit.class, depUnit);
         }
+    }
+
+    private List<AnnotationInstance> getAnnotations(DeploymentUnit depUnit, String className) {
+        CompositeIndex index = depUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
+        List<AnnotationInstance> annotations = index.getAnnotations(DotName.createSimple(className));
+        return annotations;
+    }
+
+    private AnnotationInstance getAnnotation(DeploymentUnit depUnit, String className) {
+        List<AnnotationInstance> annotations = getAnnotations(depUnit, className);
+        return annotations.size() == 1 ? annotations.get(0) : null;
+    }
+
+    private boolean allowAdditionalModuleDependencies(final DeploymentUnit depUnit) {
+        boolean isWar = DeploymentTypeMarker.isType(DeploymentType.WAR, depUnit);
+        boolean isEjb = EjbDeploymentMarker.isEjbDeployment(depUnit);
+        boolean isCDI = getAnnotation(depUnit, ManagedBean.class.getName()) != null;
+        boolean isJPA = JPADeploymentMarker.isJPADeployment(depUnit);
+        return isWar || isEjb || isCDI || isJPA;
     }
 
     @Override

@@ -47,12 +47,17 @@ public enum Namespace {
 
     DOMAIN_1_2("urn:jboss:domain:1.2"),
 
-    DOMAIN_1_3("urn:jboss:domain:1.3") ;
+    DOMAIN_1_3("urn:jboss:domain:1.3"),
+
+    DOMAIN_1_4("urn:jboss:domain:1.4");
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = DOMAIN_1_3;
+    public static final Namespace CURRENT = DOMAIN_1_4;
+
+
+    public static final Namespace[] ALL_NAMESPACES = new Namespace[] {DOMAIN_1_0, DOMAIN_1_1, DOMAIN_1_2, DOMAIN_1_3, DOMAIN_1_4};
 
     private final String name;
 

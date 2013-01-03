@@ -21,10 +21,12 @@
  */
 package org.jboss.as.weld.deployment.processors;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.enterprise.inject.spi.Extension;
@@ -35,9 +37,12 @@ import javax.validation.ValidatorFactory;
 import org.jboss.as.ee.beanvalidation.BeanValidationAttachments;
 import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.naming.JavaNamespaceSetup;
+import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
+import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
 import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.as.security.service.SimpleSecurityManagerService;
 import org.jboss.as.server.deployment.Attachments;
@@ -46,20 +51,22 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
+import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.txn.service.TransactionManagerService;
 import org.jboss.as.txn.service.UserTransactionService;
-import org.jboss.as.weld.WeldContainer;
+import org.jboss.as.weld.WeldBootstrapService;
 import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.WeldLogger;
+import org.jboss.as.weld.WeldStartService;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.as.weld.deployment.BeanDeploymentModule;
+import org.jboss.as.weld.deployment.CdiAnnotationMarker;
 import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.deployment.WeldDeployment;
 import org.jboss.as.weld.services.TCCLSingletonService;
-import org.jboss.as.weld.services.WeldService;
 import org.jboss.as.weld.services.bootstrap.WeldEjbInjectionServices;
 import org.jboss.as.weld.services.bootstrap.WeldEjbServices;
 import org.jboss.as.weld.services.bootstrap.WeldJpaInjectionServices;
@@ -94,12 +101,18 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
         if (!WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
+
+            //if there are CDI annotation present and this is the top level deployment we log a warning
+            if (deploymentUnit.getParent() == null && CdiAnnotationMarker.cdiAnnotationsPresent(deploymentUnit)) {
+                WeldLogger.DEPLOYMENT_LOGGER.cdiAnnotationsButNoBeansXML(deploymentUnit);
+            }
+
             return;
         }
 
         //add a dependency on the weld service to web deployments
-        final ServiceName weldServiceName = parent.getServiceName().append(WeldService.SERVICE_NAME);
-        deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, weldServiceName);
+        final ServiceName weldBootstrapServiceName = parent.getServiceName().append(WeldBootstrapService.SERVICE_NAME);
+        deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, weldBootstrapServiceName);
 
         final Set<ServiceName> jpaServices = new HashSet<ServiceName>();
 
@@ -128,6 +141,12 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         final EEApplicationDescription eeApplicationDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION);
 
         bdmsByIdentifier.put(module.getIdentifier(), rootBeanDeploymentModule);
+
+        for(final BeanDeploymentModule additional : deploymentUnit.getAttachmentList(WeldAttachments.VISIBLE_ADDITIONAL_BEAN_DEPLOYMENT_MODULE)) {
+            additional.addBeanDeploymentModule(rootBeanDeploymentModule);
+            rootBeanDeploymentModule.addBeanDeploymentModule(additional);
+        }
+
         moduleSpecByIdentifier.put(module.getIdentifier(), moduleSpecification);
 
         beanDeploymentArchives.addAll(rootBeanDeploymentModule.getBeanDeploymentArchives());
@@ -153,12 +172,18 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
             // add the modules bdas to the global set of bdas
             beanDeploymentArchives.addAll(bdm.getBeanDeploymentArchives());
             bdmsByIdentifier.put(subDeploymentModule.getIdentifier(), bdm);
+            List<BeanDeploymentModule> additionalModules = subDeployment.getAttachmentList(WeldAttachments.VISIBLE_ADDITIONAL_BEAN_DEPLOYMENT_MODULE);
             moduleSpecByIdentifier.put(subDeploymentModule.getIdentifier(), subDeploymentModuleSpec);
 
             //we have to do this here as the aggregate components are not available in earlier phases
             final ResourceRoot subDeploymentRoot = subDeployment.getAttachment(Attachments.DEPLOYMENT_ROOT);
             final EjbInjectionServices ejbInjectionServices = new WeldEjbInjectionServices(deploymentUnit.getServiceRegistry(), eeModuleDescription, eeApplicationDescription, subDeploymentRoot.getRoot());
             bdm.addService(EjbInjectionServices.class, ejbInjectionServices);
+            for(final BeanDeploymentModule additional : additionalModules) {
+                additional.addBeanDeploymentModule(bdm);
+                bdm.addBeanDeploymentModule(additional);bdm.addService(EjbInjectionServices.class, ejbInjectionServices);
+            }
+
         }
 
         for (Map.Entry<ModuleIdentifier, BeanDeploymentModule> entry : bdmsByIdentifier.entrySet()) {
@@ -175,38 +200,57 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
             }
         }
 
+        final EjbInjectionServices ejbInjectionServices = new WeldEjbInjectionServices(deploymentUnit.getServiceRegistry(), eeModuleDescription, eeApplicationDescription, deploymentRoot.getRoot());
+
+        rootBeanDeploymentModule.addService(EjbInjectionServices.class, ejbInjectionServices);
+
+        for(final BeanDeploymentModule additional : deploymentUnit.getAttachmentList(WeldAttachments.ADDITIONAL_BEAN_DEPLOYMENT_MODULES)) {
+            beanDeploymentArchives.addAll(additional.getBeanDeploymentArchives());
+            additional.addService(EjbInjectionServices.class, ejbInjectionServices);
+        }
+
         final List<Metadata<Extension>> extensions = deploymentUnit.getAttachmentList(WeldAttachments.PORTABLE_EXTENSIONS);
 
         final WeldDeployment deployment = new WeldDeployment(beanDeploymentArchives, extensions, module, subDeploymentLoaders);
 
-        final WeldContainer weldContainer = new WeldContainer(deployment, Environments.EE_INJECT);
+        final WeldBootstrapService weldBootstrapService = new WeldBootstrapService(deployment, Environments.EE_INJECT, deploymentUnit.getName());
         //hook up validation service
         //TODO: we need to change weld so this is a per-BDA service
         final ValidatorFactory factory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
-        weldContainer.addWeldService(ValidationServices.class, new WeldValidationServices(factory));
+        weldBootstrapService.addWeldService(ValidationServices.class, new WeldValidationServices(factory));
+        weldBootstrapService.addWeldService(EjbInjectionServices.class, ejbInjectionServices);
 
-        final EjbInjectionServices ejbInjectionServices = new WeldEjbInjectionServices(deploymentUnit.getServiceRegistry(), eeModuleDescription, eeApplicationDescription, deploymentRoot.getRoot());
-        weldContainer.addWeldService(EjbInjectionServices.class, ejbInjectionServices);
-        rootBeanDeploymentModule.addService(EjbInjectionServices.class, ejbInjectionServices);
-
-        weldContainer.addWeldService(EjbServices.class, new WeldEjbServices(deploymentUnit.getServiceRegistry()));
+        weldBootstrapService.addWeldService(EjbServices.class, new WeldEjbServices(deploymentUnit.getServiceRegistry()));
 
 
         final JpaInjectionServices rootJpaInjectionServices = new WeldJpaInjectionServices(deploymentUnit, deploymentUnit.getServiceRegistry());
-        weldContainer.addWeldService(JpaInjectionServices.class, rootJpaInjectionServices);
+        weldBootstrapService.addWeldService(JpaInjectionServices.class, rootJpaInjectionServices);
 
-        final WeldService weldService = new WeldService(weldContainer, deploymentUnit.getName());
         // add the weld service
-        final ServiceBuilder<WeldContainer> weldServiceBuilder = serviceTarget.addService(weldServiceName, weldService);
+        final ServiceBuilder<WeldBootstrapService> weldBootstrapServiceBuilder = serviceTarget.addService(weldBootstrapServiceName, weldBootstrapService);
 
-        weldServiceBuilder.addDependencies(TCCLSingletonService.SERVICE_NAME);
+        weldBootstrapServiceBuilder.addDependencies(TCCLSingletonService.SERVICE_NAME);
 
-        installResourceInjectionService(serviceTarget, deploymentUnit, weldService, weldServiceBuilder);
-        installSecurityService(serviceTarget, deploymentUnit, weldService, weldServiceBuilder);
-        installTransactionService(serviceTarget, deploymentUnit, weldService, weldServiceBuilder);
+        installResourceInjectionService(serviceTarget, deploymentUnit, weldBootstrapService, weldBootstrapServiceBuilder);
+        installSecurityService(serviceTarget, deploymentUnit, weldBootstrapService, weldBootstrapServiceBuilder);
+        installTransactionService(serviceTarget, deploymentUnit, weldBootstrapService, weldBootstrapServiceBuilder);
 
-        weldServiceBuilder.addDependencies(jpaServices);
-        weldServiceBuilder.install();
+        weldBootstrapServiceBuilder.install();
+
+        final List<SetupAction> setupActions  = new ArrayList<SetupAction>();
+        JavaNamespaceSetup naming = deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.JAVA_NAMESPACE_SETUP_ACTION);
+        if(naming != null) {
+            setupActions.add(naming);
+        }
+
+        final WeldStartService weldStartService = new WeldStartService(setupActions, module.getClassLoader());
+
+        serviceTarget.addService(deploymentUnit.getServiceName().append(WeldStartService.SERVICE_NAME), weldStartService)
+                .addDependency(weldBootstrapServiceName, WeldBootstrapService.class, weldStartService.getBootstrap())
+                        //make sure JNDI bindings are up
+                .addDependency(JndiNamingDependencyProcessor.serviceName(deploymentUnit.getServiceName()))
+                .addDependencies(jpaServices)
+                .install();
 
     }
 
@@ -216,8 +260,13 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
             final PersistenceUnitMetadataHolder persistenceUnits = root.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
             if (persistenceUnits != null && persistenceUnits.getPersistenceUnits() != null) {
                 for (final PersistenceUnitMetadata pu : persistenceUnits.getPersistenceUnits()) {
-                    final ServiceName serviceName = PersistenceUnitServiceImpl.getPUServiceName(pu);
-                    jpaServices.add(serviceName);
+                    final Properties properties = pu.getProperties();
+                    final String jpaContainerManaged = properties.getProperty(Configuration.JPA_CONTAINER_MANAGED);
+                    final boolean deployPU = (jpaContainerManaged == null || Boolean.parseBoolean(jpaContainerManaged));
+                    if (deployPU) {
+                        final ServiceName serviceName = PersistenceUnitServiceImpl.getPUServiceName(pu);
+                        jpaServices.add(serviceName);
+                    }
                 }
             }
         }
@@ -225,7 +274,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
 
     private ServiceName installSecurityService(ServiceTarget serviceTarget, DeploymentUnit deploymentUnit,
-                                               WeldService weldService, ServiceBuilder<WeldContainer> weldServiceBuilder) {
+                                               WeldBootstrapService weldService, ServiceBuilder<WeldBootstrapService> weldServiceBuilder) {
         final WeldSecurityServices service = new WeldSecurityServices();
 
         final ServiceName serviceName = deploymentUnit.getServiceName().append(WeldSecurityServices.SERVICE_NAME);
@@ -239,7 +288,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
     }
 
     private ServiceName installResourceInjectionService(ServiceTarget serviceTarget, DeploymentUnit deploymentUnit,
-                                                        WeldService weldService, ServiceBuilder<WeldContainer> weldServiceBuilder) {
+                                                        WeldBootstrapService weldService, ServiceBuilder<WeldBootstrapService> weldServiceBuilder) {
         final WeldResourceInjectionServices service = new WeldResourceInjectionServices();
 
         final ServiceName serviceName = deploymentUnit.getServiceName().append(WeldResourceInjectionServices.SERVICE_NAME);
@@ -253,7 +302,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
     }
 
     private ServiceName installTransactionService(final ServiceTarget serviceTarget, final DeploymentUnit deploymentUnit,
-                                                  WeldService weldService, ServiceBuilder<WeldContainer> weldServiceBuilder) {
+                                                  WeldBootstrapService weldService, ServiceBuilder<WeldBootstrapService> weldServiceBuilder) {
         final WeldTransactionServices weldTransactionServices = new WeldTransactionServices();
 
         final ServiceName weldTransactionServiceName = deploymentUnit.getServiceName().append(

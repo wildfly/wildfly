@@ -32,6 +32,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
@@ -49,12 +50,13 @@ class ResourceAddRemoveTestBase {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     protected OperationContext mockOperationContext(SubsystemState stateService, final List<OperationStepHandler> addedSteps,
-                                                    final ResultAction stepResult) {
+                                                    final ResultAction stepResult) throws Exception {
         ServiceRegistry serviceRegistry = Mockito.mock(ServiceRegistry.class);
         ServiceController serviceController = Mockito.mock(ServiceController.class);
         Mockito.when(serviceController.getValue()).thenReturn(stateService);
-        Mockito.when(serviceRegistry.getService(SubsystemState.SERVICE_NAME)).thenReturn(serviceController);
+        Mockito.when(serviceRegistry.getService(OSGiConstants.SUBSYSTEM_STATE_SERVICE_NAME)).thenReturn(serviceController);
         ModelNode result = new ModelNode();
+        ModelNode resolve = new ModelNode();
         final OperationContext context = Mockito.mock(OperationContext.class);
         Resource resource = Mockito.mock(Resource.class);
         Mockito.when(resource.getModel()).thenReturn(result);
@@ -82,6 +84,12 @@ class ResourceAddRemoveTestBase {
                 return null;
             }
         }).when(context).completeStep(Mockito.any(OperationContext.RollbackHandler.class));
+        Mockito.doAnswer(new Answer<ModelNode>() {
+            @Override
+            public ModelNode answer(InvocationOnMock invocation) throws Throwable {
+                return (ModelNode)invocation.getArguments()[0];
+            }
+        }).when(context).resolveExpressions(Mockito.any(ModelNode.class));
         return context;
     }
 

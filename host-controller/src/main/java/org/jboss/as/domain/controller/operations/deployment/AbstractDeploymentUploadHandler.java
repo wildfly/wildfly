@@ -20,14 +20,15 @@ package org.jboss.as.domain.controller.operations.deployment;
 
 import static org.jboss.as.domain.controller.DomainControllerLogger.DEPLOYMENT_LOGGER;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.repository.ContentRepository;
-import org.jboss.dmr.ModelNode;
-
 import java.io.IOException;
 import java.io.InputStream;
+
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.repository.ContentRepository;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Base class for operation handlers that can handle the upload of deployment content.
@@ -38,9 +39,11 @@ public abstract class AbstractDeploymentUploadHandler implements OperationStepHa
 
     private static final String[] EMPTY = new String[0];
     private final ContentRepository contentRepository;
+    protected final AttributeDefinition attribute;
 
-    protected AbstractDeploymentUploadHandler(final ContentRepository contentRepository) {
+    protected AbstractDeploymentUploadHandler(final ContentRepository contentRepository, final AttributeDefinition attribute) {
         this.contentRepository = contentRepository;
+        this.attribute = attribute;
     }
 
     /**
@@ -66,7 +69,7 @@ public abstract class AbstractDeploymentUploadHandler implements OperationStepHa
         }
         // else this is a slave domain controller and we should ignore this operation
 
-        context.completeStep();
+        context.stepCompleted();
     }
 
     protected abstract InputStream getContentInputStream(OperationContext context, ModelNode operation) throws OperationFailedException;

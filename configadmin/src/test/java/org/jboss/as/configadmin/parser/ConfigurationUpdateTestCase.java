@@ -26,7 +26,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.Hashtable;
 import java.util.Map;
 
-import org.jboss.as.configadmin.service.ConfigAdminService;
+import org.jboss.as.configadmin.ConfigAdmin;
 import org.jboss.as.configadmin.service.ConfigAdminServiceImpl;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
@@ -48,6 +48,7 @@ import org.mockito.Mockito;
  * @author David Bosschaert
  */
 public class ConfigurationUpdateTestCase {
+
     @Test
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public void testConfigurationUpdate() throws Exception {
@@ -91,13 +92,13 @@ public class ConfigurationUpdateTestCase {
         Mockito.when(mockCASServiceController.getValue()).thenReturn(mockCAS);
 
         ServiceRegistry mockServiceRegistry = Mockito.mock(ServiceRegistry.class);
-        Mockito.when(mockServiceRegistry.getService(ConfigAdminService.SERVICE_NAME)).thenReturn(mockCASServiceController);
+        Mockito.when(mockServiceRegistry.getService(ConfigAdmin.SERVICE_NAME)).thenReturn(mockCASServiceController);
 
         OperationContext mockContext2 = Mockito.mock(OperationContext.class);
         Mockito.when(mockContext2.getServiceRegistry(true)).thenReturn(mockServiceRegistry);
         step.execute(mockContext2, operation);
 
-        Mockito.verify(mockCAS).putConfigurationFromDMR("mypid", dict);
+        Mockito.verify(mockCAS).putConfigurationInternal("mypid", dict);
         Mockito.verify(mockContext2).completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
@@ -107,7 +108,6 @@ public class ConfigurationUpdateTestCase {
         addr.add(new ModelNode().set(ModelConstants.CONFIGURATION, pid));
         ModelNode operation = Util.getEmptyOperation(ModelConstants.UPDATE, addr);
         ModelNode entries = new ModelNode();
-
         for (Map.Entry<String, String> entry : props.entrySet()) {
             entries.get(entry.getKey()).set(entry.getValue());
         }

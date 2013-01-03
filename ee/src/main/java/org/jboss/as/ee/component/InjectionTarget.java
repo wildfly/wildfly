@@ -32,6 +32,7 @@ import org.jboss.msc.value.Value;
  * An injection target field or method in a class.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Eduardo Martins
  */
 public abstract class InjectionTarget {
     private final String className;
@@ -92,6 +93,15 @@ public abstract class InjectionTarget {
      */
     public abstract InterceptorFactory createInjectionInterceptorFactory(final Object targetContextKey, final Object valueContextKey, final Value<ManagedReferenceFactory> factoryValue, final DeploymentUnit deploymentUnit, final boolean optional) throws DeploymentUnitProcessingException;
 
+    /**
+     * Indicates if the target has the staic modifier.
+     *
+     * @param deploymentUnit   the deployment unit
+     * @return true
+     * @throws DeploymentUnitProcessingException if an error occurs
+     */
+    public abstract boolean isStatic(final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException;
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
@@ -112,5 +122,10 @@ public abstract class InjectionTarget {
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (declaredValueClassName != null ? declaredValueClassName.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return new StringBuilder("InjectionTarget[className=").append(className).append(",name=").append(name).append(",declaredValueClassName=").append(declaredValueClassName).append("]").toString();
     }
 }

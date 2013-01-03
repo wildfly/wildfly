@@ -73,16 +73,17 @@
             <artifactId>jboss-as-security</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.jbossts</groupId>
-            <artifactId>jbossjts</artifactId>
+            <groupId>org.jboss.jbossts.jts</groupId>
+            <artifactId>jbossjts-jacorb</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.jbossts</groupId>
+            <groupId>org.jboss.jbossts.xts</groupId>
             <artifactId>jbossxts</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.jbossts</groupId>
-            <artifactId>jbossxts-api</artifactId>
+            <groupId>org.jboss.jbossts.xts</groupId>
+            <artifactId>jbossxts</artifactId>
+            <classifier>api</classifier>
         </dependency>
         <dependency>
             <groupId>org.jboss.jbossts</groupId>

@@ -22,23 +22,25 @@
 
 package org.jboss.as.messaging;
 
+import static org.jboss.logging.annotations.Message.INHERIT;
+
 import java.util.Collection;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.hornetq.core.server.HornetQServer;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.dmr.ModelType;
-import org.jboss.logging.Cause;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageBundle;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.Messages;
 import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
-
-import static org.jboss.logging.Message.INHERIT;
 
 /**
  * Date: 10.06.2011
@@ -487,4 +489,47 @@ public interface MessagingMessages {
     @Message(id = 11671, value = "Failed to recover %s")
     OperationFailedException failedToRecover(@Cause Throwable cause, String name);
 
+    /**
+     * Create an failure description message indicating that an attribute is not supported by a given model version.
+     *
+     * @param attributes the name(s) of the unsupported attribute(s)
+     * @param version the model version that does not support the attribute
+     *
+     * @return the message.
+     */
+    @Message(id = 11672, value = "Attribute(s) %s are not supported by messaging management model %s")
+    String unsupportedAttributeInVersion(String attributes, ModelVersion version);
+
+    /**
+     * Create an failure description message indicating that the clustered attribute is deprecated.
+     *
+     * @return an {@link UnsupportedOperationException} for the error.
+     */
+    @Message(id = 11673, value = "The clustered attribute is deprecated. To create a clustered HornetQ server, define at least one cluster-connection")
+    UnsupportedOperationException canNotWriteClusteredAttribute();
+
+    /**
+     * Create an failure description message indicating that the resource of given type can not be registered.
+     *
+     * @return an {@link UnsupportedOperationException} for the error.
+     */
+    @Message(id = 11674, value = "Resources of type %s cannot be registered")
+    UnsupportedOperationException canNotRegisterResourceOfType(String childType);
+
+    /**
+     * Create an failure description message indicating that the resource of given type can not be removed.
+     *
+     * @return an {@link UnsupportedOperationException} for the error.
+     */
+    @Message(id = 11675, value = "Resources of type %s cannot be removed")
+    UnsupportedOperationException canNotRemoveResourceOfType(String childType);
+
+    /**
+     * Logs an error message indicating the given {@code address} does not match any known
+     * resource. Meant for use with runtime resources available via {@link HornetQServer#getManagementService()}
+     *
+     * @param address    the address.
+     */
+    @Message(id = 11676, value = "No resource exists at address %s")
+    String hqServerManagementServiceResourceNotFound(PathAddress address);
 }

@@ -22,20 +22,22 @@
 
 package org.jboss.as.jpa;
 
+import java.io.File;
 import java.net.URLConnection;
 
 import javax.ejb.EJBException;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
 import javax.persistence.TransactionRequiredException;
+import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.jandex.MethodInfo;
-import org.jboss.logging.Cause;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageBundle;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.Messages;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.vfs.VirtualFile;
@@ -336,8 +338,8 @@ public interface JpaMessages {
      * @param deploymentUnit the deployment unit that failed.
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11447, value = "Failed to get module attachment for %s")
-    DeploymentUnitProcessingException failedToGetModuleAttachment(DeploymentUnit deploymentUnit);
+    //@Message(id = 11447, value = "Failed to get module attachment for %s")
+    //DeploymentUnitProcessingException failedToGetModuleAttachment(DeploymentUnit deploymentUnit);
 
     /**
      * A message indicating a failure to parse the file.
@@ -355,6 +357,14 @@ public interface JpaMessages {
      */
     @Message(id = 11449, value = "Can only inject from a Hibernate EntityManagerFactoryImpl")
     RuntimeException hibernateOnlyEntityManagerFactory();
+
+    /**
+     * Creates an exception indicating the entity manager factory implementation can only be a Hibernate version.
+     *
+     * @return a {@link RuntimeException} for the error.
+     */
+    @Message(id = 11450, value = "File %s not found")
+    RuntimeException fileNotFound(File file);
 
     /**
      * Creates an exception indicating the persistence unit name contains an invalid character.
@@ -386,6 +396,9 @@ public interface JpaMessages {
      */
     @Message(id = 11453, value = "Could not add %s integration module to deployment, did not get expected JarUrlConnection, got %s")
     RuntimeException invalidUrlConnection(String integrationName, URLConnection connection);
+
+    @Message(id = 11454, value = "Could not load %s")
+    XMLStreamException errorLoadingJBossJPAFile(@Cause Throwable cause, String path);
 
     /**
      * Creates an exception indicating the persistence unit metadata likely because thread local was not set.
@@ -552,7 +565,6 @@ public interface JpaMessages {
     @Message(id = 11472, value = "internal error, the number of stateful session beans (%d) associated " +
         "with an extended persistence context (%s) cannot be a negative number.")
     RuntimeException referenceCountedEntityManagerNegativeCount(int referenceCount, String scopedPuName);
-
 
 
     /**

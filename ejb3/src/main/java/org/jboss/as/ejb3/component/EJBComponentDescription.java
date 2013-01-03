@@ -22,26 +22,9 @@
 package org.jboss.as.ejb3.component;
 
 
-import java.lang.reflect.Method;
-import java.rmi.Remote;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.ejb.EJBLocalObject;
-import javax.ejb.TimerService;
-import javax.ejb.TransactionAttributeType;
-import javax.ejb.TransactionManagementType;
-
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
+import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -78,6 +61,7 @@ import org.jboss.as.ejb3.security.EJBSecurityViewConfigurator;
 import org.jboss.as.ejb3.security.SecurityContextInterceptorFactory;
 import org.jboss.as.ejb3.timerservice.AutoTimer;
 import org.jboss.as.ejb3.timerservice.NonFunctionalTimerService;
+import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -87,8 +71,26 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+
+import javax.ejb.EJBLocalObject;
+import javax.ejb.TimerService;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagementType;
+import java.lang.reflect.Method;
+import java.rmi.Remote;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
@@ -111,6 +113,11 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      * The security-domain, if any, for this bean
      */
     private String securityDomain;
+
+    /**
+     * The default security domain to use if no explicit security domain is configured for this bean
+     */
+    private String defaultSecurityDomain;
 
     /**
      * The @DeclareRoles (a.k.a security-role-ref) for the bean
@@ -216,12 +223,13 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
         getConfigurators().addFirst(new NamespaceConfigurator());
         getConfigurators().add(new EjbJarConfigurationConfigurator());
+        getConfigurators().add(new SecurityDomainDependencyConfigurator(this));
 
         // setup a dependency on the EJBUtilities service
         this.addDependency(EJBUtilities.SERVICE_NAME, ServiceBuilder.DependencyType.REQUIRED);
         // setup a current invocation interceptor
         this.addCurrentInvocationContextFactory();
-        // setup a dependency on EJB remote tx repository service, if this EJB exposes atleast one remote view
+        // setup a dependency on EJB remote tx repository service, if this EJB exposes at least one remote view
         this.addRemoteTransactionsRepositoryDependency();
         this.transactionAttributes = new ApplicableMethodInformation<TransactionAttributeType>(componentName, TransactionAttributeType.REQUIRED);
         this.transactionTimeouts = new ApplicableMethodInformation<Integer>(componentName, null);
@@ -408,7 +416,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     /**
      * Adds a dependency for the ComponentConfiguration, on the {@link EJBRemoteTransactionsRepository} service,
-     * if the EJB exposes atleast one remote view
+     * if the EJB exposes at least one remote view
      */
     protected void addRemoteTransactionsRepositoryDependency() {
         this.getConfigurators().add(new ComponentConfigurator() {
@@ -426,7 +434,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             }
 
             /**
-             * Returns true if the passed EJB component description has atleast one remote view
+             * Returns true if the passed EJB component description has at least one remote view
              * @param ejbComponentDescription
              * @return
              */
@@ -532,8 +540,31 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         this.securityDomain = securityDomain;
     }
 
+    public void setDefaultSecurityDomain(final String defaultSecurityDomain) {
+        this.defaultSecurityDomain = defaultSecurityDomain;
+    }
+
+    /**
+     * Returns the security domain that is applicable for this bean. In the absence of any explicit
+     * configuration of a security domain for this bean, this method returns the default security domain
+     * (if any) that's configured for all beans in the EJB3 subsystem
+     * @return
+     */
     public String getSecurityDomain() {
+        if (this.securityDomain == null) {
+            return this.defaultSecurityDomain;
+        }
         return this.securityDomain;
+    }
+
+    /**
+     * Returns true if this bean has been explicitly configured with a security domain via the
+     * {@link org.jboss.ejb3.annotation.SecurityDomain} annotation or via the jboss-ejb3.xml deployment descriptor.
+     * Else returns false.
+     * @return
+     */
+    public boolean isExplicitSecurityDomainConfigured() {
+        return this.securityDomain != null;
     }
 
     public SecurityRolesMetaData getSecurityRoles() {
@@ -643,6 +674,33 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             }
             final EJBComponentCreateServiceFactory ejbComponentCreateServiceFactory = (EJBComponentCreateServiceFactory) configuration.getComponentCreateServiceFactory();
             ejbComponentCreateServiceFactory.setEjbJarConfiguration(appExceptions);
+        }
+    }
+
+    /**
+     * Responsible for adding a dependency on the security domain service for the EJB component, if a security domain
+     * is applicable for the bean
+     */
+    private class SecurityDomainDependencyConfigurator implements ComponentConfigurator {
+
+        private final EJBComponentDescription ejbComponentDescription;
+
+        SecurityDomainDependencyConfigurator(final EJBComponentDescription ejbComponentDescription) {
+            this.ejbComponentDescription = ejbComponentDescription;
+        }
+
+        @Override
+        public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+            configuration.getCreateDependencies().add(new DependencyConfigurator<Service<Component>>() {
+                @Override
+                public void configureDependency(ServiceBuilder<?> serviceBuilder, Service<Component> service) throws DeploymentUnitProcessingException {
+                    final String securityDomainName = SecurityDomainDependencyConfigurator.this.ejbComponentDescription.getSecurityDomain();
+                    if (securityDomainName != null) {
+                        final ServiceName securityDomainServiceName = SecurityDomainService.SERVICE_NAME.append(securityDomainName);
+                        serviceBuilder.addDependency(securityDomainServiceName);
+                    }
+                }
+            });
         }
     }
 

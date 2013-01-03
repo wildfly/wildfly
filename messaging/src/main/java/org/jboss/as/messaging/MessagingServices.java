@@ -38,11 +38,6 @@ public class MessagingServices {
 
     /** The core queue name base. */
     private static final String CORE_QUEUE_BASE = "queue";
-    private static final String STARTUP_POOL = "startup-pool";
-
-    public static enum TransportConfigType {
-        Remote, InVM, Generic
-    }
 
    public static ServiceName getHornetQServiceName(PathAddress pathAddress) {
          // We need to figure out what HornetQServer this operation is targeting.
@@ -52,15 +47,22 @@ public class MessagingServices {
        // We are a handler for requests related to a jms-topic resource. Those reside on level below the hornetq-server
         // resources in the resource tree. So we could look for the hornetq-server in the 2nd to last element
         // in the PathAddress. But to be more generic and future-proof, we'll walk the tree looking
-        String hornetQServerName = null;
-        for (int i = pathAddress.size() - 1; i >=0; i--) {
-            PathElement pe = pathAddress.getElement(i);
-            if (CommonAttributes.HORNETQ_SERVER.equals(pe.getKey())) {
-                hornetQServerName = pe.getValue();
-                break;
-            }
-        }
-      return JBOSS_MESSAGING.append(hornetQServerName);
+       String hornetQServerName = null;
+       PathAddress hornetQServerPathAddress = getHornetQServerPathAddress(pathAddress);
+       if (hornetQServerPathAddress != null) {
+           hornetQServerName = hornetQServerPathAddress.getLastElement().getValue();
+       }
+       return JBOSS_MESSAGING.append(hornetQServerName);
+   }
+
+   public static PathAddress getHornetQServerPathAddress(PathAddress pathAddress) {
+       for (int i = pathAddress.size() - 1; i >=0; i--) {
+           PathElement pe = pathAddress.getElement(i);
+           if (CommonAttributes.HORNETQ_SERVER.equals(pe.getKey())) {
+               return pathAddress.subAddress(0, i + 1);
+           }
+       }
+       return PathAddress.EMPTY_ADDRESS;
    }
 
    public static ServiceName getHornetQServiceName(String serverName) {

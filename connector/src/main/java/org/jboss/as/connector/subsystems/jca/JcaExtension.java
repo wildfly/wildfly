@@ -21,37 +21,8 @@
  */
 package org.jboss.as.connector.subsystems.jca;
 
-import org.jboss.as.connector.subsystems.resourceadapters.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
-import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.threads.BoundedQueueThreadPoolResourceDefinition;
-import org.jboss.as.threads.ThreadsParser;
-import org.jboss.as.threads.ThreadsServices;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import java.util.EnumSet;
-import java.util.List;
-
 import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
-import static org.jboss.as.connector.subsystems.jca.ArchiveValidationAdd.ArchiveValidationParameters;
+import static org.jboss.as.connector.subsystems.jca.JcaArchiveValidationDefinition.ArchiveValidationParameters;
 import static org.jboss.as.connector.subsystems.jca.Constants.ARCHIVE_VALIDATION;
 import static org.jboss.as.connector.subsystems.jca.Constants.BEAN_VALIDATION;
 import static org.jboss.as.connector.subsystems.jca.Constants.BOOTSTRAP_CONTEXT;
@@ -62,15 +33,34 @@ import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER;
 import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_LONG_RUNNING;
 import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_SHORT_RUNNING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequiredElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+
+import java.util.EnumSet;
+import java.util.List;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
+import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.threads.ThreadsParser;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
@@ -85,6 +75,17 @@ public class JcaExtension implements Extension {
     private static final int MANAGEMENT_API_MINOR_VERSION = 1;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
+    private static final String RESOURCE_NAME = JcaExtension.class.getPackage().getName() + ".LocalDescriptions";
+
+
+    static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
+            StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
+            for (String kp : keyPrefix) {
+                prefix.append('.').append(kp);
+            }
+            return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, JcaExtension.class.getClassLoader(), true, false);
+        }
+
     @Override
     public void initialize(final ExtensionContext context) {
         ROOT_LOGGER.debugf("Initializing Connector Extension");
@@ -94,65 +95,7 @@ public class JcaExtension implements Extension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
 
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(JcaSubsystemProviders.SUBSYSTEM);
-        registration.registerOperationHandler(ADD, JcaSubsystemAdd.INSTANCE, JcaSubsystemProviders.SUBSYSTEM_ADD_DESC, false);
-        registration.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, JcaSubsystemProviders.SUBSYSTEM_REMOVE_DESC, false);
-
-        registration.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE, GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
-
-        final ManagementResourceRegistration archiveValidation =
-            registration.registerSubModel(PathElement.pathElement(ARCHIVE_VALIDATION, ARCHIVE_VALIDATION), JcaSubsystemProviders.ARCHIVE_VALIDATION_DESC);
-        archiveValidation.registerOperationHandler(ADD, ArchiveValidationAdd.INSTANCE, JcaSubsystemProviders.ADD_ARCHIVE_VALIDATION_DESC, false);
-        archiveValidation.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, JcaSubsystemProviders.REMOVE_ARCHIVE_VALIDATION_DESC, false);
-
-        for (final ArchiveValidationAdd.ArchiveValidationParameters parameter : ArchiveValidationAdd.ArchiveValidationParameters.values()) {
-            archiveValidation.registerReadWriteAttribute(parameter.getAttribute().getName(), null, JcaAttributeWriteHandler.INSTANCE , AttributeAccess.Storage.CONFIGURATION);
-        }
-
-        final ManagementResourceRegistration beanValidation =
-            registration.registerSubModel(PathElement.pathElement(BEAN_VALIDATION, BEAN_VALIDATION), JcaSubsystemProviders.BEAN_VALIDATION_DESC);
-        beanValidation.registerOperationHandler(ADD, BeanValidationAdd.INSTANCE, JcaSubsystemProviders.ADD_BEAN_VALIDATION_DESC, false);
-        beanValidation.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, JcaSubsystemProviders.REMOVE_BEAN_VALIDATION_DESC, false);
-
-        for (final BeanValidationAdd.BeanValidationParameters parameter : BeanValidationAdd.BeanValidationParameters.values()) {
-            beanValidation.registerReadWriteAttribute(parameter.getAttribute().getName(), null, JcaAttributeWriteHandler.INSTANCE  , AttributeAccess.Storage.CONFIGURATION);
-        }
-
-        final ManagementResourceRegistration cachedConnectionManager =
-            registration.registerSubModel(PathElement.pathElement(CACHED_CONNECTION_MANAGER, CACHED_CONNECTION_MANAGER), JcaSubsystemProviders.CACHED_CONNECTION_MANAGER_DESC);
-        cachedConnectionManager.registerOperationHandler(ADD, CachedConnectionManagerAdd.INSTANCE, JcaSubsystemProviders.ADD_CACHED_CONNECTION_MANAGER_DESC, false);
-        cachedConnectionManager.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, JcaSubsystemProviders.REMOVE_CACHED_CONNECTION_MANAGER_DESC, false);
-
-        for (final CachedConnectionManagerAdd.CcmParameters parameter : CachedConnectionManagerAdd.CcmParameters.values()) {
-            if (parameter != CachedConnectionManagerAdd.CcmParameters.INSTALL) {
-                cachedConnectionManager.registerReadWriteAttribute(parameter.getAttribute().getName(), null, JcaAttributeWriteHandler.INSTANCE  , AttributeAccess.Storage.CONFIGURATION);
-            } else {
-                cachedConnectionManager.registerReadWriteAttribute(parameter.getAttribute().getName(), null, new ReloadRequiredWriteAttributeHandler(), AttributeAccess.Storage.CONFIGURATION);
-            }
-        }
-
-        final ManagementResourceRegistration workManager =
-            registration.registerSubModel(PathElement.pathElement(WORKMANAGER), JcaSubsystemProviders.WORKMANAGER_DESC);
-        workManager.registerOperationHandler(ADD, WorkManagerAdd.INSTANCE, JcaSubsystemProviders.ADD_WORKMANAGER_DESC, false);
-        workManager.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, JcaSubsystemProviders.REMOVE_WORKMANAGER_DESC, false);
-
-        for (final WorkManagerAdd.WmParameters parameter : WorkManagerAdd.WmParameters.values()) {
-            workManager.registerReadWriteAttribute(parameter.getAttribute().getName(), null, new ReloadRequiredWriteAttributeHandler() , AttributeAccess.Storage.CONFIGURATION);
-        }
-
-        workManager.registerSubModel(BoundedQueueThreadPoolResourceDefinition.create(WORKMANAGER_SHORT_RUNNING, ThreadsServices.STANDARD_THREAD_FACTORY_RESOLVER, ThreadsServices.STANDARD_HANDOFF_EXECUTOR_RESOLVER,
-                                    ThreadsServices.EXECUTOR.append(WORKMANAGER_SHORT_RUNNING), registerRuntimeOnly));
-        workManager.registerSubModel(BoundedQueueThreadPoolResourceDefinition.create(WORKMANAGER_LONG_RUNNING, ThreadsServices.STANDARD_THREAD_FACTORY_RESOLVER, ThreadsServices.STANDARD_HANDOFF_EXECUTOR_RESOLVER,
-                                    ThreadsServices.EXECUTOR.append(WORKMANAGER_LONG_RUNNING), registerRuntimeOnly));
-
-        final ManagementResourceRegistration bootstrapContext =
-            registration.registerSubModel(PathElement.pathElement(BOOTSTRAP_CONTEXT), JcaSubsystemProviders.BOOTSTRAP_CONTEXT_DESC);
-        bootstrapContext.registerOperationHandler(ADD, BootstrapContextAdd.INSTANCE, JcaSubsystemProviders.ADD_BOOTSTRAP_CONTEXT_DESC, false);
-        bootstrapContext.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, JcaSubsystemProviders.REMOVE_BOOTSTRAP_CONTEXT_DESC, false);
-
-        for (final BootstrapContextAdd.BootstrapCtxParameters parameter : BootstrapContextAdd.BootstrapCtxParameters.values()) {
-            bootstrapContext.registerReadWriteAttribute(parameter.getAttribute().getName(), null, new ReloadRequiredWriteAttributeHandler() , AttributeAccess.Storage.CONFIGURATION);
-        }
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(JcaSubsystemRootDefinition.createInstance(registerRuntimeOnly));
 
         subsystem.registerXMLElementWriter(ConnectorSubsystemParser.INSTANCE);
 
@@ -164,23 +107,14 @@ public class JcaExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JCA_1_1.getUriString(), ConnectorSubsystemParser.INSTANCE);
     }
 
-    private static ModelNode createEmptyAddOperation() {
-        final ModelNode address = new ModelNode();
-        address.add(ModelDescriptionConstants.SUBSYSTEM, JCA);
-        address.protect();
-
-        final ModelNode subsystem = new ModelNode();
-        subsystem.get(OP).set(ADD);
-        subsystem.get(OP_ADDR).set(address);
-        return subsystem;
-    }
-
     static final class ConnectorSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
             XMLElementWriter<SubsystemMarshallingContext> {
 
         static final ConnectorSubsystemParser INSTANCE = new ConnectorSubsystemParser();
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
             context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
@@ -213,9 +147,9 @@ public class JcaExtension implements Extension {
             if (parentNode.hasDefined(BEAN_VALIDATION)) {
                 ModelNode node = parentNode.get(BEAN_VALIDATION).get(BEAN_VALIDATION);
 
-                if (BeanValidationAdd.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().isMarshallable(node)) {
+                if (JcaBeanValidationDefinition.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().isMarshallable(node)) {
                     writer.writeEmptyElement(Element.BEAN_VALIDATION.getLocalName());
-                    BeanValidationAdd.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().marshallAsAttribute(node, writer);
+                    JcaBeanValidationDefinition.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().marshallAsAttribute(node, writer);
                 }
             }
         }
@@ -224,12 +158,12 @@ public class JcaExtension implements Extension {
             if (parentNode.hasDefined(CACHED_CONNECTION_MANAGER)) {
                 ModelNode node = parentNode.get(CACHED_CONNECTION_MANAGER).get(CACHED_CONNECTION_MANAGER);
 
-                final String name = CachedConnectionManagerAdd.CcmParameters.INSTALL.getAttribute().getName();
-                if(node.hasDefined(name) &&
+                final String name = JcaCachedConnectionManagerDefinition.CcmParameters.INSTALL.getAttribute().getName();
+                if (node.hasDefined(name) &&
                         node.get(name).asBoolean()) {
                     writer.writeEmptyElement(Element.CACHED_CONNECTION_MANAGER.getLocalName());
-                    CachedConnectionManagerAdd.CcmParameters.DEBUG.getAttribute().marshallAsAttribute(node, writer);
-                    CachedConnectionManagerAdd.CcmParameters.ERROR.getAttribute().marshallAsAttribute(node, writer);
+                    JcaCachedConnectionManagerDefinition.CcmParameters.DEBUG.getAttribute().marshallAsAttribute(node, writer);
+                    JcaCachedConnectionManagerDefinition.CcmParameters.ERROR.getAttribute().marshallAsAttribute(node, writer);
                 }
             }
         }
@@ -241,14 +175,14 @@ public class JcaExtension implements Extension {
                         writer.writeStartElement(Element.DEFAULT_WORKMANAGER.getLocalName());
                     } else {
                         writer.writeStartElement(Element.WORKMANAGER.getLocalName());
-                        WorkManagerAdd.WmParameters.NAME.getAttribute().marshallAsAttribute(property.getValue(), writer);
+                        JcaWorkManagerDefinition.WmParameters.NAME.getAttribute().marshallAsAttribute(property.getValue(), writer);
                     }
-                    for (Property prop : property.getValue().asPropertyList() ) {
+                    for (Property prop : property.getValue().asPropertyList()) {
                         if (WORKMANAGER_LONG_RUNNING.equals(prop.getName()) && prop.getValue().isDefined() && prop.getValue().asPropertyList().size() != 0) {
-                            ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, prop.getValue().asProperty().getValue(), Element.LONG_RUNNING_THREADS.getLocalName(), false);
+                            ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, prop.getValue().asProperty(), Element.LONG_RUNNING_THREADS.getLocalName(), false);
                         }
                         if (WORKMANAGER_SHORT_RUNNING.equals(prop.getName()) && prop.getValue().isDefined() && prop.getValue().asPropertyList().size() != 0) {
-                            ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, prop.getValue().asProperty().getValue(), Element.SHORT_RUNNING_THREADS.getLocalName(), false);
+                            ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, prop.getValue().asProperty(), Element.SHORT_RUNNING_THREADS.getLocalName(), false);
                         }
                     }
                     writer.writeEndElement();
@@ -263,16 +197,16 @@ public class JcaExtension implements Extension {
                 boolean started = false;
 
                 for (Property property : parentNode.get(BOOTSTRAP_CONTEXT).asPropertyList()) {
-                    if (!property.getValue().get(BootstrapContextAdd.BootstrapCtxParameters.NAME.getAttribute().getName()).asString().equals(DEFAULT_NAME) &&
-                            (BootstrapContextAdd.BootstrapCtxParameters.NAME.getAttribute().isMarshallable(property.getValue()) ||
-                            BootstrapContextAdd.BootstrapCtxParameters.WORKMANAGER.getAttribute().isMarshallable(property.getValue()))) {
+                    if (!property.getValue().get(JcaBootstrapContextDefinition.BootstrapCtxParameters.NAME.getAttribute().getName()).asString().equals(DEFAULT_NAME) &&
+                            (JcaBootstrapContextDefinition.BootstrapCtxParameters.NAME.getAttribute().isMarshallable(property.getValue()) ||
+                                    JcaBootstrapContextDefinition.BootstrapCtxParameters.WORKMANAGER.getAttribute().isMarshallable(property.getValue()))) {
                         if (!started) {
                             writer.writeStartElement(Element.BOOTSTRAP_CONTEXTS.getLocalName());
                             started = true;
                         }
                         writer.writeStartElement(Element.BOOTSTRAP_CONTEXT.getLocalName());
-                        BootstrapContextAdd.BootstrapCtxParameters.NAME.getAttribute().marshallAsAttribute(property.getValue(), writer);
-                        BootstrapContextAdd.BootstrapCtxParameters.WORKMANAGER.getAttribute().marshallAsAttribute(property.getValue(), writer);
+                        JcaBootstrapContextDefinition.BootstrapCtxParameters.NAME.getAttribute().marshallAsAttribute(property.getValue(), writer);
+                        JcaBootstrapContextDefinition.BootstrapCtxParameters.WORKMANAGER.getAttribute().marshallAsAttribute(property.getValue(), writer);
                         writer.writeEndElement();
                     }
                 }
@@ -281,11 +215,6 @@ public class JcaExtension implements Extension {
                 }
             }
         }
-
-        private boolean has(ModelNode node, String name) {
-            return node.has(name) && node.get(name).isDefined();
-        }
-
 
         @Override
         public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
@@ -354,7 +283,7 @@ public class JcaExtension implements Extension {
                                 parseBootstrapContexts(reader, address, list);
                                 break;
                             }
-                           default:
+                            default:
                                 throw unexpectedElement(reader);
                         }
                         break;
@@ -396,7 +325,7 @@ public class JcaExtension implements Extension {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case ENABLED: {
-                        String value = rawAttributeText(reader,  ArchiveValidationParameters.ARCHIVE_VALIDATION_ENABLED.getAttribute().getXmlName());
+                        String value = rawAttributeText(reader, ArchiveValidationParameters.ARCHIVE_VALIDATION_ENABLED.getAttribute().getXmlName());
                         ArchiveValidationParameters.ARCHIVE_VALIDATION_ENABLED.getAttribute().parseAndSetParameter(value, archiveValidationOperation, reader);
                         break;
                     }
@@ -423,7 +352,7 @@ public class JcaExtension implements Extension {
         }
 
         private void parseWorkManager(final XMLExtendedStreamReader reader, final ModelNode parentAddress,
-                final List<ModelNode> list, final ModelNode node, boolean defaultWm) throws XMLStreamException {
+                                      final List<ModelNode> list, final ModelNode node, boolean defaultWm) throws XMLStreamException {
 
             final ModelNode workManagerOperation = new ModelNode();
             workManagerOperation.get(OP).set(ADD);
@@ -434,8 +363,8 @@ public class JcaExtension implements Extension {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case NAME: {
-                        name = rawAttributeText(reader, WorkManagerAdd.WmParameters.NAME.getAttribute().getXmlName());
-                        WorkManagerAdd.WmParameters.NAME.getAttribute().parseAndSetParameter(name, workManagerOperation, reader);
+                        name = rawAttributeText(reader, JcaWorkManagerDefinition.WmParameters.NAME.getAttribute().getXmlName());
+                        JcaWorkManagerDefinition.WmParameters.NAME.getAttribute().parseAndSetParameter(name, workManagerOperation, reader);
                         break;
                     }
                     default: {
@@ -468,13 +397,13 @@ public class JcaExtension implements Extension {
                     case LONG_RUNNING_THREADS: {
                         switch (readerNS) {
                             case JCA_1_0: {
-                                org.jboss.as.threads.Namespace ns =  org.jboss.as.threads.Namespace.THREADS_1_0;
+                                org.jboss.as.threads.Namespace ns = org.jboss.as.threads.Namespace.THREADS_1_0;
                                 ThreadsParser.getInstance().parseBlockingBoundedQueueThreadPool(reader, readerNS.getUriString(),
                                         ns, workManagerAddress, list, WORKMANAGER_LONG_RUNNING, name);
                                 break;
                             }
                             default: {
-                                org.jboss.as.threads.Namespace ns =  org.jboss.as.threads.Namespace.THREADS_1_1;
+                                org.jboss.as.threads.Namespace ns = org.jboss.as.threads.Namespace.THREADS_1_1;
                                 ThreadsParser.getInstance().parseBlockingBoundedQueueThreadPool(reader, readerNS.getUriString(),
                                         ns, workManagerAddress, list, WORKMANAGER_LONG_RUNNING, name);
                             }
@@ -484,15 +413,15 @@ public class JcaExtension implements Extension {
                     case SHORT_RUNNING_THREADS: {
                         switch (readerNS) {
                             case JCA_1_0: {
-                                org.jboss.as.threads.Namespace ns =  org.jboss.as.threads.Namespace.THREADS_1_0;
+                                org.jboss.as.threads.Namespace ns = org.jboss.as.threads.Namespace.THREADS_1_0;
                                 ThreadsParser.getInstance().parseBlockingBoundedQueueThreadPool(reader, readerNS.getUriString(),
                                         ns, workManagerAddress, list, WORKMANAGER_SHORT_RUNNING, name);
                                 break;
                             }
                             default: {
-                                org.jboss.as.threads.Namespace ns =  org.jboss.as.threads.Namespace.THREADS_1_1;
+                                org.jboss.as.threads.Namespace ns = org.jboss.as.threads.Namespace.THREADS_1_1;
                                 ThreadsParser.getInstance().parseBlockingBoundedQueueThreadPool(reader, readerNS.getUriString(),
-                                        ns, workManagerAddress, list, WORKMANAGER_SHORT_RUNNING, name );
+                                        ns, workManagerAddress, list, WORKMANAGER_SHORT_RUNNING, name);
                                 break;
                             }
                         }
@@ -502,10 +431,10 @@ public class JcaExtension implements Extension {
                         throw unexpectedElement(reader);
                 }
 
+
             }
 
         }
-
 
 
         private ModelNode parseBeanValidation(final XMLExtendedStreamReader reader, final ModelNode parentOperation) throws XMLStreamException {
@@ -524,8 +453,8 @@ public class JcaExtension implements Extension {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case ENABLED: {
-                        String value = rawAttributeText(reader, BeanValidationAdd.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().getXmlName());
-                        BeanValidationAdd.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().parseAndSetParameter(value, beanValidationOperation, reader);
+                        String value = rawAttributeText(reader, JcaBeanValidationDefinition.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().getXmlName());
+                        JcaBeanValidationDefinition.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().parseAndSetParameter(value, beanValidationOperation, reader);
                         break;
                     }
                     default: {
@@ -545,7 +474,7 @@ public class JcaExtension implements Extension {
             ccmOperation.get(OP).set(ADD);
 
             final ModelNode ccmAddress = parentOperation.clone();
-            ccmAddress.add(CACHED_CONNECTION_MANAGER,CACHED_CONNECTION_MANAGER);
+            ccmAddress.add(CACHED_CONNECTION_MANAGER, CACHED_CONNECTION_MANAGER);
             ccmAddress.protect();
 
             ccmOperation.get(OP_ADDR).set(ccmAddress);
@@ -556,13 +485,13 @@ public class JcaExtension implements Extension {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case DEBUG: {
-                        String value = rawAttributeText(reader, CachedConnectionManagerAdd.CcmParameters.DEBUG.getAttribute().getXmlName());
-                        CachedConnectionManagerAdd.CcmParameters.DEBUG.getAttribute().parseAndSetParameter(value, ccmOperation, reader);
+                        String value = rawAttributeText(reader, JcaCachedConnectionManagerDefinition.CcmParameters.DEBUG.getAttribute().getXmlName());
+                        JcaCachedConnectionManagerDefinition.CcmParameters.DEBUG.getAttribute().parseAndSetParameter(value, ccmOperation, reader);
                         break;
                     }
                     case ERROR: {
-                        String value = rawAttributeText(reader, CachedConnectionManagerAdd.CcmParameters.ERROR.getAttribute().getXmlName());
-                        CachedConnectionManagerAdd.CcmParameters.ERROR.getAttribute().parseAndSetParameter(value, ccmOperation, reader);
+                        String value = rawAttributeText(reader, JcaCachedConnectionManagerDefinition.CcmParameters.ERROR.getAttribute().getXmlName());
+                        JcaCachedConnectionManagerDefinition.CcmParameters.ERROR.getAttribute().parseAndSetParameter(value, ccmOperation, reader);
                         break;
                     }
                     default: {
@@ -570,7 +499,7 @@ public class JcaExtension implements Extension {
                     }
                 }
             }
-            ccmOperation.get(CachedConnectionManagerAdd.CcmParameters.INSTALL.getAttribute().getName()).set(true);
+            ccmOperation.get(JcaCachedConnectionManagerDefinition.CcmParameters.INSTALL.getAttribute().getName()).set(true);
             // Handle elements
             requireNoContent(reader);
 
@@ -595,13 +524,13 @@ public class JcaExtension implements Extension {
                             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                             switch (attribute) {
                                 case NAME: {
-                                    name = rawAttributeText(reader, BootstrapContextAdd.BootstrapCtxParameters.NAME.getAttribute().getXmlName());
-                                    BootstrapContextAdd.BootstrapCtxParameters.NAME.getAttribute().parseAndSetParameter(name, bootstrapContextOperation, reader);
+                                    name = rawAttributeText(reader, JcaBootstrapContextDefinition.BootstrapCtxParameters.NAME.getAttribute().getXmlName());
+                                    JcaBootstrapContextDefinition.BootstrapCtxParameters.NAME.getAttribute().parseAndSetParameter(name, bootstrapContextOperation, reader);
                                     break;
                                 }
                                 case WORKMANAGER: {
-                                    wmName = rawAttributeText(reader, BootstrapContextAdd.BootstrapCtxParameters.WORKMANAGER.getAttribute().getXmlName());
-                                    BootstrapContextAdd.BootstrapCtxParameters.WORKMANAGER.getAttribute().parseAndSetParameter(wmName, bootstrapContextOperation, reader);
+                                    wmName = rawAttributeText(reader, JcaBootstrapContextDefinition.BootstrapCtxParameters.WORKMANAGER.getAttribute().getXmlName());
+                                    JcaBootstrapContextDefinition.BootstrapCtxParameters.WORKMANAGER.getAttribute().parseAndSetParameter(wmName, bootstrapContextOperation, reader);
                                     break;
                                 }
                                 default: {
@@ -639,17 +568,11 @@ public class JcaExtension implements Extension {
             }
         }
 
-        public String rawElementText(XMLStreamReader reader) throws XMLStreamException {
-            String elementText = reader.getElementText();
-            elementText = elementText == null || elementText.trim().length() == 0 ? null : elementText.trim();
-            return elementText;
-        }
-
         public String rawAttributeText(XMLStreamReader reader, String attributeName) {
-        String attributeString = reader.getAttributeValue("", attributeName) == null ? null : reader.getAttributeValue(
-                "", attributeName)
-                .trim();
-        return attributeString;
-    }
+            String attributeString = reader.getAttributeValue("", attributeName) == null ? null : reader.getAttributeValue(
+                    "", attributeName)
+                    .trim();
+            return attributeString;
+        }
     }
 }

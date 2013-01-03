@@ -70,10 +70,12 @@ public final class BindingMetricHandlers {
                     } else {
                         result.set(getNoMetrics());
                     }
-                    context.completeStep();
+
+                    context.stepCompleted();
                 }
             }, OperationContext.Stage.RUNTIME);
-            context.completeStep();
+
+            context.stepCompleted();
         }
 
         abstract void execute(ModelNode operation, SocketBinding binding, ModelNode result);

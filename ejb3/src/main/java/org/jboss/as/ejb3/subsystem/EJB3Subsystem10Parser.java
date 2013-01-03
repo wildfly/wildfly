@@ -22,16 +22,14 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import org.jboss.as.controller.parsing.ParseUtils;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
-import java.util.List;
+
+import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -41,23 +39,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 /**
  * User: Jaikiran Pai
  */
-public class EJB3Subsystem10Parser implements XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
+public class EJB3Subsystem10Parser implements XMLElementReader<List<ModelNode>> {
 
     public static final EJB3Subsystem10Parser INSTANCE = new EJB3Subsystem10Parser();
 
     private EJB3Subsystem10Parser() {
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
-        // //TODO seems to be a problem with empty elements cleaning up the queue in FormattingXMLStreamWriter.runAttrQueue
-        //context.startSubsystemElement(NewManagedBeansExtension.NAMESPACE, true);
-        context.startSubsystemElement(EJB3Extension.NAMESPACE_1_0, false);
-        // write the subsystem end element
-        writer.writeEndElement();
     }
 
     /**

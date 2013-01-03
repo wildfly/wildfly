@@ -23,14 +23,14 @@ package org.jboss.as.server.operations;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ModelController.OperationTransactionControl;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.ServerMessages;
@@ -41,10 +41,16 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class RootResourceHack implements OperationStepHandler, DescriptionProvider {
+public class RootResourceHack implements OperationStepHandler {
 
     public static final RootResourceHack INSTANCE = new RootResourceHack();
     public static final String NAME = "root-resource-hack";
+
+    //Private method does not need resources for description
+    public static OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(NAME, null)
+        .setPrivateEntry()
+        .setRuntimeOnly()
+        .build();
     private static final ModelNode OPERATION;
     static {
         OPERATION = new ModelNode();
@@ -57,19 +63,13 @@ public class RootResourceHack implements OperationStepHandler, DescriptionProvid
     }
 
     @Override
-    public ModelNode getModelDescription(Locale locale) {
-        //private operation so no description needed
-        return new ModelNode();
-    }
-
-    @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         ResourceAndRegistration threadResource = resource.get();
         if (threadResource == null || threadResource != ResourceAndRegistration.NULL) {
             throw ServerMessages.MESSAGES.internalUseOnly();
         }
-        resource.set(new ResourceAndRegistration(context.getRootResource(), context.getResourceRegistration()));
-        context.completeStep();
+        resource.set(new ResourceAndRegistration(context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, true), context.getResourceRegistration()));
+        context.stepCompleted();
     }
 
     public ResourceAndRegistration getRootResource(ModelController controller) {

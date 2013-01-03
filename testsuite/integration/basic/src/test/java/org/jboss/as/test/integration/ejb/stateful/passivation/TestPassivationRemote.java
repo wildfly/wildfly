@@ -56,4 +56,11 @@ public interface TestPassivationRemote {
     void remove();
 
     Employee getSuperEmployee();
+    
+    /**
+     * returns a value of a property of a CDI bean 
+     */
+    String getManagedBeanMessage();
+    
+    void setManagedBeanMessage(String message);
 }

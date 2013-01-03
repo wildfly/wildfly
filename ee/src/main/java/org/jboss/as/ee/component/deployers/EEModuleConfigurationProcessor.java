@@ -57,10 +57,7 @@ public class EEModuleConfigurationProcessor implements DeploymentUnitProcessor {
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         final DeploymentClassIndex classIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CLASS_INDEX);
-        if (moduleDescription == null) {
-            return;
-        }
-        if (module == null) {
+        if (module == null || moduleDescription == null) {
             return;
         }
 

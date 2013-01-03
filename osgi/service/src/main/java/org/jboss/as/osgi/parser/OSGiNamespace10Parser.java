@@ -21,16 +21,6 @@
  */
 package org.jboss.as.osgi.parser;
 
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -41,6 +31,17 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
  * Parse subsystem configuration for namespace {@link Namespace#VERSION_1_0}.
@@ -111,7 +112,7 @@ class OSGiNamespace10Parser implements Namespace10, XMLStreamConstants, XMLEleme
                     final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                     switch (attribute) {
                         case ACTIVATION: {
-                            result.get(ModelConstants.ACTIVATION).set(attrValue);
+                            OSGiRootResource.ACTIVATION.parseAndSetParameter(attrValue, result, reader);
                             break;
                         }
                         default:
@@ -208,7 +209,7 @@ class OSGiNamespace10Parser implements Namespace10, XMLStreamConstants, XMLEleme
                         ModelNode propNode = new ModelNode();
                         propNode.get(OP).set(ADD);
                         propNode.get(OP_ADDR).set(address).add(ModelConstants.PROPERTY, name);
-                        propNode.get(ModelConstants.VALUE).set(value);
+                        FrameworkPropertyResource.VALUE.parseAndSetParameter(value, propNode, reader);
 
                         result.add(propNode);
                         break;
@@ -234,33 +235,30 @@ class OSGiNamespace10Parser implements Namespace10, XMLStreamConstants, XMLEleme
                 case VERSION_1_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     if (element == Element.MODULE) {
-                        String identifier = null;
-                        String startlevel = null;
                         final int count = reader.getAttributeCount();
+
+                        ModelNode moduleNode = new ModelNode();
+                        moduleNode.get(OP).set(ADD);
+
                         for (int i = 0; i < count; i++) {
                             requireNoNamespaceAttribute(reader, i);
                             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                             switch (attribute) {
                                 case IDENTIFIER: {
-                                    identifier = reader.getAttributeValue(i);
+                                    moduleNode.get(OP_ADDR).set(address).add(ModelConstants.CAPABILITY, reader.getAttributeValue(i));
                                     break;
                                 }
                                 case STARTLEVEL: {
-                                    startlevel = reader.getAttributeValue(i);
+                                    FrameworkCapabilityResource.STARTLEVEL.parseAndSetParameter(reader.getAttributeValue(i), moduleNode, reader);
                                     break;
                                 }
                                 default:
                                     throw unexpectedAttribute(reader, i);
                             }
                         }
-                        if (identifier == null)
+                        if (!moduleNode.hasDefined(OP_ADDR)) {
                             throw missingRequired(reader, Collections.singleton(Attribute.NAME));
-
-                        ModelNode moduleNode = new ModelNode();
-                        moduleNode.get(OP).set(ADD);
-                        moduleNode.get(OP_ADDR).set(address).add(ModelConstants.CAPABILITY, identifier);
-                        if (startlevel != null)
-                            moduleNode.get(ModelConstants.STARTLEVEL).set(startlevel);
+                        }
 
                         nodes.add(moduleNode);
 

@@ -22,12 +22,13 @@
 package org.jboss.as.controller.services.path;
 
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.common.ManagementDescription;
+import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
@@ -47,29 +48,39 @@ public abstract class PathResourceDefinition extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition NAME =
             SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.NAME, ModelType.STRING, false)
                 .setValidator(new StringLengthValidator(1, false))
-                .setStorageRuntime()
+                .setResourceOnly()
                 .build();
 
     static final SimpleAttributeDefinition PATH_SPECIFIED =
             SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.PATH, ModelType.STRING, false)
+                .setAllowExpression(true)
                 .setValidator(new StringLengthValidator(1, false))
                 .build();
 
     static final SimpleAttributeDefinition PATH_NAMED =
             SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.PATH, ModelType.STRING, true)
-                .setValidator(new StringLengthValidator(1, true))
-                .build();
-
-    static final SimpleAttributeDefinition RELATIVE_TO =
-            SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.RELATIVE_TO, ModelType.STRING, true)
+                .setAllowExpression(true)
                 .setValidator(new StringLengthValidator(1, true))
                 .build();
 
     static final SimpleAttributeDefinition READ_ONLY =
-            SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.READ_ONLY, ModelType.STRING, true)
+            SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.READ_ONLY, ModelType.BOOLEAN, true)
                 .setDefaultValue(new ModelNode(false))
                 .setStorageRuntime()
                 .build();
+
+    /**
+     * A path attribute definition
+     */
+    public static final SimpleAttributeDefinition PATH = SimpleAttributeDefinitionBuilder.create(PATH_SPECIFIED).build();
+
+    /**
+     * A relative-to attribute definition
+     */
+    public static final SimpleAttributeDefinition RELATIVE_TO =
+            SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.RELATIVE_TO, ModelType.STRING, true)
+                    .setValidator(new StringLengthValidator(1, true))
+                    .build();
 
 
     protected final PathManagerService pathManager;
@@ -96,7 +107,7 @@ public abstract class PathResourceDefinition extends SimpleResourceDefinition {
     }
 
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadOnlyAttribute(NAME, null);
+        resourceRegistration.registerReadOnlyAttribute(NAME, ReadResourceNameOperationStepHandler.INSTANCE);
         resourceRegistration.registerReadWriteAttribute(RELATIVE_TO, null, new PathWriteAttributeHandler(pathManager, RELATIVE_TO, services));
         SimpleAttributeDefinition pathAttr = specified ? PATH_SPECIFIED : PATH_NAMED;
         resourceRegistration.registerReadWriteAttribute(pathAttr, null, new PathWriteAttributeHandler(pathManager, pathAttr, services));
@@ -106,7 +117,7 @@ public abstract class PathResourceDefinition extends SimpleResourceDefinition {
     private static class SpecifiedPathResourceDefinition extends PathResourceDefinition {
         SpecifiedPathResourceDefinition(PathManagerService pathManager){
             super(pathManager,
-                    ManagementDescription.getResourceDescriptionResolver(SPECIFIED_PATH_RESOURCE_PREFIX),
+                    ControllerResolver.getResolver(SPECIFIED_PATH_RESOURCE_PREFIX),
                     PathAddHandler.createSpecifiedInstance(pathManager),
                     PathRemoveHandler.createSpecifiedInstance(pathManager),
                     true,
@@ -117,7 +128,7 @@ public abstract class PathResourceDefinition extends SimpleResourceDefinition {
     private static class NamedPathResourceDefinition extends PathResourceDefinition {
         NamedPathResourceDefinition(PathManagerService pathManager){
             super(pathManager,
-                    ManagementDescription.getResourceDescriptionResolver(NAMED_PATH_RESOURCE_PREFIX),
+                    ControllerResolver.getResolver(NAMED_PATH_RESOURCE_PREFIX),
                     PathAddHandler.createNamedInstance(pathManager),
                     PathRemoveHandler.createNamedInstance(pathManager),
                     false,
@@ -128,7 +139,7 @@ public abstract class PathResourceDefinition extends SimpleResourceDefinition {
     private static class SpecifiedNoServicesPathResourceDefinition extends PathResourceDefinition {
         SpecifiedNoServicesPathResourceDefinition(PathManagerService pathManager){
             super(pathManager,
-                    ManagementDescription.getResourceDescriptionResolver(SPECIFIED_PATH_RESOURCE_PREFIX),
+                    ControllerResolver.getResolver(SPECIFIED_PATH_RESOURCE_PREFIX),
                     PathAddHandler.createSpecifiedNoServicesInstance(pathManager),
                     PathRemoveHandler.createSpecifiedNoServicesInstance(pathManager),
                     true,

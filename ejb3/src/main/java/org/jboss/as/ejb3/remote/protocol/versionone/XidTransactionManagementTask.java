@@ -22,9 +22,9 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.ejb.client.XidTransactionID;
-import org.jboss.logging.Logger;
 import org.jboss.marshalling.MarshallerFactory;
 import org.xnio.IoUtils;
 
@@ -37,8 +37,6 @@ import java.io.IOException;
  * @author Jaikiran Pai
  */
 abstract class XidTransactionManagementTask implements Runnable {
-
-    private static final Logger logger = Logger.getLogger(XidTransactionManagementTask.class);
 
     protected final short invocationId;
     protected final ChannelAssociation channelAssociation;
@@ -65,12 +63,12 @@ abstract class XidTransactionManagementTask implements Runnable {
             this.manageTransaction();
         } catch (Throwable t) {
             try {
-                logger.error("Error during transaction management of transaction id " + this.xidTransactionID, t);
+                EjbLogger.ROOT_LOGGER.errorDuringTransactionManagement(t, this.xidTransactionID);
                 // write out a failure message to the channel to let the client know that
                 // the transaction operation failed
                 transactionRequestHandler.writeException(this.channelAssociation, this.marshallerFactory, this.invocationId, t, null);
             } catch (IOException e) {
-                logger.error("Could not write out message to channel due to", e);
+                EjbLogger.ROOT_LOGGER.couldNotWriteOutToChannel(e);
                 // close the channel
                 IoUtils.safeClose(this.channelAssociation.getChannel());
             }
@@ -81,7 +79,7 @@ abstract class XidTransactionManagementTask implements Runnable {
             // write out invocation success message to the channel
             transactionRequestHandler.writeTxInvocationResponseMessage(this.channelAssociation, this.invocationId);
         } catch (IOException e) {
-            logger.error("Could not write out invocation success message to channel due to", e);
+            EjbLogger.ROOT_LOGGER.couldNotWriteInvocationSuccessMessage(e);
             // close the channel
             IoUtils.safeClose(this.channelAssociation.getChannel());
         }

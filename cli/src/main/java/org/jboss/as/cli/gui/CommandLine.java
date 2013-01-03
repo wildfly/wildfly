@@ -87,4 +87,12 @@ public class CommandLine extends JPanel {
     public JTextComponent getCmdText() {
         return this.cmdText;
     }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        submitButton.setEnabled(enabled);
+        cmdText.setEnabled(enabled);
+    }
+
 }

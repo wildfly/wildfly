@@ -21,12 +21,13 @@
  */
 package org.jboss.as.test.integration.ejb.timerservice.tx.retry;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import javax.annotation.Resource;
 import javax.ejb.Stateless;
 import javax.ejb.Timeout;
 import javax.ejb.TimerService;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author Stuart Douglas
@@ -35,10 +36,10 @@ import java.util.concurrent.TimeUnit;
 public class ExceptionRetryBean {
 
     private static final CountDownLatch latch = new CountDownLatch(1);
-    private static int TIMER_TIMEOUT_TIME_MS = 100;
-    private static int TIMER_CALL_WAITING_S = 2;
+    private static final int TIMER_TIMEOUT_TIME_MS = 100;
+    private static final int TIMER_CALL_WAITING_S = 10;
 
-    private static int count = 0;
+    private static volatile int count = 0;
 
     @Resource
     private TimerService timerService;
@@ -49,7 +50,7 @@ public class ExceptionRetryBean {
 
     @Timeout
     public void timeout() {
-        if(count == 0) {
+        if (count == 0) {
             //this should be retried
             count++;
             throw new RuntimeException("First call failed");

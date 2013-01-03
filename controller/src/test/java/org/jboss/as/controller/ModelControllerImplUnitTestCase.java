@@ -36,13 +36,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROCESS_STATE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_RESOURCES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_TYPES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CONFIG_AS_XML_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
@@ -51,26 +48,21 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLED_BACK;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_UPDATE_SKIPPED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Locale;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.CommonProviders;
+import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
-import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
-import org.jboss.as.controller.persistence.ConfigurationPersister;
-import org.jboss.as.controller.persistence.NullConfigurationPersister;
+import org.jboss.as.controller.operations.global.ReadAttributeHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -79,13 +71,13 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -97,6 +89,8 @@ public class ModelControllerImplUnitTestCase {
 
     protected static boolean useNonRecursive;
 
+    private static final PathAddress CHILD_ONE = PathAddress.pathAddress(PathElement.pathElement("child", "one"));
+    private static final PathAddress CHILD_TWO = PathAddress.pathAddress(PathElement.pathElement("child", "two"));
     private ServiceContainer container;
     private ModelController controller;
     private AtomicBoolean sharedState;
@@ -110,22 +104,21 @@ public class ModelControllerImplUnitTestCase {
 
     @Before
     public void setupController() throws InterruptedException {
-
         // restore default
         useNonRecursive = false;
 
         container = ServiceContainer.Factory.create("test");
         ServiceTarget target = container.subTarget();
-        ControlledProcessState processState = new ControlledProcessState(true);
-        ModelControllerService svc = new ModelControllerService(processState);
+        ModelControllerService svc = new ModelControllerService();
         ServiceBuilder<ModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
         builder.install();
-        sharedState = svc.state;
-        svc.latch.await();
+        sharedState = svc.getSharedState();
+        svc.awaitStartup(30, TimeUnit.SECONDS);
         controller = svc.getValue();
         ModelNode setup = Util.getEmptyOperation("setup", new ModelNode());
         controller.execute(setup, null, null, null);
-        processState.setRunning();
+
+        assertEquals(ControlledProcessState.State.RUNNING, svc.getCurrentProcessState());
     }
 
     @After
@@ -140,59 +133,6 @@ public class ModelControllerImplUnitTestCase {
             finally {
                 container = null;
             }
-        }
-    }
-
-    public static class ModelControllerService extends AbstractControllerService {
-
-        final AtomicBoolean state = new AtomicBoolean(true);
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        ModelControllerService(final ControlledProcessState processState) {
-            this(processState, new NullConfigurationPersister());
-        }
-
-        ModelControllerService(final ControlledProcessState processState, final ConfigurationPersister configurationPersister) {
-            super(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.NORMAL), configurationPersister, processState, DESC_PROVIDER, null, ExpressionResolver.DEFAULT);
-        }
-
-        @Override
-        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
-
-            rootRegistration.registerOperationHandler("setup", new SetupHandler(), DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("composite", CompositeOperationHandler.INSTANCE, DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("good", new ModelStageGoodHandler(), DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("bad", new ModelStageFailsHandler(), DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("evil", new ModelStageThrowsExceptionHandler(), DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("handleFailed", new RuntimeStageFailsHandler(state), DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("runtimeException", new RuntimeStageThrowsExceptionHandler(state), DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("operationFailedException", new RuntimeStageThrowsOFEHandler(), DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("good-service", new GoodServiceHandler(), DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("bad-service", new BadServiceHandler(), DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("missing-service", new MissingServiceHandler(), DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("reload-required", new ReloadRequiredHandler(), DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("restart-required", new RestartRequiredHandler(), DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("dependent-service", new DependentServiceHandler(), DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("remove-dependent-service", new RemoveDependentServiceHandler(), DESC_PROVIDER, false);
-
-            rootRegistration.registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
-            rootRegistration.registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
-            rootRegistration.registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true);
-            rootRegistration.registerOperationHandler(READ_CHILDREN_NAMES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_NAMES, CommonProviders.READ_CHILDREN_NAMES_PROVIDER, true);
-            rootRegistration.registerOperationHandler(READ_CHILDREN_TYPES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_TYPES, CommonProviders.READ_CHILDREN_TYPES_PROVIDER, true);
-            rootRegistration.registerOperationHandler(READ_CHILDREN_RESOURCES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_RESOURCES, CommonProviders.READ_CHILDREN_RESOURCES_PROVIDER, true);
-            rootRegistration.registerOperationHandler(READ_OPERATION_NAMES_OPERATION, GlobalOperationHandlers.READ_OPERATION_NAMES, CommonProviders.READ_OPERATION_NAMES_PROVIDER, true);
-            rootRegistration.registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true);
-            rootRegistration.registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
-            rootRegistration.registerOperationHandler(UNDEFINE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.UNDEFINE_ATTRIBUTE, CommonProviders.UNDEFINE_ATTRIBUTE_PROVIDER, true);
-
-            rootRegistration.registerSubModel(PathElement.pathElement("child"), DESC_PROVIDER);
-        }
-
-        @Override
-        protected void finishBoot() throws ConfigurationPersistenceException {
-            super.finishBoot();
-            latch.countDown();
         }
     }
 
@@ -532,7 +472,6 @@ public class ModelControllerImplUnitTestCase {
     }
 
     @Test
-    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testReloadRequired() throws Exception {
         ModelNode result = controller.execute(getOperation("reload-required", "attr1", 5), null, null, null);
         System.out.println(result);
@@ -547,14 +486,12 @@ public class ModelControllerImplUnitTestCase {
     }
 
     @Test
-    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testReloadRequiredNonRecursive() throws Exception {
         useNonRecursive = true;
         testReloadRequired();
     }
 
     @Test
-    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testRestartRequired() throws Exception {
         ModelNode result = controller.execute(getOperation("restart-required", "attr1", 5), null, null, null);
         System.out.println(result);
@@ -569,7 +506,6 @@ public class ModelControllerImplUnitTestCase {
     }
 
     @Test
-    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testRestartRequiredNonRecursive() throws Exception {
         useNonRecursive = true;
         testRestartRequired();
@@ -618,7 +554,6 @@ public class ModelControllerImplUnitTestCase {
     }
 
     @Test
-    @Ignore("AS7-3697")
     public void testRemoveDependentService() throws Exception {
         ModelNode result = controller.execute(getOperation("dependent-service", "attr1", 5), null, null, null);
         System.out.println(result);
@@ -634,8 +569,29 @@ public class ModelControllerImplUnitTestCase {
         assertEquals(ServiceController.State.UP, sc.getState());
 
         result = controller.execute(getOperation("remove-dependent-service", "attr1", 6, "good"), null, null, null);
+        sc = container.getService(ServiceName.JBOSS.append("depended-service"));
+        boolean outcome = FAILED.equals(result.get(OUTCOME).asString());
+        if (!outcome) {
+            if (sc == null) {
+                System.out.println("Null depended service!");
+            } else {
+                System.out.println(sc.getName());
+                System.out.println("Mode = " + sc.getMode());
+                System.out.println("Substate = " + sc.getSubstate());
+            }
+
+            sc = container.getService(ServiceName.JBOSS.append("dependent-service"));
+            if (sc == null) {
+                System.out.println("Null dependent service!");
+            } else {
+                System.out.println(sc.getName());
+                System.out.println("Mode = " + sc.getMode());
+                System.out.println("Substate = " + sc.getSubstate());
+            }
+        }
+
         System.out.println(result);
-        assertEquals(FAILED, result.get(OUTCOME).asString());
+        assertTrue(outcome);
         assertTrue(result.hasDefined(FAILURE_DESCRIPTION));
 
         sc = container.getService(ServiceName.JBOSS.append("depended-service"));
@@ -658,17 +614,97 @@ public class ModelControllerImplUnitTestCase {
         testRemoveDependentService();
     }
 
+    @Test
+    public void testWildCardNavigation() throws Exception {
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set("read-wildcards");
+        operation.get(OP_ADDR).setEmptyList();
+        operation.get("type").set("child");
+        final ModelNode result = controller.execute(operation, null, null, null);
+        assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        assertTrue(result.get(RESULT).hasDefined("child"));
+        assertEquals(2, result.get(RESULT, "child").asPropertyList().size());
+    }
+
+    @Test
+    public void testRemoveServiceAfterNonRollbackServiceFailure() {
+
+        // Phase I
+        // First, a situation where the service gets installed but fails
+        ModelNode operation = getOperation("bad-service", CHILD_ONE, "attribute1", 5);
+        operation.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+        ModelNode result = controller.execute(operation, null, null, null);
+        assertEquals(FAILED, result.get(OUTCOME).asString());
+        assertTrue(result.hasDefined(FAILURE_DESCRIPTION));
+
+        ServiceController<?> sc = container.getService(ServiceName.JBOSS.append("bad-service"));
+        assertNotNull(sc);
+        assertEquals(ServiceController.State.START_FAILED, sc.getState());
+
+        // Confirm model *was* changed (since we didn't rollback)
+        result = controller.execute(getOperation("read-attribute", CHILD_ONE, "attribute1", 1), null, null, null);
+        assertEquals("success", result.get("outcome").asString());
+        assertEquals(5, result.get("result").asInt());
+
+        // Confirm we can still remove the resource
+        result = controller.execute(getOperation("remove-bad-service", CHILD_ONE, "attribute1", 6), null, null, null);
+        assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        sc = container.getService(ServiceName.JBOSS.append("bad-service"));
+        if (sc != null) {
+            assertEquals(ServiceController.Mode.REMOVE, sc.getMode());
+        }
+
+        // Confirm the resource is gone
+        operation = getOperation("read-attribute", CHILD_ONE, "attribute1", 1);
+        result = controller.execute(operation, null, null, null);
+        assertEquals(FAILED, result.get(OUTCOME).asString());
+    }
+
+    /**
+     * Test for AS7-6104 and similar scenarios
+     */
+    @Test
+    public void testRemoveServiceAfterNonRollbackRuntimeOFE() {
+
+        // Phase II
+        // Next mimic a situation where the service doesn't get installed at all (this is the AS7-6104 case)
+        ModelNode operation = getOperation("operationFailedException", CHILD_ONE, "attribute1", 5);
+        operation.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+        ModelNode result = controller.execute(operation, null, null, null);
+        assertEquals(FAILED, result.get(OUTCOME).asString());
+        assertTrue(result.get("failure-description").toString().contains("OFE"));
+
+        // Confirm we can still remove the resource
+        result = controller.execute(getOperation("remove-bad-service", CHILD_ONE, "attribute1", 6), null, null, null);
+        System.out.println(result);
+        assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        assertFalse(result.get(RESULT).isDefined());
+
+        // Confirm the resource is gone
+        result = controller.execute(getOperation("read-attribute", CHILD_ONE, "attribute1", 1), null, null, null);
+        assertEquals(FAILED, result.get(OUTCOME).asString());
+    }
+
     public static ModelNode getOperation(String opName, String attr, int val) {
         return getOperation(opName, attr, val, null, false);
     }
+
+    public static ModelNode getOperation(String opName, PathAddress address, String attr, int val) {
+        return getOperation(opName, address, attr, val, null, false);
+    }
+
     public static ModelNode getOperation(String opName, String attr, int val, String rollbackName) {
         return getOperation(opName, attr, val, rollbackName, false);
     }
 
     public static ModelNode getOperation(String opName, String attr, int val, String rollbackName, boolean async) {
+        return getOperation(opName, PathAddress.EMPTY_ADDRESS, attr, val, rollbackName, async);
+    }
+
+    public static ModelNode getOperation(String opName, PathAddress address, String attr, int val, String rollbackName, boolean async) {
         ModelNode op = new ModelNode();
         op.get(OP).set(opName);
-        op.get(OP_ADDR).setEmptyList();
+        op.get(OP_ADDR).set(address.toModelNode());
         op.get(NAME).set(attr);
         op.get(VALUE).set(val);
         op.get("rollbackName").set(rollbackName == null ? opName : rollbackName);
@@ -677,6 +713,39 @@ public class ModelControllerImplUnitTestCase {
             op.get("async").set(true);
         }
         return op;
+    }
+
+    static class ModelControllerService extends TestModelControllerService {
+
+        @Override
+        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
+
+            rootRegistration.registerOperationHandler("setup", new ModelControllerImplUnitTestCase.SetupHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER, false);
+            rootRegistration.registerOperationHandler("composite", CompositeOperationHandler.INSTANCE, ModelControllerImplUnitTestCase.DESC_PROVIDER, false);
+            rootRegistration.registerOperationHandler("good", new ModelControllerImplUnitTestCase.ModelStageGoodHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER, false);
+            rootRegistration.registerOperationHandler("bad", new ModelControllerImplUnitTestCase.ModelStageFailsHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER, false);
+            rootRegistration.registerOperationHandler("evil", new ModelControllerImplUnitTestCase.ModelStageThrowsExceptionHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER, false);
+            rootRegistration.registerOperationHandler("handleFailed", new ModelControllerImplUnitTestCase.RuntimeStageFailsHandler(state), ModelControllerImplUnitTestCase.DESC_PROVIDER, false);
+            rootRegistration.registerOperationHandler("runtimeException", new ModelControllerImplUnitTestCase.RuntimeStageThrowsExceptionHandler(state), ModelControllerImplUnitTestCase.DESC_PROVIDER, false);
+            rootRegistration.registerOperationHandler("operationFailedException", new ModelControllerImplUnitTestCase.RuntimeStageThrowsOFEHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER, true);
+            rootRegistration.registerOperationHandler("good-service", new ModelControllerImplUnitTestCase.GoodServiceHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER, false);
+            rootRegistration.registerOperationHandler("bad-service", new ModelControllerImplUnitTestCase.BadServiceHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER, true);
+            rootRegistration.registerOperationHandler("remove-bad-service", new ModelControllerImplUnitTestCase.RemoveBadServiceHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER, true);
+            rootRegistration.registerOperationHandler("missing-service", new ModelControllerImplUnitTestCase.MissingServiceHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER, false);
+            rootRegistration.registerOperationHandler("reload-required", new ModelControllerImplUnitTestCase.ReloadRequiredHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER, false);
+            rootRegistration.registerOperationHandler("restart-required", new ModelControllerImplUnitTestCase.RestartRequiredHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER, false);
+            rootRegistration.registerOperationHandler("dependent-service", new ModelControllerImplUnitTestCase.DependentServiceHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER, false);
+            rootRegistration.registerOperationHandler("remove-dependent-service", new ModelControllerImplUnitTestCase.RemoveDependentServiceHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER, false);
+            rootRegistration.registerOperationHandler("read-wildcards", new ModelControllerImplUnitTestCase.WildcardReadHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER, true);
+
+            GlobalOperationHandlers.registerGlobalOperations(rootRegistration, processType);
+            SimpleResourceDefinition childResource = new SimpleResourceDefinition(
+                    PathElement.pathElement("child"),
+                    new NonResolvingResourceDescriptionResolver()
+            );
+            rootRegistration.registerSubModel(childResource);
+        }
+
     }
 
     public static class SetupHandler implements OperationStepHandler {
@@ -696,10 +765,10 @@ public class ModelControllerImplUnitTestCase {
             final ModelNode child2 = new ModelNode();
             child2.get("attribute2").set(2);
 
-            context.createResource(PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement("child", "one"))).getModel().set(child1);
-            context.createResource(PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement("child", "two"))).getModel().set(child2);
+            context.createResource(CHILD_ONE).getModel().set(child1);
+            context.createResource(CHILD_TWO).getModel().set(child2);
 
-            context.completeStep();
+            context.stepCompleted();
         }
     }
 
@@ -1014,6 +1083,35 @@ public class ModelControllerImplUnitTestCase {
         }
     }
 
+    public static class RemoveBadServiceHandler implements OperationStepHandler {
+        @Override
+        public void execute(OperationContext context, ModelNode operation) {
+
+            context.removeResource(PathAddress.EMPTY_ADDRESS);
+
+            context.addStep(new OperationStepHandler() {
+
+                @Override
+                public void execute(final OperationContext context, ModelNode operation) {
+
+                    final ServiceName svcName = ServiceName.JBOSS.append("bad-service");
+                    final ServiceRegistry sr = context.getServiceRegistry(true);
+                    ServiceController<?> sc = sr.getService(svcName);
+                    context.removeService(sc);
+
+                    context.completeStep(new OperationContext.RollbackHandler() {
+                        @Override
+                        public void handleRollback(OperationContext context, ModelNode operation) {
+                            context.getResult().set("Unexpected rollback");
+                        }
+                    });
+                }
+            }, OperationContext.Stage.RUNTIME);
+
+            context.stepCompleted();
+        }
+    }
+
     public static class ReloadRequiredHandler implements OperationStepHandler {
         @Override
         public void execute(final OperationContext context, ModelNode operation) {
@@ -1155,6 +1253,18 @@ public class ModelControllerImplUnitTestCase {
                 context.completeStep();
             }
         }
+    }
+
+    static final class WildcardReadHandler implements OperationStepHandler {
+
+        @Override
+        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+            final String type = operation.require("type").asString();
+            final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(type)));
+            context.getResult().set(Resource.Tools.readModel(resource));
+            context.completeStep();
+        }
+
     }
 
     public static final DescriptionProvider DESC_PROVIDER = new DescriptionProvider() {

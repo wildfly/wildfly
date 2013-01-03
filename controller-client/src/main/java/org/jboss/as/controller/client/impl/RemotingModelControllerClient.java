@@ -27,8 +27,6 @@ import org.jboss.as.controller.client.ControllerClientMessages;
 import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
 
 import java.io.IOException;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -148,13 +146,17 @@ public class RemotingModelControllerClient extends AbstractModelControllerClient
 
     @Override
     protected void finalize() throws Throwable {
-        if(! closed) {
-            // Create the leak description
-            final Throwable t = ControllerClientMessages.MESSAGES.controllerClientNotClosed();
-            t.setStackTrace(allocationStackTrace);
-            ControllerClientLogger.ROOT_LOGGER.leakedControllerClient(t);
-            // Close
-            StreamUtils.safeClose(this);
+        try {
+            if(! closed) {
+                // Create the leak description
+                final Throwable t = ControllerClientMessages.MESSAGES.controllerClientNotClosed();
+                t.setStackTrace(allocationStackTrace);
+                ControllerClientLogger.ROOT_LOGGER.leakedControllerClient(t);
+                // Close
+                StreamUtils.safeClose(this);
+            }
+        } finally {
+            super.finalize();
         }
     }
 

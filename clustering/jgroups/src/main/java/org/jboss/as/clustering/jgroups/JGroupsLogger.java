@@ -22,16 +22,22 @@
 
 package org.jboss.as.clustering.jgroups;
 
+import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.TRACE;
+import static org.jboss.logging.Logger.Level.WARN;
 
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.LogMessage;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.Logger;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageLogger;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
 
 /**
- * Date: 29.08.2011
+ * JGroupsLogger
+ *
+ * logging id ranges: 10260 - 10269
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
@@ -50,4 +56,25 @@ public interface JGroupsLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 10260, value = "Activating JGroups subsystem.")
     void activatingSubsystem();
+
+    @LogMessage(level = TRACE)
+    @Message(id = 10261, value = "Setting %s.%s=%d")
+    void setProtocolPropertyValue(String protocol, String property, Object value);
+
+    @LogMessage(level = TRACE)
+    @Message(id = 10262, value = "Failed to set non-existent %s.%s=%d")
+    void nonExistentProtocolPropertyValue(@Cause Throwable cause, String protocolName, String propertyName, Object propertyValue);
+
+    @LogMessage(level = TRACE)
+    @Message(id = 10263, value = "Could not set %s.%s and %s.%s, %s socket binding does not specify a multicast socket")
+    void couldNotSetAddressAndPortNoMulticastSocket(@Cause Throwable cause, String protocolName, String addressProperty, String protocolNameAgain, String portProperty, String bindingName);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 10264, value = "Error accessing original value for property %s of protocol %s")
+    void unableToAccessProtocolPropertyValue(@Cause Throwable cause, String propertyName, String protocolName);
+
+    @LogMessage(level = WARN)
+    @Message(id = 10265, value = "property %s for protocol %s attempting to override socket binding value %s : property value %s will be ignored")
+    void unableToOverrideSocketBindingValue(String propertyName, String protocolName, String bindingName, Object propertyValue);
+
 }

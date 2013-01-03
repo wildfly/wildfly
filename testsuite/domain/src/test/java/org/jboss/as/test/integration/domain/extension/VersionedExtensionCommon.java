@@ -22,6 +22,10 @@
 
 package org.jboss.as.test.integration.domain.extension;
 
+import java.util.List;
+import java.util.Locale;
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
@@ -37,7 +41,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -50,22 +54,16 @@ import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
-import javax.xml.stream.XMLStreamException;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
-
 /**
  * @author Emanuel Muckenhuber
  */
 public abstract class VersionedExtensionCommon implements Extension {
 
-    public static final String SUBSYSTEM_NAME = "test-subsystem";
     public static final String EXTENSION_NAME = "org.jboss.as.test.transformers";
 
-    static SubsystemParser PARSER = new SubsystemParser(EXTENSION_NAME);
-    static PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM,  SUBSYSTEM_NAME);
+    public static final String SUBSYSTEM_NAME = "test-subsystem";
+    public static final String IGNORED_SUBSYSTEM_NAME = "ignored-test-subsystem";
+
     static DescriptionProvider DESCRIPTION_PROVIDER = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
@@ -74,153 +72,23 @@ public abstract class VersionedExtensionCommon implements Extension {
     };
     static AttributeDefinition TEST_ATTRIBUTE = SimpleAttributeDefinitionBuilder.create("test-attribute", ModelType.STRING).build();
 
-    public SubsystemParser getParser() {
-        return PARSER;
-    }
-
-    protected ManagementResourceRegistration initializeSubsystem(final SubsystemRegistration registration) {
-        // Common subsystem tasks
-        final ResourceDefinition def = createResourceDefinition(SUBSYSTEM_PATH);
-        registration.registerXMLElementWriter(getParser());
-
-        final ManagementResourceRegistration reg = registration.registerSubsystemModel(def);
-        reg.registerReadWriteAttribute(TEST_ATTRIBUTE, null, new BasicAttributeWriteHandler(TEST_ATTRIBUTE));
-        return reg;
-    }
-
-    @Override
-    public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, EXTENSION_NAME, PARSER);
-    }
-
-    protected ResourceDefinition createResourceDefinition(final PathElement element) {
-        return new SimpleResourceDefinition(element, new TestResourceDescriptionResolver(),
+    protected static ResourceDefinition createResourceDefinition(final PathElement element) {
+        return new SimpleResourceDefinition(element, new NonResolvingResourceDescriptionResolver(),
                 NOOP_ADD_HANDLER, NOOP_REMOVE_HANDLER, OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_NONE);
     }
 
-    private static OperationStepHandler NOOP_ADD_HANDLER = new AbstractAddStepHandler() {
+    static OperationStepHandler NOOP_ADD_HANDLER = new AbstractAddStepHandler() {
         @Override
         protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
             //
         }
     };
 
-    private static OperationStepHandler NOOP_REMOVE_HANDLER = new AbstractRemoveStepHandler() {
+    static OperationStepHandler NOOP_REMOVE_HANDLER = new AbstractRemoveStepHandler() {
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             super.performRuntime(context, operation, model);
         }
     };
-
-    private static class BasicAttributeWriteHandler extends AbstractWriteAttributeHandler<Void> {
-
-        protected BasicAttributeWriteHandler(AttributeDefinition def) {
-            super(def);
-        }
-
-        @Override
-        protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> voidHandbackHolder) throws OperationFailedException {
-            return false;
-        }
-
-        @Override
-        protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Void handback) throws OperationFailedException {
-
-        }
-    }
-
-    private static class SubsystemParser implements XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
-
-        private final String namespace;
-
-        private SubsystemParser(String namespace) {
-            this.namespace = namespace;
-        }
-
-        @Override
-        public void readElement(XMLExtendedStreamReader reader, List<ModelNode> value) throws XMLStreamException {
-            ParseUtils.requireNoAttributes(reader);
-            ParseUtils.requireNoContent(reader);
-        }
-
-        @Override
-        public void writeContent(XMLExtendedStreamWriter streamWriter, SubsystemMarshallingContext context) throws XMLStreamException {
-            context.startSubsystemElement(namespace, false);
-            streamWriter.writeEndElement();
-        }
-    }
-
-    static class TestResourceDescriptionResolver implements ResourceDescriptionResolver {
-        @Override
-        public ResourceBundle getResourceBundle(Locale locale) {
-            return new ResourceBundle() {
-                @Override
-                protected Object handleGetObject(String key) {
-                    return key;
-                }
-
-                @Override
-                public Enumeration<String> getKeys() {
-                    return new Enumeration<String>() {
-                        @Override
-                        public boolean hasMoreElements() {
-                            return false;
-                        }
-
-                        @Override
-                        public String nextElement() {
-                            return null;
-                        }
-                    };
-                }
-            };
-        }
-
-        @Override
-        public String getResourceDescription(Locale locale, ResourceBundle bundle) {
-            return "description";
-        }
-
-        @Override
-        public String getResourceAttributeDescription(String attributeName, Locale locale, ResourceBundle bundle) {
-            return attributeName;
-        }
-
-        @Override
-        public String getResourceAttributeValueTypeDescription(String attributeName, Locale locale, ResourceBundle bundle, String... suffixes) {
-            return attributeName;
-        }
-
-        @Override
-        public String getOperationDescription(String operationName, Locale locale, ResourceBundle bundle) {
-            return operationName;
-        }
-
-        @Override
-        public String getOperationParameterDescription(String operationName, String paramName, Locale locale, ResourceBundle bundle) {
-            return operationName + "-" + paramName;
-        }
-
-        @Override
-        public String getOperationParameterValueTypeDescription(String operationName, String paramName, Locale locale, ResourceBundle bundle, String... suffixes) {
-            return operationName + "-" + paramName;
-        }
-
-        @Override
-        public String getOperationReplyDescription(String operationName, Locale locale, ResourceBundle bundle) {
-            return operationName;
-        }
-
-        @Override
-        public String getOperationReplyValueTypeDescription(String operationName, Locale locale, ResourceBundle bundle, String... suffixes) {
-            return operationName;
-        }
-
-        @Override
-        public String getChildTypeDescription(String childType, Locale locale, ResourceBundle bundle) {
-            return childType;
-        }
-    }
-
 
 }

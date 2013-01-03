@@ -209,7 +209,7 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
         }
 
         if(ACTION_ADD.equals(actionValue)) {
-            addModule(parsedCmd);
+            addModule(ctx, parsedCmd);
         } else if(ACTION_REMOVE.equals(actionValue)) {
             removeModule(parsedCmd);
         } else {
@@ -217,15 +217,17 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
         }
     }
 
-    protected void addModule(final ParsedCommandLine parsedCmd) throws CommandLineException {
+    protected void addModule(CommandContext ctx, final ParsedCommandLine parsedCmd) throws CommandLineException {
 
         final String moduleName = name.getValue(parsedCmd, true);
 
-        final String resourcePaths = resources.getValue(parsedCmd, true);
-        final String[] resourceArr = resourcePaths.split(PATH_SEPARATOR);
+        // resources required only if we are generating module.xml
+        final String resourcePaths = resources.getValue(parsedCmd, !moduleArg.isPresent(parsedCmd));
+
+        final String[] resourceArr = (resourcePaths == null) ? new String[0] : resourcePaths.split(PATH_SEPARATOR);
         File[] resourceFiles = new File[resourceArr.length];
         for(int i = 0; i < resourceArr.length; ++i) {
-            final File f = new File(resourceArr[i]);
+            final File f = new File(ctx.getCurrentDir(), resourceArr[i]);
             if(!f.exists()) {
                 throw new CommandLineException("Failed to locate " + f.getAbsolutePath());
             }
@@ -245,7 +247,7 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
         final String moduleXml = moduleArg.getValue(parsedCmd);
         if(moduleXml != null) {
             config = null;
-            final File source = new File(moduleXml);
+            final File source = new File(ctx.getCurrentDir(), moduleXml);
             if(!source.exists()) {
                 throw new CommandLineException("Failed to locate the file on the filesystem: " + source.getAbsolutePath());
             }
@@ -285,6 +287,11 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
                     }
                     config.setProperty(propName, pair.substring(equals + 1));
                 }
+            }
+
+            final String slotVal = slot.getValue(parsedCmd);
+            if (slotVal != null) {
+                config.setSlot(slotVal);
             }
 
             final String mainCls = mainClass.getValue(parsedCmd);

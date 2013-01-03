@@ -22,19 +22,17 @@
 
 package org.jboss.as.domain.controller.operations;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.Transformers;
 import org.jboss.dmr.ModelNode;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 
 /**
  * Step handler responsible for collecting a complete description of the domain model,
@@ -42,7 +40,7 @@ import java.util.Locale;
  *
  * @author John Bailey
  */
-public class ReadMasterDomainModelHandler implements OperationStepHandler, DescriptionProvider {
+public class ReadMasterDomainModelHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = "read-master-domain-model";
 
@@ -51,7 +49,7 @@ public class ReadMasterDomainModelHandler implements OperationStepHandler, Descr
         this.transformers = transformers;
     }
 
-    private Resource transformResource(final OperationContext context, Resource root) {
+    private Resource transformResource(final OperationContext context, Resource root) throws OperationFailedException {
         return transformers.transformResource(Transformers.Factory.getTransformationContext(transformers, context), root);
     }
 
@@ -65,7 +63,7 @@ public class ReadMasterDomainModelHandler implements OperationStepHandler, Descr
         context.getResult().set(describeAsNodeList(root));
         // The HC registration process will hijack the operationPrepared call and push
         // the model to a registering host-controller
-        context.completeStep();
+        context.stepCompleted();
     }
 
     /**
@@ -77,13 +75,13 @@ public class ReadMasterDomainModelHandler implements OperationStepHandler, Descr
      * @param resource the root resource
      * @return the list of resources
      */
-    private static List<ModelNode> describeAsNodeList(final Resource resource) {
+    private List<ModelNode> describeAsNodeList(final Resource resource) {
         final List<ModelNode> list = new ArrayList<ModelNode>();
         describe(PathAddress.EMPTY_ADDRESS, resource, list);
         return list;
     }
 
-    private static void describe(final PathAddress base, final Resource resource, List<ModelNode> nodes) {
+    private void describe(final PathAddress base, final Resource resource, List<ModelNode> nodes) {
         if (resource.isProxy() || resource.isRuntime()) {
             return; // ignore runtime and proxies
         } else if (base.size() >= 1 && base.getElement(0).getKey().equals(ModelDescriptionConstants.HOST)) {
@@ -98,9 +96,5 @@ public class ReadMasterDomainModelHandler implements OperationStepHandler, Descr
                 describe(base.append(entry.getPathElement()), entry, nodes);
             }
         }
-    }
-
-    public ModelNode getModelDescription(Locale locale) {
-        return new ModelNode(); // PRIVATE operation requires no description
     }
 }

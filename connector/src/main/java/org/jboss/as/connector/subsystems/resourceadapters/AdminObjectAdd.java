@@ -22,21 +22,19 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
-import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.ADD_ADMIN_OBJECT_DESC;
-import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.ADMIN_OBJECTS_NODEATTRIBUTE;
+import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
+import static org.jboss.as.connector.subsystems.resourceadapters.CommonAttributes.ADMIN_OBJECTS_NODE_ATTRIBUTE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.List;
-import java.util.Locale;
 
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.msc.service.ServiceController;
@@ -46,28 +44,17 @@ import org.jboss.msc.service.ServiceTarget;
 /**
  * Adds a recovery-environment to the Transactions subsystem
  */
-public class AdminObjectAdd extends AbstractAddStepHandler implements DescriptionProvider {
+public class AdminObjectAdd extends AbstractAddStepHandler {
+    static final AdminObjectAdd INSTANCE = new AdminObjectAdd();
+    private AdminObjectAdd(){
 
-    public static final AdminObjectAdd INSTANCE = new AdminObjectAdd();
-
-
-    /**
-     * Description provider for the add operation
-     */
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        // TODO use a ResourceDefinition and StandardResourceDescriptionResolver for this resource
-        return ADD_ADMIN_OBJECT_DESC.getModelDescription(Locale.getDefault());
     }
-
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode modelNode) throws OperationFailedException {
-        for (SimpleAttributeDefinition attribute : ADMIN_OBJECTS_NODEATTRIBUTE) {
+        for (AttributeDefinition attribute : ADMIN_OBJECTS_NODE_ATTRIBUTE) {
             attribute.validateAndSet(operation, modelNode);
         }
-
-
     }
 
     @Override
@@ -85,7 +72,7 @@ public class AdminObjectAdd extends AbstractAddStepHandler implements Descriptio
         try {
             adminObjectValue = RaOperationUtil.buildAdminObjects(context, operation, poolName);
         } catch (ValidateException e) {
-            throw new OperationFailedException(e.getMessage(), e);
+            throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToCreate("AdminObject", operation, e.getLocalizedMessage())));
         }
 
 
@@ -98,9 +85,5 @@ public class AdminObjectAdd extends AbstractAddStepHandler implements Descriptio
         ServiceController<?> controller = serviceTarget.addService(serviceName, service).setInitialMode(ServiceController.Mode.ACTIVE)
                 .addDependency(raServiceName, ModifiableResourceAdapter.class, service.getRaInjector())
                 .addListener(verificationHandler).install();
-
-
     }
-
-
 }

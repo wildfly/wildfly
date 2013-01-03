@@ -61,6 +61,6 @@ public class ManagedDMRContentTypeAddHandler implements OperationStepHandler {
         ManagedDMRContentTypeResource resource = new ManagedDMRContentTypeResource(pe, childType, hash, contentRepository);
         context.addResource(PathAddress.EMPTY_ADDRESS, resource);
 
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.stepCompleted();
     }
 }

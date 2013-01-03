@@ -22,11 +22,16 @@
 
 package org.jboss.as.server.deployment.reflect;
 
+import static org.jboss.as.server.ServerMessages.MESSAGES;
+
+import java.util.jar.Manifest;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.ManifestHelper;
 import org.jboss.modules.Module;
 
 /**
@@ -36,10 +41,20 @@ import org.jboss.modules.Module;
  */
 public final class InstallReflectionIndexProcessor implements DeploymentUnitProcessor {
 
-    /** {@inheritDoc} */
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+
+        // OSGi fragments do not have a module
+        Manifest manifest = deploymentUnit.getAttachment(Attachments.OSGI_MANIFEST);
+        if (ManifestHelper.hasMainAttributeValue(manifest, "Fragment-Host")) {
+            return;
+        }
+
+        Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+        if (module == null) {
+            throw MESSAGES.nullModuleAttachment(deploymentUnit);
+        }
+
         if(deploymentUnit.getParent() == null) {
             final DeploymentReflectionIndex index = DeploymentReflectionIndex.create();
             deploymentUnit.putAttachment(Attachments.REFLECTION_INDEX, index);
@@ -53,7 +68,6 @@ public final class InstallReflectionIndexProcessor implements DeploymentUnitProc
         }
     }
 
-    /** {@inheritDoc} */
     public void undeploy(final DeploymentUnit context) {
         context.removeAttachment(Attachments.REFLECTION_INDEX);
     }

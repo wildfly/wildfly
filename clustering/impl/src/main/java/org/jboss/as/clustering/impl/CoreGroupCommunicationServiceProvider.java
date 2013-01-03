@@ -52,7 +52,7 @@ public class CoreGroupCommunicationServiceProvider implements ChannelDependentSe
         final InjectedValue<ModuleLoader> loader = new InjectedValue<ModuleLoader>();
         final Service<CoreGroupCommunicationService> service = new CoreGroupCommunicationService(GROUP_COMMUNICATION_SERVICE_SCOPE, channel, loader);
         return target.addService(this.getServiceName(cluster), service)
-                // Make sure Infinispan registers its UpHandler with the channel before we do.
+                // Make sure Infinispan starts its channel before we try to use it..
                 .addDependency(CacheService.getServiceName(cluster, null))
                 .addDependency(ChannelService.getServiceName(cluster), Channel.class, channel)
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, loader)

@@ -45,42 +45,36 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
-import java.util.Locale;
-
-import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.extension.ExtensionRegistry;
-import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.services.path.PathManagerService;
-import org.jboss.as.domain.controller.DomainController;
-import org.jboss.as.host.controller.HostControllerConfigurationPersister;
 import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.HostModelUtil;
-import org.jboss.as.host.controller.HostRunningModeControl;
-import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.platform.mbean.PlatformMBeanConstants;
 import org.jboss.as.platform.mbean.RootPlatformMBeanResource;
-import org.jboss.as.repository.ContentRepository;
-import org.jboss.as.repository.HostFileRepository;
-import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.as.version.Version;
 import org.jboss.dmr.ModelNode;
+import org.jboss.modules.ModuleClassLoader;
 
 /**
  * The handler to add the local host definition to the DomainModel.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class HostModelRegistrationHandler implements OperationStepHandler, DescriptionProvider {
+public class HostModelRegistrationHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = "register-host-model";
+
+    //Private method does not need resources for description
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, null)
+        .setPrivateEntry()
+        .build();
 
     private final HostControllerEnvironment hostControllerEnvironment;
     private final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry;
@@ -92,12 +86,6 @@ public class HostModelRegistrationHandler implements OperationStepHandler, Descr
         this.hostControllerEnvironment = hostControllerEnvironment;
         this.ignoredDomainResourceRegistry = ignoredDomainResourceRegistry;
         this.hostModelRegistrar = hostModelRegistrar;
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        // This is a private operation, so this op will not be called
-        return new ModelNode();
     }
 
     /**
@@ -134,13 +122,20 @@ public class HostModelRegistrationHandler implements OperationStepHandler, Descr
         Resource.ResourceEntry ignoredRoot = ignoredDomainResourceRegistry.getRootResource();
         rootResource.registerChild(ignoredRoot.getPathElement(), ignoredRoot);
 
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.stepCompleted();
     }
 
     private static void initCoreModel(final ModelNode root, HostControllerEnvironment environment) {
 
-        root.get(RELEASE_VERSION).set(Version.AS_VERSION);
-        root.get(RELEASE_CODENAME).set(Version.AS_RELEASE_CODENAME);
+        try {
+            root.get(RELEASE_VERSION).set(Version.AS_VERSION);
+            root.get(RELEASE_CODENAME).set(Version.AS_RELEASE_CODENAME);
+        } catch (RuntimeException e) {
+            if (HostModelRegistrationHandler.class.getClassLoader() instanceof ModuleClassLoader) {
+                //The standalone tests can't get this info
+                throw e;
+            }
+        }
         root.get(MANAGEMENT_MAJOR_VERSION).set(Version.MANAGEMENT_MAJOR_VERSION);
         root.get(MANAGEMENT_MINOR_VERSION).set(Version.MANAGEMENT_MINOR_VERSION);
         root.get(MANAGEMENT_MICRO_VERSION).set(Version.MANAGEMENT_MICRO_VERSION);

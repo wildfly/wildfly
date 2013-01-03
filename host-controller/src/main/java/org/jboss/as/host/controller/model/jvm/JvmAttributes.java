@@ -21,27 +21,22 @@
 */
 package org.jboss.as.host.controller.model.jvm;
 
+import java.util.List;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ListAttributeDefinition;
-import org.jboss.as.controller.PrimitiveListAttributeDefinition;
+import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.EnumValidator;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
-import org.jboss.as.controller.operations.validation.PropertyValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.parsing.Element;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
 
 /**
  *
@@ -85,8 +80,13 @@ public class JvmAttributes {
             .setAllowExpression(false)
             .build();
 
-    public static final AttributeDefinition ENVIRONMENT_VARIABLES =
-            new PropertiesAttributeDefinition(JvmAttributes.JVM_ENV_VARIABLES, Element.VARIABLE.getLocalName(), true);
+    public static final PropertiesAttributeDefinition ENVIRONMENT_VARIABLES = new PropertiesAttributeDefinition.Builder(JvmAttributes.JVM_ENV_VARIABLES, true)
+            .setXmlName(Element.VARIABLE.getLocalName())
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setValidator(new StringLengthValidator(1, true, true))
+            .setWrapperElement(JvmAttributes.JVM_ENV_VARIABLES)
+            .build();
 
     public static final SimpleAttributeDefinition JAVA_AGENT =
             SimpleAttributeDefinitionBuilder.create(JvmAttributes.JVM_JAVA_AGENT, ModelType.STRING, true)
@@ -99,12 +99,34 @@ public class JvmAttributes {
             .setAllowExpression(false)
             .build();
 
-    public static final AttributeDefinition OPTIONS =
-            new JVMOptionsAttributeDefiniton(JvmAttributes.JVM_OPTIONS);
+    /**
+     * JVM options are resolved in ManagedServerBootCmdFactory before the JVM is launched.
+     */
+    public static final AttributeDefinition OPTIONS = new StringListAttributeDefinition.Builder(JvmAttributes.JVM_OPTIONS)
+            .setValidator(new StringLengthValidator(1, true, true))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setAttributeMarshaller(new AttributeMarshaller() {
+                @Override
+                public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+                    if (resourceModel.hasDefined(attribute.getName())) {
+                        List<ModelNode> list = resourceModel.get(attribute.getName()).asList();
+                        if (list.size() > 0) {
+                            writer.writeStartElement(attribute.getName());
+                            for (ModelNode child : list) {
+                                writer.writeEmptyElement(Element.OPTION.getLocalName());
+                                writer.writeAttribute(ModelDescriptionConstants.VALUE, child.asString());
+                            }
+                            writer.writeEndElement();
+                        }
+                    }
+                }
+            })
+            .build();
 
     public static final SimpleAttributeDefinition STACK_SIZE =
             SimpleAttributeDefinitionBuilder.create(JvmAttributes.JVM_STACK, ModelType.STRING, true)
-            .setAllowExpression(false)
+            .setAllowExpression(true)
             .setXmlName(JvmAttributes.SIZE)
             .build();
 
@@ -116,25 +138,25 @@ public class JvmAttributes {
 
     public static final SimpleAttributeDefinition HEAP_SIZE =
             SimpleAttributeDefinitionBuilder.create(JvmAttributes.JVM_HEAP, ModelType.STRING, true)
-            .setAllowExpression(false)
+            .setAllowExpression(true)
             .setXmlName(JvmAttributes.SIZE)
             .build();
 
     public static final SimpleAttributeDefinition MAX_HEAP_SIZE =
             SimpleAttributeDefinitionBuilder.create(JvmAttributes.JVM_MAX_HEAP, ModelType.STRING, true)
-            .setAllowExpression(false)
+            .setAllowExpression(true)
             .setXmlName(JvmAttributes.MAX_SIZE)
             .build();
 
     public static final SimpleAttributeDefinition PERMGEN_SIZE =
             SimpleAttributeDefinitionBuilder.create(JvmAttributes.JVM_PERMGEN, ModelType.STRING, true)
-            .setAllowExpression(false)
+            .setAllowExpression(true)
             .setXmlName(JvmAttributes.SIZE)
             .build();
 
     public static final SimpleAttributeDefinition MAX_PERMGEN_SIZE =
             SimpleAttributeDefinitionBuilder.create(JvmAttributes.JVM_MAX_PERMGEN, ModelType.STRING, true)
-            .setAllowExpression(false)
+            .setAllowExpression(true)
             .setXmlName(JvmAttributes.MAX_SIZE)
             .build();
 
@@ -159,87 +181,5 @@ public class JvmAttributes {
 
     static AttributeDefinition[] getAttributes(boolean server) {
         return server ? SERVER_ATTRIBUTES : GLOBAL_ATTRIBUTES;
-    }
-
-    abstract static class AbstractJvmListAttributeDefinition extends ListAttributeDefinition {
-
-        protected final String elementName;
-        AbstractJvmListAttributeDefinition(String name, String elementName, ParameterValidator elementValidator) {
-            super(name, true, elementValidator);
-            this.elementName = elementName;
-        }
-
-        @Override
-        public void marshallAsElement(ModelNode resourceModel, XMLStreamWriter writer) throws XMLStreamException {
-            if (resourceModel.hasDefined(getName())) {
-                List<ModelNode> list = resourceModel.get(getName()).asList();
-                if (list.size() > 0) {
-                    writer.writeStartElement(getName());
-                    writeList(list, writer);
-                    writer.writeEndElement();
-                }
-            }
-        }
-
-        @Override
-        protected void addValueTypeDescription(ModelNode node, ResourceBundle bundle) {
-            setValueType(node);
-        }
-
-        @Override
-        protected void addAttributeValueTypeDescription(ModelNode node, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
-            setValueType(node);
-        }
-
-        @Override
-        protected void addOperationParameterValueTypeDescription(ModelNode node, String operationName, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
-            setValueType(node);
-        }
-
-        abstract void setValueType(ModelNode node);
-        abstract void writeList(List<ModelNode> list, XMLStreamWriter writer) throws XMLStreamException;
-    }
-
-    /*static class EnvironmentVariableAttributeDefinition extends PropertiesAttributeDefinition {
-
-        EnvironmentVariableAttributeDefinition(String name, String elementName) {
-            super(name, elementName, false, new PropertyValidator(false, new StringLengthValidator(1)));
-        }
-
-        void setValueType(ModelNode node) {
-            node.get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.PROPERTY);
-        }
-
-        @Override
-        void writeList(List<ModelNode> list, XMLStreamWriter writer) throws XMLStreamException {
-            for (ModelNode child : list) {
-                writer.writeEmptyElement(elementName);
-                writer.writeAttribute(ModelDescriptionConstants.NAME, child.asProperty().getName());
-                writer.writeAttribute(ModelDescriptionConstants.VALUE, child.asProperty().getValue().asString());
-            }
-        }
-    }*/
-
-    static class JVMOptionsAttributeDefiniton extends PrimitiveListAttributeDefinition {
-
-        JVMOptionsAttributeDefiniton(String name) {
-            super(name, name, true, ModelType.STRING, new StringLengthValidator(1, false));
-        }
-
-        @Override
-        public void marshallAsElement(ModelNode resourceModel, XMLStreamWriter writer) throws XMLStreamException {
-            if (resourceModel.hasDefined(getName())) {
-                List<ModelNode> list = resourceModel.get(getName()).asList();
-                if (list.size() > 0) {
-                    writer.writeStartElement(getName());
-                    for (ModelNode child : list) {
-                        writer.writeEmptyElement(Element.OPTION.getLocalName());
-                        writer.writeAttribute(ModelDescriptionConstants.VALUE, child.asString());
-                    }
-                    writer.writeEndElement();
-                }
-            }
-        }
-
     }
 }

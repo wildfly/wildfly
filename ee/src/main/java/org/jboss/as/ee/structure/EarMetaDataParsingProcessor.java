@@ -64,7 +64,7 @@ public class EarMetaDataParsingProcessor implements DeploymentUnitProcessor {
         final VirtualFile deploymentFile = deploymentRoot.getRoot();
 
         EarMetaData earMetaData = handleSpecMetadata(deploymentFile, SpecDescriptorPropertyReplacement.propertyReplacer(deploymentUnit));
-        JBossAppMetaData jbossMetaData = handleJbossMetadata(deploymentFile, JBossDescriptorPropertyReplacement.propertyReplacer(deploymentUnit));
+        JBossAppMetaData jbossMetaData = handleJbossMetadata(deploymentFile, JBossDescriptorPropertyReplacement.propertyReplacer(deploymentUnit), deploymentUnit);
         if (earMetaData == null && jbossMetaData == null) {
             return;
         }
@@ -109,10 +109,11 @@ public class EarMetaDataParsingProcessor implements DeploymentUnitProcessor {
     }
 
 
-    private JBossAppMetaData handleJbossMetadata(VirtualFile deploymentFile, final PropertyReplacer propertyReplacer) throws DeploymentUnitProcessingException {
+    private JBossAppMetaData handleJbossMetadata(VirtualFile deploymentFile, final PropertyReplacer propertyReplacer, final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
         final VirtualFile applicationXmlFile = deploymentFile.getChild(JBOSS_APP_XML);
         if (!applicationXmlFile.exists()) {
-            return null;
+            //may have been in jboss-all.xml
+            return deploymentUnit.getAttachment(AppJBossAllParser.ATTACHMENT_KEY);
         }
         InputStream inputStream = null;
         try {

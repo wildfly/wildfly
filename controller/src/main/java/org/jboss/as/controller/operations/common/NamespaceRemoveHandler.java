@@ -19,20 +19,20 @@
 package org.jboss.as.controller.operations.common;
 
 
-import java.util.Locale;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
+
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -42,21 +42,21 @@ import org.jboss.dmr.Property;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class NamespaceRemoveHandler implements OperationStepHandler, DescriptionProvider {
+public class NamespaceRemoveHandler implements OperationStepHandler {
 
-    public static final String OPERATION_NAME = "remove-namespace";
+    private static final String OPERATION_NAME = "remove-namespace";
+
+    private static final SimpleAttributeDefinition NAMESPACE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.NAMESPACE, ModelType.STRING)
+            .setAllowNull(false)
+            .setValidator(new ModelTypeValidator(ModelType.STRING, false))
+            .build();
+
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, ControllerResolver.getResolver("namespaces"))
+            .setParameters(NAMESPACE)
+            .build();
+
 
     public static final NamespaceRemoveHandler INSTANCE = new NamespaceRemoveHandler();
-
-    public static ModelNode getRemoveNamespaceOperation(ModelNode address, String prefix) {
-        ModelNode op = new ModelNode();
-        op.get(OP).set(OPERATION_NAME);
-        op.get(OP_ADDR).set(address);
-        op.get(NAMESPACE).set(prefix);
-        return op;
-    }
-
-    private final ParameterValidator typeValidator = new ModelTypeValidator(ModelType.STRING);
 
     /**
      * Create the RemoveNamespaceHandler
@@ -68,8 +68,7 @@ public class NamespaceRemoveHandler implements OperationStepHandler, Description
 
         final ModelNode model = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
 
-        ModelNode param = operation.get(NAMESPACE);
-        typeValidator.validateParameter(NAMESPACE, param);
+        ModelNode param = NAMESPACE.resolveModelAttribute(context, operation);
         ModelNode namespaces = model.get(NAMESPACES);
         Property toRemove = null;
         ModelNode newList = new ModelNode().setEmptyList();
@@ -89,11 +88,6 @@ public class NamespaceRemoveHandler implements OperationStepHandler, Description
         } else {
             throw new OperationFailedException(new ModelNode().set(MESSAGES.namespaceNotFound(prefix)));
         }
+        context.stepCompleted();
     }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return CommonDescriptions.getRemoveNamespaceOperation(locale);
-    }
-
 }

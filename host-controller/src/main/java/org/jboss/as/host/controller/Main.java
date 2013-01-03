@@ -23,7 +23,6 @@
 package org.jboss.as.host.controller;
 
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
-import static org.jboss.as.process.Main.usage;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +35,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 
@@ -73,15 +73,15 @@ public final class Main {
 
         // Grab copies of our streams.
         final InputStream in = System.in;
-        final PrintStream out = System.out;
-        final PrintStream err = System.err;
+        //final PrintStream out = System.out;
+        //final PrintStream err = System.err;
 
         final byte[] authKey = new byte[16];
         try {
             StreamUtils.readFully(System.in, authKey);
         } catch (IOException e) {
             System.err.println(MESSAGES.failedToReadAuthenticationKey(e));
-            System.exit(1);
+            fail();
             return;
         }
 
@@ -100,25 +100,25 @@ public final class Main {
         );
         StdioContext.setStdioContextSelector(new SimpleStdioContextSelector(context));
 
-        create(args, in, out, err, authKey);
+        create(args, authKey);
 
         while (in.read() != -1) {}
-        System.exit(0);
+        exit();
     }
 
     private Main() {
     }
 
-    private static HostControllerBootstrap create(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr, final byte[] authCode) {
+    private static HostControllerBootstrap create(String[] args, final byte[] authCode) {
         Main main = new Main();
-        return main.boot(args, stdin, stdout, stderr, authCode);
+        return main.boot(args, authCode);
     }
 
-    private HostControllerBootstrap boot(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr, final byte[] authCode) {
+    private HostControllerBootstrap boot(String[] args, final byte[] authCode) {
         try {
-            final HostControllerEnvironment config = determineEnvironment(args, stdin, stdout, stderr);
+            final HostControllerEnvironment config = determineEnvironment(args);
             if (config == null) {
-                abort(null);
+                abort();
                 return null;
             } else {
                 try {
@@ -131,31 +131,53 @@ public final class Main {
                 }
             }
         } catch (Throwable t) {
-            abort(t, ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE);
+            abort(t);
             return null;
         }
     }
 
-    private void abort(Throwable t) {
-        abort(t, 1);
-    }
-
-    private void abort(Throwable t, int exitCode) {
+    /**
+     * Terminates process with an exit code that will trigger shutdown of the process controller as well if there
+     * are no running servers. JVM shuts down with {@link ExitCodes#HOST_CONTROLLER_ABORT_EXIT_CODE}.
+     * @param t the throwable that triggered abort
+     */
+    private static void abort(Throwable t) {
         try {
             if (t != null) {
                 t.printStackTrace();
-            } else {
-                // Inform the process controller that we are shutting down on purpose
-                // so it doesn't try to respawn us
-                exitCode = ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE;
             }
-
         } finally {
-            SystemExiter.exit(exitCode);
+            abort();
         }
     }
 
+    private static void abort() {
+        SystemExiter.exit(ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE);
+    }
+
+    /**
+     * Terminates JVM with exit code: 0 - normal termination.
+     */
+    private static void exit(){
+        SystemExiter.exit(ExitCodes.NORMAL);
+    }
+
+    /**
+     * Terminates JVM with exit code: 1 - failed termination but not an abort situation.
+     */
+    private static void fail(){
+        SystemExiter.exit(ExitCodes.FAILED);
+    }
+
+    /**
+     * @deprecated this method is not meant for public use
+     */
+    @Deprecated
     public static HostControllerEnvironment determineEnvironment(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
+        return determineEnvironment(args);
+    }
+
+    private static HostControllerEnvironment determineEnvironment(String[] args) {
         Integer pmPort = null;
         InetAddress pmAddress = null;
         final PCSocketConfig pcSocketConfig = new PCSocketConfig();
@@ -177,15 +199,7 @@ public final class Main {
             final String arg = args[i];
 
             try {
-                if (CommandLineConstants.VERSION.equals(arg) || CommandLineConstants.SHORT_VERSION.equals(arg)
-                        || CommandLineConstants.OLD_VERSION.equals(arg) || CommandLineConstants.OLD_SHORT_VERSION.equals(arg)) {
-                    productConfig = new ProductConfig(Module.getBootModuleLoader(), SecurityActions.getSystemProperty(HostControllerEnvironment.HOME_DIR));
-                    System.out.println(productConfig.getPrettyVersionString());
-                    return null;
-                } else if (CommandLineConstants.HELP.equals(arg) || CommandLineConstants.SHORT_HELP.equals(arg) || CommandLineConstants.OLD_HELP.equals(arg)) {
-                    usage();
-                    return null;
-                } else if (CommandLineConstants.PROPERTIES.equals(arg) || CommandLineConstants.OLD_PROPERTIES.equals(arg)
+                if (CommandLineConstants.PROPERTIES.equals(arg) || CommandLineConstants.OLD_PROPERTIES.equals(arg)
                         || CommandLineConstants.SHORT_PROPERTIES.equals(arg)) {
                     // Set system properties from url/file
                     if (!processProperties(arg, args[++i], hostSystemProperties)) {
@@ -211,8 +225,7 @@ public final class Main {
                     try {
                         pmPort = Integer.valueOf(port);
                     } catch (NumberFormatException e) {
-                        System.err.println(MESSAGES.invalidValue(CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT, "Integer", port));
-                        usage();
+                        System.err.println(MESSAGES.invalidValue(CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT, "Integer", port, usageNote()));
                         return null;
                     }
                 } else if (arg.startsWith(CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT)) {
@@ -230,8 +243,7 @@ public final class Main {
                     try {
                         pmAddress = InetAddress.getByName(addr);
                     } catch (UnknownHostException e) {
-                        System.err.println(MESSAGES.unknownHostValue(CommandLineConstants.PROCESS_CONTROLLER_BIND_ADDR, addr));
-                        usage();
+                        System.err.println(MESSAGES.unknownHostValue(CommandLineConstants.PROCESS_CONTROLLER_BIND_ADDR, addr, usageNote()));
                         return null;
                     }
                 } else if (arg.startsWith(CommandLineConstants.PROCESS_CONTROLLER_BIND_ADDR)) {
@@ -256,11 +268,17 @@ public final class Main {
                 } else if (CommandLineConstants.CACHED_DC.equals(arg) || CommandLineConstants.OLD_CACHED_DC.equals(arg)) {
                     cachedDc = true;
                 } else if(CommandLineConstants.DEFAULT_JVM.equals(arg) || CommandLineConstants.OLD_DEFAULT_JVM.equals(arg)) {
-                    defaultJVM = args[++i];
+                    defaultJVM = checkValueIsNotAnArg(arg, args[++i]);
+                    if (defaultJVM == null) {
+                        return null;
+                    }
                 } else if (CommandLineConstants.DOMAIN_CONFIG.equals(arg)
                         || CommandLineConstants.SHORT_DOMAIN_CONFIG.equals(arg)
                         || CommandLineConstants.OLD_DOMAIN_CONFIG.equals(arg)) {
-                    domainConfig = args[++i];
+                    domainConfig = checkValueIsNotAnArg(arg, args[++i]);
+                    if (domainConfig == null) {
+                        return null;
+                    }
                 } else if (arg.startsWith(CommandLineConstants.DOMAIN_CONFIG)) {
                     String val = parseValue(arg, CommandLineConstants.DOMAIN_CONFIG);
                     if (val == null) {
@@ -285,7 +303,10 @@ public final class Main {
                         return null;
                     }
                 } else if (CommandLineConstants.HOST_CONFIG.equals(arg) || CommandLineConstants.OLD_HOST_CONFIG.equals(arg)) {
-                    hostConfig = args[++i];
+                    hostConfig = checkValueIsNotAnArg(arg, args[++i]);
+                    if (hostConfig == null) {
+                        return null;
+                    }
                 } else if (arg.startsWith(CommandLineConstants.HOST_CONFIG)) {
                     String val = parseValue(arg, CommandLineConstants.HOST_CONFIG);
                     if (val == null) {
@@ -307,11 +328,13 @@ public final class Main {
 
                     int idx = arg.indexOf('=');
                     if (idx == arg.length() - 1) {
-                        System.err.println(MESSAGES.argumentExpected(arg));
-                        usage();
+                        System.err.println(MESSAGES.argumentExpected(arg, usageNote()));
                         return null;
                     }
-                    String value = idx > -1 ? arg.substring(idx + 1) : args[++i];
+                    String value = idx > -1 ? arg.substring(idx + 1) : checkValueIsNotAnArg(arg, args[++i]);
+                    if (value == null) {
+                        return null;
+                    }
 
                     hostSystemProperties.put(HostControllerEnvironment.JBOSS_DOMAIN_MASTER_ADDRESS, value);
                     SecurityActions.setSystemProperty(HostControllerEnvironment.JBOSS_DOMAIN_MASTER_ADDRESS, value);
@@ -320,8 +343,7 @@ public final class Main {
 
                     int idx = arg.indexOf('=');
                     if (idx == arg.length() - 1) {
-                        System.err.println(MESSAGES.argumentExpected(arg));
-                        usage();
+                        System.err.println(MESSAGES.argumentExpected(arg, usageNote()));
                         return null;
                     }
                     String value = idx > -1 ? arg.substring(idx + 1) : args[++i];
@@ -353,13 +375,14 @@ public final class Main {
 
                     int idx = arg.indexOf('=');
                     if (idx == arg.length() - 1) {
-                        System.err.println(MESSAGES.argumentExpected(arg));
-                        usage();
+                        System.err.println(MESSAGES.argumentExpected(arg, usageNote()));
                         return null;
                     }
-                    String value = idx > -1 ? arg.substring(idx + 1) : args[++i];
-
-                    String propertyName = null;
+                    String value = idx > -1 ? arg.substring(idx + 1) : checkValueIsNotAnArg(arg, args[++i]);
+                    if (value == null) {
+                        return null;
+                    }
+                    String propertyName;
                     if (idx < 0) {
                         // -b xxx -bmanagement xxx
                         propertyName = arg.length() == 2 ? HostControllerEnvironment.JBOSS_BIND_ADDRESS : HostControllerEnvironment.JBOSS_BIND_ADDRESS_PREFIX + arg.substring(2);
@@ -376,24 +399,27 @@ public final class Main {
 
                     int idx = arg.indexOf('=');
                     if (idx == arg.length() - 1) {
-                        System.err.println(MESSAGES.argumentExpected(arg));
-                        usage();
+                        System.err.println(MESSAGES.argumentExpected(arg, usageNote()));
                         return null;
                     }
-                    String value = idx > -1 ? arg.substring(idx + 1) : args[++i];
+                    String value = idx > -1 ? arg.substring(idx + 1) : checkValueIsNotAnArg(arg, args[++i]);
+                    if (value == null) {
+                        return null;
+                    }
 
                     hostSystemProperties.put(HostControllerEnvironment.JBOSS_DEFAULT_MULTICAST_ADDRESS, value);
                     SecurityActions.setSystemProperty(HostControllerEnvironment.JBOSS_DEFAULT_MULTICAST_ADDRESS, value);
                 } else if (arg.equals(CommandLineConstants.MODULE_PATH)) {
-                    modulePath = args[++i];
+                    modulePath = checkValueIsNotAnArg(arg, args[++i]);
+                    if (modulePath == null) {
+                        return null;
+                    }
                 } else {
-                    System.err.println(MESSAGES.invalidOption(arg));
-                    usage();
+                    System.err.println(MESSAGES.invalidOption(arg, usageNote()));
                     return null;
                 }
             } catch (IndexOutOfBoundsException e) {
-                System.err.println(MESSAGES.argumentExpected(arg));
-                usage();
+                System.err.println(MESSAGES.argumentExpected(arg, usageNote()));
                 return null;
             }
         }
@@ -404,12 +430,28 @@ public final class Main {
     }
 
     private static String parseValue(final String arg, final String key) {
-        String value = null;
         int splitPos = key.length();
         if (arg.length() <= splitPos + 1 || arg.charAt(splitPos) != '=') {
-            usage();
+            System.err.println(MESSAGES.argumentHasNoValue(arg, usageNote()));
+            return null;
         } else {
-            value = arg.substring(splitPos + 1);
+            return arg.substring(splitPos + 1);
+        }
+    }
+
+    /**
+     * Validates that param {@code value} does not begin with the character {@code -}. For use in cases where
+     * the legal value for an argument would not begin with that character. Usage is to detect missing argument
+     * values, where the command line includes another argument instead of the value for the last argument.
+     *
+     * @param argument the last argument, whose value should be {@code value}
+     * @param value the next item in the command line arguments, which should be the value for {@code argument}
+     * @return  {@code value} if it is valid, or {@code null} if it is not
+     */
+    private static String checkValueIsNotAnArg(String argument, String value) {
+        if (value.startsWith("-")) {
+            System.err.println(MESSAGES.argumentHasNoValue(argument, usageNote()));
+            return null;
         }
         return value;
     }
@@ -427,12 +469,10 @@ public final class Main {
              }
              return true;
          } catch (MalformedURLException e) {
-             System.err.println(MESSAGES.malformedUrl(arg));
-             usage();
+             System.err.println(MESSAGES.malformedUrl(arg, usageNote()));
              return false;
          } catch (IOException e) {
-             System.err.println(MESSAGES.unableToLoadProperties(url));
-             usage();
+             System.err.println(MESSAGES.unableToLoadProperties(url, usageNote()));
              return false;
          }
     }
@@ -441,8 +481,7 @@ public final class Main {
          try {
              return Integer.valueOf(value);
          } catch (NumberFormatException e) {
-             System.err.println(MESSAGES.invalidValue(key, "Integer", value));
-             usage();
+             System.err.println(MESSAGES.invalidValue(key, "Integer", value, usageNote()));
              return null;
          }
     }
@@ -451,8 +490,7 @@ public final class Main {
         try {
             return InetAddress.getByName(value);
         } catch (UnknownHostException e) {
-            System.err.println(MESSAGES.unknownHostValue(key, value));
-            usage();
+            System.err.println(MESSAGES.unknownHostValue(key, value, usageNote()));
             return null;
         }
     }
@@ -500,6 +538,12 @@ public final class Main {
             System.err.println(MESSAGES.cannotAccessJvmInputArgument(e));
         }
         return hostSystemProperties;
+    }
+
+    private static String usageNote() {
+        boolean isWindows = (SecurityActions.getSystemProperty("os.name")).toLowerCase(Locale.ENGLISH).contains("windows");
+        String command = isWindows ? "domain" : "domain.sh";
+        return MESSAGES.usageNote(command);
     }
 
     private static class PCSocketConfig {
@@ -596,8 +640,7 @@ public final class Main {
                 bindAddress = InetAddress.getByName(value);
             } catch (UnknownHostException e) {
                 parseFailed = true;
-                System.out.println(MESSAGES.invalidValue(key, "InetAddress", value));
-                usage();
+                System.err.println(MESSAGES.invalidValue(key, "InetAddress", value, usageNote()));
             }
         }
     }

@@ -26,15 +26,14 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.Stage;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.osgi.service.FrameworkActivator;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.osgi.framework.Services;
 
 /**
  * Operation to activate the OSGi subsystem.
  *
  * @author David Bosschaert
+ * @author Thomas.Diesler@jboss.com
  */
 public class ActivateOperationHandler extends AbstractRuntimeOnlyHandler  {
 
@@ -45,13 +44,13 @@ public class ActivateOperationHandler extends AbstractRuntimeOnlyHandler  {
 
     @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
-        ServiceController<?> svc = context.getServiceRegistry(true).getRequiredService(Services.FRAMEWORK_ACTIVE);
-        svc.setMode(Mode.ACTIVE);
 
-        // This verification handler will cause context.completeStep() to wait until svc is active.
-        ServiceVerificationHandler svh = new ServiceVerificationHandler();
-        svc.addListener(svh);
-        context.addStep(svh, Stage.VERIFY);
+        // This verification handler will cause context.completeStep() to wait until controller is active.
+        ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
+        if (FrameworkActivator.activateEagerly(verificationHandler)) {
+            context.addStep(verificationHandler, Stage.VERIFY);
+        }
+
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 }

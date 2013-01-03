@@ -1,3 +1,25 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 package org.jboss.as.messaging;
 
 import static org.jboss.as.messaging.MessagingLogger.ROOT_LOGGER;
@@ -12,26 +34,40 @@ import java.util.Map;
 
 import javax.management.MBeanServer;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
+import org.hornetq.api.core.BroadcastEndpointFactoryConfiguration;
+import org.hornetq.api.core.BroadcastGroupConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.core.config.BroadcastGroupConfiguration;
+import org.hornetq.api.core.UDPBroadcastGroupConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.impl.HornetQServerImpl;
+import org.jboss.as.clustering.jgroups.ChannelFactory;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.services.path.AbsolutePathService;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.security.plugins.SecurityDomainContext;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.inject.MapInjector;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jgroups.JChannel;
 
 /**
  * Service configuring and starting the {@code HornetQService}.
@@ -50,7 +86,7 @@ class HornetQService implements Service<HornetQServer> {
      * The name of the SocketBinding reference to use for HOST/PORT
      * configuration
      */
-    private static final String SOCKET_REF = CommonAttributes.SOCKET_BINDING.getName();
+    private static final String SOCKET_REF = RemoteTransportDefinition.SOCKET_BINDING.getName();
 
     private Configuration configuration;
 
@@ -62,6 +98,10 @@ class HornetQService implements Service<HornetQServer> {
     private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
     private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<SecurityDomainContext>();
     private final PathConfig pathConfig;
+    // mapping between the {broacast|discovery}-groups and the *names* of the JGroups channel they use
+    private final Map<String, String> jgroupsChannels = new HashMap<String, String>();
+    // mapping between the {broacast|discovery}-groups and the JGroups channel factory for the *stack* they use
+    private Map<String, ChannelFactory> jgroupFactories = new HashMap<String, ChannelFactory>();
 
     public HornetQService(PathConfig pathConfig) {
         this.pathConfig = pathConfig;
@@ -73,6 +113,10 @@ class HornetQService implements Service<HornetQServer> {
 
     Injector<SocketBinding> getSocketBindingInjector(String name) {
         return new MapInjector<String, SocketBinding>(socketBindings, name);
+    }
+
+    Injector<ChannelFactory> getJGroupsInjector(String name) {
+        return new MapInjector<String, ChannelFactory>(jgroupFactories, name);
     }
 
     Injector<OutboundSocketBinding> getOutboundSocketBindingInjector(String name) {
@@ -102,8 +146,6 @@ class HornetQService implements Service<HornetQServer> {
 
         // Disable file deployment
         configuration.setFileDeploymentEnabled(false);
-        // Setup Logging
-        configuration.setLogDelegateFactoryClassName(LOGGING_FACTORY);
         // Setup paths
         PathManager pathManager = this.pathManager.getValue();
         configuration.setBindingsDirectory(pathConfig.resolveBindingsPath(pathManager));
@@ -169,15 +211,28 @@ class HornetQService implements Service<HornetQServer> {
                     }
                 }
             }
+
+            // broadcast-group and discovery-groups configured with JGroups must share the same channel
+            final Map<String, JChannel> channels = new HashMap<String, JChannel>();
+
             if(broadcastGroups != null) {
                 final List<BroadcastGroupConfiguration> newConfigs = new ArrayList<BroadcastGroupConfiguration>();
                 for(final BroadcastGroupConfiguration config : broadcastGroups) {
                     final String name = config.getName();
-                    final SocketBinding binding = groupBindings.get("broadcast" + name);
-                    if (binding == null) {
-                        throw MESSAGES.failedToFindBroadcastSocketBinding(name);
+                    final String key = "broadcast" + name;
+                    if (jgroupFactories.containsKey(key)) {
+                        ChannelFactory channelFactory = jgroupFactories.get(key);
+                        String channelName = jgroupsChannels.get(key);
+                        JChannel channel = (JChannel) channelFactory.createChannel(channelName);
+                        channels.put(channelName, channel);
+                        newConfigs.add(BroadcastGroupAdd.createBroadcastGroupConfiguration(name, config, channel, channelName));
+                    } else {
+                        final SocketBinding binding = groupBindings.get(key);
+                        if (binding == null) {
+                            throw MESSAGES.failedToFindBroadcastSocketBinding(name);
+                        }
+                       newConfigs.add(BroadcastGroupAdd.createBroadcastGroupConfiguration(name, config, binding));
                     }
-                    newConfigs.add(BroadcastGroupAdd.createBroadcastGroupConfiguration(name, config, binding));
                 }
                 configuration.getBroadcastGroupConfigurations().clear();
                 configuration.getBroadcastGroupConfigurations().addAll(newConfigs);
@@ -186,11 +241,24 @@ class HornetQService implements Service<HornetQServer> {
                 configuration.setDiscoveryGroupConfigurations(new HashMap<String, DiscoveryGroupConfiguration>());
                 for(final Map.Entry<String, DiscoveryGroupConfiguration> entry : discoveryGroups.entrySet()) {
                     final String name = entry.getKey();
-                    final SocketBinding binding = groupBindings.get("discovery" + name);
-                    if (binding == null) {
-                        throw MESSAGES.failedToFindDiscoverySocketBinding(name);
+                    final String key = "discovery" + name;
+                    DiscoveryGroupConfiguration config = null;
+                    if (jgroupFactories.containsKey(key)) {
+                        ChannelFactory channelFactory = jgroupFactories.get(key);
+                        String channelName = jgroupsChannels.get(key);
+                        JChannel channel = channels.get(channelName);
+                        if (channel == null) {
+                            channel = (JChannel) channelFactory.createChannel(key);
+                            channels.put(channelName, channel);
+                        }
+                        config = DiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, entry.getValue(), channel, channelName);
+                    } else {
+                        final SocketBinding binding = groupBindings.get(key);
+                        if (binding == null) {
+                            throw MESSAGES.failedToFindDiscoverySocketBinding(name);
+                        }
+                        config = DiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, entry.getValue(), binding);
                     }
-                    final DiscoveryGroupConfiguration config = DiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, entry.getValue(), binding);
                     configuration.getDiscoveryGroupConfigurations().put(name, config);
                 }
             }
@@ -200,7 +268,7 @@ class HornetQService implements Service<HornetQServer> {
 
             // Now start the server
             server = new HornetQServerImpl(configuration, mbeanServer.getOptionalValue(), hornetQSecurityManagerAS7);
-            if (ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD.equals(server.getConfiguration().getClusterPassword())) {
+            if (HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD.equals(server.getConfiguration().getClusterPassword())) {
                 server.getConfiguration().setClusterPassword(java.util.UUID.randomUUID().toString());
             }
 
@@ -249,6 +317,29 @@ class HornetQService implements Service<HornetQServer> {
         return securityDomainContextValue;
     }
 
+    public Map<String, String> getJGroupsChannels() {
+        return jgroupsChannels;
+    }
+
+    /**
+     * Returns true if a {@link ServiceController} for this service has been {@link ServiceBuilder#install() installed}
+     * in MSC under the
+     * {@link MessagingServices#getHornetQServiceName(PathAddress) service name appropriate to the given operation}.
+     *
+     * @param context the operation context
+     * @param operation the operation
+     *
+     * @return {@code true} if a {@link ServiceController} is installed
+     */
+    static boolean isHornetQServiceInstalled(final OperationContext context, final ModelNode operation) {
+        if (context.isNormalServer()) {
+            final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+            final ServiceController<?> controller = context.getServiceRegistry(false).getService(hqServiceName);
+            return controller != null;
+        }
+        return false;
+    }
+
     static class PathConfig {
         private final String bindingsPath;
         private final String bindingsRelativeToPath;
@@ -289,7 +380,10 @@ class HornetQService implements Service<HornetQServer> {
         }
 
         String resolve(PathManager pathManager, String path, String relativeToPath) {
-            return pathManager.resolveRelativePathEntry(path, relativeToPath);
+            // discard the relativeToPath if the path is absolute and must not be resolved according
+            // to the default relativeToPath value
+            String relativeTo = AbsolutePathService.isAbsoluteUnixOrWindowsPath(path) ? null : relativeToPath;
+            return pathManager.resolveRelativePathEntry(path, relativeTo);
         }
 
         synchronized void registerCallbacks(PathManager pathManager) {

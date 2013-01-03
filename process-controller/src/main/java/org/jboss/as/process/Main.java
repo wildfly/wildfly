@@ -31,6 +31,7 @@ import java.net.InetSocketAddress;
 import java.security.AccessController;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -59,7 +60,7 @@ public final class Main {
     }
 
     public static void usage() {
-        CommandLineArgument.printUsage(System.out);
+        CommandLineArgumentUsageImpl.printUsage(System.out);
     }
 
     private Main() {
@@ -113,24 +114,33 @@ public final class Main {
                     if ("--".equals(arg)) {
                         for (i++; i < args.length; i++) {
                             arg = args[i];
-                            if (CommandLineConstants.HELP.equals(arg) || CommandLineConstants.SHORT_HELP.equals(arg)
-                                    || CommandLineConstants.OLD_HELP.equals(arg)) {
-                                usage();
-                                return null;
-                            } else if (CommandLineConstants.VERSION.equals(arg) || CommandLineConstants.SHORT_VERSION.equals(arg)
-                                    || CommandLineConstants.OLD_VERSION.equals(arg) || CommandLineConstants.OLD_SHORT_VERSION.equals(arg)) {
-                                System.out.println(new ProductConfig(Module.getBootModuleLoader(), jbossHome).getPrettyVersionString());
+                            if (handleHelpOrVersion(arg, jbossHome)) {
                                 return null;
                             } else if (pcSocketConfig.processPCSocketConfigArgument(arg, args, i)) {
                                 if (pcSocketConfig.isParseFailed()) {
                                     return null;
                                 }
                                 i += pcSocketConfig.getArgIncrement();
+                            } else if (arg.startsWith("-D" + CommandLineConstants.PREFER_IPV4_STACK + "=")) {
+                                // AS7-5409 set the property for this process and pass it to HC via javaOptions
+                                String val = parseValue(arg, "-D" + CommandLineConstants.PREFER_IPV4_STACK);
+                                SecurityActions.setSystemProperty(CommandLineConstants.PREFER_IPV4_STACK, val);
+                                addJavaOption(arg, javaOptions);
+                            } else if (arg.startsWith("-D" + CommandLineConstants.PREFER_IPV6_ADDRESSES + "=")) {
+                                // AS7-5409 set the property for this process and pass it to HC via javaOptions
+                                String val = parseValue(arg, "-D" + CommandLineConstants.PREFER_IPV6_ADDRESSES);
+                                SecurityActions.setSystemProperty(CommandLineConstants.PREFER_IPV6_ADDRESSES, val);
+                                addJavaOption(arg, javaOptions);
+
                             } else {
-                                smOptions.add(arg);
+                                addJavaOption(arg, smOptions);
                             }
                         }
                         break OUT;
+                    } else if (handleHelpOrVersion(arg, jbossHome)) {
+                        // This would normally come in via the nested if ("--".equals(arg)) case above, but in case someone tweaks the
+                        // script to set it directly, we've handled it
+                        return null;
                     } else if (pcSocketConfig.processPCSocketConfigArgument(arg, args, i)) {
                         // This would normally come in via the nested if ("--".equals(arg)) case above, but in case someone tweaks the
                         // script to set it directly, we've handled it
@@ -139,10 +149,14 @@ public final class Main {
                         }
                         i += pcSocketConfig.getArgIncrement();
                     } else {
-                        javaOptions.add(arg);
+                        addJavaOption(arg, javaOptions);
                     }
                 }
                 break OUT;
+            } else if (handleHelpOrVersion(arg, jbossHome)) {
+                // This would normally come in via the if ("--".equals(arg)) cases above, but in case someone tweaks the
+                // script to set it directly, we've handled it)
+                return null;
             } else if (pcSocketConfig.processPCSocketConfigArgument(arg, args, i)) {
                 // This would normally come in via the if ("--".equals(arg)) cases above, but in case someone tweaks the
                 // script to set it directly, we've handled it
@@ -239,6 +253,41 @@ public final class Main {
         return value;
     }
 
+    private static void addJavaOption(String option, List<String> javaOptions) {
+
+        // Remove any existing -D options that this one replaces
+        if (option.startsWith("-D")) {
+            String key;
+            int splitPos = option.indexOf('=');
+            if (splitPos < 0) {
+                key = option;
+            } else {
+                key = option.substring(0, splitPos);
+            }
+            for (Iterator<String> iter = javaOptions.iterator(); iter.hasNext();) {
+                String existingOp = iter.next();
+                if (existingOp.equals(key) || (existingOp.startsWith(key) && existingOp.indexOf('=') == key.length())) {
+                    iter.remove();
+                }
+            }
+        }
+
+        javaOptions.add(option);
+    }
+
+    private static boolean handleHelpOrVersion(String arg, String jbossHome) {
+        if (CommandLineConstants.HELP.equals(arg) || CommandLineConstants.SHORT_HELP.equals(arg)
+            || CommandLineConstants.OLD_HELP.equals(arg)) {
+            usage();
+            return true;
+        } else if (CommandLineConstants.VERSION.equals(arg) || CommandLineConstants.SHORT_VERSION.equals(arg)
+                || CommandLineConstants.OLD_VERSION.equals(arg) || CommandLineConstants.OLD_SHORT_VERSION.equals(arg)) {
+            System.out.println(new ProductConfig(Module.getBootModuleLoader(), jbossHome).getPrettyVersionString());
+            return true;
+        }
+        return false;
+    }
+
     private static class PCSocketConfig {
         private String bindAddress;
         private int bindPort = 0;
@@ -246,12 +295,16 @@ public final class Main {
         private boolean parseFailed;
 
         private PCSocketConfig() {
-            boolean preferIPv6 = Boolean.valueOf(SecurityActions.getSystemProperty("java.net.preferIPv6Addresses", "false"));
-            bindAddress = preferIPv6 ? "::1" : "127.0.0.1";
         }
 
         private String getBindAddress() {
-            return bindAddress;
+            if (bindAddress != null) {
+                return bindAddress;
+            } else {
+                boolean v4Stack = Boolean.valueOf(SecurityActions.getSystemProperty(CommandLineConstants.PREFER_IPV4_STACK, "false"));
+                boolean useV6 = !v4Stack && Boolean.valueOf(SecurityActions.getSystemProperty(CommandLineConstants.PREFER_IPV6_ADDRESSES, "false"));
+                return useV6 ? "::1" : "127.0.0.1";
+            }
         }
 
         private int getBindPort() {

@@ -22,43 +22,44 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.AttributeDefinition;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.services.path.PathResourceDefinition;
 
 /**
  *
  */
-public enum Attribute {
+enum Attribute {
 
-    UNKNOWN(null),
+    UNKNOWN((String) null),
 
     APPEND(CommonAttributes.APPEND),
     AUTOFLUSH(CommonAttributes.AUTOFLUSH),
     CATEGORY(CommonAttributes.CATEGORY),
     CLASS(CommonAttributes.CLASS),
-    FILE_NAME(CommonAttributes.FILE_NAME),
+    ENABLED(CommonAttributes.ENABLED),
     MIN_INCLUSIVE(CommonAttributes.MIN_INCLUSIVE),
     MIN_LEVEL(CommonAttributes.MIN_LEVEL),
     MAX_BACKUP_INDEX(CommonAttributes.MAX_BACKUP_INDEX),
     MAX_INCLUSIVE(CommonAttributes.MAX_INCLUSIVE),
     MAX_LEVEL(CommonAttributes.MAX_LEVEL),
     MODULE(CommonAttributes.MODULE),
-    NAME(CommonAttributes.NAME),
+    NAME("name"),
     NEW_LEVEL(CommonAttributes.NEW_LEVEL),
     OVERFLOW_ACTION(CommonAttributes.OVERFLOW_ACTION),
-    PATH(CommonAttributes.PATH),
+    PATH(PathResourceDefinition.PATH),
     PATTERN(CommonAttributes.PATTERN),
     QUEUE_LENGTH(CommonAttributes.QUEUE_LENGTH),
-    RELATIVE_TO(CommonAttributes.RELATIVE_TO),
+    RELATIVE_TO(PathResourceDefinition.RELATIVE_TO),
     REPLACEMENT(CommonAttributes.REPLACEMENT),
     REPLACE_ALL(CommonAttributes.REPLACE_ALL),
     ROTATE_SIZE(CommonAttributes.ROTATE_SIZE),
     SUFFIX(CommonAttributes.SUFFIX),
     TARGET(CommonAttributes.TARGET),
     USE_PARENT_HANDLERS(CommonAttributes.USE_PARENT_HANDLERS),
-    VALUE(CommonAttributes.VALUE),;
+    VALUE("value"),;
 
     private final String name;
     private final AttributeDefinition definition;
@@ -70,6 +71,11 @@ public enum Attribute {
             this.name = definition.getXmlName();
         }
         this.definition = definition;
+    }
+
+    Attribute(final String name) {
+        this.name = name;
+        this.definition = null;
     }
 
     /**

@@ -151,4 +151,49 @@ public interface ResourceDescriptionResolver {
      * @return the localized description
          */
     String getChildTypeDescription(String childType, Locale locale, ResourceBundle bundle);
+
+
+    /**
+     * Gets the description of the resource.
+     *
+     * @param locale the locale
+     * @param bundle a resource bundle previously obtained from a call to {@link #getResourceBundle(java.util.Locale)},
+     *               or {@code null} if that call returned {@code null}
+     * @return the localized description
+     */
+    String getResourceDeprecatedDescription(Locale locale, ResourceBundle bundle);
+
+    /**
+     * Gets the description of one of the resource's attributes.
+     *
+     * @param attributeName the name of the attribute
+     * @param locale        the locale
+     * @param bundle        a resource bundle previously obtained from a call to {@link #getResourceBundle(java.util.Locale)},
+     *                      or {@code null} if that call returned {@code null}
+     * @return the localized description
+     */
+    String getResourceAttributeDeprecatedDescription(String attributeName, Locale locale, ResourceBundle bundle);
+
+    /**
+     * Gets the description of one of the resource's operations.
+     *
+     * @param operationName the name of the operation
+     * @param locale        the locale
+     * @param bundle        a resource bundle previously obtained from a call to {@link #getResourceBundle(java.util.Locale)},
+     *                      or {@code null} if that call returned {@code null}
+     * @return the localized description
+     */
+    String getOperationDeprecatedDescription(String operationName, Locale locale, ResourceBundle bundle);
+
+    /**
+     * Gets the description of one of the resource's operation's parameters.
+     *
+     * @param operationName the name of the operation
+     * @param paramName     the name of the operation's parameter
+     * @param locale        the locale
+     * @param bundle        a resource bundle previously obtained from a call to {@link #getResourceBundle(java.util.Locale)},
+     *                      or {@code null} if that call returned {@code null}
+     * @return the localized description
+     */
+    String getOperationParameterDeprecatedDescription(String operationName, String paramName, Locale locale, ResourceBundle bundle);
 }

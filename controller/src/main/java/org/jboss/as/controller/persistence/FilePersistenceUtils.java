@@ -41,9 +41,7 @@ import org.xnio.IoUtils;
 class FilePersistenceUtils {
 
     static File createTempFile(File fileName) {
-        File tempFileName = new File(fileName.getParentFile(), fileName.getName() + ".tmp");
-        tempFileName.deleteOnExit();
-        return tempFileName;
+        return new File(fileName.getParentFile(), fileName.getName() + ".tmp");
     }
 
     static ExposedByteArrayOutputStream marshalXml(final AbstractConfigurationPersister persister, final ModelNode model) throws ConfigurationPersistenceException {
@@ -100,6 +98,7 @@ class FilePersistenceUtils {
     static void deleteFile(File file) {
         if (file.exists()) {
             if (!file.delete() && file.exists()) {
+                file.deleteOnExit();
                 throw new IllegalStateException(MESSAGES.couldNotDeleteFile(file));
             }
         }

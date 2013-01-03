@@ -13,8 +13,8 @@ public abstract class ContainerResourceMgmtTestBase extends AbstractMgmtTestBase
 
     @ContainerResource
     private ManagementClient managementClient;
-    
-    
+
+
 
     public ManagementClient getManagementClient() {
         return managementClient;

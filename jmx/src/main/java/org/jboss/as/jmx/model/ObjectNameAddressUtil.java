@@ -59,12 +59,12 @@ class ObjectNameAddressUtil {
         ESCAPED_KEY_CHARACTERS = keys.toArray(new EscapedCharacter[keys.size()]);
     }
 
-    static ObjectName createObjectName(final PathAddress pathAddress) {
+    static ObjectName createObjectName(final String domain, final PathAddress pathAddress) {
 
         if (pathAddress.size() == 0) {
-            return Constants.ROOT_MODEL_NAME;
+            return ModelControllerMBeanHelper.createRootObjectName(domain);
         }
-        final StringBuilder sb = new StringBuilder(Constants.DOMAIN);
+        final StringBuilder sb = new StringBuilder(domain);
         sb.append(":");
         boolean first = true;
         for (PathElement element : pathAddress) {
@@ -90,11 +90,11 @@ class ObjectNameAddressUtil {
      * @param name the ObjectName
      * @return the PathAddress if it exists in the model, {@code null} otherwise
      */
-    static PathAddress resolvePathAddress(final Resource rootResource, final ObjectName name) {
-        if (!name.getDomain().equals(Constants.DOMAIN)) {
+    static PathAddress resolvePathAddress(final String domain, final Resource rootResource, final ObjectName name) {
+        if (!name.getDomain().equals(domain)) {
             return null;
         }
-        if (name.equals(Constants.ROOT_MODEL_NAME)) {
+        if (name.equals(ModelControllerMBeanHelper.createRootObjectName(domain))) {
             return PathAddress.EMPTY_ADDRESS;
         }
         Hashtable<String, String> properties = name.getKeyPropertyList();
@@ -120,10 +120,6 @@ class ObjectNameAddressUtil {
             }
         }
         return null;
-    }
-
-    static boolean isReservedDomain(ObjectName name) {
-        return name.getDomain().equals(Constants.DOMAIN);
     }
 
     private static void escapeKey(EscapedCharacter[] escapedCharacters, StringBuilder sb, String value) {

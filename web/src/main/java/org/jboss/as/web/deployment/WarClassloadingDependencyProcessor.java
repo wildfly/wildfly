@@ -48,7 +48,12 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
     private static final ModuleIdentifier JBOSS_WEB = ModuleIdentifier.create("org.jboss.as.web");
 
     static {
-        Module.registerURLStreamHandlerFactoryModule(Module.forClass(WarClassloadingDependencyProcessor.class));
+        Module module = Module.forClass(WarClassloadingDependencyProcessor.class);
+        if (module != null) {
+            //When testing the subsystems we are running in a non-modular environment
+            //so module will be null. Having a null entry kills ModularURLStreamHandlerFactory
+            Module.registerURLStreamHandlerFactoryModule(module);
+        }
     }
 
     private static final Logger logger = Logger.getLogger(WarClassloadingDependencyProcessor.class);

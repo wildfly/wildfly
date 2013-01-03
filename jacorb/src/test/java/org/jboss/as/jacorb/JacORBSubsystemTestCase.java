@@ -23,22 +23,37 @@ package org.jboss.as.jacorb;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 
 import junit.framework.Assert;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.ControllerInitializer;
 import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 
@@ -80,6 +95,11 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
         "        <property name=\"some_property\" value=\"some_value\"/>" +
         "    </properties>" +
         "</subsystem>";
+    }
+
+    @Test
+    public void testExpressions() throws Exception {
+        standardSubsystemTest("expressions.xml");
     }
 
     @Test
@@ -248,4 +268,48 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
         } catch (XMLStreamException expected) {
         }
     }
+
+    @Test
+    public void testTransformers() throws Exception {
+        final String subsystemXml = getSubsystemXml();
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
+                .setSubsystemXml(subsystemXml);
+
+        // Add legacy subsystems
+        ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
+        builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, version_1_1_0)
+                .addMavenResourceURL("org.jboss.as:jboss-as-jacorb:7.1.2.Final");
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(version_1_1_0);
+        assertNotNull(legacyServices);
+
+        checkSubsystemModelTransformation(mainServices, version_1_1_0);
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+        operation.get(OP_ADDR).add(SUBSYSTEM, "jacorb");
+        operation.get(NAME); //
+        operation.get(VALUE).setExpression("${org.jboss.test.value:test}");
+        final Set<String> toSkip = new HashSet<String>(Arrays.asList(JacORBSubsystemConstants.SECURITY_SECURITY_DOMAIN,
+                SOCKET_BINDING, JacORBSubsystemConstants.ORB_SSL_SOCKET_BINDING, PROPERTIES));
+        for(final String key : JacORBSubsystemDefinitions.ATTRIBUTES_BY_NAME.keySet()) {
+            if (toSkip.contains(key)) {
+                continue;
+            }
+
+            // Update the attribute name
+            operation.get(NAME).set(key);
+
+            final ModelNode mainResult = mainServices.executeOperation(operation);
+            Assert.assertTrue(SUCCESS.equals(mainResult.get(OUTCOME).asString()));
+
+            final OperationTransformer.TransformedOperation op = mainServices.transformOperation(version_1_1_0, operation);
+            final ModelNode result = mainServices.executeOperation(version_1_1_0, op);
+            Assert.assertEquals(op.getTransformedOperation().toString(), FAILED, result.get(OUTCOME).asString());
+
+        }
+
+    }
+
 }

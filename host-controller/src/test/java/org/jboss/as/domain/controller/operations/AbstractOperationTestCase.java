@@ -64,6 +64,7 @@ import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
+import org.jboss.as.controller.registry.AliasEntry;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -240,6 +241,14 @@ public abstract class AbstractOperationTestCase {
 
         }
 
+        public void completeStep(ResultHandler resultHandler) {
+
+        }
+
+        public void stepCompleted() {
+            completeStep(ResultHandler.NOOP_RESULT_HANDLER);
+        }
+
         public ModelNode getFailureDescription() {
             return null;
         }
@@ -397,8 +406,7 @@ public abstract class AbstractOperationTestCase {
         public Resource readResourceFromRoot(PathAddress address, boolean recursive) {
             Resource resource = this.root;
             for (PathElement element : address) {
-                resource = resource.getChild(element);
-                assertNotNull(resource);
+                resource = resource.requireChild(element);
             }
             return resource;
         }
@@ -447,7 +455,7 @@ public abstract class AbstractOperationTestCase {
         }
 
         public ModelNode resolveExpressions(ModelNode node) {
-            return null;
+            return node.resolve();
         }
 
         @Override
@@ -693,6 +701,11 @@ public abstract class AbstractOperationTestCase {
             return null;
         }
 
+        @Override
+        public AliasEntry getAliasEntry() {
+            return null;
+        }
+
         public ProxyController getProxyController(PathAddress address) {
             if (address.getLastElement().getKey().equals(SERVER) && !address.getLastElement().getValue().equals("server-two")) {
                 return new ProxyController() {
@@ -709,6 +722,19 @@ public abstract class AbstractOperationTestCase {
 
         public Set<ProxyController> getProxyControllers(PathAddress address) {
             return null;
+        }
+
+        @Override
+        public void registerAlias(PathElement address, AliasEntry alias) {
+        }
+
+        @Override
+        public void unregisterAlias(PathElement address) {
+        }
+
+        @Override
+        public boolean isAlias() {
+            return false;
         }
     };
 }

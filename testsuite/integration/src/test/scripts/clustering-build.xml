@@ -1,75 +1,75 @@
 <?xml version="1.0"?>
 <project name="clustering-build scripts">
 
-    <!-- import shared ant targets -->
+    <!-- Import shared ant targets -->
     <import file="common-targets.xml" as="common"/>
 
-    <target name="build-clustering-udp" description="Builds server configurations for UDP tests">
+    <!-- Shared clustering config target -->
+    <target name="abstract-build-clustering" description="Builds two server configuration for given JGroups stack and cache mode">
 
-                <echo>clustering-udp-0 node0: ${node0}</echo>
-                <echo>clustering-udp-0 node1: ${node1}</echo>
-                <echo>clustering-udp-0 mcast: ${mcast}</echo>
+        <echo>clustering-${cacheMode}-${stack}-0 node0: ${node0}</echo>
+        <echo>clustering-${cacheMode}-${stack}-0 node1: ${node1}</echo>
+        <echo>clustering-${cacheMode}-${stack}-0 mcast: ${mcast}</echo>
 
-        <echo message="  =========  Building config clustering-udp-0  =========  "/>
-        <copy todir="target/jbossas-clustering-udp-0" overwrite="true">
+        <echo message="  =========  Building config clustering-${cacheMode}-${stack}-0  =========  "/>
+        <copy todir="target/jbossas-clustering-${cacheMode}-${stack}-0" overwrite="true">
             <fileset dir="${basedir}/target/jbossas"/>
         </copy>
-        <ts.config-as.ip-with-multicast name="jbossas-clustering-udp-0"
-            node="${node0}"
-            mcast="${mcast}"
-            mcast.jgroupsDiag="${mcast.jgroupsDiag}"
-            mcast.modcluster="${mcast.modcluster}"/>
-        <ts.config-as.add-port-offset name="jbossas-clustering-udp-0" />
-
-
-        <echo message="  =========  Building config clustering-udp-1  =========  "/>
-        <copy todir="target/jbossas-clustering-udp-1" overwrite="true">
-            <fileset dir="${basedir}/target/jbossas"/>
-        </copy>
-        <ts.config-as.ip-with-multicast name="jbossas-clustering-udp-1"
-            node="${node1}"
-            mcast="${mcast}"
-            mcast.jgroupsDiag="${mcast.jgroupsDiag}"
-            mcast.modcluster="${mcast.modcluster}"/>
-        <ts.config-as.add-port-offset name="jbossas-clustering-udp-1" offset="100" nativePort="9999" httpPort="9990"/>
-
-    </target>
-
-    <!-- Build TCP stack config -->
-    <target name="build-clustering-tcp" description="Builds server configurations for TCP tests">
-
-        <echo>clustering-tcp-0 node0: ${node0}</echo>
-        <echo>clustering-tcp-0 node1: ${node1}</echo>
-        <echo>clustering-tcp-0 mcast: ${mcast}</echo>
-
-        <echo message="  =========  Building config clustering-tcp-0  =========  "/>
-        <copy todir="target/jbossas-clustering-tcp-0" overwrite="true">
-            <fileset dir="${basedir}/target/jbossas"/>
-        </copy>
-        <ts.config-as.ip-with-multicast name="jbossas-clustering-tcp-0"
+        <ts.config-as.ip-with-multicast name="jbossas-clustering-${cacheMode}-${stack}-0"
                                         node="${node0}"
                                         mcast="${mcast}"
-                                        mcast.jgroupsDiag="${mcast.jgroupsDiag}"
-                                        mcast.modcluster="${mcast.modcluster}"/>
-        <ts.config-as.add-port-offset name="jbossas-clustering-tcp-0" />
-        <ts.config-as.change-transport-stack name="jbossas-clustering-tcp-0"
-                                             defaultStack="tcp"/>
+                />
+        <ts.config-as.add-port-offset name="jbossas-clustering-${cacheMode}-${stack}-0"/>
+        <ts.config-as.change-transport-stack name="jbossas-clustering-${cacheMode}-${stack}-0"
+                                             defaultStack="${stack}"
+                />
+        <ts.config-as.change-cache-mode name="jbossas-clustering-${cacheMode}-${stack}-0"
+                                        cacheMode="${cacheMode}"
+                />
 
-        <echo message="  =========  Building config clustering-tcp-1  =========  "/>
-        <copy todir="target/jbossas-clustering-tcp-1" overwrite="true">
+        <echo message="  =========  Building config clustering-${cacheMode}-${stack}-1  =========  "/>
+        <copy todir="target/jbossas-clustering-${cacheMode}-${stack}-1" overwrite="true">
             <fileset dir="${basedir}/target/jbossas"/>
         </copy>
-        <ts.config-as.ip-with-multicast name="jbossas-clustering-tcp-1"
+        <ts.config-as.ip-with-multicast name="jbossas-clustering-${cacheMode}-${stack}-1"
                                         node="${node1}"
                                         mcast="${mcast}"
-                                        mcast.jgroupsDiag="${mcast.jgroupsDiag}"
-                                        mcast.modcluster="${mcast.modcluster}"/>
-        <ts.config-as.add-port-offset name="jbossas-clustering-tcp-1" offset="100" nativePort="9999" httpPort="9990"/>
-        <ts.config-as.change-transport-stack name="jbossas-clustering-tcp-1"
-                                             defaultStack="tcp"/>
+                />
+        <ts.config-as.add-port-offset name="jbossas-clustering-${cacheMode}-${stack}-1" offset="100" nativePort="9999" httpPort="9990"/>
+        <ts.config-as.change-transport-stack name="jbossas-clustering-${cacheMode}-${stack}-1"
+                                             defaultStack="${stack}"
+                />
+        <ts.config-as.change-cache-mode name="jbossas-clustering-${cacheMode}-${stack}-1"
+                                        cacheMode="${cacheMode}"
+                />
 
     </target>
 
+    <!-- Build SYNC-tcp stack configs -->
+    <target name="build-clustering" description="Builds server configuration for SYNC-tcp tests">
+        <antcall target="abstract-build-clustering">
+            <param name="cacheMode" value="SYNC"/>
+            <param name="stack" value="tcp"/>
+        </antcall>
+    </target>
+
+    <!-- Build remaining configs for extended tests -->
+    <target name="build-clustering-extended" description="Builds server configurations for extended tests">
+        <antcall target="abstract-build-clustering">
+            <param name="cacheMode" value="ASYNC"/>
+            <param name="stack" value="tcp"/>
+        </antcall>
+        <antcall target="abstract-build-clustering">
+            <param name="cacheMode" value="SYNC"/>
+            <param name="stack" value="udp"/>
+        </antcall>
+        <antcall target="abstract-build-clustering">
+            <param name="cacheMode" value="ASYNC"/>
+            <param name="stack" value="udp"/>
+        </antcall>
+    </target>
+
+    <!-- Single node tests -->
     <target name="build-clustering-udp-jdbc-store" description="Builds server configuration for UDP tests with jdbc-store enabled">
 
         <echo message="Building config clustering-udp-jdbc-store"/>
@@ -79,11 +79,10 @@
         </copy>
         <ts.config-as.add-cache-container name="jbossas-clustering-udp-jdbc-store" containerdef="${cache.container.def}" />
         <ts.config-as.ip-with-multicast name="jbossas-clustering-udp-jdbc-store"
-            node="${node0}"
-            mcast="${mcast}"
-            mcast.jgroupsDiag="${mcast.jgroupsDiag}"
-            mcast.modcluster="${mcast.modcluster}"/>
-        <ts.config-as.add-port-offset name="jbossas-clustering-udp-jdbc-store" />
+                                        node="${node0}"
+                                        mcast="${mcast}"
+                />
+        <ts.config-as.add-port-offset name="jbossas-clustering-udp-jdbc-store"/>
 
     </target>
 

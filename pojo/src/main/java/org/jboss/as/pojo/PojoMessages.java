@@ -22,18 +22,18 @@
 
 package org.jboss.as.pojo;
 
+import java.util.Set;
+
 import org.jboss.as.pojo.descriptor.BeanMetaDataConfig;
 import org.jboss.as.pojo.descriptor.ConfigVisitorNode;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.logging.Cause;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageBundle;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.Messages;
 import org.jboss.msc.service.StartException;
 import org.jboss.vfs.VirtualFile;
-
-import java.util.Set;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -145,7 +145,7 @@ public interface PojoMessages {
     /**
      * Invalid match size.
      *
-     * @param set whole set
+     * @param set  whole set
      * @param type the type to match
      * @return a {@link IllegalArgumentException} for the error.
      */
@@ -264,7 +264,7 @@ public interface PojoMessages {
     /**
      * Ctor not found.
      *
-     * @param args the args
+     * @param args  the args
      * @param clazz the class
      * @return a {@link IllegalArgumentException} for the error.
      */
@@ -274,8 +274,8 @@ public interface PojoMessages {
     /**
      * Method not found.
      *
-     * @param name the method name
-     * @param args the args
+     * @param name  the method name
+     * @param args  the args
      * @param clazz the class
      * @return a {@link IllegalArgumentException} for the error.
      */
@@ -285,7 +285,7 @@ public interface PojoMessages {
     /**
      * Getter not found.
      *
-     * @param type the type
+     * @param type  the type
      * @param clazz the class
      * @return a {@link IllegalArgumentException} for the error.
      */
@@ -295,7 +295,7 @@ public interface PojoMessages {
     /**
      * Setter not found.
      *
-     * @param type the type
+     * @param type  the type
      * @param clazz the class
      * @return a {@link IllegalArgumentException} for the error.
      */
@@ -314,8 +314,8 @@ public interface PojoMessages {
     /**
      * Ambiguous match.
      *
-     * @param info the info
-     * @param name the name
+     * @param info  the info
+     * @param name  the name
      * @param clazz the class
      * @return a {@link IllegalArgumentException} for the error.
      */
@@ -325,10 +325,20 @@ public interface PojoMessages {
     /**
      * Field not found.
      *
-     * @param name the method name
+     * @param name  the method name
      * @param clazz the class
      * @return a {@link IllegalArgumentException} for the error.
      */
     @Message(id = 17081, value = "Field not found %s for class %s.")
     IllegalArgumentException fieldNotFound(String name, String clazz);
+
+    /**
+     * Parsing exception.
+     *
+     * @param beansXml the beans xml file
+     * @param cause    the cause
+     * @return a {@link DeploymentUnitProcessingException} for the error.
+     */
+    @Message(id = 17082, value = "Exception while parsing POJO descriptor file: %s")
+    DeploymentUnitProcessingException parsingException(VirtualFile beansXml, @Cause Throwable cause);
 }

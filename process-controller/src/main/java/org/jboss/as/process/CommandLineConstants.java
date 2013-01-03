@@ -41,6 +41,9 @@ public class CommandLineConstants {
     public static final String SHORT_VERSION = "-v";
     public static final String OLD_SHORT_VERSION = "-V";
 
+    /** Debug flag */
+    public static final String DEBUG = "--debug";
+
     /** Configure the file to be used to read properties */
     public static final String OLD_PROPERTIES = "-properties";
     public static final String PROPERTIES = "--properties";
@@ -116,6 +119,10 @@ public class CommandLineConstants {
     public static final String MASTER_PORT = "--master-port";
 
     public static final String MODULE_PATH = "-mp";
+
+    // java.net properties
+    public static final String PREFER_IPV4_STACK = "java.net.preferIPv4Stack";
+    public static final String PREFER_IPV6_ADDRESSES = "java.net.preferIPv6Addresses";
 
     /** Additional class path items, used only by app client*/
     public static final String APPCLIENT_CONFIG = "--appclient-config";

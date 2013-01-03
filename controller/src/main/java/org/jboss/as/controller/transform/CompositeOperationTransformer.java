@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.transform;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 import org.jboss.dmr.ModelNode;
@@ -37,11 +38,11 @@ import java.util.List;
 class CompositeOperationTransformer implements OperationTransformer {
 
     @Override
-    public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation) {
+    public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation) throws OperationFailedException {
         return transformOperation(context, address, operation, false);
     }
 
-    TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation, final boolean nested) {
+    TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation, final boolean nested) throws OperationFailedException {
         assert address.size() == 0;
         final ModelNode composite = operation.clone();
         composite.get(STEPS).setEmptyList();
@@ -58,7 +59,7 @@ class CompositeOperationTransformer implements OperationTransformer {
                 result = transformOperation(context, PathAddress.EMPTY_ADDRESS, step, false);
             } else {
                 final OperationTransformer transformer = target.resolveTransformer(stepAddress, operationName);
-                result = transformer.transformOperation(context, address, step);
+                result = transformer.transformOperation(context, stepAddress, step);
             }
             composite.get(STEPS).add(result.getTransformedOperation());
             steps.add(new Step(i, result));
@@ -81,8 +82,13 @@ class CompositeOperationTransformer implements OperationTransformer {
             for(final Step step : steps) {
                 final String id = "step-" + step.getStepCount();
                 final ModelNode stepResult = original.get(RESULT, id);
-                final OperationResultTransformer transformer = step.getResult();
-                result.get(id).set(transformer.transformResult(stepResult));
+                // Skip ignored steps
+                if(IGNORED.equals(stepResult.get(OUTCOME).asString())) {
+                    result.get(id).set(stepResult);
+                } else {
+                    final OperationResultTransformer transformer = step.getResult();
+                    result.get(id).set(transformer.transformResult(stepResult));
+                }
             }
             return response;
         }

@@ -14,13 +14,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.regex.Pattern;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -30,6 +34,7 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.threads.AsyncFuture;
+import org.jboss.threads.AsyncFutureTask;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -41,6 +46,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FULL_REPLACE_DEPLOYMENT;
@@ -48,7 +54,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_RESOURCES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLED_BACK;
@@ -657,12 +663,22 @@ public class FileSystemDeploymentServiceUnitTestCase {
 
     @Test
     public void testUndeployByContentDeletionZipped() throws Exception {
+        undeployByContentDeletionZippedTest(tmpDir);
+    }
 
+    @Test
+    public void testUndeployContentInSubdirectory() throws Exception {
+        File subdir = createDirectory(tmpDir, "sub");
+        undeployByContentDeletionZippedTest(subdir);
+    }
+
+    private void undeployByContentDeletionZippedTest(File baseDir) throws Exception {
         // First, zipped content
 
-        File war = createFile("foo.war");
-        File dodeploy = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
-        File deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
+        File war = createFile(baseDir, "foo.war");
+        File dodeploy = createFile(baseDir, "foo.war" + FileSystemDeploymentService.DO_DEPLOY);
+        File deployed = new File(baseDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
+        File undeployed = new File(baseDir, "foo.war" + FileSystemDeploymentService.UNDEPLOYED);
         TesteeSet ts = createTestee();
         ts.testee.setAutoDeployZippedContent(true);
         ts.controller.addCompositeSuccessResponse(1);
@@ -670,6 +686,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         assertTrue(war.exists());
         assertFalse(dodeploy.exists());
         assertTrue(deployed.exists());
+        assertFalse(undeployed.exists());
         assertEquals(1, ts.controller.added.size());
         assertEquals(1, ts.controller.deployed.size());
 
@@ -679,14 +696,16 @@ public class FileSystemDeploymentServiceUnitTestCase {
         assertFalse(war.exists());
         assertFalse(dodeploy.exists());
         assertFalse(deployed.exists());
+        assertTrue(undeployed.exists());
         assertEquals(0, ts.controller.added.size());
         assertEquals(0, ts.controller.deployed.size());
 
         // Next, zipped content with auto-deploy disabled
 
-        war = createFile("foo.war");
-        dodeploy = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
-        deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
+        war = createFile(baseDir, "foo.war");
+        dodeploy = createFile(baseDir, "foo.war" + FileSystemDeploymentService.DO_DEPLOY);
+        deployed = new File(baseDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
+        undeployed = new File(baseDir, "foo.war" + FileSystemDeploymentService.UNDEPLOYED);
         ts = createTestee();
         ts.testee.setAutoDeployZippedContent(false);
         ts.controller.addCompositeSuccessResponse(1);
@@ -694,6 +713,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         assertTrue(war.exists());
         assertFalse(dodeploy.exists());
         assertTrue(deployed.exists());
+        assertFalse(undeployed.exists());
         assertEquals(1, ts.controller.added.size());
         assertEquals(1, ts.controller.deployed.size());
 
@@ -702,6 +722,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         assertFalse(war.exists());
         assertFalse(dodeploy.exists());
         assertTrue(deployed.exists());
+        assertFalse(undeployed.exists());
         assertEquals(1, ts.controller.added.size());
         assertEquals(1, ts.controller.deployed.size());
     }
@@ -1215,7 +1236,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
 
         TesteeSet ts = createTestee(new DiscardTaskExecutor() {
             @Override
-            public <T> Future<T> submit(Callable<T> tCallable) {
+            public <T> AsyncFuture<T> submit(Callable<T> tCallable) {
                 return new TimeOutFuture<T>(5, tCallable);
             }
         });
@@ -1377,12 +1398,106 @@ public class FileSystemDeploymentServiceUnitTestCase {
 
     }
 
+    /** AS7-784 */
+    @Test
+    public void testUndeployedExternally() throws Exception {
+        File f1 = createFile("undeployed" + FileSystemDeploymentService.DEPLOYED);
+        File f2 = new File(tmpDir, "undeployed" + FileSystemDeploymentService.UNDEPLOYED);
+        File f3 = createFile(new File(tmpDir, "nested"), "nested-undeployed" + FileSystemDeploymentService.DEPLOYED);
+        File f4 = new File(new File(tmpDir, "nested"), "nested-undeployed" + FileSystemDeploymentService.UNDEPLOYED);
+        File f5 = createFile("removed" + FileSystemDeploymentService.DEPLOYED);
+        File f6 = new File(tmpDir, "removed" + FileSystemDeploymentService.UNDEPLOYED);
+        File f7 = createFile(new File(tmpDir, "nested"), "nested-removed" + FileSystemDeploymentService.DEPLOYED);
+        File f8 = new File(new File(tmpDir, "nested"), "nested-removed" + FileSystemDeploymentService.UNDEPLOYED);
+
+        File undeployed = createFile("undeployed");
+        File nestedUndeployed = createFile(new File(tmpDir, "nested"), "nested-undeployed");
+
+        File removed = createFile("removed");
+        File nestedRemoved = createFile(new File(tmpDir, "nested"), "nested-removed");
+
+        // We expect 2 requests for children names due to subdir "nested"
+        MockServerController sc = new MockServerController("undeployed", "nested-undeployed", "removed", "nested-removed");
+//        sc.responses.add(sc.responses.get(0));
+        TesteeSet ts = createTestee(sc);
+
+        Assert.assertTrue(f1.exists());
+        Assert.assertFalse(f2.exists());
+        Assert.assertTrue(f3.exists());
+        Assert.assertFalse(f4.exists());
+        Assert.assertTrue(f5.exists());
+        Assert.assertFalse(f6.exists());
+        Assert.assertTrue(undeployed.exists());
+        Assert.assertTrue(nestedUndeployed.exists());
+        Assert.assertTrue(removed.exists());
+        Assert.assertTrue(nestedRemoved.exists());
+
+        // Simulate the CLI or console undeploying 2 deployments and removing 2
+        sc.deployed.remove("undeployed");
+        sc.deployed.remove("nested-undeployed");
+        sc.added.remove("removed");
+        sc.added.remove("nested-removed");
+        sc.deployed.remove("removed");
+        sc.deployed.remove("nested-removed");
+
+        ts.testee.scan();
+
+        Assert.assertFalse(f1.exists());
+        Assert.assertTrue(f2.exists());
+        Assert.assertFalse(f3.exists());
+        Assert.assertTrue(f4.exists());
+        Assert.assertFalse(f5.exists());
+        Assert.assertTrue(f6.exists());
+        Assert.assertTrue(undeployed.exists());
+        Assert.assertTrue(nestedUndeployed.exists());
+        Assert.assertTrue(removed.exists());
+        Assert.assertTrue(nestedRemoved.exists());
+        Assert.assertEquals(0, sc.deployed.size());
+
+        ts.testee.scan();
+
+        Assert.assertFalse(f1.exists());
+        Assert.assertTrue(f2.exists());
+        Assert.assertFalse(f3.exists());
+        Assert.assertTrue(f4.exists());
+        Assert.assertFalse(f5.exists());
+        Assert.assertTrue(f6.exists());
+        Assert.assertTrue(undeployed.exists());
+        Assert.assertTrue(nestedUndeployed.exists());
+        Assert.assertTrue(removed.exists());
+        Assert.assertTrue(nestedRemoved.exists());
+        Assert.assertEquals(0, sc.deployed.size());
+    }
+
+    @Test
+    public void testArchivePatterns() throws Exception {
+        Pattern pattern = FileSystemDeploymentService.ARCHIVE_PATTERN;
+
+        assertTrue(pattern.matcher("x.war").matches());
+        assertTrue(pattern.matcher("x.War").matches());
+        assertTrue(pattern.matcher("x.WAr").matches());
+        assertTrue(pattern.matcher("x.WAR").matches());
+        assertTrue(pattern.matcher("x.jar").matches());
+        assertTrue(pattern.matcher("x.Jar").matches());
+        assertTrue(pattern.matcher("x.sar").matches());
+        assertTrue(pattern.matcher("x.Sar").matches());
+        assertTrue(pattern.matcher("x.ear").matches());
+        assertTrue(pattern.matcher("x.Ear").matches());
+        assertTrue(pattern.matcher("x.rar").matches());
+        assertTrue(pattern.matcher("x.Rar").matches());
+        assertTrue(pattern.matcher("x.wab").matches());
+        assertTrue(pattern.matcher("x.WaB").matches());
+        assertTrue(pattern.matcher("x.esa").matches());
+        assertTrue(pattern.matcher("x.ESA").matches());
+
+    }
+
     private TesteeSet createTestee(String... existingContent) throws OperationFailedException {
         return createTestee(new MockServerController(existingContent));
     }
 
-    private TesteeSet createTestee(final ScheduledExecutorService executorService, final String... existingContent) throws OperationFailedException {
-        return createTestee(new MockServerController(existingContent), executorService);
+    private TesteeSet createTestee(final DiscardTaskExecutor executorService, final String... existingContent) throws OperationFailedException {
+        return createTestee(new MockServerController(executorService, existingContent), executorService);
     }
 
     private TesteeSet createTestee(final MockServerController sc) throws OperationFailedException {
@@ -1462,6 +1577,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
 
     private static class MockServerController implements ModelControllerClient, DeploymentOperations.Factory {
 
+        private final DiscardTaskExecutor executorService;
         private final List<ModelNode> requests = new ArrayList<ModelNode>(1);
         private final List<Response> responses = new ArrayList<Response>(1);
         private final Map<String, byte[]> added = new HashMap<String, byte[]>();
@@ -1489,8 +1605,13 @@ public class FileSystemDeploymentServiceUnitTestCase {
         }
 
         @Override
-        public AsyncFuture<ModelNode> executeAsync(ModelNode operation, OperationMessageHandler messageHandler) {
-            throw new UnsupportedOperationException();
+        public AsyncFuture<ModelNode> executeAsync(final ModelNode operation, OperationMessageHandler messageHandler) {
+            return executorService.submit(new Callable<ModelNode>() {
+                @Override
+                public ModelNode call() throws Exception {
+                    return execute(operation);
+                }
+            });
         }
 
         @Override
@@ -1518,9 +1639,15 @@ public class FileSystemDeploymentServiceUnitTestCase {
         }
 
         MockServerController(String... existingDeployments) {
+            this(executor, existingDeployments);
+        }
+
+        MockServerController(DiscardTaskExecutor executorService, String... existingDeployments) {
             for (String dep : existingDeployments) {
                 added.put(dep, randomHash());
+                deployed.put(dep, added.get(dep));
             }
+            this.executorService = executorService;
         }
 
         public void addCompositeSuccessResponse(int count) {
@@ -1570,9 +1697,9 @@ public class FileSystemDeploymentServiceUnitTestCase {
             ModelNode content = new ModelNode();
             content.get(OUTCOME).set(SUCCESS);
             ModelNode result = content.get(RESULT);
-            result.setEmptyList();
+            result.setEmptyObject();
             for (String deployment : added.keySet()) {
-                result.add(deployment);
+                result.get(deployment, ENABLED).set(deployed.containsKey(deployment));
             }
             return content;
         }
@@ -1580,7 +1707,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         private ModelNode processOp(ModelNode op) {
 
             String opName = op.require(OP).asString();
-            if (READ_CHILDREN_NAMES_OPERATION.equals(opName)) {
+            if (READ_CHILDREN_RESOURCES_OPERATION.equals(opName)) {
                 return getDeploymentNamesResponse();
             }
             else if (COMPOSITE.equals(opName)) {
@@ -1651,7 +1778,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         }
 
         @Override
-        public <T> Future<T> submit(Callable<T> tCallable) {
+        public <T> AsyncFuture<T> submit(Callable<T> tCallable) {
             return new CallOnGetFuture<T>(tCallable);
         }
 
@@ -1660,7 +1787,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         }
     }
 
-    private static class CallOnGetFuture<T> implements Future<T> {
+    private static class CallOnGetFuture<T> implements AsyncFuture<T> {
         final Callable<T> callable;
 
         private CallOnGetFuture(Callable<T> callable) {
@@ -1695,40 +1822,59 @@ public class FileSystemDeploymentServiceUnitTestCase {
         public T get(long l, TimeUnit timeUnit) throws InterruptedException, ExecutionException, TimeoutException {
             return get();
         }
+
+        @Override
+        public Status await() throws InterruptedException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Status await(long timeout, TimeUnit unit) throws InterruptedException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public T getUninterruptibly() throws CancellationException, ExecutionException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public T getUninterruptibly(long timeout, TimeUnit unit) throws CancellationException, ExecutionException, TimeoutException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Status awaitUninterruptibly() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Status awaitUninterruptibly(long timeout, TimeUnit unit) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Status getStatus() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public <A> void addListener(Listener<? super T, A> listener, A attachment) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void asyncCancel(boolean interruptionDesired) {
+            throw new UnsupportedOperationException();
+        }
     }
 
-    private static class TimeOutFuture<T> implements Future<T> {
+    private static class TimeOutFuture<T> extends CallOnGetFuture<T> {
         final long expectedTimeout;
-        final Callable<T> callable;
 
         private TimeOutFuture(long expectedTimeout, Callable<T> callable) {
+            super(callable);
             this.expectedTimeout = expectedTimeout;
-            this.callable = callable;
-        }
-
-        @Override
-        public boolean cancel(boolean b) {
-            return false;
-        }
-
-        @Override
-        public boolean isCancelled() {
-            return false;
-        }
-
-        @Override
-        public boolean isDone() {
-            return false;
-        }
-
-        @Override
-        public T get() throws InterruptedException, ExecutionException {
-            try {
-                return callable.call();
-            } catch (Exception e) {
-                // Ignore
-                return null;
-            }
         }
 
         @Override

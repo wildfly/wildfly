@@ -89,6 +89,7 @@ public enum Attribute {
     RELATIVE_TO(ModelKeys.RELATIVE_TO),
     REMOTE_TIMEOUT(ModelKeys.REMOTE_TIMEOUT),
     REPLICATION_QUEUE_EXECUTOR(ModelKeys.REPLICATION_QUEUE_EXECUTOR),
+    SEGMENTS(ModelKeys.SEGMENTS),
     SHARED(ModelKeys.SHARED),
     SHUTDOWN_TIMEOUT(ModelKeys.SHUTDOWN_TIMEOUT),
     SINGLETON(ModelKeys.SINGLETON),
@@ -103,7 +104,7 @@ public enum Attribute {
     THREAD_POOL_SIZE(ModelKeys.THREAD_POOL_SIZE),
     TIMEOUT(ModelKeys.TIMEOUT),
     TYPE(ModelKeys.TYPE),
-    VIRTUAL_NODES(ModelKeys.VIRTUAL_NODES),
+    @Deprecated VIRTUAL_NODES("virtual-nodes"),
     ;
 
     private final String name;

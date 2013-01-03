@@ -28,9 +28,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
 import javax.ejb.CreateException;
+
 import org.jboss.as.cmp.CmpMessages;
-import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.as.cmp.jdbc.bridge.JDBCCMPFieldBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCCMRFieldBridge;
@@ -39,6 +40,8 @@ import org.jboss.as.cmp.jdbc.bridge.JDBCFieldBridge;
 import org.jboss.as.cmp.jdbc.metadata.JDBCEntityCommandMetaData;
 import org.jboss.logging.Logger;
 import org.jboss.security.AuthenticationManager;
+
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 
 /**
  * Base class for create commands that drives the operation sequence.
@@ -267,11 +270,11 @@ public abstract class JDBCAbstractCreateCommand implements JDBCCreateCommand {
             // execute statement
             int rowsAffected = executeInsert(index, ps, ctx);
             if (rowsAffected != 1) {
-                throw CmpMessages.MESSAGES.expectedOneRow(rowsAffected, ctx.getPrimaryKey());
+                throw CmpMessages.MESSAGES.expectedOneRow(rowsAffected, ctx.getPrimaryKeyUnchecked());
             }
         } catch (SQLException e) {
             if (exceptionProcessor != null && exceptionProcessor.isDuplicateKey(e)) {
-                throw CmpMessages.MESSAGES.uniqueKeyViolationInvalidFk(ctx.getPrimaryKey());
+                throw CmpMessages.MESSAGES.uniqueKeyViolationInvalidFk(ctx.getPrimaryKeyUnchecked());
             } else {
                 throw CmpMessages.MESSAGES.couldNotCreateEntity(e);
             }

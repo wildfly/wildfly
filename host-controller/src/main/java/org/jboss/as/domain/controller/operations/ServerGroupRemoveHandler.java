@@ -22,27 +22,17 @@
 
 package org.jboss.as.domain.controller.operations;
 
-import java.util.Locale;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.domain.controller.descriptions.ServerGroupDescription;
-import org.jboss.dmr.ModelNode;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public class ServerGroupRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
+public class ServerGroupRemoveHandler extends AbstractRemoveStepHandler {
 
     public static final ServerGroupRemoveHandler INSTANCE = new ServerGroupRemoveHandler();
 
     protected boolean requiresRuntime(OperationContext context) {
         return false;
     }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return ServerGroupDescription.getServerGroupRemove(locale);
-    }
-
 }

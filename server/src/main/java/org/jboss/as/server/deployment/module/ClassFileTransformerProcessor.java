@@ -42,20 +42,20 @@ public class ClassFileTransformerProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final DelegatingClassFileTransformer transformer = deploymentUnit.getAttachment(DelegatingClassFileTransformer.ATTACHMENT_KEY);
+        final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+        if (module == null || transformer == null) {
+            return;
+        }
         try {
-            DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-            DelegatingClassFileTransformer transformer = deploymentUnit.getAttachment(DelegatingClassFileTransformer.ATTACHMENT_KEY);
-            // some modules do not install a transformer (e.g. OSGi)
-            if (transformer != null) {
-                Module module = deploymentUnit.getAttachment(Attachments.MODULE);
-                ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
-                for (String transformerClassName : moduleSpecification.getClassFileTransformers()) {
-                    transformer.addTransformer((ClassFileTransformer) module.getClassLoader().loadClass(transformerClassName).newInstance());
-                }
-                // activate transformer only after all delegate transformers have been added
-                // so that transformers themselves are not instrumented
-                transformer.setActive(true);
+            for (String transformerClassName : moduleSpecification.getClassFileTransformers()) {
+                transformer.addTransformer((ClassFileTransformer) module.getClassLoader().loadClass(transformerClassName).newInstance());
             }
+            // activate transformer only after all delegate transformers have been added
+            // so that transformers themselves are not instrumented
+            transformer.setActive(true);
         } catch (Exception e) {
             throw ServerMessages.MESSAGES.failedToInstantiateClassFileTransformer(ClassFileTransformer.class.getSimpleName(), e);
         }

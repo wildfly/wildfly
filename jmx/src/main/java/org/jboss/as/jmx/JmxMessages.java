@@ -22,26 +22,30 @@
 
 package org.jboss.as.jmx;
 
-import org.jboss.as.controller.PathAddress;
-import org.jboss.dmr.ModelType;
-import org.jboss.logging.Cause;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageBundle;
-import org.jboss.logging.Messages;
-import org.jboss.msc.service.StartException;
-
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
 import javax.management.InvalidAttributeValueException;
 import javax.management.MBeanException;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
+import javax.management.openmbean.OpenDataException;
+import javax.management.openmbean.OpenType;
+
+import org.jboss.as.controller.PathAddress;
+import org.jboss.dmr.ModelType;
+import org.jboss.logging.Messages;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageBundle;
+import org.jboss.msc.service.StartException;
 
 /**
  * Date: 05.11.2011
+ * Reserved logging id ranges from: http://community.jboss.org/wiki/LoggingIds: 11330 - 11399
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
@@ -52,6 +56,64 @@ public interface JmxMessages {
      * The message.
      */
     JmxMessages MESSAGES = Messages.getBundle(JmxMessages.class);
+
+    @Message(id = Message.NONE, value = "entry")
+    String compositeEntryTypeName();
+
+    @Message(id = Message.NONE, value = "An entry")
+    String compositeEntryTypeDescription();
+
+    @Message (id = Message.NONE, value = "The key")
+    String compositeEntryKeyDescription();
+
+    @Message (id = Message.NONE, value = "The value")
+    String compositeEntryValueDescription();
+
+    @Message (id = Message.NONE, value = "A map")
+    String compositeMapName();
+
+    @Message (id = Message.NONE, value = "The map is indexed by 'key'")
+    String compositeMapDescription();
+
+    @Message(id = Message.NONE, value = "Complex type")
+    String complexCompositeEntryTypeName();
+
+    @Message(id = Message.NONE, value = "A complex type")
+    String complexCompositeEntryTypeDescription();
+
+    @Message(id = Message.NONE, value="This mbean does not support expressions for attributes or operation parameters, even when supported by the underlying model. Instead the resolved attribute is returned, and the real typed value must be used when writing attributes/invoking operations.")
+    String descriptorMBeanExpressionSupportFalse();
+
+    @Message(id = Message.NONE, value="This mbean supports raw expressions for attributes and operation parameters where supported by the underlying model. If no expression is used, the string representation is converted into the real attribute value.")
+    String descriptorMBeanExpressionSupportTrue();
+
+    @Message(id = Message.NONE, value="To be able to set and read expressions go to %s")
+    String descriptorAlternateMBeanExpressions(ObjectName objectName);
+
+    @Message(id = Message.NONE, value="To read resolved values and to write typed attributes and use typed operation parameters go to %s")
+    String descriptorAlternateMBeanLegacy(ObjectName objectName);
+
+    @Message(id = Message.NONE, value="This attribute supports expressions")
+    String descriptorAttributeExpressionsAllowedTrue();
+
+    @Message(id = Message.NONE, value="This attribute does not support expressions")
+    String descriptorAttributeExpressionsAllowedFalse();
+
+    @Message(id = Message.NONE, value="This parameter supports expressions")
+    String descriptorParameterExpressionsAllowedTrue();
+
+    @Message(id = Message.NONE, value="This parameter does not support expressions")
+    String descriptorParameterExpressionsAllowedFalse();
+
+    @Message(id = Message.NONE, value="A composite type representing a property")
+    String propertyCompositeType();
+
+    @Message(id = Message.NONE, value="The property name")
+    String propertyName();
+
+    @Message(id = Message.NONE, value="The property value")
+    String propertyValue();
+
 
     /**
      * Creates an exception indicating no attribute could be found matching the name.
@@ -287,5 +349,24 @@ public interface JmxMessages {
      */
     @Message(id = 11349, value = "Need the name parameter for wildcard add")
     IllegalStateException wildcardNameParameterRequired();
+
+    @Message(id = 11350, value="An error happened creating a composite type for %s")
+    IllegalStateException errorCreatingCompositeType(@Cause OpenDataException e, OpenType<?> type);
+
+    @Message(id = 11351, value="An error happened creating a composite data for %s")
+    IllegalStateException errorCreatingCompositeData(@Cause OpenDataException e, OpenType<?> type);
+
+    @Message(id = 11352, value="Unknown domain: %s")
+    IllegalArgumentException unknownDomain(String domain);
+
+    @Message(id = 11353, value="Expression can not be converted into target type %s")
+    IllegalArgumentException expressionCannotBeConvertedIntoTargeteType(OpenType<?> type);
+
+    @Message(id = 11354, value = "Unknown child %s")
+    IllegalArgumentException unknownChild(String child);
+
+    @Message(id = 11355, value = "ObjectName cannot be null")
+    IllegalArgumentException objectNameCantBeNull();
+
 }
 

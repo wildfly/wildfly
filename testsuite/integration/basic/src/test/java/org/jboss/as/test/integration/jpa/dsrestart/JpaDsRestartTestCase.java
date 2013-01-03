@@ -44,7 +44,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -66,7 +65,8 @@ public class JpaDsRestartTestCase {
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "dsrestartjpa.war");
         war.addPackage(JpaInjectedSfsb.class.getPackage());
-        war.addAsResource(getPersistenceXml(), "META-INF/persistence.xml");
+        // WEB-INF/classes is implied
+        war.addAsResource(JpaDsRestartTestCase.class.getPackage(), "persistence.xml", "META-INF/persistence.xml");
         war.addAsManifestResource(JpaDsRestartTestCase.class.getPackage(), "MANIFEST.MF", "MANIFEST.MF");
         return war;
     }
@@ -112,18 +112,5 @@ public class JpaDsRestartTestCase {
         } else {
             Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(), SUCCESS, result.get(OUTCOME).asString());
         }
-    }
-
-    private static StringAsset getPersistenceXml() {
-        return new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
-                "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
-                "  <persistence-unit name=\"mainPu\">" +
-                "    <description>Persistence Unit." +
-                "    </description>" +
-                "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
-                "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
-                "</properties>" +
-                "  </persistence-unit>" +
-                "</persistence>");
     }
 }

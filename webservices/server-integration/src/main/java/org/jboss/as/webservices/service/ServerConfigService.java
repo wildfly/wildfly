@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -88,7 +88,9 @@ public final class ServerConfigService implements Service<ServerConfig> {
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, serverConfig.getServerEnvironmentInjector());
         builder.addListener(listener);
         builder.setInitialMode(Mode.ACTIVE);
-        return builder.install();
+        ServiceController<?> sc = builder.install();
+        WSServices.saveContainerRegistry(sc.getServiceContainer());
+        return sc;
     }
 
 }

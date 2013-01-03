@@ -33,12 +33,16 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContextType;
 
 import org.jboss.as.ee.component.InjectionSource;
+import org.jboss.as.jpa.config.ExtendedPersistenceInheritance;
+import org.jboss.as.jpa.config.JPADeploymentSettings;
 import org.jboss.as.jpa.container.CreatedEntityManagers;
 import org.jboss.as.jpa.container.EntityManagerUnwrappedTargetInvocationHandler;
 import org.jboss.as.jpa.container.ExtendedEntityManager;
-import org.jboss.as.jpa.container.ReferenceCountedEntityManager;
-import org.jboss.as.jpa.container.SFSBCallStack;
+import org.jboss.as.jpa.container.ExtendedPersistenceDeepInheritance;
+import org.jboss.as.jpa.container.ExtendedPersistenceShallowInheritance;
 import org.jboss.as.jpa.container.TransactionScopedEntityManager;
+import org.jboss.as.jpa.processor.JpaAttachments;
+import org.jboss.as.jpa.service.JPAService;
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.as.naming.ManagedReference;
@@ -47,6 +51,7 @@ import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -145,29 +150,52 @@ public class PersistenceContextInjectionSource extends InjectionSource {
                 if (JPA_LOGGER.isDebugEnabled())
                     JPA_LOGGER.debugf("created new TransactionScopedEntityManager for unit name=%s", unitName);
             } else {
+                boolean useDeepInheritance = !ExtendedPersistenceInheritance.SHALLOW.equals(JPAService.getDefaultExtendedPersistenceInheritance());
+                                                        // get deployment settings from top level du (jboss-all.xml is only parsed at the top level).
+                JPADeploymentSettings jpaDeploymentSettings =
+                        DeploymentUtils.getTopDeploymentUnit(deploymentUnit).getAttachment(JpaAttachments.DEPLOYMENT_SETTINGS_KEY);
+                if (jpaDeploymentSettings != null) {
+                    useDeepInheritance = ExtendedPersistenceInheritance.DEEP.equals(jpaDeploymentSettings.getExtendedPersistenceInheritanceType());
+                }
+
+                boolean createdNewExtendedPersistence = false;
+                ExtendedEntityManager entityManager1;
                 // handle PersistenceContextType.EXTENDED
-                ReferenceCountedEntityManager entityManager1 = SFSBCallStack.findPersistenceContext(unitName);
+                if (useDeepInheritance) {
+                    entityManager1 = ExtendedPersistenceDeepInheritance.INSTANCE.findExtendedPersistenceContext(unitName);
+                }
+                else {
+                    entityManager1 = ExtendedPersistenceShallowInheritance.INSTANCE.findExtendedPersistenceContext(unitName);
+                }
+
                 if (entityManager1 == null) {
-                    EntityManager tmpEm = emf.createEntityManager(properties);
-                    entityManager = new ExtendedEntityManager(unitName, tmpEm);
-                    entityManager1 = new ReferenceCountedEntityManager((ExtendedEntityManager)entityManager);
+                    entityManager1 = new ExtendedEntityManager(unitName, emf.createEntityManager(properties));
+                    createdNewExtendedPersistence = true;
                     if (JPA_LOGGER.isDebugEnabled())
-                        JPA_LOGGER.debugf("created new ExtendedEntityManager for unit name=%s", unitName);
+                        JPA_LOGGER.debugf("created new ExtendedEntityManager for unit name=%s, useDeepInheritance = %b", unitName, useDeepInheritance);
 
                 } else {
                     entityManager1.increaseReferenceCount();
-                    entityManager = entityManager1.getEntityManager();
                     if (JPA_LOGGER.isDebugEnabled())
-                    JPA_LOGGER.debugf("inherited existing ExtendedEntityManager from SFSB invocation stack, unit name=%s, " +
-                        "%d beans sharing ExtendedEntityManager", unitName, entityManager1.getReferenceCount());
+                        JPA_LOGGER.debugf("inherited existing ExtendedEntityManager from SFSB invocation stack, unit name=%s, " +
+                                "%d beans sharing ExtendedEntityManager, useDeepInheritance = %b", unitName, entityManager1.getReferenceCount(), useDeepInheritance);
                 }
+
+                entityManager = entityManager1;
 
                 // register the EntityManager on TL so that SFSBCreateInterceptor will see it.
                 // this is important for creating a new XPC or inheriting existing XPC from SFSBCallStack
                 CreatedEntityManagers.registerPersistenceContext(entityManager1);
 
-                //register the pc so it is accessible to other SFSB's during the creation process
-                SFSBCallStack.extendedPersistenceContextCreated(unitName, entityManager1);
+                if (createdNewExtendedPersistence) {
+                    //register the pc so it is accessible to other SFSB's during the creation process
+                    if (useDeepInheritance) {
+                        ExtendedPersistenceDeepInheritance.INSTANCE.registerExtendedPersistenceContext(unitName, entityManager1);
+                    }
+                    else {
+                        ExtendedPersistenceShallowInheritance.INSTANCE.registerExtendedPersistenceContext(unitName, entityManager1);
+                    }
+                }
 
             }
 

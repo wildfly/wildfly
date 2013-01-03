@@ -1,18 +1,37 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 package org.jboss.as.controller.transform;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.extension.SubsystemInformation;
 import org.jboss.as.controller.registry.OperationTransformerRegistry;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
@@ -22,35 +41,38 @@ public class TransformationTargetImpl implements TransformationTarget {
     private final ModelVersion version;
     private final ExtensionRegistry extensionRegistry;
     private final TransformerRegistry transformerRegistry;
-    private final Map<String, String> subsystemVersions = Collections.synchronizedMap(new HashMap<String, String>());
+    private final Map<String, ModelVersion> subsystemVersions = Collections.synchronizedMap(new HashMap<String, ModelVersion>());
     private final OperationTransformerRegistry operationTransformers;
+    private final TransformationTargetType type;
+    private final IgnoredTransformationRegistry transformationExclusion;
 
-    private TransformationTargetImpl(final TransformerRegistry transformerRegistry, final ModelVersion version, final ModelNode subsystemVersions, final OperationTransformerRegistry transformers) {
+    private TransformationTargetImpl(final TransformerRegistry transformerRegistry, final ModelVersion version,
+                                     final Map<PathAddress, ModelVersion> subsystemVersions, final OperationTransformerRegistry transformers,
+                                     final IgnoredTransformationRegistry transformationExclusion, final TransformationTargetType type) {
         this.version = version;
         this.transformerRegistry = transformerRegistry;
         this.extensionRegistry = transformerRegistry.getExtensionRegistry();
-        for (Property p : subsystemVersions.asPropertyList()) {
-            this.subsystemVersions.put(p.getName(), p.getValue().asString());
+        for (Map.Entry<PathAddress, ModelVersion> p : subsystemVersions.entrySet()) {
+            final String name = p.getKey().getLastElement().getValue();
+            this.subsystemVersions.put(name, p.getValue());
         }
         this.operationTransformers = transformers;
+        this.type = type;
+        this.transformationExclusion = transformationExclusion == null ? null : transformationExclusion;
     }
 
-    public static TransformationTargetImpl create(final TransformerRegistry transformerRegistry, final ModelVersion version, final ModelNode subsystems, final TransformationTargetType type) {
+    public static TransformationTargetImpl create(final TransformerRegistry transformerRegistry, final ModelVersion version,
+                                                  final Map<PathAddress, ModelVersion> subsystems,
+                                                  final IgnoredTransformationRegistry transformationExclusion, final TransformationTargetType type) {
         final OperationTransformerRegistry registry;
         switch (type) {
             case SERVER:
-                registry = transformerRegistry.getDomainTransformers().resolveServer(version, subsystems);
+                registry = transformerRegistry.resolveServer(version, subsystems);
                 break;
             default:
-                registry = transformerRegistry.getDomainTransformers().resolveHost(version, subsystems);
+                registry = transformerRegistry.resolveHost(version, subsystems);
         }
-        return new TransformationTargetImpl(transformerRegistry, version, subsystems, registry);
-    }
-
-    @Deprecated
-    public static TransformationTargetImpl create(TransformerRegistry transformerRegistry, final int majorManagementVersion, final int minorManagementVersion,
-                                                  int microManagementVersion, final ModelNode subsystemVersions) {
-        return create(transformerRegistry, ModelVersion.create(majorManagementVersion, minorManagementVersion, microManagementVersion), subsystemVersions, TransformationTargetType.HOST);
+        return new TransformationTargetImpl(transformerRegistry, version, subsystems, registry, transformationExclusion, type);
     }
 
     @Override
@@ -59,17 +81,31 @@ public class TransformationTargetImpl implements TransformationTarget {
     }
 
     @Override
-    public String getSubsystemVersion(String subsystemName) {
+    public ModelVersion getSubsystemVersion(String subsystemName) {
         return subsystemVersions.get(subsystemName);
     }
 
-    @Override
     public SubsystemInformation getSubsystemInformation(String subsystemName) {
         return extensionRegistry.getSubsystemInfo(subsystemName);
     }
 
     @Override
+    public ResourceTransformer resolveTransformer(final PathAddress address) {
+        if (transformationExclusion != null && transformationExclusion.isResourceTransformationIgnored(address)) {
+            return ResourceTransformer.DEFAULT;
+        }
+        OperationTransformerRegistry.ResourceTransformerEntry entry = operationTransformers.resolveResourceTransformer(address);
+        if(entry == null) {
+            return ResourceTransformer.DEFAULT;
+        }
+        return entry.getTransformer();
+    }
+
+    @Override
     public OperationTransformer resolveTransformer(final PathAddress address, final String operationName) {
+        if (transformationExclusion != null && transformationExclusion.isOperationTransformationIgnored(address)) {
+            return OperationTransformer.DEFAULT;
+        }
         if(address.size() == 0) {
             // TODO use operationTransformers registry to register this operations.
             if(ModelDescriptionConstants.COMPOSITE.equals(operationName)) {
@@ -81,39 +117,31 @@ public class TransformationTargetImpl implements TransformationTarget {
     }
 
     @Override
-    public SubsystemTransformer getSubsystemTransformer(String subsystemName) {
-        if (!subsystemVersions.containsKey(subsystemName)) {
-            return null;
-        }
-        SubsystemInformation info = getSubsystemInformation(subsystemName);
-
-        String[] version = getSubsystemVersion(subsystemName).split("\\.");
-        int major = Integer.parseInt(version[0]);
-        int minor = Integer.parseInt(version[1]);
-        int micro = version.length == 3 ? Integer.parseInt(version[2]) : 0;
-
-        if (info.getManagementInterfaceMajorVersion() == major && info.getManagementInterfaceMinorVersion() == minor) {
-            return null; //no need to transform
-        }
-        SubsystemTransformer t = transformerRegistry.getSubsystemTransformer(subsystemName, major, minor, micro);
-        if (t == null) {
-            ControllerLogger.ROOT_LOGGER.transformerNotFound(subsystemName, major, minor);
-            //return defaultSubsystemTransformer?
-        }
-        return t;
-    }
-
-    public boolean isTransformationNeeded() {
-        //return  !(major==org.jboss.as.version.Version.MANAGEMENT_MAJOR_VERSION&& minor == org.jboss.as.version.Version.MANAGEMENT_MINOR_VERSION); //todo dependencies issue
-        final int major = version.getMajor();
-        final int minor = version.getMinor();
-        return !(major == 1 && minor == 2);
+    public void addSubsystemVersion(String subsystemName, int majorVersion, int minorVersion) {
+        addSubsystemVersion(subsystemName, ModelVersion.create(majorVersion, minorVersion));
     }
 
     @Override
-    public void addSubsystemVersion(String subsystemName, int majorVersion, int minorVersion) {
-        StringBuilder sb = new StringBuilder(String.valueOf(majorVersion)).append('.').append(minorVersion);
-        this.subsystemVersions.put(subsystemName, sb.toString());
-        transformerRegistry.getDomainTransformers().addSubsystem(operationTransformers, subsystemName, ModelVersion.create(majorVersion, minorVersion));
+    public void addSubsystemVersion(final String subsystemName, final ModelVersion version) {
+        this.subsystemVersions.put(subsystemName, version);
+        transformerRegistry.addSubsystem(operationTransformers, subsystemName, version);
+    }
+
+    @Override
+    public TransformationTargetType getTargetType() {
+        return type;
+    }
+
+    @Override
+    public ExtensionRegistry getExtensionRegistry() {
+        return extensionRegistry;
+    }
+
+    @Override
+    public String getHostName() {
+        if (transformationExclusion == null) {
+            return null;
+        }
+        return transformationExclusion.getHostName();
     }
 }

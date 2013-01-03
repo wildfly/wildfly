@@ -22,14 +22,17 @@
 
 package org.jboss.as.web;
 
+import org.jboss.jandex.ClassInfo;
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.Cause;
-import org.jboss.logging.LogMessage;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.Logger;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageLogger;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
 
-import static org.jboss.logging.Logger.Level.*;
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * This module is using message IDs in the range 18000-18099 and 18200-18399.
@@ -108,7 +111,7 @@ public interface WebLogger extends BasicLogger {
     void destroyContextFailed(@Cause Throwable cause);
 
     @LogMessage(level = INFO)
-    @Message(id = 18210, value = "Registering web context: %s")
+    @Message(id = 18210, value = "Register web context: %s")
     void registerWebapp(String webappPath);
 
     @LogMessage(level = ERROR)
@@ -149,6 +152,21 @@ public interface WebLogger extends BasicLogger {
 
     @LogMessage(level = WARN)
     @Message(id = 18223, value = "Snapshot mode set to 'interval' but snapshotInterval is < 1 or was not specified, using 'instant'")
-    void invalidSnapshotInterval();;
+    void invalidSnapshotInterval();
 
+    @LogMessage(level = INFO)
+    @Message(id = 18224, value = "Unregister web context: %s")
+    void unregisterWebapp(String webappPath);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 18225, value = "Failed to purge EL cache.")
+    void couldNotPurgeELCache(@Cause Exception exception);
+
+    @LogMessage(level = INFO)
+    @Message(id = 18226, value = "Skipped SCI for jar: %s.")
+    void skippedSCI(String jar, @Cause Exception e);
+
+    @LogMessage(level = INFO)
+    @Message(id = 18227, value = "Could not load class designated by HandlesTypes [%s].")
+    void cannotLoadDesignatedHandleTypes(ClassInfo classInfo, @Cause Exception e);
 }

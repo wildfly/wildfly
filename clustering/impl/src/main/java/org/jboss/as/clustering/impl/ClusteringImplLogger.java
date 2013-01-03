@@ -33,15 +33,17 @@ import org.jboss.as.clustering.ClusteringApiLogger;
 import org.jboss.as.clustering.GroupMembershipListener;
 import org.jboss.as.clustering.impl.CoreGroupCommunicationService.GroupView;
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.Cause;
-import org.jboss.logging.LogMessage;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.Logger;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageLogger;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
 import org.jgroups.Address;
 
 /**
- * Date: 26.08.2011
+ * ClusteringImplLogger
+ *
+ * logging id range: 10220 - 10239
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */

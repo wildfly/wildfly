@@ -208,7 +208,7 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
             context.getFailureDescription().set(e.getLocalizedMessage());
         }
 
-        context.completeStep();
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
     public void registerAttributes(final ManagementResourceRegistration registry) {
@@ -363,7 +363,7 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
         });
     }
 
-    private void handleReadAttribute(OperationContext context, ModelNode operation, final HornetQServerControl serverControl) {
+    private void handleReadAttribute(OperationContext context, ModelNode operation, final HornetQServerControl serverControl) throws OperationFailedException {
         final String name = operation.require(ModelDescriptionConstants.NAME).asString();
 
         if (STARTED.getName().equals(name)) {
@@ -372,6 +372,9 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
         } else if (VERSION.getName().equals(name)) {
             String version = serverControl.getVersion();
             context.getResult().set(version);
+        } else if (CommonAttributes.CLUSTERED.getName().equals(name)) {
+            boolean clustered = getClusterConnectionCount(context, operation) > 0;
+            context.getResult().set(clustered);
         } else {
             // Bug
             throw MESSAGES.unsupportedAttribute(name);
@@ -386,5 +389,15 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
         }
         HornetQServer hqServer = HornetQServer.class.cast(hqService.getValue());
         return hqServer.getHornetQServerControl();
+    }
+
+    private int getClusterConnectionCount(final OperationContext context, ModelNode operation) throws OperationFailedException {
+        final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+        ServiceController<?> hqService = context.getServiceRegistry(false).getService(hqServiceName);
+        if (hqService == null || hqService.getState() != ServiceController.State.UP) {
+            throw MESSAGES.hornetQServerNotInstalled(hqServiceName.getSimpleName());
+        }
+        HornetQServer hqServer = HornetQServer.class.cast(hqService.getValue());
+        return hqServer.getClusterManager().getClusterConnections().size();
     }
 }

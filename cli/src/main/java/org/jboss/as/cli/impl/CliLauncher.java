@@ -59,6 +59,8 @@ public class CliLauncher {
             boolean version = false;
             String username = null;
             char[] password = null;
+            int connectionTimeout = -1;
+
             for(String arg : args) {
                 if(arg.startsWith("--controller=") || arg.startsWith("controller=")) {
                     final String value;
@@ -163,6 +165,20 @@ public class CliLauncher {
                     username = arg.startsWith("--") ? arg.substring(7) : arg.substring(5);
                 } else if (arg.startsWith("--password=")) {
                     password = (arg.startsWith("--") ? arg.substring(11) : arg.substring(9)).toCharArray();
+                } else if (arg.startsWith("--timeout=")) {
+                    if (connectionTimeout > 0) {
+                        argError = "Duplicate argument '--timeout'";
+                        break;
+                    }
+                    final String value = arg.substring(10);
+                    try {
+                        connectionTimeout = Integer.parseInt(value);
+                    } catch (final NumberFormatException e) {
+                        //
+                    }
+                    if (connectionTimeout <= 0) {
+                        argError = "The timeout must be a valid positive integer: '" + value + "'";
+                    }
                 } else if (arg.equals("--help") || arg.equals("-h")) {
                     commands = Collections.singletonList("help");
                 } else if (arg.startsWith("--properties=")) {
@@ -194,7 +210,7 @@ public class CliLauncher {
                     for(Object prop : props.keySet()) {
                         SecurityActions.setSystemProperty((String)prop, (String)props.get(prop));
                     }
-                } else {
+                } else if(!(arg.startsWith("-D") || arg.equals("-XX:"))) {// skip system properties and jvm options
                     // assume it's commands
                     if(file != null) {
                         argError = "Only one of '--file', '--commands' or '--command' can appear as the argument at a time: " + arg;
@@ -215,31 +231,31 @@ public class CliLauncher {
             }
 
             if(version) {
-                cmdCtx = new CommandContextImpl();
+                cmdCtx = initCommandContext(defaultControllerHost, defaultControllerPort, username, password, false, connect, connectionTimeout);
                 VersionHandler.INSTANCE.handle(cmdCtx);
                 return;
             }
 
             if(file != null) {
-                cmdCtx = initCommandContext(defaultControllerHost, defaultControllerPort, username, password, false, connect);
+                cmdCtx = initCommandContext(defaultControllerHost, defaultControllerPort, username, password, false, connect, connectionTimeout);
                 processFile(file, cmdCtx);
                 return;
             }
 
             if(commands != null) {
-                cmdCtx = initCommandContext(defaultControllerHost, defaultControllerPort, username, password, false, connect);
+                cmdCtx = initCommandContext(defaultControllerHost, defaultControllerPort, username, password, false, connect, connectionTimeout);
                 processCommands(commands, cmdCtx);
                 return;
             }
 
             if (gui) {
-                cmdCtx = initCommandContext(defaultControllerHost, defaultControllerPort, username, password, false, true);
+                cmdCtx = initCommandContext(defaultControllerHost, defaultControllerPort, username, password, false, true, connectionTimeout);
                 processGui(cmdCtx);
                 return;
             }
 
             // Interactive mode
-            cmdCtx = initCommandContext(defaultControllerHost, defaultControllerPort, username, password, true, connect);
+            cmdCtx = initCommandContext(defaultControllerHost, defaultControllerPort, username, password, true, connect, connectionTimeout);
             cmdCtx.interact();
         } catch(Throwable t) {
             t.printStackTrace();
@@ -255,8 +271,8 @@ public class CliLauncher {
         System.exit(exitCode);
     }
 
-    private static CommandContext initCommandContext(String defaultHost, int defaultPort, String username, char[] password, boolean initConsole, boolean connect) throws CliInitializationException {
-        final CommandContext cmdCtx = CommandContextFactory.getInstance().newCommandContext(defaultHost, defaultPort, username, password, initConsole);
+    private static CommandContext initCommandContext(String defaultHost, int defaultPort, String username, char[] password, boolean initConsole, boolean connect, final int connectionTimeout) throws CliInitializationException {
+        final CommandContext cmdCtx = CommandContextFactory.getInstance().newCommandContext(defaultHost, defaultPort, username, password, initConsole, connectionTimeout);
         if(connect) {
             try {
                 cmdCtx.connectController();

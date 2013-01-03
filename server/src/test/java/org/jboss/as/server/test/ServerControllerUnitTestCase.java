@@ -44,25 +44,28 @@ import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.InterfaceDescription;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.persistence.AbstractConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.resource.InterfaceDefinition;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.DeploymentFileRepository;
-import org.jboss.as.server.ServerControllerModelUtil;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.Services;
-import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
+import org.jboss.as.server.controller.resources.ServerRootResourceDefinition;
 import org.jboss.as.server.parsing.StandaloneXml;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.dmr.ModelNode;
@@ -96,7 +99,7 @@ public class ServerControllerUnitTestCase {
         final StringConfigurationPersister persister = new StringConfigurationPersister(Collections.<ModelNode>emptyList(), new StandaloneXml(null, null, extensionRegistry));
         extensionRegistry.setWriterRegistry(persister);
         final ControlledProcessState processState = new ControlledProcessState(true);
-        final ModelControllerService svc = new ModelControllerService(processState, persister);
+        final ModelControllerService svc = new ModelControllerService(processState, persister, new DelegatingResourceDefinition());
         final ServiceBuilder<ModelController> builder = target.addService(Services.JBOSS_SERVER_CONTROLLER, svc);
         builder.install();
 
@@ -149,7 +152,7 @@ public class ServerControllerUnitTestCase {
         {
             final ModelNode operation = base.clone();
             // operation.get("any-address").set(true);
-            populateCritieria(operation, Nesting.TOP, InterfaceDescription.LOOPBACK);
+            populateCritieria(operation, Nesting.TOP, InterfaceDefinition.LOOPBACK);
             executeForResult(client, operation);
         }
         {
@@ -206,16 +209,16 @@ public class ServerControllerUnitTestCase {
         operation.get(ModelDescriptionConstants.OP_ADDR).add("interface", "complex");
         // This won't be resolvable with the runtime layer enabled
         populateCritieria(operation, Nesting.TOP,
-                InterfaceDescription.LOOPBACK);
+                InterfaceDefinition.LOOPBACK);
         populateCritieria(operation.get("not"), Nesting.NOT,
-                InterfaceDescription.PUBLIC_ADDRESS,
-                InterfaceDescription.LINK_LOCAL_ADDRESS,
-                InterfaceDescription.SITE_LOCAL_ADDRESS,
-                InterfaceDescription.VIRTUAL,
-                InterfaceDescription.UP,
-                InterfaceDescription.MULTICAST,
-                InterfaceDescription.LOOPBACK_ADDRESS,
-                InterfaceDescription.POINT_TO_POINT);
+                InterfaceDefinition.PUBLIC_ADDRESS,
+                InterfaceDefinition.LINK_LOCAL_ADDRESS,
+                InterfaceDefinition.SITE_LOCAL_ADDRESS,
+                InterfaceDefinition.VIRTUAL,
+                InterfaceDefinition.UP,
+                InterfaceDefinition.MULTICAST,
+                InterfaceDefinition.LOOPBACK_ADDRESS,
+                InterfaceDefinition.POINT_TO_POINT);
         populateCritieria(operation.get("any"), Nesting.ANY);
 
         final ModelControllerClient client = controller.createClient(Executors.newCachedThreadPool());
@@ -225,7 +228,7 @@ public class ServerControllerUnitTestCase {
 
     protected void populateCritieria(final ModelNode model, final Nesting nesting, final AttributeDefinition...excluded) {
         Set<AttributeDefinition> excludedCriteria = new HashSet<AttributeDefinition>(Arrays.asList(excluded));
-        for(final AttributeDefinition def : InterfaceDescription.NESTED_ATTRIBUTES) {
+        for(final AttributeDefinition def : InterfaceDefinition.NESTED_ATTRIBUTES) {
 
             if (excludedCriteria.contains(def)) {
                 continue;
@@ -234,15 +237,15 @@ public class ServerControllerUnitTestCase {
             final ModelNode node = model.get(def.getName());
             if(def.getType() == ModelType.BOOLEAN) {
                 node.set(true);
-            } else if (def == InterfaceDescription.INET_ADDRESS || def == InterfaceDescription.LOOPBACK_ADDRESS) {
-                if (nesting == Nesting.ANY && def == InterfaceDescription.INET_ADDRESS) {
+            } else if (def == InterfaceDefinition.INET_ADDRESS || def == InterfaceDefinition.LOOPBACK_ADDRESS) {
+                if (nesting == Nesting.ANY && def == InterfaceDefinition.INET_ADDRESS) {
                     node.add("127.0.0.1");
-                } else if (nesting == Nesting.NOT && def == InterfaceDescription.INET_ADDRESS) {
+                } else if (nesting == Nesting.NOT && def == InterfaceDefinition.INET_ADDRESS) {
                     node.add("10.0.0.1");
                 } else {
                     node.set("127.0.0.1");
                 }
-            } else if (def == InterfaceDescription.NIC || def == InterfaceDescription.NIC_MATCH) {
+            } else if (def == InterfaceDefinition.NIC || def == InterfaceDefinition.NIC_MATCH) {
                 if (nesting == Nesting.ANY) {
                     node.add("lo");
                 } else if (nesting == Nesting.NOT) {
@@ -250,7 +253,7 @@ public class ServerControllerUnitTestCase {
                 } else {
                     node.set("lo");
                 }
-            } else if (def == InterfaceDescription.SUBNET_MATCH) {
+            } else if (def == InterfaceDefinition.SUBNET_MATCH) {
                 if (nesting == Nesting.ANY) {
                     node.add("127.0.0.1/24");
                 } else if (nesting == Nesting.NOT) {
@@ -267,26 +270,30 @@ public class ServerControllerUnitTestCase {
         final CountDownLatch latch = new CountDownLatch(1);
         final StringConfigurationPersister persister;
         final ControlledProcessState processState;
+        final DelegatingResourceDefinition rootResourceDefinition;
+        final ServerEnvironment environment;
+        final ExtensionRegistry extensionRegistry;
         volatile ManagementResourceRegistration rootRegistration;
         volatile Exception error;
 
-        ModelControllerService(final ControlledProcessState processState, final StringConfigurationPersister persister) {
-            super(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.ADMIN_ONLY), persister, processState, ServerDescriptionProviders.ROOT_PROVIDER, null, ExpressionResolver.DEFAULT);
+
+        ModelControllerService(final ControlledProcessState processState, final StringConfigurationPersister persister, final DelegatingResourceDefinition rootResourceDefinition) {
+            super(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.ADMIN_ONLY), persister, processState, rootResourceDefinition, null, ExpressionResolver.DEFAULT);
             this.persister = persister;
             this.processState = processState;
+            this.rootResourceDefinition = rootResourceDefinition;
+
+            Properties properties = new Properties();
+            properties.put("jboss.home.dir", ".");
+
+            final String hostControllerName = "hostControllerName"; // Host Controller name may not be null when in a managed domain
+            environment = new ServerEnvironment(hostControllerName, properties, new HashMap<String, String>(), null, null, ServerEnvironment.LaunchType.DOMAIN, null, new ProductConfig(Module.getBootModuleLoader(), "."));
+            extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER, new RunningModeControl(RunningMode.NORMAL));
         }
 
         @Override
         protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
             this.rootRegistration = rootRegistration;
-            Properties properties = new Properties();
-            properties.put("jboss.home.dir", ".");
-
-            final String hostControllerName = "hostControllerName"; // Host Controller name may not be null when in a managed domain
-            final ServerEnvironment environment = new ServerEnvironment(hostControllerName, properties, new HashMap<String, String>(), null, null, ServerEnvironment.LaunchType.DOMAIN, null, new ProductConfig(Module.getBootModuleLoader(), "."));
-            final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER, new RunningModeControl(RunningMode.NORMAL));
-            ServerControllerModelUtil.initOperations(rootRegistration, MockRepository.INSTANCE, persister, environment,
-                    processState, null, null, extensionRegistry, false, MockRepository.INSTANCE, MOCK_PATH_MANAGER);
         }
 
         @Override
@@ -305,9 +312,44 @@ public class ServerControllerUnitTestCase {
 
         @Override
         public void start(StartContext context) throws StartException {
+            rootResourceDefinition.setDelegate(new ServerRootResourceDefinition(MockRepository.INSTANCE,
+                    persister, environment, processState, null, null, extensionRegistry, false, MOCK_PATH_MANAGER));
             super.start(context);
         }
     }
+
+    private static class DelegatingResourceDefinition implements ResourceDefinition {
+        private volatile ResourceDefinition delegate;
+
+        void setDelegate(ResourceDefinition delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public void registerOperations(ManagementResourceRegistration resourceRegistration) {
+            delegate.registerOperations(resourceRegistration);
+        }
+
+        @Override
+        public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+            delegate.registerChildren(resourceRegistration);
+        }
+
+        @Override
+        public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+            delegate.registerAttributes(resourceRegistration);
+        }
+
+        @Override
+        public PathElement getPathElement() {
+            return delegate.getPathElement();
+        }
+
+        @Override
+        public DescriptionProvider getDescriptionProvider(ImmutableManagementResourceRegistration resourceRegistration) {
+            return delegate.getDescriptionProvider(resourceRegistration);
+        }
+    };
 
     static class StringConfigurationPersister extends AbstractConfigurationPersister {
 
@@ -421,6 +463,11 @@ public class ServerControllerUnitTestCase {
         }
 
         @Override
+        public boolean syncContent(byte[] hash) {
+            return hasContent(hash);
+        }
+
+        @Override
         public VirtualFile getContent(byte[] hash) {
             return null;
         }
@@ -431,7 +478,11 @@ public class ServerControllerUnitTestCase {
         }
 
         @Override
-        public void removeContent(byte[] hash) {
+        public void removeContent(byte[] hash, Object reference) {
+        }
+
+        @Override
+        public void addContentReference(byte[] hash, Object reference) {
         }
 
     }

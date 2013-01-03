@@ -29,21 +29,27 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Executor;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
+import junit.framework.Assert;
+
+import org.jboss.as.configadmin.ConfigAdminListener;
 import org.jboss.as.configadmin.parser.ConfigAdminExtension;
-import org.jboss.as.configadmin.parser.ConfigAdminState;
 import org.jboss.as.configadmin.parser.ModelConstants;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.value.ImmediateValue;
-import org.jboss.msc.value.InjectedValue;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -53,15 +59,12 @@ import org.mockito.Mockito;
 public class ConfigAdminServiceImplTestCase {
     @Test
     public void testPutConfiguration() throws Exception {
-        // Set up some mocks
-        ConfigAdminState mockState = Mockito.mock(ConfigAdminState.class);
 
         ModelNode expectedAddr = new ModelNode();
         expectedAddr.add(new ModelNode().set(ModelDescriptionConstants.SUBSYSTEM, ConfigAdminExtension.SUBSYSTEM_NAME));
         expectedAddr.add(new ModelNode().set(ModelConstants.CONFIGURATION, "a.b.c"));
         ModelNode expectedOp = Util.getEmptyOperation(ModelDescriptionConstants.ADD, expectedAddr);
         ModelNode entries = new ModelNode();
-        entries.get(ConfigAdminService.SOURCE_PROPERTY_KEY).set(ConfigAdminService.FROM_NONDMR_SOURCE_VALUE);
         entries.get("a.key").set("A Value");
         expectedOp.get(ModelConstants.ENTRIES).set(entries);
 
@@ -74,7 +77,6 @@ public class ConfigAdminServiceImplTestCase {
         // Initialize the ConfigAdminServiceImpl object
         ConfigAdminServiceImpl cas = createConfigAdminServiceImpl();
         setControllerClient(cas, mockControllerClient);
-        injectSubsystemState(cas, mockState);
         setSynchronousExecutor(cas);
 
         // Register listener
@@ -85,13 +87,7 @@ public class ConfigAdminServiceImplTestCase {
         config.put("a.key", "A Value");
 
         assertEquals("Precondition", 0, testListener.pidList.size());
-        // Call the operation
         assertNull(cas.putConfiguration("a.b.c", config));
-
-        // Verify expected behaviour
-        Mockito.verify(mockState).putConfiguration("a.b.c", config);
-        assertEquals(Arrays.asList("a.b.c"), testListener.pidList);
-        assertEquals(Arrays.asList((Object) config), testListener.propList);
     }
 
     @Test
@@ -99,16 +95,11 @@ public class ConfigAdminServiceImplTestCase {
         Dictionary<String, String> initial = new Hashtable<String, String>();
         initial.put("some.key", "some value");
 
-        // Set up some mocks
-        ConfigAdminState mockState = Mockito.mock(ConfigAdminState.class);
-        Mockito.when(mockState.getConfiguration("a.b.c")).thenReturn(initial);
-
         ModelNode expectedAddr = new ModelNode();
         expectedAddr.add(new ModelNode().set(ModelDescriptionConstants.SUBSYSTEM, ConfigAdminExtension.SUBSYSTEM_NAME));
         expectedAddr.add(new ModelNode().set(ModelConstants.CONFIGURATION, "a.b.c"));
         ModelNode expectedOp = Util.getEmptyOperation(ModelConstants.UPDATE, expectedAddr);
         ModelNode entries = new ModelNode();
-        entries.get(ConfigAdminService.SOURCE_PROPERTY_KEY).set(ConfigAdminService.FROM_NONDMR_SOURCE_VALUE);
         entries.get("a.key").set("A Value");
         expectedOp.get(ModelConstants.ENTRIES).set(entries);
 
@@ -121,7 +112,6 @@ public class ConfigAdminServiceImplTestCase {
         // Initialize the ConfigAdminServiceImpl object
         ConfigAdminServiceImpl cas = createConfigAdminServiceImpl();
         setControllerClient(cas, mockControllerClient);
-        injectSubsystemState(cas, mockState);
         setSynchronousExecutor(cas);
 
         // Register listener
@@ -132,45 +122,13 @@ public class ConfigAdminServiceImplTestCase {
         config.put("a.key", "A Value");
 
         assertEquals("Precondition", 0, testListener.pidList.size());
-        // Call the operation
-        assertEquals(initial, cas.putConfiguration("a.b.c", config));
-
-        // Verify expected behaviour
-        Mockito.verify(mockState).putConfiguration("a.b.c", config);
-        assertEquals(Arrays.asList("a.b.c"), testListener.pidList);
-        assertEquals(Arrays.asList((Object) config), testListener.propList);
-    }
-
-    @Test
-    public void testPutConfigurationFromDMR() throws Exception {
-        // Set up some mocks
-        ConfigAdminState mockState = Mockito.mock(ConfigAdminState.class);
-
-        // Initialize the ConfigAdminServiceImpl object
-        ConfigAdminServiceImpl cas = createConfigAdminServiceImpl();
-        injectSubsystemState(cas, mockState);
-        setSynchronousExecutor(cas);
-
-        Hashtable<String, String> config = new Hashtable<String, String>();
-        config.put("a.b.c.d.e.f.g", "a value");
-
-        // Call the operation
-        cas.putConfigurationFromDMR("someconfig", config);
-
-        // Verify expected behaviour
-        Dictionary<String, String> expected = new Hashtable<String, String>(config);
-        expected.put(ConfigAdminService.SOURCE_PROPERTY_KEY, ConfigAdminService.FROM_DMR_SOURCE_VALUE);
-        Mockito.verify(mockState).putConfiguration("someconfig", expected);
+        assertNull(cas.putConfiguration("a.b.c", config));
     }
 
     @Test
     public void testRemoveConfiguration() throws Exception {
         Hashtable<String, String> initialConfig = new Hashtable<String, String>();
         initialConfig.put("x", "y");
-
-        // Set up some mocks
-        ConfigAdminState mockState = Mockito.mock(ConfigAdminState.class);
-        Mockito.when(mockState.getConfiguration("abc")).thenReturn(initialConfig);
 
         ModelNode expectedAddr = new ModelNode();
         expectedAddr.add(new ModelNode().set(ModelDescriptionConstants.SUBSYSTEM, ConfigAdminExtension.SUBSYSTEM_NAME));
@@ -186,7 +144,6 @@ public class ConfigAdminServiceImplTestCase {
         // Initialize the ConfigAdminServiceImpl object
         ConfigAdminServiceImpl cas = createConfigAdminServiceImpl();
         setControllerClient(cas, mockControllerClient);
-        injectSubsystemState(cas, mockState);
         setSynchronousExecutor(cas);
 
         // Register listener
@@ -194,50 +151,55 @@ public class ConfigAdminServiceImplTestCase {
         cas.addListener(testListener);
 
         assertEquals("Precondition", 0, testListener.pidList.size());
-        // Call the remove operation
-        assertEquals(initialConfig, cas.removeConfiguration("abc"));
-
-        // Verify expected behaviour
-        Mockito.verify(mockState).removeConfiguration("abc");
-        assertEquals(Arrays.asList("abc"), testListener.pidList);
-        assertEquals(Arrays.asList((Object) null), testListener.propList);
+        assertNull(cas.removeConfiguration("abc"));
     }
 
     @Test
-    public void testRemoveConfigurationFromDMR() throws Exception {
-        ConfigAdminState mockState = Mockito.mock(ConfigAdminState.class);
+    public void testPutConfigurationInternal() throws Exception {
 
         // Initialize the ConfigAdminServiceImpl object
         ConfigAdminServiceImpl cas = createConfigAdminServiceImpl();
-        injectSubsystemState(cas, mockState);
         setSynchronousExecutor(cas);
+
+        // Call the operation
+        Hashtable<String, String> config = new Hashtable<String, String>();
+        config.put("a.b.c.d.e.f.g", "a value");
+        cas.putConfigurationInternal("someconfig", config);
+
+        // Verify expected behaviour
+        Assert.assertEquals("a value", cas.getConfiguration("someconfig").get("a.b.c.d.e.f.g"));
+    }
+
+    @Test
+    public void testRemoveConfigurationInternal() throws Exception {
+
+        // Initialize the ConfigAdminServiceImpl object
+        ConfigAdminServiceImpl cas = createConfigAdminServiceImpl();
+        setSynchronousExecutor(cas);
+
+        Hashtable<String, String> config = new Hashtable<String, String>();
+        config.put("a.b.c.d.e.f.g", "a value");
+        cas.putConfigurationInternal("xx.yy", config);
 
         // Register listener
         TestConfigAdminListener testListener = new TestConfigAdminListener();
         cas.addListener(testListener);
 
-        assertEquals("Precondition", 0, testListener.pidList.size());
+        assertEquals("Precondition", 1, testListener.pidList.size());
+
         // Call the remove operation
-        cas.removeConfigurationFromDMR("xx.yy");
+        cas.removeConfigurationInternal("xx.yy");
 
         // Verify expected behaviour
-        Mockito.verify(mockState).removeConfiguration("xx.yy");
-        assertEquals(Arrays.asList("xx.yy"), testListener.pidList);
-        assertEquals(Arrays.asList((String) null), testListener.propList);
+        Assert.assertNull(cas.getConfiguration("xx.yy"));
+        assertEquals(Arrays.asList("xx.yy", "xx.yy"), testListener.pidList);
+        assertNull(testListener.propList.get(1));
     }
 
     private static ConfigAdminServiceImpl createConfigAdminServiceImpl() throws Exception {
         Constructor<ConfigAdminServiceImpl> ctor = ConfigAdminServiceImpl.class.getDeclaredConstructor();
         ctor.setAccessible(true);
         return ctor.newInstance();
-    }
-
-    private static void injectSubsystemState(ConfigAdminServiceImpl cas, ConfigAdminState mockState) throws Exception {
-        Field field = cas.getClass().getDeclaredField("injectedSubsystemState");
-        field.setAccessible(true);
-        @SuppressWarnings("unchecked")
-        InjectedValue<ConfigAdminState> injected = (InjectedValue<ConfigAdminState>) field.get(cas);
-        injected.setValue(new ImmediateValue<ConfigAdminState>(mockState));
     }
 
     private static void setControllerClient(ConfigAdminServiceImpl cas, ModelControllerClient value) throws Exception {
@@ -248,10 +210,15 @@ public class ConfigAdminServiceImplTestCase {
     }
 
     private static void setSynchronousExecutor(ConfigAdminServiceImpl cas) throws Exception {
-        Field field = cas.getClass().getDeclaredField("executor");
+        ExecutorService executor = Mockito.mock(ExecutorService.class);
+        Field field = cas.getClass().getDeclaredField("mgmntOperationExecutor");
         field.setAccessible(true);
         unFinal(field);
-        field.set(cas, new TestSynchronousExecutor());
+        field.set(cas, new TestSynchronousExecutor(executor));
+        field = cas.getClass().getDeclaredField("asyncListnersExecutor");
+        field.setAccessible(true);
+        unFinal(field);
+        field.set(cas, new TestSynchronousExecutor(executor));
     }
 
     private static void unFinal(Field field) throws NoSuchFieldException, IllegalAccessException {
@@ -276,10 +243,66 @@ public class ConfigAdminServiceImplTestCase {
         }
     }
 
-    private static class TestSynchronousExecutor implements Executor {
+    private static class TestSynchronousExecutor implements ExecutorService {
+
+        ExecutorService delegate;
+
+        TestSynchronousExecutor(ExecutorService delegate) {
+            this.delegate = delegate;
+        }
+
         @Override
         public void execute(Runnable command) {
             command.run();
+        }
+
+        public Future<?> submit(Runnable task) {
+            task.run();
+            return null;
+        }
+
+        public void shutdown() {
+            delegate.shutdown();
+        }
+
+        public List<Runnable> shutdownNow() {
+            return delegate.shutdownNow();
+        }
+
+        public boolean isShutdown() {
+            return delegate.isShutdown();
+        }
+
+        public boolean isTerminated() {
+            return delegate.isTerminated();
+        }
+
+        public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
+            return delegate.awaitTermination(timeout, unit);
+        }
+
+        public <T> Future<T> submit(Callable<T> task) {
+            throw new UnsupportedOperationException();
+        }
+
+        public <T> Future<T> submit(Runnable task, T result) {
+            throw new UnsupportedOperationException();
+        }
+
+        public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks) throws InterruptedException {
+            throw new UnsupportedOperationException();
+        }
+
+        public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException {
+            throw new UnsupportedOperationException();
+        }
+
+        public <T> T invokeAny(Collection<? extends Callable<T>> tasks) throws InterruptedException, ExecutionException {
+            throw new UnsupportedOperationException();
+        }
+
+        public <T> T invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            throw new UnsupportedOperationException();
         }
     }
 }

@@ -23,6 +23,7 @@
 package org.jboss.as.ee.subsystem;
 
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -44,8 +45,10 @@ public class EeWriteAttributeHandler extends AbstractWriteAttributeHandler<Void>
     private final DescriptorPropertyReplacementProcessor jbossDescriptorPropertyReplacementProcessor;
 
     public EeWriteAttributeHandler(final DefaultEarSubDeploymentsIsolationProcessor isolationProcessor,
-                                   final GlobalModuleDependencyProcessor moduleDependencyProcessor, final DescriptorPropertyReplacementProcessor specDescriptorPropertyReplacementProcessor, final DescriptorPropertyReplacementProcessor jbossDescriptorPropertyReplacementProcessor) {
-        super(GlobalModulesDefinition.INSTANCE, EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED);
+                                   final GlobalModuleDependencyProcessor moduleDependencyProcessor,
+                                   final DescriptorPropertyReplacementProcessor specDescriptorPropertyReplacementProcessor,
+                                   final DescriptorPropertyReplacementProcessor jbossDescriptorPropertyReplacementProcessor) {
+        super(EeSubsystemRootResource.ATTRIBUTES);
         this.isolationProcessor = isolationProcessor;
         this.moduleDependencyProcessor = moduleDependencyProcessor;
         this.specDescriptorPropertyReplacementProcessor = specDescriptorPropertyReplacementProcessor;
@@ -53,10 +56,9 @@ public class EeWriteAttributeHandler extends AbstractWriteAttributeHandler<Void>
     }
 
     public void registerAttributes(final ManagementResourceRegistration registry) {
-        registry.registerReadWriteAttribute(GlobalModulesDefinition.INSTANCE, null, this);
-        registry.registerReadWriteAttribute(EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED, null, this);
-        registry.registerReadWriteAttribute(EeSubsystemRootResource.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT, null, this);
-        registry.registerReadWriteAttribute(EeSubsystemRootResource.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT, null, this);
+        for (AttributeDefinition ad : EeSubsystemRootResource.ATTRIBUTES) {
+            registry.registerReadWriteAttribute(ad, null, this);
+        }
     }
 
     @Override

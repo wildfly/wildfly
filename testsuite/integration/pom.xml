@@ -53,6 +53,7 @@
             <modules>
                 <module>smoke</module>
                 <module>basic</module>
+                <module>osgi</module>
                 <module>clust</module>
                 <module>iiop</module>
                 <module>xts</module>
@@ -108,6 +109,15 @@
             <activation><property><name>ts.iiop</name></property></activation>
             <modules>
                 <module>iiop</module>
+            </modules>
+        </profile>
+
+        <!-- -Dts.osgi -->
+        <profile>
+            <id>ts.integ.group.osgi</id>
+            <activation><property><name>ts.osgi</name></property></activation>
+            <modules>
+                <module>osgi</module>
             </modules>
         </profile>
 
@@ -239,7 +249,7 @@
                             Used in arquillian.xml - arguments for all JBoss AS instances.
                             System properties are duplicated here until ARQ-647 is implemented.
                         -->
-                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.jacoco} ${jvm.args.security} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -Dmcast=${mcast} ${jvm.args.dirs}</server.jvm.args>
+                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.jacoco} ${jvm.args.security} ${jvm.args.other} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -Dmcast=${mcast} ${jvm.args.dirs}</server.jvm.args>
                     </systemPropertyVariables>
 
                 </configuration>
@@ -285,8 +295,12 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-core-model-test-framework</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-subsystem-test</artifactId>
-            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

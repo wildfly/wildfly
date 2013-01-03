@@ -21,23 +21,23 @@
  */
 package org.jboss.as.osgi.parser;
 
-import java.util.EnumSet;
-
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.AttributeAccess.Storage;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.osgi.management.ActivateOperationHandler;
-import org.jboss.as.osgi.management.ActivationAttributeHandler;
-import org.jboss.as.osgi.management.BundleResourceHandler;
-import org.jboss.as.osgi.management.StartLevelHandler;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.OperationResultTransformer;
+import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.ResourceTransformationContext;
+import org.jboss.as.controller.transform.ResourceTransformer;
+import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Domain extension used to initialize the OSGi subsystem.
@@ -68,31 +68,43 @@ public class OSGiExtension implements Extension {
 
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(OSGiDescriptionProviders.SUBSYSTEM);
-        registration.registerOperationHandler(ModelDescriptionConstants.ADD, OSGiSubsystemAdd.INSTANCE, OSGiDescriptionProviders.SUBSYSTEM_ADD, false);
-        registration.registerReadWriteAttribute(ModelConstants.ACTIVATION, null, ActivationAttributeHandler.INSTANCE, EnumSet.of(AttributeAccess.Flag.STORAGE_CONFIGURATION, AttributeAccess.Flag.RESTART_JVM));
-        registration.registerOperationHandler(ModelDescriptionConstants.DESCRIBE, OSGiSubsystemDescribeHandler.INSTANCE, OSGiDescriptionProviders.SUBSYSTEM_ADD, false, OperationEntry.EntryType.PRIVATE);
-        registration.registerOperationHandler(ModelDescriptionConstants.REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, OSGiDescriptionProviders.SUBSYSTEM_REMOVE, false);
-
-        // Framework Properties
-        ManagementResourceRegistration properties = registration.registerSubModel(PathElement.pathElement(ModelConstants.PROPERTY), OSGiDescriptionProviders.PROPERTY_DESCRIPTION);
-        properties.registerOperationHandler(ModelDescriptionConstants.ADD, OSGiFrameworkPropertyAdd.INSTANCE, OSGiFrameworkPropertyAdd.DESCRIPTION, false);
-        properties.registerOperationHandler(ModelDescriptionConstants.REMOVE, OSGiFrameworkPropertyRemove.INSTANCE, OSGiFrameworkPropertyRemove.DESCRIPTION, false);
-        properties.registerReadWriteAttribute(ModelConstants.VALUE, null, OSGiFrameworkPropertyWrite.INSTANCE, Storage.CONFIGURATION);
-
-        // Framework Capabilities
-        ManagementResourceRegistration capabilities = registration.registerSubModel(PathElement.pathElement(ModelConstants.CAPABILITY), OSGiDescriptionProviders.CAPABILITY_DESCRIPTION);
-        capabilities.registerOperationHandler(ModelDescriptionConstants.ADD, OSGiCapabilityAdd.INSTANCE, OSGiCapabilityAdd.DESCRIPTION, false);
-        capabilities.registerOperationHandler(ModelDescriptionConstants.REMOVE, OSGiCapabilityRemove.INSTANCE, OSGiCapabilityRemove.DESCRIPTION, false);
-        capabilities.registerReadOnlyAttribute(ModelConstants.STARTLEVEL, null, Storage.RUNTIME);
-
-        // Runtime attributes/operations
-        if (registerRuntimeOnly) {
-            registration.registerOperationHandler(ModelConstants.ACTIVATE, ActivateOperationHandler.INSTANCE, OSGiDescriptionProviders.ACTIVATE_OPERATION, EnumSet.of(OperationEntry.Flag.RESTART_NONE));
-            registration.registerReadWriteAttribute(ModelConstants.STARTLEVEL, StartLevelHandler.READ_HANDLER, StartLevelHandler.WRITE_HANDLER, Storage.RUNTIME);
-            BundleResourceHandler.INSTANCE.register(registration.registerSubModel(PathElement.pathElement(ModelConstants.BUNDLE), OSGiDescriptionProviders.BUNDLE_DESCRIPTION));
-        }
+        subsystem.registerSubsystemModel(new OSGiRootResource(registerRuntimeOnly));
 
         subsystem.registerXMLElementWriter(OSGiSubsystemWriter.INSTANCE);
+
+        registerTransformers1_0_0(subsystem);
+    }
+
+    private void registerTransformers1_0_0(SubsystemRegistration subsystem) {
+        //There is no difference in the model between 1.1.0 and 1.0.0 but 1.0.0 does not like "start-level"=>undefined, so we remove this here.
+        ModelVersion version = ModelVersion.create(1, 0, 0);
+        TransformersSubRegistration subsystemTransformer = subsystem.registerModelTransformers(version, ResourceTransformer.DEFAULT);
+        TransformersSubRegistration capability = subsystemTransformer.registerSubResource(PathElement.pathElement(ModelConstants.CAPABILITY), new ResourceTransformer() {
+            @Override
+            public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource)
+                    throws OperationFailedException {
+                ModelNode model = resource.getModel();
+                removeUndefinedStartLevel(model);
+                ResourceTransformationContext childContext = context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
+                childContext.processChildren(resource);
+
+            }
+        });
+        capability.registerOperationTransformer(ModelDescriptionConstants.ADD, new OperationTransformer() {
+
+            @Override
+            public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation)
+                    throws OperationFailedException {
+                ModelNode op = operation.clone();
+                removeUndefinedStartLevel(op);
+                return new TransformedOperation(op, OperationResultTransformer.ORIGINAL_RESULT);
+            }
+        });
+    }
+
+    private void removeUndefinedStartLevel(ModelNode model) {
+        if (model.has(ModelConstants.STARTLEVEL) && !model.hasDefined(ModelConstants.STARTLEVEL)) {
+            model.remove(ModelConstants.STARTLEVEL);
+        }
     }
 }

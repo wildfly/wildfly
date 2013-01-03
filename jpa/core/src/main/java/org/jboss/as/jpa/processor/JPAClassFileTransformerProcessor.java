@@ -62,26 +62,13 @@ public class JPAClassFileTransformerProcessor implements DeploymentUnitProcessor
                 PersistenceUnitMetadataHolder holder = resourceRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
                 if (holder != null) {
                     for (PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
-                        if ( needClassFileTransformer(pu)) {
+                        if (Configuration.needClassFileTransformer(pu)) {
                             transformer.addTransformer(new JPADelegatingClassFileTransformer(pu));
                         }
                     }
                 }
             }
         }
-    }
-
-    // if the persistence provider is hibernate and use_class_enhancer is not true, don't add a transformer
-    // for all other providers, add the transformer in case its needed.
-    private boolean needClassFileTransformer(PersistenceUnitMetadata pu) {
-        boolean result = true;
-        String provider = pu.getPersistenceProviderClassName();
-        if (provider == null
-            || provider.equals(Configuration.PROVIDER_CLASS_HIBERNATE)) {
-            String useHibernateClassEnhancer = pu.getProperties().getProperty("hibernate.ejb.use_class_enhancer");
-            result = "true".equals(useHibernateClassEnhancer);
-        }
-        return result;
     }
 
 

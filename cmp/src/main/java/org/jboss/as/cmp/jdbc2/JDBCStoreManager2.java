@@ -29,11 +29,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 import javax.sql.DataSource;
+
 import org.jboss.as.cmp.CmpConfig;
 import org.jboss.as.cmp.CmpLogger;
 import org.jboss.as.cmp.CmpMessages;
@@ -46,8 +48,6 @@ import org.jboss.as.cmp.jdbc.JDBCEntityPersistenceStore;
 import org.jboss.as.cmp.jdbc.JDBCQueryCommand;
 import org.jboss.as.cmp.jdbc.JDBCStartCommand;
 import org.jboss.as.cmp.jdbc.JDBCStopCommand;
-import static org.jboss.as.cmp.jdbc.JDBCStoreManager.CREATE_TABLES;
-import static org.jboss.as.cmp.jdbc.JDBCStoreManager.EXISTING_TABLES;
 import org.jboss.as.cmp.jdbc.JDBCTypeFactory;
 import org.jboss.as.cmp.jdbc.bridge.JDBCAbstractEntityBridge;
 import org.jboss.as.cmp.jdbc.metadata.JDBCEntityCommandMetaData;
@@ -66,6 +66,9 @@ import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.tm.TransactionLocal;
+
+import static org.jboss.as.cmp.jdbc.JDBCStoreManager.CREATE_TABLES;
+import static org.jboss.as.cmp.jdbc.JDBCStoreManager.EXISTING_TABLES;
 
 
 /**
@@ -248,13 +251,13 @@ public class JDBCStoreManager2 implements JDBCEntityPersistenceStore {
 
     public void loadEntity(CmpEntityBeanContext ctx) {
         try {
-            EntityTable.Row row = entityBridge.getTable().loadRow(ctx.getPrimaryKey());
+            EntityTable.Row row = entityBridge.getTable().loadRow(ctx.getPrimaryKeyUnchecked());
             PersistentContext pctx = new PersistentContext(entityBridge, row);
             ctx.setPersistenceContext(pctx);
         } catch (EJBException e) {
             throw e;
         } catch (Exception e) {
-            throw CmpMessages.MESSAGES.failedToLoadEntity(entityBridge.getEntityName(), ctx.getPrimaryKey(), e);
+            throw CmpMessages.MESSAGES.failedToLoadEntity(entityBridge.getEntityName(), ctx.getPrimaryKeyUnchecked(), e);
         }
     }
 

@@ -22,6 +22,27 @@
 
 package org.jboss.as.jpa.processor;
 
+import org.jboss.as.ee.structure.DeploymentType;
+import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.ee.structure.SpecDescriptorPropertyReplacement;
+import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
+import org.jboss.as.jpa.config.PersistenceUnitsInApplication;
+import org.jboss.as.jpa.puparser.PersistenceUnitXmlParser;
+import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentUtils;
+import org.jboss.as.server.deployment.JPADeploymentMarker;
+import org.jboss.as.server.deployment.SubDeploymentMarker;
+import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.metadata.parser.util.NoopXMLResolver;
+import org.jboss.vfs.VirtualFile;
+
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -31,30 +52,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamReader;
-
-import org.jboss.as.ee.structure.DeploymentType;
-import org.jboss.as.ee.structure.DeploymentTypeMarker;
-import org.jboss.as.ee.structure.SpecDescriptorPropertyReplacement;
-import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
-import org.jboss.as.jpa.config.PersistenceUnitsInApplication;
-import org.jboss.as.jpa.puparser.PersistenceUnitXmlParser;
-import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
-import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
-import org.jboss.as.server.deployment.Attachments;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.DeploymentUtils;
-import org.jboss.as.server.deployment.SubDeploymentMarker;
-import org.jboss.as.server.deployment.module.ModuleRootMarker;
-import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.metadata.parser.util.NoopXMLResolver;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.vfs.VirtualFile;
 
 import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
 import static org.jboss.as.jpa.JpaMessages.MESSAGES;
@@ -95,6 +92,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
     private void handleJarDeployment(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (!isEarDeployment(deploymentUnit) && !isWarDeployment(deploymentUnit)) {
+
             // handle META-INF/persistence.xml
             // ordered list of PUs
             List<PersistenceUnitMetadataHolder> listPUHolders = new ArrayList<PersistenceUnitMetadataHolder>(1);
@@ -117,22 +115,13 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
     private void handleWarDeployment(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (isWarDeployment(deploymentUnit)) {
+
             int puCount;
             // ordered list of PUs
             List<PersistenceUnitMetadataHolder> listPUHolders = new ArrayList<PersistenceUnitMetadataHolder>(1);
 
             // handle WEB-INF/classes/META-INF/persistence.xml
             final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-            //find the resource root for WEB-INF/classes
-            ResourceRoot classesRoot = deploymentRoot;
-            for (ResourceRoot resourceRoot : deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS)) {
-                if (ModuleRootMarker.isModuleRoot(resourceRoot)) {
-                    if (resourceRoot.getRoot().getPathName().contains("WEB-INF/classes")) {
-                        classesRoot = resourceRoot;
-                        break;
-                    }
-                }
-            }
 
             VirtualFile persistence_xml = deploymentRoot.getRoot().getChild(WEB_PERSISTENCE_XML);
             parse(persistence_xml, listPUHolders, deploymentUnit);
@@ -144,8 +133,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
 
             // look for persistence.xml in jar files in the META-INF/persistence.xml directory (these are not currently
             // handled as subdeployments)
-            List<ResourceRoot> resourceRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
-            assert resourceRoots != null;
+            List<ResourceRoot> resourceRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
             for (ResourceRoot resourceRoot : resourceRoots) {
                 if (resourceRoot.getRoot().getName().toLowerCase(Locale.ENGLISH).endsWith(JAR_FILE_EXTENSION)) {
                     listPUHolders = new ArrayList<PersistenceUnitMetadataHolder>(1);
@@ -167,6 +155,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
     private void handleEarDeployment(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (isEarDeployment(deploymentUnit)) {
+
             int puCount = 0;
             // ordered list of PUs
             List<PersistenceUnitMetadataHolder> listPUHolders = new ArrayList<PersistenceUnitMetadataHolder>(1);
@@ -182,7 +171,6 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             // Parsing persistence.xml in EJB jar/war files is handled as subdeployments.
             // We need to handle jars in the EAR/lib folder here
             List<ResourceRoot> resourceRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
-            assert resourceRoots != null;
             for (ResourceRoot resourceRoot : resourceRoots) {
                 // look at lib/*.jar files that aren't subdeployments (subdeployments are passed
                 // to deploy(DeploymentPhaseContext)).
@@ -210,6 +198,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             final DeploymentUnit deploymentUnit)
         throws DeploymentUnitProcessingException {
 
+        JPA_LOGGER.tracef("parse checking if %s exists, result = %b",persistence_xml.toString(), persistence_xml.exists());
         if (persistence_xml.exists() && persistence_xml.isFile()) {
             InputStream is = null;
             try {
@@ -247,7 +236,6 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit ) {
 
         for (PersistenceUnitMetadata pu : puHolder.getPersistenceUnits()) {
-
             // set URLs
             List<URL> jarfilesUrls = new ArrayList<URL>();
             if (pu.getJarFiles() != null) {
@@ -259,8 +247,6 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             URL url = getPersistenceUnitURL(persistence_xml);
             pu.setPersistenceUnitRootUrl(url);
             pu.setScopedPersistenceUnitName(createBeanName(deploymentUnit, pu.getPersistenceUnitName()));
-            final ServiceName puServiceName = PersistenceUnitServiceImpl.getPUServiceName(pu);
-            deploymentUnit.addToAttachmentList(org.jboss.as.ee.structure.Attachments.INITIALISE_IN_ORDER_SERVICES, puServiceName);
         }
     }
 

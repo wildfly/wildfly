@@ -22,7 +22,6 @@
 package org.jboss.as.test.integration.management.api.web;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
@@ -49,7 +48,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -67,9 +65,6 @@ import static org.junit.Assert.assertTrue;
 public class ConnectorTestCase extends ContainerResourceMgmtTestBase {
 
     private final File keyStoreFile = new File(System.getProperty("java.io.tmpdir"), "test.keystore");
-    private final File keyPEMFile = new File(System.getProperty("java.io.tmpdir"), "newkey.pem");
-    private final File certPEMFile = new File(System.getProperty("java.io.tmpdir"), "newcert.pem");
-    private boolean isNative = false;
 
     @ArquillianResource
     private URL url;
@@ -85,24 +80,6 @@ public class ConnectorTestCase extends ContainerResourceMgmtTestBase {
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
         ja.addClass(GlobalOpsTestCase.class);
         return ja;
-    }
-
-    @Before
-    public void before() throws IOException {
-        try {
-            addConnector(Connector.HTTPNATIVE);
-            isNative = true;
-            removeConnector(Connector.HTTPNATIVE);
-        } catch (Exception ex) {
-            // Assume native not enable on installed.
-
-            try {
-                ModelNode op = getRemoveSocketBindingOp(Connector.HTTPNATIVE);
-                executeOperation(op);
-            } catch (Exception e) {
-                // hmmm
-            }
-        }
     }
 
     @Test
@@ -129,28 +106,10 @@ public class ConnectorTestCase extends ContainerResourceMgmtTestBase {
     }
 
     @Test
-    public void testHttpOtherConnector() throws Exception {
-        if (isNative) {
-            /* test the standard JIO connector too */
-            addConnector(Connector.HTTPJIO);
-
-            // check that the connector is live
-            String cURL = "http://" + url.getHost() + ":8181";
-            String response = HttpRequest.get(cURL, 10, TimeUnit.SECONDS);
-            assertTrue("Invalid response: " + response, response.indexOf("JBoss") >= 0);
-            removeConnector(Connector.HTTPJIO);
-        }
-    }
-
-    @Test
     public void testHttpsConnector() throws Exception {
 
         FileUtils.copyURLToFile(ConnectorTestCase.class.getResource("test.keystore"), keyStoreFile);
-
-        if (isNative)
-            addConnector(Connector.HTTPSJIO);
-        else
-            addConnector(Connector.HTTPS);
+        addConnector(Connector.HTTPS);
 
         // check that the connector is live
         String cURL = "https://" + url.getHost() + ":8181";
@@ -161,54 +120,23 @@ public class ConnectorTestCase extends ContainerResourceMgmtTestBase {
         String response = EntityUtils.toString(hr.getEntity());
         assertTrue("Invalid response: " + response, response.indexOf("JBoss") >= 0);
 
-        if (isNative)
-            removeConnector(Connector.HTTPSJIO);
-        else
-            removeConnector(Connector.HTTPS);
+        removeConnector(Connector.HTTPS);
 
         if (keyStoreFile.exists())
             keyStoreFile.delete();
     }
 
     @Test
-    public void testHttpsNativeConnector() throws Exception {
-        if (isNative) {
-            FileUtils.copyURLToFile(ConnectorTestCase.class.getResource("newkey.pem"), keyPEMFile);
-            FileUtils.copyURLToFile(ConnectorTestCase.class.getResource("newcert.pem"), certPEMFile);
-            addConnector(Connector.HTTPSNATIVE);
-            // check that the connector is live
-            String cURL = "https://" + url.getHost() + ":8181";
-            HttpClient httpClient = HttpClientUtils.wrapHttpsClient(new DefaultHttpClient());
-            HttpGet get = new HttpGet(cURL);
-
-            HttpResponse hr = httpClient.execute(get);
-            String response = EntityUtils.toString(hr.getEntity());
-            assertTrue("Invalid response: " + response, response.indexOf("JBoss") >= 0);
-            removeConnector(Connector.HTTPSNATIVE);
-
-            if (keyPEMFile.exists())
-                keyPEMFile.delete();
-            if (certPEMFile.exists())
-                certPEMFile.delete();
-        }
-    }
-
-    @Test
     public void testAjpConnector() throws Exception {
         addConnector(Connector.AJP);
         removeConnector(Connector.AJP);
-        if (isNative) {
-            /* Test the JIO connector too */
-            addConnector(Connector.AJPJIO);
-            removeConnector(Connector.AJPJIO);
-        }
     }
 
     @Test
     public void testAddAndRemoveRollbacks() throws Exception {
 
         // execute and rollback add socket
-        ModelNode addSocketOp = getAddSocketBindingOp(Connector.HTTP);
+        ModelNode addSocketOp = getAddSocketBindingOp(Connector.HTTPJIO);
         ModelNode ret = executeAndRollbackOperation(addSocketOp);
         assertTrue("failed".equals(ret.get("outcome").asString()));
 
@@ -216,7 +144,7 @@ public class ConnectorTestCase extends ContainerResourceMgmtTestBase {
         executeOperation(addSocketOp);
 
         // execute and rollback add connector
-        ModelNode addConnectorOp = getAddConnectorOp(Connector.HTTP);
+        ModelNode addConnectorOp = getAddConnectorOp(Connector.HTTPJIO);
         ret = executeAndRollbackOperation(addConnectorOp);
         assertTrue("failed".equals(ret.get("outcome").asString()));
 
@@ -224,10 +152,10 @@ public class ConnectorTestCase extends ContainerResourceMgmtTestBase {
         executeOperation(addConnectorOp);
 
         // check it is listed
-        assertTrue(getConnectorList().contains("test-" + Connector.HTTP.getName() + "-connector"));
+        assertTrue(getConnectorList().contains("test-" + Connector.HTTPJIO.getName() + "-connector"));
 
         // execute and rollback remove connector
-        ModelNode removeConnOp = getRemoveConnectorOp(Connector.HTTP);
+        ModelNode removeConnOp = getRemoveConnectorOp(Connector.HTTPJIO);
         ret = executeAndRollbackOperation(removeConnOp);
         assertTrue("failed".equals(ret.get("outcome").asString()));
 
@@ -241,7 +169,7 @@ public class ConnectorTestCase extends ContainerResourceMgmtTestBase {
         assertFalse("Connector not removed.", WebUtil.testHttpURL(cURL));
 
         // execute and rollback remove socket binding
-        ModelNode removeSocketOp = getRemoveSocketBindingOp(Connector.HTTP);
+        ModelNode removeSocketOp = getRemoveSocketBindingOp(Connector.HTTPJIO);
         ret = executeAndRollbackOperation(removeSocketOp);
         assertTrue("failed".equals(ret.get("outcome").asString()));
 
@@ -281,12 +209,7 @@ public class ConnectorTestCase extends ContainerResourceMgmtTestBase {
         steps.add(op);
         if (conn.isSecure()) {
             ModelNode ssl = createOpNode("subsystem=web/connector=test-" + conn.getName() + "-connector/ssl=configuration", "add");
-            if (conn.equals(Connector.HTTPSNATIVE)) {
-                ssl.get("certificate-key-file").set(keyPEMFile.getAbsolutePath());
-                ssl.get("certificate-file").set(certPEMFile.getAbsolutePath());
-            } else {
-                ssl.get("certificate-key-file").set(keyStoreFile.getAbsolutePath());
-            }
+            ssl.get("certificate-key-file").set(keyStoreFile.getAbsolutePath());
             ssl.get("password").set("test123");
             steps.add(ssl);
         }

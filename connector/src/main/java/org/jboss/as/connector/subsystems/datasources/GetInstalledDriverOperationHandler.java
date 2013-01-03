@@ -1,14 +1,36 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 /**
  *
  */
 package org.jboss.as.connector.subsystems.datasources;
 
-import org.jboss.as.connector.util.ConnectorServices;
-import org.jboss.as.connector.services.driver.registry.DriverRegistry;
 import org.jboss.as.connector.services.driver.InstalledDriver;
+import org.jboss.as.connector.services.driver.registry.DriverRegistry;
+import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
@@ -57,29 +79,29 @@ public class GetInstalledDriverOperationHandler implements OperationStepHandler 
                     ModelNode driverNode = new ModelNode();
                     driverNode.get(DRIVER_NAME.getName()).set(driver.getDriverName());
                     if (driver.isFromDeployment()) {
-                        driverNode.get(DEPLOYMENT_NAME).set(driver.getDriverName());
+                        driverNode.get(DEPLOYMENT_NAME.getName()).set(driver.getDriverName());
                         driverNode.get(DRIVER_MODULE_NAME.getName());
-                        driverNode.get(MODULE_SLOT);
+                        driverNode.get(MODULE_SLOT.getName());
                         driverNode.get(DRIVER_XA_DATASOURCE_CLASS_NAME.getName());
                     } else {
-                        driverNode.get(DEPLOYMENT_NAME);
+                        driverNode.get(DEPLOYMENT_NAME.getName());
                         driverNode.get(DRIVER_MODULE_NAME.getName()).set(driver.getModuleName().getName());
-                        driverNode.get(MODULE_SLOT).set(driver.getModuleName() != null ? driver.getModuleName().getSlot() : "");
+                        driverNode.get(MODULE_SLOT.getName()).set(driver.getModuleName() != null ? driver.getModuleName().getSlot() : "");
                         driverNode.get(DRIVER_XA_DATASOURCE_CLASS_NAME.getName()).set(driver.getXaDataSourceClassName());
 
                     }
                     driverNode.get(DRIVER_CLASS_NAME.getName()).set(driver.getDriverClassName());
                     driverNode.get(DRIVER_MAJOR_VERSION.getName()).set(driver.getMajorVersion());
                     driverNode.get(DRIVER_MINOR_VERSION.getName()).set(driver.getMinorVersion());
-                    driverNode.get(JDBC_COMPLIANT).set(driver.isJdbcCompliant());
+                    driverNode.get(JDBC_COMPLIANT.getName()).set(driver.isJdbcCompliant());
                     result.add(driverNode);
 
                     context.getResult().set(result);
-                    context.completeStep();
+                    context.stepCompleted();
                 }
             }, OperationContext.Stage.RUNTIME);
         }
 
-        context.completeStep();
+        context.stepCompleted();
     }
 }

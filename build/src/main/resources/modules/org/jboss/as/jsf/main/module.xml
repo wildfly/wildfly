@@ -32,7 +32,6 @@
     </resources>
 
     <dependencies>
-        <module name="com.sun.jsf-impl"/>
         <module name="javax.annotation.api"/>
         <module name="javax.api"/>
         <module name="javax.faces.api" />

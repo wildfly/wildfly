@@ -57,12 +57,13 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
@@ -81,8 +82,13 @@ import org.jboss.dmr.Property;
  *
  * @author John Bailey
  */
-public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler, DescriptionProvider {
+public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler {
     public static final String OPERATION_NAME = "apply-remote-domain-model";
+
+    //Private method does not need resources for description
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, null)
+        .setPrivateEntry()
+        .build();
 
     private final HostFileRepository fileRepository;
     private final ContentRepository contentRepository;
@@ -323,7 +329,8 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
                 }
             }
         }
-        context.completeStep();
+
+        context.stepCompleted();
     }
 
     private void clearDomain(final Resource rootResource) {

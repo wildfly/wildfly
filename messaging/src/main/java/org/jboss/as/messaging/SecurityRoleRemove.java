@@ -22,28 +22,26 @@
 
 package org.jboss.as.messaging;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
 
 /**
  * {@code OperationStepHandler} for removing a security role.
  *
  * @author Emanuel Muckenhuber
  */
-class SecurityRoleRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
+class SecurityRoleRemove extends AbstractRemoveStepHandler {
 
     static final SecurityRoleRemove INSTANCE = new SecurityRoleRemove();
 
@@ -51,14 +49,18 @@ class SecurityRoleRemove extends AbstractRemoveStepHandler implements Descriptio
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
         final HornetQServer server = getServer(context, operation);
-        if(server != null) {
-            final String match = address.getElement(address.size() - 2).getValue();
-            final String roleName = address.getLastElement().getValue();
-            final Set<Role> newRoles = new HashSet<Role>();
+        final String match = address.getElement(address.size() - 2).getValue();
+        final String roleName = address.getLastElement().getValue();
+        removeRole(server, match, roleName);
+    }
+
+    static void removeRole(HornetQServer server, String match, String roleName) {
+        if (server != null) {
             final Set<Role> roles = server.getSecurityRepository().getMatch(match);
-            for(final Role role : roles) {
-                if(! roleName.equals(role.getName())) {
-                     newRoles.add(role);
+            final Set<Role> newRoles = new HashSet<Role>();
+            for (final Role role : roles) {
+                if (!roleName.equals(role.getName())) {
+                    newRoles.add(role);
                 }
             }
             server.getSecurityRepository().addMatch(match, newRoles);
@@ -72,10 +74,5 @@ class SecurityRoleRemove extends AbstractRemoveStepHandler implements Descriptio
             return HornetQServer.class.cast(controller.getValue());
         }
         return null;
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return MessagingDescriptions.getSecurityRoleRemove(locale);
     }
 }

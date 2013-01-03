@@ -22,15 +22,15 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.AttributeDefinition;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.jboss.as.controller.AttributeDefinition;
 
 /**
  *
  */
-public enum Element {
+enum Element {
 
     UNKNOWN((String) null),
 
@@ -47,12 +47,15 @@ public enum Element {
     FILE(CommonAttributes.FILE),
     FILE_HANDLER(CommonAttributes.FILE_HANDLER),
     FILTER(CommonAttributes.FILTER),
+    FILTER_SPEC(CommonAttributes.FILTER_SPEC),
     FORMATTER(CommonAttributes.FORMATTER),
     HANDLER(CommonAttributes.HANDLER),
     HANDLERS(CommonAttributes.HANDLERS),
     LEVEL(CommonAttributes.LEVEL),
-    LEVEL_RANGE(CommonAttributes.LEVEL_RANGE),
+    LEVEL_RANGE(CommonAttributes.LEVEL_RANGE_LEGACY),
     LOGGER(CommonAttributes.LOGGER),
+    LOGGING_PROFILE(CommonAttributes.LOGGING_PROFILE),
+    LOGGING_PROFILES(CommonAttributes.LOGGING_PROFILES),
     MATCH(CommonAttributes.MATCH),
     MAX_BACKUP_INDEX(CommonAttributes.MAX_BACKUP_INDEX),
     NOT(CommonAttributes.NOT),
@@ -60,7 +63,7 @@ public enum Element {
     PATTERN_FORMATTER(CommonAttributes.PATTERN_FORMATTER),
     PERIODIC_ROTATING_FILE_HANDLER(CommonAttributes.PERIODIC_ROTATING_FILE_HANDLER),
     PROPERTIES(CommonAttributes.PROPERTIES),
-    PROPERTY(CommonAttributes.PROPERTY),
+    PROPERTY("property"),
     QUEUE_LENGTH(CommonAttributes.QUEUE_LENGTH),
     REPLACE(CommonAttributes.REPLACE),
     ROOT_LOGGER(CommonAttributes.ROOT_LOGGER),

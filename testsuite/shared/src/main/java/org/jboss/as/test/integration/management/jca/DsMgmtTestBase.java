@@ -28,9 +28,12 @@ import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension.DataSo
 import org.jboss.as.connector.subsystems.datasources.Namespace;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 
 /**
  * Extension of AbstractMgmtTestBase for data source testing.
@@ -105,5 +108,31 @@ public class DsMgmtTestBase extends ContainerResourceMgmtTestBase {
 
     protected void testConnectionXA(final String dsName) throws Exception {
         testCon(dsName, "xa-data-source");
+    }
+
+    protected void testStatistics(String configFile) throws Exception {
+
+        setModel(configFile);
+
+        try {
+            final ModelNode poolAddress = new ModelNode().set(baseAddress);
+            poolAddress.add("statistics", "pool");
+
+            ModelNode operation = new ModelNode();
+            operation.get(OP).set("read-resource");
+            operation.get(OP_ADDR).set(poolAddress);
+            operation.get(INCLUDE_RUNTIME).set(true);
+            ModelNode result = executeOperation(operation);
+            Assert.assertTrue("ActiveCount", result.hasDefined("ActiveCount"));
+
+            final ModelNode jdbcAddress = new ModelNode().set(baseAddress);
+            jdbcAddress.add("statistics", "jdbc");
+
+            operation.get(OP_ADDR).set(jdbcAddress);
+            result = executeOperation(operation);
+            Assert.assertTrue("PreparedStatementCacheAccessCount", result.hasDefined("PreparedStatementCacheAccessCount"));
+        } finally {
+            removeDs();
+        }
     }
 }

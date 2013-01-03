@@ -21,13 +21,15 @@
  */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
-import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.connector.util.ConnectorServices;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.AttributeMarshaller;
+import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleMapAttributeDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.EnumValidator;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.jca.common.api.metadata.Defaults;
@@ -37,9 +39,12 @@ import org.jboss.jca.common.api.metadata.common.Credential;
 import org.jboss.jca.common.api.metadata.common.Recovery;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
 import org.jboss.jca.common.api.metadata.common.v10.CommonConnDef;
-import org.jboss.jca.common.api.metadata.ds.v11.DataSource;
 import org.jboss.jca.common.api.metadata.ds.TimeOut;
+import org.jboss.jca.common.api.metadata.ds.v11.DataSource;
 import org.jboss.jca.common.api.metadata.resourceadapter.v10.ResourceAdapter;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 
 /**
@@ -90,6 +95,8 @@ public class Constants {
 
     private static final String ARCHIVE_NAME = "archive";
 
+    private static final String MODULE_NAME = "module";
+
     private static final String BOOTSTRAPCONTEXT_NAME = "bootstrap-context";
 
     private static final String TRANSACTIONSUPPORT_NAME = "transaction-support";
@@ -120,6 +127,16 @@ public class Constants {
 
     private static final String NO_RECOVERY_NAME = "no-recovery";
 
+    public static final String ACTIVATE = "activate";
+
+    public static final String FLUSH_ALL_CONNECTION_IN_POOL = "flush-all-connection-in-pool";
+
+    public static final String FLUSH_IDLE_CONNECTION_IN_POOL = "flush-idle-connection-in-pool";
+
+    public static final String TEST_CONNECTION_IN_POOL = "test-connection-in-pool";
+
+    public static final String CLEAR_STATISTICS = "clear-statistics";
+
 
     static final SimpleAttributeDefinition CLASS_NAME = new SimpleAttributeDefinition(CLASS_NAME_NAME, CommonConnDef.Attribute.CLASS_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
 
@@ -129,13 +146,71 @@ public class Constants {
 
     static final SimpleAttributeDefinition CONFIG_PROPERTY_VALUE = new SimpleAttributeDefinition(CONFIG_PROPERTY_VALUE_NAME, CommonConnDef.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static final SimpleAttributeDefinition ARCHIVE = new SimpleAttributeDefinition(ARCHIVE_NAME, ResourceAdapter.Tag.ARCHIVE.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
+    static final SimpleAttributeDefinition ARCHIVE = SimpleAttributeDefinitionBuilder.create(ARCHIVE_NAME, ModelType.STRING)
+            .setXmlName(ResourceAdapter.Tag.ARCHIVE.getLocalName())
+            .setAllowNull(true)
+            .setAllowExpression(false)
+            .setMeasurementUnit(MeasurementUnit.NONE)
+            .setAttributeMarshaller(new AttributeMarshaller() {
+                @Override
+                public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+                    if (resourceModel.hasDefined(attribute.getName())) {
+                        writer.writeStartElement(attribute.getXmlName());
+                        String archive = resourceModel.get(attribute.getName()).asString();
+                        if (archive.contains(ConnectorServices.RA_SERVICE_NAME_SEPARATOR)) {
+                            writer.writeCharacters(archive.substring(0, archive.indexOf(ConnectorServices.RA_SERVICE_NAME_SEPARATOR)));
+                        } else {
+                            writer.writeCharacters(archive);
+                        }
 
-    static final SimpleAttributeDefinition BOOTSTRAPCONTEXT = new SimpleAttributeDefinition(BOOTSTRAPCONTEXT_NAME, ResourceAdapter.Tag.BOOTSTRAP_CONTEXT.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+                        writer.writeEndElement();
+                    }
+                }
+            })
+            .setAlternatives(MODULE_NAME).build();
 
-    static final SimpleAttributeDefinition TRANSACTIONSUPPORT = new SimpleAttributeDefinition(TRANSACTIONSUPPORT_NAME, ResourceAdapter.Tag.TRANSACTION_SUPPORT.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE, new EnumValidator<TransactionSupportEnum>(TransactionSupportEnum.class, true, true));
+    static final SimpleAttributeDefinition MODULE = SimpleAttributeDefinitionBuilder.create(MODULE_NAME, ModelType.STRING)
+            .setXmlName(AS7ResourceAdapterTags.MODULE.getLocalName())
+            .setAllowNull(true)
+            .setAllowExpression(false)
+            .setMeasurementUnit(MeasurementUnit.NONE)
+            .setAttributeMarshaller(new AttributeMarshaller() {
+                @Override
+                public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+                    if (resourceModel.hasDefined(attribute.getName())) {
+                        writer.writeStartElement(attribute.getXmlName());
+                        String module = resourceModel.get(attribute.getName()).asString();
+                        int separatorIndex = module.indexOf(":");
+                        if (separatorIndex != -1) {
+                            writer.writeAttribute("slot", module.substring(separatorIndex + 1));
+                            module =  module.substring(0, separatorIndex);
 
-    static final SimpleAttributeDefinition BEANVALIDATIONGROUPS = new SimpleAttributeDefinition(BEANVALIDATIONGROUPS_NAME, ResourceAdapter.Tag.BEAN_VALIDATION_GROUP.getLocalName(),  new ModelNode(), ModelType.LIST, true, true, MeasurementUnit.NONE);
+                        } else {
+                            if(marshallDefault) {
+                                writer.writeAttribute("slot", "main");
+                            }
+                        }
+                        if (module.contains(ConnectorServices.RA_SERVICE_NAME_SEPARATOR)) {
+                            writer.writeAttribute("id", module.substring(0, module.indexOf(ConnectorServices.RA_SERVICE_NAME_SEPARATOR)));
+                        } else {
+                            writer.writeAttribute("id", module);
+                        }
+
+                        writer.writeEndElement();
+                    }
+                }
+            })
+            .setAlternatives(ARCHIVE_NAME).build();
+
+    static final SimpleAttributeDefinition BOOTSTRAP_CONTEXT = new SimpleAttributeDefinition(BOOTSTRAPCONTEXT_NAME, ResourceAdapter.Tag.BOOTSTRAP_CONTEXT.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+
+    static final SimpleAttributeDefinition TRANSACTION_SUPPORT = new SimpleAttributeDefinition(TRANSACTIONSUPPORT_NAME, ResourceAdapter.Tag.TRANSACTION_SUPPORT.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE, new EnumValidator<TransactionSupportEnum>(TransactionSupportEnum.class, true, true));
+
+    static final PrimitiveListAttributeDefinition BEANVALIDATION_GROUPS = PrimitiveListAttributeDefinition.Builder.of(BEANVALIDATIONGROUPS_NAME, ModelType.STRING)
+            .setXmlName(ResourceAdapter.Tag.BEAN_VALIDATION_GROUP.getLocalName())
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .build();
 
     static final SimpleAttributeDefinition BEANVALIDATIONGROUP = new SimpleAttributeDefinition(BEANVALIDATIONGROUPS_NAME, ResourceAdapter.Tag.BEAN_VALIDATION_GROUP.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
@@ -147,7 +222,6 @@ public class Constants {
             .setXmlName(CommonSecurity.Tag.SECURITY_DOMAIN.getLocalName())
             .setAllowExpression(true)
             .setAllowNull(true)
-            .setMeasurementUnit(MeasurementUnit.NONE)
             .setAlternatives(SECURITY_DOMAIN_AND_APPLICATION_NAME, APPLICATION_NAME)
             .build();
 
@@ -156,12 +230,12 @@ public class Constants {
             .setXmlName(CommonSecurity.Tag.SECURITY_DOMAIN_AND_APPLICATION.getLocalName())
             .setAllowExpression(true)
             .setAllowNull(true)
-            .setMeasurementUnit(MeasurementUnit.NONE)
             .setAlternatives(SECURITY_DOMAIN_NAME, APPLICATION_NAME)
             .build();
 
     static final SimpleAttributeDefinition APPLICATION = new SimpleAttributeDefinitionBuilder(APPLICATION_NAME,ModelType.BOOLEAN)
             .setXmlName(CommonSecurity.Tag.APPLICATION.getLocalName())
+            .setDefaultValue(new ModelNode(Defaults.APPLICATION_MANAGED_SECURITY))
             .setAllowExpression(true)
             .setAllowNull(true)
             .setMeasurementUnit(MeasurementUnit.NONE)
@@ -183,7 +257,14 @@ public class Constants {
 
     static SimpleAttributeDefinition PAD_XID = new SimpleAttributeDefinition(PAD_XID_NAME, CommonXaPool.Tag.PAD_XID.getLocalName(), new ModelNode().set(Defaults.PAD_XID), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition SAME_RM_OVERRIDE = new SimpleAttributeDefinition(SAME_RM_OVERRIDE_NAME, CommonXaPool.Tag.IS_SAME_RM_OVERRIDE.getLocalName(), new ModelNode(), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
+
+    static SimpleAttributeDefinition SAME_RM_OVERRIDE = new SimpleAttributeDefinitionBuilder(SAME_RM_OVERRIDE_NAME, ModelType.BOOLEAN)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setXmlName(CommonXaPool.Tag.IS_SAME_RM_OVERRIDE.getLocalName())
+            //.setDefaultValue(new ModelNode(Defaults.IS_SAME_RM_OVERRIDE)) //this is wrong, it should not be null
+            .setDefaultValue(new ModelNode(false))
+            .build();
 
     static SimpleAttributeDefinition WRAP_XA_RESOURCE = new SimpleAttributeDefinition(WRAP_XA_RESOURCE_NAME, CommonXaPool.Tag.WRAP_XA_RESOURCE.getLocalName(), new ModelNode().set(Defaults.WRAP_XA_RESOURCE), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
 
@@ -195,12 +276,14 @@ public class Constants {
 
     static SimpleAttributeDefinition RECOVERY_SECURITY_DOMAIN = new SimpleAttributeDefinition(RECOVERY_SECURITY_DOMAIN_NAME, Credential.Tag.SECURITY_DOMAIN.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition NO_RECOVERY = new SimpleAttributeDefinition(NO_RECOVERY_NAME, Recovery.Attribute.NO_RECOVERY.getLocalName(),  new ModelNode(), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition NO_RECOVERY = new SimpleAttributeDefinition(NO_RECOVERY_NAME, Recovery.Attribute.NO_RECOVERY.getLocalName(),  new ModelNode(false), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
 
     static SimpleAttributeDefinition RECOVERLUGIN_CLASSNAME = new SimpleAttributeDefinition(RECOVERLUGIN_CLASSNAME_NAME, org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition RECOVERLUGIN_PROPERTIES = new SimpleAttributeDefinition(RECOVERLUGIN_PROPERTIES_NAME, org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.OBJECT, true, true, MeasurementUnit.NONE);
-
+    static SimpleMapAttributeDefinition RECOVERLUGIN_PROPERTIES = new SimpleMapAttributeDefinition.Builder(RECOVERLUGIN_PROPERTIES_NAME, true)
+        .setAllowExpression(true)
+        .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
+        .build();
 
 
 }

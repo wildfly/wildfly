@@ -75,7 +75,7 @@
         <xsd:attribute name="invocation-timeout" type="xsd:long" use="optional">
             <annotation xmlns="http://www.w3.org/2001/XMLSchema">
                 <documentation>
-                    A timeout, in milli seconds, that will be used for EJB invocations. A value of zero
+                    A timeout, in milliseconds, that will be used for EJB invocations. A value of zero
                     or a negative value will imply a "wait forever" semantic where the invocation will never timeout
                     and the client will wait for the invocation result indefinitely.
                 </documentation>
@@ -142,7 +142,7 @@
         <xsd:attribute name="connect-timeout" type="xsd:long" use="optional">
             <annotation xmlns="http://www.w3.org/2001/XMLSchema">
                 <documentation>
-                    The timeout, in milli seconds, to be used while creating a connection
+                    The timeout, in milliseconds, to be used while creating a connection
                 </documentation>
             </annotation>
         </xsd:attribute>
@@ -194,7 +194,7 @@
         <xsd:attribute name="connect-timeout" type="xsd:long" use="optional">
             <annotation xmlns="http://www.w3.org/2001/XMLSchema">
                 <documentation>
-                    The timeout in milli seconds while creating a connection for the nodes in the cluster
+                    The timeout in milliseconds while creating a connection for the nodes in the cluster
                 </documentation>
             </annotation>
         </xsd:attribute>
@@ -261,7 +261,7 @@
         <xsd:attribute name="connect-timeout" type="xsd:long" use="optional">
             <annotation xmlns="http://www.w3.org/2001/XMLSchema">
                 <documentation>
-                    The timeout in milli seconds while creating a connection for the node
+                    The timeout in milliseconds while creating a connection for the node
                 </documentation>
             </annotation>
         </xsd:attribute>

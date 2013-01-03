@@ -27,6 +27,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -39,8 +40,10 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.server.DeployerChainAddHandler;
 import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.ServerService;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -48,8 +51,10 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.annotation.ResourceRootIndexer;
+import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringProcessor;
 import org.jboss.as.server.deployment.module.AdditionalModuleSpecification;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
@@ -83,6 +88,14 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
             "META-INF/jboss-deployment-structure.xml",
             "WEB-INF/jboss-deployment-structure.xml"};
 
+    private static final AttachmentKey<ParseResult> RESULT_ATTACHMENT_KEY = AttachmentKey.create(ParseResult.class);
+
+    public static void registerJBossXMLParsers() {
+        DeployerChainAddHandler.addDeploymentProcessor(ServerService.SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_XML_PARSER, new JBossAllXmlParserRegisteringProcessor<ParseResult>(ROOT_1_0, RESULT_ATTACHMENT_KEY, JBossDeploymentStructureParser10.JBOSS_ALL_XML_PARSER));
+        DeployerChainAddHandler.addDeploymentProcessor(ServerService.SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_XML_PARSER, new JBossAllXmlParserRegisteringProcessor<ParseResult>(ROOT_1_1, RESULT_ATTACHMENT_KEY, JBossDeploymentStructureParser11.JBOSS_ALL_XML_PARSER));
+        DeployerChainAddHandler.addDeploymentProcessor(ServerService.SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_XML_PARSER, new JBossAllXmlParserRegisteringProcessor<ParseResult>(ROOT_1_2, RESULT_ATTACHMENT_KEY, JBossDeploymentStructureParser12.JBOSS_ALL_XML_PARSER));
+    }
+
 
     private static final QName ROOT_1_0 = new QName(JBossDeploymentStructureParser10.NAMESPACE_1_0, "jboss-deployment-structure");
     private static final QName ROOT_1_1 = new QName(JBossDeploymentStructureParser11.NAMESPACE_1_1, "jboss-deployment-structure");
@@ -101,7 +114,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
         mapper.registerRootElement(ROOT_1_0, JBossDeploymentStructureParser10.INSTANCE);
         mapper.registerRootElement(ROOT_1_1, JBossDeploymentStructureParser11.INSTANCE);
         mapper.registerRootElement(ROOT_1_2, JBossDeploymentStructureParser12.INSTANCE);
-        mapper.registerRootElement(ROOT_NO_NAMESPACE, JBossDeploymentStructureParser11.INSTANCE);
+        mapper.registerRootElement(ROOT_NO_NAMESPACE, JBossDeploymentStructureParser12.INSTANCE);
     }
 
     @Override
@@ -126,16 +139,24 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                 break;
             }
         }
-        if (deploymentFile == null) {
+        ParseResult result = deploymentUnit.getAttachment(RESULT_ATTACHMENT_KEY);
+        if (deploymentFile == null && result == null) {
             return;
         }
         if (deploymentUnit.getParent() != null) {
-            ServerLogger.DEPLOYMENT_LOGGER.jbossDeploymentStructureIgnored(deploymentFile.getPathName());
+            if(deploymentFile != null) {
+                ServerLogger.DEPLOYMENT_LOGGER.jbossDeploymentStructureIgnored(deploymentFile.getPathName());
+            }
+            if(result != null) {
+                ServerLogger.DEPLOYMENT_LOGGER.jbossDeploymentStructureNamespaceIgnored(deploymentUnit.getName());
+            }
             return;
         }
 
         try {
-            final ParseResult result = parse(deploymentFile.getPhysicalFile(), deploymentUnit, moduleLoader);
+            if(deploymentFile != null) {
+                result = parse(deploymentFile.getPhysicalFile(), deploymentUnit, moduleLoader);
+            }
 
             final ModuleSpecification moduleSpec = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
             if (result.getEarSubDeploymentsIsolated() != null) {
@@ -148,8 +169,8 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                 handleDeployment(deploymentUnit, moduleSpec, rootDeploymentSpecification);
             }
             // handle sub deployments
-            final List<ResourceRoot> resourceRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
             final Map<String, ResourceRoot> subDeploymentMap = new HashMap<String, ResourceRoot>();
+            final List<ResourceRoot> resourceRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
             for (final ResourceRoot root : resourceRoots) {
                 if (SubDeploymentMarker.isSubDeployment(root)) {
                     subDeploymentMap.put(root.getRoot().getPathNameRelativeTo(deploymentRoot.getRoot()), root);
@@ -173,7 +194,8 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                     ServerLogger.DEPLOYMENT_LOGGER.annotationImportIgnored(identifier, additionalModule.getModuleIdentifier());
                 }
                 //log a warning if the resource root is wrong
-                final ListIterator<ResourceRoot> itr = additionalModule.getResourceRoots().listIterator();
+                final List<ResourceRoot> additionalModuleResourceRoots = new ArrayList<ResourceRoot>(additionalModule.getResourceRoots());
+                final ListIterator<ResourceRoot> itr = additionalModuleResourceRoots.listIterator();
                 while (itr.hasNext()) {
                     final ResourceRoot resourceRoot = itr.next();
                     if(!resourceRoot.getRoot().exists()) {
@@ -181,11 +203,11 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                         itr.remove();
                     }
                 }
-                final AdditionalModuleSpecification additional = new AdditionalModuleSpecification(additionalModule.getModuleIdentifier(), additionalModule.getResourceRoots());
+                final AdditionalModuleSpecification additional = new AdditionalModuleSpecification(additionalModule.getModuleIdentifier(), additionalModuleResourceRoots);
                 additional.addAliases(additionalModule.getAliases());
                 additional.addSystemDependencies(additionalModule.getModuleDependencies());
                 deploymentUnit.addToAttachmentList(Attachments.ADDITIONAL_MODULES, additional);
-                for (final ResourceRoot root : additionalModule.getResourceRoots()) {
+                for (final ResourceRoot root : additionalModuleResourceRoots) {
                     ResourceRootIndexer.indexResourceRoot(root);
                 }
             }

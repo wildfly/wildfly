@@ -22,6 +22,15 @@
 
 package org.jboss.as.ee.component;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+import static org.jboss.as.server.deployment.Attachments.MODULE;
+import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Collection;
+import java.util.Iterator;
+
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -33,16 +42,9 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.value.Value;
 
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.Iterator;
-
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-import static org.jboss.as.server.deployment.Attachments.MODULE;
-import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
-
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Eduardo Martins
  */
 public final class MethodInjectionTarget extends InjectionTarget {
 
@@ -50,7 +52,16 @@ public final class MethodInjectionTarget extends InjectionTarget {
         super(className, name, paramType);
     }
 
+    @Override
+    public boolean isStatic(DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
+        return Modifier.isStatic(getMethod(deploymentUnit).getModifiers());
+    }
+
     public InterceptorFactory createInjectionInterceptorFactory(final Object targetContextKey, final Object valueContextKey, final Value<ManagedReferenceFactory> factoryValue, final DeploymentUnit deploymentUnit, final boolean optional) throws DeploymentUnitProcessingException {
+        return new ManagedReferenceMethodInjectionInterceptorFactory(targetContextKey, valueContextKey, factoryValue, getMethod(deploymentUnit), optional);
+    }
+
+    private Method getMethod(final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
         final String name = getName();
         final String className = getClassName();
         final String paramType = getDeclaredValueClassName();
@@ -82,6 +93,6 @@ public final class MethodInjectionTarget extends InjectionTarget {
         if (iterator.hasNext()) {
             throw MESSAGES.multipleMethodsFound(name, paramType, className);
         }
-        return new ManagedReferenceMethodInjectionInterceptorFactory(targetContextKey, valueContextKey, factoryValue, method, optional);
+        return method;
     }
 }

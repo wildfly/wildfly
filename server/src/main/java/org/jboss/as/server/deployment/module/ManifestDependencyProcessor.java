@@ -32,6 +32,8 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
+import org.jboss.as.server.deployment.ManifestHelper;
+import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -70,9 +72,15 @@ public final class ManifestDependencyProcessor implements DeploymentUnitProcesso
             if (manifest == null)
                 continue;
 
-            final String dependencyString = manifest.getMainAttributes().getValue(DEPENDENCIES_ATTR);
+            final String dependencyString = ManifestHelper.getMainAttributeValue(manifest, DEPENDENCIES_ATTR);
             if (dependencyString == null)
                 continue;
+
+            if(deploymentUnit.getParent() == null &&
+                    SubDeploymentMarker.isSubDeployment(resourceRoot)) {
+                //we do not want ears reading sub deployments manifests
+                continue;
+            }
 
             final String[] dependencyDefs = dependencyString.split(",");
             for (final String dependencyDef : dependencyDefs) {
@@ -100,6 +108,7 @@ public final class ManifestDependencyProcessor implements DeploymentUnitProcesso
                 final ModuleDependency dependency = new ModuleDependency(dependencyLoader, dependencyId, optional, export, services, true);
                 if(metaInf) {
                     dependency.addImportFilter(PathFilters.getMetaInfSubdirectoriesFilter(), true);
+                    dependency.addImportFilter(PathFilters.getMetaInfFilter(), true);
                 }
                 deploymentUnit.addToAttachmentList(Attachments.MANIFEST_DEPENDENCIES, dependency);
             }

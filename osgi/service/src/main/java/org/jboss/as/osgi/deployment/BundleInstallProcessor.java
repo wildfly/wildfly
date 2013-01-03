@@ -22,34 +22,34 @@
 
 package org.jboss.as.osgi.deployment;
 
+import static org.jboss.as.server.deployment.Attachments.BUNDLE_STATE_KEY;
+
 import org.jboss.as.osgi.OSGiConstants;
-import org.jboss.as.osgi.service.PersistentBundlesIntegration.InitialDeploymentTracker;
+import org.jboss.as.osgi.service.InitialDeploymentTracker;
 import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.Attachments.BundleState;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.osgi.deployment.deployer.Deployment;
-import org.jboss.osgi.framework.BundleManager;
-import org.jboss.osgi.framework.Services;
-import org.jboss.osgi.framework.StorageState;
-import org.jboss.osgi.framework.StorageStateProvider;
+import org.jboss.osgi.framework.spi.BundleManager;
+import org.jboss.osgi.framework.spi.BundleStorage;
+import org.jboss.osgi.framework.spi.IntegrationServices;
+import org.jboss.osgi.framework.spi.StorageState;
 import org.osgi.framework.BundleException;
 
 /**
  * Processes deployments that have OSGi metadata attached.
- *
- * If so, it creates an {@link BundleInstallService}.
  *
  * @author Thomas.Diesler@jboss.com
  * @since 20-Sep-2010
  */
 public class BundleInstallProcessor implements DeploymentUnitProcessor {
 
-    private AttachmentKey<ServiceName> BUNDLE_INSTALL_SERVICE = AttachmentKey.create(ServiceName.class);
+    private final AttachmentKey<ServiceName> BUNDLE_INSTALL_SERVICE = AttachmentKey.create(ServiceName.class);
     private final InitialDeploymentTracker deploymentTracker;
 
     public BundleInstallProcessor(InitialDeploymentTracker deploymentTracker) {
@@ -60,40 +60,39 @@ public class BundleInstallProcessor implements DeploymentUnitProcessor {
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
         final Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
-        if (deployment != null) {
-            ServiceName serviceName;
-            try {
-                final BundleManager bundleManager = depUnit.getAttachment(OSGiConstants.BUNDLE_MANAGER_KEY);
-                if (!deploymentTracker.isClosed() && deploymentTracker.hasDeploymentName(depUnit.getName())) {
-                    restoreStorageState(phaseContext, deployment);
-                    serviceName = bundleManager.installBundle(deployment, deploymentTracker.getBundleInstallListener());
-                    deploymentTracker.registerBundleInstallService(serviceName);
-                } else {
-                    serviceName = bundleManager.installBundle(deployment, null);
-                }
-            } catch (BundleException ex) {
-                throw new DeploymentUnitProcessingException(ex);
+        if (deployment == null)
+            return;
+
+        ServiceName serviceName;
+        try {
+            final BundleManager bundleManager = depUnit.getAttachment(OSGiConstants.BUNDLE_MANAGER_KEY);
+            if (deploymentTracker.hasDeploymentName(depUnit.getName())) {
+                restoreStorageState(phaseContext, deployment);
             }
-            phaseContext.addDeploymentDependency(serviceName, OSGiConstants.INSTALLED_BUNDLE_KEY);
-            depUnit.putAttachment(BUNDLE_INSTALL_SERVICE, serviceName);
+            serviceName = bundleManager.installBundle(deployment, phaseContext.getServiceTarget(), null);
+        } catch (BundleException ex) {
+            throw new DeploymentUnitProcessingException(ex);
         }
+
+        // Add a dependency on the next phase for this bundle to be installed
+        phaseContext.addDeploymentDependency(serviceName, OSGiConstants.BUNDLE_KEY);
+
+        depUnit.putAttachment(BUNDLE_STATE_KEY, BundleState.INSTALLED);
+        depUnit.putAttachment(BUNDLE_INSTALL_SERVICE, serviceName);
     }
 
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
-        ServiceName serviceName = depUnit.getAttachment(BUNDLE_INSTALL_SERVICE);
-        ServiceController<?> controller = serviceName != null ? depUnit.getServiceRegistry().getService(serviceName) : null;
-        if (controller != null) {
-            controller.setMode(Mode.REMOVE);
-        }
+        // uninstall is done in the bundle's install service
     }
 
     private void restoreStorageState(final DeploymentPhaseContext phaseContext, final Deployment deployment) {
-        StorageStateProvider storageProvider = (StorageStateProvider) phaseContext.getServiceRegistry().getRequiredService(Services.STORAGE_STATE_PROVIDER).getValue();
-        StorageState storageState = storageProvider.getByLocation(deployment.getLocation());
+        ServiceRegistry serviceRegistry = phaseContext.getServiceRegistry();
+        BundleStorage storageProvider = (BundleStorage) serviceRegistry.getRequiredService(IntegrationServices.BUNDLE_STORAGE).getValue();
+        StorageState storageState = storageProvider.getStorageState(deployment.getLocation());
         if (storageState != null) {
+            deployment.setAutoStart(storageState.isPersistentlyStarted());
             deployment.addAttachment(StorageState.class, storageState);
-            deployment.setAutoStart(false);
         }
     }
 }

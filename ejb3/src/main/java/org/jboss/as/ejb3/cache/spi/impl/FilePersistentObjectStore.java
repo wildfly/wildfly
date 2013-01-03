@@ -33,6 +33,7 @@ import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.cache.Cacheable;
 import org.jboss.as.ejb3.cache.PassivationManager;
@@ -70,7 +71,12 @@ public class FilePersistentObjectStore<K extends Serializable, V extends Cacheab
 
         @Override
         public Boolean run() {
-            return file.delete();
+            boolean deleted = file.delete();
+            if (!deleted) {
+                EjbLogger.EJB3_LOGGER.cannotDeleteCacheFile(file.isDirectory() ? "directory" : " file", file.getName());
+                file.deleteOnExit();
+            }
+            return deleted;
         }
 
         static boolean delete(File file) {
@@ -215,7 +221,6 @@ public class FilePersistentObjectStore<K extends Serializable, V extends Cacheab
     private void establishDirectory(File dir) {
         if (!dir.exists()) {
             if (MkdirsFileAction.mkdirs(dir)) {
-                dir.deleteOnExit();
             } else if (!dir.exists()) { // this method can be called concurrently, so another thread may have created the dir
                 throw EjbMessages.MESSAGES.passivationDirectoryCreationFailed(dir.getPath());
             }
@@ -228,13 +233,28 @@ public class FilePersistentObjectStore<K extends Serializable, V extends Cacheab
 
     @Override
     public void stop() {
-        // TODO: implement
+        deleteDirectory(baseDirectory);
+    }
+
+    private void deleteDirectory(final File dir) {
+        if (dir != null && dir.exists()) {
+            final File[] files = dir.listFiles();
+            if (files != null) {
+                for (final File file : files) {
+                    if (file.isDirectory()) {
+                        deleteDirectory(file);
+                    } else {
+                        DeleteFileAction.delete(file);
+                    }
+                }
+            }
+            DeleteFileAction.delete(dir);
+        }
     }
 
     @Override
     public void store(V obj) {
         File file = getFile(obj.getId());
-        file.deleteOnExit();
         log.tracef("Storing state to %s", file);
         try {
             FileOutputStream outputStream = null;

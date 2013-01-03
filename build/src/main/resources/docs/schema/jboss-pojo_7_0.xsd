@@ -27,7 +27,7 @@
             xmlns="urn:jboss:pojo:7.0"
             elementFormDefault="qualified"
             attributeFormDefault="unqualified"
-            version="1.0">
+            version="1.1">
 
     <xs:complexType name="deployment">
         <xs:sequence>
@@ -179,7 +179,10 @@
         <xs:attribute name="trim" type="xs:boolean" use="optional"/>
     </xs:complexType>
 
-    <xs:complexType name="parameter">
+    <xs:complexType name="parameter" mixed="true">
+        <xs:sequence>
+            <xs:element name="value" type="value" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
         <xs:attribute name="class" type="xs:string" use="optional"/>
     </xs:complexType>
 

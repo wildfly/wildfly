@@ -22,24 +22,23 @@
 
 package org.jboss.as.messaging;
 
+import static java.util.Arrays.asList;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.DEFAULT;
-import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_NAME;
-import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
 import static org.jboss.as.messaging.CommonAttributes.JMS_BRIDGE;
 import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
-import static org.jboss.as.messaging.CommonAttributes.TRANSACTION;
-import static org.jboss.as.messaging.CommonAttributes.USE_AUTO_RECOVERY;
-import static org.jboss.as.messaging.Element.SOURCE;
-import static org.jboss.as.messaging.Element.TARGET;
+import static org.jboss.as.messaging.Element.DISCOVERY_GROUP_REF;
+import static org.jboss.as.messaging.Element.STATIC_CONNECTORS;
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -50,13 +49,9 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.parsing.ParseUtils;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.messaging.jms.JndiEntriesAttribute;
 import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 
 /**
@@ -77,166 +72,106 @@ public class Messaging13SubsystemParser extends Messaging12SubsystemParser {
     }
 
     @Override
-    public Namespace getExpectedNamespace() {
-        return Namespace.MESSAGING_1_3;
+    protected void checkClusterConnectionConstraints(XMLExtendedStreamReader reader, Set<Element> seen) throws XMLStreamException {
+        // AS7-5598 relax constraints on the cluster-connection to accept one without static-connectors or discovery-group-ref
+        // howver it is still not valid to have both
+        checkNotBothElements(reader, seen, STATIC_CONNECTORS, DISCOVERY_GROUP_REF);
     }
 
     @Override
-    protected void writePooledConnectionFactoryAttributes(XMLExtendedStreamWriter writer, String name, ModelNode factory)
-            throws XMLStreamException {
-        super.writePooledConnectionFactoryAttributes(writer, name, factory);
-
-        USE_AUTO_RECOVERY.marshallAsElement(factory, writer);
+    protected void checkBroadcastGroupConstraints(XMLExtendedStreamReader reader, Set<Element> seen) throws XMLStreamException {
+        checkNotBothElements(reader, seen, Element.SOCKET_BINDING, Element.JGROUPS_STACK);
+        checkNotBothElements(reader, seen, Element.JGROUPS_STACK, Element.GROUP_ADDRESS);
+        checkNotBothElements(reader, seen, Element.GROUP_ADDRESS, Element.SOCKET_BINDING);
+        if (seen.contains(Element.GROUP_ADDRESS) && !seen.contains(Element.GROUP_PORT)) {
+            throw missingRequired(reader, EnumSet.of(Element.GROUP_PORT));
+        }
     }
 
-    protected ModelNode createConnectionFactory(XMLExtendedStreamReader reader, ModelNode connectionFactory, boolean pooled) throws XMLStreamException
-    {
-        Set<Element> seen = EnumSet.noneOf(Element.class);
-        while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            final Element element = Element.forName(reader.getLocalName());
-            if (!seen.add(element)) {
-                throw ParseUtils.duplicateNamedElement(reader, element.getLocalName());
-            }
-            switch(element) {
-                // =========================================================
-                // elements common to regular & pooled connection factories
-                case DISCOVERY_GROUP_REF: {
-                    checkOtherElementIsNotAlreadyDefined(reader, seen, Element.DISCOVERY_GROUP_REF, Element.CONNECTORS);
-                    final String groupRef = readStringAttributeElement(reader, DISCOVERY_GROUP_NAME.getXmlName());
-                    DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, connectionFactory, reader);
-                    break;
-                } case CONNECTORS: {
-                    checkOtherElementIsNotAlreadyDefined(reader, seen, Element.CONNECTORS, Element.DISCOVERY_GROUP_REF);
-                    connectionFactory.get(CONNECTOR).set(processJmsConnectors(reader));
-                    break;
-                } case ENTRIES: {
-                    while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-                        final Element local = Element.forName(reader.getLocalName());
-                        if(local != Element.ENTRY ) {
-                            throw ParseUtils.unexpectedElement(reader);
-                        }
-                        final String entry = readStringAttributeElement(reader, CommonAttributes.NAME);
-                        JndiEntriesAttribute.CONNECTION_FACTORY.parseAndAddParameterElement(entry, connectionFactory, reader);
-                    }
-                    break;
-                }
-                case HA:
-                case CLIENT_FAILURE_CHECK_PERIOD:
-                case CONNECTION_TTL:
-                case CALL_TIMEOUT:
-                case CONSUMER_WINDOW_SIZE:
-                case CONSUMER_MAX_RATE:
-                case CONFIRMATION_WINDOW_SIZE:
-                case PRODUCER_WINDOW_SIZE:
-                case PRODUCER_MAX_RATE:
-                case CACHE_LARGE_MESSAGE_CLIENT:
-                case MIN_LARGE_MESSAGE_SIZE:
-                case CLIENT_ID:
-                case DUPS_OK_BATCH_SIZE:
-                case TRANSACTION_BATH_SIZE:
-                case BLOCK_ON_ACK:
-                case BLOCK_ON_NON_DURABLE_SEND:
-                case BLOCK_ON_DURABLE_SEND:
-                case AUTO_GROUP:
-                case PRE_ACK:
-                case RETRY_INTERVAL_MULTIPLIER:
-                case MAX_RETRY_INTERVAL:
-                case FAILOVER_ON_INITIAL_CONNECTION:
-                case FAILOVER_ON_SERVER_SHUTDOWN:
-                case LOAD_BALANCING_CLASS_NAME:
-                case USE_GLOBAL_POOLS:
-                case GROUP_ID:
-                    handleElementText(reader, element, connectionFactory);
-                    break;
-                case RETRY_INTERVAL:
-                    // Use the "default" variant
-                    handleElementText(reader, element, "default", connectionFactory);
-                    break;
-                case RECONNECT_ATTEMPTS:
-                case SCHEDULED_THREAD_POOL_MAX_SIZE:
-                case THREAD_POOL_MAX_SIZE:
-                    // Use the "connection" variant
-                    handleElementText(reader, element, "connection", connectionFactory);
-                    break;
-                // end of common elements
-                // =========================================================
+    @Override
+    protected void checkDiscoveryGroupConstraints(XMLExtendedStreamReader reader, Set<Element> seen) throws XMLStreamException {
+        checkNotBothElements(reader, seen, Element.SOCKET_BINDING, Element.JGROUPS_STACK);
+        checkNotBothElements(reader, seen, Element.JGROUPS_STACK, Element.GROUP_ADDRESS);
+        checkNotBothElements(reader, seen, Element.GROUP_ADDRESS, Element.SOCKET_BINDING);
+        if (seen.contains(Element.GROUP_ADDRESS) && !seen.contains(Element.GROUP_PORT)) {
+            throw missingRequired(reader, EnumSet.of(Element.GROUP_PORT));
+        }
+    }
 
-                // =========================================================
-                // elements specific to regular (non-pooled) connection factories
-                case CONNECTION_FACTORY_TYPE:
-                    if(pooled) {
-                        throw unexpectedElement(reader);
-                    }
-                    handleElementText(reader, element, connectionFactory);
-                    break;
-                // end of regular CF elements
-                // =========================================================
-
-                // =========================================================
-                // elements specific to pooled connection factories
-                case INBOUND_CONFIG: {
-                    if(!pooled) {
-                        throw unexpectedElement(reader);
-                    }
-                    while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-                        final Element local = Element.forName(reader.getLocalName());
-                        switch (local) {
-                            case USE_JNDI:
-                            case JNDI_PARAMS:
-                            case USE_LOCAL_TX:
-                            case SETUP_ATTEMPTS:
-                            case SETUP_INTERVAL:
-                                handleElementText(reader, local, connectionFactory);
-                                break;
-                            default:
-                                throw unexpectedElement(reader);
-                        }
-                    }
-                    break;
-                } case TRANSACTION: {
-                    if(!pooled) {
-                        throw ParseUtils.unexpectedElement(reader);
-                    }
-                    final String txType = reader.getAttributeValue(0);
-                    if( txType != null) {
-                        connectionFactory.get(TRANSACTION).set(txType);
-                    }
-                    ParseUtils.requireNoContent(reader);
-                    break;
+    protected void handleUnknownConnectionFactoryAttribute(XMLExtendedStreamReader reader, Element element, ModelNode connectionFactory, boolean pooled)
+            throws XMLStreamException {
+        switch (element) {
+            case CALL_FAILOVER_TIMEOUT:
+            case COMPRESS_LARGE_MESSAGES:
+                handleElementText(reader, element, connectionFactory);
+                break;
+            case USE_AUTO_RECOVERY:
+            case INITIAL_MESSAGE_PACKET_SIZE:
+            case INITIAL_CONNECT_ATTEMPTS:
+                if (!pooled) {
+                    throw unexpectedElement(reader);
                 }
-                case USER:
-                    if(!pooled) {
-                        throw unexpectedElement(reader);
-                    }
-                    // Element name is overloaded, handleElementText can not be used, we must use the correct attribute
-                    CommonAttributes.PCF_USER.parseAndSetParameter(reader.getElementText(), connectionFactory, reader);
-                    break;
-                case PASSWORD:
-                    if(!pooled) {
-                        throw unexpectedElement(reader);
-                    }
-                    // Element name is overloaded, handleElementText can not be used, we must use the correct attribute
-                    CommonAttributes.PCF_PASSWORD.parseAndSetParameter(reader.getElementText(), connectionFactory, reader);
-                    break;
-                case MAX_POOL_SIZE:
-                case MIN_POOL_SIZE:
-                case USE_AUTO_RECOVERY:
-                    if(!pooled) {
-                        throw unexpectedElement(reader);
-                    }
-                    handleElementText(reader, element, connectionFactory);
-                    break;
-                // end of pooled CF elements
-                // =========================================================
-                default: {
-                    throw ParseUtils.unexpectedElement(reader);
-                }
+                handleElementText(reader, element, connectionFactory);
+                break;
+            default: {
+                super.handleUnknownConnectionFactoryAttribute(reader, element, connectionFactory, pooled);
             }
         }
+    }
 
-        checkOnlyOneOfElements(reader, seen, Element.CONNECTORS, Element.DISCOVERY_GROUP_REF);
+    @Override
+    protected void handleUnknownClusterConnectionAttribute(XMLExtendedStreamReader reader, Element element, ModelNode clusterConnectionAdd)
+            throws XMLStreamException {
+        switch (element) {
+            case CALL_FAILOVER_TIMEOUT:
+                handleElementText(reader, element, clusterConnectionAdd);
+                break;
+            default: {
+                super.handleUnknownClusterConnectionAttribute(reader, element, clusterConnectionAdd);
+            }
+        }
+    }
 
-        return connectionFactory;
+    @Override
+    protected void handleUnknownConfigurationAttribute(XMLExtendedStreamReader reader, Element element, ModelNode operation) throws XMLStreamException {
+        switch (element) {
+            case CHECK_FOR_LIVE_SERVER:
+            case BACKUP_GROUP_NAME:
+            case REPLICATION_CLUSTERNAME:
+                handleElementText(reader, element, operation);
+                break;
+            default: {
+                super.handleUnknownConfigurationAttribute(reader, element, operation);
+            }
+        }
+    }
+
+    @Override
+    protected void handleUnknownBroadcastGroupAttribute(XMLExtendedStreamReader reader, Element element, ModelNode operation)
+            throws XMLStreamException {
+        switch (element) {
+            case JGROUPS_STACK:
+            case JGROUPS_CHANNEL:
+                handleElementText(reader, element, operation);
+                break;
+            default: {
+                super.handleUnknownBroadcastGroupAttribute(reader, element, operation);
+            }
+        }
+    }
+
+    @Override
+    protected void handleUnknownDiscoveryGroupAttribute(XMLExtendedStreamReader reader, Element element, ModelNode operation)
+            throws XMLStreamException {
+        switch (element) {
+            case JGROUPS_STACK:
+            case JGROUPS_CHANNEL:
+                handleElementText(reader, element, operation);
+                break;
+            default: {
+                super.handleUnknownDiscoveryGroupAttribute(reader, element, operation);
+            }
+        }
     }
 
     protected void processHornetQServers(final XMLExtendedStreamReader reader, final ModelNode subsystemAddress, final List<ModelNode> list) throws XMLStreamException {
@@ -381,67 +316,16 @@ public class Messaging13SubsystemParser extends Messaging12SubsystemParser {
         }
     }
 
-    public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
-        context.startSubsystemElement(getExpectedNamespace().getUriString(), false);
-        final ModelNode node = context.getModelNode();
-
-        if (node.hasDefined(HORNETQ_SERVER)) {
-            final ModelNode servers = node.get(HORNETQ_SERVER);
-            boolean first = true;
-            for (Property prop : servers.asPropertyList()) {
-                writeHornetQServer(writer, prop.getName(), prop.getValue());
-                if (!first) {
-                    writeNewLine(writer);
-                } else {
-                    first = false;
-                }
-            }
-        }
-
-        if (node.hasDefined(JMS_BRIDGE)) {
-            final ModelNode jmsBridges = node.get(JMS_BRIDGE);
-            boolean first = true;for (Property prop : jmsBridges.asPropertyList()) {
-                writeJmsBridge(writer, prop.getName(), prop.getValue());
-                if (!first) {
-                    writeNewLine(writer);
-                } else {
-                    first = false;
-                }
-            }
-        }
-        writer.writeEndElement();
-    }
-
-    private void writeJmsBridge(XMLExtendedStreamWriter writer, String bridgeName, ModelNode value) throws XMLStreamException {
-        writer.writeStartElement(Element.JMS_BRIDGE.getLocalName());
-
-        if (!DEFAULT.equals(bridgeName)) {
-            writer.writeAttribute(Attribute.NAME.getLocalName(), bridgeName);
-        }
-
-        JMSBridgeDefinition.MODULE.marshallAsAttribute(value, writer);
-
-        writer.writeStartElement(SOURCE.getLocalName());
-        for (SimpleAttributeDefinition attr : JMSBridgeDefinition.JMS_SOURCE_ATTRIBUTES) {
-            attr.marshallAsElement(value, writer);
-        }
-        writer.writeEndElement();
-
-        writer.writeStartElement(TARGET.getLocalName());
-        for (SimpleAttributeDefinition attr : JMSBridgeDefinition.JMS_TARGET_ATTRIBUTES) {
-            attr.marshallAsElement(value, writer);
-        }
-        writer.writeEndElement();
-
-        for (SimpleAttributeDefinition attr : JMSBridgeDefinition.JMS_BRIDGE_ATTRIBUTES) {
-            if (attr == JMSBridgeDefinition.MODULE) {
-                // handled as a XML attribute
-                continue;
-            }
-            attr.marshallAsElement(value, writer);
-        }
-
-        writer.writeEndElement();
+    /**
+     * [AS7-5808] Support space-separated roles names for backwards compatibility and comma-separated ones for compatibility with
+     * HornetQ configuration.
+     *
+     * Roles are persisted using space character delimiter in {@link MessagingXMLWriter}.
+     */
+    @Override
+    protected List<String> parseRolesAttribute(XMLExtendedStreamReader reader, int index) throws XMLStreamException {
+        String roles = reader.getAttributeValue(index);
+        return asList(roles.split("[,\\s]+"));
     }
 
     static void handleSingleAttribute(final XMLExtendedStreamReader reader, final Element element, final String modelName, String attributeName, final ModelNode node) throws XMLStreamException {
@@ -451,6 +335,15 @@ public class Messaging13SubsystemParser extends Messaging12SubsystemParser {
             ((SimpleAttributeDefinition) attributeDefinition).parseAndSetParameter(value, node, reader);
         } else if (attributeDefinition instanceof ListAttributeDefinition) {
             ((ListAttributeDefinition) attributeDefinition).parseAndAddParameterElement(value, node, reader);
+        }
+    }
+
+    /**
+     * Check that not both elements have been defined
+     */
+    protected static void checkNotBothElements(XMLExtendedStreamReader reader, Set<Element> seen, Element element1, Element element2) throws XMLStreamException {
+        if (seen.contains(element1) && seen.contains(element2)) {
+            throw new XMLStreamException(MESSAGES.onlyOneRequired(element1.getLocalName(), element2.getLocalName()), reader.getLocation());
         }
     }
 }

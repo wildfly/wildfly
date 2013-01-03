@@ -24,11 +24,11 @@
 
 package org.jboss.as.controller;
 
+import java.util.EnumSet;
+
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelType;
-
-import java.util.EnumSet;
 
 /**
  * Defining characteristics of operation in a {@link org.jboss.as.controller.registry.Resource}
@@ -42,19 +42,30 @@ public abstract class OperationDefinition {
     protected final AttributeDefinition[] parameters;
     protected final ModelType replyType;
     protected final ModelType replyValueType;
+    protected final boolean replyAllowNull;
+    protected final DeprecationData deprecationData;
+    protected final AttributeDefinition[] replyParameters;
 
-    public OperationDefinition(String name,
+
+    protected OperationDefinition(String name,
                                OperationEntry.EntryType entryType,
                                EnumSet<OperationEntry.Flag> flags,
                                final ModelType replyType,
                                final ModelType replyValueType,
-                               AttributeDefinition... parameters) {
+                               final boolean replyAllowNull,
+                               final DeprecationData deprecationData,
+                               AttributeDefinition[] replyParameters,
+                               AttributeDefinition[] parameters
+    ) {
         this.name = name;
         this.entryType = entryType;
         this.flags = flags;
         this.parameters = parameters;
         this.replyType = replyType;
         this.replyValueType = replyValueType;
+        this.replyAllowNull = replyAllowNull;
+        this.deprecationData = deprecationData;
+        this.replyParameters = replyParameters;
     }
 
     public String getName() {

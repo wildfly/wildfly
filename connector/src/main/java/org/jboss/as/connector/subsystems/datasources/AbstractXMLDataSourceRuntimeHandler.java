@@ -60,7 +60,7 @@ public abstract class AbstractXMLDataSourceRuntimeHandler<T> extends AbstractRun
         if (ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION.equals(opName)) {
             final String attributeName = operation.require(ModelDescriptionConstants.NAME).asString();
             executeReadAttribute(attributeName, context, dataSource, address);
-            context.completeStep();
+            context.stepCompleted();
         } else {
             throw unknownOperation(opName);
         }
@@ -103,7 +103,6 @@ public abstract class AbstractXMLDataSourceRuntimeHandler<T> extends AbstractRun
             String exceptionMessage = ConnectorMessages.MESSAGES.noDataSourceRegisteredForAddress(operationAddress);
             throw new OperationFailedException(new ModelNode().set(exceptionMessage));
         }
-
         return config;
     }
 

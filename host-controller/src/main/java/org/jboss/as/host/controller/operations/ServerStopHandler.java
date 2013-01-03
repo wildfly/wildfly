@@ -22,18 +22,15 @@ package org.jboss.as.host.controller.operations;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.host.controller.ServerInventory;
-import org.jboss.as.host.controller.descriptions.HostRootDescription;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -41,9 +38,10 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ServerStopHandler implements OperationStepHandler, DescriptionProvider {
+public class ServerStopHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = "stop";
+    public static final OperationDefinition DEFINITION = ServerStartHandler.getOperationDefinition(OPERATION_NAME);
 
     public static ModelNode getStopServerOperation(String serverName) {
         ModelNode op = Util.getEmptyOperation(OPERATION_NAME, new ModelNode());
@@ -76,14 +74,9 @@ public class ServerStopHandler implements OperationStepHandler, DescriptionProvi
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 final ServerStatus status = serverInventory.stopServer(serverName, -1, blocking);
                 context.getResult().set(status.toString());
-                context.completeStep();
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
         }, OperationContext.Stage.RUNTIME);
-        context.completeStep();
-    }
-
-    @Override
-    public ModelNode getModelDescription(final Locale locale) {
-        return HostRootDescription.getStopServerOperation(locale);
+        context.stepCompleted();
     }
 }

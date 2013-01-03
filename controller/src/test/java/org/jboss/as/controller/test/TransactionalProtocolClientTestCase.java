@@ -424,7 +424,7 @@ public class TransactionalProtocolClientTestCase {
         }
     }
 
-    private static interface TestOperationHandler {
+    private interface TestOperationHandler {
 
         void execute(ModelNode operation, OperationMessageHandler handler, OperationAttachments attachments) throws Exception;
 

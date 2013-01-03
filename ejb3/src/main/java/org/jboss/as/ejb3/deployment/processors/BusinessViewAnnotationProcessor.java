@@ -42,14 +42,11 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
-import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.modules.Module;
-
-import org.jboss.logging.Logger;
 
 /**
  * Processes {@link Local @Local} and {@link @Remote} annotation of a session bean and sets up the {@link SessionBeanComponentDescription}
@@ -59,11 +56,6 @@ import org.jboss.logging.Logger;
  * @author Jaikiran Pai
  */
 public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor {
-
-    /**
-     * Logger
-     */
-    private static final Logger logger = Logger.getLogger(BusinessViewAnnotationProcessor.class);
 
     private final boolean appclient;
 
@@ -76,10 +68,6 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
         if (MetadataCompleteMarker.isMetadataComplete(deploymentUnit)) {
-            return;
-        }
-
-        if (deploymentUnit.hasAttachment(Attachments.OSGI_MANIFEST)) {
             return;
         }
 

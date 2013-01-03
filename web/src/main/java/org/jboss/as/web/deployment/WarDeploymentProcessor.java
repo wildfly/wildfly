@@ -22,16 +22,6 @@
 
 package org.jboss.as.web.deployment;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.security.jacc.PolicyConfiguration;
-
 import org.apache.catalina.ContainerListener;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleListener;
@@ -49,6 +39,7 @@ import org.jboss.as.security.deployment.AbstractSecurityDeployer;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.JaccService;
 import org.jboss.as.security.service.SecurityDomainService;
+import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -58,6 +49,7 @@ import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.web.VirtualHost;
 import org.jboss.as.web.WebDeploymentDefinition;
 import org.jboss.as.web.WebSubsystemServices;
+import org.jboss.as.web.deployment.WebDeploymentService.ContextActivator;
 import org.jboss.as.web.deployment.component.ComponentInstantiator;
 import org.jboss.as.web.ext.WebContextFactory;
 import org.jboss.as.web.security.JBossWebRealmService;
@@ -75,7 +67,6 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
@@ -84,6 +75,15 @@ import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityUtil;
 import org.jboss.vfs.VirtualFile;
 
+import javax.security.jacc.PolicyConfiguration;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import static org.jboss.as.web.WebMessages.MESSAGES;
 
 /**
@@ -91,6 +91,7 @@ import static org.jboss.as.web.WebMessages.MESSAGES;
  *
  * @author Emanuel Muckenhuber
  * @author Anil.Saldhana@redhat.com
+ * @author Thomas.Diesler@jboss.com
  */
 public class WarDeploymentProcessor implements DeploymentUnitProcessor {
 
@@ -103,21 +104,18 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         this.defaultHost = defaultHost;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final WarMetaData metaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
-        if (metaData == null) {
+        final WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
+        if (warMetaData == null) {
             return;
         }
-        String hostName = hostNameOfDeployment(metaData, defaultHost);
-        processDeployment(hostName, metaData, deploymentUnit, phaseContext.getServiceTarget());
+        String hostName = hostNameOfDeployment(warMetaData, defaultHost);
+        processDeployment(hostName, warMetaData, deploymentUnit, phaseContext.getServiceTarget());
     }
 
-    public static String hostNameOfDeployment(final WarMetaData metaData, final String defaultHost) {
+    static String hostNameOfDeployment(final WarMetaData metaData, final String defaultHost) {
         Collection<String> hostNames = null;
         if (metaData.getMergedJBossWebMetaData() != null) {
             hostNames = metaData.getMergedJBossWebMetaData().getVirtualHosts();
@@ -138,8 +136,8 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         deployer.undeploy(context);
     }
 
-    protected void processDeployment(final String hostName, final WarMetaData warMetaData, final DeploymentUnit deploymentUnit,
-                                     final ServiceTarget serviceTarget) throws DeploymentUnitProcessingException {
+    private void processDeployment(final String hostName, final WarMetaData warMetaData, final DeploymentUnit deploymentUnit, final ServiceTarget serviceTarget)
+            throws DeploymentUnitProcessingException {
         final VirtualFile deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         if (module == null) {
@@ -147,8 +145,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         }
         final ClassLoader classLoader = module.getClassLoader();
         final JBossWebMetaData metaData = warMetaData.getMergedJBossWebMetaData();
-        final List<SetupAction> setupActions = deploymentUnit
-                .getAttachmentList(org.jboss.as.ee.component.Attachments.WEB_SETUP_ACTIONS);
+        final List<SetupAction> setupActions = deploymentUnit.getAttachmentList(org.jboss.as.ee.component.Attachments.WEB_SETUP_ACTIONS);
 
         // Resolve the context factory
         WebContextFactory contextFactory = deploymentUnit.getAttachment(WebContextFactory.ATTACHMENT);
@@ -181,9 +178,9 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
 
         final WebInjectionContainer injectionContainer = new WebInjectionContainer(module.getClassLoader());
 
-        //see AS7-2077
-        //basically we want to ignore components that have failed for whatever reason
-        //if they are important they will be picked up when the web deployment actually starts
+        // see AS7-2077
+        // basically we want to ignore components that have failed for whatever reason
+        // if they are important they will be picked up when the web deployment actually starts
         final Map<String, ComponentInstantiator> components = deploymentUnit.getAttachment(WebAttachments.WEB_COMPONENT_INSTANTIATORS);
         if (components != null) {
             final Set<ServiceName> failed = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.FAILED_COMPONENTS);
@@ -220,16 +217,18 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
             for (ContainerListenerMetaData listener : listeners) {
                 switch (listener.getListenerType()) {
                     case CONTAINER:
-                        ContainerListener containerListener = (ContainerListener) getInstance(module, listener.getModule(), listener.getListenerClass(), listener.getParams());
+                        ContainerListener containerListener = (ContainerListener) getInstance(module, listener.getModule(), listener.getListenerClass(),
+                                listener.getParams());
                         webContext.addContainerListener(containerListener);
                         break;
                     case LIFECYCLE:
-                        LifecycleListener lifecycleListener = (LifecycleListener) getInstance(module, listener.getModule(), listener.getListenerClass(), listener.getParams());
+                        LifecycleListener lifecycleListener = (LifecycleListener) getInstance(module, listener.getModule(), listener.getListenerClass(),
+                                listener.getParams());
                         if (webContext instanceof Lifecycle) {
                             ((Lifecycle) webContext).addLifecycleListener(lifecycleListener);
                         }
                         break;
-                   case SERVLET_INSTANCE:
+                    case SERVLET_INSTANCE:
                         webContext.addInstanceListener(listener.getListenerClass());
                         break;
                     case SERVLET_CONTAINER:
@@ -253,7 +252,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         String metaDataSecurityDomain = metaData.getSecurityDomain();
-        if(metaDataSecurityDomain == null) {
+        if (metaDataSecurityDomain == null) {
             metaDataSecurityDomain = getJBossAppSecurityDomain(deploymentUnit);
         }
         if (metaDataSecurityDomain != null) {
@@ -267,60 +266,75 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         final List<ServletContextAttribute> attributes = deploymentUnit.getAttachment(ServletContextAttribute.ATTACHMENT_KEY);
 
         try {
-            final ServiceName deploymentServiceName = WebSubsystemServices.deploymentServiceName(hostName, pathName);
-            final ServiceName realmServiceName = deploymentServiceName.append("realm");
+            final ServiceName webappServiceName = WebSubsystemServices.deploymentServiceName(hostName, pathName);
+            final ServiceName realmServiceName = webappServiceName.append("realm");
+
+
+            deploymentUnit.addToAttachmentList(Attachments.DEPLOYMENT_COMPLETE_SERVICES, webappServiceName);
+            deploymentUnit.addToAttachmentList(Attachments.DEPLOYMENT_COMPLETE_SERVICES, realmServiceName);
 
             final JBossWebRealmService realmService = new JBossWebRealmService(deploymentUnit);
-            ServiceBuilder<?> builder = serviceTarget.addService(realmServiceName, realmService);
-            builder.addDependency(DependencyType.REQUIRED, SecurityDomainService.SERVICE_NAME.append(securityDomain),
-                    SecurityDomainContext.class, realmService.getSecurityDomainContextInjector()).setInitialMode(Mode.ACTIVE)
-                    .install();
+            ServiceBuilder<Realm> realmBuilder = serviceTarget.addService(realmServiceName, realmService);
+            realmBuilder
+                    .addDependency(DependencyType.REQUIRED, SecurityDomainService.SERVICE_NAME.append(securityDomain), SecurityDomainContext.class,
+                            realmService.getSecurityDomainContextInjector()).setInitialMode(Mode.ACTIVE).install();
 
-            final WebDeploymentService webDeploymentService = new WebDeploymentService(webContext, injectionContainer, setupActions, attributes);
-            builder = serviceTarget
-                    .addService(deploymentServiceName, webDeploymentService)
-                    .addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName), VirtualHost.class,
-                            new WebContextInjector(webContext)).addDependencies(injectionContainer.getServiceNames())
-                    .addDependency(realmServiceName, Realm.class, webDeploymentService.getRealm())
+            final WebDeploymentService webappService = new WebDeploymentService(webContext, injectionContainer, setupActions, attributes);
+            ServiceBuilder<StandardContext> webappBuilder = serviceTarget.addService(webappServiceName, webappService)
+                    .addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName), VirtualHost.class, new WebContextInjector(webContext))
+                    .addDependencies(injectionContainer.getServiceNames()).addDependency(realmServiceName, Realm.class, webappService.getRealm())
                     .addDependencies(deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES))
-                    .addDependency(JndiNamingDependencyProcessor.serviceName(deploymentUnit));
+                    .addDependency(JndiNamingDependencyProcessor.serviceName(deploymentUnit.getServiceName()));
 
-            //add any dependencies required by the setup action
-            for(final SetupAction action : setupActions) {
-                builder.addDependencies(action.dependencies());
+            // inject the server executor which can be used by the WebDeploymentService for blocking tasks in start/stop
+            // of that service
+            Services.addServerExecutorDependency(webappBuilder, webappService.getServerExecutorInjector(), false);
+
+
+            // add any dependencies required by the setup action
+            for (final SetupAction action : setupActions) {
+                webappBuilder.addDependencies(action.dependencies());
             }
 
             if (metaData.getDistributable() != null) {
                 DistributedCacheManagerFactoryService factoryService = new DistributedCacheManagerFactoryService();
                 DistributedCacheManagerFactory factory = factoryService.getValue();
                 if (factory != null) {
-                    ServiceName factoryServiceName = deploymentServiceName.append("session");
-                    builder.addDependency(DependencyType.OPTIONAL, factoryServiceName, DistributedCacheManagerFactory.class, config.getDistributedCacheManagerFactoryInjector());
+                    ServiceName factoryServiceName = webappServiceName.append("session");
+                    webappBuilder.addDependency(DependencyType.OPTIONAL, factoryServiceName, DistributedCacheManagerFactory.class, config.getDistributedCacheManagerFactoryInjector());
 
                     ServiceBuilder<DistributedCacheManagerFactory> factoryBuilder = serviceTarget.addService(factoryServiceName, factoryService);
-                    boolean enabled = factory.addDeploymentDependencies(deploymentServiceName, deploymentUnit.getServiceRegistry(), serviceTarget, factoryBuilder, metaData);
-                    factoryBuilder.setInitialMode(enabled ? ServiceController.Mode.ON_DEMAND : ServiceController.Mode.NEVER).install();
+                    boolean enabled = factory.addDeploymentDependencies(webappServiceName, deploymentUnit.getServiceRegistry(), serviceTarget, factoryBuilder, metaData);
+                    factoryBuilder.setInitialMode(enabled ? Mode.ON_DEMAND : Mode.NEVER).install();
                 }
             }
 
-            builder.install();
+            // OSGi web applications are activated in {@link WebContextActivationProcessor} according to bundle lifecycle changes
+            if (deploymentUnit.hasAttachment(Attachments.OSGI_MANIFEST)) {
+                webappBuilder.setInitialMode(Mode.NEVER);
+                ContextActivator activator = new ContextActivator(webappBuilder.install());
+                deploymentUnit.putAttachment(ContextActivator.ATTACHMENT_KEY, activator);
+            } else {
+                webappBuilder.setInitialMode(Mode.ACTIVE);
+                webappBuilder.install();
+            }
 
             // adding JACC service
-            AbstractSecurityDeployer<?> deployer = new WarSecurityDeployer();
-            JaccService<?> service = deployer.deploy(deploymentUnit);
-            if (service != null) {
-                ((WarJaccService) service).setContext(webContext);
+            AbstractSecurityDeployer<WarMetaData> deployer = new WarSecurityDeployer();
+            JaccService<WarMetaData> jaccService = deployer.deploy(deploymentUnit);
+            if (jaccService != null) {
+                ((WarJaccService) jaccService).setContext(webContext);
                 final ServiceName jaccServiceName = deploymentUnit.getServiceName().append(JaccService.SERVICE_NAME);
-                builder = serviceTarget.addService(jaccServiceName, service);
+                ServiceBuilder<?> jaccBuilder = serviceTarget.addService(jaccServiceName, jaccService);
                 if (deploymentUnit.getParent() != null) {
                     // add dependency to parent policy
                     final DeploymentUnit parentDU = deploymentUnit.getParent();
-                    builder.addDependency(parentDU.getServiceName().append(JaccService.SERVICE_NAME), PolicyConfiguration.class,
-                            service.getParentPolicyInjector());
+                    jaccBuilder.addDependency(parentDU.getServiceName().append(JaccService.SERVICE_NAME), PolicyConfiguration.class,
+                            jaccService.getParentPolicyInjector());
                 }
                 // add dependency to web deployment service
-                builder.addDependency(deploymentServiceName);
-                builder.setInitialMode(Mode.ACTIVE).install();
+                jaccBuilder.addDependency(webappServiceName);
+                jaccBuilder.setInitialMode(Mode.PASSIVE).install();
             }
         } catch (ServiceRegistryException e) {
             throw new DeploymentUnitProcessingException(MESSAGES.failedToAddWebDeployment(), e);
@@ -333,15 +347,12 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         processManagement(deploymentUnit, metaData);
     }
 
-    public static String pathNameOfDeployment(final DeploymentUnit deploymentUnit, final JBossWebMetaData metaData) {
+    static String pathNameOfDeployment(final DeploymentUnit deploymentUnit, final JBossWebMetaData metaData) {
         String pathName;
         if (metaData.getContextRoot() == null) {
-
-
             final EEModuleDescription description = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-            if(description != null) {
-                //if there is a EEModuleDescription we need to take into account that the module name
-                //may have been overridden
+            if (description != null) {
+                // if there is a EEModuleDescription we need to take into account that the module name may have been overridden
                 pathName = "/" + description.getModuleName();
             } else {
                 pathName = "/" + deploymentUnit.getName().substring(0, deploymentUnit.getName().length() - 4);
@@ -372,8 +383,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
 
     }
 
-    protected Object getInstance(Module module, String moduleName, String className, List<ParamValueMetaData> params)
-        throws DeploymentUnitProcessingException {
+    Object getInstance(Module module, String moduleName, String className, List<ParamValueMetaData> params) throws DeploymentUnitProcessingException {
         try {
             ClassLoader moduleClassLoader = null;
             if (moduleName == null) {
@@ -395,9 +405,6 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
 
     /**
      * Try to obtain the security domain configured in jboss-app.xml at the ear level if available
-     *
-     * @param deploymentUnit
-     * @return
      */
     private String getJBossAppSecurityDomain(final DeploymentUnit deploymentUnit) {
         String securityDomain = null;
@@ -411,4 +418,3 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         return securityDomain;
     }
 }
-

@@ -22,8 +22,15 @@
 
 package org.jboss.as.naming;
 
-import org.jboss.as.naming.context.ObjectFactoryBuilder;
-import org.jboss.as.naming.util.NameParser;
+import static org.jboss.as.naming.NamingLogger.ROOT_LOGGER;
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
+import static org.jboss.as.naming.util.NamingUtils.isEmpty;
+import static org.jboss.as.naming.util.NamingUtils.namingEnumeration;
+import static org.jboss.as.naming.util.NamingUtils.namingException;
+import static org.jboss.as.naming.util.NamingUtils.notAContextException;
+
+import java.util.Arrays;
+import java.util.Hashtable;
 
 import javax.naming.Binding;
 import javax.naming.CannotProceedException;
@@ -42,15 +49,10 @@ import javax.naming.event.NamingListener;
 import javax.naming.spi.NamingManager;
 import javax.naming.spi.ObjectFactory;
 import javax.naming.spi.ResolveResult;
-import java.util.Arrays;
-import java.util.Hashtable;
 
-import static org.jboss.as.naming.NamingLogger.ROOT_LOGGER;
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
-import static org.jboss.as.naming.util.NamingUtils.isEmpty;
-import static org.jboss.as.naming.util.NamingUtils.namingEnumeration;
-import static org.jboss.as.naming.util.NamingUtils.namingException;
-import static org.jboss.as.naming.util.NamingUtils.notAContextException;
+import org.jboss.as.naming.JndiPermission.Action;
+import org.jboss.as.naming.context.ObjectFactoryBuilder;
+import org.jboss.as.naming.util.NameParser;
 
 /**
  * Naming context implementation which proxies calls to a {@code NamingStore} instance.  This context is
@@ -169,17 +171,37 @@ public class NamingContext implements EventContext {
 
     /** {@inheritDoc} */
     public Object lookup(final Name name) throws NamingException {
+        return lookup(name, true);
+    }
+
+    /** {@inheritDoc} */
+    public Object lookup(final String name) throws NamingException {
+        return lookup(name, true);
+    }
+
+    public Object lookup(final String name, boolean dereference) throws NamingException {
+        return lookup(parseName(name), dereference);
+    }
+
+    public Object lookup(final Name name, boolean dereference) throws NamingException {
+        check(name, Action.LOOKUP);
+
         if (isEmpty(name)) {
             return new NamingContext(prefix, namingStore, environment);
         }
 
         final Name absoluteName = getAbsoluteName(name);
+
         Object result;
         try {
-            result = namingStore.lookup(absoluteName);
+            result = namingStore.lookup(absoluteName,dereference);
         } catch(CannotProceedException cpe) {
             final Context continuationContext = NamingManager.getContinuationContext(cpe);
-            result = continuationContext.lookup(cpe.getRemainingName());
+            if (continuationContext instanceof NamingContext) {
+                result = ((NamingContext)continuationContext).lookup(cpe.getRemainingName(), dereference);
+            } else {
+                result = continuationContext.lookup(cpe.getRemainingName());
+            }
         }
 
         if (result instanceof ResolveResult) {
@@ -190,7 +212,7 @@ public class NamingContext implements EventContext {
             if (resolvedObject instanceof Context){
                 context = resolvedObject;
             } else if (resolvedObject instanceof LinkRef) {
-                context = resolveLink(resolvedObject);
+                context = resolveLink(resolvedObject,dereference);
             } else {
                 context = getObjectInstance(resolvedObject, absoluteName, environment);
             }
@@ -198,25 +220,26 @@ public class NamingContext implements EventContext {
                 throw notAContextException(absoluteName.getPrefix(absoluteName.size() - resolveResult.getRemainingName().size()));
             }
             final Context namingContext = (Context) context;
-            return namingContext.lookup(resolveResult.getRemainingName());
+            if (namingContext instanceof NamingContext) {
+                return ((NamingContext)namingContext).lookup(resolveResult.getRemainingName(), dereference);
+            } else {
+                return namingContext.lookup(resolveResult.getRemainingName());
+            }
         } else if (result instanceof LinkRef) {
-            result = resolveLink(result);
+            result = resolveLink(result,dereference);
         } else if (result instanceof Reference) {
             result = getObjectInstance(result, absoluteName, environment);
             if (result instanceof LinkRef) {
-                result = resolveLink(result);
+                result = resolveLink(result,dereference);
             }
         }
         return result;
     }
 
     /** {@inheritDoc} */
-    public Object lookup(final String name) throws NamingException {
-        return lookup(parseName(name));
-    }
-
-    /** {@inheritDoc} */
     public void bind(final Name name, Object object) throws NamingException {
+        check(name, Action.BIND);
+
         if(namingStore instanceof WritableNamingStore) {
             final Name absoluteName = getAbsoluteName(name);
             if (object instanceof Referenceable) {
@@ -236,6 +259,8 @@ public class NamingContext implements EventContext {
 
     /** {@inheritDoc} */
     public void rebind(final Name name, Object object) throws NamingException {
+        check(name, Action.REBIND);
+
         if(namingStore instanceof WritableNamingStore) {
             final Name absoluteName = getAbsoluteName(name);
             if (object instanceof Referenceable) {
@@ -254,6 +279,8 @@ public class NamingContext implements EventContext {
 
     /** {@inheritDoc} */
     public void unbind(final Name name) throws NamingException {
+        check(name, Action.UNBIND);
+
         if(namingStore instanceof WritableNamingStore) {
             final Name absoluteName = getAbsoluteName(name);
             getWritableNamingStore().unbind(absoluteName);
@@ -269,6 +296,11 @@ public class NamingContext implements EventContext {
 
     /** {@inheritDoc} */
     public void rename(final Name oldName, final Name newName) throws NamingException {
+        //check for appropriate permissions first so that no other info leaks from this context
+        //in case of insufficient perms (like the fact if it is readonly or not)
+        check(oldName, Action.LOOKUP, Action.UNBIND);
+        check(newName, Action.BIND);
+
         if (namingStore instanceof WritableNamingStore) {
             bind(newName, lookup(oldName));
             unbind(oldName);
@@ -284,6 +316,8 @@ public class NamingContext implements EventContext {
 
     /** {@inheritDoc} */
     public NamingEnumeration<NameClassPair> list(final Name name) throws NamingException {
+        check(name, Action.LIST);
+
         try {
             return namingEnumeration(namingStore.list(getAbsoluteName(name)));
         } catch(CannotProceedException cpe) {
@@ -306,6 +340,8 @@ public class NamingContext implements EventContext {
 
     /** {@inheritDoc} */
     public NamingEnumeration<Binding> listBindings(final Name name) throws NamingException {
+        check(name, Action.LIST_BINDINGS);
+
         try {
             return namingEnumeration(namingStore.listBindings(getAbsoluteName(name)));
         } catch(CannotProceedException cpe) {
@@ -328,6 +364,8 @@ public class NamingContext implements EventContext {
 
     /** {@inheritDoc} */
     public void destroySubcontext(final Name name) throws NamingException {
+        check(name, Action.DESTROY_SUBCONTEXT);
+
         if(!(namingStore instanceof WritableNamingStore)) {
             throw MESSAGES.readOnlyNamingContext();
         }
@@ -340,6 +378,8 @@ public class NamingContext implements EventContext {
 
     /** {@inheritDoc} */
     public Context createSubcontext(Name name) throws NamingException {
+        check(name, Action.CREATE_SUBCONTEXT);
+
         if(namingStore instanceof WritableNamingStore) {
             final Name absoluteName = getAbsoluteName(name);
             return getWritableNamingStore().createSubcontext(absoluteName);
@@ -355,6 +395,8 @@ public class NamingContext implements EventContext {
 
     /** {@inheritDoc} */
     public Object lookupLink(Name name) throws NamingException {
+        check(name, Action.LOOKUP);
+
         if (name.isEmpty()) {
             return lookup(name);
         }
@@ -372,7 +414,7 @@ public class NamingContext implements EventContext {
 
     /** {@inheritDoc} */
     public Object lookupLink(String name) throws NamingException {
-        return lookup(parseName(name));
+        return lookupLink(parseName(name));
     }
 
     /** {@inheritDoc} */
@@ -426,6 +468,7 @@ public class NamingContext implements EventContext {
 
     /** {@inheritDoc} */
     public void addNamingListener(final Name target, final int scope, final NamingListener listener) throws NamingException {
+        check(target, Action.ADD_NAMING_LISTENER);
         namingStore.addNamingListener(target, scope, listener);
     }
 
@@ -479,13 +522,13 @@ public class NamingContext implements EventContext {
         }
     }
 
-    private Object resolveLink(Object result) throws NamingException {
+    private Object resolveLink(Object result, boolean dereference) throws NamingException {
         final Object linkResult;
         try {
             final LinkRef linkRef = (LinkRef) result;
             final String referenceName = linkRef.getLinkName();
             if (referenceName.startsWith("./")) {
-                linkResult = lookup(referenceName.substring(2));
+                linkResult = lookup(parseName(referenceName.substring(2)) ,dereference);
             } else {
                 linkResult = new InitialContext().lookup(referenceName);
             }
@@ -493,6 +536,12 @@ public class NamingContext implements EventContext {
             throw MESSAGES.cannotDeferenceObject(t);
         }
         return linkResult;
+    }
+
+    private void check(Name name, Action... actions) throws NamingException {
+        Name absoluteName = getAbsoluteName(name);
+
+        JndiPermission.check(absoluteName, actions);
     }
 
     Name getPrefix() {

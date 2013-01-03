@@ -23,21 +23,19 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.domain.controller.DomainController;
-import org.jboss.as.domain.controller.DomainModelUtil;
 import org.jboss.as.host.controller.HostControllerConfigurationPersister;
-import org.jboss.as.host.controller.descriptions.HostRootDescription;
+import org.jboss.as.host.controller.descriptions.HostResolver;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.dmr.ModelNode;
@@ -47,9 +45,10 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @version $Revision: 1.1 $
  */
-public class LocalDomainControllerAddHandler implements OperationStepHandler, DescriptionProvider {
+public class LocalDomainControllerAddHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = "write-local-domain-controller";
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, HostResolver.getResolver("host")).build();
 
     private final ManagementResourceRegistration rootRegistration;
     private final HostControllerConfigurationPersister overallConfigPersister;
@@ -122,21 +121,6 @@ public class LocalDomainControllerAddHandler implements OperationStepHandler, De
         hostControllerInfo.setMasterDomainController(true);
         overallConfigPersister.initializeDomainConfigurationPersister(false);
 
-        DomainModelUtil.initializeMasterDomainRegistry(rootRegistration, overallConfigPersister.getDomainPersister(),
-                contentRepository, fileRepository, domainController, extensionRegistry, pathManager);
-    }
-
-
-    //Done by DomainModelControllerService
-//    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
-//                                  ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
-//        final ModelNode hostModel = context.readModel(PathAddress.EMPTY_ADDRESS);
-//        final ServiceTarget serviceTarget = context.getServiceTarget();
-//        newControllers.addAll(installLocalDomainController(hostModel, serviceTarget, false, verificationHandler));
-//    }
-
-    @Override
-    public ModelNode getModelDescription(final Locale locale) {
-        return HostRootDescription.getLocalDomainControllerAdd(locale);
+        domainController.initializeMasterDomainRegistry(rootRegistration, overallConfigPersister.getDomainPersister(), contentRepository, fileRepository, extensionRegistry, pathManager);
     }
 }

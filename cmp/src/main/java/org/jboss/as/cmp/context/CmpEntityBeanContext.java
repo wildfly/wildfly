@@ -92,4 +92,8 @@ public class CmpEntityBeanContext extends EntityContextImpl {
     public void setTxAssociation(TransactionEntityMap.TxAssociation txAssociation) {
         this.txAssociation = txAssociation;
     }
+
+    public Object getPrimaryKeyUnchecked() {
+        return getComponentInstance().getPrimaryKey();
+    }
 }

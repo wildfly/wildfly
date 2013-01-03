@@ -41,11 +41,11 @@ import javax.ejb.TimerService;
 public class CalendarTimerServiceBean {
 
     // should to be greater then one second (1000ms)
-    private static int TIMER_CALL_QUICK_WAITING_MS = 1200; 
+    private static final int TIMER_CALL_QUICK_WAITING_MS = 1200;
 
     private static final CountDownLatch latch = new CountDownLatch(1);
 
-    private static boolean timerServiceCalled = false;
+    private static volatile boolean timerServiceCalled = false;
     boolean first = true;
 
     private final CountDownLatch timerEntry = new CountDownLatch(1);

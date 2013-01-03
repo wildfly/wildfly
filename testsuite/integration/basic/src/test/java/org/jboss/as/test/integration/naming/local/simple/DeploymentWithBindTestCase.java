@@ -82,4 +82,17 @@ public class DeploymentWithBindTestCase {
         assertNotNull(iniCtx.lookup("java:/test"));
         performCall("simple", "check");
     }
+
+    @Test
+    public void testBasicsNamespaces() throws Exception {
+    	iniCtx.lookup("java:global");
+    	iniCtx.listBindings("java:global");
+    	
+    	iniCtx.lookup("java:jboss");
+    	iniCtx.listBindings("java:jboss");
+
+    	iniCtx.lookup("java:jboss/exported");
+    	iniCtx.listBindings("java:jboss/exported");
+    	
+    }
 }

@@ -26,6 +26,7 @@ import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
 import org.jboss.jca.common.api.metadata.ra.Connector;
 import org.jboss.jca.core.mdr.SimpleMetadataRepository;
 import org.jboss.jca.core.spi.mdr.AlreadyExistsException;
+import org.jboss.jca.core.spi.mdr.NotFoundException;
 import org.jboss.msc.service.ServiceName;
 
 import java.io.File;
@@ -45,10 +46,15 @@ public class AS7MetadataRepositoryImpl extends SimpleMetadataRepository implemen
     private final Map<String, IronJacamar> ironJacamarMetaData = new HashMap<String, IronJacamar>();
     private final List<ServiceName> jndiServices = new LinkedList<ServiceName>();
 
-
+    /**
+     * Constructor
+     */
+    public AS7MetadataRepositoryImpl() {
+    }
 
     @Override
-    public void registerResourceAdapter(String uniqueId, File root, Connector md, IronJacamar ijmd) throws AlreadyExistsException {
+    public synchronized void registerResourceAdapter(String uniqueId, File root, Connector md, IronJacamar ijmd)
+        throws AlreadyExistsException {
         super.registerResourceAdapter(uniqueId, root, md, ijmd);
         if (ijmd != null) {
             ironJacamarMetaData.put(uniqueId, ijmd);
@@ -56,13 +62,62 @@ public class AS7MetadataRepositoryImpl extends SimpleMetadataRepository implemen
     }
 
     @Override
-    public IronJacamar getIronJcamarMetaData(String uniqueId) {
+    public synchronized void unregisterResourceAdapter(String uniqueId) throws NotFoundException {
+        super.unregisterResourceAdapter(uniqueId);
+    }
+
+    @Override
+    public synchronized boolean hasResourceAdapter(String uniqueId) {
+        return super.hasResourceAdapter(uniqueId);
+    }
+
+    @Override
+    public synchronized Connector getResourceAdapter(String uniqueId) throws NotFoundException {
+        return super.getResourceAdapter(uniqueId);
+    }
+
+    @Override
+    public synchronized Set<String> getResourceAdapters() {
+        return super.getResourceAdapters();
+    }
+
+    @Override
+    public synchronized File getRoot(String uniqueId) throws NotFoundException {
+        return super.getRoot(uniqueId);
+    }
+
+    @Override
+    public synchronized IronJacamar getIronJacamar(String uniqueId) throws NotFoundException {
+        return super.getIronJacamar(uniqueId);
+    }
+
+    @Override
+    public synchronized void registerJndiMapping(String uniqueId, String clz, String jndi) {
+        super.registerJndiMapping(uniqueId, clz, jndi);
+    }
+
+    @Override
+    public synchronized void unregisterJndiMapping(String uniqueId, String clz, String jndi) throws NotFoundException {
+        super.unregisterJndiMapping(uniqueId, clz, jndi);
+    }
+
+    @Override
+    public synchronized boolean hasJndiMappings(String uniqueId) {
+        return super.hasJndiMappings(uniqueId);
+    }
+
+    @Override
+    public synchronized Map<String, List<String>> getJndiMappings(String uniqueId) throws NotFoundException {
+        return super.getJndiMappings(uniqueId);
+    }
+
+    @Override
+    public synchronized IronJacamar getIronJcamarMetaData(String uniqueId) {
         return ironJacamarMetaData.get(uniqueId);
     }
 
     @Override
-    public Set<String> getResourceAdaptersWithIronJacamarMetadata() {
+    public synchronized Set<String> getResourceAdaptersWithIronJacamarMetadata() {
         return ironJacamarMetaData.keySet();
     }
-
 }

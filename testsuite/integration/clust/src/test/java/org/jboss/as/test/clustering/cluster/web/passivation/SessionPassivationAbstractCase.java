@@ -55,6 +55,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore // AS7-5279
 public abstract class SessionPassivationAbstractCase {
 
     // Sync these with jboss-web.xml

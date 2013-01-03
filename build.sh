@@ -19,7 +19,7 @@ ROOT="/"
 M2_HOME=""
 MAVEN_HOME=""
 
-MAVEN_OPTS="$MAVEN_OPTS -Xmx512M"
+MAVEN_OPTS="$MAVEN_OPTS -Xmx768M"
 export MAVEN_OPTS
 
 #  Default search path for maven.

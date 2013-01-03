@@ -21,13 +21,9 @@
  */
 package org.jboss.as.test.integration.security.common;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -86,8 +82,10 @@ import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.security.auth.callback.UsernamePasswordHandler;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.asset.Asset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.util.Base64;
 
 /**
@@ -112,114 +110,111 @@ public class Utils {
         return (coding == null || value == null) ? value : hash(value, "MD5", coding);
     }
 
-   public static String hash(String target, String algorithm, Coding coding) {
-      MessageDigest md = null;
-      try {
-         md = MessageDigest.getInstance(algorithm);
-      } catch (Exception e) {
-         e.printStackTrace();
-      }
-      byte[] bytes = target.getBytes();
-      byte[] byteHash = md.digest(bytes);
+    public static String hash(String target, String algorithm, Coding coding) {
+        MessageDigest md = null;
+        try {
+            md = MessageDigest.getInstance(algorithm);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        byte[] bytes = target.getBytes();
+        byte[] byteHash = md.digest(bytes);
 
-      String encodedHash = null;
+        String encodedHash = null;
 
-      switch (coding) {
-         case BASE_64:
-            encodedHash = Base64.encodeBytes(byteHash);
-            break;
-         case HEX:
-            encodedHash = toHex(byteHash);
-            break;
-         default:
-            throw new IllegalArgumentException("Unsuported coding:" + coding.name());
-      }
+        switch (coding) {
+            case BASE_64:
+                encodedHash = Base64.encodeBytes(byteHash);
+                break;
+            case HEX:
+                encodedHash = toHex(byteHash);
+                break;
+            default:
+                throw new IllegalArgumentException("Unsuported coding:" + coding.name());
+        }
 
-      return encodedHash;
-   }
+        return encodedHash;
+    }
 
+    public static String toHex(byte[] bytes) {
+        StringBuffer sb = new StringBuffer(bytes.length * 2);
+        for (int i = 0; i < bytes.length; i++) {
+            byte b = bytes[i];
+            // top 4 bits
+            char c = (char) ((b >> 4) & 0xf);
+            if (c > 9)
+                c = (char) ((c - 10) + 'a');
+            else
+                c = (char) (c + '0');
+            sb.append(c);
+            // bottom 4 bits
+            c = (char) (b & 0xf);
+            if (c > 9)
+                c = (char) ((c - 10) + 'a');
+            else
+                c = (char) (c + '0');
+            sb.append(c);
+        }
+        return sb.toString();
+    }
 
-   public static String toHex(byte[] bytes) {
-      StringBuffer sb = new StringBuffer(bytes.length * 2);
-      for (int i = 0; i < bytes.length; i++) {
-         byte b = bytes[i];
-         // top 4 bits
-         char c = (char) ((b >> 4) & 0xf);
-         if (c > 9)
-            c = (char) ((c - 10) + 'a');
-         else
-            c = (char) (c + '0');
-         sb.append(c);
-         // bottom 4 bits
-         c = (char) (b & 0xf);
-         if (c > 9)
-            c = (char) ((c - 10) + 'a');
-         else
-            c = (char) (c + '0');
-         sb.append(c);
-      }
-      return sb.toString();
-   }
+    public static URL getResource(String name) {
+        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+        return tccl.getResource(name);
+    }
 
-   public static URL getResource(String name) {
-      ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-      return tccl.getResource(name);
-   }
+    public static synchronized void logToFile(String what, String where) {
+        try {
+            File file = new File(where);
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            OutputStream os = new FileOutputStream(file, true);
+            Writer writer = new OutputStreamWriter(os);
+            writer.write(what);
+            if (!what.endsWith("\n")) {
+                writer.write("\n");
+            }
+            writer.close();
+            os.close();
 
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 
-   public static synchronized void logToFile(String what, String where) {
-      try {
-         File file = new File(where);
-         if (!file.exists()) {
-            file.createNewFile();
-         }
-         OutputStream os = new FileOutputStream(file, true);
-         Writer writer = new OutputStreamWriter(os);
-         writer.write(what);
-         if (!what.endsWith("\n")) {
-            writer.write("\n");
-         }
-         writer.close();
-         os.close();
+    private static final long STOP_DELAY_DEFAULT = 0;
 
-      } catch (IOException ex) {
-         throw new RuntimeException(ex);
-      }
-   }
+    /**
+     * stops execution of the program indefinitely useful in testsuite debugging
+     */
+    public static void stop() {
+        stop(STOP_DELAY_DEFAULT);
+    }
 
-   private static final long STOP_DELAY_DEFAULT = 0;
+    /**
+     * stop test execution for a given time interval useful for debugging
+     * 
+     * @param delay interval (milliseconds), if delay<=0, interval is considered to be infinite (Long.MAX_VALUE)
+     */
+    public static void stop(long delay) {
+        long currentTime = System.currentTimeMillis();
+        long remainingTime = 0 < delay ? currentTime + delay - System.currentTimeMillis() : Long.MAX_VALUE;
+        while (remainingTime > 0) {
+            try {
+                Thread.sleep(remainingTime);
+            } catch (InterruptedException ex) {
+                remainingTime = currentTime + delay - System.currentTimeMillis();
+                continue;
+            }
+        }
+    }
 
-   /**
-    *  stops execution of the program indefinitely
-    *  useful in testsuite debugging
-    */
-   public static void stop(){
-      stop(STOP_DELAY_DEFAULT);
-   }
-   
-   /**
-   stop test execution for a given time interval
-   useful for debugging  
-   @param delay interval (milliseconds), if delay<=0, interval is considered to be infinite (Long.MAX_VALUE)
-    */
-   public static void stop(long delay) {
-      long currentTime = System.currentTimeMillis();
-      long remainingTime = 0<delay ? currentTime + delay - System.currentTimeMillis() : Long.MAX_VALUE;
-      while (remainingTime > 0) {
-         try {
-            Thread.sleep(remainingTime);
-         } catch (InterruptedException ex) {
-            remainingTime = currentTime + delay - System.currentTimeMillis();
-            continue;
-         }
-      }
-   }
-
-   public static void applyUpdates(final List<ModelNode> updates, final ModelControllerClient client) throws Exception {
-      for (ModelNode update : updates) {
-         applyUpdate(update, client);
-      }
-   }
+    public static void applyUpdates(final List<ModelNode> updates, final ModelControllerClient client) throws Exception {
+        for (ModelNode update : updates) {
+            applyUpdate(update, client);
+        }
+    }
 
     public static void applyUpdate(ModelNode update, final ModelControllerClient client) throws Exception {
         ModelNode result = client.execute(new OperationBuilder(update).build());
@@ -236,197 +231,195 @@ public class Utils {
         }
     }
 
-   public static void removeSecurityDomain(final ModelControllerClient client, final String domainName) throws Exception {
-      final List<ModelNode> updates = new ArrayList<ModelNode>();
-      ModelNode op = new ModelNode();
-      op.get(OP).set(REMOVE);
-      op.get(OP_ADDR).add(SUBSYSTEM, "security");
-      op.get(OP_ADDR).add(SECURITY_DOMAIN, domainName);
-      updates.add(op);
+    public static void removeSecurityDomain(final ModelControllerClient client, final String domainName) throws Exception {
+        final List<ModelNode> updates = new ArrayList<ModelNode>();
+        ModelNode op = new ModelNode();
+        op.get(OP).set(REMOVE);
+        op.get(OP_ADDR).add(SUBSYSTEM, "security");
+        op.get(OP_ADDR).add(SECURITY_DOMAIN, domainName);
+        updates.add(op);
 
-      applyUpdates(updates, client);
-   }
+        applyUpdates(updates, client);
+    }
 
-   public static String getContent(HttpResponse response) throws IOException {
-      InputStreamReader reader = new InputStreamReader(response.getEntity().getContent());
-      StringBuilder content = new StringBuilder();
-      int c;
-      while (-1 != (c = reader.read())) {
-         content.append((char) c);
-      }
-      reader.close();
-      return content.toString();
-   }
+    public static String getContent(HttpResponse response) throws IOException {
+        InputStreamReader reader = new InputStreamReader(response.getEntity().getContent());
+        StringBuilder content = new StringBuilder();
+        int c;
+        while (-1 != (c = reader.read())) {
+            content.append((char) c);
+        }
+        reader.close();
+        return content.toString();
+    }
 
-   public static HttpResponse authAndGetResponse(String URL, String user, String pass) throws Exception {
-      DefaultHttpClient httpclient = new DefaultHttpClient();
-      HttpResponse response;
-      HttpGet httpget = new HttpGet(URL);
+    public static HttpResponse authAndGetResponse(String URL, String user, String pass) throws Exception {
+        DefaultHttpClient httpclient = new DefaultHttpClient();
+        HttpResponse response;
+        HttpGet httpget = new HttpGet(URL);
 
-      response = httpclient.execute(httpget);
+        response = httpclient.execute(httpget);
 
-      HttpEntity entity = response.getEntity();
-      if (entity != null)
-         EntityUtils.consume(entity);
-
-      // We should get the Login Page
-      StatusLine statusLine = response.getStatusLine();
-      System.out.println("Login form get: " + statusLine);
-      assertEquals(200, statusLine.getStatusCode());
-
-      System.out.println("Initial set of cookies:");
-      List<Cookie> cookies = httpclient.getCookieStore().getCookies();
-      if (cookies.isEmpty()) {
-         System.out.println("None");
-      } else {
-         for (int i = 0; i < cookies.size(); i++) {
-            System.out.println("- " + cookies.get(i).toString());
-         }
-      }
-
-      // We should now login with the user name and password
-      HttpPost httpost = new HttpPost(URL + "/j_security_check");
-
-      List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-      nvps.add(new BasicNameValuePair("j_username", user));
-      nvps.add(new BasicNameValuePair("j_password", pass));
-
-      httpost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
-
-      response = httpclient.execute(httpost);
-
-
-      int statusCode = response.getStatusLine().getStatusCode();
-
-      assertTrue((302 == statusCode) || (200 == statusCode));
-      // Post authentication - if succesfull, we have a 302 and have to redirect
-      if (302 == statusCode) {
-         entity = response.getEntity();
-         if (entity != null) {
-            EntityUtils.consume(entity);
-         }
-         Header locationHeader = response.getFirstHeader("Location");
-         String location = locationHeader.getValue();
-         HttpGet httpGet = new HttpGet(location);
-         response = httpclient.execute(httpGet);
-      }
-
-      return response;
-   }
-
-   public static void makeCall(String URL, String user, String pass, int expectedStatusCode) throws Exception {
-      DefaultHttpClient httpclient = new DefaultHttpClient();
-      try {
-         HttpGet httpget = new HttpGet(URL);
-
-         HttpResponse response = httpclient.execute(httpget);
-
-         HttpEntity entity = response.getEntity();
-         if (entity != null)
+        HttpEntity entity = response.getEntity();
+        if (entity != null)
             EntityUtils.consume(entity);
 
-         // We should get the Login Page
-         StatusLine statusLine = response.getStatusLine();
-         System.out.println("Login form get: " + statusLine);
-         assertEquals(200, statusLine.getStatusCode());
+        // We should get the Login Page
+        StatusLine statusLine = response.getStatusLine();
+        System.out.println("Login form get: " + statusLine);
+        assertEquals(200, statusLine.getStatusCode());
 
-         System.out.println("Initial set of cookies:");
-         List<Cookie> cookies = httpclient.getCookieStore().getCookies();
-         if (cookies.isEmpty()) {
+        System.out.println("Initial set of cookies:");
+        List<Cookie> cookies = httpclient.getCookieStore().getCookies();
+        if (cookies.isEmpty()) {
             System.out.println("None");
-         } else {
+        } else {
             for (int i = 0; i < cookies.size(); i++) {
-               System.out.println("- " + cookies.get(i).toString());
+                System.out.println("- " + cookies.get(i).toString());
             }
-         }
+        }
 
-         // We should now login with the user name and password
-         HttpPost httpost = new HttpPost(URL + "/j_security_check");
+        // We should now login with the user name and password
+        HttpPost httpost = new HttpPost(URL + "/j_security_check");
 
-         List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-         nvps.add(new BasicNameValuePair("j_username", user));
-         nvps.add(new BasicNameValuePair("j_password", pass));
+        List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+        nvps.add(new BasicNameValuePair("j_username", user));
+        nvps.add(new BasicNameValuePair("j_password", pass));
 
-         httpost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
+        httpost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
 
-         response = httpclient.execute(httpost);
-         entity = response.getEntity();
-         if (entity != null)
-            EntityUtils.consume(entity);
+        response = httpclient.execute(httpost);
 
-         statusLine = response.getStatusLine();
+        int statusCode = response.getStatusLine().getStatusCode();
 
-         // Post authentication - we have a 302
-         assertEquals(302, statusLine.getStatusCode());
-         Header locationHeader = response.getFirstHeader("Location");
-         String location = locationHeader.getValue();
-
-         HttpGet httpGet = new HttpGet(location);
-         response = httpclient.execute(httpGet);
-
-         entity = response.getEntity();
-         if (entity != null)
-            EntityUtils.consume(entity);
-
-         System.out.println("Post logon cookies:");
-         cookies = httpclient.getCookieStore().getCookies();
-         if (cookies.isEmpty()) {
-            System.out.println("None");
-         } else {
-            for (int i = 0; i < cookies.size(); i++) {
-               System.out.println("- " + cookies.get(i).toString());
+        assertTrue((302 == statusCode) || (200 == statusCode));
+        // Post authentication - if succesfull, we have a 302 and have to redirect
+        if (302 == statusCode) {
+            entity = response.getEntity();
+            if (entity != null) {
+                EntityUtils.consume(entity);
             }
-         }
+            Header locationHeader = response.getFirstHeader("Location");
+            String location = locationHeader.getValue();
+            HttpGet httpGet = new HttpGet(location);
+            response = httpclient.execute(httpGet);
+        }
 
-         // Either the authentication passed or failed based on the expected status code
-         statusLine = response.getStatusLine();
-         assertEquals(expectedStatusCode, statusLine.getStatusCode());
-      } finally {
-         // When HttpClient instance is no longer needed,
-         // shut down the connection manager to ensure
-         // immediate deallocation of all system resources
-         httpclient.getConnectionManager().shutdown();
-      }
-   }
+        return response;
+    }
 
+    public static void makeCall(String URL, String user, String pass, int expectedStatusCode) throws Exception {
+        DefaultHttpClient httpclient = new DefaultHttpClient();
+        try {
+            HttpGet httpget = new HttpGet(URL);
 
-   public static void setPropertiesFile(Map<String, String> props, URL propFile) {
-      File userPropsFile = new File(propFile.getFile());
-      try {
-         Writer writer = new FileWriter(userPropsFile);
-         for (Map.Entry<String, String> entry : props.entrySet()) {
-            writer.write(entry.getKey() + "=" + entry.getValue() + "\n");
-         }
-         writer.close();
-      } catch (IOException e) {
-         throw new RuntimeException(e);
-      }
+            HttpResponse response = httpclient.execute(httpget);
 
-   }
+            HttpEntity entity = response.getEntity();
+            if (entity != null)
+                EntityUtils.consume(entity);
 
-   public static File createTempPropFile(Map<String, String> props) {
-      try {
-         File propsFile = File.createTempFile("props", ".properties");
-         propsFile.deleteOnExit();
-         Writer writer = new FileWriter(propsFile);
-         for (Map.Entry<String, String> entry : props.entrySet()) {
-            writer.write(entry.getKey() + "=" + entry.getValue() + "\n");
-         }
-         writer.close();
-         return propsFile;
-      } catch (IOException e) {
-         throw new RuntimeException("Temporary file could not be created or writen to!", e);
-      }
-   }
-   
-   public static void saveWar(WebArchive war, String address){
-      war.as(ZipExporter.class).exportTo(new File(address), true);
-   }
+            // We should get the Login Page
+            StatusLine statusLine = response.getStatusLine();
+            System.out.println("Login form get: " + statusLine);
+            assertEquals(200, statusLine.getStatusCode());
 
-   public static ModelControllerClient getModelControllerClient() throws UnknownHostException {
-      return ModelControllerClient.Factory.create(InetAddress.getByName(TestSuiteEnvironment.getServerAddress()), TestSuiteEnvironment.getServerPort(),
-         org.jboss.as.arquillian.container.Authentication.getCallbackHandler());
-   }
+            System.out.println("Initial set of cookies:");
+            List<Cookie> cookies = httpclient.getCookieStore().getCookies();
+            if (cookies.isEmpty()) {
+                System.out.println("None");
+            } else {
+                for (int i = 0; i < cookies.size(); i++) {
+                    System.out.println("- " + cookies.get(i).toString());
+                }
+            }
+
+            // We should now login with the user name and password
+            HttpPost httpost = new HttpPost(URL + "/j_security_check");
+
+            List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+            nvps.add(new BasicNameValuePair("j_username", user));
+            nvps.add(new BasicNameValuePair("j_password", pass));
+
+            httpost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
+
+            response = httpclient.execute(httpost);
+            entity = response.getEntity();
+            if (entity != null)
+                EntityUtils.consume(entity);
+
+            statusLine = response.getStatusLine();
+
+            // Post authentication - we have a 302
+            assertEquals(302, statusLine.getStatusCode());
+            Header locationHeader = response.getFirstHeader("Location");
+            String location = locationHeader.getValue();
+
+            HttpGet httpGet = new HttpGet(location);
+            response = httpclient.execute(httpGet);
+
+            entity = response.getEntity();
+            if (entity != null)
+                EntityUtils.consume(entity);
+
+            System.out.println("Post logon cookies:");
+            cookies = httpclient.getCookieStore().getCookies();
+            if (cookies.isEmpty()) {
+                System.out.println("None");
+            } else {
+                for (int i = 0; i < cookies.size(); i++) {
+                    System.out.println("- " + cookies.get(i).toString());
+                }
+            }
+
+            // Either the authentication passed or failed based on the expected status code
+            statusLine = response.getStatusLine();
+            assertEquals(expectedStatusCode, statusLine.getStatusCode());
+        } finally {
+            // When HttpClient instance is no longer needed,
+            // shut down the connection manager to ensure
+            // immediate deallocation of all system resources
+            httpclient.getConnectionManager().shutdown();
+        }
+    }
+
+    public static void setPropertiesFile(Map<String, String> props, URL propFile) {
+        File userPropsFile = new File(propFile.getFile());
+        try {
+            Writer writer = new FileWriter(userPropsFile);
+            for (Map.Entry<String, String> entry : props.entrySet()) {
+                writer.write(entry.getKey() + "=" + entry.getValue() + "\n");
+            }
+            writer.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    public static File createTempPropFile(Map<String, String> props) {
+        try {
+            File propsFile = File.createTempFile("props", ".properties");
+            propsFile.deleteOnExit();
+            Writer writer = new FileWriter(propsFile);
+            for (Map.Entry<String, String> entry : props.entrySet()) {
+                writer.write(entry.getKey() + "=" + entry.getValue() + "\n");
+            }
+            writer.close();
+            return propsFile;
+        } catch (IOException e) {
+            throw new RuntimeException("Temporary file could not be created or writen to!", e);
+        }
+    }
+
+    public static void saveArchive(Archive<?> archive, String filePath) {
+        archive.as(ZipExporter.class).exportTo(new File(filePath), true);
+    }
+
+    public static ModelControllerClient getModelControllerClient() throws UnknownHostException {
+        return ModelControllerClient.Factory.create(InetAddress.getByName(TestSuiteEnvironment.getServerAddress()),
+                TestSuiteEnvironment.getServerPort(), org.jboss.as.arquillian.container.Authentication.getCallbackHandler());
+    }
 
     /**
      * Returns "secondary.test.address" system property if such exists. If not found, then there is a fallback to
@@ -611,4 +604,63 @@ public class Utils {
         return host.toLowerCase(Locale.ENGLISH);
     }
 
+    /**
+     * Generates content of jboss-ejb3.xml file as an ShrinkWrap asset with the given security domain name.
+     * 
+     * @param securityDomain security domain name
+     * @return Asset instance
+     */
+    public static Asset getJBossEjb3XmlAsset(final String securityDomain) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("<jboss:ejb-jar xmlns:jboss='http://www.jboss.com/xml/ns/javaee'");
+        sb.append("\n\txmlns='http://java.sun.com/xml/ns/javaee'");
+        sb.append("\n\txmlns:s='urn:security'");
+        sb.append("\n\tversion='3.1'");
+        sb.append("\n\timpl-version='2.0'>");
+        sb.append("\n\t<assembly-descriptor><s:security>");
+        sb.append("\n\t\t<ejb-name>*</ejb-name>");
+        sb.append("\n\t\t<s:security-domain>").append(securityDomain).append("</s:security-domain>");
+        sb.append("\n\t</s:security></assembly-descriptor>");
+        sb.append("\n</jboss:ejb-jar>");
+        return new StringAsset(sb.toString());
+    }
+
+    /**
+     * Generates content of jboss-web.xml file as an ShrinkWrap asset with the given security domain name.
+     * 
+     * @param securityDomain security domain name
+     * @return Asset instance
+     */
+    public static Asset getJBossWebXmlAsset(final String securityDomain) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("<jboss-web>");
+        sb.append("\n\t<security-domain>").append(securityDomain).append("</security-domain>");
+        sb.append("\n</jboss-web>");
+        return new StringAsset(sb.toString());
+    }
+
+    /**
+     * Creates content of users.properties and/or roles.properties files for given array of role names.
+     * <p>
+     * For instance if you provide 2 roles - "role1", "role2" then the result will be:
+     * 
+     * <pre>
+     * role1=role1
+     * role2=role2
+     * </pre>
+     * 
+     * If you use it as users.properties and roles.properties, then <code>roleName == userName == password</code>
+     * 
+     * @param roles role names (used also as user names and passwords)
+     * @return not-<code>null</code> content of users.properties and/or roles.properties
+     */
+    public static String createUsersFromRoles(String... roles) {
+        final StringBuilder sb = new StringBuilder();
+        if (roles != null) {
+            for (String role : roles) {
+                sb.append(role).append("=").append(role).append("\n");
+            }
+        }
+        return sb.toString();
+    }
 }

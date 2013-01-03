@@ -73,4 +73,8 @@ public class EntityContextImpl extends EJBContextImpl implements javax.ejb.Entit
     public boolean isRemoved() {
         return instance.isRemoved();
     }
+
+    protected EntityBeanComponentInstance getComponentInstance() {
+        return instance;
+    }
 }

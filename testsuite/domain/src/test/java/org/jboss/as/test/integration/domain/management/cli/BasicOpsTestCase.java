@@ -21,15 +21,15 @@
  */
 package org.jboss.as.test.integration.domain.management.cli;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import java.util.List;
-
-import org.jboss.as.test.integration.domain.DomainTestSupport;
+import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import org.junit.Test;
+
+import java.util.List;
 /**
  *
  * @author Dominik Pospisil <dpospisi@redhat.com>
@@ -66,6 +66,50 @@ public class BasicOpsTestCase {
         assertTrue(checkHostServers(cli, "master", new String[] {"main-one", "main-two", "other-one", "reload-one"}));
         assertTrue(checkHostServers(cli, "slave", new String[] {"main-three", "main-four", "other-two", "reload-two"}));
         cli.quit();
+
+    }
+
+    @Test
+    public void testWalkLocalHosts() throws Exception {
+
+        CLIWrapper cli = new CLIWrapper(true, DomainTestSupport.masterAddress);
+        try {
+            cli.sendLine("cd /host=master/server=main-one");
+            cli.sendLine("cd /host=master");
+            cli.sendLine("cd server=main-one");
+            cli.sendLine("cd core-service=platform-mbean/type=garbage-collector");
+            boolean failed = false;
+            try {
+                cli.sendLine("cd nonexistent=path");
+            } catch (Throwable t) {
+                failed = true;
+            }
+            assertTrue("should have failed", failed);
+        } finally {
+            cli.quit();
+        }
+    }
+
+    @Test
+    public void testWalkRemoteHosts() throws Exception {
+
+        CLIWrapper cli = new CLIWrapper(true, DomainTestSupport.masterAddress);
+        try {
+            cli.sendLine("cd /host=slave/server=main-three");
+            cli.sendLine("cd /host=slave");
+            cli.sendLine("cd server=main-three");
+            cli.sendLine("cd core-service=platform-mbean/type=garbage-collector");
+            boolean failed = false;
+            try {
+                cli.sendLine("cd nonexistent=path");
+            } catch (Throwable t) {
+                failed = true;
+            }
+            assertTrue("should have failed", failed);
+        } finally {
+            cli.quit();
+        }
+
 
     }
 

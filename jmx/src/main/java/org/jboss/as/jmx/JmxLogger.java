@@ -22,20 +22,22 @@
 
 package org.jboss.as.jmx;
 
-import javax.management.ObjectName;
-
-import org.jboss.logging.BasicLogger;
-import org.jboss.logging.Cause;
-import org.jboss.logging.LogMessage;
-import org.jboss.logging.Logger;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageLogger;
-
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import javax.management.ObjectName;
+
+import org.jboss.logging.BasicLogger;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
+import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
+
 /**
  * Date: 05.11.2011
+ *
+ * Reserved logging id ranges from: http://community.jboss.org/wiki/LoggingIds: 11300 - 11329
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */

@@ -115,7 +115,7 @@ class ResourceHandler implements ManagementHttpHandler {
         lastModified = createDateFormat().format(new Date());
     }
 
-    String getDefaultUrl() {
+    String getDefaultPath() {
         return context + defaultResource;
     }
 
@@ -144,7 +144,7 @@ class ResourceHandler implements ManagementHttpHandler {
              * default resource.
              */
             Headers responseHeaders = http.getResponseHeaders();
-            responseHeaders.add(LOCATION, getDefaultUrl());
+            responseHeaders.add(LOCATION, getDefaultPath());
             http.sendResponseHeaders(MOVED_PERMENANTLY, 0);
             http.close();
 
@@ -182,11 +182,13 @@ class ResourceHandler implements ManagementHttpHandler {
                     lastExpiryHeader = createDateFormat().format(new Date(lastExpiryDate));
                 }
 
-                responseHeaders.add(CACHE_CONTROL_HEADER, "private, max-age=2678400, must-revalidate");
+                responseHeaders.add(CACHE_CONTROL_HEADER, "public, max-age=2678400");
                 responseHeaders.add(EXPIRES_HEADER, lastExpiryHeader);
+            } else {
+                responseHeaders.add(CACHE_CONTROL_HEADER, "no-cache");
             }
 
-            responseHeaders.add(LAST_MODIFIED_HEADER, lastModified);
+            //responseHeaders.add(LAST_MODIFIED_HEADER, lastModified);
             responseHeaders.add(CONTENT_LENGTH_HEADER, String.valueOf(handle.getSize()));
 
             http.sendResponseHeaders(OK, 0);

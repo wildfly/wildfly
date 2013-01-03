@@ -94,7 +94,7 @@ public class BindingGroupAddHandler extends AbstractSocketBindingGroupAddHandler
                     }
                 }
 
-                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+                context.stepCompleted();
             }
         },OperationContext.Stage.MODEL);
 
@@ -108,21 +108,16 @@ public class BindingGroupAddHandler extends AbstractSocketBindingGroupAddHandler
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        if (context.isBooting()) {
-            int portOffset = SocketBindingGroupResourceDefinition.PORT_OFFSET.resolveModelAttribute(context, model).asInt();
-            String defaultInterface = SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.resolveModelAttribute(context, model).asString();
+        int portOffset = SocketBindingGroupResourceDefinition.PORT_OFFSET.resolveModelAttribute(context, model).asInt();
+        String defaultInterface = SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.resolveModelAttribute(context, model).asString();
 
-            SocketBindingManagerService service = new SocketBindingManagerService(portOffset);
-            final ServiceTarget serviceTarget = context.getServiceTarget();
-            newControllers.add(serviceTarget.addService(SocketBindingManager.SOCKET_BINDING_MANAGER, service)
-                    .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                    .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(defaultInterface), NetworkInterfaceBinding.class, service.getDefaultInterfaceBindingInjector())
-                    .addListener(verificationHandler)
-                    .install());
-        } else {
-            //If we try to add the service again it will fail, so put the server in reload-required
-            context.reloadRequired();
-        }
+        SocketBindingManagerService service = new SocketBindingManagerService(portOffset);
+        final ServiceTarget serviceTarget = context.getServiceTarget();
+        newControllers.add(serviceTarget.addService(SocketBindingManager.SOCKET_BINDING_MANAGER, service)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(defaultInterface), NetworkInterfaceBinding.class, service.getDefaultInterfaceBindingInjector())
+                .addListener(verificationHandler)
+                .install());
     }
 
     @Override

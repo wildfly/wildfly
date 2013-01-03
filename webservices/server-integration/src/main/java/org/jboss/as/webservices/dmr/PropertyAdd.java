@@ -53,6 +53,14 @@ final class PropertyAdd extends AbstractAddStepHandler {
     }
 
     @Override
+    protected void rollbackRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final List<ServiceController<?>> controllers) {
+        super.rollbackRuntime(context, operation, model, controllers);
+        if (!context.isBooting()) {
+            context.revertReloadRequired();
+        }
+    }
+
+    @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         final ServerConfig config = getServerConfig(context);
         if (config != null) {
@@ -61,12 +69,12 @@ final class PropertyAdd extends AbstractAddStepHandler {
             final PathElement confElem = address.getElement(address.size() - 2);
             final String configType = confElem.getKey();
             final String configName = confElem.getValue();
-            final String propertyValue = operation.has(VALUE) ? operation.get(VALUE).asString() : null;
+            final String propertyValue = operation.has(VALUE) ? Attributes.VALUE.resolveModelAttribute(context,operation).asString() : null;
             for (final CommonConfig cfg : getConfigs(config, configType)) {
                 if (configName.equals(cfg.getConfigName())) {
                     cfg.setProperty(propertyName, propertyValue);
                     if (!context.isBooting()) {
-                        context.restartRequired();
+                        context.reloadRequired();
                     }
                     return;
                 }
@@ -77,9 +85,6 @@ final class PropertyAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        if (operation.hasDefined(VALUE)) {
-            final ModelNode propertyValue = operation.get(VALUE);
-            model.get(VALUE).set(propertyValue);
-        }
+        Attributes.VALUE.validateAndSet(operation,model);
     }
 }

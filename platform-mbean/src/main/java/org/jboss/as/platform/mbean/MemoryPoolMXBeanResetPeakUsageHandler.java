@@ -58,7 +58,7 @@ public class MemoryPoolMXBeanResetPeakUsageHandler implements OperationStepHandl
             throw new OperationFailedException(new ModelNode().set(e.toString()));
         }
 
-        context.completeStep();
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
     @Override

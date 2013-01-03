@@ -66,8 +66,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.test.integration.domain.DomainTestSupport.validateFailedResponse;
-import static org.jboss.as.test.integration.domain.DomainTestSupport.validateResponse;
+import static org.jboss.as.test.integration.domain.management.util.DomainTestSupport.validateFailedResponse;
+import static org.jboss.as.test.integration.domain.management.util.DomainTestSupport.validateResponse;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -78,12 +78,13 @@ import java.util.Set;
 import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.operations.common.SnapshotDeleteHandler;
 import org.jboss.as.controller.operations.common.SnapshotListHandler;
 import org.jboss.as.controller.operations.common.SnapshotTakeHandler;
-import org.jboss.as.test.integration.domain.DomainTestSupport;
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
+import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -163,7 +164,6 @@ public class CoreResourceManagementTestCase {
         OTHER_RUNNING_SERVER_CLASSLOADING_ADDRESS.add(CORE_SERVICE, PLATFORM_MBEAN);
         OTHER_RUNNING_SERVER_CLASSLOADING_ADDRESS.add(TYPE, "class-loading");
         OTHER_RUNNING_SERVER_CLASSLOADING_ADDRESS.protect();
-
     }
 
     @BeforeClass
@@ -389,6 +389,95 @@ public class CoreResourceManagementTestCase {
     }
 
     @Test
+    public void testSystemPropertyExpressions() throws Exception {
+        DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
+        DomainClient slaveClient = domainSlaveLifecycleUtil.getDomainClient();
+
+        //Make sure that the domain.xml system properties can be resolved on the servers
+        final String propOne = "jboss.domain.test.property.one";
+        final String propTwo = "jboss.domain.test.property.two";
+        final String propThree = "jboss.domain.test.property.three";
+        final ModelNode rootOneAddr = getPropertyAddress(ROOT_PROP_ADDRESS, propOne);
+        final ModelNode rootTwoAddr = getPropertyAddress(ROOT_PROP_ADDRESS, propTwo);
+        final ModelNode mainServerOne = getPropertyAddress(MAIN_RUNNING_SERVER_PROP_ADDRESS, propOne);
+        final ModelNode mainServerTwo = getPropertyAddress(MAIN_RUNNING_SERVER_PROP_ADDRESS, propTwo);
+        final ModelNode otherServerOne = getPropertyAddress(OTHER_RUNNING_SERVER_PROP_ADDRESS, propOne);
+        final ModelNode otherServerTwo = getPropertyAddress(OTHER_RUNNING_SERVER_PROP_ADDRESS, propTwo);
+
+        //Check the raw values
+        ModelNode response = masterClient.execute(getReadAttributeOperation(rootOneAddr, VALUE));
+        ModelNode returnVal = validateResponse(response);
+        Assert.assertEquals("ONE", returnVal.asString());
+
+        response = masterClient.execute(getReadAttributeOperation(rootTwoAddr, VALUE));
+        returnVal = validateResponse(response);
+        Assert.assertEquals(ModelType.EXPRESSION, returnVal.getType());
+        Assert.assertEquals("${jboss.domain.test.property.one}", returnVal.asString());
+
+        response = masterClient.execute(getReadAttributeOperation(mainServerOne, VALUE));
+        returnVal = validateResponse(response);
+        Assert.assertEquals("ONE", returnVal.asString());
+
+        response = masterClient.execute(getReadAttributeOperation(mainServerTwo, VALUE));
+        returnVal = validateResponse(response);
+        Assert.assertEquals(ModelType.EXPRESSION, returnVal.getType());
+        Assert.assertEquals("${jboss.domain.test.property.one}", returnVal.asString());
+
+        response = slaveClient.execute(getReadAttributeOperation(otherServerOne, VALUE));
+        returnVal = validateResponse(response);
+        Assert.assertEquals("ONE", returnVal.asString());
+
+        response = slaveClient.execute(getReadAttributeOperation(otherServerTwo, VALUE));
+        returnVal = validateResponse(response);
+        Assert.assertEquals(ModelType.EXPRESSION, returnVal.getType());
+        Assert.assertEquals("${jboss.domain.test.property.one}", returnVal.asString());
+
+        //Resolve the system properties
+        response = masterClient.execute(getResolveExpressionOperation(propTwo, MAIN_RUNNING_SERVER_ADDRESS));
+        returnVal = validateResponse(response);
+        Assert.assertEquals("ONE", returnVal.asString());
+
+        response = slaveClient.execute(getResolveExpressionOperation(propTwo, OTHER_RUNNING_SERVER_ADDRESS));
+        returnVal = validateResponse(response);
+        Assert.assertEquals("ONE", returnVal.asString());
+
+        //Add another system property and check that gets resolved on the servers
+        ModelNode addOp = new ModelNode();
+        addOp.get(OP).set(ADD);
+        addOp.get(OP_ADDR).add(SYSTEM_PROPERTY, propThree);
+        addOp.get(VALUE).set("${jboss.domain.test.property.one}");
+        response = masterClient.execute(addOp);
+        validateResponse(response);
+
+        final ModelNode rootThreeAddr = getPropertyAddress(ROOT_PROP_ADDRESS, propThree);
+        final ModelNode mainServerThree = getPropertyAddress(MAIN_RUNNING_SERVER_PROP_ADDRESS, propThree);
+        final ModelNode otherServerThree = getPropertyAddress(OTHER_RUNNING_SERVER_PROP_ADDRESS, propThree);
+
+        response = masterClient.execute(getReadAttributeOperation(rootThreeAddr, VALUE));
+        returnVal = validateResponse(response);
+        Assert.assertEquals(ModelType.EXPRESSION, returnVal.getType());
+        Assert.assertEquals("${jboss.domain.test.property.one}", returnVal.asString());
+
+        response = masterClient.execute(getReadAttributeOperation(mainServerThree, VALUE));
+        returnVal = validateResponse(response);
+        Assert.assertEquals(ModelType.EXPRESSION, returnVal.getType());
+        Assert.assertEquals("${jboss.domain.test.property.one}", returnVal.asString());
+
+        response = slaveClient.execute(getReadAttributeOperation(otherServerThree, VALUE));
+        returnVal = validateResponse(response);
+        Assert.assertEquals(ModelType.EXPRESSION, returnVal.getType());
+        Assert.assertEquals("${jboss.domain.test.property.one}", returnVal.asString());
+
+        response = masterClient.execute(getResolveExpressionOperation(propThree, MAIN_RUNNING_SERVER_ADDRESS));
+        returnVal = validateResponse(response);
+        Assert.assertEquals("ONE", returnVal.asString());
+
+        response = slaveClient.execute(getResolveExpressionOperation(propThree, OTHER_RUNNING_SERVER_ADDRESS));
+        returnVal = validateResponse(response);
+        Assert.assertEquals("ONE", returnVal.asString());
+    }
+
+    @Test
     public void testPlatformMBeanManagement() throws Exception {
 
         // Just validate that the resources exist at the expected location
@@ -475,14 +564,14 @@ public class CoreResourceManagementTestCase {
         final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
 
         ModelNode snapshotOperation = new ModelNode();
-        snapshotOperation.get(OP).set(SnapshotTakeHandler.OPERATION_NAME);
+        snapshotOperation.get(OP).set(SnapshotTakeHandler.DEFINITION.getName());
         snapshotOperation.get(OP_ADDR).setEmptyList();
         final String snapshot = validateResponse(masterClient.execute(snapshotOperation)).asString();
         Assert.assertNotNull(snapshot);
         Assert.assertFalse(snapshot.isEmpty());
 
         ModelNode listSnapshotOperation = new ModelNode();
-        listSnapshotOperation.get(OP).set(SnapshotListHandler.OPERATION_NAME);
+        listSnapshotOperation.get(OP).set(SnapshotListHandler.DEFINITION.getName());
         listSnapshotOperation.get(OP_ADDR).setEmptyList();
         ModelNode listResult = validateResponse(masterClient.execute(listSnapshotOperation));
         Set<String> snapshots = new HashSet<String>();
@@ -493,7 +582,7 @@ public class CoreResourceManagementTestCase {
         Assert.assertTrue(snapshots.contains(snapshot));
 
         ModelNode deleteSnapshotOperation = new ModelNode();
-        deleteSnapshotOperation.get(OP).set(SnapshotDeleteHandler.OPERATION_NAME);
+        deleteSnapshotOperation.get(OP).set(SnapshotDeleteHandler.DEFINITION.getName());
         deleteSnapshotOperation.get(OP_ADDR).setEmptyList();
         deleteSnapshotOperation.get(NAME).set(snapshot.substring(snapshot.lastIndexOf(fileSeparator)  + fileSeparator.length()));
         validateResponse(masterClient.execute(deleteSnapshotOperation), false);
@@ -662,6 +751,7 @@ public class CoreResourceManagementTestCase {
         add.get(OP).set(ADD);
         add.get(OP_ADDR).add(SERVER_GROUP, serverGroupName);
         add.get(PROFILE).set("default");
+        add.get(SOCKET_BINDING_GROUP).set(bindingGroupName);
         validateResponse(masterClient.execute(add));
 
         // remove server group
@@ -831,7 +921,7 @@ public class CoreResourceManagementTestCase {
         final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
 
         ModelNode snapshotOperation = new ModelNode();
-        snapshotOperation.get(OP).set(SnapshotTakeHandler.OPERATION_NAME);
+        snapshotOperation.get(OP).set(SnapshotTakeHandler.DEFINITION.getName());
         snapshotOperation.get(OP_ADDR).set(addr);
         ModelNode response = masterClient.execute(snapshotOperation);
         final String snapshot = validateResponse(response).asString();
@@ -839,7 +929,7 @@ public class CoreResourceManagementTestCase {
         Assert.assertFalse(snapshot.isEmpty());
 
         ModelNode listSnapshotOperation = new ModelNode();
-        listSnapshotOperation.get(OP).set(SnapshotListHandler.OPERATION_NAME);
+        listSnapshotOperation.get(OP).set(SnapshotListHandler.DEFINITION.getName());
         listSnapshotOperation.get(OP_ADDR).set(addr);
         ModelNode listResult = validateResponse(masterClient.execute(listSnapshotOperation));
         Set<String> snapshots = new HashSet<String>();
@@ -850,7 +940,7 @@ public class CoreResourceManagementTestCase {
         Assert.assertTrue(snapshots.contains(snapshot));
 
         ModelNode deleteSnapshotOperation = new ModelNode();
-        deleteSnapshotOperation.get(OP).set(SnapshotDeleteHandler.OPERATION_NAME);
+        deleteSnapshotOperation.get(OP).set(SnapshotDeleteHandler.DEFINITION.getName());
         deleteSnapshotOperation.get(OP_ADDR).set(addr);
         deleteSnapshotOperation.get(NAME).set(snapshot.substring(snapshot.lastIndexOf(fileSeparator)  + fileSeparator.length()));
         validateResponse(masterClient.execute(deleteSnapshotOperation));
@@ -871,7 +961,7 @@ public class CoreResourceManagementTestCase {
             result.get(VALUE).set(value);
         }
         if (boottime != null) {
-            result.get(BOOT_TIME).set(boottime.booleanValue());
+            result.get(BOOT_TIME).set(boottime);
         }
         return result;
     }
@@ -905,6 +995,27 @@ public class CoreResourceManagementTestCase {
             // Just establish the standard structure; caller can fill in address later
             op.get(OP_ADDR);
         }
+        return op;
+    }
+
+    private ModelNode getPropertyAddress(ModelNode basePropAddress, String propName) {
+        PathAddress addr = PathAddress.pathAddress(basePropAddress);
+        PathAddress copy = PathAddress.EMPTY_ADDRESS;
+        for (PathElement element : addr) {
+            if (!element.getKey().equals(SYSTEM_PROPERTY)) {
+                copy = copy.append(element);
+            } else {
+                copy = copy.append(PathElement.pathElement(SYSTEM_PROPERTY, propName));
+            }
+        }
+        return copy.toModelNode();
+    }
+
+    private ModelNode getResolveExpressionOperation(String propName, ModelNode address) {
+        ModelNode op = new ModelNode();
+        op.get(OP).set("resolve-expression");
+        op.get(OP_ADDR).set(address);
+        op.get("expression").setExpression("${" + propName + "}");
         return op;
     }
 }

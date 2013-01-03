@@ -21,20 +21,19 @@
 */
 package org.jboss.as.host.controller.operations;
 
-import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers.WriteAttributeOperationHandler;
-import org.jboss.as.controller.operations.validation.IntRangeValidator;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.operations.coordination.ServerOperationResolver;
 import org.jboss.as.host.controller.HostControllerMessages;
+import org.jboss.as.host.controller.resources.ServerConfigResourceDefinition;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -43,72 +42,80 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public abstract class ServerRestartRequiredServerConfigWriteAttributeHandler extends WriteAttributeOperationHandler {
+public abstract class ServerRestartRequiredServerConfigWriteAttributeHandler extends ModelOnlyWriteAttributeHandler {
 
     public static final ServerRestartRequiredServerConfigWriteAttributeHandler GROUP_INSTANCE = new GroupHandler();
     public static final ServerRestartRequiredServerConfigWriteAttributeHandler SOCKET_BINDING_GROUP_INSTANCE = new SocketBindingGroupHandler();
     public static final ServerRestartRequiredServerConfigWriteAttributeHandler SOCKET_BINDING_PORT_OFFSET_INSTANCE = new SocketBindingPortOffsetHandler();
 
-    private static StringLengthValidator STRING_VALIDATOR = new StringLengthValidator(1, false);
+    private final AttributeDefinition attributeDefinition;
 
-    public ServerRestartRequiredServerConfigWriteAttributeHandler(ParameterValidator validator) {
-        super(validator);
+    protected ServerRestartRequiredServerConfigWriteAttributeHandler(AttributeDefinition attributeDefinition) {
+        super(attributeDefinition);
+        this.attributeDefinition = attributeDefinition;
     }
 
     @Override
-    protected void modelChanged(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue,
-            ModelNode currentValue) throws OperationFailedException {
+    protected void finishModelStage(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue,
+            ModelNode currentValue, Resource resource) throws OperationFailedException {
         if (newValue.equals(currentValue)) {
             //Set an attachment to avoid propagation to the servers, we don't want them to go into restart-required if nothing changed
             ServerOperationResolver.addToDontPropagateToServersAttachment(context, operation);
         }
-        validateReferencedNewValueExisits(context, newValue);
 
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        // Validate the model reference.
+
+        // Issue: We resolve in Stage.MODEL even though system properties may not be available yet. Not ideal,
+        // but the attributes involved do not support expressions because they are model references
+        ModelNode resolvedValue = attributeDefinition.resolveModelAttribute(context, resource.getModel());
+        if (resolvedValue.isDefined()) {
+            validateReferencedNewValueExists(context, resolvedValue);
+        } // else the attribute must support undefined values
     }
 
-    protected abstract void validateReferencedNewValueExisits(OperationContext context, ModelNode value) throws OperationFailedException;
+    protected abstract void validateReferencedNewValueExists(OperationContext context, ModelNode value) throws OperationFailedException;
 
     private static class GroupHandler extends ServerRestartRequiredServerConfigWriteAttributeHandler {
         public GroupHandler() {
-            super(STRING_VALIDATOR);
+            super(ServerConfigResourceDefinition.GROUP);
         }
 
         @Override
-        protected void validateReferencedNewValueExisits(OperationContext context, ModelNode value) throws OperationFailedException{
+        protected void validateReferencedNewValueExists(OperationContext context, ModelNode resolvedValue) throws OperationFailedException{
+
             final Resource root = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, false);
             //Don't do this on boot since the domain model is not populated yet
-            if (!context.isBooting() && root.getChild(PathElement.pathElement(SERVER_GROUP, value.asString())) == null) {
-                throw HostControllerMessages.MESSAGES.noServerGroupCalled(value.asString());
+            if (!context.isBooting() && root.getChild(PathElement.pathElement(SERVER_GROUP, resolvedValue.asString())) == null) {
+                throw HostControllerMessages.MESSAGES.noServerGroupCalled(resolvedValue.asString());
             }
         }
     }
 
     private static class SocketBindingGroupHandler extends ServerRestartRequiredServerConfigWriteAttributeHandler {
         public SocketBindingGroupHandler() {
-            super(STRING_VALIDATOR);
+            super(ServerConfigResourceDefinition.SOCKET_BINDING_GROUP);
         }
 
         @Override
-        protected void validateReferencedNewValueExisits(OperationContext context, ModelNode value) throws OperationFailedException{
+        protected void validateReferencedNewValueExists(OperationContext context, ModelNode resolvedValue) throws OperationFailedException{
             final Resource root = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, false);
             //Don't do this on boot since the domain model is not populated yet
-            if (!context.isBooting() && root.getChild(PathElement.pathElement(SOCKET_BINDING_GROUP, value.asString())) == null) {
-                throw HostControllerMessages.MESSAGES.noSocketBindingGroupCalled(value.asString());
+            if (!context.isBooting() && root.getChild(PathElement.pathElement(SOCKET_BINDING_GROUP, resolvedValue.asString())) == null) {
+                throw HostControllerMessages.MESSAGES.noSocketBindingGroupCalled(resolvedValue.asString());
             }
         }
     }
 
 
     private static class SocketBindingPortOffsetHandler extends ServerRestartRequiredServerConfigWriteAttributeHandler {
-        static final IntRangeValidator VALIDATOR = new IntRangeValidator(0, true);
 
         public SocketBindingPortOffsetHandler() {
-            super(VALIDATOR);
+            super(ServerConfigResourceDefinition.SOCKET_BINDING_PORT_OFFSET);
         }
 
         @Override
-        protected void validateReferencedNewValueExisits(OperationContext context, ModelNode value) throws OperationFailedException{
+        protected void validateReferencedNewValueExists(OperationContext context, ModelNode resolvedValue) throws OperationFailedException {
+            // our attribute is not a model reference
         }
     }
 }

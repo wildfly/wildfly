@@ -28,11 +28,7 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -45,30 +41,9 @@ public class BeanValidationAdd extends AbstractBoottimeAddStepHandler {
 
     public static final BeanValidationAdd INSTANCE = new BeanValidationAdd();
 
-    public static enum BeanValidationParameters {
-        BEAN_VALIDATION_ENABLED(SimpleAttributeDefinitionBuilder.create("enabled", ModelType.BOOLEAN)
-            .setAllowExpression(true)
-            .setAllowNull(true)
-            .setDefaultValue(new ModelNode().set(true))
-            .setMeasurementUnit(MeasurementUnit.NONE)
-            .setRestartAllServices()
-            .setXmlName("enabled")
-            .build());
-
-        private BeanValidationParameters(SimpleAttributeDefinition attribute) {
-            this.attribute = attribute;
-        }
-
-        public SimpleAttributeDefinition getAttribute() {
-            return attribute;
-        }
-
-        private SimpleAttributeDefinition attribute;
-    }
-
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        for (BeanValidationParameters parameter : BeanValidationParameters.values() ) {
+        for (JcaBeanValidationDefinition.BeanValidationParameters parameter : JcaBeanValidationDefinition.BeanValidationParameters.values() ) {
             parameter.getAttribute().validateAndSet(operation,model);
         }
     }
@@ -77,7 +52,7 @@ public class BeanValidationAdd extends AbstractBoottimeAddStepHandler {
     protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model,
             final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-        final boolean enabled = BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().resolveModelAttribute(context, model).asBoolean();
+        final boolean enabled = JcaBeanValidationDefinition.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().resolveModelAttribute(context, model).asBoolean();
 
         ServiceName serviceName = ConnectorServices.BEAN_VALIDATION_CONFIG_SERVICE;
         ServiceName jcaConfigServiceName = ConnectorServices.CONNECTOR_CONFIG_SERVICE;

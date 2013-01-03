@@ -27,6 +27,7 @@ import java.lang.management.ManagementFactory;
 import javax.management.MBeanServer;
 
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.jmx.model.ConfiguredDomains;
 import org.jboss.as.jmx.model.ModelControllerMBeanServerPlugin;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.jmx.MBeanServerPlugin;
@@ -51,18 +52,22 @@ import org.jboss.msc.value.InjectedValue;
 public class MBeanServerService implements Service<PluggableMBeanServer> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("mbean", "server");
 
-    private final boolean showModel;
+    private final String resolvedDomainName;
+    private final String expressionsDomainName;
+    private final boolean legacyWithProperPropertyFormat;
     private final InjectedValue<ModelController> modelControllerValue = new InjectedValue<ModelController>();
 
     private PluggableMBeanServer mBeanServer;
     private MBeanServerPlugin showModelPlugin;
 
-    private MBeanServerService(final boolean showModel) {
-        this.showModel = showModel;
+    private MBeanServerService(final String resolvedDomainName, final String expressionsDomainName, final boolean legacyWithProperPropertyFormat) {
+        this.resolvedDomainName = resolvedDomainName;
+        this.expressionsDomainName = expressionsDomainName;
+        this.legacyWithProperPropertyFormat = legacyWithProperPropertyFormat;
     }
 
-    public static ServiceController<?> addService(final ServiceTarget batchBuilder, final boolean showModel, final ServiceListener<Object>... listeners) {
-        MBeanServerService service = new MBeanServerService(showModel);
+    public static ServiceController<?> addService(final ServiceTarget batchBuilder, final String resolvedDomainName, final String expressionsDomainName, final boolean legacyWithProperPropertyFormat, final ServiceListener<Object>... listeners) {
+        MBeanServerService service = new MBeanServerService(resolvedDomainName, expressionsDomainName, legacyWithProperPropertyFormat);
         return batchBuilder.addService(MBeanServerService.SERVICE_NAME, service)
             .addListener(listeners)
             .setInitialMode(ServiceController.Mode.ACTIVE)
@@ -75,8 +80,10 @@ public class MBeanServerService implements Service<PluggableMBeanServer> {
         //If the platform MBeanServer was set up to be the PluggableMBeanServer, use that otherwise create a new one and delegate
         MBeanServer platform = ManagementFactory.getPlatformMBeanServer();
         PluggableMBeanServerImpl pluggable = platform instanceof PluggableMBeanServerImpl ? (PluggableMBeanServerImpl)platform : new PluggableMBeanServerImpl(platform);
-        if (showModel) {
-            showModelPlugin = new ModelControllerMBeanServerPlugin(modelControllerValue.getValue());
+        if (resolvedDomainName != null || expressionsDomainName != null) {
+            //TODO make these configurable
+            ConfiguredDomains configuredDomains = new ConfiguredDomains(resolvedDomainName, expressionsDomainName);
+            showModelPlugin = new ModelControllerMBeanServerPlugin(configuredDomains, modelControllerValue.getValue(), legacyWithProperPropertyFormat);
             pluggable.addPlugin(showModelPlugin);
         }
         mBeanServer = pluggable;

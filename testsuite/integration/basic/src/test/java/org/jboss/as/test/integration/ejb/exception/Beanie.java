@@ -26,6 +26,7 @@ import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 
+import static javax.ejb.TransactionAttributeType.NEVER;
 import static javax.ejb.TransactionAttributeType.NOT_SUPPORTED;
 
 /**
@@ -44,8 +45,23 @@ public class Beanie implements BeanieLocal {
         }
     }
 
+    @TransactionAttribute(NEVER)
+    public void callThrowExceptionNever() {
+        try {
+            ctx.getBusinessObject(BeanieLocal.class).throwException();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
     @TransactionAttribute(NOT_SUPPORTED)
     public void throwException() throws Exception {
         throw new Exception("This is an app exception");
+    }
+
+    @Override
+    public void throwXmlAppException() {
+        throw new XmlAppException();
     }
 }

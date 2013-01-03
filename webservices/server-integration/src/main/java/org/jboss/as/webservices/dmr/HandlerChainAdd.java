@@ -26,8 +26,8 @@ import static org.jboss.as.webservices.WSMessages.MESSAGES;
 import static org.jboss.as.webservices.dmr.Constants.POST_HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PRE_HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PROTOCOL_BINDINGS;
-import static org.jboss.as.webservices.dmr.PackageUtils.getServerConfig;
 import static org.jboss.as.webservices.dmr.PackageUtils.getConfigs;
+import static org.jboss.as.webservices.dmr.PackageUtils.getServerConfig;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -54,6 +54,14 @@ final class HandlerChainAdd extends AbstractAddStepHandler {
 
     private HandlerChainAdd() {
         // forbidden instantiation
+    }
+
+    @Override
+    protected void rollbackRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final List<ServiceController<?>> controllers) {
+        super.rollbackRuntime(context, operation, model, controllers);
+        if (!context.isBooting()) {
+            context.revertReloadRequired();
+        }
     }
 
     @Override
@@ -94,7 +102,7 @@ final class HandlerChainAdd extends AbstractAddStepHandler {
                     handlerChain.setProtocolBindings(protocolBindings);
                     handlerChains.add(handlerChain);
                     if (!context.isBooting()) {
-                        context.restartRequired();
+                        context.reloadRequired();
                     }
                     return;
                 }
@@ -105,7 +113,7 @@ final class HandlerChainAdd extends AbstractAddStepHandler {
 
     private static UnifiedHandlerChainMetaData getChain(final List<UnifiedHandlerChainMetaData> handlerChains, final String handlerChainId) {
         for (final UnifiedHandlerChainMetaData handlerChain : handlerChains) {
-            if (handlerChainId.equals(handlerChain.getId())) return handlerChain;
+            if (handlerChainId.equals(handlerChain.getId())) { return handlerChain; }
         }
         return null;
     }
@@ -116,9 +124,7 @@ final class HandlerChainAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        if (operation.hasDefined(PROTOCOL_BINDINGS)) {
-            model.get(PROTOCOL_BINDINGS).set(operation.get(PROTOCOL_BINDINGS));
-        }
+        Attributes.PROTOCOL_BINDINGS.validateAndSet(operation, model);
     }
 
 }

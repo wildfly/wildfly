@@ -29,9 +29,9 @@ import java.net.ConnectException;
 import java.net.URI;
 
 import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
-import org.jboss.logging.Cause;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageBundle;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.Messages;
 
 /**

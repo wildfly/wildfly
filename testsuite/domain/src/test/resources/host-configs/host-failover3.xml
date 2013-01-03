@@ -20,10 +20,10 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<host xmlns="urn:jboss:domain:1.3"
+<host xmlns="urn:jboss:domain:1.4"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="urn:jboss:domain:1.3 jboss-as-config_1_3.xsd"
-      name="failover3">
+      xsi:schemaLocation="urn:jboss:domain:1.4 jboss-as-config_1_4.xsd"
+      name="failover-h3">
 
     <paths>
         <path name="domainTestPath" path="/tmp" />
@@ -35,6 +35,12 @@
                 <authentication>
                      <local default-user="$local"/>
                      <properties path="mgmt-users.properties" relative-to="jboss.domain.config.dir" />
+                </authentication>
+            </security-realm>
+            <security-realm name="ApplicationRealm">
+                <authentication>
+                     <local default-user="$local" allowed-users="*"/>
+                     <properties path="domain/configuration/application-users.properties" relative-to="jboss.home.dir" />
                 </authentication>
             </security-realm>
         </security-realms>

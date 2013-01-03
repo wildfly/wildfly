@@ -23,6 +23,7 @@
 package org.jboss.as.ee;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Set;
@@ -39,11 +40,11 @@ import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.MethodInfo;
-import org.jboss.logging.Cause;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageBundle;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.Messages;
-import org.jboss.logging.Param;
+import org.jboss.logging.annotations.Param;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -875,4 +876,17 @@ public interface EeMessages {
 
     @Message(id = 16700, value = "Failed to load jboss.properties")
     DeploymentUnitProcessingException failedToLoadJbossProperties(@Cause IOException e);
+
+    @Message(id = 16701, value = "Unsupported ear module type: %s")
+    DeploymentUnitProcessingException unsupportedModuleType(String moduleFileName);
+
+    @Message(id = 16702, value = "library-directory of value / is not supported")
+    DeploymentUnitProcessingException rootAsLibraryDirectory();
+
+    @Message(id = 16703, value = "Module may not be a child of the EAR's library directory. Library directory: %s, module file name: %s")
+    DeploymentUnitProcessingException earModuleChildOfLibraryDirectory(String libraryDirectory, String moduleFileName);
+
+    @Message(id = 16704, value = "ManagedReference was null and injection is not optional for injection into field %s")
+    RuntimeException managedReferenceWasNull(Field field);
+
 }

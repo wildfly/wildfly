@@ -25,6 +25,9 @@ package org.jboss.as.domain.http.server;
 import static org.jboss.as.domain.http.server.Constants.APPLICATION_DMR_ENCODED;
 import static org.jboss.as.domain.http.server.Constants.APPLICATION_JSON;
 import static org.jboss.as.domain.http.server.Constants.CONTENT_TYPE;
+import static org.jboss.as.domain.http.server.Constants.HOST;
+import static org.jboss.as.domain.http.server.Constants.HTTP;
+import static org.jboss.as.domain.http.server.Constants.HTTPS;
 import static org.jboss.as.domain.http.server.Constants.OK;
 
 import java.io.Closeable;
@@ -34,6 +37,7 @@ import java.io.PrintWriter;
 
 import org.jboss.com.sun.net.httpserver.Headers;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
+import org.jboss.com.sun.net.httpserver.HttpsServer;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -98,6 +102,21 @@ class DomainUtil {
             close.close();
         } catch (Throwable eat) {
         }
+    }
+
+    /**
+     * Based on the current request represented by the HttpExchange construct a complete URL for the supplied path.
+     *
+     * @param exchange - The current HttpExchange
+     * @param path - The path to include in the constructed URL
+     * @return The constructed URL
+     */
+    static String constructUrl(final HttpExchange exchange, final String path) {
+        final Headers headers = exchange.getRequestHeaders();
+        String host = headers.getFirst(HOST);
+        String protocol = exchange.getHttpContext().getServer() instanceof HttpsServer ? HTTPS : HTTP;
+
+        return protocol + "://" + host + path;
     }
 
 }

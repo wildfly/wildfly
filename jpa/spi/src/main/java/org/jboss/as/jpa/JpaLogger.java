@@ -26,12 +26,14 @@ import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.Cause;
-import org.jboss.logging.LogMessage;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.Logger;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageLogger;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
 
 /**
  * Date: 07.06.2011
@@ -125,4 +127,14 @@ public interface JpaLogger extends BasicLogger {
     @Message(id = 11406, value = "Failed to stop persistence unit service %s")
     void failedToStopPUService(@Cause Throwable cause, String name);
 
+    /**
+     * Creates an exception indicating a failure to get the module for the deployment unit represented by the
+     * {@code deploymentUnit} parameter.
+     *
+     * @param deploymentUnit the deployment unit that failed.
+     * @return a {@link DeploymentUnitProcessingException} for the error.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 11407, value = "Failed to get module attachment for %s")
+    void failedToGetModuleAttachment(DeploymentUnit deploymentUnit);
 }

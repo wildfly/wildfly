@@ -22,18 +22,14 @@
 
 package org.jboss.as.domain.controller.operations;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.ProfileDescription;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public class ProfileAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
+public class ProfileAddHandler extends AbstractAddStepHandler {
 
     public static final ProfileAddHandler INSTANCE = new ProfileAddHandler();
 
@@ -48,10 +44,4 @@ public class ProfileAddHandler extends AbstractAddStepHandler implements Descrip
     protected boolean requiresRuntime(OperationContext context) {
         return false;
     }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return ProfileDescription.getProfileAddOperation(locale);
-    }
-
 }

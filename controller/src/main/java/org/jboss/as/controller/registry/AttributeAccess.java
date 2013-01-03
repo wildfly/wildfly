@@ -21,13 +21,13 @@
  */
 package org.jboss.as.controller.registry;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 import java.util.EnumSet;
 import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
-
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * Information about handling an attribute in a sub-model.
@@ -108,7 +108,11 @@ public final class AttributeAccess {
          * An attribute whose value is only stored in runtime services, and
          * isn't stored in the persistent configuration.
          */
-        STORAGE_RUNTIME
+        STORAGE_RUNTIME,
+        /**
+         * The attribute is an alias to something else
+         */
+        ALIAS
     }
 
     private final AccessType access;
@@ -127,6 +131,11 @@ public final class AttributeAccess {
         this.writeHandler = writeHandler;
         this.storage = storage;
         this.definition = definition;
+        if (flags != null && flags.contains(Flag.ALIAS)) {
+            if (readHandler == null) {
+                throw MESSAGES.nullVar("writeHandler");
+            }
+        }
         if(access == AccessType.READ_WRITE && writeHandler == null) {
             throw MESSAGES.nullVar("writeHandler");
         }

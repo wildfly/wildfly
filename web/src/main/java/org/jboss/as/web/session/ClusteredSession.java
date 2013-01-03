@@ -66,7 +66,6 @@ import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.session.StandardSession;
 import org.apache.catalina.session.StandardSessionFacade;
 import org.apache.catalina.util.Enumerator;
-import org.apache.catalina.util.StringManager;
 import org.jboss.as.clustering.web.DistributableSessionMetadata;
 import org.jboss.as.clustering.web.DistributedCacheManager;
 import org.jboss.as.clustering.web.IncomingDistributableSessionData;
@@ -128,11 +127,6 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
             return null;
         }
     };
-
-    /**
-     * The string manager for this package.
-     */
-    protected static final StringManager sm = StringManager.getManager(ClusteredSession.class.getPackage().getName());
 
     /** Length of time we do full replication as workaround to JBCACHE-1531 */
     private static final long FULL_REPLICATION_WINDOW_LENGTH = 5000;
@@ -493,7 +487,16 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
 
     @Override
     public void access() {
-        this.acquireSessionOwnership();
+        try {
+            this.acquireSessionOwnership();
+        } catch (TimeoutException e) {
+            // May be contending with the session expiration thread of another node, so retry once.
+            try {
+                this.acquireSessionOwnership();
+            } catch (TimeoutException te) {
+                throw MESSAGES.failAcquiringOwnership(realId, te);
+            }
+        }
 
         this.lastAccessedTime = this.thisAccessedTime;
         this.thisAccessedTime = System.currentTimeMillis();
@@ -509,7 +512,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
         }
     }
 
-    private void acquireSessionOwnership() {
+    private void acquireSessionOwnership() throws TimeoutException {
         SessionOwnershipSupport support = this.distributedCacheManager.getSessionOwnershipSupport();
 
         if (support != null) {
@@ -524,8 +527,6 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
                             update(data);
                         }
                     }
-                } catch (TimeoutException e) {
-                    throw MESSAGES.failAcquiringOwnership(realId, e);
                 } finally {
                     this.ownershipLock.unlock();
                 }
@@ -804,7 +805,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
         }
 
         if (canAttributeBeReplicated(value) == false) {
-            throw MESSAGES.failToReplicateAttribute();
+            throw MESSAGES.failToReplicateAttribute(name, value.getClass().getCanonicalName());
         }
 
         // Construct an event with the new value
@@ -888,7 +889,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
     public void removeAttribute(String name) {
         // Validate our current state
         if (!isValidInternal())
-            throw new IllegalStateException(sm.getString("clusteredSession.removeAttribute.ise"));
+            throw MESSAGES.expiredSession();
 
         final boolean localCall = true;
         final boolean localOnly = false;
@@ -1255,8 +1256,15 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
             // SRV.10.6 (2.5) 11.6 (3.0) Propagate listener exceptions
             RuntimeException listenerException = null;
 
-            if (localCall) {
-                this.acquireSessionOwnership();
+            final boolean requireOwnershipLock = localCall && !localOnly;
+
+            if (requireOwnershipLock) {
+                try {
+                    this.acquireSessionOwnership();
+                } catch (TimeoutException e) {
+                    this.expiring = false;
+                    throw MESSAGES.failAcquiringOwnership(realId, e);
+                }
             }
 
             try {
@@ -1328,7 +1336,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
                 // We have completed expire of this session
                 setValid(false);
                 expiring = false;
-                if (localCall) {
+                if (requireOwnershipLock) {
                     this.relinquishSessionOwnership(true);
                 }
             }

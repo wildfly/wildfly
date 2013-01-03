@@ -22,6 +22,7 @@
 package org.jboss.as.webservices.deployers.deployment;
 
 import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
+import static org.jboss.as.webservices.metadata.model.AbstractEndpoint.COMPONENT_VIEW_NAME;
 import static org.jboss.as.webservices.util.ASHelper.getJaxwsPojos;
 import static org.jboss.wsf.spi.deployment.DeploymentType.JAXWS;
 import static org.jboss.wsf.spi.deployment.EndpointType.JAXWS_JSE;
@@ -29,6 +30,7 @@ import static org.jboss.wsf.spi.deployment.EndpointType.JAXWS_JSE;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.webservices.metadata.model.POJOEndpoint;
 import org.jboss.wsf.spi.deployment.Deployment;
+import org.jboss.wsf.spi.deployment.Endpoint;
 
 /**
  * Creates new JAXWS POJO deployment.
@@ -49,7 +51,8 @@ final class DeploymentModelBuilderJAXWS_POJO extends AbstractDeploymentModelBuil
             ROOT_LOGGER.pojoName(pojoEndpointName);
             final String pojoEndpointClassName = pojoEndpoint.getClassName();
             ROOT_LOGGER.pojoClass(pojoEndpointClassName);
-            newHttpEndpoint(pojoEndpointClassName, pojoEndpointName, dep);
+            final Endpoint ep = newHttpEndpoint(pojoEndpointClassName, pojoEndpointName, dep);
+            ep.setProperty(COMPONENT_VIEW_NAME, pojoEndpoint.getComponentViewName());
         }
     }
 

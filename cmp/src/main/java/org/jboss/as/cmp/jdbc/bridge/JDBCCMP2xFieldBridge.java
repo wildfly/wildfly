@@ -22,15 +22,16 @@
 package org.jboss.as.cmp.jdbc.bridge;
 
 import java.lang.reflect.Field;
+
 import org.jboss.as.cmp.CmpMessages;
-import static org.jboss.as.cmp.CmpMessages.MESSAGES;
+import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.as.cmp.jdbc.CMPFieldStateFactory;
 import org.jboss.as.cmp.jdbc.JDBCContext;
 import org.jboss.as.cmp.jdbc.JDBCStoreManager;
 import org.jboss.as.cmp.jdbc.JDBCType;
 import org.jboss.as.cmp.jdbc.metadata.JDBCCMPFieldMetaData;
 
-import org.jboss.as.cmp.context.CmpEntityBeanContext;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 
 /**
  * JDBCCMP2xFieldBridge is a concrete implementation of JDBCCMPFieldBridge for
@@ -516,9 +517,9 @@ public class JDBCCMP2xFieldBridge extends JDBCAbstractCMPFieldBridge {
                     // set foreign key to a new value
                     cmrField.setForeignKey(ctx, newRelatedId);
                     // put calculated relatedId to the waiting list
-                    if (ctx.getPrimaryKey() != null) {
+                    if (ctx.getPrimaryKeyUnchecked() != null) {
                         JDBCCMRFieldBridge relatedCMRField = (JDBCCMRFieldBridge) cmrField.getRelatedCMRField();
-                        relatedCMRField.addRelatedPKWaitingForMyPK(newRelatedId, ctx.getPrimaryKey());
+                        relatedCMRField.addRelatedPKWaitingForMyPK(newRelatedId, ctx.getPrimaryKeyUnchecked());
                     }
                 }
             } catch (Exception e) {
@@ -528,7 +529,7 @@ public class JDBCCMP2xFieldBridge extends JDBCAbstractCMPFieldBridge {
 
         private void destroyRelations(Object oldRelatedId, CmpEntityBeanContext ctx) {
             JDBCCMRFieldBridge relatedCMRField = (JDBCCMRFieldBridge) cmrField.getRelatedCMRField();
-            relatedCMRField.removeRelatedPKWaitingForMyPK(oldRelatedId, ctx.getPrimaryKey());
+            relatedCMRField.removeRelatedPKWaitingForMyPK(oldRelatedId, ctx.getPrimaryKeyUnchecked());
             try {
                 if (cmrField.isForeignKeyValid(oldRelatedId)) {
                     cmrField.destroyRelationLinks(ctx, oldRelatedId, true, false);

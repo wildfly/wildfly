@@ -56,7 +56,7 @@ public abstract class AbstractJMSRuntimeHandler<T> extends AbstractRuntimeOnlyHa
         if (ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION.equals(opName)) {
             final String attributeName = operation.require(ModelDescriptionConstants.NAME).asString();
             executeReadAttribute(attributeName, context, dataSource, address, includeDefault);
-            context.completeStep();
+            context.stepCompleted();
         } else {
             throw unknownOperation(opName);
         }

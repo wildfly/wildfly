@@ -40,7 +40,7 @@ import org.jboss.msc.service.ServiceTarget;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface OperationContext {
+public interface OperationContext extends ExpressionResolver {
 
     /**
      * Add an execution step to this operation process.  Runtime operation steps are automatically added after
@@ -182,17 +182,46 @@ public interface OperationContext {
      * </p>
      *
      * @return the operation result action to take
+     *
+     * @deprecated use {@link #completeStep(ResultHandler)}, {@link #completeStep(RollbackHandler)} or {@link #stepCompleted()}
      */
+    @Deprecated
     ResultAction completeStep();
 
     /**
      * Complete a step, while registering for
-     * {@link RollbackHandler#handleRollback(OperationContext, ModelNode)} a notification if the work done by the
+     * {@link RollbackHandler#handleRollback(OperationContext, ModelNode) a notification} if the work done by the
      * caller needs to be rolled back}.
      *
      * @param rollbackHandler the handler for any rollback notification. Cannot be {@code null}.
      */
     void completeStep(RollbackHandler rollbackHandler);
+
+    /**
+     * Complete a step, while registering for
+     * {@link ResultHandler#handleResult(ResultAction, OperationContext, ModelNode) a notification} when the overall
+     * result of the operation is known. Handlers that register for notifications will receive the notifications in
+     * the reverse of the order in which their steps execute.
+     *
+     * @param resultHandler the handler for the result notification. Cannot be {@code null}.
+     */
+    void completeStep(ResultHandler resultHandler);
+
+    /**
+     * Called by an {@link OperationStepHandler} to indicate it has completed its handling of a step and is
+     * uninterested in the result of subsequent steps. This is a convenience method that is equivalent to a call to
+     * {@link #completeStep(ResultHandler) completeStep(OperationContext.ResultHandler.NO_OP_RESULT_HANDLER)}.
+     * <p>
+     * A common user of this method would be a {@link Stage#MODEL} handler. Typically such a handler would not need
+     * to take any further action in the case of a {@link ResultAction#KEEP successful result} for the overall operation.
+     * If the operation result is a {@link ResultAction#ROLLBACK rollback}, the {@code OperationContext} itself
+     * will ensure any changes made to the model are discarded, again requiring no action on the part of the handler.
+     * So a {@link Stage#MODEL} handler typically can be uninterested in the result of the overall operation and can
+     * use this method.
+     * </p>
+     */
+    void stepCompleted();
+
     /**
      * Get the type of process in which this operation is executing.
      *
@@ -749,6 +778,10 @@ public interface OperationContext {
         ROLLBACK,
     }
 
+    /**
+     * Handler for a callback to an {@link OperationStepHandler} indicating that the overall operation is being
+     * rolled back and the handler should revert any change it has made.
+     */
     interface RollbackHandler {
 
         /**
@@ -771,6 +804,25 @@ public interface OperationContext {
         };
 
         /**
+         * A {@link RollbackHandler} that calls {@link OperationContext#revertReloadRequired()}. Intended for use by
+         * operation step handlers call {@link OperationContext#reloadRequired()} and perform no other actions
+         * that need to be rolled back.
+         */
+        RollbackHandler REVERT_RELOAD_REQUIRED_ROLLBACK_HANDLER = new RollbackHandler() {
+            /**
+             * Does nothing.
+             *
+             * @param context  ignored
+             * @param operation ignored
+             */
+            @Override
+            public void handleRollback(OperationContext context, ModelNode operation) {
+                context.revertReloadRequired();
+            }
+        };
+
+
+        /**
          * Callback to an {@link OperationStepHandler} indicating that the overall operation is being
          * rolled back and the handler should revert any change it has made. A handler executing in
          * {@link Stage#MODEL} need not revert any changes it has made to the configuration model; this
@@ -784,6 +836,47 @@ public interface OperationContext {
          *                 that registered this rollback handler.
          */
         void handleRollback(OperationContext context, ModelNode operation);
+    }
+
+    /**
+     * Handler for a callback to an {@link OperationStepHandler} indicating that the result of the overall operation is
+     * known and the handler can take any necessary actions to deal with that result.
+     */
+    interface ResultHandler {
+
+        /**
+         * A {@link ResultHandler} that does nothing in the callback. Intended for use by operation step
+         * handlers that do not need to do any clean up work -- e.g. those that only perform reads or those
+         * that only perform persistent configuration changes. (Persistent configuration changes need not be
+         * explicitly rolled back as the {@link OperationContext} will handle that automatically.)
+         */
+        ResultHandler NOOP_RESULT_HANDLER = new ResultHandler() {
+            /**
+             * Does nothing.
+             *
+             * @param resultAction ignored
+             * @param context  ignored
+             * @param operation ignored
+             */
+            @Override
+            public void handleResult(ResultAction resultAction, OperationContext context, ModelNode operation) {
+                // no-op
+            }
+        };
+
+        /**
+         * Callback to an {@link OperationStepHandler} indicating that the result of the overall operation is
+         * known and the handler can take any necessary actions to deal with that result.
+         *
+         * @param resultAction the overall result of the operation
+         * @param context  the operation execution context; will be the same as what was passed to the
+         *                 {@link OperationStepHandler#execute(OperationContext, ModelNode)} method invocation
+         *                 that registered this rollback handler.
+         * @param operation the operation being rolled back; will be the same as what was passed to the
+         *                 {@link OperationStepHandler#execute(OperationContext, ModelNode)} method invocation
+         *                 that registered this rollback handler.
+         */
+        void handleResult(ResultAction resultAction, OperationContext context, ModelNode operation);
     }
 
     /**

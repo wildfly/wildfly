@@ -91,15 +91,17 @@ public abstract class AbstractRuntimeOnlyHandler implements OperationStepHandler
             }
         }, OperationContext.Stage.RUNTIME);
 
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.stepCompleted();
     }
 
     /**
      * Execute this step in {@link org.jboss.as.controller.OperationContext.Stage#RUNTIME}.
      * If the operation fails, {@link OperationContext#getFailureDescription() context.getFailureDescroption()}
-     * must be called, or {@link OperationFailedException} must be thrown, before calling {@link OperationContext#completeStep() context.completeStep()}.
+     * must be called, or {@link OperationFailedException} must be thrown, before calling one of the
+     * {@link org.jboss.as.controller.OperationContext#completeStep(OperationContext.ResultHandler) context.completeStep variants}.
      * If the operation succeeded, {@link OperationContext#getResult() context.getResult()} should
-     * be called and the result populated with the outcome, after which {@link OperationContext#completeStep() context.completeStep()}
+     * be called and the result populated with the outcome, after which one of the
+     * {@link org.jboss.as.controller.OperationContext#completeStep(OperationContext.ResultHandler) context.completeStep variants}
      * must be called.
      *
      * @param context the operation context

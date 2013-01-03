@@ -38,10 +38,11 @@ public enum NamingSubsystemXMLElement {
     REMOTE_NAMING("remote-naming"),
     SIMPLE("simple"),
 
-
     LOOKUP("lookup"),
 
     OBJECT_FACTORY("object-factory"),
+    OBJECT_FACTORY_ENV(NamingSubsystemModel.OBJECT_FACTORY_ENV),
+    OBJECT_FACTORY_ENV_PROPERTY("property"),
     ;
 
     private final String name;

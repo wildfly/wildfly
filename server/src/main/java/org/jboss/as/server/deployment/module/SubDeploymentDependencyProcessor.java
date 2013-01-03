@@ -75,9 +75,9 @@ public class SubDeploymentDependencyProcessor implements DeploymentUnitProcessor
                     accessibleModules.add(dependency);
                 }
             }
-            for (ModuleDependency identifier : accessibleModules) {
-                if (!identifier.equals(moduleIdentifier)) {
-                    moduleSpec.addLocalDependency(identifier);
+            for (ModuleDependency dependency : accessibleModules) {
+                if (!dependency.getIdentifier().equals(moduleIdentifier)) {
+                    moduleSpec.addLocalDependency(dependency);
                 }
             }
         }

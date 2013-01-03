@@ -30,18 +30,21 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
+
 import org.jboss.as.cmp.CmpMessages;
-import static org.jboss.as.cmp.CmpMessages.MESSAGES;
+import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.as.cmp.jdbc.bridge.JDBCCMPFieldBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCCMRFieldBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCEntityBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCFieldBridge;
 import org.jboss.as.cmp.jdbc.metadata.JDBCReadAheadMetaData;
-import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.logging.Logger;
 import org.jboss.tm.TransactionLocal;
+
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 
 
 /**
@@ -274,17 +277,17 @@ public final class ReadAheadCache {
         if (log.isTraceEnabled()) {
             log.trace("load data:" +
                     " entity=" + manager.getEntityBridge().getEntityName() +
-                    " pk=" + ctx.getPrimaryKey());
+                    " pk=" + ctx.getPrimaryKeyUnchecked());
         }
 
         // get the preload data map
-        Map preloadDataMap = getPreloadDataMap(ctx.getPrimaryKey(), false);
+        Map preloadDataMap = getPreloadDataMap(ctx.getPrimaryKeyUnchecked(), false);
         if (preloadDataMap == null || preloadDataMap.isEmpty()) {
             // no preloaded data for this entity
             if (log.isTraceEnabled()) {
                 log.trace("No preload data found:" +
                         " entity=" + manager.getEntityBridge().getEntityName() +
-                        " pk=" + ctx.getPrimaryKey());
+                        " pk=" + ctx.getPrimaryKeyUnchecked());
             }
             return false;
         }
@@ -325,7 +328,7 @@ public final class ReadAheadCache {
                     if (log.isTraceEnabled()) {
                         log.trace("Preloading data:" +
                                 " entity=" + manager.getEntityBridge().getEntityName() +
-                                " pk=" + ctx.getPrimaryKey() +
+                                " pk=" + ctx.getPrimaryKeyUnchecked() +
                                 " cmpField=" + cmpField.getFieldName());
                     }
 
@@ -340,7 +343,7 @@ public final class ReadAheadCache {
                     if (log.isTraceEnabled()) {
                         log.trace("CMPField already loaded:" +
                                 " entity=" + manager.getEntityBridge().getEntityName() +
-                                " pk=" + ctx.getPrimaryKey() +
+                                " pk=" + ctx.getPrimaryKeyUnchecked() +
                                 " cmpField=" + cmpField.getFieldName());
                     }
                 }
@@ -351,7 +354,7 @@ public final class ReadAheadCache {
                     if (log.isTraceEnabled()) {
                         log.trace("Preloading data:" +
                                 " entity=" + manager.getEntityBridge().getEntityName() +
-                                " pk=" + ctx.getPrimaryKey() +
+                                " pk=" + ctx.getPrimaryKeyUnchecked() +
                                 " cmrField=" + cmrField.getFieldName());
                     }
 
@@ -377,7 +380,7 @@ public final class ReadAheadCache {
                     if (log.isTraceEnabled()) {
                         log.trace("CMRField already loaded:" +
                                 " entity=" + manager.getEntityBridge().getEntityName() +
-                                " pk=" + ctx.getPrimaryKey() +
+                                " pk=" + ctx.getPrimaryKeyUnchecked() +
                                 " cmrField=" + cmrField.getFieldName());
                     }
                 }
@@ -386,7 +389,7 @@ public final class ReadAheadCache {
 
         if (cleanReadAhead) {
             // remove all preload data map as all of the data has been loaded
-            manager.removeEntityTxData(new PreloadKey(ctx.getPrimaryKey()));
+            manager.removeEntityTxData(new PreloadKey(ctx.getPrimaryKeyUnchecked()));
         }
 
         return loaded;

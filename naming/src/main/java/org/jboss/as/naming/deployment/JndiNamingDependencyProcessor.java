@@ -21,14 +21,14 @@
  */
 package org.jboss.as.naming.deployment;
 
-import java.util.Set;
+import java.util.List;
 
+import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
@@ -47,24 +47,32 @@ public class JndiNamingDependencyProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
-        Set<ServiceName> dependencies = deploymentUnit.getAttachment(Attachments.JNDI_DEPENDENCIES);
-        final ServiceName serviceName = serviceName(deploymentUnit);
-        final ServiceBuilder<Void> serviceBuilder = phaseContext.getServiceTarget().addService(serviceName, Service.NULL);
+        //this will always be up but we need to make sure the naming service is
+        //not shut down before the deployment is undeployed when the container is shut down
+        phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, NamingService.SERVICE_NAME);
+
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        List<ServiceName> dependencies = deploymentUnit.getAttachmentList(Attachments.JNDI_DEPENDENCIES);
+        final ServiceName serviceName = serviceName(deploymentUnit.getServiceName());
+        final ServiceBuilder<?> serviceBuilder = phaseContext.getServiceTarget().addService(serviceName, new RuntimeBindReleaseService());
         serviceBuilder.addDependencies(dependencies);
         if(deploymentUnit.getParent() != null) {
             serviceBuilder.addDependencies(deploymentUnit.getParent().getAttachment(Attachments.JNDI_DEPENDENCIES));
         }
         serviceBuilder.install();
+    }
 
+    public static ServiceName serviceName(final ServiceName deploymentUnitServiceName) {
+        return deploymentUnitServiceName.append(JNDI_DEPENDENCY_SERVICE);
     }
 
     public static ServiceName serviceName(final DeploymentUnit deploymentUnit) {
-        return deploymentUnit.getServiceName().append(JNDI_DEPENDENCY_SERVICE);
+        return serviceName(deploymentUnit.getServiceName());
     }
 
     @Override
     public void undeploy(final DeploymentUnit context) {
     }
+
 }

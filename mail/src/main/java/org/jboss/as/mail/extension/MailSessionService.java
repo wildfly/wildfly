@@ -1,22 +1,43 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 package org.jboss.as.mail.extension;
 
 
-import org.jboss.as.network.OutboundSocketBinding;
-import org.jboss.logging.Logger;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.inject.MapInjector;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-
-import javax.mail.Session;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import javax.mail.Session;
+
+import org.jboss.as.network.OutboundSocketBinding;
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.inject.MapInjector;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 
 /**
  * Service that provides a javax.mail.Session.
@@ -25,25 +46,27 @@ import java.util.Properties;
  * @created 27.7.11 0:14
  */
 public class MailSessionService implements Service<Session> {
-    private static final Logger log = Logger.getLogger(MailSessionService.class);
     private volatile Properties props;
     private final MailSessionConfig config;
     private Map<String, OutboundSocketBinding> socketBindings = new HashMap<String, OutboundSocketBinding>();
 
     public MailSessionService(MailSessionConfig config) {
-        log.tracef("service constructed with config: %s", config);
+        MailLogger.ROOT_LOGGER.tracef("service constructed with config: %s", config);
         this.config = config;
     }
 
+    public MailSessionConfig getConfig() {
+        return config;
+    }
 
     public void start(StartContext startContext) throws StartException {
-        log.trace("start...");
+        MailLogger.ROOT_LOGGER.trace("start...");
         props = getProperties();
     }
 
 
     public void stop(StopContext stopContext) {
-        log.trace("stop...");
+        MailLogger.ROOT_LOGGER.trace("stop...");
     }
 
     Injector<OutboundSocketBinding> getSocketBindingInjector(String name) {
@@ -72,20 +95,27 @@ public class MailSessionService implements Service<Session> {
         if (config.getPop3Server() != null) {
             setServerProps(props, config.getPop3Server(), "pop3");
         }
+        if (config.getCustomServers() != null) {
+            configureCustomServers(props, config.getCustomServers());
+        }
         if (config.getFrom() != null) {
             props.setProperty("mail.from", config.getFrom());
         }
         props.setProperty("mail.debug", String.valueOf(config.isDebug()));
-        log.tracef("props: %s", props);
+        MailLogger.ROOT_LOGGER.tracef("props: %s", props);
         return props;
     }
 
-    private void setServerProps(Properties props, final MailSessionServer server, final String protocol) throws StartException {
-        InetSocketAddress socketAddress = getServerSocketAddress(server);
-        props.setProperty(getHostKey(protocol), socketAddress.getAddress().getHostName());
-        props.setProperty(getPortKey(protocol), String.valueOf(socketAddress.getPort()));
+    private void configureCustomServers(final Properties props, final CustomServerConfig... serverConfigs) throws StartException {
+        for (CustomServerConfig config : serverConfigs) {
+            setServerProps(props, config, config.getProtocol());
+        }
+    }
+
+    private void setServerProps(final Properties props, final ServerConfig server, final String protocol) throws StartException {
         if (server.isSslEnabled()) {
             props.setProperty(getPropKey(protocol, "ssl.enable"), "true");
+        } else if (server.isTlsEnabled()) {
             props.setProperty(getPropKey(protocol, "starttls.enable"), "true");
         }
         if (server.getCredentials() != null) {
@@ -93,9 +123,33 @@ public class MailSessionService implements Service<Session> {
             props.setProperty(getPropKey(protocol, "user"), server.getCredentials().getUsername());
         }
         props.setProperty(getPropKey(protocol, "debug"), String.valueOf(config.isDebug()));
+
+
+        Map<String, String> customProps = server.getProperties();
+        if (server.getOutgoingSocketBinding() != null) {
+            InetSocketAddress socketAddress = getServerSocketAddress(server);
+            props.setProperty(getHostKey(protocol), socketAddress.getAddress().getHostName());
+            props.setProperty(getPortKey(protocol), String.valueOf(socketAddress.getPort()));
+        } else {
+            String host = customProps.get("host");
+            if (host != null && !"".equals(host.trim())) {
+                props.setProperty(getHostKey(protocol), host);
+            }
+            String port = customProps.get("port");
+            if (port != null && !"".equals(port.trim())) {
+                props.setProperty(getPortKey(protocol), port);
+            }
+        }
+        if (customProps!=null&&!customProps.isEmpty()) {
+            for (Map.Entry<String, String> prop : customProps.entrySet()) {
+                if (!props.contains(prop.getKey())) {
+                    props.put(getPropKey(protocol,prop.getKey()), prop.getValue());
+                }
+            }
+        }
     }
 
-    private InetSocketAddress getServerSocketAddress(MailSessionServer server) throws StartException {
+    private InetSocketAddress getServerSocketAddress(ServerConfig server) throws StartException {
         final String ref = server.getOutgoingSocketBinding();
         final OutboundSocketBinding binding = socketBindings.get(ref);
         if (ref == null) {
@@ -143,6 +197,7 @@ public class MailSessionService implements Service<Session> {
             msg.setContent("Testing mail subsystem, loerm ipsum", "text/plain");
             Transport.send(msg);
         } catch (Exception e) {
+            // Needs i18n if using
             log.error("could not send mail", e);
         }
     }*/

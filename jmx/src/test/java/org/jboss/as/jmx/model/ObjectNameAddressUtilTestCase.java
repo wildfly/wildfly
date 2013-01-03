@@ -82,9 +82,9 @@ public class ObjectNameAddressUtilTestCase {
 
     private void checkObjectName(PathElement...elements) {
         PathAddress pathAddress = PathAddress.pathAddress(elements);
-        ObjectName on = ObjectNameAddressUtil.createObjectName(pathAddress);
+        ObjectName on = ObjectNameAddressUtil.createObjectName("jboss.as", pathAddress);
         Assert.assertNotNull(on);
-        PathAddress resolved = ObjectNameAddressUtil.resolvePathAddress(rootResource, on);
+        PathAddress resolved = ObjectNameAddressUtil.resolvePathAddress("jboss.as", rootResource, on);
         Assert.assertEquals(pathAddress, resolved);
     }
 

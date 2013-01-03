@@ -29,4 +29,5 @@ interface CommonAttributes {
 
     String DEFAULT_DATASOURCE = "default-datasource";
     String JPA = "jpa";
+    String DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE = "default-extended-persistence-inheritance";
 }

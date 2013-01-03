@@ -22,16 +22,22 @@
 
 package org.jboss.as.connector.deployers.ra.processors;
 
-import org.jboss.as.connector.subsystems.resourceadapters.IronJacamarRegistrator;
-import org.jboss.as.connector.subsystems.resourceadapters.IronJacamarResourceCreator;
-import org.jboss.as.connector.util.ConnectorServices;
+import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER;
+import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
+
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.jboss.as.connector.annotations.repository.jandex.JandexAnnotationRepositoryImpl;
-import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
-import org.jboss.as.connector.services.resourceadapters.deployment.ResourceAdapterDeploymentService;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.metadata.xmldescriptors.IronJacamarXmlDescriptor;
+import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
+import org.jboss.as.connector.services.resourceadapters.deployment.ResourceAdapterDeploymentService;
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
+import org.jboss.as.connector.subsystems.resourceadapters.IronJacamarResourceCreator;
+import org.jboss.as.connector.subsystems.resourceadapters.IronJacamarResourceDefinition;
+import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -65,14 +71,10 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.SubjectFactory;
 
-import java.util.Map;
-import java.util.Map.Entry;
-
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
-
 /**
  * DeploymentUnitProcessor responsible for using IronJacamar metadata and create
  * service for ResourceAdapter.
+ *
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
@@ -84,8 +86,10 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
     /**
      * Process a deployment for a Connector. Will install a {@Code
      * JBossService} for this ResourceAdapter.
+     *
      * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
+     *
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final ConnectorXmlDescriptor connectorXmlDescriptor = phaseContext.getDeploymentUnit().getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
@@ -93,14 +97,15 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
         final ManagementResourceRegistration baseRegistration = phaseContext.getDeploymentUnit().getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT);
         final Resource deploymentResource = phaseContext.getDeploymentUnit().getAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE);
 
-        if(connectorXmlDescriptor == null) {
-            return;  // Skip non ra deployments
+        if (connectorXmlDescriptor == null) {
+            return;
         }
+        final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (deploymentUnit.getParent() != null) {
             registration = baseRegistration.getSubModel(PathAddress.pathAddress(PathElement.pathElement("subdeployment")));
-        }  else {
+        } else {
             registration = baseRegistration;
         }
         final IronJacamarXmlDescriptor ironJacamarXmlDescriptor = deploymentUnit
@@ -110,7 +115,43 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
         if (module == null)
             throw MESSAGES.failedToGetModuleAttachment(phaseContext.getDeploymentUnit());
 
+        DEPLOYMENT_CONNECTOR_LOGGER.debugf("ParsedRaDeploymentProcessor: Processing=%s", deploymentUnit);
+
         final ClassLoader classLoader = module.getClassLoader();
+
+        Map<ResourceRoot, Index> annotationIndexes = AnnotationIndexUtils.getAnnotationIndexes(deploymentUnit);
+
+
+        ServiceBuilder builder = process(connectorXmlDescriptor, ironJacamarXmlDescriptor, classLoader, serviceTarget, annotationIndexes, deploymentUnit.getServiceName());
+        if (builder != null) {
+
+            builder.addListener(new AbstractResourceAdapterDeploymentServiceListener(registration, deploymentUnit.getName(), deploymentResource) {
+
+                @Override
+                protected void registerIronjacamar(final ServiceController<? extends Object> controller, final ManagementResourceRegistration subRegistration, final Resource subsystemResource) {
+                    //register ironJacamar
+                    try {
+                        subRegistration.registerSubModel(new IronJacamarResourceDefinition());
+                    } catch (IllegalArgumentException iae) {
+                        //ignore it: submodel already registered
+                    }
+                    AS7MetadataRepository mdr = ((ResourceAdapterDeploymentService) controller.getService()).getMdr();
+                    IronJacamarResourceCreator.INSTANCE.execute(subsystemResource, mdr);
+                }
+
+                @Override
+                protected CommonDeployment getDeploymentMetadata(final ServiceController<? extends Object> controller) {
+                    return ((ResourceAdapterDeploymentService) controller.getService()).getRaDeployment();
+                }
+            });
+
+
+            builder.setInitialMode(Mode.ACTIVE).install();
+        }
+    }
+
+
+    public static ServiceBuilder process(final ConnectorXmlDescriptor connectorXmlDescriptor, final IronJacamarXmlDescriptor ironJacamarXmlDescriptor, final ClassLoader classLoader, final ServiceTarget serviceTarget, final Map<ResourceRoot, Index> annotationIndexes, final ServiceName duServiceName) throws DeploymentUnitProcessingException {
 
         Connector cmd = connectorXmlDescriptor != null ? connectorXmlDescriptor.getConnector() : null;
         final IronJacamar ijmd = ironJacamarXmlDescriptor != null ? ironJacamarXmlDescriptor.getIronJacamar() : null;
@@ -118,11 +159,21 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
         try {
             // Annotation merging
             Annotations annotator = new Annotations();
-            Map<ResourceRoot, Index> indexes = AnnotationIndexUtils.getAnnotationIndexes(deploymentUnit);
-            for (Entry<ResourceRoot, Index> entry : indexes.entrySet()) {
-                AnnotationRepository repository = new JandexAnnotationRepositoryImpl(entry.getValue(), classLoader);
-                    cmd = annotator.merge(cmd, repository, classLoader);
+
+            if (annotationIndexes != null && annotationIndexes.size() > 0) {
+                DEPLOYMENT_CONNECTOR_LOGGER.debugf("ParsedRaDeploymentProcessor: Found %d annotationIndexes", annotationIndexes.size());
+                for (Index index : annotationIndexes.values()) {
+                    // Don't apply any empty indexes, as IronJacamar doesn't like that atm.
+                    if (index.getKnownClasses() != null && index.getKnownClasses().size() > 0) {
+                        AnnotationRepository repository = new JandexAnnotationRepositoryImpl(index, classLoader);
+                        cmd = annotator.merge(cmd, repository, classLoader);
+                        DEPLOYMENT_CONNECTOR_LOGGER.debugf("ParsedRaDeploymentProcessor: CMD=%s", cmd);
+                    }
+                }
             }
+            if (annotationIndexes == null || annotationIndexes.size() == 0)
+                DEPLOYMENT_CONNECTOR_LOGGER.debugf("ParsedRaDeploymentProcessor: Found 0 annotationIndexes");
+
             // FIXME: when the connector is null the Iron Jacamar data is ignored
             if (cmd != null) {
                 // Validate metadata
@@ -133,9 +184,8 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
             }
 
             final ServiceName deployerServiceName = ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(connectorXmlDescriptor.getDeploymentName());
-            final ResourceAdapterDeploymentService raDeploymentService = new ResourceAdapterDeploymentService(connectorXmlDescriptor, cmd, ijmd, module, deployerServiceName);
+            final ResourceAdapterDeploymentService raDeploymentService = new ResourceAdapterDeploymentService(connectorXmlDescriptor, cmd, ijmd, classLoader, deployerServiceName, duServiceName);
 
-            final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 
             // Create the service
             ServiceBuilder builder = serviceTarget.addService(deployerServiceName, raDeploymentService)
@@ -150,24 +200,7 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                     .addDependency(ConnectorServices.IDLE_REMOVER_SERVICE)
                     .addDependency(ConnectorServices.CONNECTION_VALIDATOR_SERVICE)
                     .addDependency(NamingService.SERVICE_NAME);
-            builder.addListener(new AbstractResourceAdapterDeploymentServiceListener(registration, deploymentUnit.getName(), deploymentResource) {
-
-                @Override
-                protected void registerIronjacamar(final ServiceController<? extends Object> controller, final ManagementResourceRegistration subRegistration, final Resource subsystemResource) {
-                    //register ironJacamar
-                    new IronJacamarRegistrator(subRegistration).invoke();
-                    AS7MetadataRepository mdr = ((ResourceAdapterDeploymentService) controller.getService()).getMdr();
-                    IronJacamarResourceCreator.INSTANCE.execute(subsystemResource, mdr);
-                }
-
-                @Override
-                protected CommonDeployment getDeploymentMetadata(final ServiceController<? extends Object> controller) {
-                   return  ((ResourceAdapterDeploymentService) controller.getService()).getRaDeployment();
-                }
-            });
-
-
-            builder.setInitialMode(Mode.ACTIVE).install();
+            return builder;
         } catch (Throwable t) {
             throw new DeploymentUnitProcessingException(t);
         }

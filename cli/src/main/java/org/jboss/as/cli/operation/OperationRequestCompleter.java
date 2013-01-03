@@ -285,7 +285,7 @@ public class OperationRequestCompleter implements CommandLineCompleter {
                 candidates.addAll(names);
             } else {
                 for (String name : names) {
-                    if (chunk == null || name.startsWith(chunk)) {
+                    if (name.startsWith(chunk)) {
                         candidates.add(name);
                     }
                 }
@@ -295,6 +295,11 @@ public class OperationRequestCompleter implements CommandLineCompleter {
             if(parsedCmd.endsOnSeparator()) {
                 return buffer.length();//parsedCmd.getLastSeparatorIndex() + 1;
             } else {
+                if(chunk != null && candidates.size() == 1 && chunk.equals(candidates.get(0))
+                        && parsedCmd.getFormat().getPropertyListStart().length() > 0) {
+                    candidates.set(0, chunk + parsedCmd.getFormat().getPropertyListStart());
+                }
+
                 return parsedCmd.getLastChunkIndex();
             }
         }
@@ -332,7 +337,7 @@ public class OperationRequestCompleter implements CommandLineCompleter {
             candidates.addAll(names);
         } else {
             for (String name : names) {
-                if (chunk == null || name.startsWith(chunk)) {
+                if (name.startsWith(chunk)) {
                     candidates.add(name);
                 }
             }
@@ -340,14 +345,19 @@ public class OperationRequestCompleter implements CommandLineCompleter {
 
         if(candidates.size() == 1) {
             if(address.endsOnType()) {
-                candidates.set(0, Util.escapeString(candidates.get(0), ESCAPE_SELECTOR));
+                if(chunk != null && chunk.equals(candidates.get(0))) {
+                    candidates.set(0, parsedCmd.getFormat().getAddressOperationSeparator());
+                    candidates.add(parsedCmd.getFormat().getNodeSeparator());
+                    return buffer.length();
+                } else {
+                    candidates.set(0, Util.escapeString(candidates.get(0), ESCAPE_SELECTOR));
+                }
             } else {
                 candidates.set(0, Util.escapeString(candidates.get(0), ESCAPE_SELECTOR) + '=');
             }
         } else {
             Util.sortAndEscape(candidates, ESCAPE_SELECTOR);
         }
-
         return parsedCmd.endsOnSeparator() ? parsedCmd.getLastSeparatorIndex() + 1 : parsedCmd.getLastChunkIndex();
     }
 
@@ -364,11 +374,14 @@ public class OperationRequestCompleter implements CommandLineCompleter {
     }
 
     protected CommandLineCompleter getValueCompleter(CommandContext ctx, Iterable<CommandArgument> allArgs, int index) {
+        CommandLineCompleter maxIndex = null;
         for (CommandArgument arg : allArgs) {
-            if (arg.getIndex() == index || arg.getIndex() == Integer.MAX_VALUE) {
+            if (arg.getIndex() == index) {
                 return arg.getValueCompleter();
+            } else if(arg.getIndex() == Integer.MAX_VALUE) {
+                maxIndex = arg.getValueCompleter();
             }
         }
-        return null;
+        return maxIndex;
     }
 }

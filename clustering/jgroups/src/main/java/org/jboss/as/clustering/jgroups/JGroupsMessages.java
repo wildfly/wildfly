@@ -25,12 +25,14 @@ package org.jboss.as.clustering.jgroups;
 import java.net.URL;
 
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageBundle;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.Messages;
 
 /**
- * Date: 29.08.2011
+ * JGroupsMessages
+ *
+ * logging id range: 10270 - 10279
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
@@ -61,7 +63,7 @@ public interface JGroupsMessages {
     @Message(id = 10271, value = "Failed to locate %s")
     String notFound(String resource);
 
-    @Message(id = 10272, value = "A node named %s already exists in this cluster.  Perhaps there is already a server running on this host?  If so, restart this server with a unique node name, via -Djboss.node.name=<node-name>")
+    @Message(id = 10272, value = "A node named %s already exists in this cluster. Perhaps there is already a server running on this host? If so, restart this server with a unique node name, via -Djboss.node.name=<node-name>")
     IllegalStateException duplicateNodeName(String name);
 
     @Message(id = 10273, value = "Transport for stack %s is not defined. Please specify both a transport and protocol list, either as optional parameters to add() or via batching.")
@@ -70,4 +72,12 @@ public interface JGroupsMessages {
     @Message(id = 10274, value = "Protocol list for stack %s is not defined. Please specify both a transport and protocol list, either as optional parameters to add() or via batching.")
     OperationFailedException protocolListNotDefined(String stackName);
 
+    @Message(id = 10275, value = "Protocol with relative path %s is already defined.")
+    OperationFailedException protocolAlreadyDefined(String relativePath);
+
+    @Message(id = 10276, value = "Protocol with relative path %s is not defined.")
+    OperationFailedException protocolNotDefined(String relativePath);
+
+    @Message(id = 10277, value = "Property %s for protocol with relative path %s is not defined.")
+    OperationFailedException propertyNotDefined(String propertyName, String protocolRelativePath);
 }

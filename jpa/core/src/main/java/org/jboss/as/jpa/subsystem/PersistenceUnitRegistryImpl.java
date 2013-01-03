@@ -28,8 +28,6 @@ import java.util.Map;
 
 import org.jboss.as.jpa.spi.PersistenceUnitService;
 import org.jboss.as.jpa.spi.PersistenceUnitServiceRegistry;
-import org.jboss.msc.inject.InjectionException;
-import org.jboss.msc.inject.Injector;
 
 /**
  * Standard {@link PersistenceUnitServiceRegistry} implementation.
@@ -43,31 +41,16 @@ public class PersistenceUnitRegistryImpl implements PersistenceUnitServiceRegist
     private final Map<String, PersistenceUnitService> registry = Collections.synchronizedMap(new HashMap<String, PersistenceUnitService>());
 
 
-    public Injector<PersistenceUnitService> getInjector() {
-        return new PersistenceUnitInjector();
-    }
-
     @Override
     public PersistenceUnitService getPersistenceUnitService(String persistenceUnitResourceName) {
         return registry.get(persistenceUnitResourceName);
     }
 
-    private class PersistenceUnitInjector implements Injector<PersistenceUnitService> {
+    public void add(String scopedPersistenceUnitName, PersistenceUnitService service) {
+        registry.put(scopedPersistenceUnitName, service);
+    }
 
-        private String filteredPersistenceUnitName;
-
-        @Override
-        public void inject(PersistenceUnitService value) throws InjectionException {
-            filteredPersistenceUnitName = value.getScopedPersistenceUnitName();
-            registry.put(filteredPersistenceUnitName, value);
-        }
-
-        @Override
-        public void uninject() {
-            if (filteredPersistenceUnitName != null) {
-                registry.remove(filteredPersistenceUnitName);
-                filteredPersistenceUnitName = null;
-            }
-        }
+    public void remove(String scopedPersistenceUnitName) {
+        registry.remove(scopedPersistenceUnitName);
     }
 }

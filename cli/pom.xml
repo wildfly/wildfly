@@ -47,6 +47,9 @@
                         <include>**/*TestCase.java</include>
                     </includes>
                     <enableAssertions>false</enableAssertions>
+                    <systemPropertyVariables>
+                        <jboss.cli.config>${project.basedir}/../build/src/main/resources/bin/jboss-cli.xml</jboss.cli.config>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
             <plugin>
@@ -58,13 +61,34 @@
                     </compilerArgument>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>client</shadedClassifierName>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>org.jboss.as.cli.CommandLineMain</mainClass>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
     <dependencies>
         <dependency>
-            <groupId>org.jboss.jreadline</groupId>
-            <artifactId>jreadline</artifactId>
+            <groupId>org.jboss.aesh</groupId>
+            <artifactId>aesh</artifactId>
         </dependency>
 
         <dependency>
@@ -98,15 +122,10 @@
         </dependency>
 
         <dependency>
-           <groupId>org.jboss.as</groupId>
-           <artifactId>jboss-as-controller</artifactId>
-        </dependency>
-
-        <dependency>
            <groupId>org.jboss.remotingjmx</groupId>
            <artifactId>remoting-jmx</artifactId>
         </dependency>
-        
+
         <dependency>
            <groupId>org.jboss</groupId>
            <artifactId>jboss-vfs</artifactId>
@@ -119,7 +138,7 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-    
+
     <profiles>
         <profile>
             <id>linux-windows</id>
@@ -151,5 +170,5 @@
                 </dependency>
             </dependencies>
         </profile>
-    </profiles>    
+    </profiles>
 </project>

@@ -21,7 +21,6 @@
   ~  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   ~  */
   -->
-
 <subsystem xmlns="urn:jboss:domain:infinispan:1.4">
     <cache-container name="minimal" default-cache="local">
         <local-cache name="local"/>
@@ -36,7 +35,11 @@
             <file-store fetch-state="false" passivation="false" path="path" preload="true" purge="false" relative-to="jboss.server.temp.dir" shared="true" singleton="true">
                 <write-behind flush-lock-timeout="2" modification-queue-size="2048" shutdown-timeout="20000" thread-pool-size="1" />
             </file-store>
-            <indexing index="LOCAL" />
+            <indexing index="LOCAL">
+                <property name="hibernate.search.default.directory_provider">infinispan</property>
+                <property name="hibernate.search.infinispan.cachemanager_jndiname">java:jboss/infinispan/container/HibernateSearch</property>
+                <property name="hibernate.search.default.worker.backend">jgroups</property>
+            </indexing>
         </local-cache>
         <invalidation-cache name="invalid" mode="ASYNC" batching="true" queue-flush-interval="10" queue-size="1000" start="LAZY" async-marshalling="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_UNCOMMITTED" striping="true"/>
@@ -63,7 +66,7 @@
             </store>
             <indexing index="NONE" />
         </replicated-cache>
-        <distributed-cache name="dist" mode="SYNC" batching="true" l1-lifespan="1200000" owners="4" remote-timeout="35000" start="EAGER" virtual-nodes="2"  async-marshalling="true">
+        <distributed-cache name="dist" mode="SYNC" batching="true" l1-lifespan="1200000" owners="4" remote-timeout="35000" start="EAGER" segments="2"  async-marshalling="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_COMMITTED" striping="true"/>
             <transaction mode="FULL_XA" stop-timeout="60000"  locking="OPTIMISTIC"/>
             <eviction max-entries="20000" strategy="UNORDERED"/>
@@ -84,64 +87,5 @@
             </mixed-keyed-jdbc-store>
             <indexing index="ALL" />
         </distributed-cache>
-        </cache-container>
-    <cache-container name="capedwarf" default-cache="default">
-        <transport lock-timeout="60000"/>
-        <replicated-cache name="data" mode="ASYNC">
-            <transaction mode="NON_XA"/>
-            <eviction strategy="NONE"/>
-            <file-store preload="true" purge="false"/>
-        </replicated-cache>
-        <replicated-cache name="metadata" mode="ASYNC">
-            <transaction mode="NON_XA"/>
-            <eviction strategy="NONE"/>
-            <file-store preload="true" purge="false"/>
-        </replicated-cache>
-        <replicated-cache name="memcache" mode="ASYNC">
-            <transaction mode="NON_XA" locking="PESSIMISTIC"/>
-            <eviction strategy="NONE"/>
-        </replicated-cache>
-        <distributed-cache name="default" mode="ASYNC" >
-            <transaction mode="NON_XA"/>
-            <eviction strategy="NONE"/>
-            <file-store preload="true" purge="false"/>
-            <indexing index="LOCAL">
-                <property name="hibernate.search.default.directory_provider">infinispan</property>
-                <property name="hibernate.search.infinispan.cachemanager_jndiname">java:jboss/infinispan/container/HibernateSearch</property>
-                <property name="hibernate.search.default.worker.backend">jgroups</property>
-            </indexing>
-        </distributed-cache>
-        <distributed-cache name="dist" mode="ASYNC">
-            <transaction mode="NON_XA" locking="PESSIMISTIC"/>
-            <eviction strategy="NONE"/>
-            <file-store preload="true" purge="false"/>
-        </distributed-cache>
-        <distributed-cache name="tasks" mode="ASYNC">
-            <transaction mode="NON_XA"/>
-            <eviction strategy="LIRS" max-entries="10000"/>
-            <file-store preload="true" purge="false"/>
-            <indexing index="LOCAL">
-                <property name="hibernate.search.default.directory_provider">infinispan</property>
-                <property name="hibernate.search.infinispan.cachemanager_jndiname">java:jboss/infinispan/container/HibernateSearch</property>
-                <property name="hibernate.search.default.worker.backend">jgroups</property>
-            </indexing>
-        </distributed-cache>
     </cache-container>
-    <cache-container name="HibernateSearch" default-cache="LuceneIndexesMetadata">
-            <transport lock-timeout="60000"/>
-            <replicated-cache name="LuceneIndexesMetadata" mode="SYNC" batching="true">
-                <transaction mode="NONE"/>
-                <eviction strategy="NONE"/>
-                <file-store preload="true" purge="false"/>
-            </replicated-cache>
-            <replicated-cache name="LuceneIndexesData" mode="SYNC" batching="true">
-                <transaction mode="NONE"/>
-                <eviction strategy="NONE"/>
-                <file-store preload="true" purge="false"/>
-            </replicated-cache>
-            <replicated-cache name="LuceneIndexesLocking" mode="SYNC" batching="true">
-                <transaction mode="NONE"/>
-                <eviction strategy="NONE"/>
-            </replicated-cache>
-        </cache-container>
 </subsystem>

@@ -22,10 +22,8 @@
 
 package org.jboss.as.server.deployment.scanner;
 
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.server.deployment.scanner.api.DeploymentScanner;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * Update the 'scanInterval' attribute on a {@code DeploymentScanner}.
@@ -37,7 +35,7 @@ class WriteScanIntervalAttributeHandler extends AbstractWriteAttributeHandler {
     static final WriteScanIntervalAttributeHandler INSTANCE = new WriteScanIntervalAttributeHandler();
 
     private WriteScanIntervalAttributeHandler() {
-        super(new ModelTypeValidator(ModelType.INT, false, true), new ModelTypeValidator(ModelType.INT, false, false));
+        super(DeploymentScannerDefinition.SCAN_INTERVAL);
     }
 
     @Override

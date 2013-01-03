@@ -24,6 +24,7 @@ package org.jboss.as.subsystem.test;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -44,6 +45,10 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
 
     public AbstractSubsystemBaseTest(final String mainSubsystemName, final Extension mainExtension) {
         super(mainSubsystemName, mainExtension);
+    }
+
+    public AbstractSubsystemBaseTest(final String mainSubsystemName, final Extension mainExtension, final Comparator<PathAddress> removeOrderComparator) {
+        super(mainSubsystemName, mainExtension, removeOrderComparator);
     }
 
     /**
@@ -148,7 +153,7 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
 
         compare(modelA, modelC);
 
-        assertRemoveSubsystemResources(servicesA, getIgnoredChildResourcesForRemovalTest());
+        assertRemoveSubsystemResources(servicesC, getIgnoredChildResourcesForRemovalTest());
     }
 
     protected void validateModel(ModelNode model) {

@@ -27,7 +27,9 @@ import java.util.List;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
@@ -45,22 +47,40 @@ class JMXSubsystemAdd extends AbstractAddStepHandler {
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        JMXSubsystemRootResource.SHOW_MODEL.validateAndSet(operation, model);
+        model.setEmptyObject();
     }
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         launchServices(context, model, verificationHandler, newControllers);
     }
 
-    void launchServices(OperationContext context, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    void launchServices(OperationContext context, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        ModelNode recursiveModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
         // Add the MBean service
-        boolean showModel = model.hasDefined(CommonAttributes.SHOW_MODEL) ? model.get(CommonAttributes.SHOW_MODEL).asBoolean() : false;
+        String resolvedDomain = getDomainName(context, recursiveModel, CommonAttributes.RESOLVED);
+        String expressionsDomain = getDomainName(context, recursiveModel, CommonAttributes.EXPRESSION);
+        boolean legacyWithProperPropertyFormat = false;
+        if (model.hasDefined(CommonAttributes.PROPER_PROPERTY_FORMAT)) {
+            legacyWithProperPropertyFormat = ExposeModelResourceExpression.DOMAIN_NAME.resolveModelAttribute(context, recursiveModel).asBoolean();
+        }
+
         ServiceController<?> controller = verificationHandler != null ?
-                MBeanServerService.addService(context.getServiceTarget(), showModel, verificationHandler) :
-                    MBeanServerService.addService(context.getServiceTarget(), showModel);
+                MBeanServerService.addService(context.getServiceTarget(), resolvedDomain, expressionsDomain, legacyWithProperPropertyFormat, verificationHandler) :
+                    MBeanServerService.addService(context.getServiceTarget(), resolvedDomain, expressionsDomain, legacyWithProperPropertyFormat);
         if (newControllers != null) {
             newControllers.add(controller);
         }
+    }
+
+    private String getDomainName(OperationContext context, ModelNode model, String child) throws OperationFailedException {
+        if (!model.hasDefined(CommonAttributes.EXPOSE_MODEL)) {
+            return null;
+        }
+        if (!model.get(CommonAttributes.EXPOSE_MODEL).hasDefined(child)) {
+            return null;
+        }
+        ModelNode childModel = model.get(CommonAttributes.EXPOSE_MODEL, child);
+        return ExposeModelResource.getDomainNameAttribute(child).resolveModelAttribute(context, childModel).asString();
     }
 
 }

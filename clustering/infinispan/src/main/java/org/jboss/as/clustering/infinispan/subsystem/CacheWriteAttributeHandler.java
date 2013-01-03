@@ -1,25 +1,40 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.CACHE_ATTRIBUTES;
-import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.CLUSTERED_CACHE_ATTRIBUTES;
-import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.DISTRIBUTED_CACHE_ATTRIBUTES;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.infinispan.configuration.cache.CacheMode;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 
@@ -28,19 +43,14 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class CacheWriteAttributeHandler implements OperationStepHandler, SelfRegisteringAttributeHandler {
-
-    /** The basic and clustered cache attributes operation handler. */
-    static final SelfRegisteringAttributeHandler CACHE_ATTR = new CacheWriteAttributeHandler(CACHE_ATTRIBUTES);
-    static final SelfRegisteringAttributeHandler CLUSTERED_CACHE_ATTR = new CacheWriteAttributeHandler(CLUSTERED_CACHE_ATTRIBUTES);
-    static final SelfRegisteringAttributeHandler DISTRIBUTED_CACHE_ATTR = new CacheWriteAttributeHandler(DISTRIBUTED_CACHE_ATTRIBUTES);
+public class CacheWriteAttributeHandler implements OperationStepHandler {
 
     public static final CacheWriteAttributeHandler INSTANCE = new CacheWriteAttributeHandler();
     private final ParametersValidator nameValidator = new ParametersValidator();
 
     private final Map<String, AttributeDefinition> attributeDefinitions;
 
-    private CacheWriteAttributeHandler(final AttributeDefinition... definitions) {
+    public CacheWriteAttributeHandler(final AttributeDefinition... definitions) {
         assert definitions != null : MESSAGES.nullVar("definitions").getLocalizedMessage();
         attributeDefinitions = new HashMap<String, AttributeDefinition>();
         for (AttributeDefinition def : definitions) {
@@ -81,13 +91,11 @@ public class CacheWriteAttributeHandler implements OperationStepHandler, SelfReg
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     context.reloadRequired();
-                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-                        context.revertReloadRequired();
-                    }
+                    context.completeStep(OperationContext.RollbackHandler.REVERT_RELOAD_REQUIRED_ROLLBACK_HANDLER);
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-        context.completeStep();
+        context.stepCompleted();
     }
 
      /**
@@ -107,34 +115,8 @@ public class CacheWriteAttributeHandler implements OperationStepHandler, SelfReg
      }
 
     public void registerAttributes(final ManagementResourceRegistration registry) {
-
-        final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
         for (AttributeDefinition attr : attributeDefinitions.values()) {
-           registry.registerReadWriteAttribute(attr.getName(), CacheReadAttributeHandler.INSTANCE, this, flags);
+           registry.registerReadWriteAttribute(attr, CacheReadAttributeHandler.INSTANCE, this);
         }
     }
-
-    /*
-     * The operation address is of the form /subsystem=infinispan/cache-container=X/cache-type=Y:write-attribute()
-     */
-    public static CacheMode getCacheMode(ModelNode operation) {
-
-        PathAddress cacheAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
-        String cacheType = cacheAddress.getLastElement().getKey();
-
-        CacheMode mode = null;
-        if (cacheType.equals(ModelKeys.LOCAL_CACHE)) {
-            mode = CacheMode.LOCAL;
-        } else if (cacheType.equals(ModelKeys.INVALIDATION_CACHE)) {
-            mode = CacheMode.INVALIDATION_SYNC;
-        }
-        else if (cacheType.equals(ModelKeys.REPLICATED_CACHE)) {
-            mode = CacheMode.REPL_SYNC;
-        }
-        else if (cacheType.equals(ModelKeys.DISTRIBUTED_CACHE)) {
-            mode = CacheMode.DIST_SYNC;
-        }
-        return mode;
-    }
-
 }

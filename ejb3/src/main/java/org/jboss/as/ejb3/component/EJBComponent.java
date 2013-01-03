@@ -64,7 +64,6 @@ import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StopContext;
 
 import static org.jboss.as.ejb3.EjbLogger.EJB3_LOGGER;
 import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
@@ -323,15 +322,19 @@ public abstract class EJBComponent extends BasicComponent {
     }
 
     public TransactionAttributeType getTransactionAttributeType(final MethodIntf methodIntf, final Method method) {
-        TransactionAttributeType txAttr = txAttrs.get(new MethodTransactionAttributeKey(methodIntf, MethodIdentifier.getIdentifierForMethod(method)));
-        //fall back to type bean if not found
-        if (txAttr == null && methodIntf != MethodIntf.BEAN) {
-            txAttr = txAttrs.get(new MethodTransactionAttributeKey(MethodIntf.BEAN, MethodIdentifier.getIdentifierForMethod(method)));
-        }
-        if (txAttr == null)
-            return TransactionAttributeType.REQUIRED;
-        return txAttr;
+        return getTransactionAttributeType(methodIntf, MethodIdentifier.getIdentifierForMethod(method));
     }
+
+    public TransactionAttributeType getTransactionAttributeType(final MethodIntf methodIntf, final MethodIdentifier method) {
+            TransactionAttributeType txAttr = txAttrs.get(new MethodTransactionAttributeKey(methodIntf, method));
+            //fall back to type bean if not found
+            if (txAttr == null && methodIntf != MethodIntf.BEAN) {
+                txAttr = txAttrs.get(new MethodTransactionAttributeKey(MethodIntf.BEAN,method));
+            }
+            if (txAttr == null)
+                return TransactionAttributeType.REQUIRED;
+            return txAttr;
+        }
 
     public TransactionManager getTransactionManager() {
         return utilities.getTransactionManager();
@@ -342,9 +345,13 @@ public abstract class EJBComponent extends BasicComponent {
     }
 
     public int getTransactionTimeout(final MethodIntf methodIntf, final Method method) {
-        Integer txTimeout = txTimeouts.get(new MethodTransactionAttributeKey(methodIntf, MethodIdentifier.getIdentifierForMethod(method)));
+        return getTransactionTimeout(methodIntf, MethodIdentifier.getIdentifierForMethod(method));
+    }
+
+    public int getTransactionTimeout(final MethodIntf methodIntf, final MethodIdentifier method) {
+        Integer txTimeout = txTimeouts.get(new MethodTransactionAttributeKey(methodIntf, method));
         if(txTimeout == null && methodIntf != MethodIntf.BEAN) {
-            txTimeout = txTimeouts.get(new MethodTransactionAttributeKey(MethodIntf.BEAN, MethodIdentifier.getIdentifierForMethod(method)));
+            txTimeout = txTimeouts.get(new MethodTransactionAttributeKey(MethodIntf.BEAN, method));
         }
         if (txTimeout == null)
             return -1;
@@ -479,7 +486,7 @@ public abstract class EJBComponent extends BasicComponent {
     }
 
     /**
-     * Returns the {@link EJBRemoteTransactionsRepository} if there is atleast one remote view (either
+     * Returns the {@link EJBRemoteTransactionsRepository} if there is at least one remote view (either
      * ejb3.x business remote, ejb2.x remote component or home view) is exposed. Else returns null.
      *
      * @return

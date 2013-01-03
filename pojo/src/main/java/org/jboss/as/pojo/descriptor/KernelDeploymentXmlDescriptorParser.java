@@ -22,10 +22,6 @@
 
 package org.jboss.as.pojo.descriptor;
 
-import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -43,6 +39,10 @@ import org.jboss.as.pojo.ParseResult;
 import org.jboss.as.pojo.PojoMessages;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
+
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
 /**
  * Parse Microcontainer jboss-beans.xml.
@@ -617,6 +617,11 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
 
         while (reader.hasNext()) {
             switch (reader.next()) {
+                case CHARACTERS:
+                    final StringValueConfig svc = new StringValueConfig();
+                    svc.setValue(reader.getText());
+                    valueConfig = svc;
+                    break;
                 case END_ELEMENT:
                     if (valueConfig == null)
                         throw new XMLStreamException(PojoMessages.MESSAGES.missingValue(), reader.getLocation());

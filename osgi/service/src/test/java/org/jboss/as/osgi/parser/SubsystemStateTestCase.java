@@ -146,7 +146,7 @@ public class SubsystemStateTestCase {
         Assert.assertEquals(1, arguments.size());
 
         SubsystemState.ChangeEvent event = (SubsystemState.ChangeEvent) arguments.get(0);
-        assertEventEquals(SubsystemState.Activation.EAGER.toString(), false, SubsystemState.ChangeType.ACTIVATION, event);
+        assertEventEquals(SubsystemState.Activation.EAGER.name(), false, SubsystemState.ChangeType.ACTIVATION, event);
     }
 
     private void assertEventEquals(String id, boolean isRemoved, SubsystemState.ChangeType type, SubsystemState.ChangeEvent event) {

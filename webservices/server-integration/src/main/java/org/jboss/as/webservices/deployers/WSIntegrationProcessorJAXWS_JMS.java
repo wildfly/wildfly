@@ -28,7 +28,6 @@ import static org.jboss.as.webservices.util.ASHelper.getAnnotations;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -139,7 +138,7 @@ public final class WSIntegrationProcessorJAXWS_JMS implements DeploymentUnitProc
         // NOOP
     }
 
-    private static ResourceRoot getWsdlResourceRoot(final DeploymentUnit unit, final String wsdlPath) throws MalformedURLException {
+    private static ResourceRoot getWsdlResourceRoot(final DeploymentUnit unit, final String wsdlPath) {
         final AttachmentList<ResourceRoot> resourceRoots = new AttachmentList<ResourceRoot>(ResourceRoot.class);
         final ResourceRoot root = unit.getAttachment(DEPLOYMENT_ROOT);
         resourceRoots.add(root);

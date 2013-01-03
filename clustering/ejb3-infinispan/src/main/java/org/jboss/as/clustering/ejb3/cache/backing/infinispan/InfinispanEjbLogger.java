@@ -24,10 +24,12 @@ package org.jboss.as.clustering.ejb3.cache.backing.infinispan;
 
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
-import org.jboss.logging.MessageLogger;
+import org.jboss.logging.annotations.MessageLogger;
 
 /**
- * Date: 26.08.2011
+ * InfinispanEjbLogger
+ *
+ * logging id range: 10370-10379
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */

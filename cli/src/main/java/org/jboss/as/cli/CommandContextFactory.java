@@ -57,7 +57,7 @@ public abstract class CommandContextFactory {
             String username, char[] password) throws CliInitializationException;
 
     public abstract CommandContext newCommandContext(String controllerHost, int controllerPort,
-            String username, char[] password, boolean initConsole) throws CliInitializationException;
+            String username, char[] password, boolean initConsole, final int connectionTimeout) throws CliInitializationException;
 
     public abstract CommandContext newCommandContext(String controllerHost, int controllerPort,
             String username, char[] password,

@@ -28,7 +28,6 @@ import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinationManag
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.ejb.client.XidTransactionID;
-import org.jboss.logging.Logger;
 import org.jboss.marshalling.MarshallerFactory;
 import org.xnio.IoUtils;
 
@@ -44,8 +43,6 @@ import java.io.IOException;
  * @author Jaikiran Pai
  */
 class XidTransactionPrepareTask extends XidTransactionManagementTask {
-
-    private static final Logger logger = Logger.getLogger(XidTransactionPrepareTask.class);
 
     XidTransactionPrepareTask(final TransactionRequestHandler txRequestHandler, final EJBRemoteTransactionsRepository transactionsRepository,
                               final MarshallerFactory marshallerFactory, final XidTransactionID xidTransactionID,
@@ -64,7 +61,7 @@ class XidTransactionPrepareTask extends XidTransactionManagementTask {
                 // the transaction operation failed
                 transactionRequestHandler.writeException(this.channelAssociation, this.marshallerFactory, this.invocationId, t, null);
             } catch (IOException e) {
-                logger.error("Could not write out message to channel due to", e);
+                EjbLogger.EJB3_INVOCATION_LOGGER.couldNotWriteOutToChannel(e);
                 // close the channel
                 IoUtils.safeClose(this.channelAssociation.getChannel());
             }
@@ -80,7 +77,7 @@ class XidTransactionPrepareTask extends XidTransactionManagementTask {
         try {
             transactionRequestHandler.writeTxPrepareResponseMessage(this.channelAssociation, this.invocationId, prepareResult);
         } catch (IOException e) {
-            logger.error("Could not write out invocation success message to channel due to", e);
+            EjbLogger.EJB3_INVOCATION_LOGGER.couldNotWriteInvocationSuccessMessage(e);
             // close the channel
             IoUtils.safeClose(this.channelAssociation.getChannel());
         }

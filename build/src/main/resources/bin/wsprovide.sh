@@ -55,7 +55,7 @@ if [ "x$JAVA" = "x" ]; then
 fi
 
 #JPDA options. Uncomment and modify as appropriate to enable remote debugging .
-#JAVA_OPTS="-classic -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y $JAVA_OPTS"
+#JAVA_OPTS="-classic -Xdebug -Xnoagent -Djava.compiler=NONE -agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=y $JAVA_OPTS"
 
 # Setup JBoss sepecific properties
 JAVA_OPTS="$JAVA_OPTS"
@@ -72,4 +72,4 @@ eval \"$JAVA\" $JAVA_OPTS \
     -jar \"$JBOSS_HOME/jboss-modules.jar\" \
     -mp \"$JBOSS_HOME/modules\" \
     org.jboss.ws.tools.wsprovide \
-    "$@"
+    '"$@"'

@@ -23,9 +23,12 @@
 package org.jboss.as.controller.remote;
 
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.client.OperationAttachments;
+import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementChannelAssociation;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandlerFactory;
+import org.jboss.dmr.ModelNode;
 
 /**
  * @author Emanuel Muckenhuber
@@ -68,6 +71,17 @@ public final class TransactionalProtocolHandlers {
      */
     public static ManagementRequestHandlerFactory createHandler(final ManagementChannelAssociation association, final ModelController controller) {
         return new TransactionalProtocolOperationHandler(controller, association);
+    }
+
+    /**
+     * Wrap an operation's parameters in a simple encapsulating object
+     * @param operation  the operation
+     * @param messageHandler the message handler
+     * @param attachments  the attachments
+     * @return  the encapsulating object
+     */
+    public static TransactionalProtocolClient.Operation wrap(final ModelNode operation, final OperationMessageHandler messageHandler, final OperationAttachments attachments) {
+        return new TransactionalOperationImpl(operation, messageHandler, attachments);
     }
 
 }

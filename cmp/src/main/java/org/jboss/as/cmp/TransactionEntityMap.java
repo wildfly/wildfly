@@ -26,13 +26,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
 import javax.ejb.EJBException;
 import javax.transaction.RollbackException;
 import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
-import static org.jboss.as.cmp.CmpMessages.MESSAGES;
+
 import org.jboss.as.cmp.component.CmpEntityBeanComponent;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.logging.Logger;
@@ -44,6 +45,8 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.tm.TransactionLocal;
 import org.jboss.tm.TxUtils;
+
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 
 /**
  * @author John Bailey
@@ -89,7 +92,7 @@ public class TransactionEntityMap implements Service<TransactionEntityMap> {
      * </ul>
      * Implementations of TxAssociation implement these states.
      */
-    public static interface TxAssociation {
+    public interface TxAssociation {
         /**
          * Schedules the instance for synchronization. The instance might or might not be associated with the tx.
          *
@@ -140,7 +143,7 @@ public class TransactionEntityMap implements Service<TransactionEntityMap> {
         }
 
         public void invokeEjbStore(Thread thread, CmpEntityBeanContext context) throws Exception {
-            if (!context.isRemoved() && context.getPrimaryKey() != null) {
+            if (!context.isRemoved() && context.getPrimaryKeyUnchecked() != null) {
                 CmpEntityBeanComponent container = context.getComponent();
                 // set the context class loader before calling the store method
                 container.invokeEjbStore(context);
@@ -150,7 +153,7 @@ public class TransactionEntityMap implements Service<TransactionEntityMap> {
         public void synchronize(Thread thread, Transaction tx, CmpEntityBeanContext context) throws Exception {
             // only synchronize if the id is not null.  A null id means
             // that the entity has been removed.
-            if (!context.isRemoved() && context.getPrimaryKey() != null) {
+            if (!context.isRemoved() && context.getPrimaryKeyUnchecked() != null) {
                 CmpEntityBeanComponent container = context.getComponent();
 
                 // set the context class loader before calling the store method
@@ -180,7 +183,7 @@ public class TransactionEntityMap implements Service<TransactionEntityMap> {
         public void synchronize(Thread thread, Transaction tx, CmpEntityBeanContext context) throws Exception {
             CmpEntityBeanComponent container = context.getComponent();
             if (container.getStoreManager().isStoreRequired(context)) {
-                throw MESSAGES.instanceEvictedBeforeSync(container.getComponentName(), context.getPrimaryKey());
+                throw MESSAGES.instanceEvictedBeforeSync(container.getComponentName(), context.getPrimaryKeyUnchecked());
             }
         }
 
@@ -314,7 +317,7 @@ public class TransactionEntityMap implements Service<TransactionEntityMap> {
                 if (causeByException instanceof EJBException) {
                     throw (EJBException) causeByException;
                 }
-                throw CmpMessages.MESSAGES.failedToStoreEntity(((context == null || context.getPrimaryKey() == null) ? "<null>" : context.getPrimaryKey().toString()), causeByException);
+                throw CmpMessages.MESSAGES.failedToStoreEntity(((context == null || context.getPrimaryKeyUnchecked() == null) ? "<null>" : context.getPrimaryKeyUnchecked().toString()), causeByException);
             } finally {
                 synchronizing = false;
             }

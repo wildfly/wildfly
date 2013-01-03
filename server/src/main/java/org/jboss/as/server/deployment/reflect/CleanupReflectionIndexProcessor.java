@@ -39,8 +39,9 @@ public final class CleanupReflectionIndexProcessor implements DeploymentUnitProc
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         phaseContext.getDeploymentUnit().removeAttachment(Attachments.REFLECTION_INDEX);
         phaseContext.getDeploymentUnit().removeAttachment(Attachments.PROXY_REFLECTION_INDEX);
-        final DeploymentClassIndex classIndex = phaseContext.getDeploymentUnit().removeAttachment(Attachments.CLASS_INDEX);
-        classIndex.cleanup();
+        DeploymentClassIndex classIndex = phaseContext.getDeploymentUnit().removeAttachment(Attachments.CLASS_INDEX);
+        if (classIndex != null)
+            classIndex.cleanup();
     }
 
     /** {@inheritDoc} */

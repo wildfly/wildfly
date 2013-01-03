@@ -47,24 +47,12 @@ public class ResourceLocalTestCase {
 
     private static final String ARCHIVE_NAME = "jpa_sessionfactory";
 
-    private static final String persistence_xml =
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
-                    "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
-                    "  <persistence-unit name=\"mypc\" transaction-type=\"RESOURCE_LOCAL\">" +
-                    "    <description>Persistence Unit." +
-                    "    </description>" +
-                    "  <non-jta-data-source>java:app/DataSource</non-jta-data-source>" +
-                    "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
-                    "</properties>" +
-                    "  </persistence-unit>" +
-                    "</persistence>";
-
     @Deployment
     public static Archive<?> deploy() {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addPackage(ResourceLocalTestCase.class.getPackage());
-        jar.addAsResource(new StringAsset(persistence_xml), "META-INF/persistence.xml");
+        jar.addAsManifestResource(ResourceLocalTestCase.class.getPackage(), "persistence.xml","persistence.xml");
         jar.addAsManifestResource(new StringAsset("Dependencies: com.h2database.h2\n"), "MANIFEST.MF");
         return jar;
     }

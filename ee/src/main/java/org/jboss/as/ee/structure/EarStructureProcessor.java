@@ -102,6 +102,9 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
         if (earMetaData != null) {
             final String xmlLibDirName = earMetaData.getLibraryDirectory();
             if (xmlLibDirName != null) {
+                if (xmlLibDirName.length() == 1 && xmlLibDirName.charAt(0) == '/') {
+                    throw MESSAGES.rootAsLibraryDirectory();
+                }
                 libDirName = xmlLibDirName;
             }
         }
@@ -163,11 +166,23 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
                 // otherwise read from application.xml
                 for (final ModuleMetaData module : earMetaData.getModules()) {
 
+                    if(module.getFileName().endsWith(".xml")) {
+                        throw MESSAGES.unsupportedModuleType(module.getFileName());
+                    }
+
                     final VirtualFile moduleFile = virtualFile.getChild(module.getFileName());
                     if (!moduleFile.exists()) {
                         throw MESSAGES.cannotProcessEarModule(virtualFile, module.getFileName());
                     }
 
+                    if (libDir != null) {
+                        VirtualFile moduleParentFile = moduleFile.getParent();
+                        if (moduleParentFile != null) {
+                            if (libDir.equals(moduleParentFile)) {
+                                throw MESSAGES.earModuleChildOfLibraryDirectory(libDirName, module.getFileName());
+                            }
+                        }
+                    }
 
                     // maintain this in a collection of subdeployment virtual files, to be used later
                     subDeploymentFiles.add(moduleFile);
@@ -199,6 +214,9 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
                             case Web:
                                 childResource.putAttachment(org.jboss.as.ee.structure.Attachments.ALTERNATE_WEB_DEPLOYMENT_DESCRIPTOR, alternateDeploymentDescriptor);
                                 break;
+                            case Service:
+                                throw MESSAGES.unsupportedModuleType(module.getFileName());
+
                         }
                     }
                 }

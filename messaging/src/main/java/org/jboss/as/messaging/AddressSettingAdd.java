@@ -22,21 +22,10 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.messaging.CommonAttributes.ADDRESS_FULL_MESSAGE_POLICY;
 import static org.jboss.as.messaging.CommonAttributes.DEAD_LETTER_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.EXPIRY_ADDRESS;
-import static org.jboss.as.messaging.CommonAttributes.LVQ;
-import static org.jboss.as.messaging.CommonAttributes.MAX_DELIVERY_ATTEMPTS;
-import static org.jboss.as.messaging.CommonAttributes.MAX_SIZE_BYTES;
-import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNTER_HISTORY_DAY_LIMIT;
-import static org.jboss.as.messaging.CommonAttributes.PAGE_MAX_CACHE_SIZE;
-import static org.jboss.as.messaging.CommonAttributes.PAGE_SIZE_BYTES;
-import static org.jboss.as.messaging.CommonAttributes.REDELIVERY_DELAY;
-import static org.jboss.as.messaging.CommonAttributes.REDISTRIBUTION_DELAY;
-import static org.jboss.as.messaging.CommonAttributes.SEND_TO_DLA_ON_NO_ROUTE;
 
 import java.util.List;
-import java.util.Locale;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.server.HornetQServer;
@@ -49,7 +38,6 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -61,18 +49,13 @@ import org.jboss.msc.service.ServiceName;
  *
  * @author Emanuel Muckenhuber
  */
-class AddressSettingAdd extends AbstractAddStepHandler implements DescriptionProvider {
+class AddressSettingAdd extends AbstractAddStepHandler {
 
     static final OperationStepHandler INSTANCE = new AddressSettingAdd();
 
-    static final SimpleAttributeDefinition[] ATTRIBUTES = new SimpleAttributeDefinition[] { ADDRESS_FULL_MESSAGE_POLICY,
-                                     DEAD_LETTER_ADDRESS, LVQ, MAX_DELIVERY_ATTEMPTS, MAX_SIZE_BYTES,
-                                     MESSAGE_COUNTER_HISTORY_DAY_LIMIT, EXPIRY_ADDRESS, REDELIVERY_DELAY,
-                                     REDISTRIBUTION_DELAY, PAGE_MAX_CACHE_SIZE, PAGE_SIZE_BYTES, SEND_TO_DLA_ON_NO_ROUTE } ;
-
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        for(final SimpleAttributeDefinition attribute : ATTRIBUTES) {
+        for(final SimpleAttributeDefinition attribute : AddressSettingDefinition.ATTRIBUTES) {
             attribute.validateAndSet(operation, model);
         }
     }
@@ -100,19 +83,19 @@ class AddressSettingAdd extends AbstractAddStepHandler implements DescriptionPro
      */
     static AddressSettings createSettings(final OperationContext context, final ModelNode config) throws OperationFailedException {
         final AddressSettings settings = new AddressSettings();
-        final AddressFullMessagePolicy addressPolicy = AddressFullMessagePolicy.valueOf(ADDRESS_FULL_MESSAGE_POLICY.resolveModelAttribute(context, config).asString());
+        final AddressFullMessagePolicy addressPolicy = AddressFullMessagePolicy.valueOf(AddressSettingDefinition.ADDRESS_FULL_MESSAGE_POLICY.resolveModelAttribute(context, config).asString());
         settings.setAddressFullMessagePolicy(addressPolicy);
         settings.setDeadLetterAddress(asSimpleString(DEAD_LETTER_ADDRESS.resolveModelAttribute(context, config), null));
-        settings.setLastValueQueue(LVQ.resolveModelAttribute(context, config).asBoolean());
-        settings.setMaxDeliveryAttempts(MAX_DELIVERY_ATTEMPTS.resolveModelAttribute(context, config).asInt());
-        settings.setMaxSizeBytes(MAX_SIZE_BYTES.resolveModelAttribute(context, config).asLong());
-        settings.setMessageCounterHistoryDayLimit(MESSAGE_COUNTER_HISTORY_DAY_LIMIT.resolveModelAttribute(context, config).asInt());
+        settings.setLastValueQueue(AddressSettingDefinition.LAST_VALUE_QUEUE.resolveModelAttribute(context, config).asBoolean());
+        settings.setMaxDeliveryAttempts(AddressSettingDefinition.MAX_DELIVERY_ATTEMPTS.resolveModelAttribute(context, config).asInt());
+        settings.setMaxSizeBytes(AddressSettingDefinition.MAX_SIZE_BYTES.resolveModelAttribute(context, config).asLong());
+        settings.setMessageCounterHistoryDayLimit(AddressSettingDefinition.MESSAGE_COUNTER_HISTORY_DAY_LIMIT.resolveModelAttribute(context, config).asInt());
         settings.setExpiryAddress(asSimpleString(EXPIRY_ADDRESS.resolveModelAttribute(context, config), null));
-        settings.setRedeliveryDelay(REDELIVERY_DELAY.resolveModelAttribute(context, config).asLong());
-        settings.setRedistributionDelay(REDISTRIBUTION_DELAY.resolveModelAttribute(context, config).asLong());
-        settings.setPageSizeBytes(PAGE_SIZE_BYTES.resolveModelAttribute(context, config).asLong());
-        settings.setPageCacheMaxSize(PAGE_MAX_CACHE_SIZE.resolveModelAttribute(context, config).asInt());
-        settings.setSendToDLAOnNoRoute(SEND_TO_DLA_ON_NO_ROUTE.resolveModelAttribute(context, config).asBoolean());
+        settings.setRedeliveryDelay(AddressSettingDefinition.REDELIVERY_DELAY.resolveModelAttribute(context, config).asLong());
+        settings.setRedistributionDelay(AddressSettingDefinition.REDISTRIBUTION_DELAY.resolveModelAttribute(context, config).asLong());
+        settings.setPageSizeBytes(AddressSettingDefinition.PAGE_SIZE_BYTES.resolveModelAttribute(context, config).asLong());
+        settings.setPageCacheMaxSize(AddressSettingDefinition.PAGE_MAX_CACHE_SIZE.resolveModelAttribute(context, config).asInt());
+        settings.setSendToDLAOnNoRoute(AddressSettingDefinition.SEND_TO_DLA_ON_NO_ROUTE.resolveModelAttribute(context, config).asBoolean());
         return settings;
     }
 
@@ -127,10 +110,5 @@ class AddressSettingAdd extends AbstractAddStepHandler implements DescriptionPro
             return HornetQServer.class.cast(controller.getValue());
         }
         return null;
-    }
-
-    @Override
-    public ModelNode getModelDescription(final Locale locale) {
-        return MessagingDescriptions.getAddressSettingAdd(locale);
     }
 }

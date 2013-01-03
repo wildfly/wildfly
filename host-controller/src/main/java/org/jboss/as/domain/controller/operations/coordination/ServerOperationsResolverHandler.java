@@ -57,6 +57,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class ServerOperationsResolverHandler implements OperationStepHandler {
 
+    public static final String DOMAIN_PUSH_TO_SERVERS = "push-to-servers";
     public static final String OPERATION_NAME = "server-operation-resolver";
 
     private static final HostControllerExecutionSupport.ServerOperationProvider NO_OP_PROVIDER =
@@ -96,13 +97,20 @@ public class ServerOperationsResolverHandler implements OperationStepHandler {
         } else {
             boolean nullDomainOp = hostControllerExecutionSupport.getDomainOperation() == null;
 
+            // Transformed operations might need to simulate certain behavior, so allow read-only operations to be pushed as well
+            final boolean pushToServers;
+            if(operation.hasDefined(OPERATION_HEADERS)) {
+                pushToServers = operation.get(OPERATION_HEADERS, DOMAIN_PUSH_TO_SERVERS).asBoolean(false);
+            } else {
+                pushToServers = false;
+            }
             HostControllerExecutionSupport.ServerOperationProvider provider = nullDomainOp
                 ? NO_OP_PROVIDER
                 : new HostControllerExecutionSupport.ServerOperationProvider() {
                     @Override
                     public Map<Set<ServerIdentity>, ModelNode> getServerOperations(ModelNode domainOp, PathAddress address) {
 
-                        Map<Set<ServerIdentity>, ModelNode> ops = ServerOperationsResolverHandler.this.getServerOperations(context, domainOp, address);
+                        Map<Set<ServerIdentity>, ModelNode> ops = ServerOperationsResolverHandler.this.getServerOperations(context, domainOp, address, pushToServers);
                         for (Map.Entry<Set<ServerIdentity>, ModelNode> entry : ops.entrySet()) {
                             ModelNode op = entry.getValue();
                             //Remove the caller-type=user header
@@ -125,16 +133,17 @@ public class ServerOperationsResolverHandler implements OperationStepHandler {
             }
         }
 
-        context.completeStep();
+        context.stepCompleted();
     }
 
-    private Map<Set<ServerIdentity>, ModelNode> getServerOperations(OperationContext context, ModelNode domainOp,
-                                                                    PathAddress domainOpAddress) {
+    private Map<Set<ServerIdentity>, ModelNode> getServerOperations(OperationContext context, ModelNode domainOp, PathAddress domainOpAddress, boolean pushToServers) {
         Map<Set<ServerIdentity>, ModelNode> result = null;
         final PathAddress relativeAddress = domainOpAddress.subAddress(originalAddress.size());
-        Set<OperationEntry.Flag> flags = originalRegistration.getOperationFlags(relativeAddress, domainOp.require(OP).asString());
-        if (flags.contains(OperationEntry.Flag.READ_ONLY) && !flags.contains(OperationEntry.Flag.DOMAIN_PUSH_TO_SERVERS)) {
-            result = Collections.emptyMap();
+        if(! pushToServers) {
+            Set<OperationEntry.Flag> flags = originalRegistration.getOperationFlags(relativeAddress, domainOp.require(OP).asString());
+            if (flags.contains(OperationEntry.Flag.READ_ONLY) && !flags.contains(OperationEntry.Flag.DOMAIN_PUSH_TO_SERVERS)) {
+                result = Collections.emptyMap();
+            }
         }
         if (result == null) {
             result = resolver.getServerOperations(context, domainOp, domainOpAddress);

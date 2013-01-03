@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 
+  Set these VM properties in your IDE debugger 
+
+  -Djava.util.logging.manager=org.jboss.logmanager.LogManager
+  -Djboss.home=${workspace_loc:jboss-as-build}/target/jboss-as-7.2.0.Alpha1-SNAPSHOT 
+  -DallowConnectingToRunningServer=true
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -34,13 +42,7 @@
             <scope>provided</scope>
         </dependency>
 
-        <dependency>
-            <groupId>jboss</groupId>
-            <artifactId>jnp-client</artifactId>
-            <version>4.2.2.GA</version>
-        </dependency>    
-    
-        <dependency>
+       <dependency>
             <groupId>org.apache.directory.server</groupId>
             <artifactId>apacheds-core</artifactId>
             <version>${version.apacheds}</version>
@@ -139,15 +141,6 @@
                                         </parameter>
                                     </parameters>
                                 </transformationSet>
-                                <transformationSet>
-                                    <dir>${basedir}/target/jbossas/standalone/configuration</dir>
-                                    <skipDefaultExcludes>true</skipDefaultExcludes>
-                                    <includes>
-                                        <include>standalone*.xml</include>
-                                    </includes>
-                                    <stylesheet>${basedir}/src/test/xslt/configAdminPopulate.xsl</stylesheet>
-                                    <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
-                                </transformationSet>
                             </transformationSets>
                         </configuration>
                     </plugin>
@@ -190,6 +183,7 @@
                                 <configuration>
                                     <!-- Tests to execute. Overriden in webProfileExclusion.profile . -->
                                     <includes>
+                                        <include>org/jboss/as/test/integration/ee/remotelookup/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/ejb/iiop/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/*/security/**/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/ejb/mdb/**/*TestCase*.java</include>

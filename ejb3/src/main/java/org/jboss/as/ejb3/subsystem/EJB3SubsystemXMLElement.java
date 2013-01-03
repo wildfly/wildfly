@@ -43,6 +43,7 @@ public enum EJB3SubsystemXMLElement {
 
     DATA_STORE("data-store"),
     DEFAULT_DISTINCT_NAME("default-distinct-name"),
+    DEFAULT_SECURITY_DOMAIN("default-security-domain"),
 
     IIOP("iiop"),
     IN_VM_REMOTE_INTERFACE_INVOCATION("in-vm-remote-interface-invocation"),

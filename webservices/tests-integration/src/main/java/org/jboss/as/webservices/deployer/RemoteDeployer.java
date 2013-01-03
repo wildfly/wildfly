@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -47,12 +48,14 @@ import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentActionResult;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.wsf.spi.deployer.Deployer;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -65,6 +68,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.security.Constants.AUTHENTICATION;
@@ -78,38 +82,34 @@ import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
 /**
  * Remote deployer that uses AS7 client deployment API.
  *
- * TODO: this class leaks the ModelControllerClient
- *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  */
 public final class RemoteDeployer implements Deployer {
 
     private static final Logger LOGGER = Logger.getLogger(RemoteDeployer.class);
-    private static final int PORT = 9999;
-
+    private static final int DEFAULT_PORT = 9999;
     private static final String JBWS_DEPLOYER_HOST = "jbossws.deployer.host";
     private static final String JBWS_DEPLOYER_PORT = "jbossws.deployer.port";
     private static final String JBWS_DEPLOYER_AUTH_USER = "jbossws.deployer.authentication.username";
     private static final String JBWS_DEPLOYER_AUTH_PWD = "jbossws.deployer.authentication.password";
+    private static final CallbackHandler callbackHandler = getCallbackHandler();
+    private static InetAddress address;
+    private static Integer port;
     private final Map<URL, String> url2Id = new HashMap<URL, String>();
-    private final CallbackHandler callbackHandler = getCallbackHandler();
-    private final ServerDeploymentManager deploymentManager;
-    private final ModelControllerClient modelControllerClient;
     private final Map<String, Integer> securityDomainUsers = new HashMap<String, Integer>(1);
     private final Map<String, Integer> archiveCounters = new HashMap<String, Integer>();
+    private final Semaphore httpsConnSemaphore = new Semaphore(1);
 
-    public RemoteDeployer() throws IOException {
-        final String host = System.getProperty(JBWS_DEPLOYER_HOST);
-        InetAddress address;
-        if(host != null) {
-            address = InetAddress.getByName(host);
-        } else {
-            address = InetAddress.getByName("localhost");
+    static {
+        try {
+            final String host = System.getProperty(JBWS_DEPLOYER_HOST);
+            address = host != null ? InetAddress.getByName(host) : InetAddress.getByName("localhost");
+            port = Integer.getInteger(JBWS_DEPLOYER_PORT, DEFAULT_PORT);
+        } catch (final IOException e) {
+            LOGGER.fatal(e.getMessage(), e);
+            System.exit(1);
         }
-        final Integer port = Integer.getInteger(JBWS_DEPLOYER_PORT, PORT);
-        modelControllerClient = ModelControllerClient.Factory.create(address, port, callbackHandler);
-        deploymentManager = ServerDeploymentManager.Factory.create(modelControllerClient);
     }
 
     @Override
@@ -123,12 +123,12 @@ public final class RemoteDeployer implements Deployer {
             } else {
                 archiveCounters.put(k, 1);
             }
-
+            final ServerDeploymentManager deploymentManager = newDeploymentManager();
             final DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan().add(archiveURL).andDeploy();
             final DeploymentPlan plan = builder.build();
             final DeploymentAction deployAction = builder.getLastAction();
             final String uniqueId = deployAction.getDeploymentUnitUniqueName();
-            executeDeploymentPlan(plan, deployAction);
+            executeDeploymentPlan(plan, deployAction, deploymentManager);
             url2Id.put(archiveURL, uniqueId);
         }
     }
@@ -149,14 +149,14 @@ public final class RemoteDeployer implements Deployer {
                 LOGGER.warn("Trying to undeploy archive " + archiveURL + " which is not currently deployed!");
                 return;
             }
-
+            final ServerDeploymentManager deploymentManager = newDeploymentManager();
             final DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
             final String uniqueName = url2Id.get(archiveURL);
             if (uniqueName != null) {
                 final DeploymentPlan plan = builder.undeploy(uniqueName).remove(uniqueName).build();
                 final DeploymentAction deployAction = builder.getLastAction();
                 try {
-                    executeDeploymentPlan(plan, deployAction);
+                    executeDeploymentPlan(plan, deployAction, deploymentManager);
                 } finally {
                     url2Id.remove(archiveURL);
                 }
@@ -164,7 +164,8 @@ public final class RemoteDeployer implements Deployer {
         }
     }
 
-    private void executeDeploymentPlan(final DeploymentPlan plan, final DeploymentAction deployAction) throws Exception {
+    private void executeDeploymentPlan(final DeploymentPlan plan, final DeploymentAction deployAction,
+            final ServerDeploymentManager deploymentManager) throws Exception {
         try {
             final ServerDeploymentPlanResult planResult = deploymentManager.execute(plan).get();
 
@@ -179,6 +180,8 @@ public final class RemoteDeployer implements Deployer {
         } catch (final Exception e) {
             LOGGER.fatal(e.getMessage(), e);
             throw e;
+        } finally {
+            deploymentManager.close();
         }
     }
 
@@ -188,7 +191,7 @@ public final class RemoteDeployer implements Deployer {
         request.get(OP_ADDR).setEmptyList();
         request.get(NAME).set(RELEASE_VERSION);
 
-        final ModelNode response = applyUpdate(request, getModelControllerClient());
+        final ModelNode response = applyUpdate(request);
         return response.get(RESULT).asString();
     }
 
@@ -230,7 +233,7 @@ public final class RemoteDeployer implements Deployer {
                 }
             }
 
-            applyUpdates(updates, getModelControllerClient());
+            applyUpdates(updates);
         }
     }
 
@@ -251,24 +254,60 @@ public final class RemoteDeployer implements Deployer {
             op.get(OP_ADDR).add(SECURITY_DOMAIN, name);
             op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
 
-            applyUpdate(op, getModelControllerClient());
+            applyUpdate(op);
         }
     }
 
-    private ModelControllerClient getModelControllerClient() {
-        return modelControllerClient;
+    public void addHttpsConnector(Map<String, String> sslOptions) throws Exception {
+        httpsConnSemaphore.acquire();
+        try {
+            final ModelNode composite = Util.getEmptyOperation(COMPOSITE, new ModelNode());
+            final ModelNode steps = composite.get(STEPS);
+            ModelNode op = createOpNode("subsystem=web/connector=jbws-test-https-connector", ADD);
+            op.get("socket-binding").set("https");
+            op.get("scheme").set("https");
+            op.get("protocol").set("HTTP/1.1");
+            op.get("secure").set(true);
+            op.get("enabled").set(true);
+            steps.add(op);
+            ModelNode ssl = createOpNode("subsystem=web/connector=jbws-test-https-connector/ssl=configuration", ADD);
+            if (sslOptions != null) {
+                for (final String k : sslOptions.keySet()) {
+                    ssl.get(k).set(sslOptions.get(k));
+                }
+            }
+            steps.add(ssl);
+            applyUpdate(composite);
+        } catch (Exception e) {
+            httpsConnSemaphore.release();
+            throw e;
+        }
     }
 
-    private static void applyUpdates(final List<ModelNode> updates, final ModelControllerClient client) throws Exception {
+    public void removeHttpsConnector() throws Exception {
+        try {
+            ModelNode op = createOpNode("subsystem=web/connector=jbws-test-https-connector", REMOVE);
+            applyUpdate(op);
+        } finally {
+            httpsConnSemaphore.release();
+        }
+    }
+
+    private static void applyUpdates(final List<ModelNode> updates) throws Exception {
         for (final ModelNode update : updates) {
-            applyUpdate(update, client);
+            applyUpdate(update);
         }
     }
 
-    private static ModelNode applyUpdate(final ModelNode update, final ModelControllerClient client) throws Exception {
-        final ModelNode result = client.execute(new OperationBuilder(update).build());
-        checkResult(result);
-        return result;
+    private static ModelNode applyUpdate(final ModelNode update) throws Exception {
+        final ModelControllerClient client = newModelControllerClient();
+        try {
+            final ModelNode result = client.execute(new OperationBuilder(update).build());
+            checkResult(result);
+            return result;
+        } finally {
+            client.close();
+        }
     }
 
     private static void checkResult(final ModelNode result) throws Exception {
@@ -286,11 +325,11 @@ public final class RemoteDeployer implements Deployer {
     private static CallbackHandler getCallbackHandler() {
         final String username = getSystemProperty(JBWS_DEPLOYER_AUTH_USER, null);
         if (username == null || ("${" + JBWS_DEPLOYER_AUTH_USER + "}").equals(username)) {
-           return null;
+            return null;
         }
         String pwd = getSystemProperty(JBWS_DEPLOYER_AUTH_PWD, null);
         if (("${" + JBWS_DEPLOYER_AUTH_PWD + "}").equals(pwd)) {
-           pwd = null;
+            pwd = null;
         }
         final String password = pwd;
         return new CallbackHandler() {
@@ -315,6 +354,21 @@ public final class RemoteDeployer implements Deployer {
         };
     }
 
+    public static ModelNode createOpNode(String address, String operation) {
+        ModelNode op = new ModelNode();
+        // set address
+        ModelNode list = op.get("address").setEmptyList();
+        if (address != null) {
+            String[] pathSegments = address.split("/");
+            for (String segment : pathSegments) {
+                String[] elements = segment.split("=");
+                list.add(elements[0], elements[1]);
+            }
+        }
+        op.get("operation").set(operation);
+        return op;
+    }
+
     private static String getSystemProperty(final String name, final String defaultValue) {
         PrivilegedAction<String> action = new PrivilegedAction<String>() {
             public String run() {
@@ -324,4 +378,11 @@ public final class RemoteDeployer implements Deployer {
         return AccessController.doPrivileged(action);
     }
 
+    private static ModelControllerClient newModelControllerClient() {
+        return ModelControllerClient.Factory.create(address, port, callbackHandler);
+    }
+
+    private static ServerDeploymentManager newDeploymentManager() {
+        return ServerDeploymentManager.Factory.create(address, port, callbackHandler);
+    }
 }

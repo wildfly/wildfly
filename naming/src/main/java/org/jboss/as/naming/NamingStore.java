@@ -22,18 +22,20 @@
 
 package org.jboss.as.naming;
 
+import java.util.List;
+
 import javax.naming.Binding;
 import javax.naming.Name;
 import javax.naming.NameClassPair;
 import javax.naming.NamingException;
 import javax.naming.event.NamingListener;
-import java.util.List;
 
 /**
  * Interface to layout a contract for naming entry back-end storage.  This will be used by {@code NamingContext} instances
  * to manage naming entries.
  *
  * @author John E. Bailey
+ * @author Eduardo Martins
  */
 public interface NamingStore {
 
@@ -45,6 +47,16 @@ public interface NamingStore {
      * @throws NamingException If any errors occur.
      */
     Object lookup(Name name) throws NamingException;
+
+    /**
+     * Look up an object from the naming store.  An entry for this name must already exist.
+     *
+     * @param name The entry name
+     * @param dereference if true indicates that managed references should retrieve the instance.
+     * @return The object from the store.
+     * @throws NamingException If any errors occur.
+     */
+    Object lookup(Name name, boolean dereference) throws NamingException;
 
     /**
      * List the NameClassPair instances for the provided name.  An entry for this name must already exist and be bound

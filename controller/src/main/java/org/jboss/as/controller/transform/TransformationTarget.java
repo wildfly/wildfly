@@ -24,7 +24,7 @@ package org.jboss.as.controller.transform;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.extension.SubsystemInformation;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 
 /**
  * A potentially remote target requiring transformation.
@@ -46,15 +46,15 @@ public interface TransformationTarget {
      * @param subsystemName the subsystem name
      * @return the version of the specified subsystem, {@code null} if it does not exist
      */
-    String getSubsystemVersion(String subsystemName);
+    ModelVersion getSubsystemVersion(String subsystemName);
 
     /**
-     * Get the subsystem information.
+     * Resolve a resource transformer for agiven address.
      *
-     * @param subsystemName the subsystem name
-     * @return the subsystem information
+     * @param address the path address
+     * @return the transformer
      */
-    SubsystemInformation getSubsystemInformation(final String subsystemName);
+    ResourceTransformer resolveTransformer(PathAddress address);
 
     /**
      * Resolve an operation transformer for a given address.
@@ -65,16 +65,6 @@ public interface TransformationTarget {
      */
     OperationTransformer resolveTransformer(PathAddress address, String operationName);
 
-    SubsystemTransformer getSubsystemTransformer(final String subsystemName);
-
-    /**
-     * Return info about need for transformation for this target to take place
-     * For instance if target is of same version as current server no need to go trough transformation
-     *
-     * @return boolean that tells transformers api if transformation should be performed
-     */
-    boolean isTransformationNeeded();
-
     /**
      * Add version information for a subsystem.
      *
@@ -84,12 +74,71 @@ public interface TransformationTarget {
      */
     void addSubsystemVersion(String subsystemName, int majorVersion, int minorVersion);
 
+    /**
+     * Add version information for a subsystem.
+     *
+     * @param subsystemName the subsystem name
+     * @param version the version
+     */
+    void addSubsystemVersion(String subsystemName, ModelVersion version);
+
+    /**
+     * Get the type of the target.
+     *
+     * @return the target type
+     */
+    TransformationTargetType getTargetType();
+
+    /**
+     * Get the extension registry.
+     *
+     * @return the extension registry
+     */
+    ExtensionRegistry getExtensionRegistry();
+
+    /**
+     * Get the name of the host we are talking to
+     */
+    String getHostName();
+
     public enum TransformationTargetType {
 
         DOMAIN,
         HOST,
         SERVER,
         ;
+    }
+
+    /**
+     * Provides information to a {@link TransformationTarget} indicating that a resource
+     * with the given address does not need
+     * {@link TransformationTarget#resolveTransformer(PathAddress) resource transformation}
+     * or {@link TransformationTarget#resolveTransformer(PathAddress, String) operation transformation}
+     * because the resource is ignored on the target.
+     *
+     * @author Brian Stansberry (c) 2012 Red Hat Inc.
+     */
+    public interface IgnoredTransformationRegistry {
+
+        /**
+         * Gets whether a resource with the given {@code address} should be excluded from
+         * {@link TransformationTarget#resolveTransformer(PathAddress) resource transformation}.
+         *
+         * @param address the resource address. Cannot be {@code null}
+         * @return {@code true} if the resource should be excluded from resource transformation
+         */
+        boolean isResourceTransformationIgnored(final PathAddress address);
+
+        /**
+         * Gets whether a resource with the given {@code address} should be excluded from
+         * {@link TransformationTarget#resolveTransformer(PathAddress, String) operation transformation}.
+         *
+         * @param address the resource address. Cannot be {@code null}
+         * @return {@code true} if the resource should be excluded from operation transformation
+         */
+        boolean isOperationTransformationIgnored(final PathAddress address);
+
+        String getHostName();
     }
 
 }

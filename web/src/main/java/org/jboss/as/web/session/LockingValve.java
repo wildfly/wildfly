@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.valves.ValveBase;
+import org.jboss.logging.Logger;
 import org.jboss.servlet.http.HttpEvent;
 
 /**
@@ -39,6 +40,9 @@ import org.jboss.servlet.http.HttpEvent;
  * @author Paul Ferraro
  */
 public class LockingValve extends ValveBase {
+
+    protected static final Logger log = Logger.getLogger(LockingValve.class);
+
     private final Lock lock;
 
     public LockingValve(Lock lock) {
@@ -50,6 +54,10 @@ public class LockingValve extends ValveBase {
      */
     @Override
     public void invoke(Request request, Response response) throws IOException, ServletException {
+        if (log.isTraceEnabled()) {
+            log.tracef("handling request %s", request.getRequestURI());
+        }
+
         try {
             if (this.lock.tryLock(0, TimeUnit.SECONDS)) {
                 try {

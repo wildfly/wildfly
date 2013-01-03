@@ -22,19 +22,20 @@ package org.jboss.as.controller.operations.common;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URI;
-
-import java.util.Locale;
 
 import org.jboss.as.controller.AbstractModelUpdateHandler;
+import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -44,22 +45,32 @@ import org.jboss.dmr.Property;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class SchemaLocationAddHandler extends AbstractModelUpdateHandler implements DescriptionProvider {
+public class SchemaLocationAddHandler extends AbstractModelUpdateHandler {
 
-    public static final String OPERATION_NAME = "add-schema-location";
+    private static final String OPERATION_NAME = "add-schema-location";
+
+    private static final SimpleAttributeDefinition SCHEMA_LOCATION = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SCHEMA_LOCATION, ModelType.STRING)
+            .setAllowNull(false)
+            .setValidator(new ModelTypeValidator(ModelType.STRING, false))
+            .build();
+
+    private static final SimpleAttributeDefinition URI = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.URI, ModelType.STRING)
+            .setAllowNull(false)
+            .setValidator(new ModelTypeValidator(ModelType.STRING, false))
+            .build();
+
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, ControllerResolver.getResolver("schema-locations"))
+            .setParameters(SCHEMA_LOCATION, URI)
+            .build();
 
     public static final SchemaLocationAddHandler INSTANCE = new SchemaLocationAddHandler();
 
     public static ModelNode getAddSchemaLocationOperation(ModelNode address, String schemaUrl, String schemaLocation) {
-        ModelNode op = new ModelNode();
-        op.get(OP).set(OPERATION_NAME);
-        op.get(OP_ADDR).set(address);
-        op.get(URI).set(schemaUrl);
-        op.get(SCHEMA_LOCATION).set(schemaLocation);
+        ModelNode op = Util.createOperation(OPERATION_NAME, PathAddress.pathAddress(address));
+        op.get(URI.getName()).set(schemaUrl);
+        op.get(SCHEMA_LOCATION.getName()).set(schemaLocation);
         return op;
     }
-
-    private final ParameterValidator stringValidator = new ModelTypeValidator(ModelType.STRING);
 
     /**
      * Create the AddSchemaLocationHandler
@@ -68,10 +79,10 @@ public class SchemaLocationAddHandler extends AbstractModelUpdateHandler impleme
     }
 
     protected void updateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        ModelNode uri = operation.get(URI);
-        ModelNode location = operation.get(SCHEMA_LOCATION);
+        ModelNode uri = URI.resolveModelAttribute(ExpressionResolver.DEFAULT, operation);
+        ModelNode location = SCHEMA_LOCATION.resolveModelAttribute(ExpressionResolver.DEFAULT, operation);
         ModelNode locations = model.get(SCHEMA_LOCATIONS);
-        validate(uri, location, locations);
+        validate(uri, locations);
         locations.add(uri.asString(), location.asString());
     }
 
@@ -79,14 +90,7 @@ public class SchemaLocationAddHandler extends AbstractModelUpdateHandler impleme
         return false;
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return CommonDescriptions.getAddSchemaLocationOperation(locale);
-    }
-
-    private void validate(ModelNode uri, ModelNode location, ModelNode locations) throws OperationFailedException {
-        stringValidator.validateParameter(URI, uri);
-        stringValidator.validateParameter(SCHEMA_LOCATION, location);
+    private void validate(ModelNode uri, ModelNode locations) throws OperationFailedException {
         if (locations.isDefined()) {
             String uriString = uri.asString();
             for (Property prop : locations.asPropertyList()) {

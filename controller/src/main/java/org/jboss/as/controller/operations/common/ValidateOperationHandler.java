@@ -26,35 +26,52 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALIDATE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-
-import java.util.Locale;
 
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationContext.ResultAction;
 import org.jboss.as.controller.OperationContext.Stage;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyOperationAddressTranslator;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.validation.OperationValidator;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Validates an operation
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class ValidateOperationHandler implements OperationStepHandler, DescriptionProvider {
+public class ValidateOperationHandler implements OperationStepHandler {
 
     public static ValidateOperationHandler INSTANCE = new ValidateOperationHandler(false);
     public static ValidateOperationHandler SLAVE_HC_INSTANCE = new ValidateOperationHandler(true);
 
-    public static String OPERATION_NAME = VALIDATE_OPERATION;
+    private static final SimpleAttributeDefinition VALUE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.VALUE, ModelType.OBJECT)
+            .setAllowNull(false)
+            .build();
+
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(VALIDATE_OPERATION, ControllerResolver.getResolver("global"))
+            .setParameters(VALUE)
+            .setReadOnly()
+            .setRuntimeOnly()
+            .build();
+
+    public static final OperationDefinition DEFINITION_PRIVATE = new SimpleOperationDefinitionBuilder(VALIDATE_OPERATION, ControllerResolver.getResolver("global"))
+            .setParameters(VALUE)
+            .setReadOnly()
+            .setRuntimeOnly()
+            .setPrivateEntry()
+            .build();
+
 
     private final boolean slave;
 
@@ -64,7 +81,7 @@ public class ValidateOperationHandler implements OperationStepHandler, Descripti
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        ModelNode op = operation.require(VALUE);
+        ModelNode op = operation.require(VALUE.getName());
         PathAddress addr = PathAddress.pathAddress(op.get(OP_ADDR));
         if (slave) {
             op = op.clone();
@@ -92,13 +109,17 @@ public class ValidateOperationHandler implements OperationStepHandler, Descripti
         if (proxyReg != null) {
             ModelNode proxyOp = operation.clone();
             proxyOp.get(OP_ADDR).set(proxyAddr.toModelNode());
-            proxyOp.get(VALUE, OP_ADDR).set(translator.translateAddress(addr).toModelNode());
-            ModelNode result = new ModelNode();
+            proxyOp.get(VALUE.getName(), OP_ADDR).set(translator.translateAddress(addr).toModelNode());
+            final ModelNode result = new ModelNode();
 
             context.addStep(result, proxyOp, proxyReg.getOperationHandler(PathAddress.EMPTY_ADDRESS, VALIDATE_OPERATION), Stage.IMMEDIATE);
-            if( context.completeStep() == ResultAction.ROLLBACK) {
-                context.getFailureDescription().set(result.get(FAILURE_DESCRIPTION));
-            }
+            context.completeStep(new OperationContext.RollbackHandler() {
+
+                @Override
+                public void handleRollback(OperationContext context, ModelNode operation) {
+                    context.getFailureDescription().set(result.get(FAILURE_DESCRIPTION));
+                }
+            });
         } else {
             try {
                 new OperationValidator(context.getResourceRegistration(), false, false).validateOperation(op);
@@ -107,10 +128,5 @@ public class ValidateOperationHandler implements OperationStepHandler, Descripti
             }
             context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         }
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return CommonDescriptions.getValidateOperationDescription(locale);
     }
 }

@@ -41,7 +41,7 @@ import org.junit.runner.RunWith;
 
 /**
  * For managed debugging:
- * -Djboss.options="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y"
+ * -Djboss.options="-Djava.compiler=NONE -agentlib:jdwp=transport=dt_socket,address=5005,server=y,suspend=y"
  * <p/>
  * For embedded debugging:
  *  start AS standalone and attach debugger
@@ -52,18 +52,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class EPCPropagationTestCase {
-    private static final String ARCHIVE_NAME = "epc-propagation";
-
-    private static final String persistence_xml =
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
-            "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
-            "  <persistence-unit name=\"mypc\">" +
-            "    <description>Persistence Unit." +
-            "    </description>" +
-            "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
-            "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/></properties>" +
-            "  </persistence-unit>" +
-            "</persistence>";
 
     @Deployment
     public static Archive<?> deploy() {
@@ -77,7 +65,8 @@ public class EPCPropagationTestCase {
             StatelessInterface.class, AbstractStatefulInterface.class, EPCPropagationTestCase.class
         );
 
-        jar.addAsResource(new StringAsset(persistence_xml), "META-INF/persistence.xml");
+        jar.addAsManifestResource(EPCPropagationTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
+
         return jar;
     }
 

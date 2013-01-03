@@ -19,25 +19,25 @@
 package org.jboss.as.host.controller.operations;
 
 
-import java.util.Locale;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.host.controller.descriptions.HostRootDescription;
+import org.jboss.as.host.controller.descriptions.HostResolver;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class RemoteDomainControllerRemoveHandler implements OperationStepHandler, DescriptionProvider {
+public class RemoteDomainControllerRemoveHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = "remove-remote-domain-controller";
-
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, HostResolver.getResolver("host")).build();
     public static final RemoteDomainControllerRemoveHandler INSTANCE = new RemoteDomainControllerRemoveHandler();
 
     /**
@@ -58,10 +58,5 @@ public class RemoteDomainControllerRemoveHandler implements OperationStepHandler
                 context.revertReloadRequired();
             }
         });
-    }
-
-    @Override
-    public ModelNode getModelDescription(final Locale locale) {
-        return HostRootDescription.getRemoteDomainControllerRemove(locale);
     }
 }

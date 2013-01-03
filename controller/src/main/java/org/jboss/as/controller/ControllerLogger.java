@@ -27,24 +27,23 @@ import static org.jboss.logging.Logger.Level.WARN;
 
 import java.io.Closeable;
 import java.net.InetAddress;
-import java.net.NetworkInterface;
 import java.util.Set;
 
 import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.Cause;
-import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Logger.Level;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageLogger;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
 
 /**
- * This module is using message IDs in the range 14600-14899.
+ * This module is using message IDs in the ranges 14600-14899 and 13400-13499.
  * <p/>
- * This file is using the subset 14600-14629 for logger messages.
+ * This file is using the subsets 14600-14629 and 13400-13449 for logger messages.
  * <p/>
  * See <a href="http://community.jboss.org/docs/DOC-16810">http://community.jboss.org/docs/DOC-16810</a> for the full
  * list of currently reserved JBAS message id blocks.
@@ -75,6 +74,16 @@ public interface ControllerLogger extends BasicLogger {
      * A logger with the category {@code org.jboss.server.management}
      */
     ControllerLogger SERVER_MANAGEMENT_LOGGER = Logger.getMessageLogger(ControllerLogger.class, "org.jboss.server.management");
+
+    /**
+     * A logger for logging deprecated resources usage
+     */
+    ControllerLogger DEPRECATED_LOGGER = Logger.getMessageLogger(ControllerLogger.class, ControllerLogger.class.getPackage().getName() + ".management-deprecated");
+
+    /**
+     * A logger for logging problems in the transformers
+     */
+    ControllerLogger TRANSFORMER_LOGGER = Logger.getMessageLogger(ControllerLogger.class, ControllerLogger.class.getPackage().getName() + ".transformer");
 
     /**
      * Logs a warning message indicating the address, represented by the {@code address} parameter, could not be
@@ -216,8 +225,11 @@ public interface ControllerLogger extends BasicLogger {
      * parameter, at {@code address}.
      *
      * @param stepOpName the step operation name.
-     * @param address    the address.
+     * @param address    the address
+     *
+     * @deprecated use {@link #noSuchResourceType(PathAddress)} or {@link #noHandlerForOperation(String, PathAddress)}
      */
+    @Deprecated
     @LogMessage(level = ERROR)
     @Message(id = 14611, value = "No handler for %s at address %s")
     void noHandler(String stepOpName, PathAddress address);
@@ -381,4 +393,55 @@ public interface ControllerLogger extends BasicLogger {
     @LogMessage(level = Level.WARN)
     @Message(id = 14625, value = "We have no transformer for subsystem: %s-%d.%d model transfer can break!")
     void transformerNotFound(String subsystemName, int major, int minor);
+
+    /**
+     * Logs a warning message indicating that an operation was interrupted before service stability was reached
+     */
+    @LogMessage(level = Level.WARN)
+    @Message(id = 14626, value = "Operation was interrupted before stability could be reached")
+    void interruptedWaitingStability();
+
+    @LogMessage(level = Level.INFO)
+    @Message(id = 14627, value = "Attribute %s is deprecated, and it might be removed in future version!")
+    void attributeDeprecated(String name);
+
+    /**
+     * Logs a warnning message indicating a temp file could not be deleted.
+     *
+     * @param name temp filename
+     */
+    @LogMessage(level = Level.WARN)
+    @Message(id = 14628, value = "Cannot delete temp file %s, will be deleted on exit")
+    void cannotDeleteTempFile(String name);
+
+    /**
+     * Logs an error message indicating the given {@code address} does not match any known
+     * resource registration.
+     *
+     * @param address    the address.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 14629, value = "No resource definition is registered for address %s")
+    void noSuchResourceType(PathAddress address);
+
+    // END OF 146xx SERIES USABLE FOR LOGGER MESSAGES
+
+    /**
+     * Logs an error message indicating no handler is registered for an operation, represented by the {@code operationName}
+     * parameter, at {@code address}.
+     *
+     * @param operationName the operation name.
+     * @param address    the address.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 13400, value = "No operation named '%s' exists at address %s")
+    void noHandlerForOperation(String operationName, PathAddress address);
+
+    @LogMessage(level = WARN)
+    @Message(id = 13401, value = "Transforming resource %s for host controller '%s' to core model version '%s' -- attributes %s do not support expressions in that model version and this resource will need to be ignored on that host.")
+    void rejectExpressionCoreModelResourceTransformerFoundExpressions(PathAddress pathAddress, String legacyHostName, ModelVersion modelVersion, Set<String> attributeNames);
+
+    @LogMessage(level = WARN)
+    @Message(id = 13402, value = "Transforming resource %s for host controller '%s' to subsystem '%s' model version '%s' -- attributes %s do not support expressions in that model version and this resource will need to be ignored on that host.")
+    void rejectExpressionSubsystemModelResourceTransformerFoundExpressions(PathAddress pathAddress, String legacyHostName, String subsystem, ModelVersion modelVersion, Set<String> attributeNames);
 }

@@ -74,9 +74,10 @@ public class PersistenceProviderResolverImpl implements PersistenceProviderResol
             if (persistenceProviderPerClassLoader.size() > 0) {
                 // get the deployment or subdeployment classloader
                 ClassLoader deploymentClassLoader = findParentModuleCl(SecurityActions.getContextClassLoader());
-
+                ROOT_LOGGER.tracef("get application level Persistence Provider for classloader %s" , deploymentClassLoader);
                 // collect persistence providers associated with deployment/each sub-deployment
                 List<Class> deploymentSpecificPersistenceProviders = persistenceProviderPerClassLoader.get(deploymentClassLoader);
+                ROOT_LOGGER.tracef("got application level Persistence Provider list %s" , deploymentSpecificPersistenceProviders);
                 if (deploymentSpecificPersistenceProviders != null) {
 
                     for (Class providerClass : deploymentSpecificPersistenceProviders) {
@@ -138,11 +139,14 @@ public class PersistenceProviderResolverImpl implements PersistenceProviderResol
 
             for (ClassLoader deploymentClassLoader: deploymentClassLoaders) {
                 List<Class> list = persistenceProviderPerClassLoader.get(deploymentClassLoader);
+                ROOT_LOGGER.tracef("getting persistence provider list (%s) for deployment (%s)", list, deploymentClassLoader );
                 if (list == null) {
                     list = new ArrayList<Class>();
                     persistenceProviderPerClassLoader.put(deploymentClassLoader, list);
+                    ROOT_LOGGER.tracef("saving new persistence provider list (%s) for deployment (%s)", list, deploymentClassLoader );
                 }
                 list.add(persistenceProvider.getClass());
+                ROOT_LOGGER.tracef("added new persistence provider (%s) to provider list (%s)", persistenceProvider.getClass().getName(), list);
             }
         }
     }

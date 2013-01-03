@@ -1150,7 +1150,7 @@
     </dependency>
     <dependency>
       <groupId>org.hornetq</groupId>
-      <artifactId>hornetq-core</artifactId>
+      <artifactId>hornetq-server</artifactId>
       <licenses>
         <license>
           <name>Apache Software License, Version 2.0</name>
@@ -1172,7 +1172,29 @@
     </dependency>
     <dependency>
       <groupId>org.hornetq</groupId>
-      <artifactId>hornetq-jms</artifactId>
+      <artifactId>hornetq-server</artifactId>
+      <licenses>
+        <license>
+          <name>Apache Software License, Version 2.0</name>
+          <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.hornetq</groupId>
+      <artifactId>hornetq-jms-client</artifactId>
+      <licenses>
+        <license>
+          <name>Apache Software License, Version 2.0</name>
+          <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.hornetq</groupId>
+      <artifactId>hornetq-jms-server</artifactId>
       <licenses>
         <license>
           <name>Apache Software License, Version 2.0</name>
@@ -2281,8 +2303,8 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.jbossts</groupId>
-      <artifactId>jbossjts</artifactId>
+      <groupId>org.jboss.jbossts.jts</groupId>
+      <artifactId>jbossjts-jacorb</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License, Version 2.1</name>
@@ -2291,7 +2313,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.jbossts</groupId>
+      <groupId>org.jboss.jbossts.jts</groupId>
       <artifactId>jbossjts-integration</artifactId>
       <licenses>
         <license>
@@ -2311,7 +2333,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.jbossts</groupId>
+      <groupId>org.jboss.jbossts.xts</groupId>
       <artifactId>jbossxts</artifactId>
       <licenses>
         <license>
@@ -2321,8 +2343,9 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.jbossts</groupId>
-      <artifactId>jbossxts-api</artifactId>
+      <groupId>org.jboss.jbossts.xts</groupId>
+      <artifactId>jbossxts</artifactId>
+      <classifier>api</classifier>
       <licenses>
         <license>
           <name>GNU Lesser General Public License, Version 2.1</name>
@@ -3435,16 +3458,6 @@
         <license>
           <name>GNU Lesser General Public License, Version 2.1</name>
           <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>org.python</groupId>
-      <artifactId>jython-standalone</artifactId>
-      <licenses>
-        <license>
-          <name>The Jython License</name>
-          <url>http://www.jython.org/license.html</url>
         </license>
       </licenses>
     </dependency>

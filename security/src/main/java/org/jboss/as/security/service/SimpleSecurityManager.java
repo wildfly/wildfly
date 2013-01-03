@@ -23,18 +23,20 @@ package org.jboss.as.security.service;
 
 import static java.security.AccessController.doPrivileged;
 
+import java.lang.reflect.Method;
+import java.security.CodeSource;
 import java.security.Principal;
 import java.security.PrivilegedAction;
 import java.security.acl.Group;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-
 import javax.security.auth.Subject;
 
 import org.jboss.as.controller.security.ServerSecurityManager;
@@ -56,11 +58,18 @@ import org.jboss.security.SecurityContextFactory;
 import org.jboss.security.SecurityContextUtil;
 import org.jboss.security.SimplePrincipal;
 import org.jboss.security.SubjectInfo;
+import org.jboss.security.audit.AuditEvent;
+import org.jboss.security.audit.AuditLevel;
+import org.jboss.security.audit.AuditManager;
+import org.jboss.security.authorization.resources.EJBResource;
 import org.jboss.security.callbacks.SecurityContextCallbackHandler;
 import org.jboss.security.identity.Identity;
 import org.jboss.security.identity.Role;
 import org.jboss.security.identity.RoleGroup;
 import org.jboss.security.identity.plugins.SimpleIdentity;
+import org.jboss.security.identity.plugins.SimpleRoleGroup;
+import org.jboss.security.javaee.AbstractEJBAuthorizationHelper;
+import org.jboss.security.javaee.SecurityHelperFactory;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -154,7 +163,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
 
     /**
      *
-     * @param mappedRoles The principal vs roles mapping (if any). Can be null.
+     * @param incommingMappedRoles The principal vs roles mapping (if any). Can be null.
      * @param roleLinks The role link map where the key is a alias role name and the value is the collection of
      *                  role names, that alias represents. Can be null.
      * @param roleNames The role names for which the caller is being checked for
@@ -220,6 +229,34 @@ public class SimpleSecurityManager implements ServerSecurityManager {
         }
         // caller is not in any of the required roles
         return false;
+    }
+
+    public boolean authorize(String ejbName, CodeSource ejbCodeSource, String ejbMethodIntf, Method ejbMethod, Set<Principal> methodRoles, String contextID) {
+
+        final SecurityContext securityContext = doPrivileged(securityContext());
+        if (securityContext == null) {
+            return false;
+        }
+
+        EJBResource resource = new EJBResource(new HashMap<String, Object>());
+        resource.setEjbName(ejbName);
+        resource.setEjbMethod(ejbMethod);
+        resource.setEjbMethodInterface(ejbMethodIntf);
+        resource.setEjbMethodRoles(new SimpleRoleGroup(methodRoles));
+        resource.setCodeSource(ejbCodeSource);
+        resource.setPolicyContextID(contextID);
+        resource.setCallerRunAsIdentity(securityContext.getIncomingRunAs());
+        resource.setCallerSubject(securityContext.getUtil().getSubject());
+        Principal userPrincipal = securityContext.getUtil().getUserPrincipal();
+        resource.setPrincipal(userPrincipal);
+
+        try {
+            AbstractEJBAuthorizationHelper helper = SecurityHelperFactory.getEJBAuthorizationHelper(securityContext);
+            return helper.authorize(resource);
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -339,13 +376,16 @@ public class SimpleSecurityManager implements ServerSecurityManager {
             subject = new Subject();
         }
         Principal principal = util.getUserPrincipal();
+        Principal auditPrincipal = principal;
         Object credential = util.getCredential();
+        Identity unauthenticatedIdentity = null;
 
         boolean authenticated = false;
         if (principal == null) {
-            Identity unauthenticatedIdentity = getUnauthenticatedIdentity();
+            unauthenticatedIdentity = getUnauthenticatedIdentity();
             subjectInfo.addIdentity(unauthenticatedIdentity);
-            subject.getPrincipals().add(unauthenticatedIdentity.asPrincipal());
+            auditPrincipal = unauthenticatedIdentity.asPrincipal();
+            subject.getPrincipals().add(auditPrincipal);
             authenticated = true;
         }
 
@@ -355,6 +395,11 @@ public class SimpleSecurityManager implements ServerSecurityManager {
         }
         if (authenticated == true) {
             subjectInfo.setAuthenticatedSubject(subject);
+        }
+
+        AuditManager auditManager = context.getAuditManager();
+        if (auditManager != null) {
+            audit(authenticated ? AuditLevel.SUCCESS : AuditLevel.FAILURE, auditManager, auditPrincipal);
         }
 
         return authenticated;
@@ -398,4 +443,22 @@ public class SimpleSecurityManager implements ServerSecurityManager {
         }
         return aliases;
     }
+
+    /**
+     * Sends information to the {@code AuditManager}.
+     * @param level
+     * @param auditManager
+     * @param userPrincipal
+     * @param entries
+     */
+    private void audit(String level, AuditManager auditManager, Principal userPrincipal) {
+        AuditEvent auditEvent = new AuditEvent(AuditLevel.SUCCESS);
+        Map<String, Object> ctxMap = new HashMap<String, Object>();
+        ctxMap.put("principal", userPrincipal != null ? userPrincipal : "null");
+        ctxMap.put("Source", getClass().getCanonicalName());
+        ctxMap.put("Action", "authentication");
+        auditEvent.setContextMap(ctxMap);
+        auditManager.audit(auditEvent);
+    }
+
 }

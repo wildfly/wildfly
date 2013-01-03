@@ -30,11 +30,11 @@ import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.logging.Cause;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageBundle;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.Messages;
-import org.jboss.logging.Param;
+import org.jboss.logging.annotations.Param;
 import org.jboss.msc.service.StartException;
 
 /**
@@ -296,11 +296,13 @@ public interface DomainManagementMessages {
     String aboutToAddUser(String username, String realm);
 
     /**
-     * Prompt to ask user to confirm yes or no.
+     * Prompt to ask user to confirm the previous statement is correct.
+     *
+     * Do not include the translation specific yes/no
      *
      * @return a {@link String} for the message.
      */
-    @Message(id = Message.NONE, value = "Is this correct yes/no?")
+    @Message(id = Message.NONE, value = "Is this correct")
     String isCorrectPrompt();
 
     /**
@@ -326,12 +328,10 @@ public interface DomainManagementMessages {
     /**
      * The error message if the confirmation response is invalid.
      *
-     * TODO - On translation we will need support for checking the possible responses.
-     *
      * @return a {@link String} for the message.
      */
-    @Message(id = 15240, value = "Invalid response. (Valid responses are yes, y, no, and n)")
-    String invalidConfirmationResponse();
+    @Message(id = 15240, value = "Invalid response. (Valid responses are %s and %s)")
+    String invalidConfirmationResponse(String firstValues, String secondValues);
 
     /**
      * Message to inform user that the new user has been added to the file identified.
@@ -563,7 +563,7 @@ public interface DomainManagementMessages {
      * @param mechanismName - the name of the mechanism being registered.
      * @return an {@link StartException} for the failure.
      */
-    @Message(id = 15256, value = "Multiple CallbackHanderServices for the same mechanism (%s)")
+    @Message(id = 15256, value = "Multiple CallbackHandlerServices for the same mechanism (%s)")
     StartException multipleCallbackHandlerForMechanism(final String mechanismName);
 
     /**
@@ -621,7 +621,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(id = 15264, value = "Password is not strong enough, it is '%s'. It should be atleast '%s'.")
+    @Message(id = 15264, value = "Password is not strong enough, it is '%s'. It should be at least '%s'.")
     String passwordNotStrongEnough(String currentStrength, String desiredStrength);
 
     /**
@@ -639,7 +639,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(id = 15266, value = "Password must not have atleast one digit.")
+    @Message(id = 15266, value = "Password must have at least one digit.")
     String passwordMustHaveDigit();
 
     /**
@@ -647,7 +647,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(id = 15267, value = "Password must have atleast one non-alphanumeric symbol.")
+    @Message(id = 15267, value = "Password must have at least one non-alphanumeric symbol.")
     String passwordMustHaveSymbol();
 
     /**
@@ -655,7 +655,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(id = 15268, value = "Password must have atleast one alphanumeric character.")
+    @Message(id = 15268, value = "Password must have at least one alphanumeric character.")
     String passwordMustHaveAlpha();
 
     /**
@@ -663,8 +663,8 @@ public interface DomainManagementMessages {
      * @param desiredLength - desired length of password.
      * @return a {@link String} for the message.
      */
-    @Message(id = 15269, value = "Password must have atleast '%s' characters!")
-    String passwordNotLontEnough(int desiredLength);
+    @Message(id = 15269, value = "Password must have at least '%s' characters!")
+    String passwordNotLongEnough(int desiredLength);
 
     /**
      * A prompt to double check the user is really sure they want to set password.
@@ -745,6 +745,50 @@ public interface DomainManagementMessages {
      */
     @Message(id = Message.NONE, value = "Display this message and exit")
     String argHelp();
+
+    /**
+     * The long value a user would enter to indicate 'yes'
+     *
+     * This String should be the lower case representation in the respective locale.
+     *
+     * @return The value a user would enter to indicate 'yes'.
+     */
+    @Message(id = Message.NONE, value = "yes")
+    String yes();
+
+    /**
+     * The short value a user would enter to indicate 'yes'
+     *
+     * If no short value is available for a specific translation then only the long value will be accepted.
+     *
+     * This String should be the lower case representation in the respective locale.
+     *
+     * @return The short value a user would enter to indicate 'yes'.
+     */
+    @Message(id = Message.NONE, value = "y")
+    String shortYes();
+
+    /**
+     * The long value a user would enter to indicate 'no'
+     *
+     * This String should be the lower case representation in the respective locale.
+     *
+     * @return The value a user would enter to indicate 'no'.
+     */
+    @Message(id = Message.NONE, value = "no")
+    String no();
+
+    /**
+     * The short value a user would enter to indicate 'no'
+     *
+     * If no short value is available for a specific translation then only the long value will be accepted.
+     *
+     * This String should be the lower case representation in the respective locale.
+     *
+     * @return The short value a user would enter to indicate 'no'.
+     */
+    @Message(id = Message.NONE, value = "n")
+    String shortNo();
 
     /*
      * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementLogger also contains messages in

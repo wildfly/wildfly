@@ -23,6 +23,7 @@
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
 import org.jboss.as.ee.component.Component;
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
@@ -30,7 +31,6 @@ import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.remoting.PackedInteger;
-import org.jboss.logging.Logger;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.remoting3.MessageInputStream;
@@ -46,8 +46,6 @@ import java.util.concurrent.ExecutorService;
  * @author Jaikiran Pai
  */
 class SessionOpenRequestHandler extends EJBIdentifierBasedMessageHandler {
-
-    private static final Logger logger = Logger.getLogger(SessionOpenRequestHandler.class);
 
     private static final byte HEADER_SESSION_OPEN_RESPONSE = 0x02;
     private static final byte HEADER_EJB_NOT_STATEFUL = 0x0D;
@@ -82,7 +80,7 @@ class SessionOpenRequestHandler extends EJBIdentifierBasedMessageHandler {
         }
         final Component component = ejbDeploymentInformation.getEjbComponent();
         if (!(component instanceof StatefulSessionComponent)) {
-            final String failureMessage = "EJB " + beanName + " is not a Stateful Session bean in app: " + appName + " module: " + moduleName + " distinct name:" + distinctName;
+            final String failureMessage = EjbLogger.ROOT_LOGGER.notStatefulSessionBean(beanName, appName, moduleName, distinctName).getLocalizedMessage();
             this.writeInvocationFailure(channelAssociation, HEADER_EJB_NOT_STATEFUL, invocationId, failureMessage);
             return;
         }
@@ -154,7 +152,7 @@ class SessionOpenRequestHandler extends EJBIdentifierBasedMessageHandler {
                 final Affinity hardAffinity = statefulSessionComponent.getCache().getStrictAffinity();
                 SessionOpenRequestHandler.this.writeSessionId(channelAssociation, invocationId, sessionID, hardAffinity);
             } catch (IOException ioe) {
-                logger.error("IOException while generating session id for invocation id: " + invocationId + " on channel " + channelAssociation.getChannel(), ioe);
+                EjbLogger.ROOT_LOGGER.exceptionGeneratingSessionId(ioe, invocationId, channelAssociation.getChannel());
                 // close the channel
                 IoUtils.safeClose(this.channelAssociation.getChannel());
                 return;

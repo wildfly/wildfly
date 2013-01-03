@@ -74,8 +74,7 @@ public class ManagedSocketFactory implements SocketFactory {
     }
 
     private Socket register(final Socket socket) {
-        final SocketBindingManager.UnnamedBindingRegistry registry = this.manager.getUnnamedRegistry();
-        registry.registerSocket(socket);
+        this.manager.getUnnamedRegistry().registerSocket(socket);
         return socket;
     }
 
@@ -100,8 +99,7 @@ public class ManagedSocketFactory implements SocketFactory {
     }
 
     private ServerSocket register(final ServerSocket socket) {
-        final SocketBindingManager.UnnamedBindingRegistry registry = this.manager.getUnnamedRegistry();
-        registry.registerSocket(socket);
+        this.manager.getUnnamedRegistry().registerSocket(socket);
         return socket;
     }
 
@@ -126,8 +124,7 @@ public class ManagedSocketFactory implements SocketFactory {
     }
 
     private DatagramSocket register(final DatagramSocket socket) {
-        SocketBindingManager.UnnamedBindingRegistry registry = this.manager.getUnnamedRegistry();
-        registry.registerSocket(socket);
+        this.manager.getUnnamedRegistry().registerSocket(socket);
         return socket;
     }
 
@@ -147,30 +144,32 @@ public class ManagedSocketFactory implements SocketFactory {
     }
 
     private MulticastSocket register(final MulticastSocket socket) {
-        final SocketBindingManager.UnnamedBindingRegistry registry = this.manager.getUnnamedRegistry();
-        registry.registerSocket(socket);
+        this.manager.getUnnamedRegistry().registerSocket(socket);
         return socket;
     }
 
     @Override
     public void close(Socket socket) throws IOException {
-        final SocketBindingManager.UnnamedBindingRegistry registry = this.manager.getUnnamedRegistry();
-        registry.unregisterSocket(socket);
-        this.factory.close(socket);
+        if (socket != null) {
+            this.manager.getUnnamedRegistry().unregisterSocket(socket);
+            this.factory.close(socket);
+        }
     }
 
     @Override
     public void close(ServerSocket socket) throws IOException {
-        final SocketBindingManager.UnnamedBindingRegistry registry = this.manager.getUnnamedRegistry();
-        registry.unregisterSocket(socket);
-        this.factory.close(socket);
+        if (socket != null) {
+            this.manager.getUnnamedRegistry().unregisterSocket(socket);
+            this.factory.close(socket);
+        }
     }
 
     @Override
     public void close(DatagramSocket socket) {
-        final SocketBindingManager.UnnamedBindingRegistry registry = this.manager.getUnnamedRegistry();
-        registry.unregisterSocket(socket);
-        this.factory.close(socket);
+        if (socket != null) {
+            this.manager.getUnnamedRegistry().unregisterSocket(socket);
+            this.factory.close(socket);
+        }
     }
 
     @Override

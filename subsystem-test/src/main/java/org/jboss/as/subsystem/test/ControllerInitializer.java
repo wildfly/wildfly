@@ -44,21 +44,15 @@ import java.util.Map;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.CommonProviders;
-import org.jboss.as.controller.operations.common.InterfaceAddHandler;
-import org.jboss.as.controller.operations.common.InterfaceCriteriaWriteHandler;
 import org.jboss.as.controller.operations.common.SocketBindingGroupRemoveHandler;
-import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
-import org.jboss.as.controller.operations.common.SystemPropertyRemoveHandler;
-import org.jboss.as.controller.operations.common.SystemPropertyValueWriteAttributeHandler;
-import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.resource.InterfaceDefinition;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
-import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
-import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
+import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
 import org.jboss.as.server.services.net.BindingGroupAddHandler;
 import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingResourceDefinition;
 import org.jboss.as.server.services.net.RemoteDestinationOutboundSocketBindingResourceDefinition;
@@ -82,6 +76,16 @@ public class ControllerInitializer {
     protected final Map<String, OutboundSocketBinding> outboundSocketBindings = new HashMap<String, OutboundSocketBinding>();
     protected final Map<String, PathInfo> paths = new HashMap<String, PathInfo>();
     private volatile PathManagerService pathManager;
+    private volatile TestModelControllerService testModelControllerService;
+
+    /**
+     * Sets the controller being created. Internal use only.
+     *
+     * @param service the controller being created.
+     */
+    void setTestModelControllerService(TestModelControllerService service) {
+        this.testModelControllerService = service;
+    }
 
     void setPathManger(PathManagerService pathManager) {
         this.pathManager = pathManager;
@@ -213,10 +217,7 @@ public class ControllerInitializer {
             return;
         }
         rootResource.getModel().get(SYSTEM_PROPERTY);
-        ManagementResourceRegistration sysProps = rootRegistration.registerSubModel(PathElement.pathElement(SYSTEM_PROPERTY), ServerDescriptionProviders.SYSTEM_PROPERTIES_PROVIDER);
-        sysProps.registerOperationHandler(SystemPropertyAddHandler.OPERATION_NAME, SystemPropertyAddHandler.INSTANCE_WITHOUT_BOOTTIME, SystemPropertyAddHandler.INSTANCE_WITHOUT_BOOTTIME, false);
-        sysProps.registerOperationHandler(SystemPropertyRemoveHandler.OPERATION_NAME, SystemPropertyRemoveHandler.INSTANCE, SystemPropertyRemoveHandler.INSTANCE, false);
-        sysProps.registerReadWriteAttribute(VALUE, null, SystemPropertyValueWriteAttributeHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+        ManagementResourceRegistration sysProps = rootRegistration.registerSubModel(SystemPropertyResourceDefinition.createForStandaloneServer(testModelControllerService.getServerEnvironment()));
     }
 
     /**
@@ -232,18 +233,21 @@ public class ControllerInitializer {
 
         rootResource.getModel().get(INTERFACE);
         rootResource.getModel().get(SOCKET_BINDING_GROUP);
-        ManagementResourceRegistration interfaces = rootRegistration.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
-        interfaces.registerOperationHandler(SpecifiedInterfaceAddHandler.OPERATION_NAME, SpecifiedInterfaceAddHandler.INSTANCE, SpecifiedInterfaceAddHandler.INSTANCE, false);
-        interfaces.registerOperationHandler(SpecifiedInterfaceRemoveHandler.OPERATION_NAME, SpecifiedInterfaceRemoveHandler.INSTANCE, SpecifiedInterfaceRemoveHandler.INSTANCE, false);
-        InterfaceCriteriaWriteHandler.UPDATE_RUNTIME.register(interfaces);
+        ManagementResourceRegistration interfaces = rootRegistration.registerSubModel(new InterfaceDefinition(
+                SpecifiedInterfaceAddHandler.INSTANCE,
+                SpecifiedInterfaceRemoveHandler.INSTANCE,
+                true
+        ));
+        /*interfaces.registerOperationHandler(SpecifiedInterfaceAddHandler.OPERATION_NAME, SpecifiedInterfaceAddHandler.INSTANCE, new DefaultResourceAddDescriptionProvider(interfaces, CommonDescriptions.getResourceDescriptionResolver()), false);
+        interfaces.registerOperationHandler(SpecifiedInterfaceRemoveHandler.OPERATION_NAME, SpecifiedInterfaceRemoveHandler.INSTANCE, new DefaultResourceRemoveDescriptionProvider(CommonDescriptions.getResourceDescriptionResolver()), false);*/
 
-        // Sockets
-        ManagementResourceRegistration socketGroup = rootRegistration.registerSubModel(new SocketBindingGroupResourceDefinition(BindingGroupAddHandler.INSTANCE, SocketBindingGroupRemoveHandler.INSTANCE, false));
-        socketGroup.registerSubModel(SocketBindingResourceDefinition.INSTANCE);
-        // client-socket-binding (for remote destination)
-        socketGroup.registerSubModel(RemoteDestinationOutboundSocketBindingResourceDefinition.INSTANCE);
-        // client-socket-binding (for local destination)
-        socketGroup.registerSubModel(LocalDestinationOutboundSocketBindingResourceDefinition.INSTANCE);
+        //TODO socket-binding-group currently lives in controller and the child RDs live in server so they currently need passing in from here
+        rootRegistration.registerSubModel(new SocketBindingGroupResourceDefinition(BindingGroupAddHandler.INSTANCE,
+                                                    SocketBindingGroupRemoveHandler.INSTANCE,
+                                                    false,
+                                                    SocketBindingResourceDefinition.INSTANCE,
+                                                    RemoteDestinationOutboundSocketBindingResourceDefinition.INSTANCE,
+                                                    LocalDestinationOutboundSocketBindingResourceDefinition.INSTANCE));
     }
 
 
@@ -287,11 +291,15 @@ public class ControllerInitializer {
         }
 
         //Add the interface
-        ModelNode criteria = new ModelNode();
+
+
+        /*ModelNode criteria = new ModelNode();
         criteria.get(INET_ADDRESS).set(bindAddress);
         ModelNode op = InterfaceAddHandler.getAddInterfaceOperation(
-                PathAddress.pathAddress(PathElement.pathElement(INTERFACE, INTERFACE_NAME)).toModelNode(),
-                criteria);
+        PathAddress.pathAddress(PathElement.pathElement(INTERFACE, INTERFACE_NAME)).toModelNode(),
+        criteria);*/
+        ModelNode op = Util.createAddOperation(PathAddress.pathAddress(PathElement.pathElement(INTERFACE, INTERFACE_NAME)));
+        op.get(INET_ADDRESS).set(bindAddress);
         ops.add(op);
 
         //Add the socket binding group

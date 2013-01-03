@@ -24,6 +24,7 @@ package org.jboss.as.domain.http.server;
 
 import static org.jboss.as.domain.http.server.Constants.LOCATION;
 import static org.jboss.as.domain.http.server.Constants.TEMPORARY_REDIRECT;
+import static org.jboss.as.domain.http.server.DomainUtil.constructUrl;
 import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
 
 import java.io.IOException;
@@ -52,7 +53,7 @@ public class RedirectReadinessFilter extends RealmReadinessFilter {
     @Override
     void rejectRequest(HttpExchange exchange) throws IOException {
         Headers responseHeaders = exchange.getResponseHeaders();
-        responseHeaders.add(LOCATION, redirectTo);
+        responseHeaders.add(LOCATION, constructUrl(exchange, redirectTo));
         exchange.sendResponseHeaders(TEMPORARY_REDIRECT, 0);
         exchange.close();
     }

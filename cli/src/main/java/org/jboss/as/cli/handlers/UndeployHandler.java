@@ -22,42 +22,38 @@
 package org.jboss.as.cli.handlers;
 
 
-import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_REMOVE_OPERATION;
-import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_UNDEPLOY_OPERATION;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Executors;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.Util;
-import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
+import org.jboss.as.cli.impl.CommaSeparatedCompleter;
+import org.jboss.as.cli.impl.FileSystemPathArgument;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
-import org.jboss.vfs.TempFileProvider;
-import org.jboss.vfs.VFS;
 import org.jboss.vfs.spi.MountHandle;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class UndeployHandler extends BatchModeCommandHandler {
+public class UndeployHandler extends DeploymentHandler {
 
     private final ArgumentWithoutValue l;
     private final ArgumentWithoutValue path;
@@ -66,8 +62,6 @@ public class UndeployHandler extends BatchModeCommandHandler {
     private final ArgumentWithoutValue allRelevantServerGroups;
     private final ArgumentWithoutValue keepContent;
     private final ArgumentWithValue script;
-
-    private static final String CLI_ARCHIVE_SUFFIX = ".cli";
 
     public UndeployHandler(CommandContext ctx) {
         super(ctx, "undeploy", true);
@@ -136,54 +130,22 @@ public class UndeployHandler extends BatchModeCommandHandler {
         };
         allRelevantServerGroups.addRequiredPreceding(name);
 
-        serverGroups = new ArgumentWithValue(this, new CommandLineCompleter() {
+        serverGroups = new ArgumentWithValue(this, new CommaSeparatedCompleter() {
             @Override
-            public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
-
-                if(buffer.isEmpty()) {
-                    candidates.addAll(Util.getServerGroups(ctx.getModelControllerClient()));
-                    Collections.sort(candidates);
-                    return 0;
+            protected Collection<String> getAllCandidates(CommandContext ctx) {
+              final String deploymentName = name.getValue(ctx.getParsedCommandLine());
+              final List<String> allGroups;
+//              if(deploymentName == null) {
+//                  allGroups = Util.getServerGroups(ctx.getModelControllerClient());
+//              } else {
+                  try {
+                    allGroups = Util.getServerGroupsReferencingDeployment(deploymentName, ctx.getModelControllerClient());
+                } catch (CommandLineException e) {
+                    e.printStackTrace();
+                    return Collections.emptyList();
                 }
-
-//                final String deploymentName = name.getValue(ctx.getParsedArguments());
-                final List<String> allGroups;
-//                if(deploymentName == null) {
-                    allGroups = Util.getServerGroups(ctx.getModelControllerClient());
-//                } else {
-//                    allGroups = Util.getAllReferencingServerGroups(deploymentName, ctx.getModelControllerClient());
-//                }
-
-                final String[] groups = buffer.split(",+");
-
-                final String chunk;
-                final int lastGroupIndex;
-                if(buffer.charAt(buffer.length() - 1) == ',') {
-                    lastGroupIndex = groups.length;
-                    chunk = null;
-                } else {
-                    lastGroupIndex = groups.length - 1;
-                    chunk = groups[groups.length - 1];
-                }
-
-                for(int i = 0; i < lastGroupIndex; ++i) {
-                    allGroups.remove(groups[i]);
-                }
-
-                final int result;
-                if(chunk == null) {
-                    candidates.addAll(allGroups);
-                    result = buffer.length();
-                } else {
-                    for(String group : allGroups) {
-                        if(group.startsWith(chunk)) {
-                            candidates.add(group);
-                        }
-                    }
-                    result = buffer.lastIndexOf(',') + 1;
-                }
-                Collections.sort(candidates);
-                return result;
+//              }
+                  return allGroups;
             }}, "--server-groups") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
@@ -202,19 +164,7 @@ public class UndeployHandler extends BatchModeCommandHandler {
         keepContent.addRequiredPreceding(name);
 
         final FilenameTabCompleter pathCompleter = Util.isWindows() ? new WindowsFilenameTabCompleter(ctx) : new DefaultFilenameTabCompleter(ctx);
-        path = new ArgumentWithValue(this, pathCompleter, "--path") {
-            @Override
-            public String getValue(ParsedCommandLine args) {
-                String value = super.getValue(args);
-                if(value != null) {
-                    if(value.length() >= 0 && value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"') {
-                        value = value.substring(1, value.length() - 1);
-                    }
-                    value = pathCompleter.translatePath(value);
-                }
-                return value;
-            }
-        };
+        path = new FileSystemPathArgument(this, pathCompleter, "--path");
         path.addCantAppearAfter(l);
 
         script = new ArgumentWithValue(this, "--script");
@@ -222,13 +172,13 @@ public class UndeployHandler extends BatchModeCommandHandler {
     }
 
     @Override
-    protected void doHandle(CommandContext ctx) throws CommandFormatException {
+    protected void doHandle(CommandContext ctx) throws CommandLineException {
 
         final ModelControllerClient client = ctx.getModelControllerClient();
         final ParsedCommandLine args = ctx.getParsedCommandLine();
         final boolean l = this.l.isPresent(args);
         if(!args.hasProperties() || l) {
-            printList(ctx, Util.getDeployments(client), l);
+            this.listDeployments(ctx, l);
             return;
         }
 
@@ -346,8 +296,9 @@ public class UndeployHandler extends BatchModeCommandHandler {
                     throw new CommandFormatException("ERROR: script '" + script + "' not found in archive '" + f.getAbsolutePath() + "'.");
                 }
 
+                BufferedReader reader = null;
                 try {
-                    BufferedReader reader = new BufferedReader(new FileReader(scriptFile));
+                    reader = new BufferedReader(new FileReader(scriptFile));
                     String line = reader.readLine();
                     while (!ctx.isTerminated() && line != null) {
                         ctx.handle(line);
@@ -359,6 +310,13 @@ public class UndeployHandler extends BatchModeCommandHandler {
                     throw new CommandFormatException("Failed to read the next command from " + scriptFile.getName() + ": " + e.getMessage(), e);
                 } catch (CommandLineException e) {
                     throw new CommandFormatException(e.getMessage(), e);
+                } finally {
+                    if(reader != null) {
+                        try {
+                            reader.close();
+                        } catch (IOException e) {
+                        }
+                    }
                 }
 
                 return ctx.getBatchManager().getActiveBatch().toRequest();
@@ -373,91 +331,77 @@ public class UndeployHandler extends BatchModeCommandHandler {
         }
 
         if(name == null) {
-            throw new OperationFormatException("Required argument name are missing.");
+            throw new OperationFormatException("Deployment name is missing.");
         }
 
         final ModelControllerClient client = ctx.getModelControllerClient();
         DefaultOperationRequestBuilder builder;
 
-        if(ctx.isDomainMode()) {
+        final List<String> deploymentNames;
+        if(name.indexOf('*') < 0) {
+            deploymentNames = Collections.singletonList(name);
+        } else {
+            deploymentNames = Util.getMatchingDeployments(client, name, null);
+            if(deploymentNames.isEmpty()) {
+                throw new CommandFormatException("No deployment matched wildcard expression " + name);
+            }
+        }
+
+        for(String deploymentName : deploymentNames) {
+
             final List<String> serverGroups;
-            if(allRelevantServerGroups) {
-                if(keepContent) {
-                    serverGroups = Util.getAllEnabledServerGroups(name, client);
-                } else {
-                    serverGroups = Util.getAllReferencingServerGroups(name, client);
-                }
-            } else {
-                if(serverGroupsStr == null) {
-                    //throw new OperationFormatException("Either --all-relevant-server-groups or --server-groups must be specified.");
-                    serverGroups = Collections.emptyList();
-                } else {
-                    serverGroups = Arrays.asList(serverGroupsStr.split(","));
-                }
-            }
-
-            if(serverGroups.isEmpty()) {
-                if(keepContent) {
-                    throw new OperationFormatException("None server group is specified or available.");
-                }
-            } else {
-                for (String group : serverGroups){
-                    ModelNode groupStep = Util.configureDeploymentOperation(DEPLOYMENT_UNDEPLOY_OPERATION, name, group);
-                    steps.add(groupStep);
-                }
-
-//                if(!keepContent) {
-                    for (String group : serverGroups) {
-                        ModelNode groupStep = Util.configureDeploymentOperation(DEPLOYMENT_REMOVE_OPERATION, name, group);
-                        steps.add(groupStep);
+            if(ctx.isDomainMode()) {
+                if(allRelevantServerGroups) {
+                    if(keepContent) {
+                        serverGroups = Util.getAllEnabledServerGroups(deploymentName, client);
+                    } else {
+                        try {
+                            serverGroups = Util.getServerGroupsReferencingDeployment(deploymentName, client);
+                        } catch (CommandLineException e) {
+                            throw new CommandFormatException("Failed to retrieve all referencing server groups", e);
+                        }
                     }
-//                }
+                } else {
+                    if(serverGroupsStr == null) {
+                        //throw new OperationFormatException("Either --all-relevant-server-groups or --server-groups must be specified.");
+                        serverGroups = Collections.emptyList();
+                    } else {
+                        serverGroups = Arrays.asList(serverGroupsStr.split(","));
+                    }
+                }
+
+                if(serverGroups.isEmpty()) {
+                    if(keepContent) {
+                        throw new OperationFormatException("None of the server groups is specified or references specified deployment.");
+                    }
+                } else {
+                    for (String group : serverGroups){
+                        ModelNode groupStep = Util.configureDeploymentOperation(Util.UNDEPLOY, deploymentName, group);
+                        steps.add(groupStep);
+//                      if(!keepContent) {
+                            groupStep = Util.configureDeploymentOperation(Util.REMOVE, deploymentName, group);
+                            steps.add(groupStep);
+//                      }
+                    }
+                }
+            } else {
+                if(Util.isDeployedAndEnabledInStandalone(deploymentName, client)) {
+                    builder = new DefaultOperationRequestBuilder();
+                    builder.setOperationName(Util.UNDEPLOY);
+                    builder.addNode(Util.DEPLOYMENT, deploymentName);
+                    steps.add(builder.buildRequest());
+                }
             }
-        } else if(Util.isDeployedAndEnabledInStandalone(name, client)) {
-            builder = new DefaultOperationRequestBuilder();
-            builder.setOperationName("undeploy");
-            builder.addNode("deployment", name);
-            steps.add(builder.buildRequest());
         }
 
         if (!keepContent) {
-            builder = new DefaultOperationRequestBuilder();
-            builder.setOperationName("remove");
-            builder.addNode("deployment", name);
-            steps.add(builder.buildRequest());
+            for(String deploymentName : deploymentNames) {
+                builder = new DefaultOperationRequestBuilder();
+                builder.setOperationName(Util.REMOVE);
+                builder.addNode(Util.DEPLOYMENT, deploymentName);
+                steps.add(builder.buildRequest());
+            }
         }
         return composite;
-    }
-
-    private MountHandle extractArchive(File archive) throws IOException {
-        return ((MountHandle)VFS.mountZipExpanded(archive, VFS.getChild("cli"),
-                TempFileProvider.create("cli", Executors.newSingleThreadScheduledExecutor())));
-    }
-
-    private String activateNewBatch(CommandContext ctx) {
-        String currentBatch = null;
-        BatchManager batchManager = ctx.getBatchManager();
-        if (batchManager.isBatchActive()) {
-            currentBatch = "batch" + System.currentTimeMillis();
-            batchManager.holdbackActiveBatch(currentBatch);
-        }
-        batchManager.activateNewBatch();
-        return currentBatch;
-    }
-
-    private void discardBatch(CommandContext ctx, String holdbackBatch) {
-        BatchManager batchManager = ctx.getBatchManager();
-        batchManager.discardActiveBatch();
-        if (holdbackBatch != null) {
-            batchManager.activateHeldbackBatch(holdbackBatch);
-        }
-    }
-
-    private boolean isCliArchive(File f) {
-        if (f == null || f.isDirectory() || !f.getName().endsWith(CLI_ARCHIVE_SUFFIX)) {
-            return false;
-        } else {
-            return true;
-        }
     }
 }

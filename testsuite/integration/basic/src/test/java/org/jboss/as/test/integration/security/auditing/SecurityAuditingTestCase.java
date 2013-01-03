@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.security.auditing;
 
+import static junit.framework.Assert.assertTrue;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -36,39 +38,43 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.security.Constants;
+import org.jboss.as.test.integration.ejb.security.AnnSBTest;
+import org.jboss.as.test.integration.ejb.security.authorization.SingleMethodsAnnOnlyCheckSFSB;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
+import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
 import org.jboss.as.test.integration.security.common.Utils;
+import org.jboss.as.test.integration.security.common.config.SecurityDomain;
+import org.jboss.as.test.integration.security.common.config.SecurityModule;
 import org.jboss.dmr.ModelNode;
-import org.jboss.security.auth.spi.UsersRolesLoginModule;
+import org.jboss.logging.Logger;
+import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static junit.framework.Assert.assertTrue;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.security.Constants.FLAG;
-import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
-
 /**
  * This class tests Security auditing functionality
- *
+ * 
  * @author <a href="mailto:jlanik@redhat.com">Jan Lanik</a>.
  */
 @RunWith(Arquillian.class)
-@ServerSetup(SecurityAuditingTestCase.SecurityAuditingTestCaseSetup.class)
-public class SecurityAuditingTestCase {
+@RunAsClient
+@ServerSetup({ SecurityAuditingTestCase.SecurityDomainsSetup.class, // 
+        SecurityAuditingTestCase.SecurityAuditingTestCaseSetup.class })
+public class SecurityAuditingTestCase extends AnnSBTest {
+
+    private static final Logger log = Logger.getLogger(testClass());
+
+    private static File auditLog = new File(System.getProperty("jboss.home", null), "standalone/log/audit.log");
 
     static class SecurityAuditingTestCaseSetup extends AbstractMgmtServerSetupTask {
+
+        /** The LOGGING */
+        private static final String LOGGING = "logging";
 
         @Override
         protected void doSetup(final ManagementClient managementClient) throws Exception {
@@ -78,7 +84,7 @@ public class SecurityAuditingTestCase {
 
             op = new ModelNode();
             op.get(OP).set(ADD);
-            op.get(OP_ADDR).add(SUBSYSTEM, "logging");
+            op.get(OP_ADDR).add(SUBSYSTEM, LOGGING);
             op.get(OP_ADDR).add("periodic-rotating-file-handler", "AUDIT");
             op.get("level").set("TRACE");
             op.get("append").set("true");
@@ -92,44 +98,38 @@ public class SecurityAuditingTestCase {
 
             op = new ModelNode();
             op.get(OP).set(ADD);
-            op.get(OP_ADDR).add(SUBSYSTEM, "logging");
-            op.get(OP_ADDR).add("logger", "org.jboss.security.audit.providers.LogAuditProvider");
+            op.get(OP_ADDR).add(SUBSYSTEM, LOGGING);
+            op.get(OP_ADDR).add("logger", "org.jboss.security.audit");
             op.get("level").set("TRACE");
             ModelNode list = op.get("handlers");
             list.add("AUDIT");
             updates.add(op);
 
-            op = new ModelNode();
-            op.get(OP).set(ADD);
-            op.get(OP_ADDR).add(SUBSYSTEM, "security");
-            op.get(OP_ADDR).add(SECURITY_DOMAIN, "form-auth");
-            updates.add(op);
-
-            op = new ModelNode();
-            op.get(OP).set(ADD);
-            op.get(OP_ADDR).add(SUBSYSTEM, "security");
-            op.get(OP_ADDR).add(SECURITY_DOMAIN, "form-auth");
-            op.get(OP_ADDR).add(Constants.AUTHENTICATION, Constants.CLASSIC);
-
-            ModelNode loginModule = op.get(Constants.LOGIN_MODULES).add();
-            loginModule.get(ModelDescriptionConstants.CODE).set(UsersRolesLoginModule.class.getName());
-            loginModule.get(FLAG).set("required");
-            op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-
-            ModelNode moduleOptions = loginModule.get("module-options");
-            moduleOptions.get("usersProperties").set("users.properties");
-            moduleOptions.get("rolesProperties").set("roles.properties");
-
-            updates.add(op);
             executeOperations(updates);
         }
 
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
+            final List<ModelNode> updates = new ArrayList<ModelNode>();
+
+            // /subsystem=logging/logger=org.jboss.security.audit:remove
+            ModelNode op = new ModelNode();
+            op.get(OP).set(REMOVE);
+            op.get(OP_ADDR).add(SUBSYSTEM, LOGGING);
+            op.get(OP_ADDR).add("logger", "org.jboss.security.audit");
+            updates.add(op);
+
+            // /subsystem=logging/periodic-rotating-file-handler=AUDIT:remove            
+            op = new ModelNode();
+            op.get(OP).set(REMOVE);
+            op.get(OP_ADDR).add(SUBSYSTEM, LOGGING);
+            op.get(OP_ADDR).add("periodic-rotating-file-handler", "AUDIT");
+            updates.add(op);
+
+            executeOperations(updates);
 
         }
     }
-
 
     @Deployment
     public static WebArchive deploy() {
@@ -145,51 +145,109 @@ public class SecurityAuditingTestCase {
         return war;
     }
 
-    @Ignore("AS7-3346")
-    @RunAsClient
+    private static final String MODULE = "singleMethodsAnnOnlySFSB";
+
+    private static Class<?> testClass() {
+        return SecurityAuditingTestCase.class;
+    }
+
+    private static Class<?> beanClass() {
+        return SingleMethodsAnnOnlyCheckSFSB.class;
+    }
+
+    @Deployment(name = MODULE + ".jar", order = 1, testable = false)
+    public static Archive<JavaArchive> deployment() {
+        return testAppDeployment(Logger.getLogger(testClass()), MODULE, beanClass());
+    }
+
+    /**
+     * Basic test if auditing works in EJB module.
+     * 
+     * @throws Exception
+     */
     @Test
-    public void test(@ArquillianResource URL url) throws Exception {
-
-        File auditLog = new File(System.getProperty("jbossas.ts.submodule.dir"), "target/jbossas/standalone/log/audit.log");
-
+    public void testSingleMethodAnnotationsUser1Template() throws Exception {
 
         assertTrue("Audit log file has not been created (" + auditLog.getAbsolutePath() + ")", auditLog.exists());
         assertTrue("Audit log file is closed for reading (" + auditLog.getAbsolutePath() + ")", auditLog.canRead());
 
         BufferedReader reader = new BufferedReader(new FileReader(auditLog));
 
-        String line;
-        while (null != (line = reader.readLine())) {
+        while (reader.readLine() != null) {
             // we need to get trough all old records (if any)
         }
 
+        testSingleMethodAnnotationsUser1Template(MODULE, log, beanClass());
+
+        checkAuditLog(reader, "TRACE.+org.jboss.security.audit.+Success.+user1");
+
+    }
+
+    /**
+     * Basic test if auditing works for web module.
+     * 
+     * @param url
+     * @throws Exception
+     */
+    @Test
+    public void test(@ArquillianResource URL url) throws Exception {
+
+        assertTrue("Audit log file has not been created (" + auditLog.getAbsolutePath() + ")", auditLog.exists());
+        assertTrue("Audit log file is closed for reading (" + auditLog.getAbsolutePath() + ")", auditLog.canRead());
+
+        BufferedReader reader = new BufferedReader(new FileReader(auditLog));
+
+        while (reader.readLine() != null) {
+            // we need to get trough all old records (if any)
+        }
 
         Utils.makeCall(url.toString(), "anil", "anil", 200);
 
-        Pattern successPattern = Pattern.compile("TRACE.+org.jboss.security.audit.providers.LogAuditProvider.+Success");
+        checkAuditLog(reader, "TRACE.+org.jboss.security.audit.+Success.+anil");
+    }
+
+    private void checkAuditLog(BufferedReader reader, String regex) throws Exception {
+
+        Pattern successPattern = Pattern.compile(regex);
 
         // we'll be actively waiting for a given INTERVAL for the record to appear
         final long INTERVAL = 5000;
         long startTime = System.currentTimeMillis();
-        while (true) {
-            boolean recordFound = false;
-            //some new line were added -> go trough those and check whether our record is present
+        String line;
+        search_for_log: while (true) {
+            // some new lines were added -> go trough those and check whether our record is present
             while (null != (line = reader.readLine())) {
-                if (successPattern.matcher(line).matches()) {
-                    recordFound = true;
+                if (successPattern.matcher(line).find()) {
+                    break search_for_log;
                 }
             }
-            if (recordFound) {
-                break; // we are done
-            }
-            //record not written to log yet -> continue checking if the time has not yet expired
+            // record not written to log yet -> continue checking if the time has not yet expired
             if (System.currentTimeMillis() > startTime + INTERVAL) {
-                //time expired
-                throw new AssertionError("Login record has not been written into audit log! (time expired)");
+                // time expired
+                throw new AssertionError("Login record has not been written into audit log! (time expired). Checked regex="
+                        + regex);
             }
         }
 
     }
 
+    /**
+     * A {@link ServerSetupTask} instance which creates security domains for this test case.
+     * 
+     * @author Josef Cacek
+     */
+    static class SecurityDomainsSetup extends AbstractSecurityDomainsServerSetupTask {
 
+        /**
+         * Returns SecurityDomains configuration for this testcase.
+         * 
+         * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask#getSecurityDomains()
+         */
+        @Override
+        protected SecurityDomain[] getSecurityDomains() {
+            final SecurityDomain sd = new SecurityDomain.Builder().name("form-auth")
+                    .loginModules(new SecurityModule.Builder().name("UsersRoles").build()).build();
+            return new SecurityDomain[] { sd };
+        }
+    }
 }

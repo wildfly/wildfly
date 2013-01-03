@@ -51,10 +51,11 @@ public class ActivationWriteHandlerTestCase {
         Mockito.when(context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS)).thenReturn(resource);
 
         ModelNode operation = new ModelNode();
+        operation.get(ModelDescriptionConstants.NAME).set(ModelConstants.ACTIVATION);
         operation.get(ModelDescriptionConstants.VALUE).set(Activation.LAZY.toString().toLowerCase(Locale.ENGLISH));
         ActivationAttributeHandler.INSTANCE.execute(context, operation);
 
-        Mockito.verify(context).completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        Mockito.verify(context).stepCompleted();
 
         Assert.assertEquals(Activation.LAZY.toString().toLowerCase(), targetNode.get(ModelConstants.ACTIVATION).asString());
     }

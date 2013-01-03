@@ -51,9 +51,6 @@ class DataSourcesSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     protected void populateModel(ModelNode operation, ModelNode model) {
         model.setEmptyObject();
-        model.get(DATA_SOURCE);
-        model.get(XA_DATASOURCE);
-        model.get(JDBC_DRIVER_NAME);
     }
 
     @Override

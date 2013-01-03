@@ -101,6 +101,6 @@ public class TransformerSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertTrue(legacySubsystem.get("element").hasDefined("renamed"));
 
         generateLegacySubsystemResourceRegistrationDmr(mainServices, oldVersion);
-        checkSubsystemTransformer(mainServices, oldVersion);
+        checkSubsystemModelTransformation(mainServices, oldVersion);
     }
 }

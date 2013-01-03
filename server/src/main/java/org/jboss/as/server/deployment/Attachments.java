@@ -23,6 +23,7 @@
 package org.jboss.as.server.deployment;
 
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.jar.Manifest;
 
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -124,10 +125,6 @@ public final class Attachments {
     public static final AttachmentKey<Manifest> MANIFEST = AttachmentKey.create(Manifest.class);
 
     /**
-     *  A flag indicating whether the presence of a bundle manifest attributes should be ignored and a bundle not created
-     */
-    public static final AttachmentKey<Boolean> IGNORE_OSGI = AttachmentKey.create(Boolean.class);
-    /**
      * Available when the deployment contains a valid OSGi manifest
      */
     public static final AttachmentKey<Manifest> OSGI_MANIFEST = AttachmentKey.create(Manifest.class);
@@ -209,6 +206,12 @@ public final class Attachments {
     public static final AttachmentKey<AbstractVaultReader> VAULT_READER_ATTACHMENT_KEY = AttachmentKey.create(AbstractVaultReader.class);
 
     //
+    // REGISTER
+    //
+
+    public static final AttachmentKey<BundleState> BUNDLE_STATE_KEY = AttachmentKey.create(BundleState.class);
+
+    //
     // DEPENDENCIES
     //
     public static final AttachmentKey<AttachmentList<ModuleDependency>> MANIFEST_DEPENDENCIES = AttachmentKey.createList(ModuleDependency.class);
@@ -219,8 +222,13 @@ public final class Attachments {
     /**
      * The module identifier.
      */
-
     public static final AttachmentKey<ModuleIdentifier> MODULE_IDENTIFIER = AttachmentKey.create(ModuleIdentifier.class);
+
+    /**
+     * The flag that indicates that the respective phase should be deferred.
+     */
+    public static final AttachmentKey<AttachmentList<String>> DEFERRED_MODULES = AttachmentKey.createList(String.class);
+    public static final AttachmentKey<AtomicInteger> DEFERRED_ACTIVATION_COUNT = AttachmentKey.create(AtomicInteger.class);
 
     //
     // MODULARIZE
@@ -269,7 +277,7 @@ public final class Attachments {
     /**
      * JNDI dependencies, only attached to the top level deployment
      */
-    public static final AttachmentKey<Set<ServiceName>> JNDI_DEPENDENCIES = AttachmentKey.create(Set.class);
+    public static final AttachmentKey<AttachmentList<ServiceName>> JNDI_DEPENDENCIES = AttachmentKey.createList(ServiceName.class);
 
     /**
      * The reflection index for the deployment.
@@ -290,6 +298,14 @@ public final class Attachments {
      */
     public static final AttachmentKey<AttachmentList<SetupAction>> SETUP_ACTIONS = AttachmentKey.createList(SetupAction.class);
 
+    /**
+     * List of services that need to be up before we consider this deployment 'done'. This is used to manage initialize-in-order,
+     * and inter deployment dependencies.
+     *
+     * It would better if this could be handled by MSC without needing to add all these into a list manually
+     */
+    public static final AttachmentKey<AttachmentList<ServiceName>> DEPLOYMENT_COMPLETE_SERVICES = AttachmentKey.createList(ServiceName.class);
+
     //
     // CLEANUP
     //
@@ -297,5 +313,13 @@ public final class Attachments {
     private Attachments() {
     }
 
-
+    /**
+     * The state of an OSGi bundle deployment
+     */
+    public static enum BundleState {
+        INSTALLED,
+        RESOLVED,
+        ACTIVE,
+        UNINSTALLED
+    }
 }

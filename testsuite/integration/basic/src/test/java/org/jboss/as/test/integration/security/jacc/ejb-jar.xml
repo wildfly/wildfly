@@ -29,13 +29,13 @@
             <role-name>TestRole</role-name>
             <method>
                 <ejb-name>HelloBeanDD</ejb-name>
-                <method-name>sayHello</method-name>
+                <method-name>sayHelloWorld</method-name>
             </method>
         </method-permission>
         <exclude-list>
             <method>
                 <ejb-name>HelloBeanDD</ejb-name>
-                <method-name>echo</method-name>
+                <method-name>sayHello</method-name>
             </method>
         </exclude-list>
     </assembly-descriptor>

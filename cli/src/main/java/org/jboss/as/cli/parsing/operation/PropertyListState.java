@@ -24,8 +24,8 @@ package org.jboss.as.cli.parsing.operation;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.parsing.CharacterHandler;
 import org.jboss.as.cli.parsing.DefaultParsingState;
-import org.jboss.as.cli.parsing.EnterStateCharacterHandler;
 import org.jboss.as.cli.parsing.GlobalCharacterHandlers;
+import org.jboss.as.cli.parsing.LineBreakHandler;
 import org.jboss.as.cli.parsing.ParsingContext;
 
 
@@ -62,7 +62,12 @@ public class PropertyListState extends DefaultParsingState {
                     ctx.enterState(propState);
                 }
             }});
-        setDefaultHandler(new EnterStateCharacterHandler(propState));
+        setDefaultHandler(new LineBreakHandler(false, false){
+            @Override
+            protected void doHandle(ParsingContext ctx) throws CommandFormatException {
+                ctx.enterState(propState);
+            }
+        });
         putHandler(propSeparator, GlobalCharacterHandlers.NOOP_CHARACTER_HANDLER);
         setReturnHandler(new CharacterHandler(){
             @Override

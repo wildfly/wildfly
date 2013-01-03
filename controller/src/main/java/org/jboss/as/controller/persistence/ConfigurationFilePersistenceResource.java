@@ -37,7 +37,6 @@ import org.jboss.dmr.ModelNode;
 public class ConfigurationFilePersistenceResource extends AbstractFilePersistenceResource {
 
     private final ConfigurationFile configurationFile;
-    private final File tempFileName;
     protected final File fileName;
 
 
@@ -46,11 +45,11 @@ public class ConfigurationFilePersistenceResource extends AbstractFilePersistenc
         super(model, persister);
         this.configurationFile = configurationFile;
         this.fileName = configurationFile.getMainFile();
-        tempFileName = FilePersistenceUtils.createTempFile(fileName);
     }
 
     @Override
     public void doCommit(ExposedByteArrayOutputStream marshalled) {
+        final File tempFileName = FilePersistenceUtils.createTempFile(fileName);
         try {
             try {
                 FilePersistenceUtils.writeToTempFile(marshalled, tempFileName);
@@ -66,6 +65,11 @@ public class ConfigurationFilePersistenceResource extends AbstractFilePersistenc
             configurationFile.fileWritten();
         } catch (ConfigurationPersistenceException e) {
            MGMT_OP_LOGGER.errorf(e, e.toString());
+        } finally {
+            if (tempFileName.exists() && !tempFileName.delete()) {
+                MGMT_OP_LOGGER.cannotDeleteTempFile(tempFileName.getName());
+                tempFileName.deleteOnExit();
+            }
         }
     }
 }

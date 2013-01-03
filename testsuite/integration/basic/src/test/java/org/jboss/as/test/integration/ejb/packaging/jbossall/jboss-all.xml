@@ -1,0 +1,13 @@
+<jboss>
+    <ejb-jar xmlns="http://www.jboss.com/xml/ns/javaee">
+        <enterprise-beans>
+
+            <session xmlns="http://java.sun.com/xml/ns/javaee">
+                <ejb-name>JBossAllBean</ejb-name>
+                <ejb-class>org.jboss.as.test.integration.ejb.packaging.jbossall.JBossAllBean</ejb-class>
+                <session-type>Stateless</session-type>
+            </session>
+        </enterprise-beans>
+
+    </ejb-jar>
+</jboss>

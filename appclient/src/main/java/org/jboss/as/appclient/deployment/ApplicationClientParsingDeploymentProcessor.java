@@ -158,7 +158,8 @@ public class ApplicationClientParsingDeploymentProcessor implements DeploymentUn
                 }
             }
         } else {
-            return null;
+            //we may already have this info from jboss-all.xml
+            return deploymentUnit.getAttachment(AppClientJBossAllParser.ATTACHMENT_KEY);
         }
     }
 

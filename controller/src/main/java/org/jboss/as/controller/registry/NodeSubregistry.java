@@ -41,6 +41,13 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
  */
 final class NodeSubregistry {
 
+    private static void checkPermission() {
+        SecurityManager sm = System.getSecurityManager();
+        if (sm != null) {
+            sm.checkPermission(ImmutableManagementResourceRegistration.ACCESS_PERMISSION);
+        }
+    }
+
     private static final String WILDCARD_VALUE = PathElement.WILDCARD_VALUE;
 
     private final String keyName;
@@ -88,10 +95,27 @@ final class NodeSubregistry {
     }
 
     void unregisterProxyController(final String elementValue) {
+        checkPermission();
         childRegistriesUpdater.remove(this, elementValue);
     }
 
+    public AliasResourceRegistration registerAlias(final String elementValue, AliasEntry aliasEntry, AbstractResourceRegistration target) {
+        final AliasResourceRegistration newRegistry = new AliasResourceRegistration(elementValue, this, aliasEntry, target);
+        final AbstractResourceRegistration existingRegistry = childRegistriesUpdater.putIfAbsent(this, elementValue, newRegistry);
+        if (existingRegistry != null) {
+            throw MESSAGES.nodeAlreadyRegistered(getLocationString(), elementValue);
+        }
+        return newRegistry;
+    }
+
+    public void unregisterAlias(final String elementValue) {
+        checkPermission();
+        childRegistriesUpdater.remove(this, elementValue);
+    }
+
+
     void unregisterSubModel(final String elementValue) {
+        checkPermission();
         childRegistriesUpdater.remove(this, elementValue);
     }
 

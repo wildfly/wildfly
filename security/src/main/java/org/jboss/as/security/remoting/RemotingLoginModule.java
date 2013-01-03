@@ -62,8 +62,8 @@ public class RemotingLoginModule extends AbstractServerLoginModule {
             for (Principal current : con.getPrincipals()) {
                 if (current instanceof UserPrincipal) {
                     up = (UserPrincipal) current;
+                    break;
                 }
-                break;
             }
             // If we found a principal from the connection then authentication succeeded.
             if (up != null) {

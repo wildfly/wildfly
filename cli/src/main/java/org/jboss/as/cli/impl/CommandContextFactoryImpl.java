@@ -56,14 +56,14 @@ public class CommandContextFactoryImpl extends CommandContextFactory {
     public CommandContext newCommandContext(String controllerHost,
             int controllerPort, String username, char[] password)
             throws CliInitializationException {
-        return newCommandContext(controllerHost, controllerPort, username, password, false);
+        return newCommandContext(controllerHost, controllerPort, username, password, false, -1);
     }
 
     @Override
     public CommandContext newCommandContext(String controllerHost,
             int controllerPort, String username, char[] password,
-            boolean initConsole) throws CliInitializationException {
-        final CommandContext ctx = new CommandContextImpl(controllerHost, controllerPort, username, password, initConsole);
+            boolean initConsole, final int connectionTimeout) throws CliInitializationException {
+        final CommandContext ctx = new CommandContextImpl(controllerHost, controllerPort, username, password, initConsole, connectionTimeout);
         addShutdownHook(ctx);
         return ctx;
     }

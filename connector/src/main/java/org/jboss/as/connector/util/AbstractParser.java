@@ -28,18 +28,17 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Map;
-
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.CommonBundle;
-import org.jboss.jca.common.CommonLogger;
 import org.jboss.jca.common.api.metadata.common.Extension;
 import org.jboss.jca.common.api.validator.ValidateException;
-import org.jboss.logging.Logger;
 import org.jboss.logging.Messages;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
@@ -50,15 +49,9 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  */
 public abstract class AbstractParser {
     /**
-     * The logger
-     */
-    private static CommonLogger log = Logger.getMessageLogger(CommonLogger.class, AbstractParser.class.getName());
-
-    /**
      * The bundle
      */
     private static CommonBundle bundle = Messages.getBundle(CommonBundle.class);
-
 
 
     /**
@@ -82,7 +75,11 @@ public abstract class AbstractParser {
      * @return the string representing raw attribute text
      */
     public String rawAttributeText(XMLStreamReader reader, String attributeName) {
-        String attributeString = reader.getAttributeValue("", attributeName) == null ? null : reader.getAttributeValue(
+        return rawAttributeText(reader, attributeName, null);
+    }
+
+    public String rawAttributeText(XMLStreamReader reader, String attributeName, String defaultValue) {
+        String attributeString = reader.getAttributeValue("", attributeName) == null ? defaultValue : reader.getAttributeValue(
                 "", attributeName)
                 .trim();
         return attributeString;
@@ -90,7 +87,7 @@ public abstract class AbstractParser {
 
 
     protected void parseExtension(XMLExtendedStreamReader reader, String enclosingTag, final ModelNode operation,
-                                  final SimpleAttributeDefinition extensionClassName, final SimpleAttributeDefinition extensionProperties)
+                                  final SimpleAttributeDefinition extensionClassName, final AttributeDefinition extensionProperties)
             throws XMLStreamException, ParserException, ValidateException {
 
         String className = null;
@@ -118,7 +115,7 @@ public abstract class AbstractParser {
                         return;
                     } else {
                         if (Extension.Tag.forName(reader.getLocalName()) == Extension.Tag.UNKNOWN) {
-                            throw new ParserException(bundle.unexpectedEndTag(reader.getLocalName()));
+                            throw ParseUtils.unexpectedEndElement(reader);
                         }
                     }
                     break;
@@ -131,7 +128,7 @@ public abstract class AbstractParser {
                             String value = rawElementText(reader);
                             final String trimmed = value == null ? null : value.trim();
                             ModelNode node = new ModelNode();
-                            if (trimmed != null ) {
+                            if (trimmed != null) {
                                 if (extensionProperties.isAllowExpression()) {
                                     node = ParseUtils.parsePossibleExpression(trimmed);
                                 } else {

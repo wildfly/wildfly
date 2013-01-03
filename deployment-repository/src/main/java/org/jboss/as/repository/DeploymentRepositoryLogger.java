@@ -23,12 +23,13 @@
 package org.jboss.as.repository;
 
 import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
 
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.LogMessage;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.Logger;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageLogger;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
 
 /**
  * The reserved message id's as per http://community.jboss.org/wiki/LoggingIds are: 14900 - 14999
@@ -56,4 +57,8 @@ interface DeploymentRepositoryLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 14901, value = "Content removed from location %s")
     void contentRemoved(String path);
+
+    @LogMessage(level = WARN)
+    @Message(id = 14902, value = "Cannot delete temp file %s, will be deleted on exit")
+    void cannotDeleteTempFile(String path);
 }

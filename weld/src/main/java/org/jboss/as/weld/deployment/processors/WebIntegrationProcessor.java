@@ -22,7 +22,6 @@
 package org.jboss.as.weld.deployment.processors;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -45,29 +44,22 @@ import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.WeldLogger;
 import org.jboss.as.weld.webtier.jsp.JspInitializationListener;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
-import org.jboss.metadata.web.spec.FilterMappingMetaData;
-import org.jboss.metadata.web.spec.FilterMetaData;
-import org.jboss.metadata.web.spec.FiltersMetaData;
 import org.jboss.metadata.web.spec.ListenerMetaData;
-import org.jboss.weld.servlet.ConversationPropagationFilter;
 import org.jboss.weld.servlet.WeldListener;
 
 /**
  * Deployment processor that integrates weld into the web tier
  *
  * @author Stuart Douglas
+ * @author Marko Luksa
  */
 public class WebIntegrationProcessor implements DeploymentUnitProcessor {
     private final ListenerMetaData WBL;
     private final ListenerMetaData JIL;
-    private final FilterMetaData CPF;
-    private final FilterMappingMetaData CPFM;
 
     private static final String WELD_LISTENER = WeldListener.class.getName();
 
     private static final String JSP_LISTENER = JspInitializationListener.class.getName();
-
-    private static final String CONVERSATION_FILTER = ConversationPropagationFilter.class.getName();
 
     private static final String WELD_SERVLET_LISTENER = "org.jboss.weld.environment.servlet.Listener";
 
@@ -78,13 +70,6 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
         WBL.setListenerClass(WELD_LISTENER);
         JIL = new ListenerMetaData();
         JIL.setListenerClass(JSP_LISTENER);
-        CPF = new FilterMetaData();
-        CPF.setFilterName("Weld Conversation Propagation Filter");
-        CPF.setFilterClass(CONVERSATION_FILTER);
-        CPF.setAsyncSupported(true);
-        CPFM = new FilterMappingMetaData();
-        CPFM.setFilterName("Weld Conversation Propagation Filter");
-        CPFM.setUrlPatterns(Arrays.asList("/*"));
     }
 
     @Override
@@ -137,20 +122,6 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
         module.addComponent(componentDescription);
         final Map<String, ComponentInstantiator> instantiators = deploymentUnit.getAttachment(WebAttachments.WEB_COMPONENT_INSTANTIATORS);
         instantiators.put(JSP_LISTENER, new WebComponentInstantiator(deploymentUnit, componentDescription));
-
-        FiltersMetaData filters = webMetaData.getFilters();
-        if (filters == null) {
-            filters = new FiltersMetaData();
-            webMetaData.setFilters(filters);
-        }
-        filters.add(CPF);
-
-        List<FilterMappingMetaData> filterMappings = webMetaData.getFilterMappings();
-        if (filterMappings == null) {
-            filterMappings = new ArrayList<FilterMappingMetaData>();
-            webMetaData.setFilterMappings(filterMappings);
-        }
-        filterMappings.add(CPFM);
     }
 
     @Override

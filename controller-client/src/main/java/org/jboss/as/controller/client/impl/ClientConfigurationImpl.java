@@ -45,6 +45,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ClientConfigurationImpl implements ModelControllerClientConfiguration {
 
     private static final int DEFAULT_MAX_THREADS = getSystemProperty("org.jboss.as.controller.client.max-threads", 6);
+    private static final int DEFAULT_CONNECTION_TIMEOUT = 5000;
 
     // Global count of created pools
     private static final AtomicInteger executorCount = new AtomicInteger();
@@ -61,12 +62,17 @@ public class ClientConfigurationImpl implements ModelControllerClientConfigurati
     private final SSLContext sslContext;
     private final ExecutorService executorService;
     private boolean shutdownExecutor;
+    private final int connectionTimeout;
 
     protected ClientConfigurationImpl(String address, int port, CallbackHandler handler, Map<String, String> saslOptions, SSLContext sslContext, ExecutorService executorService) {
-        this(address, port, handler, saslOptions, sslContext, executorService, false);
+        this(address, port, handler, saslOptions, sslContext, executorService, false, DEFAULT_CONNECTION_TIMEOUT);
     }
 
     protected ClientConfigurationImpl(String address, int port, CallbackHandler handler, Map<String, String> saslOptions, SSLContext sslContext, ExecutorService executorService, boolean shutdownExecutor) {
+        this(address, port, handler, saslOptions, sslContext, executorService, shutdownExecutor, DEFAULT_CONNECTION_TIMEOUT);
+    }
+
+    protected ClientConfigurationImpl(String address, int port, CallbackHandler handler, Map<String, String> saslOptions, SSLContext sslContext, ExecutorService executorService, boolean shutdownExecutor, final int connectionTimeout) {
         this.address = address;
         this.port = port;
         this.handler = handler;
@@ -74,6 +80,7 @@ public class ClientConfigurationImpl implements ModelControllerClientConfigurati
         this.sslContext = sslContext;
         this.executorService = executorService;
         this.shutdownExecutor = shutdownExecutor;
+        this.connectionTimeout = connectionTimeout > 0 ? connectionTimeout : DEFAULT_CONNECTION_TIMEOUT;
     }
 
     @Override
@@ -103,7 +110,7 @@ public class ClientConfigurationImpl implements ModelControllerClientConfigurati
 
     @Override
     public int getConnectionTimeout() {
-        return 5000;
+        return connectionTimeout;
     }
 
     @Override
@@ -140,6 +147,10 @@ public class ClientConfigurationImpl implements ModelControllerClientConfigurati
 
     public static ModelControllerClientConfiguration create(final String hostName, final int port, final CallbackHandler handler, final SSLContext sslContext) throws UnknownHostException {
         return new ClientConfigurationImpl(hostName, port, handler, null, sslContext, createDefaultExecutor(), true);
+    }
+
+    public static ModelControllerClientConfiguration create(final String hostName, final int port, final CallbackHandler handler, final SSLContext sslContext, final int connectionTimeout) throws UnknownHostException {
+        return new ClientConfigurationImpl(hostName, port, handler, null, sslContext, createDefaultExecutor(), true, connectionTimeout);
     }
 
     public static ModelControllerClientConfiguration create(final String hostName, final int port, final CallbackHandler handler, final Map<String, String> saslOptions) throws UnknownHostException {

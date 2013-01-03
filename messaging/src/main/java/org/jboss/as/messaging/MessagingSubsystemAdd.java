@@ -50,8 +50,7 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        // create the hook for children
-        model.get(CommonAttributes.HORNETQ_SERVER);
+        model.setEmptyObject();
     }
 
     @Override

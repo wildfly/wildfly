@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.jboss.as.test.integration.common.HttpRequest;
-import org.jboss.as.test.integration.domain.DomainTestSupport;
+import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.domain.management.util.RolloutPlanBuilder;
 import org.jboss.as.test.integration.domain.suites.CLITestSuite;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
@@ -53,7 +53,7 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
     private static WebArchive war;
     private static File warFile;
     private static final int TEST_PORT = 8081;
-    
+
     private static final String[] serverGroups = new String[] {"main-server-group", "other-server-group", "test-server-group"};
 
     @BeforeClass
@@ -76,13 +76,13 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
         CLITestSuite.addServer("test-one", "master", "test-server-group","default", 700, true);
 
         // start main-two
-        cli.sendLine("/host=master/server-config=main-two:start");
+        cli.sendLine("/host=master/server-config=main-two:start(blocking=true)");
         CLIOpResult res = cli.readAllAsOpResult();
         Assert.assertTrue(res.isIsOutcomeSuccess());
         waitUntilState("main-two", "STARTED");
 
         // start test-one
-        cli.sendLine("/host=master/server-config=test-one:start");
+        cli.sendLine("/host=master/server-config=test-one:start(blocking=true)");
         res = cli.readAllAsOpResult();
         Assert.assertTrue(res.isIsOutcomeSuccess());
         waitUntilState("test-one", "STARTED");
@@ -92,13 +92,13 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
     public static void after() throws Exception {
 
         // stop test-one
-        cli.sendLine("/host=master/server-config=test-one:stop");
+        cli.sendLine("/host=master/server-config=test-one:stop(blocking=true)");
         CLIOpResult res = cli.readAllAsOpResult();
         Assert.assertTrue(res.isIsOutcomeSuccess());
         waitUntilState("test-one", "STOPPED");
 
         // stop main-two
-        cli.sendLine("/host=master/server-config=main-two:stop");
+        cli.sendLine("/host=master/server-config=main-two:stop(blocking=true)");
         res = cli.readAllAsOpResult();
         Assert.assertTrue(res.isIsOutcomeSuccess());
         waitUntilState("main-two", "DISABLED");

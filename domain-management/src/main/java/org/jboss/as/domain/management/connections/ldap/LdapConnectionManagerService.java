@@ -21,6 +21,18 @@
  */
 package org.jboss.as.domain.management.connections.ldap;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INITIAL_CONTEXT_FACTORY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SEARCH_CREDENTIAL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SEARCH_DN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
+
+import java.util.Properties;
+
+import javax.naming.Context;
+import javax.naming.directory.InitialDirContext;
+import javax.net.ssl.SSLContext;
+
+import org.jboss.as.domain.management.SSLIdentity;
 import org.jboss.as.domain.management.connections.ConnectionManager;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
@@ -28,15 +40,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import javax.naming.Context;
-import javax.naming.directory.InitialDirContext;
-import java.util.Properties;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INITIAL_CONTEXT_FACTORY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SEARCH_CREDENTIAL;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SEARCH_DN;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * The LDAP connection manager to maintain the LDAP connections.
@@ -47,6 +51,7 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
 
     public static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("server", "controller", "management", "connection_manager");
 
+    private final InjectedValue<SSLIdentity> sslIdentity = new InjectedValue<SSLIdentity>();
     private volatile ModelNode resolvedConfiguration;
 
     public LdapConnectionManagerService(final ModelNode resolvedConfiguration) {
@@ -56,8 +61,6 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
     void setResolvedConfiguration(final ModelNode resolvedConfiguration) {
         // Validate
         resolvedConfiguration.require(LdapConnectionResourceDefinition.URL.getName());
-        resolvedConfiguration.require(LdapConnectionResourceDefinition.SEARCH_DN.getName());
-        resolvedConfiguration.require(LdapConnectionResourceDefinition.SEARCH_CREDENTIAL.getName());
         resolvedConfiguration.require(LdapConnectionResourceDefinition.INITIAL_CONTEXT_FACTORY.getName());
         // Store
         this.resolvedConfiguration = resolvedConfiguration;
@@ -77,13 +80,17 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
         return this;
     }
 
+    public InjectedValue<SSLIdentity> getSSLIdentityInjector() {
+        return sslIdentity;
+    }
+
     /*
      *  Connection Manager Methods
      */
 
     public Object getConnection() throws Exception {
         final ModelNode config = resolvedConfiguration;
-        return getConnection(getFullProperties(config));
+        return getConnection(getFullProperties(config), getSSLContext(false));
     }
 
     public Object getConnection(String principal, String credential) throws Exception {
@@ -92,23 +99,31 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
         connectionProperties.put(Context.SECURITY_PRINCIPAL, principal);
         connectionProperties.put(Context.SECURITY_CREDENTIALS, credential);
 
-        return getConnection(connectionProperties);
+        // Use a trust only SSLContext as we do not want to authenticate using a pre-defined key in a KeyStore.
+        return getConnection(connectionProperties, getSSLContext(true));
     }
 
-    // TODO - Workaround to clear ContextClassLoader to allow access to System ClassLoader
-    private Object getConnection(Properties properties) throws Exception {
-        ClassLoader original = null;
+    private Object getConnection(final Properties properties, final SSLContext sslContext) throws Exception {
         try {
-            original = Thread.currentThread().getContextClassLoader();
-            if (original != null) {
-                Thread.currentThread().setContextClassLoader(null);
+            if (sslContext != null) {
+                ThreadLocalSSLSocketFactory.setSSLSocketFactory(sslContext.getSocketFactory());
+                properties.put("java.naming.ldap.factory.socket", ThreadLocalSSLSocketFactory.class.getName());
             }
             return new InitialDirContext(properties);
         } finally {
-            if (original != null) {
-                Thread.currentThread().setContextClassLoader(original);
+            if (sslContext != null) {
+                ThreadLocalSSLSocketFactory.removeSSLSocketFactory();
             }
         }
+    }
+
+    private SSLContext getSSLContext(final boolean trustOnly) {
+        SSLIdentity sslIdentityValue = sslIdentity.getOptionalValue();
+        if (sslIdentityValue != null) {
+            return trustOnly ? sslIdentityValue.getTrustOnlyContext() : sslIdentityValue.getFullContext();
+        }
+
+        return null;
     }
 
     private Properties getConnectionOnlyProperties(final ModelNode config) {
@@ -122,10 +137,15 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
 
     private Properties getFullProperties(final ModelNode config) {
         final Properties result = getConnectionOnlyProperties(config);
-        String searchDN = config.require(SEARCH_DN).asString();
-        String searchCredential = config.require(SEARCH_CREDENTIAL).asString();
-        result.put(Context.SECURITY_PRINCIPAL,searchDN);
-        result.put(Context.SECURITY_CREDENTIALS,searchCredential);
+        // These are no longer mandatory as the SSL identity of the server
+        // could be used instead.
+        if (config.hasDefined(SEARCH_DN)) {
+            result.put(Context.SECURITY_PRINCIPAL, config.require(SEARCH_DN).asString());
+        }
+        if (config.hasDefined(SEARCH_CREDENTIAL)) {
+            result.put(Context.SECURITY_CREDENTIALS, config.require(SEARCH_CREDENTIAL).asString());
+        }
+
         return result;
     }
 

@@ -38,19 +38,11 @@ import org.jboss.dmr.ModelType;
  * @since 07-Nov-2011
  */
 public class JAXRWriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {
-
-    static SimpleAttributeDefinition CONNECTION_FACTORY_ATTRIBUTE = new SimpleAttributeDefinition(ModelConstants.CONNECTION_FACTORY, ModelType.STRING, true);
-    static SimpleAttributeDefinition CONNECTION_FACTORY_IMPL_ATTRIBUTE = new SimpleAttributeDefinition(ModelConstants.CONNECTION_FACTORY_IMPL, ModelType.STRING, true);
-
     private final JAXRConfiguration config;
 
     JAXRWriteAttributeHandler(JAXRConfiguration config) {
+        super(JAXRSubsystemRootResource.ATTRIBUTES);
         this.config = config;
-    }
-
-    void registerAttributes(final ManagementResourceRegistration registry) {
-        registry.registerReadWriteAttribute(CONNECTION_FACTORY_ATTRIBUTE, null, this);
-        registry.registerReadWriteAttribute(CONNECTION_FACTORY_IMPL_ATTRIBUTE, null, this);
     }
 
     @Override

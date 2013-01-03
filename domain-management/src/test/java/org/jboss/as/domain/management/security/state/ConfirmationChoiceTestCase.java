@@ -22,14 +22,16 @@
 
 package org.jboss.as.domain.management.security.state;
 
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.as.domain.management.security.AssertConsoleBuilder;
 import org.jboss.msc.service.StartException;
 import org.junit.Test;
-
-import java.io.IOException;
-
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Test the confirmation state
@@ -67,9 +69,24 @@ public class ConfirmationChoiceTestCase extends PropertyTestHelper {
 
         ConfirmationChoice confirmationChoice = new ConfirmationChoice(consoleMock, USER_DISPLAY_TEXT, PLEASE_ANSWER, passwordState,errorState);
 
-        AssertConsoleBuilder consoleBuilder = new AssertConsoleBuilder().
-                expectedConfirmMessage(USER_DISPLAY_TEXT,PLEASE_ANSWER,"d").
-                expectedErrorMessage(MESSAGES.invalidConfirmationResponse());
+        List<String> acceptedValues = new ArrayList<String>(4);
+        acceptedValues.add(MESSAGES.yes());
+        if (MESSAGES.shortYes().length() > 0) {
+            acceptedValues.add(MESSAGES.shortYes());
+        }
+        acceptedValues.add(MESSAGES.no());
+        if (MESSAGES.shortNo().length() > 0) {
+            acceptedValues.add(MESSAGES.shortNo());
+        }
+        StringBuilder sb = new StringBuilder(acceptedValues.get(0));
+        for (int i = 1; i < acceptedValues.size() - 1; i++) {
+            sb.append(", ");
+            sb.append(acceptedValues.get(i));
+        }
+
+        AssertConsoleBuilder consoleBuilder = new AssertConsoleBuilder().expectedConfirmMessage(USER_DISPLAY_TEXT,
+                PLEASE_ANSWER, "d").expectedErrorMessage(
+                MESSAGES.invalidConfirmationResponse(sb.toString(), acceptedValues.get(acceptedValues.size() - 1)));
 
         consoleMock.setResponses(consoleBuilder);
         State nextState = confirmationChoice.execute();

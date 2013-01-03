@@ -22,7 +22,7 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.JNDI_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.List;
@@ -30,7 +30,6 @@ import java.util.List;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -50,7 +49,7 @@ public abstract class AbstractDataSourceRemove extends AbstractRemoveStepHandler
         final ServiceRegistry registry = context.getServiceRegistry(true);
         final ModelNode address = operation.require(OP_ADDR);
         final String dsName = PathAddress.pathAddress(address).getLastElement().getValue();
-        final String jndiName = model.get(JNDINAME.getName()).asString();
+        final String jndiName = model.get(JNDI_NAME.getName()).asString();
 
         final ServiceName binderServiceName = ContextNames.bindInfoFor(jndiName).getBinderServiceName();
         final ServiceController<?> binderController = registry.getService(binderServiceName);
@@ -98,11 +97,17 @@ public abstract class AbstractDataSourceRemove extends AbstractRemoveStepHandler
             context.removeService(dataSourceServiceName);
         }
 
+
+        final ServiceName driverDemanderServiceName = ServiceName.JBOSS.append("driver-demander").append(jndiName);
+        final ServiceController<?> driverDemanderController = registry.getService(driverDemanderServiceName);
+        if (driverDemanderController != null) {
+            context.removeService(driverDemanderServiceName);
+        }
+
     }
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
         // TODO:  RE-ADD SERVICES
     }
 
-    protected abstract SimpleAttributeDefinition[] getModelProperties();
 }

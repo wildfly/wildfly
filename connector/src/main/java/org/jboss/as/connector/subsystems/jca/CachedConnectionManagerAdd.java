@@ -30,14 +30,10 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -50,46 +46,9 @@ public class CachedConnectionManagerAdd extends AbstractAddStepHandler {
 
     public static final CachedConnectionManagerAdd INSTANCE = new CachedConnectionManagerAdd();
 
-    public static enum CcmParameters {
-        DEBUG(SimpleAttributeDefinitionBuilder.create("debug", ModelType.BOOLEAN)
-                .setAllowExpression(true)
-                .setAllowNull(true)
-                .setDefaultValue(new ModelNode().set(false))
-                .setMeasurementUnit(MeasurementUnit.NONE)
-                .setRestartAllServices()
-                .setXmlName("debug")
-                .build()),
-        ERROR(SimpleAttributeDefinitionBuilder.create("error", ModelType.BOOLEAN)
-                .setAllowExpression(true)
-                .setAllowNull(true)
-                .setDefaultValue(new ModelNode().set(false))
-                .setMeasurementUnit(MeasurementUnit.NONE)
-                .setRestartAllServices()
-                .setXmlName("error")
-                .build()),
-        INSTALL(SimpleAttributeDefinitionBuilder.create("install", ModelType.BOOLEAN)
-                .setAllowExpression(false)
-                .setAllowNull(true)
-                .setDefaultValue(new ModelNode().set(false))
-                .setMeasurementUnit(MeasurementUnit.NONE)
-                .setRestartAllServices()
-                .build());
-
-
-        private CcmParameters(SimpleAttributeDefinition attribute) {
-            this.attribute = attribute;
-        }
-
-        public SimpleAttributeDefinition getAttribute() {
-            return attribute;
-        }
-
-        private SimpleAttributeDefinition attribute;
-    }
-
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        for (CcmParameters parameter : CcmParameters.values()) {
+        for (JcaCachedConnectionManagerDefinition.CcmParameters parameter : JcaCachedConnectionManagerDefinition.CcmParameters.values()) {
             parameter.getAttribute().validateAndSet(operation, model);
         }
     }
@@ -98,9 +57,9 @@ public class CachedConnectionManagerAdd extends AbstractAddStepHandler {
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
                                    final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-        final boolean debug = CcmParameters.DEBUG.getAttribute().resolveModelAttribute(context, model).asBoolean();
-        final boolean error = CcmParameters.ERROR.getAttribute().resolveModelAttribute(context, model).asBoolean();
-        final boolean install = CcmParameters.INSTALL.getAttribute().resolveModelAttribute(context, model).asBoolean();
+        final boolean debug = JcaCachedConnectionManagerDefinition.CcmParameters.DEBUG.getAttribute().resolveModelAttribute(context, model).asBoolean();
+        final boolean error = JcaCachedConnectionManagerDefinition.CcmParameters.ERROR.getAttribute().resolveModelAttribute(context, model).asBoolean();
+        final boolean install = JcaCachedConnectionManagerDefinition.CcmParameters.INSTALL.getAttribute().resolveModelAttribute(context, model).asBoolean();
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
 

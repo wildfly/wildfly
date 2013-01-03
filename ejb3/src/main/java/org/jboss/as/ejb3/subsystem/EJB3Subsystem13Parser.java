@@ -22,35 +22,26 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.remoting.Attribute;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_DISTINCT_NAME;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ENABLE_STATISTICS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
+
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 
 /**
@@ -60,30 +51,6 @@ public class EJB3Subsystem13Parser extends EJB3Subsystem12Parser {
     public static final EJB3Subsystem13Parser INSTANCE = new EJB3Subsystem13Parser();
 
     protected EJB3Subsystem13Parser() {
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void writeElements(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
-        super.writeElements(writer, context);
-
-        ModelNode model = context.getModelNode();
-
-        // statistics element
-        if (model.hasDefined(ENABLE_STATISTICS)) {
-            writer.writeStartElement(EJB3SubsystemXMLElement.STATISTICS.getLocalName());
-            writer.writeAttribute(EJB3SubsystemXMLAttribute.ENABLED.getLocalName(), model.get(EJB3SubsystemModel.ENABLE_STATISTICS).asString());
-            writer.writeEndElement();
-        }
-
-        // default-distinct-name element
-        if (model.hasDefined(DEFAULT_DISTINCT_NAME)) {
-            writer.writeStartElement(EJB3SubsystemXMLElement.DEFAULT_DISTINCT_NAME.getLocalName());
-            writer.writeAttribute(EJB3SubsystemXMLAttribute.VALUE.getLocalName(), model.get(EJB3SubsystemModel.DEFAULT_DISTINCT_NAME).asString());
-            writer.writeEndElement();
-        }
     }
 
     @Override
@@ -157,9 +124,9 @@ public class EJB3Subsystem13Parser extends EJB3Subsystem12Parser {
     @Override
     protected void parseRemote(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
         final int count = reader.getAttributeCount();
-        String connectorName = null;
-        String threadPoolName = null;
         final EnumSet<EJB3SubsystemXMLAttribute> required = EnumSet.of(EJB3SubsystemXMLAttribute.CONNECTOR_REF, EJB3SubsystemXMLAttribute.THREAD_POOL_NAME);
+        final PathAddress ejb3RemoteServiceAddress = SUBSYSTEM_PATH.append(SERVICE, REMOTE);
+        ModelNode operation = Util.createAddOperation(ejb3RemoteServiceAddress);
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
@@ -167,10 +134,10 @@ public class EJB3Subsystem13Parser extends EJB3Subsystem12Parser {
             required.remove(attribute);
             switch (attribute) {
                 case CONNECTOR_REF:
-                    connectorName = value;
+                    EJB3RemoteResourceDefinition.CONNECTOR_REF.parseAndSetParameter(value, operation, reader);
                     break;
                 case THREAD_POOL_NAME:
-                    threadPoolName = value;
+                    EJB3RemoteResourceDefinition.THREAD_POOL_NAME.parseAndSetParameter(value, operation, reader);
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
@@ -179,13 +146,9 @@ public class EJB3Subsystem13Parser extends EJB3Subsystem12Parser {
         if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
-        operations.add(EJB3RemoteServiceAdd.create(connectorName, threadPoolName));
+        operations.add(operation);
 
         // set the address for this operation
-        final ModelNode ejb3RemoteServiceAddress = new ModelNode();
-        ejb3RemoteServiceAddress.add(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME);
-        ejb3RemoteServiceAddress.add(SERVICE, REMOTE);
-
         final Set<EJB3SubsystemXMLElement> parsedElements = new HashSet<EJB3SubsystemXMLElement>();
         while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
             switch (EJB3SubsystemXMLElement.forName(reader.getLocalName())) {
@@ -205,7 +168,7 @@ public class EJB3Subsystem13Parser extends EJB3Subsystem12Parser {
 
     }
 
-    private void parseChannelCreationOptions(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> operations) throws XMLStreamException {
+    private void parseChannelCreationOptions(final XMLExtendedStreamReader reader, final PathAddress address, final List<ModelNode> operations) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
             switch (EJB3SubsystemXMLElement.forName(reader.getLocalName())) {
                 case OPTION: {
@@ -219,12 +182,11 @@ public class EJB3Subsystem13Parser extends EJB3Subsystem12Parser {
         }
     }
 
-    private void parseChannelCreationOption(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> operations) throws XMLStreamException {
+    private void parseChannelCreationOption(final XMLExtendedStreamReader reader, final PathAddress address, final List<ModelNode> operations) throws XMLStreamException {
         final EnumSet<EJB3SubsystemXMLAttribute> required = EnumSet.of(EJB3SubsystemXMLAttribute.NAME, EJB3SubsystemXMLAttribute.TYPE);
         final int count = reader.getAttributeCount();
         String optionName = null;
-        String optionType = null;
-        String optionValue = null;
+        ModelNode operation = Util.createAddOperation();
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
             final String attributeValue = reader.getAttributeValue(i);
@@ -235,10 +197,10 @@ public class EJB3Subsystem13Parser extends EJB3Subsystem12Parser {
                     optionName = attributeValue;
                     break;
                 case TYPE:
-                    optionType = attributeValue;
+                    ChannelCreationOptionResource.CHANNEL_CREATION_OPTION_TYPE.parseAndSetParameter(attributeValue, operation, reader);
                     break;
                 case VALUE:
-                    optionValue = attributeValue;
+                    ChannelCreationOptionResource.CHANNEL_CREATION_OPTION_VALUE.parseAndSetParameter(attributeValue, operation, reader);
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
@@ -249,36 +211,8 @@ public class EJB3Subsystem13Parser extends EJB3Subsystem12Parser {
         }
         // this element just supports attributes so we expect no more content
         requireNoContent(reader);
-
-        final ModelNode channelOptionAddOperation = new ModelNode();
-        channelOptionAddOperation.get(OP).set(ADD);
-        channelOptionAddOperation.get(OP_ADDR).set(address).add(EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS, optionName);
-        channelOptionAddOperation.get(VALUE).set(optionValue);
-        channelOptionAddOperation.get(EJB3SubsystemModel.TYPE).set(optionType);
-
-        operations.add(channelOptionAddOperation);
+        operation.get(ADDRESS).set(address.append(EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS, optionName).toModelNode());
+        operations.add(operation);
     }
 
-    @Override
-    protected void writeRemote(XMLExtendedStreamWriter writer, ModelNode model) throws XMLStreamException {
-        super.writeRemote(writer, model);
-
-        // write out any channel creation options
-        if (model.hasDefined(CHANNEL_CREATION_OPTIONS)) {
-            writeChannelCreationOptions(writer, model.get(CHANNEL_CREATION_OPTIONS));
-        }
-    }
-
-    private void writeChannelCreationOptions(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-        writer.writeStartElement(EJB3SubsystemXMLElement.CHANNEL_CREATION_OPTIONS.getLocalName());
-        for (final Property optionPropertyModelNode : node.asPropertyList()) {
-            writer.writeStartElement(EJB3SubsystemXMLElement.OPTION.getLocalName());
-            writer.writeAttribute(Attribute.NAME.getLocalName(), optionPropertyModelNode.getName());
-            final ModelNode propertyValueModelNode = optionPropertyModelNode.getValue();
-            ChannelCreationOptionResource.CHANNEL_CREATION_OPTION_VALUE.marshallAsAttribute(propertyValueModelNode, writer);
-            ChannelCreationOptionResource.CHANNEL_CREATION_OPTION_TYPE.marshallAsAttribute(propertyValueModelNode, writer);
-            writer.writeEndElement();
-        }
-        writer.writeEndElement();
-    }
 }

@@ -81,18 +81,22 @@ public class ExtensionAddHandler implements OperationStepHandler {
             }
         }
 
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.stepCompleted();
     }
 
     void initializeExtension(String module) throws OperationFailedException {
         try {
+            boolean unknownModule = false;
             for (Extension extension : Module.loadServiceFromCallerModuleLoader(ModuleIdentifier.fromString(module), Extension.class)) {
                 ClassLoader oldTccl = SecurityActions.setThreadContextClassLoader(extension.getClass());
                 try {
-                    if (!extensionRegistry.getExtensionModuleNames().contains(module)) {
+                    if (unknownModule || !extensionRegistry.getExtensionModuleNames().contains(module)) {
                         // This extension wasn't handled by the standalone.xml or domain.xml parsing logic, so we
                         // need to initialize its parsers so we can display what XML namespaces it supports
                         extension.initializeParsers(extensionRegistry.getExtensionParsingContext(module, null));
+                        // AS7-6190 - ensure we initialize parsers for other extensions from this module
+                        // now that we know the registry was unaware of the module
+                        unknownModule = true;
                     }
                     extension.initialize(extensionRegistry.getExtensionContext(module));
                 } finally {

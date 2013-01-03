@@ -37,10 +37,10 @@
         <module name="javax.transaction.api"/>
         <module name="javax.validation.api"/>
         <module name="javax.xml.ws.api" optional="true"/>
-        <module name="org.hibernate.validator"/>
+        <module name="org.hibernate.validator" optional="true"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.as.controller"/>
-        <module name="org.jboss.as.naming"/>
+        <module name="org.jboss.as.naming" optional="true"/>
         <module name="org.jboss.as.server" />
         <module name="org.jboss.invocation"/>
         <module name="org.jboss.jandex"/>

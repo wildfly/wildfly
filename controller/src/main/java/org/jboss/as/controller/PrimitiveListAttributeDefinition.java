@@ -22,6 +22,9 @@
 
 package org.jboss.as.controller;
 
+import java.util.Locale;
+import java.util.ResourceBundle;
+
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
@@ -30,48 +33,32 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-import java.util.Locale;
-import java.util.ResourceBundle;
-
 /**
  * Date: 13.10.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  * @author Richard Achmatowicz (c) 2012 RedHat Inc.
+ * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
 public class PrimitiveListAttributeDefinition extends ListAttributeDefinition {
     private final ModelType valueType;
 
-    public PrimitiveListAttributeDefinition(final String name, final String xmlName, final boolean allowNull, final ModelType valueType, final int minSize, final int maxSize, final String[] alternatives, final String[] requires, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, allowNull, minSize, maxSize, new ModelTypeValidator(valueType), alternatives, requires, flags);
+    protected PrimitiveListAttributeDefinition(final String name, final String xmlName, final boolean allowNull, final boolean allowExpressions, final ModelType valueType, final int minSize, final int maxSize,
+                                               final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller, final boolean resourceOnly,
+                                               final DeprecationData deprecated, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, allowNull, allowExpressions, minSize, maxSize, new ModelTypeValidator(valueType), alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
         this.valueType = valueType;
     }
 
-    public PrimitiveListAttributeDefinition(final String name, final String xmlName, final boolean allowNull, final ModelType valueType, final int minSize, final int maxSize, final String[] alternatives, final String[] requires, ParameterValidator elementValidator, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, allowNull, minSize, maxSize, elementValidator, alternatives, requires, flags);
+    protected PrimitiveListAttributeDefinition(final String name, final String xmlName, final boolean allowNull, final boolean allowExpressions, final ModelType valueType, final int minSize, final int maxSize,
+                                               final String[] alternatives, final String[] requires, ParameterValidator elementValidator, final AttributeMarshaller attributeMarshaller,
+                                               final boolean resourceOnly, final DeprecationData deprecated, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, allowNull, allowExpressions, minSize, maxSize, elementValidator, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
         this.valueType = valueType;
     }
 
-    public PrimitiveListAttributeDefinition(String name, String xmlName, boolean allowNull, final ModelType valueType) {
-        super(name, xmlName, allowNull, 0, Integer.MAX_VALUE, new ModelTypeValidator(valueType));
-        this.valueType = valueType;
-    }
-
-    public PrimitiveListAttributeDefinition(String name, String xmlName, boolean allowNull, final ModelType valueType, ParameterValidator elementValidator) {
-        super(name, xmlName, allowNull, 0, Integer.MAX_VALUE, elementValidator);
-        this.valueType = valueType;
-    }
-
-    public PrimitiveListAttributeDefinition(final String name, final String xmlName, final boolean allowNull, final ModelType valueType, final int minSize, final int maxSize, ParameterValidator elementValidator) {
-        super(name, xmlName, allowNull, minSize, maxSize, elementValidator);
-        this.valueType = valueType;
-    }
-
-    public PrimitiveListAttributeDefinition(final String name, final boolean allowNull, final ModelType valueType, ParameterValidator elementValidator, final AttributeAccess.Flag... flags) {
-        super(name, allowNull, elementValidator, flags);
-        this.valueType = valueType;
+    public ModelType getValueType() {
+        return valueType;
     }
 
     @Override
@@ -88,6 +75,9 @@ public class PrimitiveListAttributeDefinition extends ListAttributeDefinition {
 
 
     protected void addValueTypeDescription(final ModelNode node) {
+        if (isAllowExpression()) {
+            node.get(ModelDescriptionConstants.EXPRESSIONS_ALLOWED).set(true);
+        }
         node.get(ModelDescriptionConstants.VALUE_TYPE).set(valueType);
     }
 
@@ -101,34 +91,18 @@ public class PrimitiveListAttributeDefinition extends ListAttributeDefinition {
         addValueTypeDescription(node);
     }
 
-    @Override
-    public void marshallAsElement(final ModelNode resourceModel, final XMLStreamWriter writer) throws XMLStreamException {
-        if (resourceModel.hasDefined(getName())) {
-            writer.writeStartElement(getXmlName());
-            for (ModelNode handler : resourceModel.get(getName()).asList()) {
-                writer.writeStartElement("element");
-                writer.writeCharacters(handler.asString());
-                writer.writeEndElement();
-            }
-            writer.writeEndElement();
-        }
-    }
-
-
-    public static class Builder {
-        private final String name;
+    public static class Builder extends AbstractAttributeDefinitionBuilder<Builder, PrimitiveListAttributeDefinition> {
         private final ModelType valueType;
-        private String xmlName;
-        private boolean allowNull;
-        private int minSize;
-        private int maxSize;
-        private String[] alternatives;
-        private String[] requires;
-        private AttributeAccess.Flag[] flags;
+
 
         public Builder(final String name, final ModelType valueType) {
-            this.name = name;
+            super(name, ModelType.LIST);
             this.valueType = valueType;
+        }
+
+        public Builder(final PrimitiveListAttributeDefinition basic) {
+            super(basic);
+            this.valueType = basic.getValueType();
         }
 
         public static Builder of(final String name, final ModelType valueType) {
@@ -138,42 +112,10 @@ public class PrimitiveListAttributeDefinition extends ListAttributeDefinition {
         public PrimitiveListAttributeDefinition build() {
             if (xmlName == null) { xmlName = name; }
             if (maxSize < 1) { maxSize = Integer.MAX_VALUE; }
-            return new PrimitiveListAttributeDefinition(name, xmlName, allowNull, valueType, minSize, maxSize, alternatives, requires, flags);
-        }
-
-        public Builder setAllowNull(final boolean allowNull) {
-            this.allowNull = allowNull;
-            return this;
-        }
-
-        public Builder setAlternates(final String... alternates) {
-            this.alternatives = alternates;
-            return this;
-        }
-
-        public Builder setFlags(final AttributeAccess.Flag... flags) {
-            this.flags = flags;
-            return this;
-        }
-
-        public Builder setMaxSize(final int maxSize) {
-            this.maxSize = maxSize;
-            return this;
-        }
-
-        public Builder setMinSize(final int minSize) {
-            this.minSize = minSize;
-            return this;
-        }
-
-        public Builder setRequires(final String... requires) {
-            this.requires = requires;
-            return this;
-        }
-
-        public Builder setXmlName(final String xmlName) {
-            this.xmlName = xmlName;
-            return this;
+            if (validator == null) {
+                validator = new ModelTypeValidator(valueType, allowNull, allowExpression);
+            }
+            return new PrimitiveListAttributeDefinition(name, xmlName, allowNull, allowExpression, valueType, minSize, maxSize, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
         }
     }
 }

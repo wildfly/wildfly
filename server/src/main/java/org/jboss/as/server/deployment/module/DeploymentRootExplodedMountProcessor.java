@@ -39,11 +39,13 @@ import org.jboss.as.server.deployment.MountExplodedMarker;
 public class DeploymentRootExplodedMountProcessor implements DeploymentUnitProcessor {
 
     static final String WAR_EXTENSION = ".war";
+    static final String WAB_EXTENSION = ".wab";
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if(deploymentUnit.getName().toLowerCase(Locale.ENGLISH).endsWith(WAR_EXTENSION)) {
-            MountExplodedMarker.setMountExploded(deploymentUnit);
+        DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
+        String depName = depUnit.getName().toLowerCase(Locale.ENGLISH);
+        if(depName.endsWith(WAR_EXTENSION) || depName.endsWith(WAB_EXTENSION)) {
+            MountExplodedMarker.setMountExploded(depUnit);
         }
     }
 

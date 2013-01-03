@@ -87,6 +87,7 @@ import org.jboss.as.cli.handlers.CommandCommandHandler;
 import org.jboss.as.cli.handlers.ConnectHandler;
 import org.jboss.as.cli.handlers.DeployHandler;
 import org.jboss.as.cli.handlers.DeploymentInfoHandler;
+import org.jboss.as.cli.handlers.DeploymentOverlayHandler;
 import org.jboss.as.cli.handlers.EchoDMRHandler;
 import org.jboss.as.cli.handlers.GenericTypeOperationHandler;
 import org.jboss.as.cli.handlers.HelpHandler;
@@ -109,6 +110,9 @@ import org.jboss.as.cli.handlers.batch.BatchListHandler;
 import org.jboss.as.cli.handlers.batch.BatchMoveLineHandler;
 import org.jboss.as.cli.handlers.batch.BatchRemoveLineHandler;
 import org.jboss.as.cli.handlers.batch.BatchRunHandler;
+import org.jboss.as.cli.handlers.ifelse.ElseHandler;
+import org.jboss.as.cli.handlers.ifelse.EndIfHandler;
+import org.jboss.as.cli.handlers.ifelse.IfHandler;
 import org.jboss.as.cli.handlers.jca.JDBCDriverNameProvider;
 import org.jboss.as.cli.handlers.jca.JDBCDriverInfoHandler;
 import org.jboss.as.cli.handlers.jca.XADataSourceAddCompositeHandler;
@@ -136,7 +140,9 @@ import org.jboss.as.cli.parsing.operation.OperationFormat;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
-import org.jboss.jreadline.console.settings.Settings;
+import org.jboss.aesh.console.settings.Settings;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Logger.Level;
 import org.jboss.sasl.callback.DigestHashCallback;
 import org.jboss.sasl.util.HexConverter;
 
@@ -145,6 +151,8 @@ import org.jboss.sasl.util.HexConverter;
  * @author Alexey Loubyansky
  */
 class CommandContextImpl implements CommandContext {
+
+    private static final Logger log = Logger.getLogger(CommandContext.class);
 
     /** the cli configuration */
     private final CliConfig config;
@@ -177,6 +185,8 @@ class CommandContextImpl implements CommandContext {
     private String username;
     /** the command line specified password */
     private char[] password;
+    /** the time to connect to a controller */
+    private final int connectionTimeout;
     /** The SSLContext when managed by the CLI */
     private SSLContext sslContext;
     /** The TrustManager in use by the SSLContext, a reference is kept to rejected certificates can be captured. */
@@ -224,18 +234,19 @@ class CommandContextImpl implements CommandContext {
         defaultControllerHost = config.getDefaultControllerHost();
         defaultControllerPort = config.getDefaultControllerPort();
         resolveParameterValues = config.isResolveParameterValues();
+        this.connectionTimeout = config.getConnectionTimeout();
         initSSLContext();
     }
 
     CommandContextImpl(String username, char[] password) throws CliInitializationException {
-        this(null, -1, username, password, false);
+        this(null, -1, username, password, false, -1);
     }
 
     /**
      * Default constructor used for both interactive and non-interactive mode.
      *
      */
-    CommandContextImpl(String defaultControllerHost, int defaultControllerPort, String username, char[] password, boolean initConsole)
+    CommandContextImpl(String defaultControllerHost, int defaultControllerPort, String username, char[] password, boolean initConsole, final int connectionTimeout)
             throws CliInitializationException {
 
         config = CliConfigImpl.load(this);
@@ -244,6 +255,8 @@ class CommandContextImpl implements CommandContext {
 
         this.username = username;
         this.password = password;
+        this.connectionTimeout = connectionTimeout != -1 ? connectionTimeout : config.getConnectionTimeout();
+
         if (defaultControllerHost != null) {
             this.defaultControllerHost = defaultControllerHost;
         } else {
@@ -281,6 +294,8 @@ class CommandContextImpl implements CommandContext {
 
         this.username = username;
         this.password = password;
+        this.connectionTimeout = config.getConnectionTimeout();
+
         if (defaultControllerHost != null) {
             this.defaultControllerHost = defaultControllerHost;
         } else {
@@ -311,7 +326,7 @@ class CommandContextImpl implements CommandContext {
         if(consoleInput != null)
             Settings.getInstance().setInputStream(consoleInput);
         if(consoleOutput != null)
-            Settings.getInstance().setOutputStream(consoleOutput);
+            Settings.getInstance().setStdOut(consoleOutput);
 
         Settings.getInstance().setHistoryDisabled(!config.isHistoryEnabled());
         Settings.getInstance().setHistoryFile(new File(config.getHistoryFileDir(), config.getHistoryFileName()));
@@ -324,7 +339,7 @@ class CommandContextImpl implements CommandContext {
         cmdRegistry.registerHandler(new CommandCommandHandler(cmdRegistry), "command");
         cmdRegistry.registerHandler(new ConnectHandler(), "connect");
         cmdRegistry.registerHandler(new EchoDMRHandler(), "echo-dmr");
-        cmdRegistry.registerHandler(new HelpHandler(), "help", "h");
+        cmdRegistry.registerHandler(new HelpHandler(cmdRegistry), "help", "h");
         cmdRegistry.registerHandler(new HistoryHandler(), "history");
         cmdRegistry.registerHandler(new LsHandler(), "ls");
         cmdRegistry.registerHandler(new ASModuleHandler(this), "module");
@@ -338,13 +353,14 @@ class CommandContextImpl implements CommandContext {
         cmdRegistry.registerHandler(new DeployHandler(this), "deploy");
         cmdRegistry.registerHandler(new UndeployHandler(this), "undeploy");
         cmdRegistry.registerHandler(new DeploymentInfoHandler(this), "deployment-info");
+        cmdRegistry.registerHandler(new DeploymentOverlayHandler(this), "deployment-overlay");
 
         // batch commands
-        cmdRegistry.registerHandler(new BatchHandler(), "batch");
+        cmdRegistry.registerHandler(new BatchHandler(this), "batch");
         cmdRegistry.registerHandler(new BatchDiscardHandler(), "discard-batch");
         cmdRegistry.registerHandler(new BatchListHandler(), "list-batch");
         cmdRegistry.registerHandler(new BatchHoldbackHandler(), "holdback-batch");
-        cmdRegistry.registerHandler(new BatchRunHandler(), "run-batch");
+        cmdRegistry.registerHandler(new BatchRunHandler(this), "run-batch");
         cmdRegistry.registerHandler(new BatchClearHandler(), "clear-batch");
         cmdRegistry.registerHandler(new BatchRemoveLineHandler(), "remove-batch-line");
         cmdRegistry.registerHandler(new BatchMoveLineHandler(), "move-batch-line");
@@ -355,6 +371,11 @@ class CommandContextImpl implements CommandContext {
         cmdRegistry.registerHandler(new CatchHandler(), "catch");
         cmdRegistry.registerHandler(new FinallyHandler(), "finally");
         cmdRegistry.registerHandler(new EndTryHandler(), "end-try");
+
+        // if else
+        cmdRegistry.registerHandler(new IfHandler(), "if");
+        cmdRegistry.registerHandler(new ElseHandler(), "else");
+        cmdRegistry.registerHandler(new EndIfHandler(), "end-if");
 
         // data-source
         GenericTypeOperationHandler dsHandler = new GenericTypeOperationHandler(this, "/subsystem=datasources/data-source", null);
@@ -602,6 +623,16 @@ class CommandContextImpl implements CommandContext {
 
     @Override
     public void printLine(String message) {
+        final Level logLevel;
+        if(exitCode != 0) {
+            logLevel = Level.ERROR;
+        } else {
+            logLevel = Level.INFO;
+        }
+        if(log.isEnabled(logLevel)) {
+            log.log(logLevel, message);
+        }
+
         if (outputTarget != null) {
             try {
                 outputTarget.append(message);
@@ -651,6 +682,9 @@ class CommandContextImpl implements CommandContext {
 
     @Override
     public void printColumns(Collection<String> col) {
+        if(log.isInfoEnabled()) {
+            log.info(col);
+        }
         if (outputTarget != null) {
             try {
                 for (String item : col) {
@@ -733,26 +767,15 @@ class CommandContextImpl implements CommandContext {
             retry = false;
             try {
                 ModelControllerClient newClient = null;
-
                 CallbackHandler cbh = new AuthenticationCallbackHandler(username, password);
-                long beforeConnect = System.currentTimeMillis();
-                ModelControllerClient tempClient = ModelControllerClient.Factory.create(host, port, cbh, sslContext);
-                switch (initialConnection(tempClient)) {
-                    case SUCCESS:
-                        newClient = tempClient;
-                        break;
-                    case CONNECTION_FAILURE:
-                    throw new CommandLineException("The controller is not available at " + host + ":" + port + ", connect failed after " + (System.currentTimeMillis() - beforeConnect) + ")");
-                    case AUTHENTICATION_FAILURE:
-                        throw new CommandLineException("Unable to authenticate against controller at " + host + ":" + port);
-                    case SSL_FAILURE:
-                        retry = handleSSLFailure();
-                        if (retry == false) {
-                            throw new CommandLineException("Unable to negotiate SSL connection with controller at " + host + ":" + port);
-                        }
-                        break;
+                if(log.isDebugEnabled()) {
+                    log.debug("connecting to " + host + ':' + port + " as " + username);
                 }
-
+                ModelControllerClient tempClient = ModelControllerClient.Factory.create(host, port, cbh, sslContext, connectionTimeout);
+                retry = tryConnection(tempClient, host, port);
+                if(!retry) {
+                    newClient = tempClient;
+                }
                 initNewClient(newClient, host, port);
             } catch (UnknownHostException e) {
                 throw new CommandLineException("Failed to resolve host '" + host + "': " + e.getLocalizedMessage());
@@ -882,7 +905,7 @@ class CommandContextImpl implements CommandContext {
     /**
      * Used to make a call to the server to verify that it is possible to connect.
      */
-    private ConnectStatus initialConnection(final ModelControllerClient client) {
+    private boolean tryConnection(final ModelControllerClient client, String host, int port) throws CommandLineException {
         try {
             DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
             builder.setOperationName(Util.READ_ATTRIBUTE);
@@ -891,22 +914,26 @@ class CommandContextImpl implements CommandContext {
             client.execute(builder.buildRequest());
             // We don't actually care what the response is we just want to be sure the ModelControllerClient
             // does not throw an Exception.
-            return ConnectStatus.SUCCESS;
+            return false;
         } catch (Exception e) {
             try {
                 Throwable current = e;
                 while (current != null) {
                     if (current instanceof SaslException) {
-                        return ConnectStatus.AUTHENTICATION_FAILURE;
+                        throw new CommandLineException("Unable to authenticate against controller at " + host + ":" + port, current);
                     }
                     if (current instanceof SSLException) {
-                        return ConnectStatus.SSL_FAILURE;
+                        if (!handleSSLFailure()) {
+                            throw new CommandLineException("Unable to negotiate SSL connection with controller at " + host + ":" + port);
+                        } else {
+                            return true;
+                        }
                     }
                     current = current.getCause();
                 }
 
                 // We don't know what happened, most likely a timeout.
-                return ConnectStatus.CONNECTION_FAILURE;
+                throw new CommandLineException("The controller is not available at " + host + ":" + port, e);
             } finally {
                 StreamUtils.safeClose(client);
             }
@@ -942,7 +969,9 @@ class CommandContextImpl implements CommandContext {
 
     @Override
     public void clearScreen() {
-        console.clearScreen();
+        if(console != null) {
+            console.clearScreen();
+        }
     }
 
     String promptConnectPart;
@@ -988,6 +1017,13 @@ class CommandContextImpl implements CommandContext {
 
     @Override
     public CommandHistory getHistory() {
+        if(console == null) {
+            try {
+                initBasicConsole(null, null);
+            } catch (CliInitializationException e) {
+                throw new IllegalStateException("Failed to initialize console.", e);
+            }
+        }
         return console.getHistory();
     }
 
@@ -1019,8 +1055,6 @@ class CommandContextImpl implements CommandContext {
         return batchManager;
     }
 
-    private final DefaultCallbackHandler tmpBatched = new DefaultCallbackHandler();
-
     @Override
     public BatchedCommand toBatchedCommand(String line) throws CommandFormatException {
         return new DefaultBatchedCommand(line, buildRequest(line, true));
@@ -1039,38 +1073,29 @@ class CommandContextImpl implements CommandContext {
 
         final DefaultCallbackHandler originalParsedArguments = this.parsedCmd;
         try {
-            this.parsedCmd = tmpBatched;
+            this.parsedCmd = new DefaultCallbackHandler();
             resetArgs(line);
-        } catch (CommandFormatException e) {
-            this.parsedCmd = originalParsedArguments;
-            throw e;
-        }
 
-        if (parsedCmd.getFormat() == OperationFormat.INSTANCE) {
-            try {
+            if (parsedCmd.getFormat() == OperationFormat.INSTANCE) {
                 final ModelNode request = this.parsedCmd.toOperationRequest(this);
                 StringBuilder op = new StringBuilder();
                 op.append(prefixFormatter.format(parsedCmd.getAddress()));
                 op.append(line.substring(line.indexOf(':')));
                 return request;
-            } finally {
-                this.parsedCmd = originalParsedArguments;
             }
-        }
 
-        final CommandHandler handler = cmdRegistry.getCommandHandler(parsedCmd.getOperationName());
-        if (handler == null) {
-            throw new OperationFormatException("No command handler for '" + parsedCmd.getOperationName() + "'.");
-        }
-        if(batchMode) {
-            if(!handler.isBatchMode(this)) {
-                throw new OperationFormatException("The command is not allowed in a batch.");
+            final CommandHandler handler = cmdRegistry.getCommandHandler(parsedCmd.getOperationName());
+            if (handler == null) {
+                throw new OperationFormatException("No command handler for '" + parsedCmd.getOperationName() + "'.");
             }
-        } else if (!(handler instanceof OperationCommand)) {
-            throw new OperationFormatException("The command does not translate to an operation request.");
-        }
+            if(batchMode) {
+                if(!handler.isBatchMode(this)) {
+                    throw new OperationFormatException("The command is not allowed in a batch.");
+                }
+            } else if (!(handler instanceof OperationCommand)) {
+                throw new OperationFormatException("The command does not translate to an operation request.");
+            }
 
-        try {
             return ((OperationCommand) handler).buildRequest(this);
         } finally {
             this.parsedCmd = originalParsedArguments;
@@ -1160,10 +1185,6 @@ class CommandContextImpl implements CommandContext {
     @Override
     public void setResolveParameterValues(boolean resolve) {
         this.resolveParameterValues = resolve;
-    }
-
-    private enum ConnectStatus {
-        SUCCESS, AUTHENTICATION_FAILURE, SSL_FAILURE, CONNECTION_FAILURE
     }
 
     private class AuthenticationCallbackHandler implements CallbackHandler {

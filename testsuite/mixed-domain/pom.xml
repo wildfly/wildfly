@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2011, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>jboss-as-testsuite</artifactId>
+        <groupId>org.jboss.as</groupId>
+        <version>7.2.0.Alpha1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>jboss-as-testsuite-integration-mixed-domain</artifactId>
+    <name>JBoss Application Server Test Suite: Mixed Domain Mode Integration Tests</name>
+
+    <properties>
+
+        <!-- used to provide an absolute location for the distribution under test -->
+        <!-- this value is overridden in modules with the correct relative pathname -->
+        <jboss.dist>${project.basedir}/../../build/target/jboss-as-${jboss.as.release.version}</jboss.dist>
+        <jboss.home>${jboss.dist}</jboss.home>
+
+        <!-- Used to provide an absolute location for the XSLT scripts. -->
+        <!-- This value is overridden in submodules with the correct relative path. -->
+        <xslt.scripts.dir>${basedir}/../integration/src/test/xslt</xslt.scripts.dir>
+    </properties>
+
+    <!--
+    Compile-time dependencies upon anything  in the AS7 runtime
+    are allowed in this section
+    -->
+
+    <dependencies>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <failIfNoTests>false</failIfNoTests>
+                    <!-- parallel>none</parallel -->
+                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+
+                    <!-- System properties to forked surefire JVM which runs clients. -->
+                    <argLine>${jvm.args.ip.client} ${jvm.args.timeouts}</argLine>
+                    <skipTests>false</skipTests>
+
+                    <systemPropertyVariables>
+                        <jboss.options>${surefire.system.args}</jboss.options>
+                        <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                        <jboss.home>${jboss.home}</jboss.home>
+                        <module.path>${jboss.home}/modules</module.path>
+                        <jboss.test.host.master.address>${node0}</jboss.test.host.master.address>
+                        <jboss.test.host.slave.address>${node1}</jboss.test.host.slave.address>
+                        <jboss.test.mixed.domain.versions>7.1.2.Final,7.1.3.Final</jboss.test.mixed.domain.versions>
+                    </systemPropertyVariables>
+                    <includes>
+                         <!-- include>**/*TestCase.java</include -->
+                         <include>**/*TestSuite.java</include>
+                    </includes>
+                    
+                </configuration>                        
+            </plugin>  
+        </plugins>
+    </build>
+
+</project>

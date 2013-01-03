@@ -22,13 +22,15 @@
 
 package org.jboss.as.clustering.web.impl;
 
-import org.jboss.logging.Cause;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageBundle;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.Messages;
 
 /**
- * Date: 30.08.2011
+ * ClusteringWebMessages
+ *
+ * logging id range: 10310 - 10319
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */

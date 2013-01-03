@@ -24,10 +24,10 @@ package org.jboss.as.controller;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
-
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.ListValidator;
@@ -47,22 +47,44 @@ public abstract class ListAttributeDefinition extends AttributeDefinition {
     private final ParameterValidator elementValidator;
 
     public ListAttributeDefinition(final String name, final boolean allowNull, final ParameterValidator elementValidator) {
-        this(name, name, allowNull, 0, Integer.MAX_VALUE, elementValidator, null, null);
+        this(name, name, allowNull, false, 0, Integer.MAX_VALUE, elementValidator, null, null);
     }
 
-    public ListAttributeDefinition(final String name, final boolean allowNull, final ParameterValidator elementValidator, final AttributeAccess.Flag... flags) {
-        this(name, name, allowNull, 0, Integer.MAX_VALUE, elementValidator, null, null, flags);
+    protected ListAttributeDefinition(final String name, final boolean allowNull, final ParameterValidator elementValidator, final AttributeAccess.Flag... flags) {
+        this(name, name, allowNull, false, 0, Integer.MAX_VALUE, elementValidator, null, null, null,false, null, flags);
     }
 
     public ListAttributeDefinition(final String name, final String xmlName, final boolean allowNull,
                                    final int minSize, final int maxSize, final ParameterValidator elementValidator) {
-        this(name, xmlName, allowNull, minSize, maxSize, elementValidator, null, null);
+        this(name, xmlName, allowNull, false, minSize, maxSize, elementValidator, null, null);
     }
 
-    public ListAttributeDefinition(final String name, final String xmlName, final boolean allowNull,
+    @Deprecated
+    protected ListAttributeDefinition(final String name, final String xmlName, final boolean allowNull,
+                                      final int minSize, final int maxSize, final ParameterValidator elementValidator,
+                                      final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller, boolean resourceOnly, DeprecationData deprecated, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, null, ModelType.LIST, allowNull, false, null, null, new ListValidator(elementValidator, allowNull, minSize, maxSize), allowNull, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
+        this.elementValidator = elementValidator;
+    }
+
+    @Deprecated
+    protected ListAttributeDefinition(final String name, final String xmlName, final boolean allowNull,
+                                      final int minSize, final int maxSize, final ParameterValidator elementValidator,
+                                      final String[] alternatives, final String[] requires, final AttributeAccess.Flag... flags) {
+        this(name, xmlName, allowNull, false, minSize, maxSize, elementValidator, alternatives, requires, null, false, null, flags);
+    }
+
+    protected ListAttributeDefinition(final String name, final String xmlName, final boolean allowNull, final boolean allowExpressions,
+                                   final int minSize, final int maxSize, final ParameterValidator elementValidator,
+                                   final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller, boolean resourceOnly, DeprecationData deprecated, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, null, ModelType.LIST, allowNull, allowExpressions, null, null, new ListValidator(elementValidator, allowNull, minSize, maxSize), allowNull, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
+        this.elementValidator = elementValidator;
+    }
+
+    protected ListAttributeDefinition(final String name, final String xmlName, final boolean allowNull, final boolean allowExpressions,
                                    final int minSize, final int maxSize, final ParameterValidator elementValidator,
                                    final String[] alternatives, final String[] requires, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, null, ModelType.LIST, allowNull, false, null, new ListValidator(elementValidator, allowNull, minSize, maxSize), alternatives, requires, flags);
+        super(name, xmlName, null, ModelType.LIST, allowNull, allowExpressions, null, null, new ListValidator(elementValidator, allowNull, minSize, maxSize), allowNull, alternatives, requires,null, false, null, flags);
         this.elementValidator = elementValidator;
     }
 
@@ -215,6 +237,7 @@ public abstract class ListAttributeDefinition extends AttributeDefinition {
         return result;
     }
 
+
     protected abstract void addValueTypeDescription(final ModelNode node, final ResourceBundle bundle);
 
     protected abstract void addAttributeValueTypeDescription(final ModelNode node, final ResourceDescriptionResolver resolver,
@@ -237,5 +260,10 @@ public abstract class ListAttributeDefinition extends AttributeDefinition {
         elementValidator.validateParameter(getXmlName(), node);
 
         return node;
+    }
+
+    @Override
+    public void marshallAsElement(ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+        attributeMarshaller.marshallAsElement(this,resourceModel,marshallDefault,writer);
     }
 }

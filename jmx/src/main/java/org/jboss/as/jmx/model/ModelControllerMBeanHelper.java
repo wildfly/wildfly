@@ -47,6 +47,7 @@ import javax.management.InstanceNotFoundException;
 import javax.management.InvalidAttributeValueException;
 import javax.management.MBeanException;
 import javax.management.MBeanInfo;
+import javax.management.MalformedObjectNameException;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.QueryExp;
@@ -69,14 +70,21 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-class ModelControllerMBeanHelper {
+public class ModelControllerMBeanHelper {
 
     static final String CLASS_NAME = ModelController.class.getName();
     private final boolean standalone;
     private final ModelController controller;
     private final PathAddress CORE_SERVICE_PLATFORM_MBEAN = PathAddress.pathAddress(PathElement.pathElement("core-service", "platform-mbean"));
 
-    ModelControllerMBeanHelper(ModelController controller) {
+    private final TypeConverters converters;
+    private final ConfiguredDomains configuredDomains;
+    private final String domain;
+
+    ModelControllerMBeanHelper(TypeConverters converters, ConfiguredDomains configuredDomains, String domain, ModelController controller) {
+        this.converters = converters;
+        this.configuredDomains = configuredDomains;
+        this.domain = domain;
         this.controller = controller;
 
         ModelNode op = new ModelNode();
@@ -117,7 +125,7 @@ class ModelControllerMBeanHelper {
                 if (isExcludeAddress(address)) {
                     return false;
                 }
-                ObjectName resourceName = ObjectNameAddressUtil.createObjectName(address);
+                ObjectName resourceName = ObjectNameAddressUtil.createObjectName(domain, address);
                 if (name == null || name.apply(resourceName)) {
                     //TODO check query
                     set.add(new ObjectInstance(resourceName, CLASS_NAME));
@@ -141,7 +149,7 @@ class ModelControllerMBeanHelper {
                 if (isExcludeAddress(address)) {
                     return false;
                 }
-                ObjectName resourceName = ObjectNameAddressUtil.createObjectName(address);
+                ObjectName resourceName = ObjectNameAddressUtil.createObjectName(domain, address);
                 if (name == null || name.apply(resourceName)) {
                     //TODO check query
                     set.add(resourceName);
@@ -158,23 +166,23 @@ class ModelControllerMBeanHelper {
 
 
     PathAddress resolvePathAddress(final ObjectName name) {
-        return ObjectNameAddressUtil.resolvePathAddress(getRootResourceAndRegistration().getResource(), name);
+        return ObjectNameAddressUtil.resolvePathAddress(domain, getRootResourceAndRegistration().getResource(), name);
     }
 
 
     MBeanInfo getMBeanInfo(final ObjectName name) throws InstanceNotFoundException {
         ResourceAndRegistration reg = getRootResourceAndRegistration();
-        PathAddress address = ObjectNameAddressUtil.resolvePathAddress(reg.getResource(), name);
+        PathAddress address = ObjectNameAddressUtil.resolvePathAddress(domain, reg.getResource(), name);
         if (address == null) {
             throw createInstanceNotFoundException(name);
         }
 
-        return MBeanInfoFactory.createMBeanInfo(standalone, address, getMBeanRegistration(address, reg));
+        return MBeanInfoFactory.createMBeanInfo(name, converters, configuredDomains, standalone, address, getMBeanRegistration(address, reg));
     }
 
     Object getAttribute(final ObjectName name, final String attribute)  throws AttributeNotFoundException, InstanceNotFoundException, ReflectionException {
         final ResourceAndRegistration reg = getRootResourceAndRegistration();
-        final PathAddress address = ObjectNameAddressUtil.resolvePathAddress(reg.getResource(), name);
+        final PathAddress address = ObjectNameAddressUtil.resolvePathAddress(domain, reg.getResource(), name);
         if (address == null) {
             throw createInstanceNotFoundException(name);
         }
@@ -183,7 +191,7 @@ class ModelControllerMBeanHelper {
 
     AttributeList getAttributes(ObjectName name, String[] attributes) throws InstanceNotFoundException, ReflectionException {
         final ResourceAndRegistration reg = getRootResourceAndRegistration();
-        final PathAddress address = ObjectNameAddressUtil.resolvePathAddress(reg.getResource(), name);
+        final PathAddress address = ObjectNameAddressUtil.resolvePathAddress(domain, reg.getResource(), name);
         if (address == null) {
             throw createInstanceNotFoundException(name);
         }
@@ -217,13 +225,13 @@ class ModelControllerMBeanHelper {
             throw new AttributeNotFoundException(error);
         }
 
-        return TypeConverter.fromModelNode(description.require(ATTRIBUTES).require(attributeName), result.get(RESULT));
+        return converters.fromModelNode(description.require(ATTRIBUTES).require(attributeName), result.get(RESULT));
     }
 
 
     void setAttribute(ObjectName name, Attribute attribute) throws InstanceNotFoundException, AttributeNotFoundException, InvalidAttributeValueException {
         final ResourceAndRegistration reg = getRootResourceAndRegistration();
-        final PathAddress address = ObjectNameAddressUtil.resolvePathAddress(reg.getResource(), name);
+        final PathAddress address = ObjectNameAddressUtil.resolvePathAddress(domain, reg.getResource(), name);
         if (address == null) {
             throw createInstanceNotFoundException(name);
         }
@@ -233,7 +241,7 @@ class ModelControllerMBeanHelper {
 
     AttributeList setAttributes(ObjectName name, AttributeList attributes) throws InstanceNotFoundException, ReflectionException {
         final ResourceAndRegistration reg = getRootResourceAndRegistration();
-        final PathAddress address = ObjectNameAddressUtil.resolvePathAddress(reg.getResource(), name);
+        final PathAddress address = ObjectNameAddressUtil.resolvePathAddress(domain, reg.getResource(), name);
         if (address == null) {
             throw createInstanceNotFoundException(name);
         }
@@ -267,7 +275,7 @@ class ModelControllerMBeanHelper {
         op.get(OP_ADDR).set(address.toModelNode());
         op.get(NAME).set(attributeName);
         try {
-            op.get(VALUE).set(TypeConverter.toModelNode(description.require(ATTRIBUTES).require(attributeName), attribute.getValue()));
+            op.get(VALUE).set(converters.toModelNode(description.require(ATTRIBUTES).require(attributeName), attribute.getValue()));
         } catch (ClassCastException e) {
             throw MESSAGES.invalidAttributeType(e, attribute.getName());
         }
@@ -300,7 +308,7 @@ class ModelControllerMBeanHelper {
         }
 
         final ResourceAndRegistration reg = getRootResourceAndRegistration();
-        PathAddress address = ObjectNameAddressUtil.resolvePathAddress(reg.getResource(), name);
+        PathAddress address = ObjectNameAddressUtil.resolvePathAddress(domain, reg.getResource(), name);
         if (address == null) {
             throw createInstanceNotFoundException(name);
         }
@@ -308,10 +316,18 @@ class ModelControllerMBeanHelper {
 
         String realOperationName = null;
         OperationEntry opEntry = registration.getOperationEntry(PathAddress.EMPTY_ADDRESS, operationName);
-
         if (opEntry != null) {
             realOperationName = operationName;
         } else {
+            String opName = NameConverter.convertFromCamelCase(operationName);
+            opEntry = registration.getOperationEntry(PathAddress.EMPTY_ADDRESS, opName);
+            if (opEntry != null) {
+                realOperationName = opName;
+            }
+        }
+
+        if (opEntry == null) {
+            //Brute force search in case the operation name is not standard format
             Map<String, OperationEntry> ops = registration.getOperationDescriptions(PathAddress.EMPTY_ADDRESS, false);
             for (Map.Entry<String, OperationEntry> entry : ops.entrySet()) {
                 if (operationName.equals(NameConverter.convertToCamelCase(entry.getKey()))) {
@@ -361,7 +377,7 @@ class ModelControllerMBeanHelper {
             for (int i = 0 ; i < params.length ; i++) {
                 String attributeName = it.next();
                 ModelNode paramDescription = requestProperties.get(attributeName);
-                op.get(attributeName).set(TypeConverter.toModelNode(paramDescription, params[i]));
+                op.get(attributeName).set(converters.toModelNode(paramDescription, params[i]));
             }
         }
 
@@ -375,7 +391,7 @@ class ModelControllerMBeanHelper {
             return null;
         }
         //TODO we could have more than one reply property
-        return TypeConverter.fromModelNode(description.get(REPLY_PROPERTIES), result.get(RESULT));
+        return converters.fromModelNode(description.get(REPLY_PROPERTIES), result.get(RESULT));
     }
 
     static InstanceNotFoundException createInstanceNotFoundException(ObjectName name) {
@@ -401,7 +417,7 @@ class ModelControllerMBeanHelper {
 
     private String getFailureDescription(ModelNode result) {
         if (result.hasDefined(FAILURE_DESCRIPTION)) {
-            return result.get(FAILURE_DESCRIPTION).asString();
+            return result.get(FAILURE_DESCRIPTION).toString();
         }
         return null;
     }
@@ -420,5 +436,13 @@ class ModelControllerMBeanHelper {
 
     private boolean isExcludeAddress(PathAddress pathAddress) {
         return pathAddress.equals(CORE_SERVICE_PLATFORM_MBEAN);
+    }
+
+    public static ObjectName createRootObjectName(String domain) {
+        try {
+            return ObjectName.getInstance(domain, "management-root", "server");
+        } catch (MalformedObjectNameException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

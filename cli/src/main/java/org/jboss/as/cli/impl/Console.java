@@ -33,10 +33,10 @@ import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandHistory;
 import org.jboss.as.cli.CommandLineCompleter;
 
-import org.jboss.jreadline.complete.CompleteOperation;
-import org.jboss.jreadline.complete.Completion;
-import org.jboss.jreadline.console.Config;
-import org.jboss.jreadline.console.settings.Settings;
+import org.jboss.aesh.complete.CompleteOperation;
+import org.jboss.aesh.complete.Completion;
+import org.jboss.aesh.console.Config;
+import org.jboss.aesh.console.settings.Settings;
 
 /**
  *
@@ -74,18 +74,18 @@ public interface Console {
 
         public static Console getConsole(final CommandContext ctx, InputStream is, OutputStream os) throws CliInitializationException {
 
-            org.jboss.jreadline.console.Console jReadlineConsole = null;
+            org.jboss.aesh.console.Console aeshConsole = null;
             try {
-                jReadlineConsole = new org.jboss.jreadline.console.Console();
+                aeshConsole = new org.jboss.aesh.console.Console();
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
-            final org.jboss.jreadline.console.Console finalJReadlineConsole = jReadlineConsole;
+            final org.jboss.aesh.console.Console finalAeshConsole = aeshConsole;
             return new Console() {
 
                 private CommandContext cmdCtx = ctx;
-                private org.jboss.jreadline.console.Console console = finalJReadlineConsole;
+                private org.jboss.aesh.console.Console console = finalAeshConsole;
                 private CommandHistory history = new HistoryImpl();
 
                 @Override
@@ -96,6 +96,11 @@ public interface Console {
                             int offset =  completer.complete(cmdCtx,
                                     co.getBuffer(), co.getCursor(), co.getCompletionCandidates());
                             co.setOffset(offset);
+                            if(co.getCompletionCandidates().size() == 1 &&
+                                    co.getCompletionCandidates().get(0).startsWith(co.getBuffer()))
+                                co.doAppendSeparator(true);
+                            else
+                                co.doAppendSeparator(false);
                         }
                     });
                 }
@@ -134,8 +139,8 @@ public interface Console {
                     String[] newList = new String[list.size()];
                     list.toArray(newList);
                     try {
-                        console.pushToConsole(
-                                org.jboss.jreadline.util.Parser.formatCompletions(newList,
+                        console.pushToStdOut(
+                                org.jboss.aesh.util.Parser.formatDisplayList(newList,
                                         console.getTerminalHeight(), console.getTerminalWidth()));
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -145,7 +150,7 @@ public interface Console {
                 @Override
                 public void print(String line) {
                     try {
-                        console.pushToConsole(line);
+                        console.pushToStdOut(line);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -154,7 +159,7 @@ public interface Console {
                 @Override
                 public void printNewLine() {
                     try {
-                        console.pushToConsole(Config.getLineSeparator());
+                        console.pushToStdOut(Config.getLineSeparator());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -163,7 +168,7 @@ public interface Console {
                 @Override
                 public String readLine(String prompt) {
                     try {
-                        return console.read(prompt);
+                        return console.read(prompt).getBuffer();
                     } catch (IOException e) {
                         e.printStackTrace();
                         return null;
@@ -173,7 +178,7 @@ public interface Console {
                 @Override
                 public String readLine(String prompt, Character mask) {
                     try {
-                        return console.read(prompt, mask);
+                        return console.read(prompt, mask).getBuffer();
                     } catch (IOException e) {
                         e.printStackTrace();
                         return null;

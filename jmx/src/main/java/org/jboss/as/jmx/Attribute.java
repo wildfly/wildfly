@@ -31,7 +31,9 @@ import java.util.Map;
 enum Attribute {
 
     UNKNOWN(null),
+    DOMAIN_NAME(CommonAttributes.DOMAIN_NAME),
     NAME(CommonAttributes.NAME),
+    PROPER_PROPETY_FORMAT(CommonAttributes.PROPER_PROPERTY_FORMAT),
     SHOW_MODEL(CommonAttributes.SHOW_MODEL),
     SERVER_BINDING(CommonAttributes.SERVER_BINDING),
     REGISTRY_BINDING(CommonAttributes.REGISTRY_BINDING),

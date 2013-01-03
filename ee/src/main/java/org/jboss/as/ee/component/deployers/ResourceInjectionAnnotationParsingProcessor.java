@@ -23,8 +23,6 @@
 package org.jboss.as.ee.component.deployers;
 
 import static org.jboss.as.ee.EeMessages.MESSAGES;
-import static org.jboss.as.server.deployment.Attachments.OSGI_MANIFEST;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -82,13 +80,13 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         final Map<String, String> locations = new HashMap<String, String>();
         locations.put("javax.transaction.UserTransaction", "java:jboss/UserTransaction");
         locations.put("javax.transaction.TransactionSynchronizationRegistry", "java:jboss/TransactionSynchronizationRegistry");
+        locations.put("org.osgi.framework.BundleContext", "java:jboss/osgi/BundleContext");
 
         //we have to be careful with java:comp lookups here
         //as they will not work in entries in application.xml, as there is no comp context availble
         //so we can only use it for resources that are not valid to be entries in application.xml
         locations.put("javax.enterprise.inject.spi.BeanManager", "java:comp/BeanManager");
         locations.put("javax.ejb.TimerService", "java:comp/TimerService");
-        locations.put("org.osgi.framework.BundleContext", "java:comp/BundleContext");
         locations.put("org.omg.CORBA.ORB", "java:comp/ORB");
         FIXED_LOCATIONS = Collections.unmodifiableMap(locations);
 
@@ -122,19 +120,17 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         resourceRefEntries.add("java.net.URL");
 
         RESOURCE_REF_ENTRIES = Collections.unmodifiableSet(resourceRefEntries);
-
-
     }
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if (deploymentUnit.hasAttachment(OSGI_MANIFEST)) {
-            return;
-        }
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final CompositeIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
         final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
+        if (module == null) {
+            return;
+        }
         final List<AnnotationInstance> resourceAnnotations = index.getAnnotations(RESOURCE_ANNOTATION_NAME);
         for (AnnotationInstance annotation : resourceAnnotations) {
             final AnnotationTarget annotationTarget = annotation.target();

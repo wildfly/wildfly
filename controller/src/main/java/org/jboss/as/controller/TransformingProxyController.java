@@ -29,6 +29,7 @@ import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import org.jboss.as.controller.remote.TransactionalProtocolHandlers;
 import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.Transformers;
@@ -62,13 +63,18 @@ public interface TransformingProxyController extends ProxyController {
      * @param operation the operation to transform.
      * @param context the operation context
      * @return the transformed operation
+     * @throws OperationFailedException
      */
-    OperationTransformer.TransformedOperation transformOperation(OperationContext context, ModelNode operation);
+    OperationTransformer.TransformedOperation transformOperation(OperationContext context, ModelNode operation) throws OperationFailedException;
 
     public static class Factory {
 
         public static TransformingProxyController create(final ManagementChannelHandler channelAssociation, final Transformers transformers, final PathAddress pathAddress, final ProxyOperationAddressTranslator addressTranslator) {
             final TransactionalProtocolClient client = TransactionalProtocolHandlers.createClient(channelAssociation);
+            return create(client, transformers, pathAddress, addressTranslator);
+        }
+
+        public static TransformingProxyController create(final TransactionalProtocolClient client, final Transformers transformers, final PathAddress pathAddress, final ProxyOperationAddressTranslator addressTranslator) {
             final RemoteProxyController proxy = RemoteProxyController.create(client, pathAddress, addressTranslator);
             final Transformers delegating = new Transformers() {
                 @Override
@@ -77,13 +83,13 @@ public interface TransformingProxyController extends ProxyController {
                 }
 
                 @Override
-                public OperationTransformer.TransformedOperation transformOperation(final TransformationContext context, final ModelNode original) {
+                public OperationTransformer.TransformedOperation transformOperation(final TransformationContext context, final ModelNode original) throws OperationFailedException {
                     final ModelNode operation = proxy.translateOperationForProxy(original);
                     return transformers.transformOperation(context, operation);
                 }
 
                 @Override
-                public Resource transformResource(TransformationContext context, Resource resource) {
+                public Resource transformResource(ResourceTransformationContext context, Resource resource) throws OperationFailedException {
                     return transformers.transformResource(context, resource);
 
                 }
@@ -123,7 +129,7 @@ public interface TransformingProxyController extends ProxyController {
         }
 
         @Override
-        public OperationTransformer.TransformedOperation transformOperation(final OperationContext context, final ModelNode operation) {
+        public OperationTransformer.TransformedOperation transformOperation(final OperationContext context, final ModelNode operation) throws OperationFailedException {
             final TransformationContext transformationContext = Transformers.Factory.getTransformationContext(transformers, context);
             return transformers.transformOperation(transformationContext, operation);
         }

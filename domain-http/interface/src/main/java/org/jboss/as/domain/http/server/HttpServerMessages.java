@@ -22,9 +22,9 @@
 
 package org.jboss.as.domain.http.server;
 
-import org.jboss.logging.Cause;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageBundle;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.Messages;
 
 /**
@@ -154,19 +154,6 @@ public interface HttpServerMessages {
     @Message(id = 15131, value = "Unexpected characters being dropped from header '%s' for %s")
     IllegalArgumentException unexpectedHeaderChar(String dropping, String key);
 
-    /*
-     * Message IDs 15100 to 15199 Reserved for the HTTP management interface, HttpServerLogger also contains messages in this
-     * range commencing at 15100.
-     */
-
-    /**
-     * The description for the {@link TrailingSlashFilter}.
-     *
-     * @return the description.
-     */
-    @Message(id = 15132, value = "Ensure all requests to the context have a trailing slash.")
-    String trailingSlashFilterDescription();
-
     /**
      * The description for the {@link RedirectReadinessFilter}.
      *
@@ -193,4 +180,8 @@ public interface HttpServerMessages {
     @Message(id = 15135, value = "The security realm is not ready to process requests, see %s")
     String realmNotReadyMessage(final String url);
 
+    /*
+     * Message IDs 15100 to 15199 Reserved for the HTTP management interface, HttpServerLogger also contains messages in this
+     * range commencing at 15100.
+     */
 }

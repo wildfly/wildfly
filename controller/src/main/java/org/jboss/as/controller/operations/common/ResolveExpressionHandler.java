@@ -22,18 +22,15 @@
 
 package org.jboss.as.controller.operations.common;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -43,7 +40,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ResolveExpressionHandler implements OperationStepHandler, DescriptionProvider {
+public class ResolveExpressionHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = "resolve-expression";
 
@@ -51,6 +48,15 @@ public class ResolveExpressionHandler implements OperationStepHandler, Descripti
 
     public static final SimpleAttributeDefinition EXPRESSION = new SimpleAttributeDefinitionBuilder("expression", ModelType.STRING, true)
             .setAllowExpression(true).build();
+
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, ControllerResolver.getResolver("core"))
+        .addParameter(EXPRESSION)
+        .setReplyType(ModelType.STRING)
+        .allowReturnNull()
+        .setReadOnly()
+        .setRuntimeOnly()
+        .build();
+
 
     private ResolveExpressionHandler() {
     }
@@ -81,16 +87,6 @@ public class ResolveExpressionHandler implements OperationStepHandler, Descripti
             }
         }, OperationContext.Stage.RUNTIME);
 
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        ModelType valueType = null;
-        DescriptionProvider delegate = new DefaultOperationDescriptionProvider(OPERATION_NAME,
-                CommonDescriptions.getResourceDescriptionResolver("core"), ModelType.STRING, valueType, EXPRESSION);
-        ModelNode result = delegate.getModelDescription(locale);
-        result.get(ModelDescriptionConstants.REPLY_PROPERTIES, ModelDescriptionConstants.NILLABLE).set(true);
-        return result;
+        context.stepCompleted();
     }
 }

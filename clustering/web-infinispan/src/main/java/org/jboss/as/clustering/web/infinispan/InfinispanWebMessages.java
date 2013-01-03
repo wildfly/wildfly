@@ -22,14 +22,16 @@
 
 package org.jboss.as.clustering.web.infinispan;
 
-import org.jboss.logging.Cause;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageBundle;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.Messages;
 import org.jboss.metadata.web.jboss.ReplicationGranularity;
 
 /**
- * Date: 29.08.2011
+ * InfinispanWebMessages
+ *
+ * logging id range: 10330 - 10339
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */

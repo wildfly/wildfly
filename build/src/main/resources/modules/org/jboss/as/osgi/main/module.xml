@@ -34,14 +34,13 @@
     <dependencies>
         <module name="javax.api"/>
         <module name="javax.annotation.api"/>
+        <module name="javax.inject.api"/>
         <module name="org.apache.xerces" services="import"/>
         <module name="org.jboss.as.controller"/>
-        <module name="org.jboss.as.ee"/>
-        <module name="org.jboss.as.jmx"/>
-        <module name="org.jboss.as.naming"/>
-        <module name="org.jboss.jandex"/>
+        <module name="org.jboss.as.ee" optional="true"/>
         <module name="org.jboss.as.network"/>
         <module name="org.jboss.as.server"/>
+        <module name="org.jboss.jandex"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
@@ -52,5 +51,13 @@
         <module name="org.jboss.osgi.spi"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.osgi.core"/>
+        <!-- 
+        	Optional Extensions 
+        -->
+        <module name="org.jboss.as.osgi.jmx" optional="true" services="import"/>
+        <module name="org.jboss.as.osgi.jpa" optional="true" services="import"/>
+        <module name="org.jboss.as.osgi.jta" optional="true" services="import"/>
+        <module name="org.jboss.as.osgi.naming" optional="true" services="import"/>
+        <module name="org.jboss.as.osgi.web" optional="true" services="import"/>
     </dependencies>
 </module>

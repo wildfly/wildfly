@@ -22,24 +22,22 @@
 
 package org.jboss.as.controller.operations.common;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import org.jboss.as.controller.descriptions.common.InterfaceDescription;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.resource.InterfaceDefinition;
 import org.jboss.dmr.ModelNode;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -58,16 +56,12 @@ public final class InterfaceCriteriaWriteHandler implements OperationStepHandler
     private static final ParametersValidator nameValidator = new ParametersValidator();
 
     static {
-        for(final AttributeDefinition def : InterfaceDescription.ROOT_ATTRIBUTES) {
+        for(final AttributeDefinition def : InterfaceDefinition.ROOT_ATTRIBUTES) {
             ATTRIBUTES.put(def.getName(), def);
         }
     }
 
-    public void register(final ManagementResourceRegistration registration) {
-        for(final AttributeDefinition def : InterfaceDescription.ROOT_ATTRIBUTES) {
-            registration.registerReadWriteAttribute(def, null, this);
-        }
-    }
+
 
     private final boolean updateRuntime;
 
@@ -95,9 +89,10 @@ public final class InterfaceCriteriaWriteHandler implements OperationStepHandler
         }
         // Verify the model in a later step
         context.addStep(VERIFY_HANDLER, OperationContext.Stage.MODEL);
-        if (context.completeStep() != OperationContext.ResultAction.KEEP && updateRuntime) {
-            context.revertReloadRequired();
-        }
+        OperationContext.RollbackHandler rollbackHandler = updateRuntime
+                ? OperationContext.RollbackHandler.REVERT_RELOAD_REQUIRED_ROLLBACK_HANDLER
+                : OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER;
+        context.completeStep(rollbackHandler);
     }
 
     static class ModelValidationStep implements OperationStepHandler {
@@ -106,7 +101,7 @@ public final class InterfaceCriteriaWriteHandler implements OperationStepHandler
         public void execute(final OperationContext context, final ModelNode ignored) throws OperationFailedException {
             final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
             final ModelNode model = resource.getModel();
-            for(final AttributeDefinition definition : InterfaceDescription.ROOT_ATTRIBUTES) {
+            for(final AttributeDefinition definition : InterfaceDefinition.ROOT_ATTRIBUTES) {
                 final String attributeName = definition.getName();
                 final boolean has = model.hasDefined(attributeName);
                 if(! has && isRequired(definition, model)) {

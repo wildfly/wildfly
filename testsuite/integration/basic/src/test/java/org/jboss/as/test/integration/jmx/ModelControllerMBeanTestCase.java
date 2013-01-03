@@ -21,8 +21,15 @@
 */
 package org.jboss.as.test.integration.jmx;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
@@ -44,32 +51,22 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
 import junit.framework.Assert;
+
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.jmx.model.Constants;
+import org.jboss.as.arquillian.api.ContainerResource;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.jmx.model.ModelControllerMBeanHelper;
 import org.jboss.as.test.integration.jmx.sar.TestMBean;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.xnio.IoUtils;
-
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 /**
  *
@@ -77,49 +74,28 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("AS7-2741")
 public class ModelControllerMBeanTestCase {
 
-    static final String HOST = "localhost";
-    static final int PORT = 1090;
+    private static final String RESOLVED_DOMAIN = "jboss.as";
 
-    static final ObjectName MODEL_FILTER = createObjectName(Constants.DOMAIN  + ":*");
-    static final ObjectName ROOT_MODEL_NAME = Constants.ROOT_MODEL_NAME;
+    static final ObjectName RESOLVED_MODEL_FILTER = createObjectName(RESOLVED_DOMAIN  + ":*");
+    static final ObjectName RESOLVED_ROOT_MODEL_NAME = ModelControllerMBeanHelper.createRootObjectName(RESOLVED_DOMAIN);
 
     static JMXConnector connector;
     static MBeanServerConnection connection;
-    static ModelControllerClient client;
 
-    @BeforeClass
-    public static void initialize() throws Exception {
-        client = ModelControllerClient.Factory.create("localhost", 9999, getCallbackHandler());
-        enableJMXConnector(client);
+    @ContainerResource
+    private ManagementClient managementClient;
+
+
+    @Before
+    public void initialize() throws Exception {
         connection = setupAndGetConnection();
     }
 
-    private static void enableJMXConnector(ModelControllerClient client) throws IOException {
-        final ModelNode connector = new ModelNode();
-        connector.get(OP).set(ADD);
-        connector.get(OP_ADDR).add(SUBSYSTEM, "jmx").add("connector", "jmx");
-        connector.get("server-binding").set("jmx-connector-server");
-        connector.get("registry-binding").set("jmx-connector-registry");
-        ModelNode result = client.execute(connector);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-    }
-
-    @AfterClass
-    public static void closeConnection() throws Exception {
+    @After
+    public void closeConnection() throws Exception {
         IoUtils.safeClose(connector);
-        disableJMXConnector(client);
-        IoUtils.safeClose(client);
-    }
-
-    private static void disableJMXConnector(ModelControllerClient client) throws IOException {
-        ModelNode op = new ModelNode();
-        op.get(OP).set("remove");
-        op.get(OP_ADDR).add(SUBSYSTEM, "jmx").add("connector", "jmx");
-        ModelNode result = client.execute(op);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
     }
 
     /**
@@ -127,7 +103,7 @@ public class ModelControllerMBeanTestCase {
      */
     @Test
     public void testAllMBeanInfos() throws Exception {
-        Set<ObjectName> names = connection.queryNames(MODEL_FILTER, null);
+        Set<ObjectName> names = connection.queryNames(RESOLVED_MODEL_FILTER, null);
         Map<ObjectName, Exception> failedInfos = new HashMap<ObjectName, Exception>();
 
         for (ObjectName name : names) {
@@ -145,10 +121,10 @@ public class ModelControllerMBeanTestCase {
     public void testSystemProperties() throws Exception {
         String[] initialNames = getSystemPropertyNames();
 
-        ObjectName testName = new ObjectName(Constants.DOMAIN + ":system-property=mbeantest");
+        ObjectName testName = new ObjectName(RESOLVED_DOMAIN + ":system-property=mbeantest");
         assertNoMBean(testName);
 
-        connection.invoke(ROOT_MODEL_NAME, "addSystemProperty", new Object[] {"mbeantest", "800"}, new String[] {String.class.getName(), String.class.getName()});
+        connection.invoke(RESOLVED_ROOT_MODEL_NAME, "addSystemProperty", new Object[] {"mbeantest", "800"}, new String[] {String.class.getName(), String.class.getName()});
         try {
             String[] newNames = getSystemPropertyNames();
             Assert.assertEquals(initialNames.length + 1, newNames.length);
@@ -160,9 +136,9 @@ public class ModelControllerMBeanTestCase {
                 }
             };
             Assert.assertTrue(found);
-            Assert.assertNotNull(connection.getMBeanInfo(new ObjectName(Constants.DOMAIN + ":system-property=mbeantest")));
+            Assert.assertNotNull(connection.getMBeanInfo(new ObjectName(RESOLVED_DOMAIN + ":system-property=mbeantest")));
         } finally {
-            connection.invoke(new ObjectName(Constants.DOMAIN + ":system-property=mbeantest"), "remove", new Object[0], new String[0]);
+            connection.invoke(new ObjectName(RESOLVED_DOMAIN + ":system-property=mbeantest"), "remove", new Object[0], new String[0]);
         }
 
         assertNoMBean(testName);
@@ -173,7 +149,7 @@ public class ModelControllerMBeanTestCase {
     @Test
     public void testDeploymentViaJmx() throws Exception {
         ObjectName testSarMBeanName = new ObjectName("jboss:name=test,type=jmx-sar");
-        ObjectName testDeploymentModelName = new ObjectName("jboss.model:deployment=test-jmx-sar.sar");
+        ObjectName testDeploymentModelName = new ObjectName("" + RESOLVED_DOMAIN + ":deployment=test-jmx-sar.sar");
 
         assertNoMBean(testSarMBeanName);
         assertNoMBean(testDeploymentModelName);
@@ -193,12 +169,12 @@ public class ModelControllerMBeanTestCase {
         byte[] bytes = bout.toByteArray();
 
         //Upload the content
-        byte[] hash = (byte[])connection.invoke(ROOT_MODEL_NAME, "uploadDeploymentBytes", new Object[] {bytes}, new String[] {byte.class.getName()});
+        byte[] hash = (byte[])connection.invoke(RESOLVED_ROOT_MODEL_NAME, "uploadDeploymentBytes", new Object[] {bytes}, new String[] {byte.class.getName()});
 
 
         //Do all this to create the composite type
         CompositeType contentType = null;
-        MBeanInfo info = connection.getMBeanInfo(ROOT_MODEL_NAME);
+        MBeanInfo info = connection.getMBeanInfo(RESOLVED_ROOT_MODEL_NAME);
         for (MBeanOperationInfo op : info.getOperations()) {
             if (op.getName().equals("addDeployment")) {
                 contentType = (CompositeType)((ArrayType<CompositeType>)((OpenMBeanParameterInfo)op.getSignature()[2]).getOpenType()).getElementOpenType();
@@ -213,7 +189,7 @@ public class ModelControllerMBeanTestCase {
         CompositeData contents = new CompositeDataSupport(contentType, values);
 
         //Deploy it
-        connection.invoke(ROOT_MODEL_NAME,
+        connection.invoke(RESOLVED_ROOT_MODEL_NAME,
                 "addDeployment",
                 new Object[] {"test-jmx-sar.sar", "test-jmx-sar.sar", new CompositeData[] {contents}, Boolean.TRUE},
                 new String[] {String.class.getName(), String.class.getName(), CompositeData.class.getName(), Boolean.class.getName()});
@@ -248,7 +224,7 @@ public class ModelControllerMBeanTestCase {
         op.get(OP_ADDR).setEmptyList();
         op.get(CHILD_TYPE).set("system-property");
 
-        ModelNode result = client.execute(op);
+        ModelNode result = managementClient.getControllerClient().execute(op);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
         List<ModelNode> propertyNames = result.get(RESULT).asList();
         String[] names = new String[propertyNames.size()];
@@ -269,10 +245,10 @@ public class ModelControllerMBeanTestCase {
         }
     }
 
-    private static MBeanServerConnection setupAndGetConnection() throws Exception {
+    private MBeanServerConnection setupAndGetConnection() throws Exception {
         // Make sure that we can connect to the MBean server
         String urlString = System
-                .getProperty("jmx.service.url", "service:jmx:remoting-jmx://" + HOST + ":" + PORT);
+                .getProperty("jmx.service.url", "service:jmx:remoting-jmx://" + managementClient.getMgmtAddress() + ":" + managementClient.getMgmtPort());
         JMXServiceURL serviceURL = new JMXServiceURL(urlString);
         connector = JMXConnectorFactory.connect(serviceURL, null);
         return connector.getMBeanServerConnection();

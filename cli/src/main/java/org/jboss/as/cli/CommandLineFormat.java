@@ -27,6 +27,10 @@ package org.jboss.as.cli;
  */
 public interface CommandLineFormat {
 
+    String getNodeSeparator();
+
+    String getAddressOperationSeparator();
+
     String getPropertyListStart();
 
     String getPropertyListEnd();

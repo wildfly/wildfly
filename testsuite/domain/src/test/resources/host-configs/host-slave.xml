@@ -20,9 +20,9 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<host xmlns="urn:jboss:domain:1.3"
+<host xmlns="urn:jboss:domain:1.4"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="urn:jboss:domain:1.3 jboss-as-config_1_3.xsd"
+      xsi:schemaLocation="urn:jboss:domain:1.4 jboss-as-config_1_4.xsd"
       name="slave">
 
     <paths>
@@ -61,7 +61,7 @@
         <!-- Remote domain controller configuration with a host and port -->
         <remote host="${jboss.test.host.master.address}" port="9999" security-realm="ManagementRealm">
             <ignored-resources type="extension">
-                <instance name="ignored"/>
+                <instance name="org.jboss.as.jsr77"/>
             </ignored-resources>
             <ignored-resources type="profile">
                 <instance name="ignored"/>
@@ -111,6 +111,8 @@
             </interfaces>
             <socket-bindings socket-binding-group="osgi-sockets" port-offset="550"/>
         </server>
-        <server name="reload-two" group="reload-test-group"  auto-start="false"/>
+        <server name="reload-two" group="reload-test-group"  auto-start="false">
+            <jvm name="default" />
+        </server>
     </servers>
 </host>

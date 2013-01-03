@@ -25,6 +25,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.osgi.parser.OSGiRootResource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.osgi.framework.Services;
@@ -47,8 +48,10 @@ public abstract class StartLevelHandler implements OperationStepHandler {
 
     public static final StartLevelHandler WRITE_HANDLER = new StartLevelHandler() {
         @Override
-        void invokeOperation(StartLevel startLevel, OperationContext context, ModelNode operation) {
-            int targetStartLevel = operation.require(ModelDescriptionConstants.VALUE).asInt();
+        void invokeOperation(StartLevel startLevel, OperationContext context, ModelNode operation) throws OperationFailedException {
+            ModelNode value = operation.require(ModelDescriptionConstants.VALUE);
+            OSGiRootResource.STARTLEVEL.getValidator().validateParameter(ModelDescriptionConstants.VALUE, value);
+            int targetStartLevel = value.asInt();
             startLevel.setStartLevel(targetStartLevel);
         }
     };
@@ -66,5 +69,5 @@ public abstract class StartLevelHandler implements OperationStepHandler {
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
-    abstract void invokeOperation(StartLevel sls, OperationContext context, ModelNode operation);
+    abstract void invokeOperation(StartLevel sls, OperationContext context, ModelNode operation) throws OperationFailedException ;
 }

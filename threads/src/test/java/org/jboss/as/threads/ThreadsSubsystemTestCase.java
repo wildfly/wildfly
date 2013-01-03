@@ -39,21 +39,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_RESOURCES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_TYPES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import static org.jboss.as.threads.CommonAttributes.ALLOW_CORE_TIMEOUT;
@@ -111,7 +104,6 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
@@ -180,15 +172,13 @@ public class ThreadsSubsystemTestCase {
     public void setupController() throws InterruptedException {
         container = ServiceContainer.Factory.create("test");
         ServiceTarget target = container.subTarget();
-        ControlledProcessState processState = new ControlledProcessState(true);
-        ModelControllerService svc = new ModelControllerService(processState);
+        ModelControllerService svc = new ModelControllerService();
         ServiceBuilder<ModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
         builder.install();
-        svc.latch.await();
+        svc.latch.await(30, TimeUnit.SECONDS);
         controller = svc.getValue();
         ModelNode setup = Util.getEmptyOperation("setup", new ModelNode());
         controller.execute(setup, null, null, null);
-        processState.setRunning();
     }
 
     @After
@@ -333,7 +323,6 @@ public class ThreadsSubsystemTestCase {
         ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
         ModelNode threadFactory = subsystem.require("thread-factory");
         assertEquals(1, threadFactory.keys().size());
-        assertEquals("test-factory", threadFactory.require("test-factory").require("name").asString());
     }
 
     @Test
@@ -361,7 +350,6 @@ public class ThreadsSubsystemTestCase {
         ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
         ModelNode threadFactory = subsystem.require("thread-factory");
         assertEquals(1, threadFactory.keys().size());
-        assertEquals("test-factory", threadFactory.require("test-factory").require("name").asString());
         assertEquals("test-group", threadFactory.require("test-factory").require("group-name").asString());
         assertEquals("test-pattern", threadFactory.require("test-factory").require("thread-name-pattern").asString());
         assertEquals(5, threadFactory.require("test-factory").require("priority").asInt());
@@ -383,9 +371,7 @@ public class ThreadsSubsystemTestCase {
         ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
         ModelNode threadFactory = subsystem.require("thread-factory");
         assertEquals(2, threadFactory.keys().size());
-        assertEquals("test-factory", threadFactory.require("test-factory").require("name").asString());
         assertEquals("A", threadFactory.require("test-factory").require("group-name").asString());
-        assertEquals("test-factory1", threadFactory.require("test-factory1").require("name").asString());
         assertEquals("B", threadFactory.require("test-factory1").require("group-name").asString());
     }
 
@@ -404,7 +390,6 @@ public class ThreadsSubsystemTestCase {
         ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("unbounded-queue-thread-pool");
         assertEquals(1, threadPool.keys().size());
-        assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
     }
 
     @Test
@@ -423,7 +408,6 @@ public class ThreadsSubsystemTestCase {
         ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("unbounded-queue-thread-pool");
         assertEquals(1, threadPool.keys().size());
-        assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
     }
 
     @Test
@@ -468,7 +452,6 @@ public class ThreadsSubsystemTestCase {
         ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("unbounded-queue-thread-pool");
         assertEquals(1, threadPool.keys().size());
-        assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
         assertEquals(100, threadPool.require("test-pool").require(MAX_THREADS).asInt());
         assertEquals(1000L, threadPool.require("test-pool").require(KEEPALIVE_TIME).require(TIME).asLong());
         assertEquals("MILLISECONDS", threadPool.require("test-pool").require(KEEPALIVE_TIME).require(UNIT).asString());
@@ -490,8 +473,6 @@ public class ThreadsSubsystemTestCase {
         ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
         ModelNode threadFactory = subsystem.require("unbounded-queue-thread-pool");
         assertEquals(2, threadFactory.keys().size());
-        assertEquals("test-poolA", threadFactory.require("test-poolA").require("name").asString());
-        assertEquals("test-poolB", threadFactory.require("test-poolB").require("name").asString());
     }
 
     @Test
@@ -512,8 +493,6 @@ public class ThreadsSubsystemTestCase {
         ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
         ModelNode threadFactory = subsystem.require("unbounded-queue-thread-pool");
         assertEquals(2, threadFactory.keys().size());
-        assertEquals("test-poolA", threadFactory.require("test-poolA").require("name").asString());
-        assertEquals("test-poolB", threadFactory.require("test-poolB").require("name").asString());
     }
 
     @Test
@@ -531,7 +510,6 @@ public class ThreadsSubsystemTestCase {
         ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("scheduled-thread-pool");
         assertEquals(1, threadPool.keys().size());
-        assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
     }
     @Test
     public void testSimpleScheduledThreadPool1_0() throws Exception {
@@ -549,7 +527,6 @@ public class ThreadsSubsystemTestCase {
         ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("scheduled-thread-pool");
         assertEquals(1, threadPool.keys().size());
-        assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
     }
 
     @Test
@@ -594,7 +571,6 @@ public class ThreadsSubsystemTestCase {
         ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("scheduled-thread-pool");
         assertEquals(1, threadPool.keys().size());
-        assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
         assertEquals(100, threadPool.require("test-pool").require(MAX_THREADS).asInt());
         assertEquals(1000L, threadPool.require("test-pool").require(KEEPALIVE_TIME).get(TIME).asLong());
         assertEquals("MILLISECONDS", threadPool.require("test-pool").require(KEEPALIVE_TIME).get(UNIT).asString());
@@ -616,8 +592,6 @@ public class ThreadsSubsystemTestCase {
         ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
         ModelNode threadFactory = subsystem.require("scheduled-thread-pool");
         assertEquals(2, threadFactory.keys().size());
-        assertEquals("test-poolA", threadFactory.require("test-poolA").require("name").asString());
-        assertEquals("test-poolB", threadFactory.require("test-poolB").require("name").asString());
     }
 
     @Test
@@ -638,8 +612,6 @@ public class ThreadsSubsystemTestCase {
         ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
         ModelNode threadFactory = subsystem.require("scheduled-thread-pool");
         assertEquals(2, threadFactory.keys().size());
-        assertEquals("test-poolA", threadFactory.require("test-poolA").require("name").asString());
-        assertEquals("test-poolB", threadFactory.require("test-poolB").require("name").asString());
     }
 
     @Test
@@ -657,7 +629,6 @@ public class ThreadsSubsystemTestCase {
         ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("queueless-thread-pool");
         assertEquals(1, threadPool.keys().size());
-        assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
     }
 
     @Test
@@ -677,7 +648,6 @@ public class ThreadsSubsystemTestCase {
         ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("queueless-thread-pool");
         assertEquals(1, threadPool.keys().size());
-        assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
     }
 
     @Test
@@ -730,7 +700,6 @@ public class ThreadsSubsystemTestCase {
         ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("queueless-thread-pool");
         assertEquals(2, threadPool.keys().size());
-        assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
         assertEquals(100, threadPool.require("test-pool").require(MAX_THREADS).asInt());
         assertEquals(1000L, threadPool.require("test-pool").require(KEEPALIVE_TIME).require(TIME).asLong());
         assertEquals("MILLISECONDS", threadPool.require("test-pool").require(KEEPALIVE_TIME).require(UNIT).asString());
@@ -753,8 +722,6 @@ public class ThreadsSubsystemTestCase {
         ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
         ModelNode threadFactory = subsystem.require("queueless-thread-pool");
         assertEquals(2, threadFactory.keys().size());
-        assertEquals("test-poolA", threadFactory.require("test-poolA").require("name").asString());
-        assertEquals("test-poolB", threadFactory.require("test-poolB").require("name").asString());
     }
 
     @Test
@@ -772,7 +739,6 @@ public class ThreadsSubsystemTestCase {
         ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("blocking-queueless-thread-pool");
         assertEquals(1, threadPool.keys().size());
-        assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
     }
 
     @Test
@@ -792,7 +758,6 @@ public class ThreadsSubsystemTestCase {
         ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("blocking-queueless-thread-pool");
         assertEquals(1, threadPool.keys().size());
-        assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
     }
 
     @Test
@@ -840,7 +805,6 @@ public class ThreadsSubsystemTestCase {
         ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("blocking-queueless-thread-pool");
         assertEquals(1, threadPool.keys().size());
-        assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
         assertEquals(100, threadPool.require("test-pool").require(MAX_THREADS).asInt());
         assertEquals(1000L, threadPool.require("test-pool").require(KEEPALIVE_TIME).require(TIME).asLong());
         assertEquals("MILLISECONDS", threadPool.require("test-pool").require(KEEPALIVE_TIME).require(UNIT).asString());
@@ -864,8 +828,6 @@ public class ThreadsSubsystemTestCase {
         ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
         ModelNode threadFactory = subsystem.require("blocking-queueless-thread-pool");
         assertEquals(2, threadFactory.keys().size());
-        assertEquals("test-poolA", threadFactory.require("test-poolA").require("name").asString());
-        assertEquals("test-poolB", threadFactory.require("test-poolB").require("name").asString());
     }
 
     @Test
@@ -886,8 +848,6 @@ public class ThreadsSubsystemTestCase {
         ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
         ModelNode threadFactory = subsystem.require("queueless-thread-pool");
         assertEquals(2, threadFactory.keys().size());
-        assertEquals("test-poolA", threadFactory.require("test-poolA").require("name").asString());
-        assertEquals("test-poolB", threadFactory.require("test-poolB").require("name").asString());
     }
 
     @Test
@@ -906,7 +866,6 @@ public class ThreadsSubsystemTestCase {
         ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("bounded-queue-thread-pool");
         assertEquals(1, threadPool.keys().size());
-        assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
     }
 
     @Test
@@ -926,7 +885,6 @@ public class ThreadsSubsystemTestCase {
         ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("bounded-queue-thread-pool");
         assertEquals(1, threadPool.keys().size());
-        assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
     }
 
     @Test
@@ -981,7 +939,6 @@ public class ThreadsSubsystemTestCase {
         ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("bounded-queue-thread-pool");
         assertEquals(1, threadPool.keys().size());
-        assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
         assertTrue(threadPool.require("test-pool").require("allow-core-timeout").asBoolean());
         assertEquals(200, threadPool.require("test-pool").require(CORE_THREADS).asInt());
         assertEquals(300, threadPool.require("test-pool").require(QUEUE_LENGTH).asInt());
@@ -1007,8 +964,6 @@ public class ThreadsSubsystemTestCase {
         ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
         ModelNode threadFactory = subsystem.require("bounded-queue-thread-pool");
         assertEquals(2, threadFactory.keys().size());
-        assertEquals("test-poolA", threadFactory.require("test-poolA").require("name").asString());
-        assertEquals("test-poolB", threadFactory.require("test-poolB").require("name").asString());
     }
 
     @Test
@@ -1030,8 +985,6 @@ public class ThreadsSubsystemTestCase {
         ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
         ModelNode threadFactory = subsystem.require("bounded-queue-thread-pool");
         assertEquals(2, threadFactory.keys().size());
-        assertEquals("test-poolA", threadFactory.require("test-poolA").require("name").asString());
-        assertEquals("test-poolB", threadFactory.require("test-poolB").require("name").asString());
     }
 
     @Test
@@ -1050,7 +1003,6 @@ public class ThreadsSubsystemTestCase {
         ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("blocking-bounded-queue-thread-pool");
         assertEquals(1, threadPool.keys().size());
-        assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
     }
 
     @Test
@@ -1070,7 +1022,6 @@ public class ThreadsSubsystemTestCase {
         ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("blocking-bounded-queue-thread-pool");
         assertEquals(1, threadPool.keys().size());
-        assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
     }
 
     @Test
@@ -1120,7 +1071,6 @@ public class ThreadsSubsystemTestCase {
         ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("blocking-bounded-queue-thread-pool");
         assertEquals(1, threadPool.keys().size());
-        assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
         assertTrue(threadPool.require("test-pool").require("allow-core-timeout").asBoolean());
         assertEquals(200, threadPool.require("test-pool").require(CORE_THREADS).asInt());
         assertEquals(300, threadPool.require("test-pool").require(QUEUE_LENGTH).asInt());
@@ -1148,8 +1098,6 @@ public class ThreadsSubsystemTestCase {
         ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
         ModelNode threadFactory = subsystem.require("blocking-bounded-queue-thread-pool");
         assertEquals(2, threadFactory.keys().size());
-        assertEquals("test-poolA", threadFactory.require("test-poolA").require("name").asString());
-        assertEquals("test-poolB", threadFactory.require("test-poolB").require("name").asString());
     }
 
     @Test
@@ -1171,8 +1119,6 @@ public class ThreadsSubsystemTestCase {
         ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
         ModelNode threadFactory = subsystem.require("blocking-bounded-queue-thread-pool");
         assertEquals(2, threadFactory.keys().size());
-        assertEquals("test-poolA", threadFactory.require("test-poolA").require("name").asString());
-        assertEquals("test-poolB", threadFactory.require("test-poolB").require("name").asString());
     }
 
     private ModelNode createOperation(String operationName, String... address) {
@@ -1262,11 +1208,6 @@ public class ThreadsSubsystemTestCase {
                 }
 
                 @Override
-                public void registerSubsystemTransformer(SubsystemTransformer subsystemTransformer) {
-
-                }
-
-                @Override
                 public TransformersSubRegistration registerModelTransformers(ModelVersionRange version, ResourceTransformer resourceTransformer) {
                     return null;
                 }
@@ -1304,39 +1245,12 @@ public class ThreadsSubsystemTestCase {
         return updates;
     }
 
-//    static class TestResultHandler implements ResultHandler {
-//        ModelNode failureDescription;
-//
-//        @Override
-//        public void handleResultFragment(String[] location, ModelNode result) {
-//        }
-//
-//        @Override
-//        public void handleResultComplete() {
-//        }
-//
-//        @Override
-//        public void handleCancellation() {
-//        }
-//
-//        @Override
-//        public void handleFailed(ModelNode failureDescription) {
-//            this.failureDescription = failureDescription;
-//        }
-//
-//        void clear() {
-//            failureDescription = null;
-//        }
-//
-//
-//    }
-
     public class ModelControllerService extends AbstractControllerService {
 
-        private final CountDownLatch latch = new CountDownLatch(1);
+        private final CountDownLatch latch = new CountDownLatch(2);
 
-        ModelControllerService(final ControlledProcessState processState) {
-            super(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.NORMAL), new TestConfigurationPersister(), processState, NULL_PROVIDER, null, ExpressionResolver.DEFAULT);
+        ModelControllerService() {
+            super(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.NORMAL), new TestConfigurationPersister(), new ControlledProcessState(true), NULL_PROVIDER, null, ExpressionResolver.DEFAULT);
         }
 
         @Override
@@ -1345,22 +1259,20 @@ public class ThreadsSubsystemTestCase {
             latch.countDown();
         }
 
+        @Override
+        protected void bootThreadDone() {
+            super.bootThreadDone();
+            latch.countDown();
+        }
+
         protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
-            rootRegistration.registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
-            rootRegistration.registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
-            rootRegistration.registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true);
-            rootRegistration.registerOperationHandler(READ_CHILDREN_NAMES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_NAMES, CommonProviders.READ_CHILDREN_NAMES_PROVIDER, true);
-            rootRegistration.registerOperationHandler(READ_CHILDREN_TYPES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_TYPES, CommonProviders.READ_CHILDREN_TYPES_PROVIDER, true);
-            rootRegistration.registerOperationHandler(READ_CHILDREN_RESOURCES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_RESOURCES, CommonProviders.READ_CHILDREN_RESOURCES_PROVIDER, true);
-            rootRegistration.registerOperationHandler(READ_OPERATION_NAMES_OPERATION, GlobalOperationHandlers.READ_OPERATION_NAMES, CommonProviders.READ_OPERATION_NAMES_PROVIDER, true);
-            rootRegistration.registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true);
-            rootRegistration.registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
+            GlobalOperationHandlers.registerGlobalOperations(rootRegistration, processType);
 
             rootRegistration.registerOperationHandler("setup", new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     context.createResource(PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement("profile", "test")));
-                    context.completeStep();
+                    context.stepCompleted();
                 }
             }, new DescriptionProvider() {
                 @Override

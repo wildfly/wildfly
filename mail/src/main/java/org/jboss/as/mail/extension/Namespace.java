@@ -28,16 +28,17 @@ import java.util.Map;
 /**
  * @author <a href="tomaz.cerar@gmail.com">Tomaz Cerar</a>
  */
-public enum Namespace {
+enum Namespace {
     // must be first
     UNKNOWN(null),
 
-    MAIL_1_0("urn:jboss:domain:mail:1.0");
+    MAIL_1_0("urn:jboss:domain:mail:1.0"),
+    MAIL_1_1("urn:jboss:domain:mail:1.1");
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = MAIL_1_0;
+    public static final Namespace CURRENT = MAIL_1_1;
 
     private final String name;
 

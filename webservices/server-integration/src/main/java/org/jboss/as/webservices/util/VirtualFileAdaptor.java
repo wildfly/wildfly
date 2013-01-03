@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2010, JBoss Inc., and individual contributors as indicated
+ * Copyright 2012, JBoss Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -22,9 +22,8 @@
 package org.jboss.as.webservices.util;
 
 import static org.jboss.as.webservices.WSMessages.MESSAGES;
+import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 
-import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.LinkedList;
@@ -32,7 +31,6 @@ import java.util.List;
 
 import org.jboss.vfs.VirtualFile;
 import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
-import org.jboss.wsf.spi.util.URLLoaderAdapter;
 
 /**
  * A VirtualFile adaptor.
@@ -51,16 +49,34 @@ public final class VirtualFileAdaptor implements UnifiedVirtualFile {
         this.file = file;
     }
 
-    protected VirtualFile getFile() throws IOException {
+    private VirtualFile getFile() throws IOException {
         return file;
     }
 
-    public UnifiedVirtualFile findChild(String child) throws IOException {
+    private UnifiedVirtualFile findChild(String child, boolean throwExceptionIfNotFound) throws IOException {
         final VirtualFile virtualFile = getFile();
         final VirtualFile childFile = file.getChild(child);
-        if (!childFile.exists())
-            throw MESSAGES.missingChild(child, virtualFile);
+        if (!childFile.exists()) {
+            if (throwExceptionIfNotFound) {
+                throw MESSAGES.missingChild(child, virtualFile);
+            } else {
+                if (ROOT_LOGGER.isTraceEnabled()) ROOT_LOGGER.missingChild(child, virtualFile);
+                return null;
+            }
+        }
         return new VirtualFileAdaptor(childFile);
+    }
+
+    public UnifiedVirtualFile findChild(String child) throws IOException {
+        return findChild(child, true);
+    }
+
+    public UnifiedVirtualFile findChildFailSafe(String child) {
+        try {
+            return findChild(child, false);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public URL toURL() {
@@ -68,27 +84,6 @@ public final class VirtualFileAdaptor implements UnifiedVirtualFile {
             return getFile().toURL();
         } catch (Exception e) {
             return null;
-        }
-    }
-
-    private Object writeReplace() {
-        // TODO: hack to enable remote tests
-        try {
-            File archive = file.getPhysicalFile();
-            if (archive.list().length == 0) {
-                final File parent = file.getPhysicalFile().getParentFile();
-                final File[] children = parent.listFiles(new FileFilter() {
-                    @Override
-                    public boolean accept(File fileOrDir) {
-                        return fileOrDir.isFile();
-                    }
-                });
-                archive = children[0];
-            }
-            // Offer different UnifiedVirtualFile implementation for deserialization process
-            return new URLLoaderAdapter(archive.toURI().toURL());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
     }
 

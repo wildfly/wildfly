@@ -58,6 +58,10 @@ class ParallelBootOperationContext extends AbstractOperationContext {
         AbstractOperationContext.controllingThread.set(controllingThread);
     }
 
+    void close() {
+        AbstractOperationContext.controllingThread.remove();
+    }
+
     @Override
     public void addStep(OperationStepHandler step, Stage stage) throws IllegalArgumentException {
         if (activeStep == null) {
@@ -156,12 +160,14 @@ class ParallelBootOperationContext extends AbstractOperationContext {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public ModelNode readModel(PathAddress address) {
         PathAddress fullAddress = activeStep.address.append(address);
         return primaryContext.readModel(fullAddress);
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public ModelNode readModelForUpdate(PathAddress address) {
         PathAddress fullAddress = activeStep.address.append(address);
         return primaryContext.readModelForUpdate(fullAddress);
@@ -218,6 +224,7 @@ class ParallelBootOperationContext extends AbstractOperationContext {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public Resource getRootResource() {
         return primaryContext.getRootResource();
     }
@@ -276,6 +283,11 @@ class ParallelBootOperationContext extends AbstractOperationContext {
     @Override
     void releaseStepLocks(Step step) {
         // Our steps took no locks
+    }
+
+    @Override
+    void waitForRemovals() {
+        // nothing to do
     }
 
     @Override

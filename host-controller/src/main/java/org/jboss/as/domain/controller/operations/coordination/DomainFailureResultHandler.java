@@ -61,7 +61,7 @@ public class DomainFailureResultHandler implements OperationStepHandler {
             collectHostFailures(context, isDomain);
         }
 
-        context.completeStep();
+        context.stepCompleted();
     }
 
     private boolean collectDomainFailure(OperationContext context, final boolean isDomain) {

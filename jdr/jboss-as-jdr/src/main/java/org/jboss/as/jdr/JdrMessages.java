@@ -22,9 +22,10 @@
 
 package org.jboss.as.jdr;
 
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageBundle;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.Messages;
+import org.jboss.as.controller.OperationFailedException;
 
 /**
  * This module is using message IDs in the range 13100-13199. This file is using the subset 13150-13199 for
@@ -49,7 +50,7 @@ interface JdrMessages {
      * passed into a method.
      *
      * @param var method variable that was <code>null</code>
-     * @return  Exception describing the invalid parameter.
+     * @return Exception describing the invalid parameter.
      */
     @Message(id = 13151, value = "Parameter %s may not be null.")
     IllegalArgumentException varNull(String var);
@@ -62,4 +63,13 @@ interface JdrMessages {
 
     @Message(id = Message.NONE, value = "port that the management api is bound to. (default: 9990)")
     String jdrPortMessage();
+
+    @Message(id = 13352, value = "Zipfile could not be created.")
+    OperationFailedException couldNotCreateZipfile();
+
+    @Message(id = 13353, value = "Could not configure JDR. At least one configuration step failed.")
+    OperationFailedException couldNotConfigureJDR();
+
+    @Message(id = 13354, value = "No JDR commands were loaded. Be sure that a valid Plugin class is specified in plugins.properties.")
+    OperationFailedException noCommandsToRun();
 }

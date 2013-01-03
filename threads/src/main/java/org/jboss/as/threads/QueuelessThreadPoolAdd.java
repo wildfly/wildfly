@@ -73,10 +73,6 @@ public class QueuelessThreadPoolAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        final String name = address.getLastElement().getValue();
-        model.get(NAME).set(name);
-
         AttributeDefinition[] attributes = blocking ? BLOCKING_ATTRIBUTES : NON_BLOCKING_ATTRIBUTES;
         for(final AttributeDefinition attribute : attributes) {
             attribute.validateAndSet(operation, model);

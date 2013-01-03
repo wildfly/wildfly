@@ -58,14 +58,6 @@ public class WebJPATestCase {
 	@ArquillianResource
 	static URL baseUrl;
 
-	private static final String persistence_xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> "
-			+ "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">"
-			+ " <persistence-unit name=\"web_jpa_pc\">"
-			+ " <description>Persistence Unit.</description>"
-			+ " <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>"
-			+ " <properties> "
-			+ " <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>"
-			+ " </properties>" + " </persistence-unit>" + "</persistence>";
 
 	@Deployment
 	public static WebArchive deployment() {
@@ -73,9 +65,8 @@ public class WebJPATestCase {
 		war.addClasses(WebJPATestCase.class, TestServlet.class,
 				HttpRequest.class, Flight.class, Company.class, Customer.class,
 				Ticket.class);
-
-		war.addAsResource(new StringAsset(persistence_xml),	"META-INF/persistence.xml");
-
+        // WEB-INF/classes/ is implied
+        war.addAsResource(WebJPATestCase.class.getPackage(), "persistence.xml", "META-INF/persistence.xml");
 		return war;
 	}
 

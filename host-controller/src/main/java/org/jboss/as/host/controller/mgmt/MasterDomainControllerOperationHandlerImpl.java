@@ -41,7 +41,6 @@ import org.jboss.as.protocol.mgmt.RequestProcessingException;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.repository.RemoteFileRequestAndHandler.RootFileReader;
 import org.jboss.dmr.ModelNode;
-import org.jboss.remoting3.Channel;
 
 /**
  * Handles for requests from slave DC to master DC on the 'domain' channel.

@@ -26,13 +26,15 @@ import java.util.Collection;
 
 import org.jboss.as.clustering.ClusterNode;
 import org.jboss.as.clustering.ClusteringApiMessages;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageBundle;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.Messages;
 import org.jgroups.Address;
 
 /**
- * Date: 26.08.2011
+ * ClusteringImplMessages
+ *
+ * logging id range: 10240 - 10259
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */

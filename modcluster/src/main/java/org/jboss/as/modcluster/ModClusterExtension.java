@@ -22,21 +22,45 @@
 
 package org.jboss.as.modcluster;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.modcluster.CustomLoadMetricDefinition.CLASS;
+import static org.jboss.as.modcluster.DynamicLoadProviderDefinition.DECAY;
+import static org.jboss.as.modcluster.DynamicLoadProviderDefinition.HISTORY;
+import static org.jboss.as.modcluster.LoadMetricDefinition.CAPACITY;
+import static org.jboss.as.modcluster.LoadMetricDefinition.PROPERTY;
+import static org.jboss.as.modcluster.LoadMetricDefinition.TYPE;
+import static org.jboss.as.modcluster.LoadMetricDefinition.WEIGHT;
+import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.ADVERTISE;
+import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.AUTO_ENABLE_CONTEXTS;
+import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.FLUSH_PACKETS;
+import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.PING;
+import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.STICKY_SESSION;
+import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.STICKY_SESSION_FORCE;
+import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.STICKY_SESSION_REMOVE;
+import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
+import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.CIPHER_SUITE;
+import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.KEY_ALIAS;
+import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.PROTOCOL;
+
+import java.util.List;
+import javax.xml.stream.XMLStreamConstants;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.AbstractSubsystemTransformer;
+import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
+import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
-
-import javax.xml.stream.XMLStreamConstants;
-import java.util.List;
-
-import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
 
 /**
  * Domain extension used to initialize the mod_cluster subsystem element handlers.
@@ -48,15 +72,15 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
 
     public static final String SUBSYSTEM_NAME = "modcluster";
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 2;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 3;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ModClusterExtension.SUBSYSTEM_NAME);
     static final PathElement CONFIGURATION_PATH = PathElement.pathElement(CommonAttributes.MOD_CLUSTER_CONFIG, CommonAttributes.CONFIGURATION);
     static final PathElement SSL_CONFIGURATION_PATH = PathElement.pathElement(CommonAttributes.SSL, CommonAttributes.CONFIGURATION);
-    static final PathElement DYNAMIC_LOAD_PROVIDER = PathElement.pathElement(CommonAttributes.DYNAMIC_LOAD_PROVIDER, CommonAttributes.CONFIGURATION);
-    static final PathElement LOAD_METRIC = PathElement.pathElement(CommonAttributes.LOAD_METRIC);
-    static final PathElement CUSTOM_LOAD_METRIC = PathElement.pathElement(CommonAttributes.CUSTOM_LOAD_METRIC);
+    static final PathElement DYNAMIC_LOAD_PROVIDER_PATH = PathElement.pathElement(CommonAttributes.DYNAMIC_LOAD_PROVIDER, CommonAttributes.CONFIGURATION);
+    static final PathElement LOAD_METRIC_PATH = PathElement.pathElement(CommonAttributes.LOAD_METRIC);
+    static final PathElement CUSTOM_LOAD_METRIC_PATH = PathElement.pathElement(CommonAttributes.CUSTOM_LOAD_METRIC);
 
     private static final String RESOURCE_NAME = ModClusterExtension.class.getPackage().getName() + ".LocalDescriptions";
 
@@ -88,6 +112,8 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         dynamicLoadProvider.registerSubModel(CustomLoadMetricDefinition.INSTANCE);
 
         subsystem.registerXMLElementWriter(new ModClusterSubsystemXMLWriter());
+
+        registerTransformers_1_2_0(subsystem);
     }
 
     @Override
@@ -98,5 +124,45 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
                 context.setSubsystemXmlMapping(SUBSYSTEM_NAME, namespace.getUri(), namespace.getXMLReader());
             }
         }
+    }
+
+    private static void registerTransformers_1_2_0(SubsystemRegistration subsystem) {
+
+        TransformersSubRegistration transformers = subsystem.registerModelTransformers(ModelVersion.create(1, 2, 0), new AbstractSubsystemTransformer(SUBSYSTEM_NAME) {
+            @Override
+            protected ModelNode transformModel(TransformationContext context, ModelNode model) {
+                return model;
+            }
+        });
+
+        // ModClusterConfigResourceDefinition
+        RejectExpressionValuesTransformer configRejectExpressionTransformer = new RejectExpressionValuesTransformer(ADVERTISE, AUTO_ENABLE_CONTEXTS, FLUSH_PACKETS, STICKY_SESSION, STICKY_SESSION_REMOVE, STICKY_SESSION_FORCE, PING);
+        TransformersSubRegistration config = transformers.registerSubResource(CONFIGURATION_PATH);
+        config.registerOperationTransformer(ModelDescriptionConstants.ADD, configRejectExpressionTransformer);
+
+        // ModClusterSSLResourceDefinition
+        RejectExpressionValuesTransformer sslRejectExpressionTransformer = new RejectExpressionValuesTransformer(CIPHER_SUITE, KEY_ALIAS, PROTOCOL);
+        TransformersSubRegistration ssl = transformers.registerSubResource(SSL_CONFIGURATION_PATH);
+        ssl.registerOperationTransformer(ADD, sslRejectExpressionTransformer);
+        ssl.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, sslRejectExpressionTransformer.getWriteAttributeTransformer());
+
+        // DynamicLoadProviderDefinition
+        RejectExpressionValuesTransformer dynamicProviderRejectExpressionTransformer = new RejectExpressionValuesTransformer(DECAY, HISTORY);
+        TransformersSubRegistration dynamicProvider = transformers.registerSubResource(DYNAMIC_LOAD_PROVIDER_PATH);
+        dynamicProvider.registerOperationTransformer(ADD, dynamicProviderRejectExpressionTransformer);
+        dynamicProvider.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, dynamicProviderRejectExpressionTransformer.getWriteAttributeTransformer());
+
+        // CustomLoadMetricDefinition
+        RejectExpressionValuesTransformer customRejectExpressionTransformer = new RejectExpressionValuesTransformer(CLASS);
+        TransformersSubRegistration customMetric = dynamicProvider.registerSubResource(CUSTOM_LOAD_METRIC_PATH);
+        customMetric.registerOperationTransformer(ADD, customRejectExpressionTransformer);
+        customMetric.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, customRejectExpressionTransformer.getWriteAttributeTransformer());
+
+        // LoadMetricDefinition
+        RejectExpressionValuesTransformer loadMetricRejectExpressionTransformer = new RejectExpressionValuesTransformer(TYPE, WEIGHT, CAPACITY, PROPERTY);
+        TransformersSubRegistration metric = dynamicProvider.registerSubResource(LOAD_METRIC_PATH);
+        metric.registerOperationTransformer(ADD, loadMetricRejectExpressionTransformer);
+        metric.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, loadMetricRejectExpressionTransformer.getWriteAttributeTransformer());
+
     }
 }

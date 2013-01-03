@@ -43,16 +43,23 @@ import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.protocol.mgmt.RequestProcessingException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.logging.Cause;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
-import org.jboss.logging.Param;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageBundle;
+import org.jboss.logging.annotations.Param;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 
 /**
+ * This module is using message IDs in the ranges 14600-14899 and 13400-13499.
+ * <p/>
+ * This file is using the subsets 14630-14899 and 13450-13499 for non-logger messages.
+ * <p/>
+ * See <a href="http://community.jboss.org/docs/DOC-16810">http://community.jboss.org/docs/DOC-16810</a> for the full
+ * list of currently reserved JBAS message id blocks.
+ * <p/>
  * Date: 02.11.2011
  *
  * Reserved logging id ranges from: http://community.jboss.org/wiki/LoggingIds: 14600 - 14899
@@ -1302,8 +1309,11 @@ public interface ControllerMessages {
      * @param stepOpName the step operation name.
      * @param address    the address.
      *
-     * @return the message.
+     * @return the message
+     *
+     * @deprecated use {@link #noSuchResourceType(PathAddress)} or {@link #noHandlerForOperation(String, PathAddress)}
      */
+    @Deprecated
     @Message(id = 14739, value = "No handler for %s at address %s")
     String noHandler(String stepOpName, PathAddress address);
 
@@ -1495,8 +1505,9 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14758, value = "Profile has no subsystem configurations")
-    XMLStreamException profileHasNoSubsystems(@Param Location location);
+    //No longer used
+    //@Message(id = 14758, value = "Profile has no subsystem configurations")
+    //XMLStreamException profileHasNoSubsystems(@Param Location location);
 
     /**
      * Creates an exception indicating no profile found for inclusion.
@@ -1636,7 +1647,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = Message.NONE, value = "Missing[%s]")
+    @Message(id = Message.NONE, value = "is missing [%s]")
     String servicesMissing(StringBuilder sb);
 
     /**
@@ -2494,4 +2505,103 @@ public interface ControllerMessages {
 
     @Message(id = 14867, value = "Failed to delete file %s")
     IllegalStateException couldNotDeleteFile(File file);
+
+    @Message(id = 14868, value = "An alias is already registered at location '%s'")
+    IllegalArgumentException aliasAlreadyRegistered(String location);
+
+    @Message(id = 14869, value = "Expected an address under '%s', was '%s'")
+    IllegalArgumentException badAliasConvertAddress(PathAddress aliasAddress, PathAddress actual);
+
+    @Message(id = 14870, value = "Alias target address not found: %s")
+    IllegalArgumentException aliasTargetResourceRegistrationNotFound(PathAddress targetAddress);
+
+    @Message(id = 14871, value = "No operation called '%s' found for alias address '%s' which maps to '%s'")
+    IllegalArgumentException aliasStepHandlerOperationNotFound(String name, PathAddress aliasAddress, PathAddress targetAddress);
+
+
+    @Message(id = 14872, value = "Resource registration is not an alias")
+    IllegalStateException resourceRegistrationIsNotAnAlias();
+
+    @Message(id = 14873, value = "Model contains fields that are not known in definition, fields: %s, path: %s")
+    RuntimeException modelFieldsNotKnown(Set<String> fields, PathAddress address);
+
+
+    @Message(id = 14874, value = "Could not marshal attribute as element: %s")
+    UnsupportedOperationException couldNotMarshalAttributeAsElement(String attributeName);
+
+    @Message(id = 14875, value = "Could not marshal attribute as attribute: %s")
+    UnsupportedOperationException couldNotMarshalAttributeAsAttribute(String attributeName);
+
+    @Message(id = 14876, value = "Operation %s invoked against multiple target addresses failed at address %s with failure description %s")
+    String wildcardOperationFailedAtSingleAddress(String operation, PathAddress address, String failureMessage);
+
+    @Message(id = 14877, value = "Operation %s invoked against multiple target addresses failed at address %s. See the operation result for details.")
+    String wildcardOperationFailedAtSingleAddressWithComplexFailure(String operation, PathAddress address);
+
+    @Message(id = 14878, value = "Operation %s invoked against multiple target addresses failed at addresses %s. See the operation result for details.")
+    String wildcardOperationFailedAtMultipleAddresses(String operation, Set<PathAddress> addresses);
+
+    @Message(id = 14879, value = "One or more services were unable to start due to one or more indirect dependencies not being available.")
+    String missingTransitiveDependencyProblem();
+
+    @Message(id = Message.NONE, value = "Services that were unable to start:")
+    String missingTransitiveDependendents();
+
+    @Message(id = Message.NONE, value = "Services that may be the cause:")
+    String missingTransitiveDependencies();
+
+    @Message(id = 14880, value = "No operation entry called '%s' registered at '%s'")
+    String noOperationEntry(String op, PathAddress pathAddress);
+
+
+    @Message(id = 14881, value = "No operation handler called '%s' registered at '%s'")
+    String noOperationHandler(String op, PathAddress pathAddress);
+
+    @Message(id = 14882, value = "There is no registered path to resolve with path attribute '%s' and/or relative-to attribute '%s on: %s")
+    IllegalStateException noPathToResolve(String pathAttributeName, String relativeToAttributeName, ModelNode model);
+
+    /**
+     * Logs an error message indicating the given {@code address} does not match any known
+     * resource registration.
+     *
+     * @param address    the address.
+     */
+    @Message(id = 14883, value = "No resource definition is registered for address %s")
+    String noSuchResourceType(PathAddress address);
+
+    /**
+     * Logs an error message indicating no handler is registered for an operation, represented by the {@code operationName}
+     * parameter, at {@code address}.
+     *
+     * @param operationName the operation name.
+     * @param address    the address.
+     */
+    @Message(id = 14884, value = "No operation named '%s' exists at address %s")
+    String noHandlerForOperation(String operationName, PathAddress address);
+
+    /**
+     * Indicates {@code permissionName} is not a valid permission for use with permission class {@code permissionClass}
+     * @param permissionClass the class of the permission
+     * @param permissionName the name of the permission provided by the user
+     * @return the exception
+     */
+    @Message(id = 14885, value = "Invalid %s \"%s\"")
+    IllegalArgumentException invalidPermission(String permissionClass, String permissionName);
+
+    @Message(id = 14886, value = "Method cannot be called from a chained transformer")
+    IllegalStateException cannotCallMethodFromChainedTransformer();
+
+
+    @Message(id = 14887, value = "Transforming resource %s for host controller '%s' to core model version '%s' -- attributes %s do not support expressions in that model version and this resource will need to be ignored on that host.")
+    OperationFailedException rejectExpressionCoreModelResourceTransformerFoundExpressions(PathAddress pathAddress, String legacyHostName, ModelVersion modelVersion, Set<String> attributeNames);
+
+    @Message(id = 14888, value = "Transforming operation %s at resource %s for host controller '%s' to core model version '%s' -- attributes %s do not support expressions in that model version and this resource will need to be ignored on that host.")
+    OperationFailedException rejectExpressionCoreModelOperationTransformerFoundExpressions(ModelNode op, PathAddress pathAddress, String legacyHostName, ModelVersion modelVersion, Set<String> attributeNames);
+
+    @Message(id = 14889, value = "Transforming resource %s for host controller '%s' to subsystem '%s' model version '%s' -- attributes %s do not support expressions in that model version and this resource will need to be ignored on that host.")
+    OperationFailedException rejectExpressionSubsystemModelResourceTransformerFoundExpressions(PathAddress pathAddress, String legacyHostName, String subsystem, ModelVersion modelVersion, Set<String> attributeNames);
+
+    @Message(id = 14890, value = "Transforming operation %s at resource %s for host controller '%s' to subsystem '%s' model version '%s' -- attributes %s do not support expressions in that model version and this resource will need to be ignored on that host.")
+    OperationFailedException rejectExpressionSubsystemModelOperationTransformerFoundExpressions(ModelNode op, PathAddress pathAddress, String legacyHostName, String subsystem, ModelVersion modelVersion, Set<String> attributeNames);
+
 }

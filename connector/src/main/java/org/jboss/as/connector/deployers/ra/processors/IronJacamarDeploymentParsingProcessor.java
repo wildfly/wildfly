@@ -68,8 +68,16 @@ public class IronJacamarDeploymentParsingProcessor implements DeploymentUnitProc
         final VirtualFile deploymentRoot = resourceRoot.getRoot();
         final boolean resolveProperties = Util.shouldResolveJBoss(deploymentUnit);
 
+        IronJacamarXmlDescriptor xmlDescriptor = process(deploymentRoot, resolveProperties);
+        if (xmlDescriptor != null) {
+            deploymentUnit.putAttachment(IronJacamarXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
+        }
+    }
+
+    public static IronJacamarXmlDescriptor process(VirtualFile deploymentRoot, boolean resolveProperties) throws DeploymentUnitProcessingException {
+        IronJacamarXmlDescriptor xmlDescriptor = null ;
         if (deploymentRoot == null || !deploymentRoot.exists())
-            return;
+            return null;
 
         final String deploymentRootName = deploymentRoot.getName().toLowerCase(Locale.ENGLISH);
         VirtualFile serviceXmlFile = null;
@@ -78,7 +86,7 @@ public class IronJacamarDeploymentParsingProcessor implements DeploymentUnitProc
         }
 
         if (serviceXmlFile == null || !serviceXmlFile.exists())
-            return;
+            return null;
 
         InputStream xmlStream = null;
         IronJacamar result = null;
@@ -88,8 +96,8 @@ public class IronJacamarDeploymentParsingProcessor implements DeploymentUnitProc
             ironJacamarParser.setSystemPropertiesResolved(resolveProperties);
             result = ironJacamarParser.parse(xmlStream);
             if (result != null) {
-                IronJacamarXmlDescriptor xmlDescriptor = new IronJacamarXmlDescriptor(result);
-                deploymentUnit.putAttachment(IronJacamarXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
+                xmlDescriptor = new IronJacamarXmlDescriptor(result);
+
             } else
                 throw MESSAGES.failedToParseServiceXml(serviceXmlFile);
         } catch (Exception e) {
@@ -97,6 +105,7 @@ public class IronJacamarDeploymentParsingProcessor implements DeploymentUnitProc
         } finally {
             VFSUtils.safeClose(xmlStream);
         }
+        return xmlDescriptor;
     }
 
     public void undeploy(final DeploymentUnit context) {

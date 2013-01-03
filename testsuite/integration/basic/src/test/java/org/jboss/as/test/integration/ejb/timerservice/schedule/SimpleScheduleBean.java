@@ -21,14 +21,14 @@
  */
 package org.jboss.as.test.integration.ejb.timerservice.schedule;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import javax.ejb.Schedule;
 import javax.ejb.Stateless;
 import javax.ejb.Timer;
 
 import org.jboss.logging.Logger;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author Stuart Douglas
@@ -37,15 +37,15 @@ import java.util.concurrent.TimeUnit;
 public class SimpleScheduleBean {
     private static final Logger log = Logger.getLogger(SimpleScheduleBean.class);
     private static final CountDownLatch latch = new CountDownLatch(1);
-    private static int TIMER_CALL_WAITING_S = 2;
+    private static final int TIMER_CALL_WAITING_S = 2;
 
-    private static boolean timerServiceCalled = false;
-    
+    private static volatile boolean timerServiceCalled = false;
+
     private static String timerInfo;
     private static boolean isPersistent;
     private static boolean isCalendar;
     private static String timezone;
-    
+
     public String getTimerInfo() {
         return timerInfo;
     }
@@ -68,7 +68,7 @@ public class SimpleScheduleBean {
         isCalendar = timer.isCalendarTimer();
         timezone = timer.getSchedule().getTimezone();
         log.info(timer.getSchedule().getEnd());
-        
+
         timerServiceCalled = true;
         latch.countDown();
     }

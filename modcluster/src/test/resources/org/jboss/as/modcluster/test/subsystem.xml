@@ -1,20 +1,48 @@
 <subsystem xmlns="urn:jboss:domain:modcluster:1.1">
-    <mod-cluster-config proxy-list="example.com:6666" load-balancing-group="mydomain" advertise="true" advertise-security-key="mysecuritykey"
-                        excluded-contexts="a,b,c" auto-enable-contexts="true" stop-context-timeout="10" socket-timeout="20" connector="ajp">
-        <simple-load-provider factor="15"/>
-        <dynamic-load-provider decay="2" history="10">
-            <load-metric capacity="1000" type="sessions" weight="2"/>
-            <load-metric capacity="512" type="send-traffic" weight="3"/>
-            <load-metric capacity="1024" type="receive-traffic"/>
-            <load-metric capacity="1000" type="requests"/>
+    <mod-cluster-config advertise="${modcluster.advertise:true}"
+                        advertise-security-key="${modcluster.advertise-security-key:mysecurekey!}"
+                        advertise-socket="modcluster"
+                        auto-enable-contexts="${modcluster.auto-enable-contexts:true}"
+                        balancer="${modcluster.balancer:mybalancer}"
+                        connector="ajp"
+                        excluded-contexts="${modcluster.excluded-contexts:contextA,contextB,contextC}"
+                        flush-packets="${modcluster.flush-packets:true}"
+                        flush-wait="${modcluster.flush-wait:10}"
+                        load-balancing-group="${modcluster.load-balancing-group:mylbgroup}"
+                        max-attempts="${modcluster.max-attempts:10}"
+                        node-timeout="${modcluster.node-timeout:123}"
+                        ping="${modcluster.ping:10}"
+                        proxy-list="${modcluster.proxy-list:example.com:6666,example.com:6667}"
+                        proxy-url="${modcluster.proxy-url:/}"
+                        smax="${modcluster.smax:2}"
+                        socket-timeout="${modcluster.socket-timeout:20}"
+                        sticky-session="${modcluster.sticky-session:true}"
+                        sticky-session-force="${modcluster.sticky-session-force:false}"
+                        sticky-session-remove="${modcluster.sticky-session-remove:false}"
+                        stop-context-timeout="${modcluster.stop-context-timeout:10}"
+                        ttl="${modcluster.ttl:1}"
+                        worker-timeout="${modcluster.worker-timeout:2}">
+        <simple-load-provider factor="${modcluster.simple-load-provider.factor:15}"/>
+        <dynamic-load-provider decay="${modcluster.dynamic-load-provider.decay:2}" history="${modcluster.dynamic-load-provider.history:10}">
+            <load-metric capacity="${modcluster.load-metric.capacity:1000.0}" type="sessions" weight="${modcluster.load-metric.weight:2}"/>
+            <load-metric capacity="512.0" type="send-traffic" weight="3"/>
+            <load-metric capacity="1024.0" type="receive-traffic"/>
+            <load-metric capacity="1000.0" type="requests"/>
             <load-metric type="mem"/>
             <load-metric type="cpu"/>
             <load-metric type="heap"/>
             <load-metric type="busyness">
-                <property name="name" value="value"/>
+                <property name="name1" value="value1"/>
+                <property name="name2" value="value2"/>
             </load-metric>
-            <custom-load-metric class="org.jboss.modcluster.SomeFakeLoadMetricClass" weight="5"/>
+            <custom-load-metric class="${modcluster.load-metric.class:org.jboss.modcluster.SomeFakeLoadMetricClass}" weight="5"/>
         </dynamic-load-provider>
-        <ssl ca-certificate-file="/home/rhusar/client-keystore.jsk" certificate-key-file="/home/rhusar/client-keystore.jsk" password="mypassword"/>
+        <ssl ca-certificate-file="${modcluster.ca-certificate-file:/home/rhusar/client-keystore.jks}"
+             ca-revocation-url="${modcluster.ca-revocation-url:/home/rhusar/revocations}"
+             certificate-key-file="${modcluster.certificate-key-file:/home/rhusar/client-keystore.jks}"
+             cipher-suite="${modcluster.cipher-suite:ALL:!ADH:@STRENGTH}"
+             key-alias="${modcluster.key-alias:mykeyalias}"
+             password="${modcluster.password:mypassword}"
+             protocol="${modcluster.protocol:TLS}"/>
     </mod-cluster-config>
 </subsystem>

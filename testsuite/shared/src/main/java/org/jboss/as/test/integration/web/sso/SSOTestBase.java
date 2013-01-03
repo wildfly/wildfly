@@ -64,17 +64,17 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 
 /**
  * Base class for tests of web app single sign-on
- * 
+ *
  * @author Brian Stansberry
  * @author lbarreiro@redhat.com
  */
 public abstract class SSOTestBase {
 
     private static Logger log = Logger.getLogger(SSOTestBase.class);
-    
+
     /**
      * Test single sign-on across two web apps using form based auth
-     * 
+     *
      * @throws Exception
      */
     public static void executeFormAuthSingleSignOnTest(URL serverA, URL serverB, Logger log) throws Exception {
@@ -106,10 +106,10 @@ public abstract class SSOTestBase {
 
         // Now try logging out of war2
         executeLogout(httpclient, warB2);
-        
+
         // Reset Http client
         httpclient = new DefaultHttpClient();
-        
+
         // Try accessing war1 again
         checkAccessDenied(httpclient, warA1 + "index.html");
 
@@ -137,7 +137,7 @@ public abstract class SSOTestBase {
 
         String ssoID = processSSOCookie(store, serverA.toString(), serverB.toString());
         log.debug("Saw JSESSIONIDSSO=" + ssoID);
-            
+
         // Now try getting the war2 index using the JSESSIONIDSSO cookie
         log.debug("Prepare /war2/index.html get");
         checkAccessAllowed(httpclient, warB2 + "index.html");
@@ -197,7 +197,7 @@ public abstract class SSOTestBase {
 
         // Follow the redirect to the index.html page
         String indexURL = postResponse.getFirstHeader("Location").getValue();
-        HttpGet rediretGet = new HttpGet(indexURL.toString()); 
+        HttpGet rediretGet = new HttpGet(indexURL.toString());
         HttpResponse redirectResponse = httpConn.execute(rediretGet);
 
         statusCode = redirectResponse.getStatusLine().getStatusCode();
@@ -225,7 +225,7 @@ public abstract class SSOTestBase {
         for (Cookie cookie : cookieStore.getCookies()) {
             if ("JSESSIONIDSSO".equalsIgnoreCase(cookie.getName())) {
                 ssoID = cookie.getValue();
-                if (serverA.equals(serverB) == false) { 
+                if (serverA.equals(serverB) == false) {
                     // Make an sso cookie to send to serverB
                     Cookie copy = copyCookie(cookie, serverB);
                     cookieStore.addCookie(copy);
@@ -255,7 +255,7 @@ public abstract class SSOTestBase {
         if (index > -1) {
             targetServer = targetServer.substring(0, index);
         }
-        
+
         // Cookie copy = new Cookie(targetServer, toCopy.getName(), toCopy.getValue(), "/", null, false);
         BasicClientCookie copy = new BasicClientCookie(toCopy.getName(), toCopy.getValue());
         copy.setDomain(targetServer);
@@ -291,7 +291,7 @@ public abstract class SSOTestBase {
 
         return war;
     }
-    
+
     public static EnterpriseArchive createSsoEar() {
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         String resourcesLocation = "org/jboss/as/test/integration/web/sso/resources/";
@@ -318,7 +318,7 @@ public abstract class SSOTestBase {
 
         return ear;
     }
-    
+
     public static void addSso(ModelControllerClient client) throws Exception {
         final List<ModelNode> updates = new ArrayList<ModelNode>();
 
@@ -339,7 +339,7 @@ public abstract class SSOTestBase {
 
         applyUpdates(updates, client);
     }
-    
+
     public static void removeSso(final ModelControllerClient client) throws Exception {
         final List<ModelNode> updates = new ArrayList<ModelNode>();
 
@@ -379,11 +379,11 @@ public abstract class SSOTestBase {
                     readOp.get("name").set("server-state");
                     ModelNode result = client.execute(new OperationBuilder(readOp).build());
                     if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
-                        if ((result.hasDefined("result")) && (result.get("result").asString().equals("running")))                           
+                        if ((result.hasDefined("result")) && (result.get("result").asString().equals("running")))
                             return true;
                     }
                     log.info("Server is down.");
-                    throw new Exception("Connector not available.");                    
+                    throw new Exception("Connector not available.");
                 }
             });
         } catch (TimeoutException e) {

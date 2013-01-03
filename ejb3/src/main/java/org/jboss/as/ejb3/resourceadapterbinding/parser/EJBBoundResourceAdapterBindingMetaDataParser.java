@@ -36,6 +36,14 @@ import org.jboss.metadata.property.PropertyReplacer;
  */
 public class EJBBoundResourceAdapterBindingMetaDataParser extends AbstractEJBBoundMetaDataParser<EJBBoundResourceAdapterBindingMetaData> {
 
+    public static final String LEGACY_NAMESPACE_URI = "urn:resource-adapter-binding";
+    public static final String NAMESPACE_URI = "urn:resource-adapter-binding:1.0";
+    public static final EJBBoundResourceAdapterBindingMetaDataParser INSTANCE = new EJBBoundResourceAdapterBindingMetaDataParser();
+
+    private EJBBoundResourceAdapterBindingMetaDataParser() {
+
+    }
+
     @Override
     public EJBBoundResourceAdapterBindingMetaData parse(XMLStreamReader reader, final PropertyReplacer propertyReplacer) throws XMLStreamException {
         EJBBoundResourceAdapterBindingMetaData metaData = new EJBBoundResourceAdapterBindingMetaData();
@@ -47,7 +55,8 @@ public class EJBBoundResourceAdapterBindingMetaDataParser extends AbstractEJBBou
     protected void processElement(EJBBoundResourceAdapterBindingMetaData metaData, XMLStreamReader reader,  final PropertyReplacer propertyReplacer) throws XMLStreamException {
         final String namespaceURI = reader.getNamespaceURI();
         final String localName = reader.getLocalName();
-        if ("urn:resource-adapter-binding".equals(namespaceURI)) {
+        if (LEGACY_NAMESPACE_URI.equals(namespaceURI) ||
+                NAMESPACE_URI.equals(namespaceURI)) {
             if ("resource-adapter-name".equals(localName))
                 metaData.setResourceAdapterName(getElementText(reader, propertyReplacer));
             else

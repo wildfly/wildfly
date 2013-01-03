@@ -22,21 +22,18 @@
 
 package org.jboss.as.server.services.net;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
-import org.jboss.as.network.OutboundSocketBinding;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.net.UnknownHostException;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import org.jboss.as.controller.AbstractWriteAttributeHandler;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.network.OutboundSocketBinding;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * A write attribute handler for handling updates to attributes of a client socket binding.
@@ -48,74 +45,53 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
  *
  * @author Jaikiran Pai
  */
-class OutboundSocketBindingWriteHandler extends WriteAttributeHandlers.WriteAttributeOperationHandler {
+class OutboundSocketBindingWriteHandler extends AbstractWriteAttributeHandler<Boolean> {
 
-    private final ParameterValidator resolvedValueValidator;
     private final boolean remoteDestination;
 
-    OutboundSocketBindingWriteHandler(ParameterValidator valueValidator, ParameterValidator resolvedValueValidator,
+    OutboundSocketBindingWriteHandler(final AttributeDefinition attribute,
                                       final boolean remoteDestination) {
-        super(valueValidator);
-        this.resolvedValueValidator = resolvedValueValidator;
+        super(attribute);
         this.remoteDestination = remoteDestination;
     }
 
-    /**
-     * Indicating whether the operation requires a restart irrespective of
-     * the runtime state.
-     *
-     * @return
-     */
-    protected boolean requiresRestart() {
-        return false;
+    @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return context.isNormalServer();
     }
 
     @Override
-    protected void modelChanged(final OperationContext context, final ModelNode operation,
-                                final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
-
-        final boolean restartRequired = requiresRestart();
-        boolean setReload = false;
-        if (context.isNormalServer()) {
-            if (restartRequired) {
-                context.reloadRequired();
-                setReload = true;
-            } else {
-                context.addStep(new OperationStepHandler() {
-                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        final ModelNode resolvedValue = newValue.isDefined() ? newValue.resolve() : newValue;
-                        if (resolvedValueValidator != null) {
-                            resolvedValueValidator.validateResolvedParameter(VALUE, resolvedValue);
-                        }
-                        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-                        final PathElement element = address.getLastElement();
-                        final String bindingName = element.getValue();
-                        final ModelNode bindingModel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-                        final ServiceController<?> controller = context.getServiceRegistry(true).getRequiredService(OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(bindingName));
-                        final OutboundSocketBinding binding = controller.getState() == ServiceController.State.UP ? OutboundSocketBinding.class.cast(controller.getValue()) : null;
-                        final boolean bound = binding != null && binding.isConnected();
-                        if (binding == null) {
-                            // existing is not started, so can't "update" it. Instead reinstall the service
-                            handleBindingReinstall(context, bindingName, bindingModel);
-                        } else {
-                            // We don't allow runtime changes without a context reload for outbound socket bindings
-                            // since any services which might have already injected/depended on the outbound
-                            // socket binding service would have use the (now stale) attributes.
-                            context.reloadRequired();
-                        }
-                        if (context.completeStep() != OperationContext.ResultAction.KEEP) {
-                            if (binding == null) {
-                                // Back to the old service
-                                revertBindingReinstall(context, bindingName, bindingModel, attributeName, currentValue);
-                            } else {
-                                context.revertReloadRequired();
-                            }
-                        }
-                    }
-                }, OperationContext.Stage.RUNTIME);
-            }
+    protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
+                                           ModelNode resolvedValue, ModelNode currentValue,
+                                           HandbackHolder<Boolean> handbackHolder) throws OperationFailedException {
+        final String bindingName = PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement().getValue();
+        final ModelNode bindingModel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+        final ServiceController<?> controller = context.getServiceRegistry(true).getRequiredService(OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(bindingName));
+        final OutboundSocketBinding binding = controller.getState() == ServiceController.State.UP ? OutboundSocketBinding.class.cast(controller.getValue()) : null;
+        final boolean bound = binding != null && binding.isConnected(); // FIXME see if this can be used, or remove
+        if (binding == null) {
+            // existing is not started, so can't "update" it. Instead reinstall the service
+            handleBindingReinstall(context, bindingName, bindingModel);
+            handbackHolder.setHandback(Boolean.TRUE);
+        } else {
+            // We don't allow runtime changes without a context reload for outbound socket bindings
+            // since any services which might have already injected/depended on the outbound
+            // socket binding service would have use the (now stale) attributes.
+            context.reloadRequired();
         }
-        if (context.completeStep() != OperationContext.ResultAction.KEEP && setReload) {
+
+        return false; // we handle the reloadRequired stuff ourselves; it's clearer
+    }
+
+    @Override
+    protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
+                                         ModelNode valueToRestore, ModelNode valueToRevert, Boolean handback) throws OperationFailedException {
+        if (handback != null && handback.booleanValue()) {
+            final String bindingName = PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement().getValue();
+            final ModelNode bindingModel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+            // Back to the old service
+            revertBindingReinstall(context, bindingName, bindingModel, attributeName, valueToRestore);
+        } else {
             context.revertReloadRequired();
         }
     }

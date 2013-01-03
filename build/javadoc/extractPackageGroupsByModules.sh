@@ -10,6 +10,8 @@ DIRNAME=`dirname $0`
 TARGET=$DIRNAME/target
 PROJECT_ROOT_DIR="$DIRNAME/../..";
 
+AS_BUILT_DIR=`ls -1 -d $PROJECT_ROOT_DIR/build/target/jboss-as-* | tail -1`  # Latest built AS in target/
+
 if [ ! `which xsltproc` ]; then
   echo "xsltproc not found. This script needs it. Please install it.";
   exit 2;
@@ -43,7 +45,8 @@ echo "<groups>"
       MOD_NAME=${LINE#MODULE: }
       MOD_PATH=`echo $MOD_NAME | tr . /`
       PACKAGES="";
-      for JAR in `find $PROJECT_ROOT_DIR/build/target/jboss-as-7.1.2.Final-SNAPSHOT/modules/$MOD_PATH/main -name *.jar`; do
+      #for JAR in `find $PROJECT_ROOT_DIR/build/target/jboss-as-7.1.3.Beta1/modules/$MOD_PATH/main -name *.jar`; do
+      for JAR in `find $AS_BUILT_DIR/modules/$MOD_PATH/main -name *.jar`; do
         #echo "    JAR: $JAR";
         for PACKAGE in `jar tf $JAR | grep .class | sed 's#/[^/]*\.class##' | sort | uniq`; do
           #PACKAGE=`dirname $PACKAGE | tr / .`

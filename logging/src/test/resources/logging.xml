@@ -20,35 +20,38 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<subsystem xmlns="urn:jboss:domain:logging:1.1">
+<subsystem xmlns="urn:jboss:domain:logging:1.2">
     <async-handler name="async">
         <queue-length value="10"/>
-        <overflow-action value="block" />
+        <overflow-action value="block"/>
         <subhandlers>
-            <handler name="sizeLogger" />
-            <handler name="simpleFile" />
+            <handler name="sizeLogger"/>
+            <handler name="simpleFile"/>
         </subhandlers>
     </async-handler>
 
     <console-handler name="CONSOLE">
         <level name="INFO"/>
-        <filter>
-            <level-range min-level="TRACE" max-level="WARN" />
-        </filter>
+        <filter-spec value="levelRange(TRACE,WARN)" />
         <formatter>
-            <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
+            <pattern-formatter pattern="%K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
         </formatter>
     </console-handler>
 
-    <file-handler name="simpleFile">
-        <level name="INFO" />
-        <filter>
-            <deny />
-        </filter>
-        <file relative-to="jboss.server.log.dir" path="fileHandler.log"/>
-        <append value="true" />
+    <file-handler name="anotherFile" enabled="false">
+        <filter-spec value="levelRange(TRACE,WARN]" />
+        <file relative-to="jboss.server.log.dir" path="another.log"/>
+        <append value="true"/>
     </file-handler>
 
+    <file-handler name="simpleFile">
+        <level name="INFO"/>
+        <filter-spec value="deny"/>
+        <file relative-to="jboss.server.log.dir" path="fileHandler.log"/>
+        <append value="true"/>
+    </file-handler>
+
+    <!-- Can't use custom handlers as they require JBoss Modules
     <custom-handler name="customHandler" module="org.jboss.logmanager" class="org.jboss.logmanager.handler.ConsoleHandler">
         <filter>
             <replace pattern="\b(Name)|\b(name)" replacement="user" replace-all="true"/>
@@ -59,16 +62,15 @@
         </properties>
     </custom-handler>
 
+    <custom-handler name="log4jAppender" module="org.apache.log4j" class="org.apache.log4j.ConsoleAppender">
+        <properties>
+            <property name="target" value="System.out"/>
+        </properties>
+    </custom-handler> -->
+
     <periodic-rotating-file-handler name="FILE">
-        <encoding value="UTF-8" />
-        <filter>
-            <any>
-                <level name="INFO" />
-                <not>
-                    <level name="TRACE" />
-                </not>
-            </any>
-        </filter>
+        <encoding value="UTF-8"/>
+        <filter-spec value="any(levels(INFO),not(levels(TRACE)))"/>
         <formatter>
             <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
         </formatter>
@@ -77,26 +79,30 @@
     </periodic-rotating-file-handler>
 
     <size-rotating-file-handler name="sizeLogger">
-        <level name="DEBUG" />
-        <encoding value="UTF-8" />
-        <filter>
-            <all>
-                <change-level new-level="DEBUG"/>
-                <match pattern=".*" />
-            </all>
-        </filter>
+        <level name="DEBUG"/>
+        <encoding value="UTF-8"/>
+        <filter-spec value="all(levelChange(DEBUG),match(&quot;JBAS+\\d&quot;))"/>
         <formatter>
             <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
         </formatter>
         <file relative-to="jboss.server.log.dir" path="sizeLogger.log"/>
-        <rotate-size value="64m" />
-        <max-backup-index value="1024" />
-        <append value="false" />
+        <rotate-size value="64m"/>
+        <max-backup-index value="1024"/>
+        <append value="false"/>
     </size-rotating-file-handler>
 
+    <logger category="com.example" use-parent-handlers="false">
+        <level name="TRACE"/>
+        <filter-spec value="levelRange[TRACE,WARN)"/>
+        <handlers>
+            <handler name="sizeLogger"/>
+            <handler name="CONSOLE"/>
+        </handlers>
+    </logger>
 
     <logger category="com.arjuna">
         <level name="WARN"/>
+        <filter-spec value="levelRange[TRACE,WARN]"/>
     </logger>
 
     <root-logger>
@@ -104,7 +110,31 @@
         <handlers>
             <handler name="CONSOLE"/>
             <handler name="FILE"/>
-            <handler name="customHandler" />
         </handlers>
     </root-logger>
+
+    <logging-profiles>
+        <logging-profile name="test-profile">
+
+            <console-handler name="CONSOLE">
+                <level name="ALL"/>
+                <filter-spec value="levelRange(TRACE,WARN)"/>
+                <formatter>
+                    <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
+                </formatter>
+            </console-handler>
+
+            <logger category="org.jboss.as.logging">
+                <level name="TRACE"/>
+                <filter-spec value="levelRange[TRACE,WARN)"/>
+            </logger>
+
+            <root-logger>
+                <level name="INFO"/>
+                <handlers>
+                    <handler name="CONSOLE"/>
+                </handlers>
+            </root-logger>
+        </logging-profile>
+    </logging-profiles>
 </subsystem>

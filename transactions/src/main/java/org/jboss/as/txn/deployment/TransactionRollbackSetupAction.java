@@ -1,3 +1,25 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 package org.jboss.as.txn.deployment;
 
 import java.util.Collections;
@@ -23,6 +45,7 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class TransactionRollbackSetupAction implements SetupAction, Service<TransactionRollbackSetupAction> {
 
+    private static final ThreadLocal<Integer> depth = new ThreadLocal<Integer>();
 
     private final InjectedValue<TransactionManager> transactionManager = new InjectedValue<TransactionManager>();
 
@@ -34,31 +57,13 @@ public class TransactionRollbackSetupAction implements SetupAction, Service<Tran
 
     @Override
     public void setup(final Map<String, Object> properties) {
-
+        changeDepth(1);
     }
 
     @Override
     public void teardown(final Map<String, Object> properties) {
-        try {
-            final TransactionManager tm = transactionManager.getValue();
-            final int status = tm.getStatus();
-
-            switch (status) {
-                case Status.STATUS_ACTIVE:
-                case Status.STATUS_COMMITTING:
-                case Status.STATUS_MARKED_ROLLBACK:
-                case Status.STATUS_PREPARING:
-                case Status.STATUS_ROLLING_BACK:
-                case Status.STATUS_PREPARED:
-                    try {
-                        TransactionLogger.ROOT_LOGGER.transactionStillOpen(status);
-                        tm.rollback();
-                    } catch (Exception ex) {
-                        TransactionLogger.ROOT_LOGGER.unableToRollBack(ex);
-                    }
-            }
-        } catch (Exception e) {
-            TransactionLogger.ROOT_LOGGER.unableToGetTransactionStatus(e);
+        if (changeDepth(-1) == 0) {
+            checkTransactionStatus();
         }
     }
 
@@ -89,5 +94,40 @@ public class TransactionRollbackSetupAction implements SetupAction, Service<Tran
 
     public InjectedValue<TransactionManager> getTransactionManager() {
         return transactionManager;
+    }
+
+    private int changeDepth(int increment) {
+        Integer now = depth.get();
+        int newVal = now == null ? increment : now.intValue() + increment;
+        if (newVal == 0) {
+            depth.set(null);
+        } else {
+            depth.set(Integer.valueOf(newVal));
+        }
+        return newVal;
+    }
+
+    private void checkTransactionStatus() {
+        try {
+            final TransactionManager tm = transactionManager.getValue();
+            final int status = tm.getStatus();
+
+            switch (status) {
+                case Status.STATUS_ACTIVE:
+                case Status.STATUS_COMMITTING:
+                case Status.STATUS_MARKED_ROLLBACK:
+                case Status.STATUS_PREPARING:
+                case Status.STATUS_ROLLING_BACK:
+                case Status.STATUS_PREPARED:
+                    try {
+                        TransactionLogger.ROOT_LOGGER.transactionStillOpen(status);
+                        tm.rollback();
+                    } catch (Exception ex) {
+                        TransactionLogger.ROOT_LOGGER.unableToRollBack(ex);
+                    }
+            }
+        } catch (Exception e) {
+            TransactionLogger.ROOT_LOGGER.unableToGetTransactionStatus(e);
+        }
     }
 }

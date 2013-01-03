@@ -47,6 +47,8 @@ import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -60,15 +62,21 @@ public class OperationValidator {
     private final ImmutableManagementResourceRegistration root;
     private final boolean validateDescriptions;
     private final boolean includeOperationInError;
+    private final boolean exitOnError;
 
     public OperationValidator(final ImmutableManagementResourceRegistration root) {
         this(root, true, true);
     }
 
     public OperationValidator(final ImmutableManagementResourceRegistration root, boolean validateDescriptions, boolean includeOperationInError) {
+        this(root, true, true, true);
+    }
+
+    public OperationValidator(final ImmutableManagementResourceRegistration root, boolean validateDescriptions, boolean includeOperationInError, boolean exitOnError) {
         this.root = root;
         this.validateDescriptions = validateDescriptions;
         this.includeOperationInError = includeOperationInError;
+        this.exitOnError = exitOnError;
     }
 
     /**
@@ -83,7 +91,17 @@ public class OperationValidator {
         }
 
         for (ModelNode operation : operations) {
-            validateOperation(operation);
+            try {
+                validateOperation(operation);
+            } catch (RuntimeException e) {
+                if (exitOnError) {
+                    throw e;
+                } else {
+                    System.out.println("---- Operation validation error:");
+                    System.out.println(e.getMessage());
+                }
+
+            }
         }
     }
 
@@ -96,6 +114,20 @@ public class OperationValidator {
     public void validateOperation(final ModelNode operation) {
         if (operation == null) {
             return;
+        }
+        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+        final String name = operation.get(OP).asString();
+
+        OperationEntry entry = root.getOperationEntry(address, name);
+        if (entry == null) {
+            throwOrWarnAboutDescriptorProblem(MESSAGES.noOperationEntry(name, address));
+        }
+        //noinspection ConstantConditions
+        if (entry.getType() == EntryType.PRIVATE) {
+            return;
+        }
+        if (entry.getOperationHandler() == null) {
+            throwOrWarnAboutDescriptorProblem(MESSAGES.noOperationHandler(name, address));
         }
         final DescriptionProvider provider = getDescriptionProvider(operation);
         final ModelNode description = provider.getModelDescription(null);
@@ -168,14 +200,15 @@ public class OperationValidator {
             if(described.hasDefined(ALTERNATIVES)) {
                 alternatives = described.get(ALTERNATIVES).asList();
             }
-            final boolean exist = actualParams.containsKey(paramName);
+            final boolean exist = actualParams.containsKey(paramName) && actualParams.get(paramName).isDefined();
             final String alternative = hasAlternative(actualParams.keySet(), alternatives);
+            final boolean alternativeExist = alternative != null && actualParams.get(alternative).isDefined();
             if (required) {
-                if(!exist && alternative == null) {
+                if(!exist && !alternativeExist) {
                     throw MESSAGES.validationFailedRequiredParameterNotPresent(paramName, formatOperationForMessage(operation));
                 }
             }
-            if(exist && alternative != null) {
+            if(exist && alternativeExist) {
                 throw MESSAGES.validationFailedRequiredParameterPresentAsWellAsAlternative(alternative, paramName, formatOperationForMessage(operation));
             }
         }
@@ -214,7 +247,7 @@ public class OperationValidator {
     }
 
     private void checkRange(final ModelNode operation, final ModelNode description, final String paramName, final ModelType modelType, final ModelNode describedProperty, final ModelNode value) {
-        if (!value.isDefined()) {
+        if (!value.isDefined() || value.getType() == ModelType.EXPRESSION) {
             return;
         }
         if (describedProperty.hasDefined(MIN)) {

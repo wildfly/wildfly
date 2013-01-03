@@ -24,6 +24,7 @@ package org.jboss.as.cmp.component;
 
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -90,7 +91,11 @@ public class CmpEntityBeanComponent extends EntityBeanComponent {
     }
 
     public Collection<Object> getEntityLocalCollection(List<Object> idList) {
-        return null;
+       final List<Object> result = new ArrayList<Object>(idList.size());
+       for (Object id:idList) {
+           result.add(getEJBLocalObject(id));
+       }
+       return result;
     }
 
     public void synchronizeEntitiesWithinTransaction(Transaction transaction) {
@@ -121,7 +126,7 @@ public class CmpEntityBeanComponent extends EntityBeanComponent {
      * @throws Exception
      */
     public void invokeEjbStore(CmpEntityBeanContext ctx) throws Exception {
-        if (ctx.getPrimaryKey() != null) {
+        if (ctx.getPrimaryKeyUnchecked() != null) {
             // if call-ejb-store-for-clean=true then invoke ejbStore first (the last chance to modify the instance)
             if (ejbStoreForClean) {
                 try {
@@ -150,7 +155,7 @@ public class CmpEntityBeanComponent extends EntityBeanComponent {
     }
 
     public void storeEntity(CmpEntityBeanContext ctx) throws Exception {
-        if (ctx.getPrimaryKey() != null) {
+        if (ctx.getPrimaryKeyUnchecked() != null) {
             if (getStoreManager().isStoreRequired(ctx)) {
                 getStoreManager().storeEntity(ctx);
             }

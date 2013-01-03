@@ -51,8 +51,8 @@ import org.jboss.as.arquillian.service.InContainerManagementClientExtension;
 import org.jboss.as.arquillian.service.JMXProtocolEndpointExtension;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceActivator;
-import org.jboss.osgi.spi.BundleInfo;
-import org.jboss.osgi.spi.ManifestBuilder;
+import org.jboss.osgi.metadata.ManifestBuilder;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.ArchivePaths;
@@ -83,6 +83,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
         defaultDependencies.add("deployment.arquillian-service");
         defaultDependencies.add("org.jboss.modules");
         defaultDependencies.add("org.jboss.msc");
+        defaultDependencies.add("org.osgi.core");
     }
 
     private static final Logger log = Logger.getLogger(JMXProtocolPackager.class);
@@ -178,6 +179,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
                     StringBuilder builder = new StringBuilder();
                     builder.append("org.jboss.arquillian.container.test.api,org.jboss.arquillian.junit,");
                     builder.append("org.jboss.arquillian.osgi,org.jboss.arquillian.test.api,");
+                    builder.append("org.jboss.as.arquillian.api,org.jboss.as.arquillian.container,org.jboss.as.osgi,");
                     builder.append("org.jboss.shrinkwrap.api,org.jboss.shrinkwrap.api.asset,org.jboss.shrinkwrap.api.spec,");
                     builder.append("org.junit,org.junit.runner");
                     props.setProperty(Constants.EXPORT_PACKAGE, builder.toString());
@@ -222,7 +224,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
         final Manifest manifest = ManifestUtils.getOrCreateManifest(appArchive);
 
         // Don't enrich with Modules Dependencies if this is a OSGi bundle
-        if (BundleInfo.isValidBundleManifest(manifest)) {
+        if (OSGiManifestBuilder.isValidBundleManifest(manifest)) {
             return;
         }
         Attributes attributes = manifest.getMainAttributes();

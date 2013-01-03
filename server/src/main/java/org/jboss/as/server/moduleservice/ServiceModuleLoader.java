@@ -22,7 +22,6 @@
 package org.jboss.as.server.moduleservice;
 
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.server.Bootstrap;
 import org.jboss.as.server.ServerLogger;
@@ -69,12 +68,10 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
     private class ModuleSpecLoadListener extends AbstractServiceListener<ModuleSpec> {
 
         private final CountDownLatch latch = new CountDownLatch(1);
-        private final ModuleIdentifier identifier;
         private volatile StartException startException;
         private volatile ModuleSpec moduleSpec;
 
         private ModuleSpecLoadListener(ModuleIdentifier identifier) {
-            this.identifier = identifier;
         }
 
         @Override
@@ -100,13 +97,10 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
                 case STOP_REQUESTED_to_STOPPING: {
                     log.tracef("serviceStopping: %s", controller);
                     ModuleSpec moduleSpec = this.moduleSpec;
-                    try {
-                        Module module = loadModule(moduleSpec.getModuleIdentifier());
+                    ModuleIdentifier identifier = moduleSpec.getModuleIdentifier();
+                    Module module = findLoadedModuleLocal(identifier);
+                    if(module != null)
                         unloadModuleLocal(module);
-                    } catch (ModuleLoadException e) {
-                        // ignore, the module should always be already loaded by this point,
-                        // and if not we will only mask the true problem
-                    }
                     // TODO: what if the service is restarted?
                     controller.removeListener(this);
                     break;
@@ -123,17 +117,8 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
         }
 
         public ModuleSpec getModuleSpec() throws ModuleLoadException {
-            if (moduleSpec != null)
-                return moduleSpec;
             if (startException != null)
                 throw new ModuleLoadException(startException.getCause());
-            try {
-                log.tracef("waiting for: %s", identifier);
-                if (latch.await(2000, TimeUnit.MILLISECONDS) == false)
-                    throw ServerMessages.MESSAGES.timeoutWaitingForModuleService(identifier);
-            } catch (InterruptedException e) {
-                // ignore
-            }
             return moduleSpec;
         }
     }

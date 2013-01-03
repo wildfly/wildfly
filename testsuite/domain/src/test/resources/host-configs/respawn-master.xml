@@ -20,9 +20,9 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<host xmlns="urn:jboss:domain:1.3"
+<host xmlns="urn:jboss:domain:1.4"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="urn:jboss:domain:1.3 jboss-as-config_1_3.xsd"
+      xsi:schemaLocation="urn:jboss:domain:1.4 jboss-as-config_1_4.xsd"
       name="master">
 
     <paths>

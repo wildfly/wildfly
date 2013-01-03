@@ -37,10 +37,10 @@ import javax.ejb.TimerService;
 @Stateless
 public class TimedObjectTimerServiceBean implements TimedObject {
 
-    private static CountDownLatch latch = new CountDownLatch(1);
-    private static int TIMER_CALL_WAITING_S = 2;
+    private static volatile CountDownLatch latch = new CountDownLatch(1);
+    private static final int TIMER_CALL_WAITING_S = 2;
 
-    private static boolean timerServiceCalled = false;
+    private static volatile boolean timerServiceCalled = false;
 
     @Resource
     private SessionContext sessionContext;

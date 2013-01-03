@@ -2,8 +2,9 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config default-supplement="default">
    <extension-module>org.jboss.as.jmx</extension-module>
-   <subsystem xmlns="urn:jboss:domain:jmx:1.1">
-       <show-model value="true"/>
+   <subsystem xmlns="urn:jboss:domain:jmx:1.2">
+       <expose-resolved-model/>
+       <expose-expression-model/>
        <?REMOTING-CONNECTOR?>
    </subsystem>
    <supplement name="default">

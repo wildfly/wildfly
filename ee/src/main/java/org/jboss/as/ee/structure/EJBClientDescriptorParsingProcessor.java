@@ -22,6 +22,7 @@
 
 package org.jboss.as.ee.structure;
 
+import org.jboss.as.ee.EeLogger;
 import org.jboss.as.ee.EeMessages;
 import org.jboss.as.ee.metadata.EJBClientDescriptorMetaData;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -54,8 +55,6 @@ import java.io.InputStream;
  * @author Jaikiran Pai
  */
 public class EJBClientDescriptorParsingProcessor implements DeploymentUnitProcessor {
-
-    private static final Logger logger = Logger.getLogger(EJBClientDescriptorParsingProcessor.class);
 
     public static final String[] EJB_CLIENT_DESCRIPTOR_LOCATIONS = {"META-INF/jboss-ejb-client.xml", "WEB-INF/jboss-ejb-client.xml"};
 
@@ -96,7 +95,7 @@ public class EJBClientDescriptorParsingProcessor implements DeploymentUnitProces
             return;
         }
         if (deploymentUnit.getParent() != null) {
-            logger.warnf("%s in subdeployment ignored. jboss-ejb-client.xml is only parsed for top level deployments.", descriptorFile.getPathName());
+            EeLogger.ROOT_LOGGER.subdeploymentIgnored(descriptorFile.getPathName());
             return;
         }
         final File ejbClientDeploymentDescriptorFile;
@@ -106,7 +105,7 @@ public class EJBClientDescriptorParsingProcessor implements DeploymentUnitProces
             throw EeMessages.MESSAGES.failedToProcessEJBClientDescriptor(e);
         }
         final EJBClientDescriptorMetaData ejbClientDescriptorMetaData = parse(ejbClientDeploymentDescriptorFile, deploymentUnit, moduleLoader);
-        logger.debug("Successfully parsed jboss-ejb-client.xml for deployment unit " + deploymentUnit);
+        EeLogger.ROOT_LOGGER.debugf("Successfully parsed jboss-ejb-client.xml for deployment unit %s", deploymentUnit);
         // attach the metadata
         deploymentUnit.putAttachment(Attachments.EJB_CLIENT_METADATA, ejbClientDescriptorMetaData);
     }

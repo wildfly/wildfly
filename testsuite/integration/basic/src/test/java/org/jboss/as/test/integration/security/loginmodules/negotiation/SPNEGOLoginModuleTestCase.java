@@ -71,6 +71,7 @@ import org.jboss.security.SecurityConstants;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -85,6 +86,7 @@ import org.junit.runner.RunWith;
         SPNEGOLoginModuleTestCase.KDCServerSetupTask.class, //
         SPNEGOLoginModuleTestCase.SecurityDomainsSetup.class })
 @RunAsClient
+@Ignore("AS7-5624")
 public class SPNEGOLoginModuleTestCase {
 
     private static Logger LOGGER = Logger.getLogger(SPNEGOLoginModuleTestCase.class);

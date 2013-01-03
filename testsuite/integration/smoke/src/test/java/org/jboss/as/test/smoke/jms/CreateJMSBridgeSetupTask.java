@@ -29,7 +29,6 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.test.jms.auxiliary.CreateQueueSetupTask;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.logging.Logger;
 
 /**
@@ -72,7 +71,7 @@ public class CreateJMSBridgeSetupTask extends CreateQueueSetupTask {
         createConnectionFactoryOp.get(ClientConstants.OP_ADDR).add("hornetq-server", "default");
         createConnectionFactoryOp.get(ClientConstants.OP_ADDR).add("connection-factory", cfName);
         ModelNode connector = createConnectionFactoryOp.get("connector");
-        connector.get("in-vm").set(ModelType.UNDEFINED);
+        connector.get("in-vm").set(new ModelNode());
 
         createConnectionFactoryOp.get("factory-type").set("XA_GENERIC");
         createConnectionFactoryOp.get("entries").add(cfJndiName);

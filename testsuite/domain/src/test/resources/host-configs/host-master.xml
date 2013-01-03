@@ -20,9 +20,9 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<host xmlns="urn:jboss:domain:1.3"
+<host xmlns="urn:jboss:domain:1.4"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="urn:jboss:domain:1.3 jboss-as-config_1_3.xsd"
+      xsi:schemaLocation="urn:jboss:domain:1.4 jboss-as-config_1_4.xsd"
       name="master">
 
     <paths>
@@ -70,7 +70,16 @@
           <heap size="64m" max-size="128m"/>
           <environment-variables>
               <variable name="DOMAIN_TEST_JVM" value="jvm"/>
-          </environment-variables>               
+          </environment-variables>
+            <!--
+            <jvm-options>
+                <option value="-Xdebug"/>
+                <option value="-Xnoagent"/>
+                <option value="-Djava.compiler=NONE"/>
+                <option value="-agentlib:jdwp=transport=dt_socket,address=5005,server=y,suspend=y"/>
+
+            </jvm-options>
+            -->
        </jvm>
  	</jvms>
 
@@ -88,7 +97,7 @@
             <jvm name="default">
 	             <environment-variables>
 	                 <variable name="DOMAIN_TEST_SERVER" value="server"/>
-	             </environment-variables>               
+	             </environment-variables>
             </jvm>
         </server>
         <server name="main-two" group="main-server-group" auto-start="false">
@@ -120,6 +129,7 @@
                     <inet-address value="${jboss.test.host.master.address}"/>
                 </interface>
             </interfaces>
+            <jvm name="default" />
         </server>
     </servers>
 </host>

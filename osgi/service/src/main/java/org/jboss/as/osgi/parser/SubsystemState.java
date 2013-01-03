@@ -22,7 +22,6 @@
 
 package org.jboss.as.osgi.parser;
 
-import static org.jboss.as.osgi.OSGiConstants.SERVICE_BASE_NAME;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 
 import java.io.Serializable;
@@ -35,11 +34,11 @@ import java.util.Map;
 import java.util.Observable;
 
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -54,9 +53,7 @@ import org.jboss.msc.service.StopContext;
  */
 public class SubsystemState  extends Observable implements Service<SubsystemState> {
 
-    public static final ServiceName SERVICE_NAME = SERVICE_BASE_NAME.append("subsystemstate");
     public static final String PROP_JBOSS_OSGI_SYSTEM_MODULES = "org.jboss.osgi.system.modules";
-    public static final String PROP_JBOSS_OSGI_SYSTEM_PACKAGES = "org.jboss.osgi.system.packages";
     public static final String PROP_JBOSS_OSGI_SYSTEM_MODULES_EXTRA = "org.jboss.osgi.system.modules.extra";
 
     private final Map<String, Object> properties = new LinkedHashMap<String, Object>();
@@ -69,13 +66,13 @@ public class SubsystemState  extends Observable implements Service<SubsystemStat
         SubsystemState state = new SubsystemState();
         state.setActivation(activation);
 
-        ServiceBuilder<SubsystemState> builder = serviceTarget.addService(SERVICE_NAME, state);
+        ServiceBuilder<SubsystemState> builder = serviceTarget.addService(OSGiConstants.SUBSYSTEM_STATE_SERVICE_NAME, state);
         builder.setInitialMode(Mode.LAZY);
         return builder.install();
     }
 
     static SubsystemState getSubsystemState(OperationContext context) {
-        ServiceController<?> controller = context.getServiceRegistry(true).getService(SubsystemState.SERVICE_NAME);
+        ServiceController<?> controller = context.getServiceRegistry(true).getService(OSGiConstants.SUBSYSTEM_STATE_SERVICE_NAME);
         return controller != null ? (SubsystemState) controller.getValue() : null;
     }
 
@@ -97,7 +94,16 @@ public class SubsystemState  extends Observable implements Service<SubsystemStat
     }
 
     public enum Activation {
-        EAGER, LAZY
+        EAGER("eager"), LAZY("lazy");
+        private final String name;
+        Activation(String name){
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
     }
 
     public Map<String, Object> getProperties() {

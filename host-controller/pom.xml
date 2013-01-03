@@ -101,6 +101,10 @@
             <artifactId>jboss-as-threads</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-version</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.logmanager</groupId>
             <artifactId>jboss-logmanager</artifactId>
         </dependency>
@@ -111,7 +115,7 @@
         <dependency>
             <groupId>org.jboss.remotingjmx</groupId>
             <artifactId>remoting-jmx</artifactId>
-        </dependency>        
+        </dependency>
         <dependency>
             <groupId>org.jboss.marshalling</groupId>
             <artifactId>jboss-marshalling-river</artifactId>
@@ -120,6 +124,11 @@
         <dependency>
             <groupId>org.jboss.stdio</groupId>
             <artifactId>jboss-stdio</artifactId>
+        </dependency>
+        <dependency>
+           <groupId>org.jboss.as</groupId>
+           <artifactId>jboss-as-model-test</artifactId>
+           <scope>test</scope>
         </dependency>
         <dependency>
            <groupId>junit</groupId>

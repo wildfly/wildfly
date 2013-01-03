@@ -77,7 +77,7 @@ public class ArchiveDeployer {
             return deployer.deploy(name, input);
         } catch (Exception ex) {
             Throwable rootCause = ex.getCause();
-            while (null != rootCause) {
+            while (null != rootCause && rootCause.getCause() != null) {
                 rootCause = rootCause.getCause();
             }
             throw new DeploymentException("Cannot deploy: " + name, rootCause);

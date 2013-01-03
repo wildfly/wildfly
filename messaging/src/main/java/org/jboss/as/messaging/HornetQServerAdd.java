@@ -24,24 +24,25 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.ALLOW_FAILBACK;
 import static org.jboss.as.messaging.CommonAttributes.ASYNC_CONNECTION_EXECUTION_ENABLED;
 import static org.jboss.as.messaging.CommonAttributes.BACKUP;
+import static org.jboss.as.messaging.CommonAttributes.BACKUP_GROUP_NAME;
 import static org.jboss.as.messaging.CommonAttributes.BINDINGS_DIRECTORY;
-import static org.jboss.as.messaging.CommonAttributes.CLUSTERED;
+import static org.jboss.as.messaging.CommonAttributes.BROADCAST_GROUP;
+import static org.jboss.as.messaging.CommonAttributes.CHECK_FOR_LIVE_SERVER;
 import static org.jboss.as.messaging.CommonAttributes.CLUSTER_PASSWORD;
 import static org.jboss.as.messaging.CommonAttributes.CLUSTER_USER;
-import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_TTL_OVERRIDE;
 import static org.jboss.as.messaging.CommonAttributes.CREATE_BINDINGS_DIR;
 import static org.jboss.as.messaging.CommonAttributes.CREATE_JOURNAL_DIR;
+import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP;
 import static org.jboss.as.messaging.CommonAttributes.FAILBACK_DELAY;
 import static org.jboss.as.messaging.CommonAttributes.FAILOVER_ON_SHUTDOWN;
 import static org.jboss.as.messaging.CommonAttributes.ID_CACHE_SIZE;
-import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
-import static org.jboss.as.messaging.CommonAttributes.JMS_TOPIC;
+import static org.jboss.as.messaging.CommonAttributes.JGROUPS_CHANNEL;
+import static org.jboss.as.messaging.CommonAttributes.JGROUPS_STACK;
 import static org.jboss.as.messaging.CommonAttributes.JMX_DOMAIN;
 import static org.jboss.as.messaging.CommonAttributes.JMX_MANAGEMENT_ENABLED;
 import static org.jboss.as.messaging.CommonAttributes.JOURNAL_BUFFER_SIZE;
@@ -56,7 +57,6 @@ import static org.jboss.as.messaging.CommonAttributes.JOURNAL_SYNC_NON_TRANSACTI
 import static org.jboss.as.messaging.CommonAttributes.JOURNAL_SYNC_TRANSACTIONAL;
 import static org.jboss.as.messaging.CommonAttributes.JOURNAL_TYPE;
 import static org.jboss.as.messaging.CommonAttributes.LARGE_MESSAGES_DIRECTORY;
-import static org.jboss.as.messaging.CommonAttributes.LIVE_CONNECTOR_REF;
 import static org.jboss.as.messaging.CommonAttributes.LOG_JOURNAL_WRITE_RATE;
 import static org.jboss.as.messaging.CommonAttributes.MANAGEMENT_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.MANAGEMENT_NOTIFICATION_ADDRESS;
@@ -73,8 +73,7 @@ import static org.jboss.as.messaging.CommonAttributes.PERF_BLAST_PAGES;
 import static org.jboss.as.messaging.CommonAttributes.PERSISTENCE_ENABLED;
 import static org.jboss.as.messaging.CommonAttributes.PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY;
 import static org.jboss.as.messaging.CommonAttributes.PERSIST_ID_CACHE;
-import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
-import static org.jboss.as.messaging.CommonAttributes.QUEUE;
+import static org.jboss.as.messaging.CommonAttributes.REPLICATION_CLUSTERNAME;
 import static org.jboss.as.messaging.CommonAttributes.RUN_SYNC_SPEED_TEST;
 import static org.jboss.as.messaging.CommonAttributes.SCHEDULED_THREAD_POOL_MAX_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.SECURITY_DOMAIN;
@@ -87,6 +86,8 @@ import static org.jboss.as.messaging.CommonAttributes.THREAD_POOL_MAX_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_TIMEOUT_SCAN_PERIOD;
 import static org.jboss.as.messaging.CommonAttributes.WILD_CARD_ROUTING_ENABLED;
+import static org.jboss.as.messaging.MessagingPathHandlers.PATHS;
+import static org.jboss.as.messaging.MessagingPathHandlers.RELATIVE_TO;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -96,21 +97,25 @@ import java.util.Set;
 
 import javax.management.MBeanServer;
 
+import org.hornetq.api.core.BroadcastGroupConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
@@ -134,17 +139,11 @@ import org.jboss.msc.service.ServiceTarget;
  * @author Emanuel Muckenhuber
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */
 class HornetQServerAdd implements OperationStepHandler {
 
-    private static final String DEFAULT_PATH = "messaging";
-    private static final String DEFAULT_RELATIVE_TO = "jboss.server.data.dir";
     static final String PATH_BASE = "paths";
-
-    static final String DEFAULT_BINDINGS_DIR = "bindings";
-    static final String DEFAULT_JOURNAL_DIR = "journal";
-    static final String DEFAULT_LARGE_MESSAGE_DIR = "largemessages";
-    static final String DEFAULT_PAGING_DIR = "paging";
 
     public static final HornetQServerAdd INSTANCE = new HornetQServerAdd();
 
@@ -163,13 +162,22 @@ class HornetQServerAdd implements OperationStepHandler {
             attributeDefinition.validateAndSet(operation, model);
         }
 
-        model.get(QUEUE).setEmptyObject();
-        model.get(CONNECTION_FACTORY).setEmptyObject();
-        model.get(JMS_QUEUE).setEmptyObject();
-        model.get(JMS_TOPIC).setEmptyObject();
-        model.get(POOLED_CONNECTION_FACTORY).setEmptyObject();
-
         if (context.isNormalServer()) {
+            // add an operation to create all the messaging paths resources that have not been already been created
+            // prior to adding the HornetQ server
+            context.addStep(new OperationStepHandler() {
+                @Override
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                    final ModelNode model = Resource.Tools.readModel(resource);
+                    for (String path : MessagingPathHandlers.PATHS.keySet()) {
+                        if (!model.get(ModelDescriptionConstants.PATH).hasDefined(path)) {
+                            PathAddress pathAddress = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.PATH, path));
+                            context.createResource(pathAddress);
+                        }
+                    }
+                    context.stepCompleted();
+                }
+            }, OperationContext.Stage.MODEL);
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
@@ -178,15 +186,18 @@ class HornetQServerAdd implements OperationStepHandler {
 
                     context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
 
-                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-                        for(ServiceController<?> controller : controllers) {
-                            context.removeService(controller.getName());
+                    context.completeStep(new OperationContext.RollbackHandler() {
+                        @Override
+                        public void handleRollback(OperationContext context, ModelNode operation) {
+                            for(ServiceController<?> controller : controllers) {
+                                context.removeService(controller.getName());
+                            }
                         }
-                    }
+                    });
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-        context.completeStep();
+        context.stepCompleted();
     }
 
     private void performRuntime(final OperationContext context, final HornetQServerResource resource,
@@ -206,15 +217,14 @@ class HornetQServerAdd implements OperationStepHandler {
                 final Configuration configuration = transformConfig(context, serverName, model);
 
                 // Create path services
-
-                String bindingsPath = getPath(DEFAULT_BINDINGS_DIR, CommonAttributes.PATH.resolveModelAttribute(context, model.get(PATH, BINDINGS_DIRECTORY)));
-                String bindingsRelativeToPath = getRelativeToPath(model.get(PATH, BINDINGS_DIRECTORY));
-                String journalPath = getPath(DEFAULT_JOURNAL_DIR, CommonAttributes.PATH.resolveModelAttribute(context, model.get(PATH, JOURNAL_DIRECTORY)));
-                String journalRelativeToPath = getRelativeToPath(model.get(PATH, JOURNAL_DIRECTORY));
-                String largeMessagePath = getPath(DEFAULT_LARGE_MESSAGE_DIR, CommonAttributes.PATH.resolveModelAttribute(context, model.get(PATH, LARGE_MESSAGES_DIRECTORY)));
-                String largeMessageRelativeToPath = getRelativeToPath(model.get(PATH, LARGE_MESSAGES_DIRECTORY));
-                String pagingPath = getPath(DEFAULT_PAGING_DIR, CommonAttributes.PATH.resolveModelAttribute(context, model.get(PATH, PAGING_DIRECTORY)));
-                String pagingRelativeToPath = getRelativeToPath(model.get(PATH, PAGING_DIRECTORY));
+                String bindingsPath = PATHS.get(BINDINGS_DIRECTORY).resolveModelAttribute(context, model.get(PATH, BINDINGS_DIRECTORY)).asString();
+                String bindingsRelativeToPath = RELATIVE_TO.resolveModelAttribute(context, model.get(PATH, BINDINGS_DIRECTORY)).asString();
+                String journalPath = PATHS.get(JOURNAL_DIRECTORY).resolveModelAttribute(context, model.get(PATH, JOURNAL_DIRECTORY)).asString();
+                String journalRelativeToPath = RELATIVE_TO.resolveModelAttribute(context, model.get(PATH, JOURNAL_DIRECTORY)).asString();
+                String largeMessagePath = PATHS.get(LARGE_MESSAGES_DIRECTORY).resolveModelAttribute(context, model.get(PATH, LARGE_MESSAGES_DIRECTORY)).asString();
+                String largeMessageRelativeToPath = RELATIVE_TO.resolveModelAttribute(context, model.get(PATH, LARGE_MESSAGES_DIRECTORY)).asString();
+                String pagingPath = PATHS.get(PAGING_DIRECTORY).resolveModelAttribute(context, model.get(PATH, PAGING_DIRECTORY)).asString();
+                String pagingRelativeToPath = RELATIVE_TO.resolveModelAttribute(context, model.get(PATH, PAGING_DIRECTORY)).asString();
 
                 // Create the HornetQ Service
                 final HornetQService hqService = new HornetQService(
@@ -238,7 +248,7 @@ class HornetQServerAdd implements OperationStepHandler {
 
                 // Process acceptors and connectors
                 final Set<String> socketBindings = new HashSet<String>();
-                TransportConfigOperationHandlers.processAcceptors(configuration, model, socketBindings);
+                TransportConfigOperationHandlers.processAcceptors(context, configuration, model, socketBindings);
 
                 for (final String socketBinding : socketBindings) {
                     final ServiceName socketName = SocketBinding.JBOSS_BINDING_NAME.append(socketBinding);
@@ -246,7 +256,7 @@ class HornetQServerAdd implements OperationStepHandler {
                 }
 
                 final Set<String> outboundSocketBindings = new HashSet<String>();
-                TransportConfigOperationHandlers.processConnectors(configuration, model, outboundSocketBindings);
+                TransportConfigOperationHandlers.processConnectors(context, configuration, model, outboundSocketBindings);
                 for (final String outboundSocketBinding : outboundSocketBindings) {
                     final ServiceName outboundSocketName = OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(outboundSocketBinding);
                     // Optional dependency so it won't fail if the user used a ref to socket-binding instead of
@@ -268,15 +278,34 @@ class HornetQServerAdd implements OperationStepHandler {
                 if(broadcastGroupConfigurations != null) {
                     for(final BroadcastGroupConfiguration config : broadcastGroupConfigurations) {
                         final String name = config.getName();
-                        final ServiceName groupBinding = GroupBindingService.getBroadcastBaseServiceName(hqServiceName).append(name);
-                        serviceBuilder.addDependency(groupBinding, SocketBinding.class, hqService.getGroupBindingInjector("broadcast" + name));
+                        final String key = "broadcast" + name;
+                        ModelNode broadcastGroupModel = model.get(BROADCAST_GROUP, name);
+
+                        if (broadcastGroupModel.hasDefined(JGROUPS_STACK.getName())) {
+                            String jgroupsStack = JGROUPS_STACK.resolveModelAttribute(context, broadcastGroupModel).asString();
+                            String channelName = JGROUPS_CHANNEL.resolveModelAttribute(context, broadcastGroupModel).asString();
+                            serviceBuilder.addDependency(ServiceName.JBOSS.append("jgroups").append("stack").append(jgroupsStack), ChannelFactory.class, hqService.getJGroupsInjector(key));
+                            hqService.getJGroupsChannels().put(key, channelName);
+                        } else {
+                            final ServiceName groupBinding = GroupBindingService.getBroadcastBaseServiceName(hqServiceName).append(name);
+                            serviceBuilder.addDependency(groupBinding, SocketBinding.class, hqService.getGroupBindingInjector(key));
+                        }
                     }
                 }
                 if(discoveryGroupConfigurations != null) {
                     for(final DiscoveryGroupConfiguration config : discoveryGroupConfigurations.values()) {
                         final String name = config.getName();
-                        final ServiceName groupBinding = GroupBindingService.getDiscoveryBaseServiceName(hqServiceName).append(name);
-                        serviceBuilder.addDependency(groupBinding, SocketBinding.class, hqService.getGroupBindingInjector("discovery" + name));
+                        final String key = "discovery" + name;
+                        ModelNode discoveryGroupModel = model.get(DISCOVERY_GROUP, name);
+                        if (discoveryGroupModel.hasDefined(JGROUPS_STACK.getName())) {
+                            String jgroupsStack = JGROUPS_STACK.resolveModelAttribute(context, discoveryGroupModel).asString();
+                            String channelName = JGROUPS_CHANNEL.resolveModelAttribute(context, discoveryGroupModel).asString();
+                            serviceBuilder.addDependency(ServiceName.JBOSS.append("jgroups").append("stack").append(jgroupsStack), ChannelFactory.class, hqService.getJGroupsInjector(key));
+                            hqService.getJGroupsChannels().put(key, channelName);
+                        } else {
+                            final ServiceName groupBinding = GroupBindingService.getDiscoveryBaseServiceName(hqServiceName).append(name);
+                            serviceBuilder.addDependency(groupBinding, SocketBinding.class, hqService.getGroupBindingInjector(key));
+                        }
                     }
                 }
 
@@ -290,7 +319,7 @@ class HornetQServerAdd implements OperationStepHandler {
                 newControllers.add(hqServerServiceController);
                 newControllers.add(JMSService.addService(serviceTarget, hqServiceName, verificationHandler));
 
-                context.completeStep();
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
         }, OperationContext.Stage.RUNTIME);
     }
@@ -313,11 +342,10 @@ class HornetQServerAdd implements OperationStepHandler {
         configuration.setAllowAutoFailBack(ALLOW_FAILBACK.resolveModelAttribute(context, model).asBoolean());
         configuration.setEnabledAsyncConnectionExecution(ASYNC_CONNECTION_EXECUTION_ENABLED.resolveModelAttribute(context, model).asBoolean());
 
+        configuration.setBackupGroupName(BACKUP_GROUP_NAME.resolveModelAttribute(context, model).asString());
+        configuration.setReplicationClustername(REPLICATION_CLUSTERNAME.resolveModelAttribute(context, model).asString());
+        configuration.setCheckForLiveServer(CHECK_FOR_LIVE_SERVER.resolveModelAttribute(context, model).asBoolean());
         configuration.setBackup(BACKUP.resolveModelAttribute(context, model).asBoolean());
-        if(model.hasDefined(LIVE_CONNECTOR_REF.getName())) {
-            configuration.setLiveConnectorName(LIVE_CONNECTOR_REF.resolveModelAttribute(context, model).asString());
-        }
-        configuration.setClustered(CLUSTERED.resolveModelAttribute(context, model).asBoolean());
         configuration.setClusterPassword(CLUSTER_PASSWORD.resolveModelAttribute(context, model).asString());
         configuration.setClusterUser(CLUSTER_USER.resolveModelAttribute(context, model).asString());
         configuration.setConnectionTTLOverride(CONNECTION_TTL_OVERRIDE.resolveModelAttribute(context, model).asInt());
@@ -335,13 +363,13 @@ class HornetQServerAdd implements OperationStepHandler {
         configuration.setJournalType(journalType);
 
         // AIO Journal
-        configuration.setJournalBufferSize_AIO(JOURNAL_BUFFER_SIZE.resolveModelAttribute(context, model).asInt(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_AIO));
-        configuration.setJournalBufferTimeout_AIO(JOURNAL_BUFFER_TIMEOUT.resolveModelAttribute(context, model).asInt(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO));
-        configuration.setJournalMaxIO_AIO(JOURNAL_MAX_IO.resolveModelAttribute(context, model).asInt(ConfigurationImpl.DEFAULT_JOURNAL_MAX_IO_AIO));
+        configuration.setJournalBufferSize_AIO(JOURNAL_BUFFER_SIZE.resolveModelAttribute(context, model).asInt(HornetQDefaultConfiguration.DEFAULT_JOURNAL_BUFFER_SIZE_AIO));
+        configuration.setJournalBufferTimeout_AIO(JOURNAL_BUFFER_TIMEOUT.resolveModelAttribute(context, model).asInt(HornetQDefaultConfiguration.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO));
+        configuration.setJournalMaxIO_AIO(JOURNAL_MAX_IO.resolveModelAttribute(context, model).asInt(HornetQDefaultConfiguration.DEFAULT_JOURNAL_MAX_IO_AIO));
         // NIO Journal
-        configuration.setJournalBufferSize_NIO(JOURNAL_BUFFER_SIZE.resolveModelAttribute(context, model).asInt(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_NIO));
-        configuration.setJournalBufferTimeout_NIO(JOURNAL_BUFFER_TIMEOUT.resolveModelAttribute(context, model).asInt(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO));
-        configuration.setJournalMaxIO_NIO(JOURNAL_MAX_IO.resolveModelAttribute(context, model).asInt(ConfigurationImpl.DEFAULT_JOURNAL_MAX_IO_NIO));
+        configuration.setJournalBufferSize_NIO(JOURNAL_BUFFER_SIZE.resolveModelAttribute(context, model).asInt(HornetQDefaultConfiguration.DEFAULT_JOURNAL_BUFFER_SIZE_NIO));
+        configuration.setJournalBufferTimeout_NIO(JOURNAL_BUFFER_TIMEOUT.resolveModelAttribute(context, model).asInt(HornetQDefaultConfiguration.DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO));
+        configuration.setJournalMaxIO_NIO(JOURNAL_MAX_IO.resolveModelAttribute(context, model).asInt(HornetQDefaultConfiguration.DEFAULT_JOURNAL_MAX_IO_NIO));
         //
         configuration.setJournalCompactMinFiles(JOURNAL_COMPACT_MIN_FILES.resolveModelAttribute(context, model).asInt());
         configuration.setJournalCompactPercentage(JOURNAL_COMPACT_PERCENTAGE.resolveModelAttribute(context, model).asInt());
@@ -382,9 +410,10 @@ class HornetQServerAdd implements OperationStepHandler {
         configuration.setTransactionTimeout(TRANSACTION_TIMEOUT.resolveModelAttribute(context, model).asLong());
         configuration.setTransactionTimeoutScanPeriod(TRANSACTION_TIMEOUT_SCAN_PERIOD.resolveModelAttribute(context, model).asLong());
         configuration.setWildcardRoutingEnabled(WILD_CARD_ROUTING_ENABLED.resolveModelAttribute(context, model).asBoolean());
-        // --
+
         processAddressSettings(context, configuration, model);
         processSecuritySettings(context, configuration, model);
+        processRemotingInterceptors(context, configuration, model);
 
         // Add in items from child resources
         GroupingHandlerAdd.addGroupingHandlerConfig(context,configuration, model);
@@ -424,6 +453,21 @@ class HornetQServerAdd implements OperationStepHandler {
     }
 
     /**
+     * Process the HornetQ server-side interceptors.
+     */
+    static void processRemotingInterceptors(final OperationContext context, final Configuration configuration, final ModelNode params) {
+        // TODO preemptively check that the interceptor classes can be loaded
+        ModelNode interceptors = params.get(CommonAttributes.REMOTING_INTERCEPTORS.getName());
+        if (interceptors.isDefined()) {
+            final List<String> interceptorClassNames = new ArrayList<String>();
+            for (ModelNode child : interceptors.asList()) {
+                interceptorClassNames.add(child.asString());
+            }
+            configuration.setInterceptorClassNames(interceptorClassNames);
+        }
+    }
+
+    /**
      * Process the security settings.
      *
      * @param configuration the hornetQ configuration
@@ -438,36 +482,11 @@ class HornetQServerAdd implements OperationStepHandler {
                 if(config.hasDefined(CommonAttributes.ROLE)) {
                     final Set<Role> roles = new HashSet<Role>();
                     for (final Property role : config.get(CommonAttributes.ROLE).asPropertyList()) {
-                        roles.add(SecurityRoleAdd.transform(context, role.getName(), role.getValue()));
+                        roles.add(SecurityRoleDefinition.transform(context, role.getName(), role.getValue()));
                     }
                     configuration.getSecurityRoles().put(match, roles);
                 }
             }
         }
     }
-
-   /**
-    * Get the path for a given target.
-    *
-    *
-    * @param name          the path service name
-    * @param path          the detyped path element
-    * @return the path
-    */
-    static String getPath(final String name, final ModelNode path) {
-        return path.isDefined() ? path.asString() : DEFAULT_PATH + name;
-    }
-
-    /**
-     * Get the relative path for a given target.
-     *
-     *
-     * @param name          the path service name
-     * @param path          the detyped path element
-     * @return the path
-     */
-     static String getRelativeToPath(final ModelNode path) {
-         return path.hasDefined(RELATIVE_TO) ? path.get(RELATIVE_TO).asString() : DEFAULT_RELATIVE_TO;
-     }
-
 }

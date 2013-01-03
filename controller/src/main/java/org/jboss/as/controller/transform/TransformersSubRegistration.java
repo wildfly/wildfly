@@ -44,13 +44,23 @@ public interface TransformersSubRegistration {
     TransformersSubRegistration registerSubResource(PathElement element);
 
     /**
-     * Register a sub resource.
+     * Register a sub resource. If discardByDefault is set to {@code true}, both operations and resource transformations
+     * are going to discard operations addressed to this resource.
      *
      * @param element the path element
      * @param discardByDefault don't forward operations by default
      * @return the sub registration
      */
     TransformersSubRegistration registerSubResource(PathElement element, boolean discardByDefault);
+
+    /**
+     * register a sub resource.
+     *
+     * @param element the path element
+     * @param resourceTransformer the resource transformer
+     * @return the transformers sub registration
+     */
+    TransformersSubRegistration registerSubResource(PathElement element, ResourceTransformer resourceTransformer);
 
     /**
      * Register a sub resource.
@@ -60,6 +70,16 @@ public interface TransformersSubRegistration {
      * @return the sub registration
      */
     TransformersSubRegistration registerSubResource(PathElement element, OperationTransformer operationTransformer);
+
+    /**
+     * Register a sub resource.
+     *
+     * @param element the path element
+     * @param resourceTransformer the resource transformer
+     * @param operationTransformer the default operation transformer
+     * @return the transformers sub registration
+     */
+    TransformersSubRegistration registerSubResource(PathElement element, ResourceTransformer resourceTransformer, OperationTransformer operationTransformer);
 
     /**
      * Don't forward and just discard the operation.

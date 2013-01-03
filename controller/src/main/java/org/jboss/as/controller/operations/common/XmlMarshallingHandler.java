@@ -22,31 +22,38 @@
 
 package org.jboss.as.controller.operations.common;
 
+import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
+
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
-import java.util.Locale;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-
-import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
+import org.jboss.dmr.ModelType;
 
 /**
  * A {@link org.jboss.as.controller.OperationStepHandler} that can output a model in XML form
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class XmlMarshallingHandler implements OperationStepHandler, DescriptionProvider {
+public class XmlMarshallingHandler implements OperationStepHandler{
 
-    public static final String OPERATION_NAME = CommonDescriptions.READ_CONFIG_AS_XML;
+    private static final String OPERATION_NAME = "read-config-as-xml";
+
+    public static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME,ControllerResolver.getResolver())
+            .setReplyType(ModelType.STRING)
+            .setReadOnly()
+            .setRuntimeOnly()
+            .build();
 
     private final ConfigurationPersister configPersister;
 
@@ -54,12 +61,7 @@ public class XmlMarshallingHandler implements OperationStepHandler, DescriptionP
         this.configPersister  = configPersister;
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return CommonDescriptions.getReadConfigAsXmlOperation(locale);
-    }
-
-    @Override
+  @Override
     public void execute(OperationContext context, ModelNode operation) {
         final Resource resource = context.readResourceFromRoot(getBaseAddress());
         // Get the model recursively
@@ -84,7 +86,7 @@ public class XmlMarshallingHandler implements OperationStepHandler, DescriptionP
                     PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
             context.getFailureDescription().set(e.toString());
         }
-        context.completeStep();
+        context.stepCompleted();
     }
 
     protected PathAddress getBaseAddress() {

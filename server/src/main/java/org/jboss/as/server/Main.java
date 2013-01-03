@@ -33,6 +33,7 @@ import java.util.StringTokenizer;
 
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.process.CommandLineConstants;
+import org.jboss.as.process.ExitCodes;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.logmanager.Level;
 import org.jboss.logmanager.Logger;
@@ -56,7 +57,7 @@ import org.jboss.stdio.StdioContext;
 public final class Main {
 
     public static void usage() {
-        CommandLineArgument.printUsage(System.out);
+        CommandLineArgumentUsageImpl.printUsage(System.out);
     }
 
     private Main() {
@@ -77,7 +78,7 @@ public final class Main {
 
         try {
             Module.registerURLStreamHandlerFactoryModule(Module.getBootModuleLoader().loadModule(ModuleIdentifier.create("org.jboss.vfs")));
-            ServerEnvironment serverEnvironment = determineEnvironment(args, new Properties(SecurityActions.getSystemProperties()), SecurityActions.getSystemEnvironment(), ServerEnvironment.LaunchType.STANDALONE);
+            ServerEnvironment serverEnvironment = determineEnvironment(args, SecurityActions.getSystemProperties(), SecurityActions.getSystemEnvironment(), ServerEnvironment.LaunchType.STANDALONE);
             // Install JBoss Stdio to avoid any nasty crosstalk, after command line arguments are processed.
             StdioContext.install();
             final StdioContext context = StdioContext.create(
@@ -106,7 +107,7 @@ public final class Main {
                 t.printStackTrace(System.err);
             }
         } finally {
-            SystemExiter.exit(1);
+            SystemExiter.exit(ExitCodes.FAILED);
         }
     }
 
@@ -153,22 +154,22 @@ public final class Main {
                 } else if (CommandLineConstants.PROPERTIES.equals(arg) || CommandLineConstants.OLD_PROPERTIES.equals(arg)
                         || CommandLineConstants.SHORT_PROPERTIES.equals(arg)) {
                     // Set system properties from url/file
-                    if (!processProperties(arg, args[++i])) {
+                    if (!processProperties(arg, args[++i],systemProperties)) {
                         return null;
                     }
                 } else if (arg.startsWith(CommandLineConstants.PROPERTIES)) {
                     String urlSpec = parseValue(arg, CommandLineConstants.PROPERTIES);
-                    if (urlSpec == null || !processProperties(arg, urlSpec)) {
+                    if (urlSpec == null || !processProperties(arg, urlSpec,systemProperties)) {
                         return null;
                     }
                 } else if (arg.startsWith(CommandLineConstants.SHORT_PROPERTIES)) {
                     String urlSpec = parseValue(arg, CommandLineConstants.SHORT_PROPERTIES);
-                    if (urlSpec == null || !processProperties(arg, urlSpec)) {
+                    if (urlSpec == null || !processProperties(arg, urlSpec,systemProperties)) {
                         return null;
                     }
                 }  else if (arg.startsWith(CommandLineConstants.OLD_PROPERTIES)) {
                     String urlSpec = parseValue(arg, CommandLineConstants.OLD_PROPERTIES);
-                    if (urlSpec == null || !processProperties(arg, urlSpec)) {
+                    if (urlSpec == null || !processProperties(arg, urlSpec,systemProperties)) {
                         return null;
                     }
                 } else if (arg.startsWith(CommandLineConstants.SYS_PROP)) {
@@ -184,7 +185,6 @@ public final class Main {
                         value = arg.substring(idx + 1, arg.length());
                     }
                     systemProperties.setProperty(name, value);
-                    SecurityActions.setSystemProperty(name, value);
                 } else if (arg.startsWith(CommandLineConstants.PUBLIC_BIND_ADDRESS)) {
 
                     int idx = arg.indexOf('=');
@@ -207,7 +207,6 @@ public final class Main {
                         propertyName =  ServerEnvironment.JBOSS_BIND_ADDRESS_PREFIX + arg.substring(2, idx);
                     }
                     systemProperties.setProperty(propertyName, value);
-                    SecurityActions.setSystemProperty(propertyName, value);
                 } else if (arg.startsWith(CommandLineConstants.DEFAULT_MULTICAST_ADDRESS)) {
 
                     int idx = arg.indexOf('=');
@@ -220,14 +219,26 @@ public final class Main {
                     String value = idx > -1 ? arg.substring(idx + 1) : args[++i];
 
                     systemProperties.setProperty(ServerEnvironment.JBOSS_DEFAULT_MULTICAST_ADDRESS, value);
-                    SecurityActions.setSystemProperty(ServerEnvironment.JBOSS_DEFAULT_MULTICAST_ADDRESS, value);
                 } else if (CommandLineConstants.ADMIN_ONLY.equals(arg)) {
                     runningMode = RunningMode.ADMIN_ONLY;
                 } else if (arg.startsWith(CommandLineConstants.SECURITY_PROP)) {
                     //Value can be a comma separated key value pair
                     //Drop the first 2 characters
                     String token = arg.substring(2);
-                    processSecurityProperties(token);
+                    processSecurityProperties(token,systemProperties);
+                } else if (arg.equals(CommandLineConstants.DEBUG)) { // Need to process the debug options as they cannot be filtered out in Windows
+                    // The next option may or may not be a port. Assume if it's a number and doesn't start with a - it's the port
+                    final int next = i + 1;
+                    if (next < argsLength) {
+                        final String nextArg = args[next];
+                        if (!nextArg.startsWith("-")) {
+                            try {
+                                Integer.parseInt(nextArg);
+                                i++;
+                            } catch (NumberFormatException ignore) {
+                            }
+                        }
+                    }
                 } else {
                     System.err.printf(ServerMessages.MESSAGES.invalidCommandLineOption(arg));
                     usage();
@@ -243,7 +254,6 @@ public final class Main {
         if (serverConfig != null && initialServerConfig != null) {
             throw ServerMessages.MESSAGES.cannotHaveBothInitialServerConfigAndServerConfig();
         }
-
         String hostControllerName = null; // No host controller unless in domain mode.
         productConfig = new ProductConfig(Module.getBootModuleLoader(), SecurityActions.getSystemProperty(ServerEnvironment.HOME_DIR));
         return new ServerEnvironment(hostControllerName, systemProperties, systemEnvironment, serverConfig, initialServerConfig, launchType, runningMode, productConfig);
@@ -260,12 +270,11 @@ public final class Main {
         return value;
     }
 
-    private static boolean processProperties(final String arg, final String urlSpec) {
+    private static boolean processProperties(final String arg, final String urlSpec, Properties systemProperties) {
          URL url = null;
          try {
              url = makeURL(urlSpec);
-             Properties props = System.getProperties();
-             props.load(url.openConnection().getInputStream());
+             systemProperties.load(url.openConnection().getInputStream());
              return true;
          } catch (MalformedURLException e) {
              System.err.printf(ServerMessages.MESSAGES.malformedCommandLineURL(urlSpec, arg));
@@ -305,7 +314,7 @@ public final class Main {
         return url;
     }
 
-    private static void processSecurityProperties(String secProperties){
+    private static void processSecurityProperties(String secProperties, Properties systemProperties){
         StringTokenizer tokens = new StringTokenizer(secProperties, ",");
         while(tokens != null && tokens.hasMoreTokens()){
             String token = tokens.nextToken();
@@ -319,7 +328,7 @@ public final class Main {
             }
             String value = token.substring(idx + 1);
             String key = token.substring(0, idx);
-            SecurityActions.setSecurityProperty(key, value);
+            systemProperties.setProperty(key, value);
         }
     }
 }

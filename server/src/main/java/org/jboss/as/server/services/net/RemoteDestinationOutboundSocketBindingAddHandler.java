@@ -23,13 +23,8 @@
 package org.jboss.as.server.services.net;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_SOURCE_PORT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOURCE_INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOURCE_PORT;
 
 import java.net.UnknownHostException;
 import java.util.List;
@@ -39,7 +34,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBindingManager;
@@ -57,43 +52,23 @@ public class RemoteDestinationOutboundSocketBindingAddHandler extends AbstractAd
 
     static final RemoteDestinationOutboundSocketBindingAddHandler INSTANCE = new RemoteDestinationOutboundSocketBindingAddHandler();
 
+    @Deprecated
     public static ModelNode getOperation(final ModelNode address, final ModelNode remoteDestinationOutboundSocketBinding) {
         final ModelNode addOperation = new ModelNode();
         addOperation.get(OP).set(ADD);
         addOperation.get(OP_ADDR).set(address);
-        // destination host
-        addOperation.get(HOST).set(remoteDestinationOutboundSocketBinding.get(HOST));
-
-        // destination port
-        addOperation.get(PORT).set(remoteDestinationOutboundSocketBinding.get(PORT));
-
-        // (optional) source interface
-        if (remoteDestinationOutboundSocketBinding.get(SOURCE_INTERFACE).isDefined()) {
-            addOperation.get(SOURCE_INTERFACE).set(remoteDestinationOutboundSocketBinding.get(SOURCE_INTERFACE));
-        }
-        // (optional) source port
-        if (remoteDestinationOutboundSocketBinding.get(SOURCE_PORT).isDefined()) {
-            addOperation.get(SOURCE_PORT).set(remoteDestinationOutboundSocketBinding.get(SOURCE_PORT));
-        }
-        if (remoteDestinationOutboundSocketBinding.get(FIXED_SOURCE_PORT).isDefined()) {
-            addOperation.get(FIXED_SOURCE_PORT).set(remoteDestinationOutboundSocketBinding.get(FIXED_SOURCE_PORT));
+        for (SimpleAttributeDefinition ad : RemoteDestinationOutboundSocketBindingResourceDefinition.ATTRIBUTES) {
+            if (remoteDestinationOutboundSocketBinding.get(ad.getName()).isDefined()) {
+                addOperation.get(ad.getName()).set(remoteDestinationOutboundSocketBinding.get(ad.getName()));
+            }
         }
         return addOperation;
     }
 
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-
-        model.get(ModelDescriptionConstants.HOST).set(operation.get(ModelDescriptionConstants.HOST));
-        model.get(ModelDescriptionConstants.PORT).set(operation.get(ModelDescriptionConstants.PORT));
-        if (operation.hasDefined(ModelDescriptionConstants.SOURCE_INTERFACE)) {
-            model.get(ModelDescriptionConstants.SOURCE_INTERFACE).set(operation.get(ModelDescriptionConstants.SOURCE_INTERFACE));
-        }
-        if (operation.hasDefined(ModelDescriptionConstants.SOURCE_PORT)) {
-            model.get(ModelDescriptionConstants.SOURCE_PORT).set(operation.get(ModelDescriptionConstants.SOURCE_PORT));
-        }
-        if (operation.hasDefined(FIXED_SOURCE_PORT)) {
-            model.get(ModelDescriptionConstants.FIXED_SOURCE_PORT).set(operation.get(FIXED_SOURCE_PORT));
+        for (SimpleAttributeDefinition ad : RemoteDestinationOutboundSocketBindingResourceDefinition.ATTRIBUTES) {
+            ad.validateAndSet(operation, model);
         }
     }
 
@@ -105,7 +80,7 @@ public class RemoteDestinationOutboundSocketBindingAddHandler extends AbstractAd
         final String outboundSocketName = address.getLastElement().getValue();
         final ServiceController<OutboundSocketBinding> outboundSocketBindingServiceController;
         try {
-            outboundSocketBindingServiceController = this.installOutboundSocketBindingService(context, model, outboundSocketName);
+            outboundSocketBindingServiceController = installOutboundSocketBindingService(context, model, outboundSocketName);
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
@@ -129,7 +104,7 @@ public class RemoteDestinationOutboundSocketBindingAddHandler extends AbstractAd
         final Integer sourcePort = sourcePortModelNode.isDefined() ? sourcePortModelNode.asInt() : null;
         // (optional) fixedSourcePort
         final ModelNode fixedSourcePortModelNode = OutboundSocketBindingResourceDefinition.FIXED_SOURCE_PORT.resolveModelAttribute(context, model);
-        final boolean fixedSourcePort = fixedSourcePortModelNode.isDefined() ? fixedSourcePortModelNode.asBoolean() : false;
+        final boolean fixedSourcePort = fixedSourcePortModelNode.isDefined() && fixedSourcePortModelNode.asBoolean();
         // create the service
         final OutboundSocketBindingService outboundSocketBindingService = new RemoteDestinationOutboundSocketBindingService(outboundSocketName, destinationHost, destinationPort, sourcePort, fixedSourcePort);
         final ServiceBuilder<OutboundSocketBinding> serviceBuilder = serviceTarget.addService(OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(outboundSocketName), outboundSocketBindingService);

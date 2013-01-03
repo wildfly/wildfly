@@ -109,7 +109,14 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
                                      final ParameterCorrector corrector, final ParameterValidator validator,
                                      boolean validateNull, String[] alternatives, String[] requires, AttributeAccess.Flag... flags) {
         super(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
-                corrector, createParameterValidator(validator, type, allowNull, allowExpression), validateNull, alternatives, requires, flags);
+                corrector, createParameterValidator(validator, type, allowNull, allowExpression), validateNull, alternatives, requires, null, false, null, flags);
+    }
+    public SimpleAttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
+                                     final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
+                                     final ParameterCorrector corrector, final ParameterValidator validator,
+                                     boolean validateNull, String[] alternatives, String[] requires, AttributeMarshaller attributeMarshaller, final boolean resourceOnly, final DeprecationData deprecated, AttributeAccess.Flag... flags) {
+        super(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
+                corrector, createParameterValidator(validator, type, allowNull, allowExpression), validateNull, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
     }
 
     public SimpleAttributeDefinition(final String name, final ModelNode defaultValue, final ModelType type, final boolean allowNull, final String[] alternatives) {
@@ -261,18 +268,7 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
      * @throws javax.xml.stream.XMLStreamException if {@code writer} throws an exception
      */
     public void marshallAsAttribute(final ModelNode resourceModel, final boolean marshallDefault, final XMLStreamWriter writer) throws XMLStreamException {
-        if (isMarshallable(resourceModel, marshallDefault)) {
-            writer.writeAttribute(getXmlName(), resourceModel.get(getName()).asString());
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     * Invoking this method is the same as calling {@code marshallAsElementText(resourceModel, true, writer)}
-     */
-    @Override
-    public void marshallAsElement(final ModelNode resourceModel, final XMLStreamWriter writer) throws XMLStreamException {
-        marshallAsElement(resourceModel, true, writer);
+        attributeMarshaller.marshallAsAttribute(this,resourceModel,marshallDefault,writer);
     }
 
     /**
@@ -281,23 +277,10 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
      * This implementation marshalls the attribute value as text content of the element.
      */
     public void marshallAsElement(final ModelNode resourceModel, final boolean marshallDefault, final XMLStreamWriter writer) throws XMLStreamException {
-        if (isMarshallable(resourceModel, marshallDefault)) {
-            writer.writeStartElement(getXmlName());
-            String content = resourceModel.get(getName()).asString();
-            if (content.indexOf('\n') > -1) {
-                // Multiline content. Use the overloaded variant that staxmapper will format
-                writer.writeCharacters(content);
-            } else {
-                // Staxmapper will just output the chars without adding newlines if this is used
-                char[] chars = content.toCharArray();
-                writer.writeCharacters(chars, 0, chars.length);
-            }
-            writer.writeEndElement();
-        }
+        attributeMarshaller.marshallAsElement(this,resourceModel,marshallDefault,writer);
     }
 
     private ModelNode parse(final String value) throws OperationFailedException  {
-
         final String trimmed = value == null ? null : value.trim();
         ModelNode node;
         if (trimmed != null ) {

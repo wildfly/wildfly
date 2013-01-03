@@ -21,12 +21,10 @@
  */
 package org.jboss.as.test.integration.management.cli;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
+
 import org.apache.commons.io.FileUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -71,7 +69,7 @@ public class GenericCommandTestCase extends AbstractCliTestBase {
 
     @BeforeClass
     public static void before() throws Exception {
-        deployDir = new File(tempDir + File.separator + "tempDeployment");
+        deployDir = new File(tempDir, "tempDeployment");
         if (deployDir.exists()) {
             FileUtils.deleteDirectory(deployDir);
         }
@@ -92,20 +90,20 @@ public class GenericCommandTestCase extends AbstractCliTestBase {
         // prepare deployment
         war = ShrinkWrap.create(WebArchive.class, "SimpleServlet.war");
         war.addClass(SimpleServlet.class);
-        warFile = new File(deployDir.getAbsolutePath() + File.separator + "SimpleServlet.war");
+        warFile = new File(deployDir, "SimpleServlet.war");
         new ZipExporterImpl(war).exportTo(warFile, true);
 
         // add generic deployment scanner command
         cli.sendLine("command add --node-type=/subsystem=deployment-scanner/scanner --command-name=deployment-scanner");
 
         // test created deployment scanner add command
-        cli.sendLine("deployment-scanner add --name=testScanner --path=" + deployDir.getAbsolutePath());
+        cli.sendLine("deployment-scanner add --name=testScanner --path=" + deployDir.getAbsolutePath().replaceAll("\\\\","\\\\\\\\"));
 
         // wait for deployment
         Thread.sleep(WAIT_LINETIMEOUT * 2);
 
         // check that the deployment scanner was added and the app deployed
-        File marker = new File(deployDir.getAbsolutePath() + File.separator + "SimpleServlet.war.deployed");
+        File marker = new File(deployDir.getAbsolutePath().replaceAll("\\\\", "\\\\") + File.separator + "SimpleServlet.war.deployed");
         Assert.assertTrue(marker.exists());
 
         String response = HttpRequest.get(getBaseURL(url) + "SimpleServlet/SimpleServlet", 10, TimeUnit.SECONDS);

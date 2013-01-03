@@ -86,15 +86,6 @@ public interface SubsystemRegistration {
     void registerXMLElementWriter(XMLElementWriter<SubsystemMarshallingContext> writer);
 
     /**
-     * Registers subsystem model transformer
-     * @param subsystemTransformer - transformer of model
-     *
-     * @deprecated experimental method; may be removed or changed without warning. Should not be used outside the main JBoss AS codebase
-     */
-    @Deprecated
-    void registerSubsystemTransformer(SubsystemTransformer subsystemTransformer);
-
-    /**
      * Register transformers for a specific model versions.
      *
      * @param version the model version range

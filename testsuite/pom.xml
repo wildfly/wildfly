@@ -98,8 +98,6 @@
         <node0>127.0.0.1</node0>
         <node1>127.0.0.1</node1>
         <mcast>230.0.0.4</mcast> <!-- Default multicast address. -->
-        <mcast.jgroupsDiag>224.0.75.75</mcast.jgroupsDiag>  <!-- for <socket-binding name="jgroups-diagnostics" .../> -->
-        <mcast.modcluster >224.0.1.105</mcast.modcluster>   <!-- for <socket-binding name="modcluster" .../> -->
 
         <!-- IP stack configs. -->
         <jvm.args.ip>-Djava.net.preferIPv4Stack=true -Djava.net.preferIPv6Addresses=false</jvm.args.ip>
@@ -111,6 +109,9 @@
         <jvm.args.securityPolicy></jvm.args.securityPolicy>
         <jvm.args.securityManagerOther></jvm.args.securityManagerOther>
         <jvm.args.security>${jvm.args.securityManager} ${jvm.args.securityPolicy} ${jvm.args.securityManagerOther}</jvm.args.security>
+
+        <!-- Additional JVM args, like those for EC2. -->
+        <jvm.args.other></jvm.args.other>
 
 
         <!-- JaCoCo - Code coverage (-Dcoverage). -->
@@ -126,11 +127,15 @@
         <!-- Database properties. -->
         <ds.db></ds.db>
         <ds.jdbc.driver></ds.jdbc.driver>
+        <ds.jdbc.driver-xa></ds.jdbc.driver-xa>
         <ds.jdbc.driver.version></ds.jdbc.driver.version>
         <ds.jdbc.url></ds.jdbc.url>
         <ds.jdbc.user>test</ds.jdbc.user>
         <ds.jdbc.pass>test</ds.jdbc.pass>
         <ds.jdbc.driver.jar>${ds.db}-jdbc-driver.jar</ds.jdbc.driver.jar>
+        <ds.module.path></ds.module.path>
+        <ds.isModule>false</ds.isModule>
+        <ds.jdbc.driver.target.path>${basedir}/target/jbossas/standalone/deployments</ds.jdbc.driver.target.path>
 
         <!-- Common surefire properties. -->
         <surefire.memory.args>-Xmx512m -XX:MaxPermSize=256m</surefire.memory.args>
@@ -167,6 +172,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-testsuite-shared</artifactId>
             <scope>test</scope>
@@ -179,10 +188,24 @@
         <dependency>
             <groupId>org.projectodd.stilts</groupId>
             <artifactId>stilts-stomp-client</artifactId>
+               <exclusions>
+                  <!-- use io.netty:netty instead -->
+                   <exclusion>
+                       <groupId>org.jboss.netty</groupId>
+                       <artifactId>netty</artifactId>
+                   </exclusion>
+               </exclusions>
         </dependency>
         <dependency>
             <groupId>org.projectodd.stilts</groupId>
             <artifactId>stilts-stomplet-server-core</artifactId>
+               <exclusions>
+                  <!-- use io.netty:netty instead -->
+                   <exclusion>
+                       <groupId>org.jboss.netty</groupId>
+                       <artifactId>netty</artifactId>
+                   </exclusion>
+               </exclusions>
         </dependency>
         <!-- Needed for @Resource(lookup=). -->
         <dependency>
@@ -363,9 +386,8 @@
                                         <parameter><name>publicIPAddress</name>        <value>${node0}</value></parameter>
 
                                         <parameter><name>udpMcastAddress</name>        <value>${mcast}</value></parameter>
-                                        <parameter><name>diagnosticsMcastAddress</name><value>${mcast.jgroupsDiag}</value></parameter>
                                         <parameter><name>mpingMcastAddress</name>      <value>${mcast}</value></parameter>
-                                        <parameter><name>modclusterMcastAddress</name> <value>${mcast.modcluster}</value></parameter>
+                                        <parameter><name>modclusterMcastAddress</name> <value>${mcast}</value></parameter>
                                     </parameters>
                                 </transformationSet>
                             </transformationSets>
@@ -411,7 +433,7 @@
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                         <jboss.dist>${jboss.dist}</jboss.dist>
                         <jboss.home>${basedir}/target/jbossas</jboss.home>
-                        <module.path>${jboss.dist}/modules</module.path>
+                        <module.path>${jboss.dist}/modules${path.separator}${basedir}/target/modules</module.path>
                         <bundle.path>${jboss.dist}/bundles</bundle.path>
                     </systemPropertyVariables>
                     <!-- Arquillian's config files. -->
@@ -506,7 +528,6 @@
                 <artifactId>maven-install-plugin</artifactId>
                 <executions><execution><id>default-install</id><phase>none</phase></execution></executions>
             </plugin>
-
         </plugins>
     </build>
 
@@ -525,8 +546,14 @@
                 <module>integration</module>
                 <module>compat</module>
                 <module>domain</module>
-                <module>benchmark</module>
-                <module>stress</module>
+            </modules>
+        </profile>
+        
+        <profile>
+            <id>mixed-domain.module.profile</id>
+            <activation><property><name>jboss.test.mixed.domain.dir</name></property></activation>
+            <modules>
+                <module>mixed-domain</module>
             </modules>
         </profile>
 
@@ -550,6 +577,11 @@
         <profile>
             <id>integ-iiop.module.profile</id>
             <activation><property><name>ts.iiop</name></property></activation>
+            <modules><module>integration</module></modules>
+        </profile>
+        <profile>
+            <id>integ-osgi.module.profile</id>
+            <activation><property><name>ts.osgi</name></property></activation>
             <modules><module>integration</module></modules>
         </profile>
         <profile>
@@ -606,14 +638,14 @@
             <id>jpda.profile</id>
             <activation><property><name>jpda</name></property></activation>
             <properties>
-                <surefire.jpda.args>-Xrunjdwp:transport=dt_socket,address=${as.debug.port},server=y,suspend=y</surefire.jpda.args>
+                <surefire.jpda.args>-agentlib:jdwp=transport=dt_socket,address=${as.debug.port},server=y,suspend=y</surefire.jpda.args>
             </properties>
         </profile>
         <profile>
             <id>debug.profile</id>
             <activation><property><name>debug</name></property></activation>
             <properties>
-                <surefire.jpda.args>-Xrunjdwp:transport=dt_socket,address=${as.debug.port},server=y,suspend=y</surefire.jpda.args>
+                <surefire.jpda.args>-agentlib:jdwp=transport=dt_socket,address=${as.debug.port},server=y,suspend=y</surefire.jpda.args>
             </properties>
         </profile>
 
@@ -628,9 +660,7 @@
                 <!-- Override IPv4 defaults from the top. -->
                 <node0>::1</node0>
                 <node1>::1</node1>
-                <mcast            >ff01::1</mcast>      <!-- ff01::1  is IPv6 Node-Local scope mcast addr. -->
-                <mcast.jgroupsDiag>ff01::2</mcast.jgroupsDiag>
-                <mcast.modcluster >ff01::3</mcast.modcluster>
+                <mcast>ff01::1</mcast>      <!-- ff01::1  is IPv6 Node-Local scope mcast addr. -->
             </properties>
         </profile>
         <!-- Ugly workaround for MANTRUN-172 :/   See AS7-3993. -->
@@ -647,17 +677,7 @@
         <profile>
             <id>ts.ipv6.dummy.mcast</id>
             <activation><property><name>mcast</name></property></activation>
-            <properties> <mcast            >${mcast}</mcast> </properties>
-        </profile>
-        <profile>
-            <id>ts.ipv6.dummy.mcast.jgroupsDiag</id>
-            <activation><property><name>mcast.jgroupsDiag</name></property></activation>
-            <properties> <mcast.jgroupsDiag>${mcast.jgroupsDiag}</mcast.jgroupsDiag> </properties>
-        </profile>
-        <profile>
-            <id>ts.ipv6.dummy.mcast.modcluster</id>
-            <activation><property><name>mcast.modcluster</name></property></activation>
-            <properties> <mcast.modcluster >${mcast.modcluster}</mcast.modcluster> </properties>
+            <properties><mcast>${mcast}</mcast></properties>
         </profile>
 
 
@@ -711,6 +731,76 @@
         -->
 
         <profile>
+            <id>ds.createModule.profile</id>
+            <activation><property><name>ds.createModule</name></property></activation>
+            <properties>
+                <ds.jdbc.driver.target.path>${basedir}/target/modules/${ds.module.path}/main</ds.jdbc.driver.target.path>
+                <ds.isModule>true</ds.isModule>
+            </properties>
+            <build>
+                <plugins>
+                     <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>xml-maven-plugin</artifactId>
+                        <executions combine.children="append">
+                            <!-- Edit template module.xml -->
+                            <execution>
+                                <id>ts.config-as.db.change-datasource-module</id>
+                                <phase>process-test-sources</phase>
+                                <goals><goal>transform</goal></goals>
+                                <inherited>true</inherited>
+                                <configuration>
+                                    <transformationSets>
+                                        <transformationSet>
+                                            <dir      >${basedir}/target/jdbcDrivers</dir>
+                                            <outputDir>${basedir}/target/jdbcDrivers</outputDir>
+                                            <stylesheet>${xslt.scripts.dir}/changeModule.xsl</stylesheet>
+                                            <includes>
+                                                <include>module.xml</include>
+                                            </includes>
+                                            <parameters>
+                                                <parameter><name>ds.jdbc.driver.resource</name><value>${ds.jdbc.driver.jar}</value></parameter>
+                                                <parameter><name>ds.jdbc.driver.module.path</name><value>${ds.module.path}</value></parameter>
+                                            </parameters>
+                                        </transformationSet>
+                                    </transformationSets>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                         <executions combine.children="append">
+                            <!-- Copy template module.xml to working directory -->
+                            <execution>
+                               <id>ts.config-as.db.copy-jdbc-module-template</id>
+                               <phase>generate-test-sources</phase>
+                               <goals><goal>copy-resources</goal></goals>
+                               <inherited>true</inherited>
+                               <configuration>
+                                  <outputDirectory>${basedir}/target/jdbcDrivers</outputDirectory>
+                                     <resources>
+                                        <resource>
+                                           <directory>${xslt.scripts.dir}</directory>
+                                           <filtering>true</filtering>
+                                           <includes>
+                                              <include>module.xml</include>
+                                           </includes>
+                                        </resource>
+                                     </resources>
+                               </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                </plugins>
+	    </build>
+        </profile>
+
+
+        <profile>
             <!--
                 Profile used to perform database related changes.
             -->
@@ -731,15 +821,15 @@
             </repositories>
             <build>
                 <plugins>
-                    <!-- Copy the JDBC driver to target/jdbcDrivers. -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-dependency-plugin</artifactId>
                         <executions combine.children="append">
+                          <!-- Copy the JDBC driver to target/jdbcDrivers. -->
                             <execution>
                                 <id>ts.config-as.db.copy-jdbc-jars</id>
                                 <goals><goal>copy</goal></goals>
-                                <phase>process-sources</phase>
+                                <phase>generate-test-resources</phase>
                                 <inherited>true</inherited>
                                 <configuration>
                                     <artifactItems>
@@ -756,6 +846,7 @@
                             </execution>
                         </executions>
                     </plugin>
+
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>xml-maven-plugin</artifactId>
@@ -776,10 +867,13 @@
                                                 <include>standalone*.xml</include>
                                             </includes>
                                             <parameters>
-                                                <parameter><name>ds.jdbc.driver.jar</name><value>${ds.jdbc.driver.jar}</value></parameter>
                                                 <parameter><name>ds.jdbc.url</name><value>${ds.jdbc.url}</value></parameter>
                                                 <parameter><name>ds.jdbc.user</name><value>${ds.jdbc.user}</value></parameter>
                                                 <parameter><name>ds.jdbc.pass</name><value>${ds.jdbc.pass}</value></parameter>
+                                                <parameter><name>ds.jdbc.driver</name><value>${ds.jdbc.driver-xa}</value></parameter>
+                                                <parameter><name>ds.jdbc.driver.jar</name><value>${ds.jdbc.driver.jar}</value></parameter>
+                                                <parameter><name>ds.jdbc.driver.module</name><value>${ds.module.path}</value></parameter>
+                                                <parameter><name>ds.jdbc.isModule</name><value>${ds.isModule}</value></parameter>
                                             </parameters>
                                         </transformationSet>
                                     </transformationSets>
@@ -788,26 +882,25 @@
                         </executions>
                     </plugin>
 
-                    <!--
-                        Deploy the JDBC driver by copying to the deployments directory.
-                    -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-resources-plugin</artifactId>
-                        <executions combine.children="append">
+                         <executions combine.children="append">
+                            <!-- Copy JDBC driver and module.xml (if ds.createModule) to deploy folder in targed/jbossas/ (or to module folder target/modules/) -->
                             <execution>
                                 <id>deploy-database-driver.server</id>
-                                <phase>generate-test-resources</phase>
+                                <phase>process-test-resources</phase>
                                 <goals><goal>copy-resources</goal></goals>
                                 <inherited>true</inherited>
                                 <configuration>
-                                    <outputDirectory>${basedir}/target/jbossas/standalone/deployments</outputDirectory>
+                                    <outputDirectory>${ds.jdbc.driver.target.path}</outputDirectory>
                                     <overwrite>true</overwrite>
                                     <resources>
                                         <resource>
                                             <directory>${basedir}/target/jdbcDrivers</directory>
                                             <includes>
                                                 <include>${ds.db}-jdbc-driver.jar</include>
+                                                <include>module.xml</include>
                                             </includes>
                                         </resource>
                                     </resources>
@@ -817,7 +910,7 @@
                     </plugin>
 
                 </plugins>
-            </build>
+	    </build>
         </profile>
 
         <!-- Database properties profiles. -->
@@ -856,9 +949,74 @@
                 <ds.jdbc.driver-xa>com.mysql.jdbc.jdbc2.optional.MysqlXADataSource</ds.jdbc.driver-xa>
                 <ds.jdbc.url>jdbc:mysql://localhost:3306/test</ds.jdbc.url>
                 <ds.jdbc.driver.version>5.1.17</ds.jdbc.driver.version>
+                <ds.module.path>com/mysql</ds.module.path>
             </properties>
         </profile>
 
+        <!-- DB2 -->
+        <profile>
+            <id>db2.profile</id>
+            <activation><property><name>ds</name><value>db2</value></property></activation>
+            <properties>
+                <ds.db>db2</ds.db>
+                <ds.jdbc.driver>com.ibm.db2.jcc.DB2Driver</ds.jdbc.driver>
+                <ds.jdbc.driver-xa>com.ibm.db2.jcc.DB2Driver</ds.jdbc.driver-xa>
+                <ds.jdbc.url>jdbc:db2://localhost:60000/test</ds.jdbc.url>
+                <ds.jdbc.driver.version>4.11.77</ds.jdbc.driver.version>
+            </properties>
+        </profile>
+
+        <!-- MS SQL 2005 -->
+        <profile>
+            <id>mssql2005.profile</id>
+            <activation><property><name>ds</name><value>mssql2005</value></property></activation>
+            <properties>
+                <ds.db>mssql</ds.db>
+                <ds.jdbc.driver>com.microsoft.sqlserver.jdbc.SQLServerDriver</ds.jdbc.driver>
+                <ds.jdbc.driver-xa>com.microsoft.sqlserver.jdbc.SQLServerDriver</ds.jdbc.driver-xa>
+                <ds.jdbc.url>jdbc:sqlserver://localhost:1433;DatabaseName=test</ds.jdbc.url>
+                <ds.jdbc.driver.version>3.0.1301.101</ds.jdbc.driver.version>
+            </properties>
+        </profile>
+
+        <!-- Oracle -->
+        <profile>
+            <id>oracle11.profile</id>
+            <activation><property><name>ds</name><value>oracle11</value></property></activation>
+            <properties>
+                <ds.db>oracle</ds.db>
+                <ds.jdbc.driver>oracle.jdbc.driver.OracleDriver</ds.jdbc.driver>
+                <ds.jdbc.driver-xa>oracle.jdbc.driver.OracleDriver</ds.jdbc.driver-xa>
+                <ds.jdbc.url>jdbc:oracle:thin:@localhost:1521:test</ds.jdbc.url>
+                <ds.jdbc.driver.version>11.2.0.2.0</ds.jdbc.driver.version>
+            </properties>
+        </profile>
+
+        <!-- PostgreSQL -->
+        <profile>
+            <id>postgresql.profile</id>
+            <activation><property><name>ds</name><value>postgresql</value></property></activation>
+            <properties>
+                <ds.db>oracle</ds.db>
+                <ds.jdbc.driver>org.postgresql.Driver</ds.jdbc.driver>
+                <ds.jdbc.driver-xa>org.postgresql.Driver</ds.jdbc.driver-xa>
+                <ds.jdbc.url>jdbc:postgresql://localhost:5432/test</ds.jdbc.url>
+                <ds.jdbc.driver.version>8.4.702</ds.jdbc.driver.version>
+            </properties>
+        </profile>
+
+        <!-- Sybase -->
+        <profile>
+            <id>sybase.profile</id>
+            <activation><property><name>ds</name><value>sybase</value></property></activation>
+            <properties>
+                <ds.db>sybase</ds.db>
+                <ds.jdbc.driver>com.sybase.jdbc4.jdbc.SybDriver</ds.jdbc.driver>
+                <ds.jdbc.driver-xa>com.sybase.jdbc4.jdbc.SybDriver</ds.jdbc.driver-xa>
+                <ds.jdbc.url>jdbc:sybase:Tds:localhost:5000/test</ds.jdbc.url>
+                <ds.jdbc.driver.version>26502</ds.jdbc.driver.version>
+            </properties>
+        </profile>
 
 
         <!-- JaCoCo test coverage. Will set ${jvm.args.jacoco} to be used in Arquillian config. -->
@@ -986,7 +1144,6 @@
                                                         <!-- AS7-3390 -->
                                                         <exclude name="org/apache/commons/beanutils/**/*"/>
                                                         <!-- AS7-3389 -->
-                                                        <exclude name="org/python/jython/standalone/**/*"/>
                                                     </fileset>
                                                 </classfiles>
                                                 <sourcefiles encoding="UTF-8">

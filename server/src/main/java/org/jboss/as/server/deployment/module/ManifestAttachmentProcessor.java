@@ -53,6 +53,7 @@ public class ManifestAttachmentProcessor implements DeploymentUnitProcessor {
      * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
      */
+    @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -61,21 +62,26 @@ public class ManifestAttachmentProcessor implements DeploymentUnitProcessor {
             if (IgnoreMetaInfMarker.isIgnoreMetaInf(resourceRoot)) {
                 continue;
             }
-            Manifest manifest = resourceRoot.getAttachment(Attachments.MANIFEST);
+            Manifest manifest = getManifest(resourceRoot);
             if (manifest != null)
-                continue;
+                resourceRoot.putAttachment(Attachments.MANIFEST, manifest);
+        }
+    }
 
+    public static Manifest getManifest(ResourceRoot resourceRoot) throws DeploymentUnitProcessingException {
+        Manifest manifest = resourceRoot.getAttachment(Attachments.MANIFEST);
+        if (manifest == null) {
             final VirtualFile deploymentRoot = resourceRoot.getRoot();
             try {
                 manifest = VFSUtils.getManifest(deploymentRoot);
-                if (manifest != null)
-                    resourceRoot.putAttachment(Attachments.MANIFEST, manifest);
             } catch (IOException e) {
                 throw ServerMessages.MESSAGES.failedToGetManifest(deploymentRoot, e);
             }
         }
+        return manifest;
     }
 
+    @Override
     public void undeploy(final DeploymentUnit context) {
         List<ResourceRoot> resourceRoots = DeploymentUtils.allResourceRoots(context);
         for (ResourceRoot resourceRoot : resourceRoots) {

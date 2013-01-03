@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<domain xmlns="urn:jboss:domain:1.4">
+    <profiles>
+        <profile name="testA">
+        </profile>
+        <profile name="testB">
+        </profile>
+    </profiles>
+</domain>        

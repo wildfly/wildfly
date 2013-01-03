@@ -65,7 +65,7 @@ public class JDBCInformixCreateCommand extends JDBCIdentityColumnCreateCommand {
         }
 
         try {
-            Class wrapperClass = loader.loadClass("org.jboss.resource.adapter.jdbc.StatementAccess");
+            Class wrapperClass = loader.loadClass("org.jboss.jca.adapters.jdbc.StatementAccess");
             getUnderlyingStatement = wrapperClass.getMethod("getUnderlyingStatement");
         } catch (ClassNotFoundException e) {
             throw MESSAGES.couldNotLoadStatementAccess(e);

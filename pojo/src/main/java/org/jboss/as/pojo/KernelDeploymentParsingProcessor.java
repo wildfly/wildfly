@@ -22,6 +22,17 @@
 
 package org.jboss.as.pojo;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
+
 import org.jboss.as.pojo.descriptor.KernelDeploymentXmlDescriptor;
 import org.jboss.as.pojo.descriptor.KernelDeploymentXmlDescriptorParser;
 import org.jboss.as.pojo.descriptor.LegacyKernelDeploymentXmlDescriptorParser;
@@ -36,16 +47,6 @@ import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilter;
 import org.jboss.vfs.util.SuffixMatchFilter;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * DeploymentUnitProcessor responsible for parsing a jboss-beans.xml
@@ -73,6 +74,7 @@ public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor
      *
      * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
+     *
      */
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -91,7 +93,8 @@ public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor
      *
      * @param unit the deployment unit
      * @param root the root
-     * @throws DeploymentUnitProcessingException for any error
+     * @throws DeploymentUnitProcessingException
+     *          for any error
      */
     protected void parseDescriptors(DeploymentUnit unit, VirtualFile root) throws DeploymentUnitProcessingException {
         if (root == null || root.exists() == false)
@@ -99,7 +102,7 @@ public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor
 
         Collection<VirtualFile> beans;
         final String name = root.getName();
-        if(name.endsWith("jboss-beans.xml")) {
+        if (name.endsWith("jboss-beans.xml")) {
             beans = Collections.singleton(root);
         } else {
             VirtualFileFilter filter = new SuffixMatchFilter("jboss-beans.xml");
@@ -131,12 +134,13 @@ public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor
     /**
      * Parse -jboss-beans.xml file.
      *
-     * @param unit the deployment unit
+     * @param unit         the deployment unit
      * @param beansXmlFile the beans xml file
-     * @throws DeploymentUnitProcessingException for any error
+     * @throws DeploymentUnitProcessingException
+     *          for any error
      */
     protected void parseDescriptor(DeploymentUnit unit, VirtualFile beansXmlFile) throws DeploymentUnitProcessingException {
-        if(beansXmlFile == null || beansXmlFile.exists() == false)
+        if (beansXmlFile == null || beansXmlFile.exists() == false)
             return;
 
         InputStream xmlStream = null;
@@ -146,14 +150,14 @@ public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor
             final ParseResult<KernelDeploymentXmlDescriptor> result = new ParseResult<KernelDeploymentXmlDescriptor>();
             xmlMapper.parseDocument(result, reader);
             final KernelDeploymentXmlDescriptor xmlDescriptor = result.getResult();
-            if(xmlDescriptor != null)
+            if (xmlDescriptor != null)
                 unit.addToAttachmentList(KernelDeploymentXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
             else
                 throw PojoMessages.MESSAGES.failedToParse(beansXmlFile);
-        } catch(DeploymentUnitProcessingException e) {
+        } catch (DeploymentUnitProcessingException e) {
             throw e;
-        } catch(Exception e) {
-            throw PojoMessages.MESSAGES.failedToParse(beansXmlFile);
+        } catch (Exception e) {
+            throw PojoMessages.MESSAGES.parsingException(beansXmlFile, e);
         } finally {
             VFSUtils.safeClose(xmlStream);
         }

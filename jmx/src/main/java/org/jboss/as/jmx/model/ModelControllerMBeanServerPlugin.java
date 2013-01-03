@@ -21,7 +21,11 @@
 */
 package org.jboss.as.jmx.model;
 
+import static org.jboss.as.jmx.JmxMessages.MESSAGES;
+
+import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.management.Attribute;
 import javax.management.AttributeList;
@@ -53,59 +57,81 @@ import org.jboss.as.jmx.BaseMBeanServerPlugin;
  */
 public class ModelControllerMBeanServerPlugin extends BaseMBeanServerPlugin {
 
-    private final ModelControllerMBeanHelper helper;
+    private final ConfiguredDomains configuredDomains;
+    private final ModelControllerMBeanHelper legacyHelper;
+    private final ModelControllerMBeanHelper exprHelper;
 
-    public ModelControllerMBeanServerPlugin(ModelController controller) {
-        helper = new ModelControllerMBeanHelper(controller);
+    public ModelControllerMBeanServerPlugin(ConfiguredDomains configuredDomains, ModelController controller, boolean legacyWithProperPropertyFormat) {
+        assert configuredDomains != null;
+        this.configuredDomains = configuredDomains;
+
+        legacyHelper = configuredDomains.getLegacyDomain() != null ?
+                new ModelControllerMBeanHelper(TypeConverters.createLegacyTypeConverters(legacyWithProperPropertyFormat), configuredDomains, configuredDomains.getLegacyDomain(), controller) : null;
+        exprHelper = configuredDomains.getExprDomain() != null ?
+                new ModelControllerMBeanHelper(TypeConverters.createExpressionTypeConverters(), configuredDomains, configuredDomains.getExprDomain(), controller) : null;
     }
 
     @Override
     public boolean accepts(ObjectName objectName) {
-        return ObjectNameAddressUtil.isReservedDomain(objectName);
+        String domain = objectName.getDomain();
+        if (!objectName.isDomainPattern()) {
+            return domain.equals(configuredDomains.getLegacyDomain()) || domain.equals(configuredDomains.getExprDomain());
+        }
+
+        Pattern p = Pattern.compile(objectName.getDomain().replace("*", ".*"));
+        return p.matcher(configuredDomains.getLegacyDomain()).matches() || p.matcher(configuredDomains.getExprDomain()).matches();
+
     }
 
     public Object getAttribute(ObjectName name, String attribute) throws MBeanException, AttributeNotFoundException, InstanceNotFoundException,
             ReflectionException {
-        return helper.getAttribute(name, attribute);
+        return getHelper(name).getAttribute(name, attribute);
     }
 
     public AttributeList getAttributes(ObjectName name, String[] attributes) throws InstanceNotFoundException, ReflectionException {
-        return helper.getAttributes(name, attributes);
+        return getHelper(name).getAttributes(name, attributes);
     }
 
     public ClassLoader getClassLoader(ObjectName loaderName) throws InstanceNotFoundException {
-        if (helper.resolvePathAddress(loaderName) != null) {
+        if (getHelper(loaderName).resolvePathAddress(loaderName) != null) {
             return SecurityActions.getClassLoader(this.getClass());
         }
         throw ModelControllerMBeanHelper.createInstanceNotFoundException(loaderName);
     }
 
     public ClassLoader getClassLoaderFor(ObjectName mbeanName) throws InstanceNotFoundException {
-        if (helper.resolvePathAddress(mbeanName) != null) {
+        if (getHelper(mbeanName).resolvePathAddress(mbeanName) != null) {
             return SecurityActions.getClassLoader(this.getClass());
         }
         throw ModelControllerMBeanHelper.createInstanceNotFoundException(mbeanName);
     }
 
     public String[] getDomains() {
-        return new String[] {Constants.DOMAIN};
+        return configuredDomains.getDomains();
     }
 
     public Integer getMBeanCount() {
-        return helper.getMBeanCount();
+        int count = 0;
+        if (legacyHelper != null) {
+            count += legacyHelper.getMBeanCount();
+        }
+        if (exprHelper != null) {
+            count += exprHelper.getMBeanCount();
+        }
+        return count;
     }
 
     public MBeanInfo getMBeanInfo(ObjectName name) throws InstanceNotFoundException, IntrospectionException, ReflectionException {
-        return helper.getMBeanInfo(name);
+        return getHelper(name).getMBeanInfo(name);
     }
 
     public ObjectInstance getObjectInstance(ObjectName name) throws InstanceNotFoundException {
-        return helper.getObjectInstance(name);
+        return getHelper(name).getObjectInstance(name);
     }
 
     public Object invoke(ObjectName name, String operationName, Object[] params, String[] signature) throws InstanceNotFoundException,
             MBeanException, ReflectionException {
-        return helper.invoke(name, operationName, params, signature);
+        return getHelper(name).invoke(name, operationName, params, signature);
     }
 
     public boolean isInstanceOf(ObjectName name, String className) throws InstanceNotFoundException {
@@ -113,24 +139,46 @@ public class ModelControllerMBeanServerPlugin extends BaseMBeanServerPlugin {
     }
 
     public boolean isRegistered(ObjectName name) {
-        return helper.resolvePathAddress(name) != null;
+        return getHelper(name).resolvePathAddress(name) != null;
     }
 
     public Set<ObjectInstance> queryMBeans(ObjectName name, QueryExp query) {
-        return helper.queryMBeans(name, query);
+        if (name != null && !name.isDomainPattern()) {
+            return getHelper(name).queryMBeans(name, query);
+        } else {
+            Set<ObjectInstance> instances = new HashSet<ObjectInstance>();
+            if (legacyHelper != null) {
+                instances.addAll(legacyHelper.queryMBeans(name, query));
+            }
+            if (exprHelper != null) {
+                instances.addAll(exprHelper.queryMBeans(name, query));
+            }
+            return instances;
+        }
     }
 
     public Set<ObjectName> queryNames(ObjectName name, QueryExp query) {
-        return helper.queryNames(name, query);
+        if (name != null && !name.isDomainPattern()) {
+            return getHelper(name).queryNames(name, query);
+        } else {
+            Set<ObjectName> instances = new HashSet<ObjectName>();
+            if (legacyHelper != null) {
+                instances.addAll(legacyHelper.queryNames(name, query));
+            }
+            if (exprHelper != null) {
+                instances.addAll(exprHelper.queryNames(name, query));
+            }
+            return instances;
+        }
     }
 
     public void setAttribute(ObjectName name, Attribute attribute) throws InstanceNotFoundException, AttributeNotFoundException,
             InvalidAttributeValueException, MBeanException, ReflectionException {
-        helper.setAttribute(name, attribute);
+        getHelper(name).setAttribute(name, attribute);
     }
 
     public AttributeList setAttributes(ObjectName name, AttributeList attributes) throws InstanceNotFoundException, ReflectionException {
-        return helper.setAttributes(name, attributes);
+        return getHelper(name).setAttributes(name, attributes);
     }
 
     public void addNotificationListener(ObjectName name, NotificationListener listener, NotificationFilter filter, Object handback)
@@ -160,5 +208,17 @@ public class ModelControllerMBeanServerPlugin extends BaseMBeanServerPlugin {
 
     public void removeNotificationListener(ObjectName name, ObjectName listener) throws InstanceNotFoundException, ListenerNotFoundException {
         //TODO handle notifications in model?
+    }
+
+    private ModelControllerMBeanHelper getHelper(ObjectName name) {
+        String domain = name.getDomain();
+        if (domain.equals(configuredDomains.getLegacyDomain()) || name.isDomainPattern()) {
+            return legacyHelper;
+        }
+        if (domain.equals(configuredDomains.getExprDomain())) {
+            return exprHelper;
+        }
+        //This should not happen
+        throw MESSAGES.unknownDomain(domain);
     }
 }

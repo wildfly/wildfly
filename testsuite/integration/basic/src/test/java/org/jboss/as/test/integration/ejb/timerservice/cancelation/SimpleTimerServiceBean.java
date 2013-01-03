@@ -41,11 +41,11 @@ public class SimpleTimerServiceBean {
 
     private static final CountDownLatch latch = new CountDownLatch(1);
 
-    private static int TIMER_INIT_TIME_MS = 100;
-    private static int TIMER_TIMEOUT_TIME_MS = 100;
+    private static final int TIMER_INIT_TIME_MS = 100;
+    private static final int TIMER_TIMEOUT_TIME_MS = 100;
     // should to be greater then (timer init time + timeout time)
-    private static int TIMER_CALL_QUICK_WAITING_MS = 1000;
-    private static boolean timerServiceCalled = false;
+    private static final int TIMER_CALL_QUICK_WAITING_MS = 1000;
+    private static volatile boolean timerServiceCalled = false;
     boolean first = true;
 
     private final CountDownLatch timerEntry = new CountDownLatch(1);

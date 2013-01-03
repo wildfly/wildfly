@@ -41,6 +41,10 @@ class DefaultSingletonBeanAccessTimeoutWriteHandler extends AbstractWriteAttribu
 
     static final DefaultSingletonBeanAccessTimeoutWriteHandler INSTANCE = new DefaultSingletonBeanAccessTimeoutWriteHandler();
 
+    private DefaultSingletonBeanAccessTimeoutWriteHandler() {
+        super(EJB3SubsystemRootResourceDefinition.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT);
+    }
+
     @Override
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> voidHandbackHolder) throws OperationFailedException {
         final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();

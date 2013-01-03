@@ -22,7 +22,6 @@
 
 package org.jboss.as.controller;
 
-import java.io.InputStream;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
@@ -31,7 +30,6 @@ import java.util.ResourceBundle;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -41,15 +39,8 @@ import org.jboss.as.controller.operations.validation.NillableOrExpressionParamet
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Defining characteristics of an attribute in a {@link org.jboss.as.controller.registry.Resource}, with utility
@@ -71,20 +62,23 @@ public abstract class AttributeDefinition {
     private final ParameterCorrector valueCorrector;
     private final ParameterValidator validator;
     private final EnumSet<AttributeAccess.Flag> flags;
+    protected final AttributeMarshaller attributeMarshaller;
+    private final boolean resourceOnly;
+    private final DeprecationData deprecationData;
 
     protected AttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
                                final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
                                final ParameterValidator validator, final String[] alternatives, final String[] requires,
                                final AttributeAccess.Flag... flags) {
         this(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
-                null, validator, true, alternatives, requires, flags);
+                null, validator, true, alternatives, requires, null, false, null, flags);
     }
 
     protected AttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
                                   final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
                                   final ParameterCorrector valueCorrector, final ParameterValidator validator,
-                                  boolean validateNull, final String[] alternatives, final String[] requires,
-                                  final AttributeAccess.Flag... flags) {
+                                  boolean validateNull, final String[] alternatives, final String[] requires, AttributeMarshaller attributeMarshaller,
+                                  boolean resourceOnly, DeprecationData deprecationData, final AttributeAccess.Flag... flags) {
 
         this.name = name;
         this.xmlName = xmlName;
@@ -108,11 +102,18 @@ public abstract class AttributeDefinition {
         }
         if (flags == null || flags.length == 0) {
             this.flags = EnumSet.noneOf(AttributeAccess.Flag.class);
-        } else if (flags.length == 0) {
+        } else if (flags.length == 1) {
             this.flags = EnumSet.of(flags[0]);
         } else {
             this.flags = EnumSet.of(flags[0], flags);
         }
+        if (attributeMarshaller != null) {
+            this.attributeMarshaller = attributeMarshaller;
+        } else {
+            this.attributeMarshaller = new DefaultAttributeMarshaller();
+        }
+        this.resourceOnly = resourceOnly;
+        this.deprecationData = deprecationData;
     }
 
     public String getName() {
@@ -170,7 +171,7 @@ public abstract class AttributeDefinition {
      * @return {@code true} if the given {@code resourceModel} has a defined value under this attribute's {@link #getName()} () name}.
      */
     public boolean isMarshallable(final ModelNode resourceModel) {
-        return isMarshallable(resourceModel, true);
+        return attributeMarshaller.isMarshallable(this, resourceModel, true);
     }
 
     /**
@@ -183,7 +184,7 @@ public abstract class AttributeDefinition {
      * and {@code marshallDefault} is {@code true} or that value differs from this attribute's {@link #getDefaultValue() default value}.
      */
     public boolean isMarshallable(final ModelNode resourceModel, final boolean marshallDefault) {
-        return resourceModel.hasDefined(name) && (marshallDefault || !resourceModel.get(name).equals(defaultValue));
+        return attributeMarshaller.isMarshallable(this, resourceModel, marshallDefault);
     }
 
     /**
@@ -209,9 +210,17 @@ public abstract class AttributeDefinition {
      * @throws OperationFailedException if the value is not valid
      */
     public final void validateAndSet(ModelNode operationObject, final ModelNode model) throws OperationFailedException {
-        final ModelNode newValue = correctValue(operationObject.get(name), model.get(name));
-        if (!newValue.equals(operationObject.get(name))) {
-            operationObject.get(name).set(newValue);
+        if (operationObject.hasDefined(name) && isDeprecated()) {
+            ControllerLogger.DEPRECATED_LOGGER.attributeDeprecated(getName());
+        }
+        // AS7-6224 -- convert expression strings to ModelType.EXPRESSION *before* correcting
+        ModelNode newValue = operationObject.get(name);
+        if (isAllowExpression() && newValue.getType() == ModelType.STRING) {
+            newValue = ParseUtils.parsePossibleExpression(newValue.asString());
+        }
+        final ModelNode correctedValue = correctValue(newValue, model.get(name));
+        if (!correctedValue.equals(operationObject.get(name))) {
+            operationObject.get(name).set(correctedValue);
         }
         ModelNode node = validateOperation(operationObject, false);
         model.get(name).set(node);
@@ -238,7 +247,16 @@ public abstract class AttributeDefinition {
      *              this attribute's name
      * @throws OperationFailedException if the value is not valid
      */
-    public ModelNode resolveModelAttribute(OperationContext context, final ModelNode model) throws OperationFailedException {
+    public ModelNode resolveModelAttribute(final OperationContext context, final ModelNode model) throws OperationFailedException {
+        return resolveModelAttribute(new ExpressionResolver() {
+            @Override
+            public ModelNode resolveExpressions(ModelNode node) throws OperationFailedException {
+                return context.resolveExpressions(node);
+            }
+        }, model);
+    }
+
+    public ModelNode resolveModelAttribute(final ExpressionResolver resolver, final ModelNode model) throws OperationFailedException {
         final ModelNode node = new ModelNode();
         if(model.has(name)) {
             node.set(model.get(name));
@@ -246,7 +264,7 @@ public abstract class AttributeDefinition {
         if (!node.isDefined() && defaultValue.isDefined()) {
             node.set(defaultValue);
         }
-        final ModelNode resolved = context.resolveExpressions(node);
+        final ModelNode resolved = resolver.resolveExpressions(node);
         validator.validateParameter(name, resolved);
         return resolved;
     }
@@ -279,14 +297,29 @@ public abstract class AttributeDefinition {
     }
 
     /**
-     * Marshalls the value from the given {@code resourceModel} as an xml element, if it
+     * Marshalls the value from the given {@code resourceModel} as an xml attribute, if it
      * {@link #isMarshallable(org.jboss.dmr.ModelNode, boolean) is marshallable}.
      *
      * @param resourceModel the model, a non-null node of {@link org.jboss.dmr.ModelType#OBJECT}.
      * @param writer stream writer to use for writing the attribute
      * @throws javax.xml.stream.XMLStreamException if thrown by {@code writer}
      */
-    public abstract void marshallAsElement(final ModelNode resourceModel, final XMLStreamWriter writer) throws XMLStreamException;
+    public void marshallAsElement(final ModelNode resourceModel, final XMLStreamWriter writer) throws XMLStreamException{
+        marshallAsElement(resourceModel,true,writer);
+    }
+
+    /**
+     * Marshalls the value from the given {@code resourceModel} as an xml element, if it
+     * {@link #isMarshallable(org.jboss.dmr.ModelNode, boolean) is marshallable}.
+     *
+     * @param resourceModel the model, a non-null node of {@link org.jboss.dmr.ModelType#OBJECT}.
+     * @param writer        stream writer to use for writing the attribute
+     * @throws javax.xml.stream.XMLStreamException
+     *          if thrown by {@code writer}
+     */
+    public void marshallAsElement(final ModelNode resourceModel, final boolean marshallDefault, final XMLStreamWriter writer) throws XMLStreamException{
+        throw ControllerMessages.MESSAGES.couldNotMarshalAttributeAsElement(getName());
+    }
 
     /**
      * Creates a returns a basic model node describing the attribute, after attaching it to the given overall resource
@@ -302,6 +335,10 @@ public abstract class AttributeDefinition {
         final ModelNode attr = getNoTextDescription(false);
         attr.get(ModelDescriptionConstants.DESCRIPTION).set(getAttributeTextDescription(bundle, prefix));
         final ModelNode result = resourceDescription.get(ModelDescriptionConstants.ATTRIBUTES, getName()).set(attr);
+        ModelNode deprecated = addDeprecatedInfo(result);
+        if (deprecated != null) {
+            deprecated.get(ModelDescriptionConstants.REASON).set(getAttributeDeprecatedDescription(bundle, prefix));
+        }
         return result;
     }
 
@@ -322,6 +359,10 @@ public abstract class AttributeDefinition {
         final String description = resolver.getResourceAttributeDescription(getName(), locale, bundle);
         attr.get(ModelDescriptionConstants.DESCRIPTION).set(description);
         final ModelNode result = resourceDescription.get(ModelDescriptionConstants.ATTRIBUTES, getName()).set(attr);
+        ModelNode deprecated = addDeprecatedInfo(result);
+        if (deprecated != null) {
+            deprecated.get(ModelDescriptionConstants.REASON).set(resolver.getResourceAttributeDeprecatedDescription(getName(), locale, bundle));
+        }
         return result;
     }
 
@@ -339,6 +380,10 @@ public abstract class AttributeDefinition {
         final ModelNode param = getNoTextDescription(true);
         param.get(ModelDescriptionConstants.DESCRIPTION).set(getAttributeTextDescription(bundle, prefix));
         final ModelNode result = operationDescription.get(ModelDescriptionConstants.REQUEST_PROPERTIES, getName()).set(param);
+        ModelNode deprecated = addDeprecatedInfo(result);
+        if (deprecated != null) {
+            deprecated.get(ModelDescriptionConstants.REASON).set(getAttributeDeprecatedDescription(bundle, prefix));
+        }
         return result;
     }
 
@@ -361,12 +406,33 @@ public abstract class AttributeDefinition {
         final String description = resolver.getOperationParameterDescription(operationName, getName(), locale, bundle);
         param.get(ModelDescriptionConstants.DESCRIPTION).set(description);
         final ModelNode result = resourceDescription.get(ModelDescriptionConstants.REQUEST_PROPERTIES, getName()).set(param);
+        ModelNode deprecated = addDeprecatedInfo(result);
+        if (deprecated != null) {
+            deprecated.get(ModelDescriptionConstants.REASON).set(resolver.getOperationParameterDeprecatedDescription(operationName, getName(), locale, bundle));
+        }
         return result;
     }
 
     public String getAttributeTextDescription(final ResourceBundle bundle, final String prefix) {
         final String bundleKey = prefix == null ? name : (prefix + "." + name);
         return bundle.getString(bundleKey);
+    }
+
+    public String getAttributeDeprecatedDescription(final ResourceBundle bundle, final String prefix) {
+        String bundleKey = prefix == null ? name : (prefix + "." + name);
+        bundleKey += "." + ModelDescriptionConstants.DEPRECATED;
+        return bundle.getString(bundleKey);
+    }
+
+    public ModelNode addDeprecatedInfo(final ModelNode model) {
+        if (deprecationData == null) { return null; }
+        ModelNode deprecated = model.get(ModelDescriptionConstants.DEPRECATED);
+        deprecated.get(ModelDescriptionConstants.SINCE).set(deprecationData.getSince().toString());
+        /*String bundleKey = prefix == null ? name : (prefix + "." + name);
+        bundleKey+="."+ModelDescriptionConstants.DEPRECATED;*/
+        //deprecated.get(ModelDescriptionConstants.REASON).set(bundle.getString(bundleKey));
+        deprecated.get(ModelDescriptionConstants.REASON);
+        return deprecated;
     }
 
     public ModelNode getNoTextDescription(boolean forOperation) {
@@ -378,7 +444,7 @@ public abstract class AttributeDefinition {
             result.get(ModelDescriptionConstants.REQUIRED).set(!isAllowNull());
         }
         result.get(ModelDescriptionConstants.NILLABLE).set(isAllowNull());
-        if (!forOperation && defaultValue != null && defaultValue.isDefined()) {
+        if (defaultValue != null && defaultValue.isDefined()) {
             result.get(ModelDescriptionConstants.DEFAULT).set(defaultValue);
         }
         if (measurementUnit != null && measurementUnit != MeasurementUnit.NONE) {
@@ -402,6 +468,7 @@ public abstract class AttributeDefinition {
                     case STRING:
                     case LIST:
                     case OBJECT:
+                    case BYTES:
                         result.get(ModelDescriptionConstants.MIN_LENGTH).set(min);
                         break;
                     default:
@@ -414,6 +481,7 @@ public abstract class AttributeDefinition {
                     case STRING:
                     case LIST:
                     case OBJECT:
+                    case BYTES:
                         result.get(ModelDescriptionConstants.MAX_LENGTH).set(max);
                         break;
                     default:
@@ -421,6 +489,17 @@ public abstract class AttributeDefinition {
                 }
             }
         }
+        addAllowedValuesToDescription(result, validator);
+        return result;
+    }
+
+    /**
+     * Adds the allowed values. Override for attributes who should not use the allowed values.
+     *
+     * @param result the node to add the allowed values to
+     * @param validator the validator to get the allowed values from
+     */
+    protected void addAllowedValuesToDescription(ModelNode result, ParameterValidator validator) {
         if (validator instanceof AllowedValuesValidator) {
             AllowedValuesValidator avv = (AllowedValuesValidator) validator;
             List<ModelNode> allowed = avv.getAllowedValues();
@@ -430,7 +509,6 @@ public abstract class AttributeDefinition {
                 }
             }
         }
-        return result;
     }
 
     /**
@@ -470,300 +548,38 @@ public abstract class AttributeDefinition {
         return node;
     }
 
-    private final OperationContext NO_OPERATION_CONTEXT_FOR_RESOLVING_MODEL_PARAMETERS = new OperationContext() {
+    public AttributeMarshaller getAttributeMarshaller() {
+        return attributeMarshaller;
+    }
 
-        @Override
-        public void setRollbackOnly() {
-        }
+    /**
+     * Show if attribute is resource only which means it wont be part of add operations but only present on resource
+     * @return true is attribute is resource only
+     */
+    public boolean isResourceOnly() {
+        return resourceOnly;
+    }
 
-        @Override
-        public void runtimeUpdateSkipped() {
-        }
+    /**
+     *
+     * @return true if attribute is deprecated
+     */
+    public boolean isDeprecated() {
+        return deprecationData != null;
+    }
 
-        @Override
-        public void revertRestartRequired() {
-        }
+    /**
+     * return deprecation data if there is any
+     * @return {@link DeprecationData}
+     */
+    public DeprecationData getDeprecationData() {
+        return deprecationData;
+    }
 
-        @Override
-        public void revertReloadRequired() {
-        }
-
-        @Override
-        public void restartRequired() {
-        }
-
-        @Override
-        public void report(MessageSeverity severity, String message) {
-        }
-
-        @Override
-        public void removeService(ServiceController<?> controller) throws UnsupportedOperationException {
-        }
-
-        @Override
-        public ServiceController<?> removeService(ServiceName name) throws UnsupportedOperationException {
-            return null;
-        }
-
-        @Override
-        public Resource removeResource(PathAddress address) throws UnsupportedOperationException {
-            return null;
-        }
-
-        @Override
-        public void reloadRequired() {
-        }
-
-        @Override
-        public Resource readResourceForUpdate(PathAddress address) {
-            return null;
-        }
-
-        @Override
-        public Resource readResource(PathAddress address) {
-            return null;
-        }
-
-        @Override
-        public Resource readResource(PathAddress address, boolean recursive) {
-            return null;
-        }
-
-        @Override
-        public Resource readResourceFromRoot(PathAddress address) {
-            return null;
-        }
-
-        @Override
-        public Resource readResourceFromRoot(PathAddress address, boolean recursive) {
-            return null;
-        }
-
-        @Override
-        public ModelNode readModelForUpdate(PathAddress address) {
-            return null;
-        }
-
-        @Override
-        public ModelNode readModel(PathAddress address) {
-            return null;
-        }
-
-        @Override
-        public final boolean isNormalServer() {
-            return false;
-        }
-
-        @Override
-        public boolean isRuntimeAffected() {
-            return false;
-        }
-
-        @Override
-        public boolean isRollbackOnly() {
-            return false;
-        }
-
-        @Override
-        public boolean isRollbackOnRuntimeFailure() {
-            return false;
-        }
-
-        @Override
-        public boolean isResourceServiceRestartAllowed() {
-            return false;
-        }
-
-        @Override
-        public boolean isResourceRegistryAffected() {
-            return false;
-        }
-
-        @Override
-        public boolean isModelAffected() {
-            return false;
-        }
-
-        @Override
-        public boolean isBooting() {
-            return false;
-        }
-
-        @Override
-        public boolean hasResult() {
-            return false;
-        }
-
-        @Override
-        public boolean hasFailureDescription() {
-            return false;
-        }
-
-        @Override
-        public ProcessType getProcessType() {
-            return null;
-        }
-
-        @Override
-        public RunningMode getRunningMode() {
-            return null;
-        }
-
-        @Override
-        @Deprecated
-        @SuppressWarnings("deprecation")
-        public Type getType() {
-            return null;
-        }
-
-        @Override
-        public ServiceTarget getServiceTarget() throws UnsupportedOperationException {
-            return null;
-        }
-
-        @Override
-        public ServiceRegistry getServiceRegistry(boolean modify) throws UnsupportedOperationException {
-            return null;
-        }
-
-        @Override
-        public Resource getRootResource() {
-            return null;
-        }
-
-        @Override
-        public ModelNode getResult() {
-            return null;
-        }
-
-        @Override
-        public ModelNode getServerResults() {
-            return null;
-        }
-
-        @Override
-        public ManagementResourceRegistration getResourceRegistrationForUpdate() {
-            return null;
-        }
-
-        @Override
-        public ImmutableManagementResourceRegistration getResourceRegistration() {
-            return null;
-        }
-
-        @Override
-        public ImmutableManagementResourceRegistration getRootResourceRegistration() {
-            return null;
-        }
-
-        @Override
-        public ModelNode getFailureDescription() {
-            return null;
-        }
-
-        @Override
-        public ModelNode getResponseHeaders() {
-            return null;
-        }
-
-        @Override
-        public Stage getCurrentStage() {
-            return null;
-        }
-
-        @Override
-        public int getAttachmentStreamCount() {
-            return 0;
-        }
-
-        @Override
-        public InputStream getAttachmentStream(int index) {
-            return null;
-        }
-
-        @Override
-        public Resource createResource(PathAddress address) throws UnsupportedOperationException {
-            return null;
-        }
-
-        @Override
-        public void completeStep(RollbackHandler rollbackHandler) {
-        }
-
-        @Override
-        public ResultAction completeStep() {
-            return null;
-        }
-
-        @Override
-        public void addStep(ModelNode response, ModelNode operation, OperationStepHandler step, Stage stage)
-                throws IllegalArgumentException {
-        }
-
-        @Override
-        public void addStep(ModelNode operation, OperationStepHandler step, Stage stage) throws IllegalArgumentException {
-        }
-
-        @Override
-        public void addStep(OperationStepHandler step, Stage stage) throws IllegalArgumentException {
-        }
-
-        @Override
-        public void addResource(PathAddress address, Resource toAdd) {
-        }
-
-        @Override
-        public void addStep(ModelNode response, ModelNode operation, OperationStepHandler step, Stage stage, boolean addFirst) throws IllegalArgumentException {
-            //
-        }
-
-        @Override
-        public void addStep(OperationStepHandler step, Stage stage, boolean addFirst) throws IllegalArgumentException {
-            //
-        }
-
-        @Override
-        public void acquireControllerLock() {
-        }
-
+    private static final ExpressionResolver NO_OPERATION_CONTEXT_FOR_RESOLVING_MODEL_PARAMETERS = new ExpressionResolver() {
         @Override
         public ModelNode resolveExpressions(ModelNode node) throws OperationFailedException {
             return ExpressionResolver.DEFAULT.resolveExpressions(node);
-        }
-
-        @Override
-        public <T> T getAttachment(final AttachmentKey<T> key) {
-            return null;
-        }
-
-        @Override
-        public <T> T attach(final AttachmentKey<T> key, final T value) {
-            return null;
-        }
-
-        @Override
-        public <T> T attachIfAbsent(final AttachmentKey<T> key, final T value) {
-            return null;
-        }
-
-        @Override
-        public <T> T detach(final AttachmentKey<T> key) {
-            return null;
-        }
-
-        @Override
-        public Resource getOriginalRootResource() {
-            return null;
-        }
-
-        @Override
-        public boolean markResourceRestarted(PathAddress resource, Object owner) {
-            return false;
-        }
-
-        @Override
-        public boolean revertResourceRestarted(PathAddress resource, Object owner) {
-            return false;
         }
     };
 }

@@ -26,18 +26,16 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Handler for the "composite" operation; i.e. one that includes one or more child operations
@@ -46,17 +44,28 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public final class CompositeOperationHandler implements OperationStepHandler, DescriptionProvider {
+public final class CompositeOperationHandler implements OperationStepHandler {
     public static final CompositeOperationHandler INSTANCE = new CompositeOperationHandler();
     public static final String NAME = ModelDescriptionConstants.COMPOSITE;
+
+    private static final AttributeDefinition STEPS = new PrimitiveListAttributeDefinition.Builder(ModelDescriptionConstants.STEPS, ModelType.OBJECT)
+            .build();
+
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(NAME, ControllerResolver.getResolver("root"))
+        .addParameter(STEPS)
+        .setReplyType(ModelType.OBJECT)
+        .setPrivateEntry()
+        .build();
 
     private CompositeOperationHandler() {
     }
 
-    public void execute(final OperationContext context, final ModelNode operation) {
+    public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+        STEPS.validateOperation(operation);
+
         ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
-        final List<ModelNode> list = operation.get(STEPS).asList();
-        ModelNode responseMap = context.getResult().setEmptyObject();
+        final List<ModelNode> list = operation.get(ModelDescriptionConstants.STEPS).asList();
+        final ModelNode responseMap = context.getResult().setEmptyObject();
         Map<String, OperationStepHandler> stepHandlerMap = new HashMap<String, OperationStepHandler>();
         final int size = list.size();
         // Validate all needed handlers are available.
@@ -69,8 +78,13 @@ public final class CompositeOperationHandler implements OperationStepHandler, De
             String stepOpName = subOperation.require(OP).asString();
             OperationStepHandler stepHandler = registry.getOperationHandler(stepAddress, stepOpName);
             if (stepHandler == null) {
-                context.getFailureDescription().set(MESSAGES.noHandler(stepOpName, stepAddress));
-                context.completeStep();
+                ImmutableManagementResourceRegistration child = registry.getSubModel(stepAddress);
+                if (child == null) {
+                   context.getFailureDescription().set(MESSAGES.noSuchResourceType(stepAddress));
+                } else {
+                    context.getFailureDescription().set(MESSAGES.noHandlerForOperation(stepOpName, stepAddress));
+                }
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                 return;
             }
             stepHandlerMap.put(stepName, stepHandler);
@@ -82,26 +96,22 @@ public final class CompositeOperationHandler implements OperationStepHandler, De
             context.addStep(responseMap.get(stepName).setEmptyObject(), subOperation, stepHandlerMap.get(stepName), OperationContext.Stage.IMMEDIATE);
         }
 
-        if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-            final ModelNode failureMsg = new ModelNode();
-            for (int i = 0; i < size; i++) {
-                String stepName = "step-" + (i+1);
-                ModelNode stepResponse = responseMap.get(stepName);
-                if (stepResponse.hasDefined(FAILURE_DESCRIPTION)) {
-                    failureMsg.get(MESSAGES.compositeOperationFailed(), MESSAGES.operation(stepName)).set(stepResponse.get(FAILURE_DESCRIPTION));
+        context.completeStep(new OperationContext.RollbackHandler() {
+            @Override
+            public void handleRollback(OperationContext context, ModelNode operation) {
+                final ModelNode failureMsg = new ModelNode();
+                for (int i = 0; i < size; i++) {
+                    String stepName = "step-" + (i+1);
+                    ModelNode stepResponse = responseMap.get(stepName);
+                    if (stepResponse.hasDefined(FAILURE_DESCRIPTION)) {
+                        failureMsg.get(MESSAGES.compositeOperationFailed(), MESSAGES.operation(stepName)).set(stepResponse.get(FAILURE_DESCRIPTION));
+                    }
                 }
+                if (!failureMsg.isDefined()) {
+                    failureMsg.set(MESSAGES.compositeOperationRolledBack());
+                }
+                context.getFailureDescription().set(failureMsg);
             }
-            if (!failureMsg.isDefined()) {
-                failureMsg.set(MESSAGES.compositeOperationRolledBack());
-            }
-            context.getFailureDescription().set(failureMsg);
-        }
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        //Since this instance should have EntryType.PRIVATE, there is no need for a description
-        //return new ModelNode();
-        return CommonDescriptions.getCompositeOperation(locale);
+        });
     }
 }

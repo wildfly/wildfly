@@ -210,7 +210,7 @@ public class JvmXml {
             }
             final String[] array = requireAttributes(reader, Attribute.NAME.getLocalName(), Attribute.VALUE.getLocalName());
             requireNoContent(reader);
-            properties.add(array[0], array[1]);
+            properties.add(array[0], ParseUtils.parsePossibleExpression(array[1]));
         }
 
         if (!properties.isDefined()) {
@@ -431,7 +431,7 @@ public class JvmXml {
             final Element element = Element.forName(reader.getLocalName());
             if (element == Element.OPTION) {
                 // Handle attributes
-                String option = null;
+                ModelNode option = null;
                 final int count = reader.getAttributeCount();
                 for (int i = 0; i < count; i++) {
                     final String attrValue = reader.getAttributeValue(i);
@@ -441,7 +441,7 @@ public class JvmXml {
                         final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                         switch (attribute) {
                             case VALUE: {
-                                option = attrValue;
+                                option = ParseUtils.parsePossibleExpression(attrValue);
                                 break;
                             }
                             default:
@@ -454,7 +454,6 @@ public class JvmXml {
                 }
 
                 options.add(option);
-
                 // Handle elements
                 requireNoContent(reader);
             } else {
@@ -487,7 +486,7 @@ public class JvmXml {
             JvmAttributes.HEAP_SIZE.marshallAsAttribute(jvmElement, writer);
             JvmAttributes.MAX_HEAP_SIZE.marshallAsAttribute(jvmElement, writer);
         }
-        if (JvmAttributes.PERMGEN_SIZE.isMarshallable(jvmElement) || JvmAttributes.MAX_HEAP_SIZE.isMarshallable(jvmElement)) {
+        if (JvmAttributes.PERMGEN_SIZE.isMarshallable(jvmElement) || JvmAttributes.MAX_PERMGEN_SIZE.isMarshallable(jvmElement)) {
             writer.writeEmptyElement(Element.PERMGEN.getLocalName());
             JvmAttributes.PERMGEN_SIZE.marshallAsAttribute(jvmElement, writer);
             JvmAttributes.MAX_PERMGEN_SIZE.marshallAsAttribute(jvmElement, writer);

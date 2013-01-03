@@ -21,293 +21,575 @@
 */
 package org.jboss.as.logging;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 import org.apache.commons.io.FileUtils;
-import org.jboss.as.subsystem.test.AbstractSubsystemTest;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.subsystem.test.ControllerInitializer;
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.services.path.PathResourceDefinition;
+import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
+import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
-import org.jboss.logging.Logger.Level;
+import org.jboss.logmanager.LogContext;
+import org.jboss.logmanager.Logger;
+import org.junit.After;
+import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
+public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystemTest {
+
+    private static final String PROFILE = "testProfile";
+    private static final String FQCN = LoggingOperationsSubsystemTestCase.class.getName();
+    private static final Level[] LEVELS = {
+            org.jboss.logmanager.Level.FATAL,
+            org.jboss.logmanager.Level.ERROR,
+            org.jboss.logmanager.Level.WARN,
+            org.jboss.logmanager.Level.INFO,
+            org.jboss.logmanager.Level.DEBUG,
+            org.jboss.logmanager.Level.TRACE,
+
+    };
 
     private static File logDir;
 
-    static {
-        System.setProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager");
-    }
-
-    private static final Logger log = Logger.getLogger(LoggingOperationsSubsystemTestCase.class.getName());
-
-    public LoggingOperationsSubsystemTestCase() {
-        super(LoggingExtension.SUBSYSTEM_NAME, new LoggingExtension());
-    }
-
     @BeforeClass
     public static void setupLoggingDir() {
-        logDir = new File("target/logs");
-        logDir.mkdirs();
-        for (String name : logDir.list()) {
-            new File(logDir, name).delete();
+        logDir = LoggingTestEnvironment.get().getLogDir();
+        for (File file : logDir.listFiles()) {
+            file.delete();
         }
-        System.setProperty("jboss.server.log.dir", logDir.getAbsolutePath());
+    }
+
+    @After
+    @Override
+    public void clearLogContext() {
+        super.clearLogContext();
+        final LoggingProfileContextSelector contextSelector = LoggingProfileContextSelector.getInstance();
+        if (contextSelector.exists(PROFILE)) {
+            clearLogContext(contextSelector.get(PROFILE));
+            contextSelector.remove(PROFILE);
+        }
+    }
+
+    @Override
+    protected void standardSubsystemTest(final String configId) throws Exception {
+        // do nothing as this is not a subsystem parsing test
+    }
+
+    @Override
+    protected String getSubsystemXml() throws IOException {
+        return readResource("/operations.xml");
     }
 
     @Test
     public void testChangeRootLogLevel() throws Exception {
-
-        KernelServices kernelServices = installInController(new LoggingAdditionalInitialization(), readResource("/operations.xml"));
-
-        // add new file loger so we can track logged messages
-        File logFile = new File(logDir, "test-fh.log");
-        if (logFile.exists()) assertTrue(logFile.delete());
-        addFileHandler(kernelServices, "test-logger", "TRACE", logFile, true);
-
-        Level[] levels = new Logger.Level[] {Level.ERROR, Level.WARN,
-            Level.INFO, Level.DEBUG, Level.TRACE};
-        Map<Level, Integer> levelOrd = new HashMap<Level,Integer>();
-        levelOrd.put(Level.FATAL, 0);
-        levelOrd.put(Level.ERROR, 1);
-        levelOrd.put(Level.WARN, 2);
-        levelOrd.put(Level.INFO, 3);
-        levelOrd.put(Level.DEBUG, 4);
-        levelOrd.put(Level.TRACE, 5);
-
-        // log messages on all levels with different root logger level settings
-        for(Level level : levels) {
-            // change root log level
-            ModelNode op = createOpNode("subsystem=logging/root-logger=ROOT", "change-root-log-level");
-            op.get("level").set(level.name());
-            ModelNode ret = kernelServices.executeOperation(op);
-
-            // log a message
-            for (Logger.Level lvl : Logger.Level.values()) {
-                log.log(lvl, "RootLoggerTestCaseTST " + level);
-            }
-        }
-
-        // stop logger
-        removeFileHandler(kernelServices, "test-logger", true);
-
-        // go through loggeded messages - test that with each root logger level settings
-        // message with equal priority and also messags with all higher
-        // priorities were logged
-
-        boolean[][] logFound = new boolean[levelOrd.size()][levelOrd.size()];
-
-        List<String> logLines = FileUtils.readLines(logFile);
-        for(String line : logLines) {
-            if (! line.contains("RootLoggerTestCaseTST")) continue; // not our log
-            String[] lWords = line.split(" +");
-            try {
-                Level lineLogLevel = Level.valueOf(lWords[1]);
-                Level rootLogLevel = Level.valueOf(lWords[5]);
-                int ll = levelOrd.get(lineLogLevel);
-                int rl = levelOrd.get(rootLogLevel);
-                assertTrue(ll <= rl);
-                logFound[ll][rl] = true;
-            } catch (Exception e) {
-                throw new Exception("Unexpected log:" + line);
-            }
-        }
-        for(Level level : levels) {
-            int rl = levelOrd.get(level);
-            for(int ll = 0; ll <= rl; ll++) assertTrue(logFound[ll][rl]);
-        }
-
+        testChangeRootLogLevel(null);
+        testChangeRootLogLevel(PROFILE);
     }
 
     @Test
-    @Ignore("AS7-2385")
     public void testSetRootLogger() throws Exception {
-
-        KernelServices kernelServices = installInController(new LoggingAdditionalInitialization(), readResource("/operations.xml"));
-
-        // add new file loger so we can test root logger change
-        File logFile = new File(logDir, "test-fh.log");
-        if (logFile.exists()) assertTrue(logFile.delete());
-        addFileHandler(kernelServices, "test-logger", "TRACE", logFile, false);
-
-        // read root logger
-        ModelNode op = createOpNode("subsystem=logging", "read-attribute");
-        op.get("name").set("root-logger");
-        ModelNode rootLogger = kernelServices.executeOperation(op);
-        List<String> handlers = modelNodeAsStringList(rootLogger.get("handlers"));
-
-        // set new root logger
-        op = createOpNode("subsystem=logging", "set-root-logger");
-        op.get("level").set(rootLogger.get("level"));
-        for(String handler : handlers) op.get("handlers").add(handler);
-        op.get("handlers").add("test-logger");
-        kernelServices.executeOperation(op);
-
-        // log a message
-        for (Logger.Level lvl : Logger.Level.values())
-            log.log(lvl, "Test123");
-
-
-        // revert root logger
-        op = createOpNode("subsystem=logging", "set-root-logger");
-        op.get("level").set(rootLogger.get("level"));
-        op.get("handlers").set(rootLogger.get("handlers"));
-        kernelServices.executeOperation(op);
-
-        // remove file handler
-        removeFileHandler(kernelServices, "test-logger", false);
-
-        // check that root logger were changed - file logger was registered
-        String log = FileUtils.readFileToString(logFile);
-        assertTrue(log.contains("Test123."));
-
-        // remove log file
-        assertTrue(logFile.delete());
+        testSetRootLogger(null);
+        testSetRootLogger(PROFILE);
     }
 
     @Test
     public void testAddRemoveFileHandler() throws Exception {
-        KernelServices kernelServices = installInController(new LoggingAdditionalInitialization(), readResource("/operations.xml"));
+        testAddRemoveFileHandler(null);
+        testAddRemoveFileHandler(PROFILE);
+    }
 
-        File logFile = new File(logDir, "test-fh.log");
-        if (logFile.exists()) assertTrue(logFile.delete());
+    @Test
+    public void testDisableHandler() throws Exception {
+        testDisableHandler(null);
+        testDisableHandler(PROFILE);
+    }
 
-        // add file handler
-        ModelNode op = createOpNode("subsystem=logging/file-handler=test-fh", "add");
-        op.get("name").set("test-fh");
-        op.get("level").set("INFO");
-        op.get("file").get("path").set(logFile.getAbsolutePath());
-        kernelServices.executeOperation(op);
+    @Test
+    public void testLegacyDisableHandler() throws Exception {
+        final String subsystemXml = getSubsystemXml();
+        final ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
+        final KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
+                .setSubsystemXml(subsystemXml);
 
-        // register it with root logger
-        op = createOpNode("subsystem=logging/root-logger=ROOT", "root-logger-assign-handler");
-        op.get("name").set("test-fh");
-        kernelServices.executeOperation(op);
+        // Note this is running in ADMIN_ONLY meaning runtime changes won't take effect. Can't confirm the
+        // handlers actually get disabled.
+        builder.createLegacyKernelServicesBuilder(LoggingTestEnvironment.getManagementInstance(), modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-logging:7.1.2.Final");
 
-        // check it is listed in root-logger
-        op = createOpNode("subsystem=logging/root-logger=ROOT", "read-attribute");
-        op.get("name").set("handlers");
-        ModelNode handlers = kernelServices.executeOperation(op).require(RESULT);
-        List<String> loggers = modelNodeAsStringList(handlers);
-        assertTrue(loggers.contains("test-fh"));
+        final KernelServices kernelServices = builder.build();
+        assertTrue(kernelServices.isSuccessfulBoot());
+        assertTrue(kernelServices.getLegacyServices(modelVersion).isSuccessfulBoot());
+        final ModelNode handlerAddress = createFileHandlerAddress("FILE").toModelNode();
 
-        for (Logger.Level level : Logger.Level.values()) {
-            log.log(level, "Test123");
+        // Disable the handler
+        TransformedOperation transformedOperation = kernelServices.transformOperation(modelVersion, Operations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, false));
+        // Validate the operation has been transformed properly
+        assertEquals(AbstractHandlerDefinition.DISABLE_HANDLER.getName(), Operations.getOperationName(transformedOperation.getTransformedOperation()));
+        // Execute the operation to confirm success
+        executeTransformOperation(kernelServices, modelVersion, Operations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, false));
+
+        // Re-enable the handler
+        // Validate the operation has been transformed properly
+        transformedOperation = kernelServices.transformOperation(modelVersion, Operations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, true));
+        assertEquals(AbstractHandlerDefinition.ENABLE_HANDLER.getName(), Operations.getOperationName(transformedOperation.getTransformedOperation()));
+        // Execute the operation to confirm success
+        executeTransformOperation(kernelServices, modelVersion, Operations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, true));
+    }
+
+    @Test
+    public void testLegacyFilters() throws Exception {
+        final KernelServices kernelServices = boot();
+        final String fileHandlerName = "test-file-handler";
+
+        // add new file logger so we can track logged messages
+        final File logFile = createLogFile();
+        final ModelNode handlerAddress = createFileHandlerAddress(fileHandlerName).toModelNode();
+        addFileHandler(kernelServices, null, fileHandlerName, org.jboss.logmanager.Level.TRACE, logFile, true);
+        // Write legacy filters
+        for (Map.Entry<String, ModelNode> entry : FilterConversionTestCase.MAP.entrySet()) {
+            // Validate the write-attribute operation
+            ModelNode op = Operations.createWriteAttributeOperation(handlerAddress, CommonAttributes.FILTER, entry.getValue());
+            executeOperation(kernelServices, op);
+            // Read the current value
+            op = Operations.createReadAttributeOperation(handlerAddress, CommonAttributes.FILTER_SPEC);
+            String filterSpecResult = Operations.readResultAsString(executeOperation(kernelServices, op));
+            assertEquals(entry.getKey(), filterSpecResult);
+
+            // Validate an add operation
+            final ModelNode tempHandlerAddress = createConsoleHandlerAddress("temp").toModelNode();
+            op = Operations.createAddOperation(tempHandlerAddress);
+            op.get(CommonAttributes.FILTER.getName()).set(entry.getValue());
+            executeOperation(kernelServices, op);
+            // Read the current value
+            op = Operations.createReadAttributeOperation(tempHandlerAddress, CommonAttributes.FILTER_SPEC);
+            filterSpecResult = Operations.readResultAsString(executeOperation(kernelServices, op));
+            assertEquals(entry.getKey(), filterSpecResult);
+            // Remove the temp handler
+            op = Operations.createRemoveOperation(tempHandlerAddress, true);
+            executeOperation(kernelServices, op);
+
+            // Add to a logger
+            final ModelNode loggerAddress = createLoggerAddress("test-logger").toModelNode();
+            op = Operations.createAddOperation(loggerAddress);
+            op.get(CommonAttributes.FILTER.getName()).set(entry.getValue());
+            executeOperation(kernelServices, op);
+            // Read the current value
+            op = Operations.createReadAttributeOperation(loggerAddress, CommonAttributes.FILTER_SPEC);
+            filterSpecResult = Operations.readResultAsString(executeOperation(kernelServices, op));
+            assertEquals(entry.getKey(), filterSpecResult);
+
+            // Remove the attribute
+            op = Operations.createUndefineAttributeOperation(loggerAddress, CommonAttributes.FILTER_SPEC);
+            executeOperation(kernelServices, op);
+            op = Operations.createReadAttributeOperation(loggerAddress, CommonAttributes.FILTER);
+            // Filter and filter spec should be undefined
+            assertEquals("Filter was not undefined", Operations.UNDEFINED, Operations.readResult(executeOperation(kernelServices, op)));
+            op = Operations.createReadAttributeOperation(loggerAddress, CommonAttributes.FILTER_SPEC);
+            assertEquals("Filter was not undefined", Operations.UNDEFINED, Operations.readResult(executeOperation(kernelServices, op)));
+
+            // Test writing the attribute to the logger
+            op = Operations.createWriteAttributeOperation(loggerAddress, CommonAttributes.FILTER, entry.getValue());
+            executeOperation(kernelServices, op);
+            // Read the current value
+            op = Operations.createReadAttributeOperation(loggerAddress, CommonAttributes.FILTER_SPEC);
+            filterSpecResult = Operations.readResultAsString(executeOperation(kernelServices, op));
+            assertEquals(entry.getKey(), filterSpecResult);
+
+            // Remove the logger
+            op = Operations.createRemoveOperation(loggerAddress, true);
+            executeOperation(kernelServices, op);
         }
 
-        // deregister handler from logger
-        op = createOpNode("subsystem=logging/root-logger=ROOT", "root-logger-unassign-handler");
-        op.get("name").set("test-fh");
-        kernelServices.executeOperation(op);
+        // Write new filters
+        for (Map.Entry<String, ModelNode> entry : FilterConversionTestCase.MAP.entrySet()) {
+            // Write to a handler
+            ModelNode op = Operations.createWriteAttributeOperation(handlerAddress, CommonAttributes.FILTER_SPEC, entry.getKey());
+            executeOperation(kernelServices, op);
+            // Read the current value
+            op = Operations.createReadAttributeOperation(handlerAddress, CommonAttributes.FILTER);
+            ModelNode filterResult = Operations.readResult(executeOperation(kernelServices, op));
+            ModelTestUtils.compare(entry.getValue(), filterResult);
 
-        // check it is not listed in root-logger
-        op = createOpNode("subsystem=logging/root-logger=ROOT", "read-attribute");
-        op.get("name").set("handlers");
-        handlers = kernelServices.executeOperation(op);
-        loggers = modelNodeAsStringList(handlers);
-        assertFalse(loggers.contains("test-fh"));
+            // Validate an add operation
+            final ModelNode tempHandlerAddress = createConsoleHandlerAddress("temp").toModelNode();
+            op = Operations.createAddOperation(tempHandlerAddress);
+            op.get(CommonAttributes.FILTER_SPEC.getName()).set(entry.getKey());
+            executeOperation(kernelServices, op);
+            // Read the current value
+            op = Operations.createReadAttributeOperation(tempHandlerAddress, CommonAttributes.FILTER);
+            filterResult = Operations.readResult(executeOperation(kernelServices, op));
+            ModelTestUtils.compare(entry.getValue(), filterResult);
+            // Remove the temp handler
+            op = Operations.createRemoveOperation(tempHandlerAddress, true);
+            executeOperation(kernelServices, op);
 
-        // remove handler
-        op = createOpNode("subsystem=logging/file-handler=test-fh", "remove");
-        kernelServices.executeOperation(op);
+            // Add to a logger
+            final ModelNode loggerAddress = createLoggerAddress("test-logger").toModelNode();
+            op = Operations.createAddOperation(loggerAddress);
+            op.get(CommonAttributes.FILTER_SPEC.getName()).set(entry.getKey());
+            executeOperation(kernelServices, op);
+            // Read the current value
+            op = Operations.createReadAttributeOperation(loggerAddress, CommonAttributes.FILTER);
+            filterResult = Operations.readResult(executeOperation(kernelServices, op));
+            ModelTestUtils.compare(entry.getValue(), filterResult);
+
+            // Test writing the attribute to the logger
+            op = Operations.createWriteAttributeOperation(loggerAddress, CommonAttributes.FILTER_SPEC, entry.getKey());
+            executeOperation(kernelServices, op);
+            // Read the current value
+            op = Operations.createReadAttributeOperation(loggerAddress, CommonAttributes.FILTER);
+            filterResult = Operations.readResult(executeOperation(kernelServices, op));
+            ModelTestUtils.compare(entry.getValue(), filterResult);
+
+            // Remove the logger
+            op = Operations.createRemoveOperation(loggerAddress, true);
+            executeOperation(kernelServices, op);
+        }
+        removeFileHandler(kernelServices, null, fileHandlerName, true);
+    }
+
+    @Test
+    public void testLoggingProfile() throws Exception {
+        final KernelServices kernelServices = boot();
+        final String handlerName = "test-file-handler";
+
+        final File logFile = createLogFile();
+        final File profileLogFile = createLogFile("profile.log");
+        final ModelNode handlerAddress = createFileHandlerAddress(handlerName).toModelNode();
+        final ModelNode profileHandlerAddress = createFileHandlerAddress(PROFILE, handlerName).toModelNode();
+
+        // Add handlers
+        addFileHandler(kernelServices, null, handlerName, org.jboss.logmanager.Level.INFO, logFile, true);
+        addFileHandler(kernelServices, PROFILE, handlerName, org.jboss.logmanager.Level.INFO, profileLogFile, true);
+
+        // Change the format
+        ModelNode op = Operations.createReadAttributeOperation(handlerAddress, CommonAttributes.FORMATTER);
+        final String defaultHandlerFormat = Operations.readResultAsString(executeOperation(kernelServices, op));
+        op = Operations.createReadAttributeOperation(profileHandlerAddress, CommonAttributes.FORMATTER);
+        final String defaultProfileHandlerFormat = Operations.readResultAsString(executeOperation(kernelServices, op));
+        op = Operations.createWriteAttributeOperation(handlerAddress, CommonAttributes.FORMATTER, "%m%n");
+        executeOperation(kernelServices, op);
+        op = Operations.createWriteAttributeOperation(profileHandlerAddress, CommonAttributes.FORMATTER, "%m%n");
+        executeOperation(kernelServices, op);
+
+        // Log with and without profile
+        final String msg = "This is a test message";
+        doLog(null, LEVELS, msg);
+        doLog(PROFILE, LEVELS, msg);
+
+        // Reset the formatters
+        op = Operations.createWriteAttributeOperation(handlerAddress, CommonAttributes.FORMATTER, defaultHandlerFormat);
+        executeOperation(kernelServices, op);
+        op = Operations.createWriteAttributeOperation(profileHandlerAddress, CommonAttributes.FORMATTER, defaultProfileHandlerFormat);
+        executeOperation(kernelServices, op);
+
+        // Remove the handler
+        removeFileHandler(kernelServices, null, handlerName, true);
+        removeFileHandler(kernelServices, PROFILE, handlerName, true);
+
+        // Read the files to a string
+        final String result = FileUtils.readFileToString(logFile);
+        final String profileResult = FileUtils.readFileToString(profileLogFile);
+
+        // Check generated log file
+        assertTrue(result.contains(msg));
+        assertTrue(profileResult.contains(msg));
+
+        // The contents of the files should match
+        assertTrue(String.format("Contents don't match: %nResult:%n%s%nProfileResult%n%s", result, profileResult), result.equals(profileResult));
+    }
+
+    private void testChangeRootLogLevel(final String loggingProfile) throws Exception {
+        final KernelServices kernelServices = boot();
+        final String fileHandlerName = "test-file-handler";
+
+        // add new file logger so we can track logged messages
+        final File logFile = createLogFile();
+        addFileHandler(kernelServices, loggingProfile, fileHandlerName, org.jboss.logmanager.Level.TRACE, logFile, true);
+
+        final Level[] levels = {
+                org.jboss.logmanager.Level.FATAL,
+                org.jboss.logmanager.Level.ERROR,
+                org.jboss.logmanager.Level.WARN,
+                org.jboss.logmanager.Level.INFO,
+                org.jboss.logmanager.Level.DEBUG,
+                org.jboss.logmanager.Level.TRACE
+        };
+        final Map<Level, Integer> levelOrd = new HashMap<Level, Integer>();
+        levelOrd.put(org.jboss.logmanager.Level.FATAL, 0);
+        levelOrd.put(org.jboss.logmanager.Level.ERROR, 1);
+        levelOrd.put(org.jboss.logmanager.Level.WARN, 2);
+        levelOrd.put(org.jboss.logmanager.Level.INFO, 3);
+        levelOrd.put(org.jboss.logmanager.Level.DEBUG, 4);
+        levelOrd.put(org.jboss.logmanager.Level.TRACE, 5);
+
+        // log messages on all levels with different root logger level settings
+        final ModelNode address = createRootLoggerAddress(loggingProfile).toModelNode();
+        for (Level level : levels) {
+            // change root log level
+            final ModelNode op = Operations.createWriteAttributeOperation(address, CommonAttributes.LEVEL, level.getName());
+            executeOperation(kernelServices, op);
+            doLog(loggingProfile, levels, "RootLoggerTestCaseTST %s", level);
+        }
+
+        // Remove the handler
+        removeFileHandler(kernelServices, loggingProfile, fileHandlerName, true);
+
+        // go through logged messages - test that with each root logger level settings
+        // message with equal priority and also messages with all higher
+        // priorities were logged
+
+        final boolean[][] logFound = new boolean[levelOrd.size()][levelOrd.size()];
+
+        final List<String> logLines = FileUtils.readLines(logFile);
+        for (String line : logLines) {
+            if (!line.contains("RootLoggerTestCaseTST")) continue; // not our log
+            final String[] words = line.split("\\s+");
+            try {
+                final Level lineLogLevel = Level.parse(words[1]);
+                final Level rootLogLevel = Level.parse(words[5]);
+                final int producedLevel = levelOrd.get(lineLogLevel);
+                final int loggedLevel = levelOrd.get(rootLogLevel);
+                assertTrue(String.format("Produced level(%s) greater than logged level (%s)", lineLogLevel, rootLogLevel), producedLevel <= loggedLevel);
+                logFound[producedLevel][loggedLevel] = true;
+            } catch (Exception e) {
+                throw new Exception("Unexpected log:" + line);
+            }
+        }
+        for (Level level : levels) {
+            final int rl = levelOrd.get(level);
+            for (int ll = 0; ll <= rl; ll++) assertTrue(logFound[ll][rl]);
+        }
+
+    }
+
+    private void testSetRootLogger(final String loggingProfile) throws Exception {
+        final KernelServices kernelServices = boot();
+        final String fileHandlerName = "test-file-handler";
+
+        // Add new file logger so we can test root logger change
+        final File logFile = createLogFile();
+        addFileHandler(kernelServices, loggingProfile, fileHandlerName, org.jboss.logmanager.Level.INFO, logFile, false);
+
+        // Read root logger
+        final ModelNode rootLoggerAddress = createRootLoggerAddress(loggingProfile).toModelNode();
+        ModelNode op = Operations.createOperation(Operations.READ_RESOURCE, rootLoggerAddress);
+        final ModelNode rootLoggerResult = executeOperation(kernelServices, op);
+        final List<String> handlers = modelNodeAsStringList(rootLoggerResult.get(CommonAttributes.HANDLERS.getName()));
+
+        // Remove the root logger
+        op = Operations.createRemoveOperation(rootLoggerAddress, false);
+        executeOperation(kernelServices, op);
+
+        // Set a new root logger
+        op = Operations.createOperation(ModelDescriptionConstants.ADD, rootLoggerAddress);
+        op.get(CommonAttributes.LEVEL.getName()).set(rootLoggerResult.get(CommonAttributes.LEVEL.getName()));
+        for (String handler : handlers) op.get(CommonAttributes.HANDLERS.getName()).add(handler);
+        op.get(CommonAttributes.HANDLERS.getName()).add(fileHandlerName);
+        executeOperation(kernelServices, op);
+        doLog(loggingProfile, LEVELS, "Test123");
+
+        // Remove the root logger
+        op = Operations.createRemoveOperation(rootLoggerAddress, false);
+        executeOperation(kernelServices, op);
+
+
+        // Revert root logger
+        op = Operations.createOperation(ModelDescriptionConstants.ADD, rootLoggerAddress);
+        op.get(CommonAttributes.LEVEL.getName()).set(rootLoggerResult.get(CommonAttributes.LEVEL.getName()));
+        op.get(CommonAttributes.HANDLERS.getName()).set(rootLoggerResult.get(CommonAttributes.HANDLERS.getName()));
+        executeOperation(kernelServices, op);
+
+        // remove file handler
+        removeFileHandler(kernelServices, loggingProfile, fileHandlerName, false);
+
+        // check that root logger were changed - file logger was registered
+        String log = FileUtils.readFileToString(logFile);
+        assertTrue(log.contains("Test123"));
+    }
+
+    private void testAddRemoveFileHandler(final String loggingProfile) throws Exception {
+        final KernelServices kernelServices = boot();
+        final String fileHandlerName = "test-file-handler";
+
+        File logFile = createLogFile();
+
+        // Add file handler
+        addFileHandler(kernelServices, loggingProfile, fileHandlerName, org.jboss.logmanager.Level.INFO, logFile, true);
+
+        // Ensure the handler is listed
+        final ModelNode rootLoggerAddress = createRootLoggerAddress(loggingProfile).toModelNode();
+        ModelNode op = Operations.createReadAttributeOperation(rootLoggerAddress, CommonAttributes.HANDLERS);
+        ModelNode handlerResult = executeOperation(kernelServices, op);
+        List<String> handlerList = Operations.readResultAsList(handlerResult);
+        assertTrue(String.format("Handler '%s' was not found. Result: %s", fileHandlerName, handlerResult), handlerList.contains(fileHandlerName));
+        doLog(loggingProfile, LEVELS, "Test123");
+
+        // Remove handler from logger
+        op = Operations.createOperation(RootLoggerResourceDefinition.ROOT_LOGGER_REMOVE_HANDLER_OPERATION_NAME, rootLoggerAddress);
+        op.get(CommonAttributes.NAME.getName()).set(fileHandlerName);
+        executeOperation(kernelServices, op);
+
+        // Ensure the handler is not listed
+        op = Operations.createReadAttributeOperation(rootLoggerAddress, CommonAttributes.HANDLERS);
+        handlerResult = executeOperation(kernelServices, op);
+        handlerList = Operations.readResultAsList(handlerResult);
+        assertFalse(String.format("Handler '%s' was not removed. Result: %s", fileHandlerName, handlerResult), handlerList.contains(fileHandlerName));
+
+        // Remove the handler
+        removeFileHandler(kernelServices, loggingProfile, fileHandlerName, false);
 
         // check generated log file
         assertTrue(FileUtils.readFileToString(logFile).contains("Test123"));
 
         // verify that the logger is stopped, no more logs are comming to the file
         long checksum = FileUtils.checksumCRC32(logFile);
-        for (Logger.Level level : Logger.Level.values()) {
-            log.log(level, "Test123");
-        }
+        doLog(loggingProfile, LEVELS, "Test123");
         assertEquals(checksum, FileUtils.checksumCRC32(logFile));
+    }
 
-        // remove log file
-        assertTrue(logFile.delete());
+    private void testDisableHandler(final String profileName) throws Exception {
+        final KernelServices kernelServices = boot();
+        final String fileHandlerName = "test-file-handler";
+
+        final File logFile = createLogFile();
+
+        // Add file handler
+        addFileHandler(kernelServices, profileName, fileHandlerName, org.jboss.logmanager.Level.INFO, logFile, true);
+
+        // Ensure the handler is listed
+        final ModelNode rootLoggerAddress = createRootLoggerAddress(profileName).toModelNode();
+        ModelNode op = Operations.createReadAttributeOperation(rootLoggerAddress, CommonAttributes.HANDLERS);
+        ModelNode handlerResult = executeOperation(kernelServices, op);
+        List<String> handlerList = Operations.readResultAsList(handlerResult);
+        assertTrue(String.format("Handler '%s' was not found. Result: %s", fileHandlerName, handlerResult), handlerList.contains(fileHandlerName));
+
+        // Get the logger
+        final Logger logger = getLogger(profileName);
+
+        // Log 3 lines
+        logger.info("Test message 1");
+        logger.info("Test message 2");
+        logger.info("Test message 3");
+
+        // Disable the handler
+        final ModelNode handlerAddress = createFileHandlerAddress(profileName, fileHandlerName).toModelNode();
+        executeOperation(kernelServices, Operations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, false));
+
+        // Log 3 more lines
+        logger.info("Test message 4");
+        logger.info("Test message 5");
+        logger.info("Test message 6");
+
+        // Check the file, should only contain 3 lines
+        List<String> lines = FileUtils.readLines(logFile);
+        assertEquals("Handler was not disable.", 3, lines.size());
+
+        // Re-enable the handler
+        executeOperation(kernelServices, Operations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, true));
+
+        // Log 3 more lines
+        logger.info("Test message 7");
+        logger.info("Test message 8");
+        logger.info("Test message 9");
+
+        // Check the file, should contain 6 lines
+        lines = FileUtils.readLines(logFile);
+        assertEquals("Handler was not disable.", 6, lines.size());
+
     }
 
 
-
-    private void addFileHandler(KernelServices kernelServices, String name, String level, File file, boolean assign) throws Exception {
+    private void addFileHandler(final KernelServices kernelServices, final String loggingProfile, final String name,
+                                final Level level, final File file, final boolean assign) throws Exception {
 
         // add file handler
-        ModelNode op = createOpNode("subsystem=logging/file-handler=" + name, "add");
-        op.get("name").set(name);
-        op.get("level").set(level);
-        op.get("file").get("path").set(file.getAbsolutePath());
-        kernelServices.executeOperation(op);
+        ModelNode op = Operations.createAddOperation(createFileHandlerAddress(loggingProfile, name).toModelNode());
+        op.get(CommonAttributes.NAME.getName()).set(name);
+        op.get(CommonAttributes.LEVEL.getName()).set(level.getName());
+        op.get(CommonAttributes.FILE.getName()).get(PathResourceDefinition.PATH.getName()).set(file.getAbsolutePath());
+        executeOperation(kernelServices, op);
 
         if (!assign) return;
 
         // register it with root logger
-        op = createOpNode("subsystem=logging/root-logger=ROOT", "root-logger-assign-handler");
-        op.get("name").set(name);
-        kernelServices.executeOperation(op);
+        op = Operations.createOperation(RootLoggerResourceDefinition.ROOT_LOGGER_ADD_HANDLER_OPERATION_NAME, createRootLoggerAddress(loggingProfile).toModelNode());
+        op.get(CommonAttributes.NAME.getName()).set(name);
+        executeOperation(kernelServices, op);
     }
 
-    private void removeFileHandler(KernelServices kernelServices, String name, boolean unassign) throws Exception {
+    private void removeFileHandler(final KernelServices kernelServices, final String loggingProfile, final String name,
+                                   final boolean unassign) throws Exception {
 
         if (unassign) {
-            // deregister handler from logger
-            ModelNode op = createOpNode("subsystem=logging/root-logger=ROOT", "root-logger-unassign-handler");
-            op.get("name").set(name);
-            kernelServices.executeOperation(op);
+            // Remove the handler from the logger
+            final ModelNode op = Operations.createOperation(RootLoggerResourceDefinition.ROOT_LOGGER_REMOVE_HANDLER_OPERATION_NAME, createRootLoggerAddress(loggingProfile).toModelNode());
+            op.get(CommonAttributes.NAME.getName()).set(name);
+            executeOperation(kernelServices, op);
         }
 
-        // remove handler
-        ModelNode op = createOpNode("subsystem=logging/file-handler=" + name, "remove");
-        kernelServices.executeOperation(op);
+        // Remove the handler
+        final ModelNode op = Operations.createRemoveOperation(createFileHandlerAddress(loggingProfile, name).toModelNode(), false);
+        executeOperation(kernelServices, op);
     }
 
-    public static ModelNode createOpNode(String address, String operation) {
-        ModelNode op = new ModelNode();
+    private ModelNode executeOperation(final KernelServices kernelServices, final ModelNode op) {
+        return executeOperation(kernelServices, op, true);
+    }
 
-        // set address
-        ModelNode list = op.get("address").setEmptyList();
-        if (address != null) {
-            String [] pathSegments = address.split("/");
-            for (String segment : pathSegments) {
-                String[] elements = segment.split("=");
-                list.add(elements[0], elements[1]);
-            }
+    private ModelNode executeOperation(final KernelServices kernelServices, final ModelNode op, final boolean validateResult) {
+        final ModelNode result = kernelServices.executeOperation(op);
+        if (validateResult) assertTrue(Operations.getFailureDescription(result), Operations.successful(result));
+        return result;
+    }
+
+    private static ModelNode executeTransformOperation(final KernelServices kernelServices, final ModelVersion modelVersion, final ModelNode op) throws OperationFailedException {
+        TransformedOperation transformedOp = kernelServices.transformOperation(modelVersion, op);
+        ModelNode result = kernelServices.executeOperation(modelVersion, transformedOp);
+        Assert.assertTrue(result.asString(), Operations.successful(result));
+        return result;
+    }
+
+    private void doLog(final String loggingProfile, final Level[] levels, final String format, final Object... params) {
+        final Logger log = getLogger(loggingProfile);
+        // log a message
+        for (Level lvl : levels) {
+            log.log(lvl, String.format(format, params));
         }
-        op.get("operation").set(operation);
-        return op;
     }
 
-    private static List<String> modelNodeAsStringList(ModelNode node) {
-        List<String> ret = new LinkedList<String>();
-        for (ModelNode n : node.asList()) ret.add(n.asString());
-        return ret;
-    }
-
-    private static class LoggingAdditionalInitialization extends AdditionalInitialization {
-
-        @Override
-        protected ControllerInitializer createControllerInitializer() {
-            return new ControllerInitializer() {
-                {
-                    addPath("jboss.server.log.dir", new File("target/logs").getAbsolutePath(), null);
-                }
-            };
+    private Logger getLogger(final String profileName) {
+        final LogContext logContext;
+        if (profileName != null) {
+            logContext = LoggingProfileContextSelector.getInstance().get(profileName);
+        } else {
+            logContext = LogContext.getSystemLogContext();
         }
-
+        return logContext.getLogger(FQCN);
     }
 
+    private static File createLogFile() {
+        return createLogFile("test-fh.log");
+    }
+
+    private static File createLogFile(final String filename) {
+        final File logFile = new File(logDir, filename);
+        if (logFile.exists()) assertTrue("Log file was not deleted", logFile.delete());
+        return logFile;
+    }
 }

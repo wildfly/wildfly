@@ -26,7 +26,7 @@ import java.util.jar.Manifest;
 import org.jboss.arquillian.container.osgi.AbstractOSGiApplicationArchiveProcessor;
 import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
 import org.jboss.arquillian.test.spi.TestClass;
-import org.jboss.osgi.spi.BundleInfo;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 
 
@@ -53,7 +53,7 @@ public class OSGiApplicationArchiveProcessor extends AbstractOSGiApplicationArch
     private boolean isValidOSGiBundle(Archive<?> appArchive) {
         Manifest manifest = ManifestUtils.getManifest(appArchive);
         if(manifest != null) {
-            if(BundleInfo.isValidBundleManifest(manifest)) {
+            if(OSGiManifestBuilder.isValidBundleManifest(manifest)) {
                 return true;
             }
         }

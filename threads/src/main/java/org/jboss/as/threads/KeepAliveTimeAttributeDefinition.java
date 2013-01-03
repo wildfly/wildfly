@@ -23,16 +23,23 @@
 package org.jboss.as.threads;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXPRESSIONS_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.threads.CommonAttributes.KEEPALIVE_TIME;
 import static org.jboss.as.threads.CommonAttributes.TIME;
 import static org.jboss.as.threads.CommonAttributes.UNIT;
 
+import java.util.EnumSet;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -40,8 +47,10 @@ import org.jboss.as.controller.PropagatingCorrector;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
+import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
  * {@link AttributeDefinition} a thread pool resource's keepalive-time attribute.
@@ -52,30 +61,32 @@ class KeepAliveTimeAttributeDefinition extends SimpleAttributeDefinition {
 
     KeepAliveTimeAttributeDefinition() {
         super(CommonAttributes.KEEPALIVE_TIME, ModelType.OBJECT, true,
-            PropagatingCorrector.INSTANCE, new ParameterValidator(){
-                @Override
-                public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
-                    if(value.getType() == ModelType.UNDEFINED) {
-                        return;
-                    }
-                    if(value.getType() != ModelType.OBJECT) {
-                        throw ThreadsMessages.MESSAGES.invalidKeepAliveType(parameterName, ModelType.OBJECT, value, value.getType());
-                    }
-                    final Set<String> keys = value.keys();
-                    if(keys.size() != 2) {
-                        throw ThreadsMessages.MESSAGES.invalidKeepAliveKeys(parameterName, TIME, UNIT, keys);
-                    }
-                    if (!keys.contains(TIME)) {
-                        throw ThreadsMessages.MESSAGES.missingKeepAliveTime(TIME, parameterName);
-                    }
-                    if (!keys.contains(UNIT)) {
-                        throw ThreadsMessages.MESSAGES.missingKeepAliveUnit(UNIT, parameterName);
-                    }
+                PropagatingCorrector.INSTANCE, new ParameterValidator() {
+            @Override
+            public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
+                if (value.getType() == ModelType.UNDEFINED) {
+                    return;
                 }
-                @Override
-                public void validateResolvedParameter(String parameterName, ModelNode value) throws OperationFailedException {
-                    validateParameter(parameterName, value);
-                }}
+                if (value.getType() != ModelType.OBJECT) {
+                    throw ThreadsMessages.MESSAGES.invalidKeepAliveType(parameterName, ModelType.OBJECT, value, value.getType());
+                }
+                final Set<String> keys = value.keys();
+                if (keys.size() != 2) {
+                    throw ThreadsMessages.MESSAGES.invalidKeepAliveKeys(parameterName, TIME, UNIT, keys);
+                }
+                if (!keys.contains(TIME)) {
+                    throw ThreadsMessages.MESSAGES.missingKeepAliveTime(TIME, parameterName);
+                }
+                if (!keys.contains(UNIT)) {
+                    throw ThreadsMessages.MESSAGES.missingKeepAliveUnit(UNIT, parameterName);
+                }
+            }
+
+            @Override
+            public void validateResolvedParameter(String parameterName, ModelNode value) throws OperationFailedException {
+                validateParameter(parameterName, value);
+            }
+        }
         );
     }
 
@@ -110,7 +121,45 @@ class KeepAliveTimeAttributeDefinition extends SimpleAttributeDefinition {
     private void addNoTextValueTypeDescription(final ModelNode node) {
         node.get(VALUE_TYPE, TIME, TYPE).set(ModelType.LONG);
         node.get(VALUE_TYPE, TIME, REQUIRED).set(true);
+        node.get(VALUE_TYPE, TIME, EXPRESSIONS_ALLOWED).set(true);
         node.get(VALUE_TYPE, UNIT, TYPE).set(ModelType.STRING);
         node.get(VALUE_TYPE, UNIT, REQUIRED).set(true);
+    }
+
+    public void parseAndSetParameter(final ModelNode operation, final XMLExtendedStreamReader reader) throws XMLStreamException {
+        final int attrCount = reader.getAttributeCount();
+        TimeUnit unit = null;
+        ModelNode duration = null;
+        Set<Attribute> required = EnumSet.of(Attribute.TIME, Attribute.UNIT);
+        for (int i = 0; i < attrCount; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case TIME: {
+                    duration = ParseUtils.parsePossibleExpression(value);
+                    break;
+                }
+                case UNIT: {
+                    unit = Enum.valueOf(TimeUnit.class, value.toUpperCase(Locale.ENGLISH));
+                    break;
+                }
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+
+        if (!required.isEmpty()) {
+            throw missingRequired(reader, required);
+        }
+        assert unit != null;
+        assert duration != null;
+
+        ParseUtils.requireNoContent(reader);
+        ModelNode model = new ModelNode();
+        model.get(TIME).set(duration);
+        model.get(UNIT).set(unit.toString());
+        operation.get(getName()).set(model);
     }
 }

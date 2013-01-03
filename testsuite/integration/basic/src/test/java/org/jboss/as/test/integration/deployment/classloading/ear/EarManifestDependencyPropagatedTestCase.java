@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.deployment.classloading.ear;
 
+import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -37,6 +38,9 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class EarManifestDependencyPropagatedTestCase {
 
+    public static final String CLASS_FILE_WRITER_CLASS = "org.jboss.classfilewriter.ClassFile";
+    public static final String JANDEX_CLASS = "org.jboss.jandex.Index";
+
     @Deployment
     public static Archive<?> deploy() {
 
@@ -44,17 +48,32 @@ public class EarManifestDependencyPropagatedTestCase {
         JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class,"ejbmodule.jar");
         ejbJar.addClasses(EarManifestDependencyPropagatedTestCase.class);
         ejbJar.addAsManifestResource(emptyEjbJar(), "ejb-jar.xml");
+        ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.jandex\n"),"MANIFEST.MF");
         ear.addAsModule(ejbJar);
 
         JavaArchive earLib = ShrinkWrap.create(JavaArchive.class, "libjar.jar");
         earLib.addAsManifestResource(new StringAsset("Dependencies: org.jboss.classfilewriter\n"),"MANIFEST.MF");
+        earLib.addClass(EarLibClassLoadingClass.class);
+
         ear.addAsLibraries(earLib);
         return ear;
     }
 
     @Test
     public void testClassFileWriterAccessible() throws ClassNotFoundException {
-        loadClass("org.jboss.classfilewriter.ClassFile");
+        loadClass(CLASS_FILE_WRITER_CLASS);
+        EarLibClassLoadingClass.loadClass(CLASS_FILE_WRITER_CLASS);
+    }
+
+    @Test
+    public void testJandexAccessibility() throws ClassNotFoundException {
+        loadClass(JANDEX_CLASS);
+        try {
+            EarLibClassLoadingClass.loadClass(JANDEX_CLASS);
+            Assert.fail("Expected class loading to fail");
+        } catch (ClassNotFoundException e) {
+
+        }
     }
 
 

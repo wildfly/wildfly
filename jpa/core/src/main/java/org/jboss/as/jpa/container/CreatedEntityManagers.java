@@ -38,9 +38,9 @@ public class CreatedEntityManagers {
     // that happens later at postConstruct time.
     //
     // The deferToPostConstruct is a one item length store (hack)
-    private static ThreadLocal<List<ReferenceCountedEntityManager>> deferToPostConstruct = new ThreadLocal<List<ReferenceCountedEntityManager>>() {
-        protected List<ReferenceCountedEntityManager> initialValue() {
-            return new ArrayList<ReferenceCountedEntityManager>(1);
+    private static ThreadLocal<List<ExtendedEntityManager>> deferToPostConstruct = new ThreadLocal<List<ExtendedEntityManager>>() {
+        protected List<ExtendedEntityManager> initialValue() {
+            return new ArrayList<ExtendedEntityManager>(1);
         }
     };
 
@@ -50,21 +50,21 @@ public class CreatedEntityManagers {
      *
      * @param xpc The ExtendedEntityManager
      */
-    public static void registerPersistenceContext(ReferenceCountedEntityManager xpc) {
+    public static void registerPersistenceContext(ExtendedEntityManager xpc) {
         if (xpc == null) {
             throw MESSAGES.nullParameter("SFSBXPCMap.RegisterPersistenceContext", "EntityManager");
         }
-        final List<ReferenceCountedEntityManager> store = deferToPostConstruct.get();
+        final List<ExtendedEntityManager> store = deferToPostConstruct.get();
         store.add(xpc);
     }
 
     /**
      * Called by postconstruct interceptor
      */
-    public static List<ReferenceCountedEntityManager> getDeferredEntityManagers() {
-        List<ReferenceCountedEntityManager> store = deferToPostConstruct.get();
+    public static List<ExtendedEntityManager> getDeferredEntityManagers() {
+        List<ExtendedEntityManager> store = deferToPostConstruct.get();
         try {
-            return new ArrayList<ReferenceCountedEntityManager>(store);
+            return new ArrayList<ExtendedEntityManager>(store);
         } finally {
             store.clear();
         }

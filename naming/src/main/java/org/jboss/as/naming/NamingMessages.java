@@ -29,14 +29,16 @@ import javax.naming.InvalidNameException;
 import javax.naming.Name;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
+import javax.naming.spi.ObjectFactory;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.naming.deployment.JndiName;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.logging.Cause;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageBundle;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -378,4 +380,80 @@ public interface NamingMessages {
 
     @Message(id = 11864, value = "Invaliding binding name %s, name must start with one of %s")
     OperationFailedException invalidNamespaceForBinding(String name, String namespaces);
+
+    /**
+     * Creates an exception indicating that the type for the binding to add is not known.
+     * @param type the unknown type
+     * @return
+     */
+    @Message(id = 11865, value = "Unknown binding type %s")
+    OperationFailedException unknownBindingType(String type);
+
+    /**
+     * Creates an exception indicating that the type for the simple binding to add is not supported.
+     * @param type the unsupported type
+     * @return
+     */
+    @Message(id = 11866, value = "Unsupported simple binding type %s")
+    OperationFailedException unsupportedSimpleBindingType(String type);
+
+    /**
+     * Creates an exception indicating that the string value for the simple URL binding failed to transform.
+     * @param value the URL value as string
+     * @param cause the original cause of failure
+     * @return
+     */
+    @Message(id = 11867, value = "Unable to transform URL binding value %s")
+    OperationFailedException unableToTransformURLBindingValue(String value, @Cause Throwable cause);
+
+    /**
+     * Creates an exception indicating that a module could not be loaded.
+     * @param moduleID the module not loaded
+     * @return
+     */
+    @Message(id = 11868, value = "Could not load module %s")
+    OperationFailedException couldNotLoadModule(ModuleIdentifier moduleID);
+
+    /**
+     * Creates an exception indicating that a class could not be loaded from a module.
+     * @param className the name of the class not loaded
+     * @param moduleID the module
+     * @return
+     */
+    @Message(id = 11869, value = "Could not load class %s from module %s")
+    OperationFailedException couldNotLoadClassFromModule(String className, ModuleIdentifier moduleID);
+
+    /**
+     * Creates an exception indicating that a class instance could not be instantiate, from the specified module.
+     * @param className the name of the class not loaded
+     * @param moduleID the module
+     * @return
+     */
+    @Message(id = 11870, value = "Could not instantiate instance of class %s from module %s")
+    OperationFailedException couldNotInstantiateClassInstanceFromModule(String className, ModuleIdentifier moduleID);
+
+    /**
+     * Creates an exception indicating that a class is not an {@link ObjectFactory} instance, from the specified module.
+     * @param className the name of the class
+     * @param moduleID the module id
+     * @return
+     */
+    @Message(id = 11871, value = "Class %s from module %s is not an instance of ObjectFactory")
+    OperationFailedException notAnInstanceOfObjectFactory(String className, ModuleIdentifier moduleID);
+
+    /**
+     * A "simple URL" binding add operation was failed by the operation transformer.
+     * @param modelVersion the model version related with the transformer.
+     * @return
+     */
+    @Message(id = 11872, value = "Binding add operation for Simple URL not supported in Naming Subsystem model version %s")
+    String failedToTransformSimpleURLNameBindingAddOperation(String modelVersion);
+
+    /**
+     * A "Object Factory With Environment" binding add operation was failed by the operation transformer.
+     * @param modelVersion the model version related with the transformer.
+     * @return
+     */
+    @Message(id = 11873, value = "Binding add operation for Object Factory With Environment not supported in Naming Subsystem model version %s")
+    String failedToTransformObjectFactoryWithEnvironmentNameBindingAddOperation(String modelVersion);
 }

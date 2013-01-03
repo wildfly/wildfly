@@ -177,7 +177,7 @@ public class EJBReadWriteLockTest {
         private Lock lock;
 
         /**
-         * The amount of time, in milli seconds, this {@link ThreadHoldingWriteLock}
+         * The amount of time, in milliseconds, this {@link ThreadHoldingWriteLock}
          * will sleep for in its {@link #run()} method
          */
         private long processingTime;
@@ -192,7 +192,7 @@ public class EJBReadWriteLockTest {
          *
          * @param latch          A latch for notifying any waiting threads
          * @param lock           A lock that will be used for obtaining a lock during processing
-         * @param processingTime The amount of time in milli seconds, this thread will sleep (a.k.a process)
+         * @param processingTime The amount of time in milliseconds, this thread will sleep (a.k.a process)
          *                       in its {@link #run()} method
          */
         public ThreadHoldingWriteLock(CountDownLatch latch, Lock lock, long processingTime) {
@@ -202,7 +202,7 @@ public class EJBReadWriteLockTest {
         }
 
         /**
-         * Obtains a lock, sleeps for {@link #processingTime} milli seconds and then unlocks the lock
+         * Obtains a lock, sleeps for {@link #processingTime} milliseconds and then unlocks the lock
          *
          * @see Runnable#run()
          */

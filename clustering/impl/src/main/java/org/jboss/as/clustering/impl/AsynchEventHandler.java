@@ -38,7 +38,7 @@ class AsynchEventHandler implements Runnable {
     /**
      * Interface implemented by classes able to process the objects placed into an AsynchEventHandler's queue.
      */
-    public static interface AsynchEventProcessor {
+    public interface AsynchEventProcessor {
         void processEvent(Object event);
     }
 

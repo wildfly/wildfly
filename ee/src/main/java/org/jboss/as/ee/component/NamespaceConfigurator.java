@@ -57,6 +57,7 @@ public final class NamespaceConfigurator implements ComponentConfigurator {
         final Injector<NamingStore> compInjector = selector.getCompContextInjector();
         final Injector<NamingStore> jbossInjector = selector.getJbossContextInjector();
         final Injector<NamingStore> globalInjector = selector.getGlobalContextInjector();
+        final Injector<NamingStore> exportedInjector = selector.getExportedContextInjector();
 
         configuration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
             public void configureDependency(final ServiceBuilder<?> serviceBuilder, ComponentStartService service) {
@@ -69,9 +70,10 @@ public final class NamespaceConfigurator implements ComponentConfigurator {
                 }
                 serviceBuilder.addDependency(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, NamingStore.class, globalInjector);
                 serviceBuilder.addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, NamingStore.class, jbossInjector);
+                serviceBuilder.addDependency(ContextNames.EXPORTED_CONTEXT_SERVICE_NAME, NamingStore.class, exportedInjector);
             }
         });
-        final InterceptorFactory interceptorFactory = new ImmediateInterceptorFactory(new NamespaceContextInterceptor(selector, context.getServiceTarget()));
+        final InterceptorFactory interceptorFactory = new ImmediateInterceptorFactory(new NamespaceContextInterceptor(selector, context.getDeploymentUnit().getServiceName()));
         configuration.addPostConstructInterceptor(interceptorFactory, InterceptorOrder.ComponentPostConstruct.JNDI_NAMESPACE_INTERCEPTOR);
         configuration.addPreDestroyInterceptor(interceptorFactory, InterceptorOrder.ComponentPreDestroy.JNDI_NAMESPACE_INTERCEPTOR);
         if(description.isPassivationApplicable()) {

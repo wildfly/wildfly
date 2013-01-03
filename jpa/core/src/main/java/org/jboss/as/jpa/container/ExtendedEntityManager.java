@@ -29,6 +29,7 @@ import java.io.Serializable;
 
 import javax.persistence.EntityManager;
 
+import org.jboss.as.jpa.JpaMessages;
 import org.jboss.as.jpa.transaction.TransactionUtil;
 
 /**
@@ -63,7 +64,7 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
      * By default transient fields are not serialized but can be manually (de)serialized in readObject/writeObject.
      * Just make sure you think about whether the newly added field should be serialized.
      */
-    private static final long serialVersionUID = 432437L;
+    private static final long serialVersionUID = 432438L;
 
     /**
      * EntityManager obtained from the persistence provider that represents the XPC.
@@ -76,6 +77,12 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
     private String puScopedName;
 
     private transient boolean isInTx;
+
+    /**
+     * Track the number of stateful session beans that are referencing the extended persistence context.
+     * when the reference count reaches zero, the persistence context is closed.
+     */
+    private int referenceCount = 1;
 
     /**
      * the UUID representing the extended persistence context
@@ -151,14 +158,47 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
 
     }
 
-    public void containerClose() {
-        if (underlyingEntityManager.isOpen()) {
-            underlyingEntityManager.close();
-            if (isTraceEnabled) {
-                ROOT_LOGGER.tracef("closed extended persistence context for pu = %s", puScopedName);
+    /**
+     * Start of reference count handling.
+     * synchronize on *this* to protect access to the referenceCount (should be mostly uncontended locks).
+     *
+     */
+
+    public synchronized void increaseReferenceCount() {
+        referenceCount++;
+    }
+
+    public synchronized int getReferenceCount() {
+        return referenceCount;
+    }
+
+    public synchronized void refCountedClose() {
+
+        referenceCount--;
+        if (referenceCount == 0) {
+            if (underlyingEntityManager.isOpen()) {
+                underlyingEntityManager.close();
+                if (isTraceEnabled) {
+                    ROOT_LOGGER.tracef("closed extended persistence context (%s)", puScopedName);
+                }
             }
         }
+        else if (isTraceEnabled) {
+            ROOT_LOGGER.tracef("decremented extended persistence context (%s) owner count to %d",
+                    puScopedName, referenceCount);
+        }
+
+        // referenceCount should never be negative, if it is we need to fix the bug that caused it to decrement too much
+        if (referenceCount < 0) {
+            throw JpaMessages.MESSAGES.referenceCountedEntityManagerNegativeCount(referenceCount, getScopedPuName());
+        }
+
     }
+
+
+    /**
+     * End of reference count handling
+     */
 
     @Override
     public String toString() {

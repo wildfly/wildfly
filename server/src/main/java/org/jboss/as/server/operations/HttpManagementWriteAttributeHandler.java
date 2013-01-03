@@ -66,7 +66,7 @@ public class HttpManagementWriteAttributeHandler extends AbstractWriteAttributeH
                             HttpManagementResourceDefinition.SOCKET_BINDING.getName(),
                             HttpManagementResourceDefinition.SECURE_SOCKET_BINDING.getName());
                 }
-                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+                context.stepCompleted();
             }
         }, OperationContext.Stage.MODEL);
 

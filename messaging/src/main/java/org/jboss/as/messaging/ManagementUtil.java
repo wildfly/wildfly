@@ -65,7 +65,7 @@ public class ManagementUtil {
     /**
      *  Utility for converting camel case based HQ formats to AS standards.
      */
-    private static ModelNode convertSecurityRole(final ModelNode camelCase) {
+    static ModelNode convertSecurityRole(final ModelNode camelCase) {
         final ModelNode result = new ModelNode();
         result.setEmptyList();
         if (camelCase.isDefined()) {
@@ -74,13 +74,13 @@ public class ManagementUtil {
                 for (Property prop : role.asPropertyList()) {
                     String key = prop.getName();
                     if ("createDurableQueue".equals(key)) {
-                        key = SecurityRoleAdd.CREATE_DURABLE_QUEUE.getName();
+                        key = SecurityRoleDefinition.CREATE_DURABLE_QUEUE.getName();
                     } else if ("deleteDurableQueue".equals(key)) {
-                        key = SecurityRoleAdd.DELETE_DURABLE_QUEUE.getName();
+                        key = SecurityRoleDefinition.DELETE_DURABLE_QUEUE.getName();
                     } else if ("createNonDurableQueue".equals(key)) {
-                        key = SecurityRoleAdd.CREATE_NON_DURABLE_QUEUE.getName();
+                        key = SecurityRoleDefinition.CREATE_NON_DURABLE_QUEUE.getName();
                     } else if ("deleteNonDurableQueue".equals(key)) {
-                        key = SecurityRoleAdd.DELETE_NON_DURABLE_QUEUE.getName();
+                        key = SecurityRoleDefinition.DELETE_NON_DURABLE_QUEUE.getName();
                     }
 
                     roleNode.get(key).set(prop.getValue());
@@ -91,9 +91,9 @@ public class ManagementUtil {
         return result;
     }
 
-    public static void rollbackOperationWithNoHandler(OperationContext context, ModelNode operation) {
-        context.getFailureDescription().set(ControllerMessages.MESSAGES.noHandler(READ_ATTRIBUTE_OPERATION, PathAddress.pathAddress(operation.require(OP_ADDR))));
+    public static void rollbackOperationWithResourceNotFound(OperationContext context, ModelNode operation) {
+        context.getFailureDescription().set(MessagingMessages.MESSAGES.hqServerManagementServiceResourceNotFound(PathAddress.pathAddress(operation.require(OP_ADDR))));
         context.setRollbackOnly();
-        context.completeStep();
+        context.stepCompleted();
     }
 }

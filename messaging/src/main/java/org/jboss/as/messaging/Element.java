@@ -30,6 +30,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.messaging.jms.ConnectionFactoryAttributes;
+import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common;
+import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
 import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
 
 /**
@@ -43,8 +46,8 @@ public enum Element {
    UNKNOWN((String) null),
    // Messaging 1.0 elements in alpha order
    ACCEPTORS(CommonAttributes.ACCEPTORS),
-   ADDRESS(getAttributeDefinitions(CommonAttributes.QUEUE_ADDRESS, DivertDefinition.ADDRESS,
-           CommonAttributes.GROUPING_HANDLER_ADDRESS, CommonAttributes.CLUSTER_CONNECTION_ADDRESS)),
+   ADDRESS(getAttributeDefinitions(QueueDefinition.ADDRESS, DivertDefinition.ADDRESS,
+           GroupingHandlerDefinition.GROUPING_HANDLER_ADDRESS, ClusterConnectionDefinition.ADDRESS)),
    ADDRESS_SETTINGS(CommonAttributes.ADDRESS_SETTINGS),
    ALLOW_FAILBACK(CommonAttributes.ALLOW_FAILBACK),
    ASYNC_CONNECTION_EXECUTION_ENABLED(CommonAttributes.ASYNC_CONNECTION_EXECUTION_ENABLED),
@@ -55,7 +58,9 @@ public enum Element {
    BROADCAST_GROUP(CommonAttributes.BROADCAST_GROUP),
    BROADCAST_GROUPS(CommonAttributes.BROADCAST_GROUPS),
    BROADCAST_PERIOD(BroadcastGroupDefinition.BROADCAST_PERIOD),
+   CHECK_FOR_LIVE_SERVER(CommonAttributes.CHECK_FOR_LIVE_SERVER),
    CLASS_NAME(CommonAttributes.CLASS_NAME),
+   @Deprecated
    CLUSTERED(CommonAttributes.CLUSTERED),
    CLUSTER_CONNECTION(CommonAttributes.CLUSTER_CONNECTION),
    CLUSTER_CONNECTIONS(CommonAttributes.CLUSTER_CONNECTIONS),
@@ -78,7 +83,7 @@ public enum Element {
    FAILOVER_ON_SHUTDOWN(CommonAttributes.FAILOVER_ON_SHUTDOWN),
    FILE_DEPLOYMENT_ENABLED(CommonAttributes.FILE_DEPLOYMENT_ENABLED),
    FORWARDING_ADDRESS(getForwardingAddressDefinitions()),
-   FORWARD_WHEN_NO_CONSUMERS(CommonAttributes.FORWARD_WHEN_NO_CONSUMERS),
+   FORWARD_WHEN_NO_CONSUMERS(ClusterConnectionDefinition.FORWARD_WHEN_NO_CONSUMERS),
    GROUP_ADDRESS(CommonAttributes.GROUP_ADDRESS),
    GROUP_PORT(CommonAttributes.GROUP_PORT),
    GROUPING_HANDLER(CommonAttributes.GROUPING_HANDLER),
@@ -87,6 +92,8 @@ public enum Element {
    INITIAL_WAIT_TIMEOUT(DiscoveryGroupDefinition.INITIAL_WAIT_TIMEOUT),
    IN_VM_ACCEPTOR(CommonAttributes.IN_VM_ACCEPTOR),
    IN_VM_CONNECTOR(CommonAttributes.IN_VM_CONNECTOR),
+   JGROUPS_CHANNEL(CommonAttributes.JGROUPS_CHANNEL),
+   JGROUPS_STACK(CommonAttributes.JGROUPS_STACK),
    JMX_DOMAIN(CommonAttributes.JMX_DOMAIN),
    JMX_MANAGEMENT_ENABLED(CommonAttributes.JMX_MANAGEMENT_ENABLED),
    JOURNAL_BUFFER_SIZE(CommonAttributes.JOURNAL_BUFFER_SIZE),
@@ -101,13 +108,14 @@ public enum Element {
    JOURNAL_SYNC_TRANSACTIONAL(CommonAttributes.JOURNAL_SYNC_TRANSACTIONAL),
    JOURNAL_TYPE(CommonAttributes.JOURNAL_TYPE),
    LARGE_MESSAGES_DIRECTORY(CommonAttributes.LARGE_MESSAGES_DIRECTORY),
+   @Deprecated
    LIVE_CONNECTOR_REF(CommonAttributes.LIVE_CONNECTOR_REF),
    LOCAL_BIND_ADDRESS(CommonAttributes.LOCAL_BIND_ADDRESS),
    LOCAL_BIND_PORT(CommonAttributes.LOCAL_BIND_PORT),
    LOG_JOURNAL_WRITE_RATE(CommonAttributes.LOG_JOURNAL_WRITE_RATE),
    MANAGEMENT_ADDRESS(CommonAttributes.MANAGEMENT_ADDRESS),
    MANAGEMENT_NOTIFICATION_ADDRESS(CommonAttributes.MANAGEMENT_NOTIFICATION_ADDRESS),
-   MAX_HOPS(CommonAttributes.MAX_HOPS),
+   MAX_HOPS(ClusterConnectionDefinition.MAX_HOPS),
    MEMORY_MEASURE_INTERVAL(CommonAttributes.MEMORY_MEASURE_INTERVAL),
    MEMORY_WARNING_THRESHOLD(CommonAttributes.MEMORY_WARNING_THRESHOLD),
    MESSAGE_COUNTER_ENABLED(CommonAttributes.MESSAGE_COUNTER_ENABLED),
@@ -118,6 +126,7 @@ public enum Element {
    NAME(CommonAttributes.NAME),
    NETTY_ACCEPTOR(CommonAttributes.NETTY_ACCEPTOR),
    NETTY_CONNECTOR(CommonAttributes.NETTY_CONNECTOR),
+   BACKUP_GROUP_NAME(CommonAttributes.BACKUP_GROUP_NAME),
    PAGE_MAX_CONCURRENT_IO(CommonAttributes.PAGE_MAX_CONCURRENT_IO),
    PAGING_DIRECTORY(CommonAttributes.PAGING_DIRECTORY),
    PERF_BLAST_PAGES(CommonAttributes.PERF_BLAST_PAGES),
@@ -127,6 +136,7 @@ public enum Element {
    QUEUE(CommonAttributes.QUEUE),
    REFRESH_TIMEOUT(DiscoveryGroupDefinition.REFRESH_TIMEOUT),
    REMOTING_INTERCEPTORS(CommonAttributes.REMOTING_INTERCEPTORS),
+   REPLICATION_CLUSTERNAME(CommonAttributes.REPLICATION_CLUSTERNAME),
    ROUTING_NAME(DivertDefinition.ROUTING_NAME),
    RUN_SYNC_SPEED_TEST(CommonAttributes.RUN_SYNC_SPEED_TEST),
    SECURITY_DOMAIN(CommonAttributes.SECURITY_DOMAIN),
@@ -151,57 +161,60 @@ public enum Element {
    ADDRESS_SETTING(CommonAttributes.ADDRESS_SETTING),
    DEAD_LETTER_ADDRESS(CommonAttributes.DEAD_LETTER_ADDRESS),
    EXPIRY_ADDRESS(CommonAttributes.EXPIRY_ADDRESS),
-   REDELIVERY_DELAY(CommonAttributes.REDELIVERY_DELAY),
-   MAX_DELIVERY_ATTEMPTS(CommonAttributes.MAX_DELIVERY_ATTEMPTS),
-   MAX_SIZE_BYTES(CommonAttributes.MAX_SIZE_BYTES),
-   ADDRESS_FULL_MESSAGE_POLICY(CommonAttributes.ADDRESS_FULL_MESSAGE_POLICY),
-   PAGE_MAX_CACHE_SIZE(CommonAttributes.PAGE_MAX_CACHE_SIZE),
-   PAGE_SIZE_BYTES(CommonAttributes.PAGE_SIZE_BYTES),
-   MESSAGE_COUNTER_HISTORY_DAY_LIMIT(CommonAttributes.MESSAGE_COUNTER_HISTORY_DAY_LIMIT),
-   LVQ(CommonAttributes.LVQ),
-   REDISTRIBUTION_DELAY(CommonAttributes.REDISTRIBUTION_DELAY),
-   SEND_TO_DLA_ON_NO_ROUTE(CommonAttributes.SEND_TO_DLA_ON_NO_ROUTE),
+   REDELIVERY_DELAY(AddressSettingDefinition.REDELIVERY_DELAY),
+   MAX_DELIVERY_ATTEMPTS(AddressSettingDefinition.MAX_DELIVERY_ATTEMPTS),
+   MAX_SIZE_BYTES(AddressSettingDefinition.MAX_SIZE_BYTES),
+   ADDRESS_FULL_MESSAGE_POLICY(AddressSettingDefinition.ADDRESS_FULL_MESSAGE_POLICY),
+   PAGE_MAX_CACHE_SIZE(AddressSettingDefinition.PAGE_MAX_CACHE_SIZE),
+   PAGE_SIZE_BYTES(AddressSettingDefinition.PAGE_SIZE_BYTES),
+   MESSAGE_COUNTER_HISTORY_DAY_LIMIT(AddressSettingDefinition.MESSAGE_COUNTER_HISTORY_DAY_LIMIT),
+   LVQ(AddressSettingDefinition.LAST_VALUE_QUEUE),
+   REDISTRIBUTION_DELAY(AddressSettingDefinition.REDISTRIBUTION_DELAY),
+   SEND_TO_DLA_ON_NO_ROUTE(AddressSettingDefinition.SEND_TO_DLA_ON_NO_ROUTE),
    STATIC_CONNECTORS(CommonAttributes.STATIC_CONNECTORS),
-   TIMEOUT(CommonAttributes.TIMEOUT),
-   TYPE(CommonAttributes.TYPE),
+   TIMEOUT(GroupingHandlerDefinition.TIMEOUT),
+   TYPE(GroupingHandlerDefinition.TYPE),
 
    //JMS Stuff
-   AUTO_GROUP(CommonAttributes.AUTO_GROUP),
-   BLOCK_ON_ACK(CommonAttributes.BLOCK_ON_ACK),
-   BLOCK_ON_DURABLE_SEND(CommonAttributes.BLOCK_ON_DURABLE_SEND),
-   BLOCK_ON_NON_DURABLE_SEND(CommonAttributes.BLOCK_ON_NON_DURABLE_SEND),
-   CACHE_LARGE_MESSAGE_CLIENT(CommonAttributes.CACHE_LARGE_MESSAGE_CLIENT),
+   AUTO_GROUP(Common.AUTO_GROUP),
+   BLOCK_ON_ACK(Common.BLOCK_ON_ACKNOWLEDGE),
+   BLOCK_ON_DURABLE_SEND(Common.BLOCK_ON_DURABLE_SEND),
+   BLOCK_ON_NON_DURABLE_SEND(Common.BLOCK_ON_NON_DURABLE_SEND),
+   CACHE_LARGE_MESSAGE_CLIENT(Common.CACHE_LARGE_MESSAGE_CLIENT),
    CALL_TIMEOUT(CommonAttributes.CALL_TIMEOUT),
+   CALL_FAILOVER_TIMEOUT(CommonAttributes.CALL_FAILOVER_TIMEOUT),
    CHECK_PERIOD(getCheckPeriodDefinitions()),
-   CLIENT_FAILURE_CHECK_PERIOD(CommonAttributes.CLIENT_FAILURE_CHECK_PERIOD),
+   CLIENT_FAILURE_CHECK_PERIOD(Common.CLIENT_FAILURE_CHECK_PERIOD),
    CLIENT_ID(CommonAttributes.CLIENT_ID),
    CONNECTION_FACTORY(getConnectionFactoryDefinitions()),
    CONNECTION_FACTORIES(CommonAttributes.JMS_CONNECTION_FACTORIES),
    CONNECTION_TTL(getConnectionTTLDefinitions()),
-   CONFIRMATION_WINDOW_SIZE(CommonAttributes.CONFIRMATION_WINDOW_SIZE),
-   CONSUMER_MAX_RATE(CommonAttributes.CONSUMER_MAX_RATE),
-   CONSUMER_WINDOW_SIZE(CommonAttributes.CONSUMER_WINDOW_SIZE),
-   DISCOVERY_INITIAL_WAIT_TIMEOUT(CommonAttributes.DISCOVERY_INITIAL_WAIT_TIMEOUT),
+   CONFIRMATION_WINDOW_SIZE(getConfirmationWindowSizeDefinitions()),
+   CONSUMER_MAX_RATE(Common.CONSUMER_MAX_RATE),
+   CONSUMER_WINDOW_SIZE(Common.CONSUMER_WINDOW_SIZE),
+   DISCOVERY_INITIAL_WAIT_TIMEOUT(Common.DISCOVERY_INITIAL_WAIT_TIMEOUT),
    DISCOVERY_GROUP_REF(CommonAttributes.DISCOVERY_GROUP_REF),
-   DUPS_OK_BATCH_SIZE(CommonAttributes.DUPS_OK_BATCH_SIZE),
-   ENTRIES(CommonAttributes.ENTRIES),
+   DUPS_OK_BATCH_SIZE(Common.DUPS_OK_BATCH_SIZE),
+   ENTRIES(Common.ENTRIES),
    ENTRY(CommonAttributes.ENTRY),
-   FAILOVER_ON_INITIAL_CONNECTION(CommonAttributes.FAILOVER_ON_INITIAL_CONNECTION),
-   FAILOVER_ON_SERVER_SHUTDOWN(CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN),
-   GROUP_ID(CommonAttributes.GROUP_ID),
+   FAILOVER_ON_INITIAL_CONNECTION(Common.FAILOVER_ON_INITIAL_CONNECTION),
+   FAILOVER_ON_SERVER_SHUTDOWN(Common.FAILOVER_ON_SERVER_SHUTDOWN),
+   GROUP_ID(Common.GROUP_ID),
    HA(CommonAttributes.HA),
+   INITIAL_CONNECT_ATTEMPTS(Pooled.INITIAL_CONNECT_ATTEMPTS),
+   INITIAL_MESSAGE_PACKET_SIZE(Pooled.INITIAL_MESSAGE_PACKET_SIZE),
    JMS_DESTINATIONS(CommonAttributes.JMS_DESTINATIONS),
    JMS_TOPIC(CommonAttributes.JMS_TOPIC),
    JMS_QUEUE(CommonAttributes.JMS_QUEUE),
-   LOAD_BALANCING_CLASS_NAME(CommonAttributes.LOAD_BALANCING_CLASS_NAME),
-   MAX_POOL_SIZE(CommonAttributes.MAX_POOL_SIZE),
+   LOAD_BALANCING_CLASS_NAME(Common.CONNECTION_LOAD_BALANCING_CLASS_NAME),
+   MAX_POOL_SIZE(Pooled.MAX_POOL_SIZE),
    MAX_RETRY_INTERVAL(getMaxRetryIntervalDefinitions()),
-   MIN_LARGE_MESSAGE_SIZE(CommonAttributes.MIN_LARGE_MESSAGE_SIZE),
-   MIN_POOL_SIZE(CommonAttributes.MIN_POOL_SIZE),
+   MIN_LARGE_MESSAGE_SIZE(getMinLargeMessageSizeDefinitions()),
+   MIN_POOL_SIZE(Pooled.MIN_POOL_SIZE),
    PASSWORD(getPasswordDefinitions()),
-   PRE_ACK(CommonAttributes.PRE_ACK),
-   PRODUCER_WINDOW_SIZE(CommonAttributes.PRODUCER_WINDOW_SIZE),
-   PRODUCER_MAX_RATE(CommonAttributes.PRODUCER_MAX_RATE),
+   PRE_ACK(Common.PRE_ACKNOWLEDGE),
+   PRODUCER_WINDOW_SIZE(Common.PRODUCER_WINDOW_SIZE),
+   PRODUCER_MAX_RATE(Common.PRODUCER_MAX_RATE),
    QUEUE_NAME(BridgeDefinition.QUEUE_NAME),
    RECONNECT_ATTEMPTS(getReconnectAttemptsDefinitions()),
    RETRY_INTERVAL(getRetryIntervalDefinitions()),
@@ -209,22 +222,23 @@ public enum Element {
    SELECTOR(CommonAttributes.SELECTOR),
    SCHEDULED_THREAD_POOL_MAX_SIZE(getScheduledThreadPoolDefinitions()),
    THREAD_POOL_MAX_SIZE(getThreadPoolDefinitions()),
-   TRANSACTION_BATH_SIZE(CommonAttributes.TRANSACTION_BATCH_SIZE),
+   TRANSACTION_BATH_SIZE(Common.TRANSACTION_BATCH_SIZE),
    USER(getUserDefinitions()),
    USE_DUPLICATE_DETECTION(getDuplicateDetectionDefinitions()),
-   USE_AUTO_RECOVERY(CommonAttributes.USE_AUTO_RECOVERY),
-   USE_GLOBAL_POOLS(CommonAttributes.USE_GLOBAL_POOLS),
+   USE_AUTO_RECOVERY(Pooled.USE_AUTO_RECOVERY),
+   USE_GLOBAL_POOLS(Common.USE_GLOBAL_POOLS),
    POOLED_CONNECTION_FACTORY(CommonAttributes.POOLED_CONNECTION_FACTORY),
-   TRANSACTION(CommonAttributes.TRANSACTION),
+   TRANSACTION(ConnectionFactoryAttributes.Pooled.TRANSACTION),
    MODE(CommonAttributes.MODE),
    INBOUND_CONFIG(CommonAttributes.INBOUND_CONFIG),
-   USE_JNDI(CommonAttributes.USE_JNDI),
-   JNDI_PARAMS(CommonAttributes.JNDI_PARAMS),
-   USE_LOCAL_TX(CommonAttributes.USE_LOCAL_TX),
-   CONNECTION_FACTORY_TYPE(CommonAttributes.CONNECTION_FACTORY_TYPE),
-   SETUP_ATTEMPTS(CommonAttributes.SETUP_ATTEMPTS),
-   SETUP_INTERVAL(CommonAttributes.SETUP_INTERVAL),
-   SOCKET_BINDING(CommonAttributes.SOCKET_BINDING.getName()),
+   USE_JNDI(Pooled.USE_JNDI),
+   JNDI_PARAMS(Pooled.JNDI_PARAMS),
+   USE_LOCAL_TX(Pooled.USE_LOCAL_TX),
+   COMPRESS_LARGE_MESSAGES(ConnectionFactoryAttributes.Common.COMPRESS_LARGE_MESSAGES),
+   CONNECTION_FACTORY_TYPE(ConnectionFactoryAttributes.Regular.FACTORY_TYPE),
+   SETUP_ATTEMPTS(Pooled.SETUP_ATTEMPTS),
+   SETUP_INTERVAL(Pooled.SETUP_INTERVAL),
+   SOCKET_BINDING(RemoteTransportDefinition.SOCKET_BINDING.getName()),
 
    // JMS Bridge
    JMS_BRIDGE(CommonAttributes.JMS_BRIDGE),
@@ -332,32 +346,41 @@ public enum Element {
     private static Map<String, AttributeDefinition> getScheduledThreadPoolDefinitions() {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
         result.put("server", CommonAttributes.SCHEDULED_THREAD_POOL_MAX_SIZE);
-        result.put("connection", CommonAttributes.CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE);
+        result.put("connection", Common.SCHEDULED_THREAD_POOL_MAX_SIZE);
         return result;
     }
 
     private static Map<String, AttributeDefinition> getThreadPoolDefinitions() {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
         result.put("server", CommonAttributes.THREAD_POOL_MAX_SIZE);
-        result.put("connection", CommonAttributes.CONNECTION_THREAD_POOL_MAX_SIZE);
+        result.put("connection", Common.THREAD_POOL_MAX_SIZE);
         return result;
     }
 
     private static Map<String, AttributeDefinition> getConnectorRefDefinitions() {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
-        result.put("simple", CommonAttributes.CONNECTOR_REF);
-        result.put("broadcast-group", ConnectorRefsAttribute.BROADCAST_GROUP);
-        result.put("bridge", ConnectorRefsAttribute.BRIDGE_CONNECTORS);
-        result.put("cluster-connection", ConnectorRefsAttribute.CLUSTER_CONNECTION_CONNECTORS);
+        result.put("simple", ClusterConnectionDefinition.CONNECTOR_REF);
+        result.put("broadcast-group", BroadcastGroupDefinition.CONNECTOR_REFS);
+        result.put("bridge", BridgeDefinition.CONNECTOR_REFS);
+        result.put("cluster-connection", ClusterConnectionDefinition.CONNECTOR_REFS);
         return result;
 
     }
 
     private static Map<String, AttributeDefinition> getReconnectAttemptsDefinitions() {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
-        result.put("connection", CommonAttributes.CONNECTION_FACTORY_RECONNECT_ATTEMPTS);
+        result.put("connection", Common.RECONNECT_ATTEMPTS);
+        result.put("pooled-connection", Pooled.RECONNECT_ATTEMPTS);
         result.put("bridge", BridgeDefinition.RECONNECT_ATTEMPTS);
-        result.put("cluster", CommonAttributes.CLUSTER_CONNECTION_RECONNECT_ATTEMPTS);
+        result.put("cluster", ClusterConnectionDefinition.RECONNECT_ATTEMPTS);
+        return result;
+
+    }
+
+    private static Map<String, AttributeDefinition> getConfirmationWindowSizeDefinitions() {
+        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        result.put("connection", ConnectionFactoryAttributes.Common.CONFIRMATION_WINDOW_SIZE);
+        result.put("bridge", CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE);
         return result;
 
     }
@@ -372,7 +395,7 @@ public enum Element {
 
     private static Map<String, AttributeDefinition> getDuplicateDetectionDefinitions() {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
-        result.put("cluster", CommonAttributes.CLUSTER_CONNECTION_USE_DUPLICATE_DETECTION);
+        result.put("cluster", ClusterConnectionDefinition.USE_DUPLICATE_DETECTION);
         result.put("bridge", BridgeDefinition.USE_DUPLICATE_DETECTION);
         return result;
 
@@ -380,35 +403,46 @@ public enum Element {
 
     private static Map<String, AttributeDefinition> getRetryIntervalDefinitions() {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
-        result.put("cluster", CommonAttributes.CLUSTER_CONNECTION_RETRY_INTERVAL);
+        result.put("cluster", ClusterConnectionDefinition.RETRY_INTERVAL);
+        result.put("connection", ConnectionFactoryAttributes.Common.RETRY_INTERVAL);
         result.put("default", CommonAttributes.RETRY_INTERVAL);
         return result;
     }
 
     private static Map<String, AttributeDefinition> getRetryIntervalMultiplierDefinitions() {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
-        result.put("cluster", CommonAttributes.CLUSTER_CONNECTION_RETRY_INTERVAL_MULTIPLIER);
+        result.put("cluster", ClusterConnectionDefinition.RETRY_INTERVAL_MULTIPLIER);
+        result.put("connection", ConnectionFactoryAttributes.Common.RETRY_INTERVAL_MULTIPLIER);
         result.put("default", CommonAttributes.RETRY_INTERVAL_MULTIPLIER);
         return result;
     }
 
     private static Map<String, AttributeDefinition> getMaxRetryIntervalDefinitions() {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
-        result.put("cluster", CommonAttributes.CLUSTER_CONNECTION_MAX_RETRY_INTERVAL);
+        result.put("cluster", ClusterConnectionDefinition.MAX_RETRY_INTERVAL);
+        result.put("connection", ConnectionFactoryAttributes.Common.MAX_RETRY_INTERVAL);
         result.put("default", CommonAttributes.MAX_RETRY_INTERVAL);
+        return result;
+    }
+
+    private static Map<String, AttributeDefinition> getMinLargeMessageSizeDefinitions() {
+        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        result.put("connection", ConnectionFactoryAttributes.Common.MIN_LARGE_MESSAGE_SIZE);
+        result.put("default", CommonAttributes.MIN_LARGE_MESSAGE_SIZE);
         return result;
     }
 
     private static Map<String, AttributeDefinition> getConnectionTTLDefinitions() {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
-        result.put("cluster", CommonAttributes.CLUSTER_CONNECTION_CONNECTION_TTL);
+        result.put("cluster", ClusterConnectionDefinition.CONNECTION_TTL);
+        result.put("connection", ConnectionFactoryAttributes.Common.CONNECTION_TTL);
         result.put("default", CommonAttributes.CONNECTION_TTL);
         return result;
     }
 
     private static Map<String, AttributeDefinition> getCheckPeriodDefinitions() {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
-        result.put("cluster", CommonAttributes.CLUSTER_CONNECTION_CHECK_PERIOD);
+        result.put("cluster", ClusterConnectionDefinition.CHECK_PERIOD);
         result.put("default", CommonAttributes.CHECK_PERIOD);
         return result;
     }

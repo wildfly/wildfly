@@ -56,6 +56,7 @@ import org.jboss.as.controller.extension.ParallelExtensionAddHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -112,6 +113,12 @@ class ModelControllerImpl implements ModelController {
     }
 
     protected ModelNode internalExecute(final ModelNode operation, final OperationMessageHandler handler, final OperationTransactionControl control, final OperationAttachments attachments, final OperationStepHandler prepareStep) {
+
+        SecurityManager sm = System.getSecurityManager();
+        if (sm != null) {
+            sm.checkPermission(ModelController.ACCESS_PERMISSION);
+        }
+
         final ModelNode headers = operation.has(OPERATION_HEADERS) ? operation.get(OPERATION_HEADERS) : null;
         final boolean rollbackOnFailure = headers == null || !headers.hasDefined(ROLLBACK_ON_RUNTIME_FAILURE) || headers.get(ROLLBACK_ON_RUNTIME_FAILURE).asBoolean();
         final EnumSet<OperationContextImpl.ContextFlag> contextFlags = rollbackOnFailure ? EnumSet.of(OperationContextImpl.ContextFlag.ROLLBACK_ON_FAIL) : EnumSet.noneOf(OperationContextImpl.ContextFlag.class);
@@ -119,11 +126,20 @@ class ModelControllerImpl implements ModelController {
         if (restartResourceServices) {
             contextFlags.add(OperationContextImpl.ContextFlag.ALLOW_RESOURCE_SERVICE_RESTART);
         }
-        OperationContextImpl context = new OperationContextImpl(this, processType, runningModeControl.getRunningMode(), contextFlags, handler, attachments, model, control, processState, bootingFlag.get());
-        ModelNode response = new ModelNode();
-        context.addStep(response, operation, prepareStep, OperationContext.Stage.MODEL);
 
-        context.completeStep();
+        final ModelNode response = new ModelNode();
+        // Report the correct operation response, otherwise the preparedResult would only contain
+        // the result of the last active step in a composite operation
+        final OperationTransactionControl originalResultTxControl = control == null ? null : new OperationTransactionControl() {
+            @Override
+            public void operationPrepared(OperationTransaction transaction, ModelNode result) {
+                control.operationPrepared(transaction, response);
+            }
+        };
+
+        OperationContextImpl context = new OperationContextImpl(this, processType, runningModeControl.getRunningMode(), contextFlags, handler, attachments, model, originalResultTxControl, processState, bootingFlag.get());
+        context.addStep(response, operation, prepareStep, OperationContext.Stage.MODEL);
+        context.executeOperation();
 
         if (!response.hasDefined(RESPONSE_HEADERS) || !response.get(RESPONSE_HEADERS).hasDefined(PROCESS_STATE)) {
             ControlledProcessState.State state = processState.getState();
@@ -153,7 +169,7 @@ class ModelControllerImpl implements ModelController {
         List<ParsedBootOp> postExtensionOps = organizeBootOperations(bootList, context);
 
         // Run the steps up to the last ExtensionAddHandler
-        OperationContext.ResultAction resultAction = context.completeStep();
+        OperationContext.ResultAction resultAction = context.executeOperation();
         if (resultAction == OperationContext.ResultAction.KEEP && postExtensionOps != null) {
 
             // Success. Now any extension handlers are registered. Continue with remaining ops
@@ -163,7 +179,7 @@ class ModelControllerImpl implements ModelController {
             for (ParsedBootOp parsedOp : postExtensionOps) {
                 final OperationStepHandler stepHandler = parsedOp.handler == null ? rootRegistration.getOperationHandler(parsedOp.address, parsedOp.operationName) : parsedOp.handler;
                 if (stepHandler == null) {
-                    ROOT_LOGGER.noHandler(parsedOp.operationName, parsedOp.address);
+                    logNoHandler(parsedOp);
                     postExtContext.setRollbackOnly();
                     // stop
                     break;
@@ -172,7 +188,7 @@ class ModelControllerImpl implements ModelController {
                 }
             }
 
-            resultAction = postExtContext.completeStep();
+            resultAction = postExtContext.executeOperation();
         }
 
         return  resultAction == OperationContext.ResultAction.KEEP;
@@ -241,7 +257,7 @@ class ModelControllerImpl implements ModelController {
                 if (!sawExtensionAdd && stepHandler == null) {
                     // Odd case. An op prior to the first extension add where there is no handler. This would really
                     // only happen during AS development
-                    ROOT_LOGGER.noHandler(parsedOp.operationName, parsedOp.address);
+                    logNoHandler(parsedOp);
                     context.setRollbackOnly();
                     // stop
                     break;
@@ -289,6 +305,12 @@ class ModelControllerImpl implements ModelController {
     }
 
     public ModelControllerClient createClient(final Executor executor) {
+
+        SecurityManager sm = System.getSecurityManager();
+        if (sm != null) {
+            sm.checkPermission(ModelController.ACCESS_PERMISSION);
+        }
+
         return new ModelControllerClient() {
 
             @Override
@@ -455,6 +477,16 @@ class ModelControllerImpl implements ModelController {
         return expressionResolver.resolveExpressions(node);
     }
 
+    private void logNoHandler(ParsedBootOp parsedOp) {
+        ImmutableManagementResourceRegistration child = rootRegistration.getSubModel(parsedOp.address);
+        if (child == null) {
+            ROOT_LOGGER.noSuchResourceType(parsedOp.address);
+        } else {
+            ROOT_LOGGER.noHandlerForOperation(parsedOp.operationName, parsedOp.address);
+        }
+
+    }
+
     private class DefaultPrepareStepHandler implements OperationStepHandler {
 
         @Override
@@ -468,9 +500,14 @@ class ModelControllerImpl implements ModelController {
             if(stepHandler != null) {
                 context.addStep(stepHandler, OperationContext.Stage.MODEL);
             } else {
-                context.getFailureDescription().set(MESSAGES.noHandler(operationName, address));
+                ImmutableManagementResourceRegistration child = rootRegistration.getSubModel(address);
+                if (child == null) {
+                    context.getFailureDescription().set(MESSAGES.noSuchResourceType(address));
+                } else {
+                    context.getFailureDescription().set(MESSAGES.noHandlerForOperation(operationName, address));
+                }
             }
-            context.completeStep();
+            context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
         }
     }
 
@@ -478,7 +515,7 @@ class ModelControllerImpl implements ModelController {
      * The root resource, maintains a read-only reference to the current model. All write operations have to performed
      * after acquiring the write lock on a clone of the underlying model.
      */
-    private class RootResource implements Resource {
+    private final class RootResource implements Resource {
 
         private final AtomicReference<Resource> modelReference = new AtomicReference<Resource>(Resource.Factory.create());
 

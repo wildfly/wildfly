@@ -36,17 +36,16 @@ import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
-import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.EjbDeploymentMarker;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.ejb.spec.EjbType;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.metadata.ejb.spec.GenericBeanMetaData;
@@ -60,8 +59,6 @@ import static org.jboss.as.ejb3.deployment.processors.AbstractDeploymentUnitProc
  * User: jpai
  */
 public class SessionBeanComponentDescriptionFactory extends EJBComponentDescriptionFactory {
-
-    private static final Logger logger = Logger.getLogger(SessionBeanComponentDescriptionFactory.class);
 
     private static final DotName STATELESS_ANNOTATION = DotName.createSimple(Stateless.class.getName());
     private static final DotName STATEFUL_ANNOTATION = DotName.createSimple(Stateful.class.getName());
@@ -118,7 +115,7 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
             final AnnotationTarget target = sessionBeanAnnotation.target();
             if (!(target instanceof ClassInfo)) {
                 // Let's just WARN and move on. No need to throw an error
-                logger.warn(sessionBeanAnnotation.name() + " annotation is expected to be applied on class level. " + target + " is not a class");
+                EjbLogger.ROOT_LOGGER.annotationOnlyAllowedOnClass(sessionBeanAnnotation.name().toString(), target);
                 continue;
             }
             final ClassInfo sessionBeanClassInfo = (ClassInfo) target;

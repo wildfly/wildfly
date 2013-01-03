@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
 import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 
 /**
@@ -212,6 +213,8 @@ public class ConnectorServices {
 
         deploymentServiceNames.put(raName, serviceName);
 
+        ROOT_LOGGER.tracef("ConnectorServices: registerDeployment(%s) -> %s", raName, serviceName);
+
         return serviceName;
     }
 
@@ -221,7 +224,7 @@ public class ConnectorServices {
 
             ServiceName entry = deploymentServiceNames.get(raName);
 
-
+            ROOT_LOGGER.tracef("ConnectorServices: getDeploymentServiceName(%s) -> %s", raName, entry);
 
             return entry;
         }
@@ -235,6 +238,8 @@ public class ConnectorServices {
 
         if (serviceName == null)
             throw MESSAGES.undefinedVar("ServiceName");
+
+        ROOT_LOGGER.tracef("ConnectorServices: unregisterDeployment(%s, %s)", raName, serviceName);
 
         ServiceName entry = deploymentServiceNames.get(raName);
 
@@ -280,6 +285,7 @@ public class ConnectorServices {
         if (raName == null || raName.trim().isEmpty()) {
             throw MESSAGES.undefinedVar("RaName");
         }
+
         // There can be multiple activations for the same ra name. For example, multiple resource
         // adapter elements (with different configs) in the resource adapter subsystem, all pointing to the same ra archive.
         // The ServiceName for the first activation of a RA with raName *will always* be of the form:
@@ -304,6 +310,9 @@ public class ConnectorServices {
             serviceName = RESOURCE_ADAPTER_SERVICE_PREFIX.append(raName).append(RA_SERVICE_NAME_SEPARATOR).append(nextId.toString());
         }
         serviceNamesForRAActivation.add(serviceName);
+
+        ROOT_LOGGER.tracef("ConnectorServices: registerResourceAdapter(%s) -> %s", raName, serviceName);
+
         return serviceName;
     }
 
@@ -320,6 +329,9 @@ public class ConnectorServices {
         if (registeredServiceNames == null || registeredServiceNames.isEmpty() || !registeredServiceNames.contains(serviceName)) {
             throw MESSAGES.serviceIsntRegistered(serviceName.getCanonicalName());
         }
+
+        ROOT_LOGGER.tracef("ConnectorServices: unregisterResourceAdapter(%s, %s)", raName, serviceName);
+
         // remove the service from the registered service names for this RA
         registeredServiceNames.remove(serviceName);
 
@@ -360,11 +372,18 @@ public class ConnectorServices {
         if (raName == null || raName.trim().isEmpty()) {
             throw MESSAGES.stringParamCannotBeNullOrEmpty("resource adapter name");
         }
-        // For now, we just return a single service name as the dependency service name, even if there
-        // might be multiple activations for the same RA. If the dependent service needs the service name of
+
+        ROOT_LOGGER.tracef("ConnectorServices: getResourceAdapterServiceNames(%s) -> %s",
+                           raName, resourceAdapterServiceNames.get(raName));
+
+        if (resourceAdapterServiceNames.get(raName) == null || resourceAdapterServiceNames.get(raName).isEmpty()) {
+            return Collections.singleton(RESOURCE_ADAPTER_SERVICE_PREFIX.append(raName));
+        }
+
+        // Return all active service names for a resource adapter. If the dependent service needs the service name of
         // a specific activation of the RA, then a different method which accepts specific properties for that
         // RA activation, will have to be used
-        return Collections.singleton(RESOURCE_ADAPTER_SERVICE_PREFIX.append(raName));
+        return Collections.unmodifiableSet(resourceAdapterServiceNames.get(raName));
     }
 
     /**

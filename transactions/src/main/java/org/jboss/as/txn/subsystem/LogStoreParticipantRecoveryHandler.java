@@ -58,6 +58,6 @@ public class LogStoreParticipantRecoveryHandler  implements OperationStepHandler
         // refresh the attributes of this participant (the status attribute should have changed to PREPARED
         context.addStep(refreshHandler, OperationContext.Stage.IMMEDIATE);
 
-        context.completeStep();
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 }

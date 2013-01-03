@@ -23,9 +23,9 @@
 package org.jboss.as.connector.subsystems.resourceadapters;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.jca.common.CommonBundle;
 import org.jboss.jca.common.api.metadata.ValidatableMetadata;
@@ -46,7 +46,7 @@ public class ModifiableConnDef implements CommonConnDef {
      */
     private static final long serialVersionUID = -7109775624169563102L;
 
-    private final HashMap<String, String> configProperties;
+    private final ConcurrentHashMap<String, String> configProperties;
 
     private final String className;
 
@@ -70,8 +70,6 @@ public class ModifiableConnDef implements CommonConnDef {
 
     private final Recovery recovery;
 
-    private static CommonBundle bundle = Messages.getBundle(CommonBundle.class);
-
 
     /**
      * Create a new ConnectionDefinition.
@@ -94,10 +92,10 @@ public class ModifiableConnDef implements CommonConnDef {
                              CommonValidation validation, CommonSecurity security, Recovery recovery) throws ValidateException {
         super();
         if (configProperties != null) {
-            this.configProperties = new HashMap<String, String>(configProperties.size());
+            this.configProperties = new ConcurrentHashMap<String, String>(configProperties.size());
             this.configProperties.putAll(configProperties);
         } else {
-            this.configProperties = new HashMap<String, String>(0);
+            this.configProperties = new ConcurrentHashMap<String, String>(0);
         }
         this.className = className;
         this.jndiName = jndiName;

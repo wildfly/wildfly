@@ -35,6 +35,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.ejb.security.AnnotationAuthorizationTestCase;
 import org.jboss.as.test.integration.ejb.security.EjbSecurityDomainSetup;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
@@ -46,6 +47,7 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 /**
@@ -55,6 +57,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @ServerSetup({AsynchronousSecurityTestCase.AsynchronousSecurityTestCaseSetup.class})
+@Category(CommonCriteria.class)
 public class AsynchronousSecurityTestCase {
     private static final Logger log = Logger.getLogger(AsynchronousSecurityTestCase.class);
     private static final String ARCHIVE_NAME = "AsyncSecurityTestCase";
@@ -78,6 +81,7 @@ public class AsynchronousSecurityTestCase {
         jar.addAsResource(AsynchronousSecurityTestCase.class.getPackage(), "roles.properties", "roles.properties");
         jar.addAsResource(AsynchronousSecurityTestCase.class.getPackage(), "users.properties", "users.properties");
         jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr\n"),"MANIFEST.MF");
+        jar.addPackage(CommonCriteria.class.getPackage());
         log.info(jar.toString(true));
         return jar;
     }

@@ -39,7 +39,7 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Servlet which does JNDI lookup and returns looked up object class name in Http response. Lookup name is specified through
  * request parameter "name".
- * 
+ *
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
 @WebServlet(urlPatterns = {"/JndiServlet"})

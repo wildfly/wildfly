@@ -24,12 +24,13 @@
 
 package org.jboss.as.controller;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumSet;
+
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelType;
-
-import java.util.Arrays;
-import java.util.EnumSet;
 
 /**
  * Builder for helping construct {@link SimpleOperationDefinition}
@@ -38,20 +39,42 @@ import java.util.EnumSet;
  */
 public class SimpleOperationDefinitionBuilder {
     private ResourceDescriptionResolver resolver;
+    private ResourceDescriptionResolver attributeResolver;
     protected String name;
-    protected OperationEntry.EntryType entryType;
-    protected EnumSet<OperationEntry.Flag> flags;
+    protected OperationEntry.EntryType entryType = OperationEntry.EntryType.PUBLIC;
+    protected EnumSet<OperationEntry.Flag> flags = EnumSet.noneOf(OperationEntry.Flag.class);
     protected AttributeDefinition[] parameters = new AttributeDefinition[0];
     protected ModelType replyType;
     protected ModelType replyValueType;
+    protected boolean replyAllowNull;
+    protected DeprecationData deprecationData = null;
+    protected AttributeDefinition[] replyParameters = new AttributeDefinition[0];
 
     public SimpleOperationDefinitionBuilder(String name, ResourceDescriptionResolver resolver) {
         this.name = name;
         this.resolver = resolver;
     }
 
+
     public SimpleOperationDefinition build() {
-        return new SimpleOperationDefinition(name, resolver, entryType, flags, replyType, replyValueType, parameters);
+        if (attributeResolver == null) {
+            attributeResolver = resolver;
+        }
+        return internalBuild(resolver, attributeResolver);
+    }
+
+    protected SimpleOperationDefinition internalBuild(ResourceDescriptionResolver resolver, ResourceDescriptionResolver attributeResolver) {
+        return new SimpleOperationDefinition(name, resolver, attributeResolver, entryType, flags, replyType, replyValueType, replyAllowNull, deprecationData, replyParameters, parameters);
+    }
+
+    protected static EnumSet<OperationEntry.Flag> getFlagsSet(OperationEntry.Flag... vararg) {
+        if (vararg == null || vararg.length == 0) {
+            return EnumSet.noneOf(OperationEntry.Flag.class);
+        } else {
+            EnumSet<OperationEntry.Flag> result = EnumSet.noneOf(OperationEntry.Flag.class);
+            Collections.addAll(result, vararg);
+            return result;
+        }
     }
 
     public SimpleOperationDefinitionBuilder setEntryType(OperationEntry.EntryType entryType) {
@@ -59,10 +82,36 @@ public class SimpleOperationDefinitionBuilder {
         return this;
     }
 
+    public SimpleOperationDefinitionBuilder setPrivateEntry() {
+        this.entryType = OperationEntry.EntryType.PRIVATE;
+        return this;
+    }
+
     public SimpleOperationDefinitionBuilder withFlags(EnumSet<OperationEntry.Flag> flags) {
         this.flags = flags;
         return this;
     }
+
+    public SimpleOperationDefinitionBuilder withFlags(OperationEntry.Flag... flags) {
+        this.flags = getFlagsSet(flags);
+        return this;
+    }
+
+    public SimpleOperationDefinitionBuilder withFlag(OperationEntry.Flag flag) {
+        this.flags = EnumSet.of(flag);
+        return this;
+    }
+
+    public SimpleOperationDefinitionBuilder setRuntimeOnly() {
+        this.flags = EnumSet.of(OperationEntry.Flag.RUNTIME_ONLY, flags.toArray(new OperationEntry.Flag[flags.size()]));
+        return this;
+    }
+
+    public SimpleOperationDefinitionBuilder setReadOnly() {
+        this.flags = EnumSet.of(OperationEntry.Flag.READ_ONLY, flags.toArray(new OperationEntry.Flag[flags.size()]));
+        return this;
+    }
+
 
     public SimpleOperationDefinitionBuilder setParameters(AttributeDefinition... parameters) {
         this.parameters = parameters;
@@ -86,4 +135,23 @@ public class SimpleOperationDefinitionBuilder {
         return this;
     }
 
+    public SimpleOperationDefinitionBuilder allowReturnNull() {
+        this.replyAllowNull = true;
+        return this;
+    }
+
+    public SimpleOperationDefinitionBuilder setDeprecated(ModelVersion since) {
+        this.deprecationData = new DeprecationData(since);
+        return this;
+    }
+
+    public SimpleOperationDefinitionBuilder setReplyParameters(AttributeDefinition... replyParameters) {
+        this.replyParameters = replyParameters;
+        return this;
+    }
+
+    public SimpleOperationDefinitionBuilder setAttributeResolver(ResourceDescriptionResolver resolver) {
+        this.attributeResolver = resolver;
+        return this;
+    }
 }

@@ -35,10 +35,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import java.io.File;
-import java.util.List;
 
 import junit.framework.Assert;
-
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -80,7 +78,9 @@ public class OtherServicesSubsystemTestCase extends AbstractSubsystemTest {
         String subsystemXml =
                 "<subsystem xmlns=\"" + SimpleSubsystemExtension.NAMESPACE + "\">" +
                 "</subsystem>";
-        KernelServices services = super.installInController( new ExtraServicesInit(), subsystemXml);
+        KernelServices services = createKernelServicesBuilder(new ExtraServicesInit())
+                .setSubsystemXml(subsystemXml)
+                .build();
 
         //Read the whole model and make sure it looks as expected
         ModelNode model = services.readWholeModel();
@@ -103,7 +103,9 @@ public class OtherServicesSubsystemTestCase extends AbstractSubsystemTest {
         String subsystemXml =
                 "<subsystem xmlns=\"" + SimpleSubsystemExtension.NAMESPACE + "\">" +
                 "</subsystem>";
-        KernelServices services = super.installInController( new SystemPropertiesInit(), subsystemXml);
+        KernelServices services = createKernelServicesBuilder(new SystemPropertiesInit())
+                .setSubsystemXml(subsystemXml)
+                .build();
 
         //Read the whole model and make sure it looks as expected
         ModelNode model = services.readWholeModel();
@@ -123,7 +125,10 @@ public class OtherServicesSubsystemTestCase extends AbstractSubsystemTest {
         String subsystemXml =
                 "<subsystem xmlns=\"" + SimpleSubsystemExtension.NAMESPACE + "\">" +
                 "</subsystem>";
-        KernelServices services = super.installInController( new SocketBindingInit(), subsystemXml);
+        KernelServices services = createKernelServicesBuilder(new SocketBindingInit())
+                .setSubsystemXml(subsystemXml)
+                .build();
+
 
         //Read the whole model and make sure it looks as expected
         ModelNode model = services.readWholeModel();
@@ -163,7 +168,9 @@ public class OtherServicesSubsystemTestCase extends AbstractSubsystemTest {
         String subsystemXml =
                 "<subsystem xmlns=\"" + SimpleSubsystemExtension.NAMESPACE + "\">" +
                 "</subsystem>";
-        KernelServices services = super.installInController( new PathInit(), subsystemXml);
+        KernelServices services = createKernelServicesBuilder(new PathInit())
+                .setSubsystemXml(subsystemXml)
+                .build();
 
         //Read the whole model and make sure it looks as expected
         ModelNode model = services.readWholeModel();

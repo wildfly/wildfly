@@ -24,6 +24,7 @@ package org.jboss.as.service;
 
 import java.lang.reflect.Method;
 
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -39,8 +40,8 @@ final class StartStopService extends AbstractService {
     private final Method startMethod;
     private final Method stopMethod;
 
-    StartStopService(final Object mBeanInstance, final Method startMethod, final Method stopMethod) {
-        super(mBeanInstance);
+    StartStopService(final Object mBeanInstance, final Method startMethod, final Method stopMethod, final ServiceName duServiceName) {
+        super(mBeanInstance, duServiceName);
         this.startMethod = startMethod;
         this.stopMethod = stopMethod;
     }
@@ -51,7 +52,7 @@ final class StartStopService extends AbstractService {
             SarLogger.ROOT_LOGGER.tracef("Starting Service: %s", context.getController().getName());
         }
         try {
-            invokeLifecycleMethod(startMethod);
+            invokeLifecycleMethod(startMethod, context);
         } catch (final Exception e) {
             throw SarMessages.MESSAGES.failedExecutingLegacyMethod(e, "start()");
         }
@@ -63,7 +64,7 @@ final class StartStopService extends AbstractService {
             SarLogger.ROOT_LOGGER.tracef("Stopping Service: %s", context.getController().getName());
         }
         try {
-            invokeLifecycleMethod(stopMethod);
+            invokeLifecycleMethod(stopMethod, context);
         } catch (final Exception e) {
             SarLogger.ROOT_LOGGER.failedExecutingLegacyMethod(e, "stop()");
         }

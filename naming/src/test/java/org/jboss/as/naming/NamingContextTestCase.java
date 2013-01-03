@@ -22,10 +22,16 @@
 
 package org.jboss.as.naming;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.jboss.as.naming.SecurityHelper.testActionPermission;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Set;
 
 import javax.naming.Binding;
 import javax.naming.CompositeName;
@@ -41,15 +47,12 @@ import javax.naming.Referenceable;
 import javax.naming.StringRefAddr;
 import javax.naming.spi.ObjectFactory;
 
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Set;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.jboss.as.naming.JndiPermission.Action;
 
 /**
  * @author John E. Bailey
@@ -83,7 +86,11 @@ public class NamingContextTestCase {
         final Object object = new Object();
         namingStore.bind(name, object);
 
-        final Object result = namingContext.lookup(name);
+        Object result = namingContext.lookup(name);
+        assertEquals(object, result);
+        
+        //the same with security permissions
+        result = testActionPermission(Action.LOOKUP, namingContext, "test");
         assertEquals(object, result);
     }
 
@@ -93,7 +100,11 @@ public class NamingContextTestCase {
         final Reference reference = new Reference(String.class.getName(), new StringRefAddr("blah", "test"), TestObjectFactory.class.getName(), null);
         namingStore.bind(name, reference);
 
-        final Object result = namingContext.lookup(name);
+        Object result = namingContext.lookup(name);
+        assertEquals("test", result);
+        
+        //the same with security permissions
+        result = testActionPermission(Action.LOOKUP, namingContext, "test");
         assertEquals("test", result);
     }
 
@@ -104,7 +115,11 @@ public class NamingContextTestCase {
         final Reference reference = new Reference(String.class.getName(), new StringRefAddr("nns", "comp"), TestObjectFactoryWithNameResolution.class.getName(), null);
         namingStore.bind(new CompositeName("test"), reference);
 
-        final Object result = namingContext.lookup(new CompositeName("test/nested"));
+        Object result = namingContext.lookup(new CompositeName("test/nested"));
+        assertEquals("test", result);
+
+        //the same with security permissions
+        result = testActionPermission(Action.LOOKUP, Arrays.asList(new JndiPermission("comp/nested",  "lookup")), namingContext, "test/nested");
         assertEquals("test", result);
     }
 
@@ -115,7 +130,11 @@ public class NamingContextTestCase {
         final Reference reference = new Reference(String.class.getName(), new StringRefAddr("blahh", "test"), TestObjectFactoryWithNameResolution.class.getName(), null);
         namingStore.bind(new CompositeName("comp"), reference);
 
-        final Object result = namingContext.lookup(new CompositeName("comp/nested"));
+        Object result = namingContext.lookup(new CompositeName("comp/nested"));
+        assertEquals("test", result);
+
+        //the same with security permissions
+        result = testActionPermission(Action.LOOKUP, Arrays.asList(new JndiPermission("test/nested", "lookup")), namingContext, "comp/nested");
         assertEquals("test", result);
     }
 
@@ -128,9 +147,17 @@ public class NamingContextTestCase {
         Object result = namingContext.lookup(linkName);
         assertEquals("testValue", result);
 
+        //the same with security permissions
+        result = testActionPermission(Action.LOOKUP, Arrays.asList(new JndiPermission("test", "lookup")), namingContext, "link");
+        assertEquals("testValue", result);
+        
         System.setProperty(Context.INITIAL_CONTEXT_FACTORY, InitialContextFactory.class.getName());
         namingStore.rebind(linkName, new LinkRef(name));
         result = namingContext.lookup(linkName);
+        assertEquals("testValue", result);
+        
+        //the same with security permissions
+        result = testActionPermission(Action.LOOKUP, Arrays.asList(new JndiPermission("test", "lookup")), namingContext, "link");
         assertEquals("testValue", result);
     }
 
@@ -142,6 +169,12 @@ public class NamingContextTestCase {
         namingStore.bind(linkName, new LinkRef("./test"));
         Object result = namingContext.lookup("link/value");
         assertEquals("testValue", result);
+        
+        //the same with security permissions
+        result = testActionPermission(Action.LOOKUP, Arrays.asList(new JndiPermission("test", "lookup"), 
+            new JndiPermission("test/value", "lookup")), namingContext, "link/value");
+        
+        assertEquals("testValue", result);        
     }
 
 
@@ -152,6 +185,13 @@ public class NamingContextTestCase {
             fail("Should have thrown and NameNotFoundException");
         } catch (NameNotFoundException expected) {
         }
+
+        //the same with security permissions
+        try {
+            testActionPermission(Action.LOOKUP, namingContext, "test");
+            fail("Should have thrown and NameNotFoundException with appropriate permissions");
+        } catch (NameNotFoundException expected) {
+        }
     }
 
     @Test
@@ -160,22 +200,39 @@ public class NamingContextTestCase {
         assertTrue(result instanceof NamingContext);
         result = namingContext.lookup(new CompositeName(""));
         assertTrue(result instanceof NamingContext);
+        
+        //the same with security permissions
+        result = testActionPermission(Action.LOOKUP, namingContext, null);
+        assertTrue(result instanceof NamingContext);
+        result = testActionPermission(Action.LOOKUP, namingContext, "");
+        assertTrue(result instanceof NamingContext);
     }
 
     @Test
     public void testBind() throws Exception {
-        final Name name = new CompositeName("test");
+        Name name = new CompositeName("test");
         final Object value = new Object();
         namingContext.bind(name, value);
         assertEquals(value, namingStore.lookup(name));
+        
+        //the same with security permissions
+        name = new CompositeName("securitytest");
+        testActionPermission(Action.BIND, namingContext, "securitytest", value);
+        assertEquals(value, namingStore.lookup(name));        
     }
 
     @Test
     public void testBindReferenceable() throws Exception {
-        final Name name = new CompositeName("test");
+        Name name = new CompositeName("test");
         final TestObjectReferenceable referenceable = new TestObjectReferenceable("addr");
         namingContext.bind(name, referenceable);
-        final Object result = namingContext.lookup(name);
+        Object result = namingContext.lookup(name);
+        assertEquals(referenceable.addr, result);
+
+        //the same with security permissions
+        name = new CompositeName("securitytest");
+        testActionPermission(Action.BIND, namingContext, "securitytest", referenceable);
+        result = testActionPermission(Action.LOOKUP, namingContext, "securitytest");
         assertEquals(referenceable.addr, result);
     }
     
@@ -189,11 +246,22 @@ public class NamingContextTestCase {
             namingStore.lookup(name);
             fail("Should have thrown name not found");
         } catch (NameNotFoundException expect) {}
+
+        //the same with security permissions
+        testActionPermission(Action.BIND, namingContext, "test", value);
+        testActionPermission(Action.UNBIND, namingContext, "test");
+        try {
+            namingStore.lookup(name);
+            fail("Should have thrown name not found");
+        } catch (NameNotFoundException expect) {}
     }
 
     @Test
     public void testCreateSubcontext() throws Exception {
         assertTrue(namingContext.createSubcontext(new CompositeName("test")) instanceof NamingContext);
+        
+        //the same with security permissions
+        assertTrue(testActionPermission(Action.CREATE_SUBCONTEXT, namingContext, "securitytest") instanceof NamingContext);
     }
 
     @Test
@@ -201,8 +269,13 @@ public class NamingContextTestCase {
         final Name name = new CompositeName("test");
         final Object value = new Object();
         namingStore.bind(name, value);
-        final Object newValue = new Object();
+        Object newValue = new Object();
         namingContext.rebind(name, newValue);
+        assertEquals(newValue, namingStore.lookup(name));
+        
+        //the same with security permissions
+        newValue = new Object();
+        testActionPermission(Action.REBIND, namingContext, "test", newValue);
         assertEquals(newValue, namingStore.lookup(name));
     }
 
@@ -211,9 +284,15 @@ public class NamingContextTestCase {
         final Name name = new CompositeName("test");
         final TestObjectReferenceable referenceable = new TestObjectReferenceable("addr");
         namingContext.bind(name, referenceable);
-        final TestObjectReferenceable newReferenceable = new TestObjectReferenceable("newAddr");
+        TestObjectReferenceable newReferenceable = new TestObjectReferenceable("newAddr");
         namingContext.rebind(name, newReferenceable);
-        final Object result = namingContext.lookup(name);
+        Object result = namingContext.lookup(name);
+        assertEquals(newReferenceable.addr, result);
+        
+        //the same with security permissions
+        newReferenceable = new TestObjectReferenceable("yetAnotherNewAddr");
+        testActionPermission(Action.REBIND, namingContext, "test", newReferenceable);
+        result = namingContext.lookup(name);
         assertEquals(newReferenceable.addr, result);
     }
     
@@ -224,67 +303,41 @@ public class NamingContextTestCase {
             fail("Should have thrown and NameNotFoundException");
         } catch (NameNotFoundException expected) {
         }
+
+        //the same with security permissions
+        try {
+            testActionPermission(Action.LIST, namingContext, "test");
+            fail("Should have thrown and NameNotFoundException with appropriate permissions");
+        } catch (NameNotFoundException expected) {
+        }
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testList() throws Exception {
-        final Name name = new CompositeName("test");
-        final Object object = new Object();
-        namingStore.bind(name, object);
-        final Name nameTwo = new CompositeName("testTwo");
-        final Object objectTwo = new Object();
-        namingStore.bind(nameTwo, objectTwo);
-        final Name nameThree = new CompositeName("testThree");
-        final Object objectThree = new Object();
-        namingStore.bind(nameThree, objectThree);
+        bindList();
 
-        namingStore.bind(new CompositeName("testContext/test"), "testNested");
+        NamingEnumeration<NameClassPair> results = namingContext.list(new CompositeName());
+        checkListResults(results);
 
-        final NamingEnumeration<NameClassPair> results = namingContext.list(new CompositeName());
-        final Set<String> expected = new HashSet<String>(Arrays.asList("test", "testTwo", "testThree", "testContext"));
-        while (results.hasMore()) {
-            NameClassPair result = results.next();
-            final String resultName = result.getName();
-            if ("test".equals(resultName) || "testTwo".equals(resultName) || "testThree".equals(resultName)) {
-                assertEquals(Object.class.getName(), result.getClassName());
-            } else if ("testContext".equals(resultName)) {
-                assertEquals(Context.class.getName(), result.getClassName());
-            } else {
-                fail("Unknown result name: " + resultName);
-            }
-            expected.remove(resultName);
-        }
-        assertTrue("Not all expected results were returned", expected.isEmpty());
+        //the same with security permissions        
+        results = (NamingEnumeration<NameClassPair>) testActionPermission(Action.LIST, namingContext, null);
+        checkListResults(results);
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testListWithContinuation() throws Exception {
-        final Name name = new CompositeName("test/test");
-        final Object object = new Object();
-        namingStore.bind(name, object);
-        final Name nameTwo = new CompositeName("test/testTwo");
-        final Object objectTwo = new Object();
-        namingStore.bind(nameTwo, objectTwo);
-        final Name nameThree = new CompositeName("test/testThree");
-        final Object objectThree = new Object();
-        namingStore.bind(nameThree, objectThree);
+        bindListWithContinuations();
 
-        final Reference reference = new Reference(String.class.getName(), new StringRefAddr("nns", "test"), TestObjectFactoryWithNameResolution.class.getName(), null);
-        namingStore.bind(new CompositeName("comp"), reference);
-
-        final NamingEnumeration<NameClassPair> results = namingContext.list(new CompositeName("comp"));
-        final Set<String> expected = new HashSet<String>(Arrays.asList("test", "testTwo", "testThree"));
-        while (results.hasMore()) {
-            NameClassPair result = results.next();
-            final String resultName = result.getName();
-            if ("test".equals(resultName) || "testTwo".equals(resultName) || "testThree".equals(resultName)) {
-                assertEquals(Object.class.getName(), result.getClassName());
-            } else {
-                fail("Unknown result name: " + resultName);
-            }
-            expected.remove(resultName);
-        }
-        assertTrue("Not all expected results were returned", expected.isEmpty());
+        NamingEnumeration<NameClassPair> results = namingContext.list(new CompositeName("comp"));
+        checkListWithContinuationsResults(results);
+        
+        //the same with security permissions        
+        results = (NamingEnumeration<NameClassPair>) testActionPermission(Action.LIST, Arrays.asList(
+            new JndiPermission("test", "list")), namingContext, "comp");
+        
+        checkListWithContinuationsResults(results);
     }
 
     @Test
@@ -294,74 +347,41 @@ public class NamingContextTestCase {
             fail("Should have thrown and NameNotFoundException");
         } catch (NameNotFoundException expected) {
         }
+
+        //the same with security permissions        
+        try {
+            testActionPermission(Action.LIST_BINDINGS, namingContext, "test");
+            fail("Should have thrown and NameNotFoundException with appropriate permissions");
+        } catch (NameNotFoundException expected) {
+        }
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testListBindings() throws Exception {
-        final Name name = new CompositeName("test");
-        final Object object = new Object();
-        namingStore.bind(name, object);
-        final Name nameTwo = new CompositeName("testTwo");
-        final Object objectTwo = new Object();
-        namingStore.bind(nameTwo, objectTwo);
-        final Name nameThree = new CompositeName("testThree");
-        final Object objectThree = new Object();
-        namingStore.bind(nameThree, objectThree);
+        bindList();
 
-        namingStore.bind(new CompositeName("testContext/test"), "test");
-
-        final NamingEnumeration<Binding> results = namingContext.listBindings(new CompositeName());
-        final Set<String> expected = new HashSet<String>(Arrays.asList("test", "testTwo", "testThree", "testContext"));
-        while (results.hasMore()) {
-            final Binding result = results.next();
-            final String resultName = result.getName();
-            if ("test".equals(resultName)) {
-                assertEquals(Object.class.getName(), result.getClassName());
-                assertEquals(object, result.getObject());
-            } else if ("testTwo".equals(resultName)) {
-                assertEquals(Object.class.getName(), result.getClassName());
-                assertEquals(objectTwo, result.getObject());
-            } else if ("testThree".equals(resultName)) {
-                assertEquals(Object.class.getName(), result.getClassName());
-                assertEquals(objectThree, result.getObject());
-            } else if ("testContext".equals(resultName)) {
-                assertEquals(Context.class.getName(), result.getClassName());
-            } else {
-                fail("Unknown result name: " + resultName);
-            }
-            expected.remove(resultName);
-        }
-        assertTrue("Not all expected results were returned", expected.isEmpty());
+        NamingEnumeration<Binding> results = namingContext.listBindings(new CompositeName());
+        checkListResults(results);
+        
+        //the same with security permissions
+        results = (NamingEnumeration<Binding>) testActionPermission(Action.LIST_BINDINGS, namingContext, null);
+        checkListResults(results);
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testListBindingsWithContinuation() throws Exception {
-        final Name name = new CompositeName("test/test");
-        final Object object = new Object();
-        namingStore.bind(name, object);
-        final Name nameTwo = new CompositeName("test/testTwo");
-        final Object objectTwo = new Object();
-        namingStore.bind(nameTwo, objectTwo);
-        final Name nameThree = new CompositeName("test/testThree");
-        final Object objectThree = new Object();
-        namingStore.bind(nameThree, objectThree);
+        bindListWithContinuations();
 
-        final Reference reference = new Reference(String.class.getName(), new StringRefAddr("nns", "test"), TestObjectFactoryWithNameResolution.class.getName(), null);
-        namingStore.bind(new CompositeName("comp"), reference);
-
-        final NamingEnumeration<Binding> results = namingContext.listBindings(new CompositeName("comp"));
-        final Set<String> expected = new HashSet<String>(Arrays.asList("test", "testTwo", "testThree"));
-        while (results.hasMore()) {
-            NameClassPair result = results.next();
-            final String resultName = result.getName();
-            if ("test".equals(resultName) || "testTwo".equals(resultName) || "testThree".equals(resultName)) {
-                assertEquals(Object.class.getName(), result.getClassName());
-            } else {
-                fail("Unknown result name: " + resultName);
-            }
-            expected.remove(resultName);
-        }
-        assertTrue("Not all expected results were returned", expected.isEmpty());
+        NamingEnumeration<Binding> results = namingContext.listBindings(new CompositeName("comp"));
+        checkListWithContinuationsResults(results);
+        
+        //the same with security permissions
+        results = (NamingEnumeration<Binding>) testActionPermission(Action.LIST_BINDINGS, Arrays.asList(
+            new JndiPermission("test", "listBindings")), namingContext, "comp");
+        
+        checkListWithContinuationsResults(results);
     }
 
     public static class TestObjectFactory implements ObjectFactory {
@@ -397,4 +417,67 @@ public class NamingContextTestCase {
 
     }
 
+    private void bindList() throws NamingException {
+        final Name name = new CompositeName("test");
+        final Object object = new Object();
+        namingStore.bind(name, object);
+        final Name nameTwo = new CompositeName("testTwo");
+        final Object objectTwo = new Object();
+        namingStore.bind(nameTwo, objectTwo);
+        final Name nameThree = new CompositeName("testThree");
+        final Object objectThree = new Object();
+        namingStore.bind(nameThree, objectThree);
+
+        namingStore.bind(new CompositeName("testContext/test"), "testNested");
+    }
+    
+    private void bindListWithContinuations() throws NamingException {
+        final Name name = new CompositeName("test/test");
+        final Object object = new Object();
+        namingStore.bind(name, object);
+        final Name nameTwo = new CompositeName("test/testTwo");
+        final Object objectTwo = new Object();
+        namingStore.bind(nameTwo, objectTwo);
+        final Name nameThree = new CompositeName("test/testThree");
+        final Object objectThree = new Object();
+        namingStore.bind(nameThree, objectThree);
+
+        final Reference reference = new Reference(String.class.getName(), new StringRefAddr("nns", "test"), TestObjectFactoryWithNameResolution.class.getName(), null);
+        namingStore.bind(new CompositeName("comp"), reference);
+    }
+    
+    private void checkListResults(NamingEnumeration<? extends NameClassPair> results) throws NamingException {
+        final Set<String> expected = new HashSet<String>(Arrays.asList("test", "testTwo", "testThree", "testContext"));
+        
+        while (results.hasMore()) {
+            NameClassPair result = results.next();
+            final String resultName = result.getName();
+            if ("test".equals(resultName) || "testTwo".equals(resultName) || "testThree".equals(resultName)) {
+                assertEquals(Object.class.getName(), result.getClassName());
+            } else if ("testContext".equals(resultName)) {
+                assertEquals(Context.class.getName(), result.getClassName());
+            } else {
+                fail("Unknown result name: " + resultName);
+            }
+            expected.remove(resultName);
+        }
+        assertTrue("Not all expected results were returned", expected.isEmpty());
+    }
+        
+    private void checkListWithContinuationsResults(NamingEnumeration<? extends NameClassPair> results) throws NamingException {
+        final Set<String> expected = new HashSet<String>(Arrays.asList("test", "testTwo", "testThree"));
+        
+        while (results.hasMore()) {
+            NameClassPair result = results.next();
+            final String resultName = result.getName();
+            if ("test".equals(resultName) || "testTwo".equals(resultName) || "testThree".equals(resultName)) {
+                assertEquals(Object.class.getName(), result.getClassName());
+            } else {
+                fail("Unknown result name: " + resultName);
+            }
+            expected.remove(resultName);
+        }
+        assertTrue("Not all expected results were returned", expected.isEmpty());
+    }
+        
 }

@@ -53,7 +53,13 @@
           </xs:documentation>
       </xs:annotation>
       <xs:all>
-          <xs:element maxOccurs="1" minOccurs="0" name="clustered" type="xs:boolean" />
+          <xs:element maxOccurs="1" minOccurs="0" name="clustered" type="xs:boolean">
+              <xs:annotation>
+                  <xs:documentation>
+                      Deprecated. A HornetQ server is clustered if it has at least one cluster-connection.
+                  </xs:documentation>
+              </xs:annotation>
+          </xs:element>
           <!-- no file system deployment in AS
           <xs:element maxOccurs="1" minOccurs="0" type="file-deployment-enabled"/>
            -->
@@ -104,7 +110,13 @@
           <xs:element maxOccurs="1" minOccurs="0" name="failover-on-shutdown" type="xs:boolean" />
           <xs:element maxOccurs="1" minOccurs="0" name="shared-store" type="xs:boolean" />
           <xs:element maxOccurs="1" minOccurs="0" name="persist-delivery-count-before-delivery" type="xs:boolean" />
-          <xs:element maxOccurs="1" minOccurs="0" name="live-connector-ref" type="live-connectorType" />
+          <xs:element maxOccurs="1" minOccurs="0" name="live-connector-ref" type="live-connectorType">
+              <xs:annotation>
+                  <xs:documentation>
+                      Deprecated.
+                  </xs:documentation>
+              </xs:annotation>
+          </xs:element>
           <xs:element maxOccurs="1" minOccurs="0" name="page-max-concurrent-io" type="xs:int" />
           <xs:element maxOccurs="1" minOccurs="0" name="create-bindings-dir" type="xs:boolean" />
           <xs:element maxOccurs="1" minOccurs="0" name="create-journal-dir" type="xs:boolean" />
@@ -124,6 +136,9 @@
           <xs:element maxOccurs="1" minOccurs="0" name="server-dump-interval" type="xs:long" />
           <xs:element maxOccurs="1" minOccurs="0" name="memory-warning-threshold" type="xs:int" />
           <xs:element maxOccurs="1" minOccurs="0" name="memory-measure-interval" type="xs:long" />
+          <xs:element maxOccurs="1" minOccurs="0" name="check-for-live-server" type="xs:boolean" />
+          <xs:element maxOccurs="1" minOccurs="0" name="backup-group-name" type="xs:string" />
+          <xs:element maxOccurs="1" minOccurs="0" name="replication-clustername" type="xs:string" />
 
           <xs:element maxOccurs="1" minOccurs="0" name="paging-directory" type="directoryType" />
           <xs:element maxOccurs="1" minOccurs="0" name="bindings-directory" type="directoryType" />
@@ -234,6 +249,16 @@
        <xs:sequence>
            <xs:choice>
                <xs:sequence>
+                  <xs:element maxOccurs="1" minOccurs="1" name="jgroups-stack" type="xs:string">
+                      <xs:annotation>
+                          <xs:documentation>
+                              The name of a stack defined in the org.jboss.as.clustering.jgroups subsystem.
+                          </xs:documentation>
+                      </xs:annotation>
+                  </xs:element>
+                  <xs:element maxOccurs="1" minOccurs="1" name="jgroups-channel" type="xs:string" />
+               </xs:sequence>
+               <xs:sequence>
                   <xs:element maxOccurs="1" minOccurs="1" name="socket-binding" type="xs:string" />
                </xs:sequence>
                <xs:sequence>
@@ -277,6 +302,16 @@
         <xs:sequence>
             <xs:choice>
                <xs:sequence>
+                  <xs:element maxOccurs="1" minOccurs="1" name="jgroups-stack" type="xs:string">
+                      <xs:annotation>
+                          <xs:documentation>
+                              The name of a stack defined in the org.jboss.as.clustering.jgroups subsystem.
+                          </xs:documentation>
+                      </xs:annotation>
+                  </xs:element>
+                  <xs:element maxOccurs="1" minOccurs="1" name="jgroups-channel" type="xs:string" />
+               </xs:sequence>
+               <xs:sequence>
                   <xs:element maxOccurs="1" minOccurs="1" name="socket-binding" type="xs:string" />
                </xs:sequence>
                <xs:sequence>
@@ -310,6 +345,13 @@
     </xs:complexType>
 
     <xs:complexType name="remoting-interceptorsType">
+       <xs:annotation>
+          <xs:documentation>
+            <![CDATA[
+              Remoting interceptors must be placed into a JBoss module and added as a dependency to org.jboss.as.messaging:main module.
+            ]]>
+            </xs:documentation>
+       </xs:annotation>
        <xs:sequence>
           <xs:element maxOccurs="unbounded" minOccurs="1" name="class-name" type="xs:string" />
        </xs:sequence>
@@ -483,6 +525,7 @@
           <xs:element maxOccurs="1" minOccurs="0" name="connection-ttl" type="xs:long" />
           <xs:element maxOccurs="1" minOccurs="0" name="min-large-message-size" type="xs:int" />
           <xs:element maxOccurs="1" minOccurs="0" name="call-timeout" type="xs:long" />
+          <xs:element maxOccurs="1" minOccurs="0" name="call-failover-timeout" type="xs:long" />
           <xs:element maxOccurs="1" minOccurs="0" name="retry-interval" type="xs:long" />
           <xs:element maxOccurs="1" minOccurs="0" name="retry-interval-multiplier" type="xs:double" />
           <xs:element maxOccurs="1" minOccurs="0" name="max-retry-interval" type="xs:long" />
@@ -555,8 +598,16 @@
        <xs:sequence>
           <xs:element maxOccurs="unbounded" minOccurs="0" name="permission">
              <xs:complexType>
-                <xs:attribute name="type" type="xs:string" use="required"/>
-                <xs:attribute name="roles" type="xs:string" use="required"/>
+                <xs:attribute name="type" type="security-permissionType" use="required"/>
+                <xs:attribute name="roles" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>
+                            <![CDATA[
+                                List of roles that are granted the permission for the given type. The roles must be separated by spaces or commas.
+                            ]]>
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
              </xs:complexType>
           </xs:element>
        </xs:sequence>
@@ -680,11 +731,13 @@
          <xs:element name="client-failure-check-period" type="xs:long" maxOccurs="1" minOccurs="0" />
          <xs:element name="connection-ttl" type="xs:long" maxOccurs="1" minOccurs="0" />
          <xs:element name="call-timeout" type="xs:long" maxOccurs="1" minOccurs="0" />
+         <xs:element name="call-failover-timeout" type="xs:long" maxOccurs="1" minOccurs="0" />
          <xs:element name="consumer-window-size" type="xs:int" maxOccurs="1" minOccurs="0" />
          <xs:element name="consumer-max-rate" type="xs:int" maxOccurs="1" minOccurs="0" />
          <xs:element name="confirmation-window-size" type="xs:int" maxOccurs="1" minOccurs="0" />
          <xs:element name="producer-window-size" type="xs:int" maxOccurs="1" minOccurs="0" />
          <xs:element name="producer-max-rate" type="xs:int" maxOccurs="1" minOccurs="0" />
+         <xs:element name="compress-large-messages" type="xs:boolean" maxOccurs="1" minOccurs="0" />
          <xs:element name="cache-large-message-client" type="xs:boolean" maxOccurs="1" minOccurs="0" />
          <xs:element name="min-large-message-size" type="xs:long" maxOccurs="1" minOccurs="0" />
          <xs:element name="client-id" type="xs:string" maxOccurs="1" minOccurs="0" />
@@ -700,7 +753,13 @@
          <xs:element name="max-retry-interval" type="xs:long" maxOccurs="1" minOccurs="0" />
          <xs:element name="reconnect-attempts" type="xs:int" maxOccurs="1" minOccurs="0" />
          <xs:element name="failover-on-initial-connection" type="xs:boolean" maxOccurs="1" minOccurs="0" />
-         <xs:element name="failover-on-server-shutdown" type="xs:boolean" maxOccurs="1" minOccurs="0" />
+         <xs:element name="failover-on-server-shutdown" type="xs:boolean" maxOccurs="1" minOccurs="0">
+             <xs:annotation>
+                <xs:documentation>
+                   Deprecated. the failover-on-server-shutdown attribute is no longer taken into account when configuring a connector-ref.
+                </xs:documentation>
+             </xs:annotation>
+         </xs:element>
          <xs:element name="connection-load-balancing-policy-class-name" type="xs:string" maxOccurs="1" minOccurs="0" />
          <xs:element name="use-global-pools" type="xs:boolean" maxOccurs="1" minOccurs="0" />
          <xs:element name="scheduled-thread-pool-max-size" type="xs:int" maxOccurs="1" minOccurs="0" />
@@ -744,6 +803,8 @@
          <xs:element name="min-pool-size" type="xs:int" maxOccurs="1" minOccurs="0" />
          <xs:element name="max-pool-size" type="xs:int" maxOccurs="1" minOccurs="0" />
          <xs:element name="use-auto-recovery" type="xs:boolean" maxOccurs="1" minOccurs="0" />
+         <xs:element name="initial-message-packet-size" type="xs:int" maxOccurs="1" minOccurs="0" />
+         <xs:element name="initial-connect-attempts" type="xs:int" maxOccurs="1" minOccurs="0" />
          <!-- ============================================================== -->
          <!-- end of JMS pooled-connection-factoryType specific elements     -->
 
@@ -769,6 +830,8 @@
          <xs:element name="client-failure-check-period" type="xs:long" maxOccurs="1" minOccurs="0" />
          <xs:element name="connection-ttl" type="xs:long" maxOccurs="1" minOccurs="0" />
          <xs:element name="call-timeout" type="xs:long" maxOccurs="1" minOccurs="0" />
+         <xs:element name="call-failover-timeout" type="xs:long" maxOccurs="1" minOccurs="0" />
+         <xs:element name="compress-large-messages" type="xs:boolean" maxOccurs="1" minOccurs="0" />
          <xs:element name="consumer-window-size" type="xs:int" maxOccurs="1" minOccurs="0" />
          <xs:element name="consumer-max-rate" type="xs:int" maxOccurs="1" minOccurs="0" />
          <xs:element name="confirmation-window-size" type="xs:int" maxOccurs="1" minOccurs="0" />
@@ -789,7 +852,13 @@
          <xs:element name="max-retry-interval" type="xs:long" maxOccurs="1" minOccurs="0" />
          <xs:element name="reconnect-attempts" type="xs:int" maxOccurs="1" minOccurs="0" />
          <xs:element name="failover-on-initial-connection" type="xs:boolean" maxOccurs="1" minOccurs="0" />
-         <xs:element name="failover-on-server-shutdown" type="xs:boolean" maxOccurs="1" minOccurs="0" />
+         <xs:element name="failover-on-server-shutdown" type="xs:boolean" maxOccurs="1" minOccurs="0">
+             <xs:annotation>
+                <xs:documentation>
+                   Deprecated. the failover-on-server-shutdown attribute is no longer taken into account when configuring a connector-ref.
+                </xs:documentation>
+             </xs:annotation>
+         </xs:element>
          <xs:element name="connection-load-balancing-policy-class-name" type="xs:string" maxOccurs="1" minOccurs="0" />
          <xs:element name="use-global-pools" type="xs:boolean" maxOccurs="1" minOccurs="0" />
          <xs:element name="scheduled-thread-pool-max-size" type="xs:int" maxOccurs="1" minOccurs="0" />
@@ -952,7 +1021,7 @@
                </xs:documentation>
             </xs:annotation>
          </xs:element>
-         <xs:element maxOccurs="1" minOccurs="0" name="contex" type="contextType" />
+         <xs:element maxOccurs="1" minOccurs="0" name="context" type="contextType" />
       </xs:all>
    </xs:complexType>
 
@@ -965,6 +1034,32 @@
          <xs:enumeration value="AT_MOST_ONCE"/>
          <xs:enumeration value="DUPLICATES_OK"/>
          <xs:enumeration value="ONCE_AND_ONLY_ONCE"/>
+      </xs:restriction>
+   </xs:simpleType>
+
+   <xs:simpleType name="security-permissionType">
+      <xs:restriction base="xs:token">
+         <xs:enumeration value="send"/>
+         <xs:enumeration value="consume"/>
+         <xs:enumeration value="createDurableQueue"/>
+         <xs:enumeration value="deleteDurableQueue"/>
+         <xs:enumeration value="createNonDurableQueue"/>
+         <xs:enumeration value="deleteNonDurableQueue"/>
+         <xs:enumeration value="manage"/>
+         <xs:enumeration value="createTempQueue">
+             <xs:annotation>
+                 <xs:documentation>
+                     Deprecated. use createNonDurableQueue instead.
+                 </xs:documentation>
+             </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="deleteTempQueue">
+             <xs:annotation>
+                 <xs:documentation>
+                     Deprecated. use deleteNonDurableQueue instead.
+                 </xs:documentation>
+             </xs:annotation>
+         </xs:enumeration>
       </xs:restriction>
    </xs:simpleType>
 

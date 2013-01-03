@@ -22,12 +22,9 @@
 
 package org.jboss.as.messaging;
 
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 /**
  * {@link ResourceDefinition} for the messaging subsystem root resource.
@@ -36,12 +33,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
  */
 public class MessagingSubsystemRootResourceDefinition extends SimpleResourceDefinition {
 
-    private static final PathElement SUBSYSTEM_PATH  = PathElement.pathElement(SUBSYSTEM, MessagingExtension.SUBSYSTEM_NAME);
-
     public static final MessagingSubsystemRootResourceDefinition INSTANCE = new MessagingSubsystemRootResourceDefinition();
 
     private MessagingSubsystemRootResourceDefinition() {
-        super(SUBSYSTEM_PATH, MessagingExtension.getResourceDescriptionResolver(MessagingExtension.SUBSYSTEM_NAME),
-                MessagingSubsystemAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(MessagingExtension.SUBSYSTEM_PATH,
+                MessagingExtension.getResourceDescriptionResolver(MessagingExtension.SUBSYSTEM_NAME),
+                MessagingSubsystemAdd.INSTANCE,
+                ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 }

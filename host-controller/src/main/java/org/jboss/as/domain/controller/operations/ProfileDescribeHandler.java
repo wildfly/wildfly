@@ -25,20 +25,17 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.ProfileDescription;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 
@@ -48,7 +45,7 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class ProfileDescribeHandler implements OperationStepHandler, DescriptionProvider {
+public class ProfileDescribeHandler implements OperationStepHandler {
 
     public static final ProfileDescribeHandler INSTANCE = new ProfileDescribeHandler();
 
@@ -103,7 +100,7 @@ public class ProfileDescribeHandler implements OperationStepHandler, Description
                     }
                     context.getResult().set(result);
                 }
-                context.completeStep();
+                context.stepCompleted();
             }
         }, OperationContext.Stage.IMMEDIATE);
 
@@ -118,7 +115,14 @@ public class ProfileDescribeHandler implements OperationStepHandler, Description
                 PathAddress relativeAddress = PathAddress.pathAddress(pe);
                 OperationStepHandler subsysHandler = registry.getOperationHandler(relativeAddress, opName);
                 if (subsysHandler == null) {
-                    throw new OperationFailedException(new ModelNode().set(MESSAGES.noHandlerForOperation(opName, fullAddress)));
+                    String errMsg;
+                    ImmutableManagementResourceRegistration child = registry.getSubModel(relativeAddress);
+                    if (child == null) {
+                       errMsg = ControllerMessages.MESSAGES.noSuchResourceType(fullAddress);
+                    } else {
+                        errMsg = ControllerMessages.MESSAGES.noHandlerForOperation(opName, fullAddress);
+                    }
+                    throw new OperationFailedException(new ModelNode(errMsg));
                 }
 
                 // Step to store subsystem ops in overall list
@@ -134,7 +138,7 @@ public class ProfileDescribeHandler implements OperationStepHandler, Description
                                 }
                             }
                         }
-                        context.completeStep();
+                        context.stepCompleted();
                     }
                 }, OperationContext.Stage.IMMEDIATE);
 
@@ -159,11 +163,6 @@ public class ProfileDescribeHandler implements OperationStepHandler, Description
             }
         }
 
-        context.completeStep();
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return ProfileDescription.getProfileDescribeOperation(locale);
+        context.stepCompleted();
     }
 }

@@ -29,11 +29,13 @@ import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 
 /**
  * @author Radoslav Husar
  * @version April 2012
  */
+@Ignore // AS7-5279
 public class SessionBasedSessionPassivationTestCase extends SessionPassivationAbstractCase {
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)

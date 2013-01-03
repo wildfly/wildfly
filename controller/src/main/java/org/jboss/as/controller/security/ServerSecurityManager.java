@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.security;
 
+import java.lang.reflect.Method;
+import java.security.CodeSource;
 import java.security.Principal;
 import java.util.Collection;
 import java.util.Map;
@@ -47,5 +49,7 @@ public interface ServerSecurityManager {
 
     boolean isCallerInRole(final Object mappedRoles, final Map<String, Collection<String>> roleLinks,
             final String... roleNames);
+
+    boolean authorize(String ejbName, CodeSource ejbCodeSource, String ejbMethodIntf, Method ejbMethod, Set<Principal> methodRoles, String contextID);
 
 }

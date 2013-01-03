@@ -32,6 +32,7 @@ import java.io.PrintStream;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,13 +55,15 @@ public final class ProcessController {
      */
     private final Object lock = new Object();
 
-    private final Random rng;
     private final ProtocolServer server;
-    private final Map<String, ManagedProcess> processes = new HashMap<String, ManagedProcess>();
+    // Synchronized map so we can safely check its size without holding the monitor for field 'lock' */
+    private final Map<String, ManagedProcess> processes = Collections.synchronizedMap(new HashMap<String, ManagedProcess>());
     private final Map<Key, ManagedProcess> processesByKey = new HashMap<Key, ManagedProcess>();
     private final Set<Connection> managedConnections = new CopyOnWriteArraySet<Connection>();
 
-    private boolean shutdown;
+    private volatile boolean shutdown;
+
+
 
     private final PrintStream stdout;
     private final PrintStream stderr;
@@ -68,7 +71,6 @@ public final class ProcessController {
     public ProcessController(final ProtocolServer.Configuration configuration, final PrintStream stdout, final PrintStream stderr) throws IOException {
         this.stdout = stdout;
         this.stderr = stderr;
-        rng = new Random(new SecureRandom().nextLong());
         //noinspection ThisEscapedInObjectConstruction
         configuration.setConnectionHandler(new ProcessControllerServerHandler(this));
         final ProtocolServer server = new ProtocolServer(configuration);
@@ -90,6 +92,14 @@ public final class ProcessController {
     }
 
     public void addProcess(final String processName, final List<String> command, final Map<String, String> env, final String workingDirectory, final boolean isPrivileged, final boolean respawn) {
+        // Create a new authKey
+        final byte[] authKey = new byte[16];
+        new Random(new SecureRandom().nextLong()).nextBytes(authKey);
+        //
+        addProcess(processName, authKey, command, env, workingDirectory, isPrivileged, respawn);
+    }
+
+    public void addProcess(final String processName, final byte[] authKey, final List<String> command, final Map<String, String> env, final String workingDirectory, final boolean isPrivileged, final boolean respawn) {
         for (String s : command) {
             if (s == null) {
                 throw MESSAGES.nullCommandComponent();
@@ -105,8 +115,6 @@ public final class ProcessController {
                 // ignore
                 return;
             }
-            final byte[] authKey = new byte[16];
-            rng.nextBytes(authKey);
             final ManagedProcess process = new ManagedProcess(processName, command, env, workingDirectory, lock, this, authKey, isPrivileged, respawn);
             processes.put(processName, process);
             processesByKey.put(new Key(authKey), process);
@@ -292,7 +300,6 @@ public final class ProcessController {
                     }
                 } catch (IOException e) {
                     ROOT_LOGGER.failedToWriteMessage("PROCESS_REMOVED " + processName, e);
-                    e.printStackTrace();
                     removeManagedConnection(connection);
                 }
             }
@@ -312,6 +319,7 @@ public final class ProcessController {
                             StreamUtils.writeUTFZBytes(os, process.getProcessName());
                             os.write(process.getAuthKey());
                             StreamUtils.writeBoolean(os, process.isRunning());
+                            StreamUtils.writeBoolean(os, process.isStopping());
                         }
                         os.close();
                     } finally {
@@ -356,6 +364,15 @@ public final class ProcessController {
                 }
             }
         }
+    }
+
+    /**
+     * Gets the current number of processes, or zero if a shutdown is in progress.
+     *
+     * @return the current number of processes, or zero if a shutdown is in progress
+     */
+    int getOngoingProcessCount() {
+        return shutdown ? 0 : processes.size();
     }
 
     public ProtocolServer getServer() {

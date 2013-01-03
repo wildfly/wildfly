@@ -30,7 +30,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.duplicateAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.readArrayAttributeElement;
-import static org.jboss.as.controller.parsing.ParseUtils.readBooleanAttributeElement;
 import static org.jboss.as.controller.parsing.ParseUtils.readProperty;
 import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
@@ -40,26 +39,18 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.remoting.CommonAttributes.AUTHENTICATION_PROVIDER;
 import static org.jboss.as.remoting.CommonAttributes.CONNECTOR;
-import static org.jboss.as.remoting.CommonAttributes.FORWARD_SECRECY;
 import static org.jboss.as.remoting.CommonAttributes.INCLUDE_MECHANISMS;
 import static org.jboss.as.remoting.CommonAttributes.LOCAL_OUTBOUND_CONNECTION;
-import static org.jboss.as.remoting.CommonAttributes.NO_ACTIVE;
-import static org.jboss.as.remoting.CommonAttributes.NO_ANONYMOUS;
-import static org.jboss.as.remoting.CommonAttributes.NO_DICTIONARY;
-import static org.jboss.as.remoting.CommonAttributes.NO_PLAIN_TEXT;
 import static org.jboss.as.remoting.CommonAttributes.OUTBOUND_CONNECTION;
 import static org.jboss.as.remoting.CommonAttributes.OUTBOUND_SOCKET_BINDING_REF;
-import static org.jboss.as.remoting.CommonAttributes.PASS_CREDENTIALS;
 import static org.jboss.as.remoting.CommonAttributes.POLICY;
 import static org.jboss.as.remoting.CommonAttributes.PROPERTY;
 import static org.jboss.as.remoting.CommonAttributes.QOP;
 import static org.jboss.as.remoting.CommonAttributes.REMOTE_OUTBOUND_CONNECTION;
-import static org.jboss.as.remoting.CommonAttributes.REUSE_SESSION;
 import static org.jboss.as.remoting.CommonAttributes.SASL;
 import static org.jboss.as.remoting.CommonAttributes.SASL_POLICY;
 import static org.jboss.as.remoting.CommonAttributes.SECURITY;
 import static org.jboss.as.remoting.CommonAttributes.SECURITY_REALM;
-import static org.jboss.as.remoting.CommonAttributes.SERVER_AUTH;
 import static org.jboss.as.remoting.CommonAttributes.SOCKET_BINDING;
 import static org.jboss.as.remoting.CommonAttributes.STRENGTH;
 import static org.jboss.as.remoting.CommonAttributes.URI;
@@ -311,11 +302,13 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
                     break;
                 }
                 case REUSE_SESSION: {
-                    saslElement.get(REUSE_SESSION).set(readBooleanAttributeElement(reader, "value"));
+                    String value = readStringAttributeElement(reader, "value");
+                    SaslResource.REUSE_SESSION_ATTRIBUTE.parseAndSetParameter(value, saslElement, reader);
                     break;
                 }
                 case SERVER_AUTH: {
-                    saslElement.get(SERVER_AUTH).set(readBooleanAttributeElement(reader, "value"));
+                    String value = readStringAttributeElement(reader, "value");
+                    SaslResource.SERVER_AUTH_ATTRIBUTE.parseAndSetParameter(value, saslElement, reader);
                     break;
                 }
                 case STRENGTH: {
@@ -356,27 +349,27 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
             visited.add(element);
             switch (element) {
                 case FORWARD_SECRECY: {
-                    policy.get(FORWARD_SECRECY).set(readBooleanAttributeElement(reader, "value"));
+                    SaslPolicyResource.FORWARD_SECRECY.parseAndSetParameter(readStringAttributeElement(reader, "value"), policy, reader);
                     break;
                 }
                 case NO_ACTIVE: {
-                    policy.get(NO_ACTIVE).set(readBooleanAttributeElement(reader, "value"));
+                    SaslPolicyResource.NO_ACTIVE.parseAndSetParameter(readStringAttributeElement(reader, "value"), policy, reader);
                     break;
                 }
                 case NO_ANONYMOUS: {
-                    policy.get(NO_ANONYMOUS).set(readBooleanAttributeElement(reader, "value"));
+                    SaslPolicyResource.NO_ANONYMOUS.parseAndSetParameter(readStringAttributeElement(reader, "value"), policy, reader);
                     break;
                 }
                 case NO_DICTIONARY: {
-                    policy.get(NO_DICTIONARY).set(readBooleanAttributeElement(reader, "value"));
+                    SaslPolicyResource.NO_DICTIONARY.parseAndSetParameter(readStringAttributeElement(reader, "value"), policy, reader);
                     break;
                 }
                 case NO_PLAIN_TEXT: {
-                    policy.get(NO_PLAIN_TEXT).set(readBooleanAttributeElement(reader, "value"));
+                    SaslPolicyResource.NO_PLAIN_TEXT.parseAndSetParameter(readStringAttributeElement(reader, "value"), policy, reader);
                     break;
                 }
                 case PASS_CREDENTIALS: {
-                    policy.get(PASS_CREDENTIALS).set(readBooleanAttributeElement(reader, "value"));
+                    SaslPolicyResource.PASS_CREDENTIALS.parseAndSetParameter(readStringAttributeElement(reader, "value"), policy, reader);
                     break;
                 }
                 default: {

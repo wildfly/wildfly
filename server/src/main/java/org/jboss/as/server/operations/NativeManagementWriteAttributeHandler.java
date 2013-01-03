@@ -58,7 +58,7 @@ public class NativeManagementWriteAttributeHandler extends ReloadRequiredWriteAt
                     throw ServerMessages.MESSAGES.conflictingConfigs(NativeManagementResourceDefinition.INTERFACE.getName(),
                             NativeManagementResourceDefinition.SOCKET_BINDING.getName());
                 }
-                context.completeStep();
+                context.stepCompleted();
             }
         }, OperationContext.Stage.MODEL);
 

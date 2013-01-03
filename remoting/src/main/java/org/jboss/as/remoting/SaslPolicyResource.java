@@ -28,6 +28,8 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
@@ -42,12 +44,12 @@ public class SaslPolicyResource extends SimpleResourceDefinition {
 
     static final SaslPolicyResource INSTANCE = new SaslPolicyResource();
 
-    static final AttributeDefinition FORWARD_SECRECY = new BooleanValueAttributeDefinition(CommonAttributes.FORWARD_SECRECY);
-    static final AttributeDefinition NO_ACTIVE = new BooleanValueAttributeDefinition(CommonAttributes.NO_ACTIVE);
-    static final AttributeDefinition NO_ANONYMOUS = new BooleanValueAttributeDefinition(CommonAttributes.NO_ANONYMOUS);
-    static final AttributeDefinition NO_DICTIONARY = new BooleanValueAttributeDefinition(CommonAttributes.NO_DICTIONARY);
-    static final AttributeDefinition NO_PLAIN_TEXT = new BooleanValueAttributeDefinition(CommonAttributes.NO_PLAIN_TEXT);
-    static final AttributeDefinition PASS_CREDENTIALS = new BooleanValueAttributeDefinition(CommonAttributes.PASS_CREDENTIALS);
+    static final SimpleAttributeDefinition FORWARD_SECRECY = createBooleanAttributeDefinition(CommonAttributes.FORWARD_SECRECY);
+    static final SimpleAttributeDefinition NO_ACTIVE = createBooleanAttributeDefinition(CommonAttributes.NO_ACTIVE);
+    static final SimpleAttributeDefinition NO_ANONYMOUS = createBooleanAttributeDefinition(CommonAttributes.NO_ANONYMOUS);
+    static final SimpleAttributeDefinition NO_DICTIONARY = createBooleanAttributeDefinition(CommonAttributes.NO_DICTIONARY);
+    static final SimpleAttributeDefinition NO_PLAIN_TEXT = createBooleanAttributeDefinition(CommonAttributes.NO_PLAIN_TEXT);
+    static final SimpleAttributeDefinition PASS_CREDENTIALS = createBooleanAttributeDefinition(CommonAttributes.PASS_CREDENTIALS);
 
     private SaslPolicyResource() {
         super(SASL_POLICY_CONFIG_PATH,
@@ -69,9 +71,12 @@ public class SaslPolicyResource extends SimpleResourceDefinition {
         resourceRegistration.registerReadWriteAttribute(PASS_CREDENTIALS, null, writeHandler);
     }
 
-    private static class BooleanValueAttributeDefinition extends NamedValueAttributeDefinition {
-        public BooleanValueAttributeDefinition(String name) {
-            super(name, Attribute.VALUE, new ModelNode().set(true), ModelType.BOOLEAN, true);
-        }
+    private static SimpleAttributeDefinition createBooleanAttributeDefinition(String name) {
+        return SimpleAttributeDefinitionBuilder.create(name, ModelType.BOOLEAN)
+                .setDefaultValue(new ModelNode(true))
+                .setAllowNull(true)
+                .setAllowExpression(true)
+                .setAttributeMarshaller(new WrappedAttributeMarshaller(Attribute.VALUE))
+                .build();
     }
 }

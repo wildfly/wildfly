@@ -75,6 +75,6 @@ public class SecurityDomainModelv1UnitTestCase extends AbstractSubsystemTest {
         //Make sure the models from the two controllers are identical
         super.compare(modelA, modelB);
 
-        assertRemoveSubsystemResources(servicesA);
+        assertRemoveSubsystemResources(servicesB);
    }
 }

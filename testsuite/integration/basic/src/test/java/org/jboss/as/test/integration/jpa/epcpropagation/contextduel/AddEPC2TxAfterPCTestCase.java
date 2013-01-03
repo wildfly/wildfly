@@ -52,17 +52,6 @@ import javax.naming.NamingException;
 public class AddEPC2TxAfterPCTestCase {
     private static final String ARCHIVE_NAME = "jpa_AddEPC2TxAfterPCTestCase";
 
-    private static final String persistence_xml =
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
-            "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
-            "  <persistence-unit name=\"mypc\">" +
-            "    <description>AddEPC2TxAfterPCTestCase Persistence Unit." +
-            "    </description>" +
-            "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
-            "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
-            "</properties>" +
-            "  </persistence-unit>" +
-            "</persistence>";
 
         @Deployment
     public static Archive<?> deploy() {
@@ -73,7 +62,8 @@ public class AddEPC2TxAfterPCTestCase {
             Employee.class,
             BMTEPCStatefulBean.class,
             CMTPCStatefulBean.class);
-            jar.addAsResource(new StringAsset(persistence_xml), "META-INF/persistence.xml");
+            jar.addAsManifestResource(AddEPC2TxAfterPCTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
+
             return jar;
         }
     @ArquillianResource

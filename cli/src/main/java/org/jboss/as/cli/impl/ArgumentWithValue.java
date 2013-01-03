@@ -115,8 +115,15 @@ public class ArgumentWithValue extends ArgumentWithoutValue {
             return false;
         }
 
-        if (index >= 0 && index < args.getOtherProperties().size()) {
-            return true;
+        if (index >= 0) {
+            final int size = args.getOtherProperties().size();
+            if(index >= size) {
+                return false;
+            }
+            if(index < size -1) {
+                return true;
+            }
+            return !args.getOtherProperties().get(index).equals(args.getLastParsedPropertyValue());
         }
 
         if(fullName.equals(args.getLastParsedPropertyName())) {

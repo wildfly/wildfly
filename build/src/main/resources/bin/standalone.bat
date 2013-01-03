@@ -3,7 +3,22 @@ rem -------------------------------------------------------------------------
 rem JBoss Bootstrap Script for Windows
 rem -------------------------------------------------------------------------
 
-rem $Id$
+rem Use --debug to activate debug mode with an optional argument to specify the port
+rem Usage : standalone.bat --debug
+rem         standalone.bat --debug 9797
+
+rem By default debug mode is disable.
+set DEBUG_MODE=false
+set DEBUG_PORT=8787
+rem Set to all parameters by default
+set SERVER_OPTS=%*
+
+rem Get the program name before using shift as the command modify the variable ~nx0
+if "%OS%" == "Windows_NT" (
+  set "PROGNAME=%~nx0%"
+) else (
+  set "PROGNAME=standalone.bat"
+)
 
 @if not "%ECHO%" == ""  echo %ECHO%
 @if "%OS%" == "Windows_NT" setlocal
@@ -14,15 +29,37 @@ if "%OS%" == "Windows_NT" (
   set DIRNAME=.\
 )
 
-rem Read an optional configuration file.
-if "x%STANDALONE_CONF%" == "x" (
-   set "STANDALONE_CONF=%DIRNAME%standalone.conf.bat"
-)
-if exist "%STANDALONE_CONF%" (
-   echo Calling "%STANDALONE_CONF%"
-   call "%STANDALONE_CONF%" %*
+rem Read command-line args.
+:READ-ARGS
+if "%1" == "" ( 
+   goto MAIN
+) else if "%1" == "--debug" (
+   goto READ-DEBUG-PORT
 ) else (
-   echo Config file not found "%STANDALONE_CONF%"
+   rem This doesn't work as Windows splits on = and spaces by default
+   rem set SERVER_OPTS=%SERVER_OPTS% %1
+   shift
+   goto READ-ARGS
+)
+
+:READ-DEBUG-PORT
+set "DEBUG_MODE=true"
+set DEBUG_ARG="%2"
+if not "x%DEBUG_ARG" == "x" (
+   if x%DEBUG_ARG:-=%==x%DEBUG_ARG% (
+      shift
+      set DEBUG_PORT=%DEBUG_ARG%
+   )
+   shift
+   goto READ-ARGS
+)
+
+:MAIN
+rem $Id$
+)
+
+if "%DEBUG_MODE%" == "true" (
+   set "JAVA_OPTS=%JAVA_OPTS% -agentlib:jdwp=transport=dt_socket,address=%DEBUG_PORT%,server=y,suspend=n"
 )
 
 pushd %DIRNAME%..
@@ -37,17 +74,28 @@ pushd "%JBOSS_HOME%"
 set "SANITIZED_JBOSS_HOME=%CD%"
 popd
 
-if "%RESOLVED_JBOSS_HOME%" NEQ "%SANITIZED_JBOSS_HOME%" (
-    echo WARNING JBOSS_HOME may be pointing to a different installation - unpredictable results may occur.
+if /i "%RESOLVED_JBOSS_HOME%" NEQ "%SANITIZED_JBOSS_HOME%" (
+   echo.
+   echo   WARNING:  JBOSS_HOME may be pointing to a different installation - unpredictable results may occur.
+   echo.
+   echo             JBOSS_HOME: %JBOSS_HOME%
+   echo.
+   rem 2 seconds pause
+   ping 127.0.0.1 -n 3 > nul
+)
+
+rem Read an optional configuration file.
+if "x%STANDALONE_CONF%" == "x" (
+   set "STANDALONE_CONF=%DIRNAME%standalone.conf.bat"
+)
+if exist "%STANDALONE_CONF%" (
+   echo Calling "%STANDALONE_CONF%"
+   call "%STANDALONE_CONF%" %*
+) else (
+   echo Config file not found "%STANDALONE_CONF%"
 )
 
 set DIRNAME=
-
-if "%OS%" == "Windows_NT" (
-  set "PROGNAME=%~nx0%"
-) else (
-  set "PROGNAME=standalone.bat"
-)
 
 rem Setup JBoss specific properties
 set JAVA_OPTS=-Dprogram.name=%PROGNAME% %JAVA_OPTS%
@@ -140,14 +188,14 @@ echo.
 
 :RESTART
 "%JAVA%" %JAVA_OPTS% ^
- "-Dorg.jboss.boot.log.file=%JBOSS_LOG_DIR%\boot.log" ^
+ "-Dorg.jboss.server.log.file=%JBOSS_LOG_DIR%\server.log" ^
  "-Dlogging.configuration=file:%JBOSS_CONFIG_DIR%/logging.properties" ^
     -jar "%JBOSS_HOME%\jboss-modules.jar" ^
     -mp "%JBOSS_MODULEPATH%" ^
     -jaxpmodule "javax.xml.jaxp-provider" ^
      org.jboss.as.standalone ^
     -Djboss.home.dir="%JBOSS_HOME%" ^
-     %*
+     %SERVER_OPTS%
 
 if ERRORLEVEL 10 goto RESTART
 

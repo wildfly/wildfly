@@ -23,13 +23,8 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.AbstractAction;
-import javax.swing.JTabbedPane;
-import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
+import org.jboss.as.cli.gui.component.CLIOutput;
 
 /**
  * This class executes whatever command is on the command line.
@@ -42,15 +37,13 @@ public class DoOperationActionListener extends AbstractAction {
 
     private CliGuiContext cliGuiCtx;
 
-    private JTextComponent output;
-    private JTabbedPane tabs;
+    private CLIOutput output;
 
     private LinkedList<String> cmdHistory = new LinkedList<String>();
 
-    public DoOperationActionListener(CliGuiContext cliGuiCtx, JTextComponent output, JTabbedPane tabs) {
+    public DoOperationActionListener(CliGuiContext cliGuiCtx) {
         this.cliGuiCtx = cliGuiCtx;
-        this.output = output;
-        this.tabs = tabs;
+        this.output = cliGuiCtx.getOutput();
     }
 
     public void actionPerformed(ActionEvent ae) {
@@ -60,13 +53,9 @@ public class DoOperationActionListener extends AbstractAction {
             CommandExecutor.Response response = cliGuiCtx.getExecutor().doCommandFullResponse(command);
             postOutput(response);
         } catch (Exception e) {
-            try {
-                postOutput(command, e.getMessage());
-            } catch (BadLocationException ble) {
-                ble.printStackTrace();
-            }
+            output.postCommandWithResponse(command, e.getMessage());
         } finally {
-            tabs.setSelectedIndex(1); // set to Output tab to view the output
+            cliGuiCtx.getTabs().setSelectedIndex(1); // set to Output tab to view the output
         }
     }
 
@@ -79,32 +68,14 @@ public class DoOperationActionListener extends AbstractAction {
         if (verbose) {
             postVerboseOutput(response);
         } else {
-            postOutput(response.getCommand(), response.getDmrResponse().toString());
+            output.postCommandWithResponse(response.getCommand(), response.getDmrResponse().toString());
         }
     }
 
-    private void postOutput(String command, String response) throws BadLocationException {
-        processOutput(response + "\n\n", null);
-        processBoldOutput(command + "\n");
-    }
-
     private void postVerboseOutput(CommandExecutor.Response response) throws BadLocationException {
-        processOutput(response.getDmrResponse().toString() + "\n\n", null);
-        processOutput(response.getDmrRequest().toString() + "\n\n", null);
-        processBoldOutput(response.getCommand() + "\n");
-    }
-
-    private void processBoldOutput(String text) throws BadLocationException {
-        SimpleAttributeSet attribs = new SimpleAttributeSet();
-        StyleConstants.setBold(attribs, true);
-        processOutput(text, attribs);
-    }
-
-
-    private void processOutput(String text, AttributeSet attribs) throws BadLocationException {
-        Document doc = output.getDocument();
-        doc.insertString(0, text, attribs);
-        output.setCaretPosition(0);
+        output.postAttributed(response.getDmrResponse().toString() + "\n\n", null);
+        output.postAttributed(response.getDmrRequest().toString() + "\n\n", null);
+        output.postBold(response.getCommand() + "\n");
     }
 
 }

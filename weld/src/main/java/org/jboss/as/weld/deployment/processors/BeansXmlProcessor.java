@@ -23,12 +23,12 @@ package org.jboss.as.weld.deployment.processors;
 
 import java.net.MalformedURLException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.ee.structure.SpecDescriptorPropertyReplacement;
-import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -64,27 +64,23 @@ public class BeansXmlProcessor implements DeploymentUnitProcessor {
 
         Set<BeanArchiveMetadata> beanArchiveMetadata = new HashSet<BeanArchiveMetadata>();
         ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-
-        AttachmentList<ResourceRoot> structure = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
         if (deploymentRoot == null) {
             return;
         }
 
         ResourceRoot classesRoot = null;
-
-        if (structure != null) {
-            for (ResourceRoot resourceRoot : structure) {
-                if (ModuleRootMarker.isModuleRoot(resourceRoot) && !SubDeploymentMarker.isSubDeployment(resourceRoot)) {
-                    if (resourceRoot.getRootName().equals("classes")) {
-                        // hack for dealing with war modules
-                        classesRoot = resourceRoot;
-                    } else {
-                        VirtualFile beansXml = resourceRoot.getRoot().getChild(META_INF_BEANS_XML);
-                        if (beansXml.exists() && beansXml.isFile()) {
-                            WeldLogger.DEPLOYMENT_LOGGER.debugf("Found beans.xml: %s", beansXml.toString());
-                            beanArchiveMetadata.add(new BeanArchiveMetadata(beansXml, resourceRoot, parseBeansXml(beansXml,
-                                    parser, deploymentUnit), false));
-                        }
+        List<ResourceRoot> structure = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
+        for (ResourceRoot resourceRoot : structure) {
+            if (ModuleRootMarker.isModuleRoot(resourceRoot) && !SubDeploymentMarker.isSubDeployment(resourceRoot)) {
+                if (resourceRoot.getRootName().equals("classes")) {
+                    // hack for dealing with war modules
+                    classesRoot = resourceRoot;
+                } else {
+                    VirtualFile beansXml = resourceRoot.getRoot().getChild(META_INF_BEANS_XML);
+                    if (beansXml.exists() && beansXml.isFile()) {
+                        WeldLogger.DEPLOYMENT_LOGGER.debugf("Found beans.xml: %s", beansXml.toString());
+                        beanArchiveMetadata.add(new BeanArchiveMetadata(beansXml, resourceRoot, parseBeansXml(beansXml,
+                                parser, deploymentUnit), false));
                     }
                 }
             }
@@ -93,7 +89,7 @@ public class BeansXmlProcessor implements DeploymentUnitProcessor {
         if (DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
             // look for WEB-INF/beans.xml
             final VirtualFile rootBeansXml = deploymentRoot.getRoot().getChild(WEB_INF_BEANS_XML);
-            if (rootBeansXml.exists() && rootBeansXml.isFile()) {
+            if (rootBeansXml.exists() && rootBeansXml.isFile() && classesRoot != null) {
                 WeldLogger.DEPLOYMENT_LOGGER.debugf("Found beans.xml: %s", rootBeansXml);
                 beanArchiveMetadata.add(new BeanArchiveMetadata(rootBeansXml, classesRoot, parseBeansXml(rootBeansXml, parser, deploymentUnit), true));
             } else if (classesRoot != null) {

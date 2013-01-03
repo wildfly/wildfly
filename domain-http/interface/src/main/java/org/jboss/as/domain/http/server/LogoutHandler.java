@@ -1,6 +1,34 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 package org.jboss.as.domain.http.server;
 
+import static org.jboss.as.domain.http.server.DomainUtil.constructUrl;
+import static org.jboss.as.domain.http.server.Constants.AUTHORIZATION_HEADER;
+import static org.jboss.as.domain.http.server.Constants.REFERER;
+import static org.jboss.as.domain.http.server.Constants.USER_AGENT;
+import static org.jboss.as.domain.http.server.Constants.HTTP;
 import static org.jboss.as.domain.http.server.Constants.LOCATION;
+import static org.jboss.as.domain.http.server.Constants.TEMPORARY_REDIRECT;
 import static org.jboss.as.domain.http.server.Constants.WWW_AUTHENTICATE_HEADER;
 
 import java.io.IOException;
@@ -40,22 +68,22 @@ class LogoutHandler implements ManagementHttpHandler {
 
         // Redirect back if there is no realm to log out of
         if (realm == null) {
-            responseHeaders.set(LOCATION, "/");
-            exchange.sendResponseHeaders(307, -1);
+            responseHeaders.set(LOCATION, constructUrl(exchange, "/"));
+            exchange.sendResponseHeaders(TEMPORARY_REDIRECT, -1);
         }
 
-        String authorization = requestHeaders.getFirst("Authorization");
+        String authorization = requestHeaders.getFirst(AUTHORIZATION_HEADER);
         String rawQuery = exchange.getRequestURI().getRawQuery();
         boolean query = rawQuery != null && rawQuery.contains("logout");
 
-        String userAgent = requestHeaders.getFirst("User-Agent");
+        String userAgent = requestHeaders.getFirst(USER_AGENT);
         boolean opera = userAgent != null && userAgent.contains("Opera");
         boolean win = !opera && userAgent != null && userAgent.contains("MSIE");
 
-        String referrer = responseHeaders.getFirst("Referer");
+        String referrer = responseHeaders.getFirst(REFERER);
 
         // Calculate location URL
-        String protocol = "http";
+        String protocol = HTTP;
         String host = null;
         if (referrer != null) {
             try {
@@ -96,7 +124,7 @@ class LogoutHandler implements ManagementHttpHandler {
         if (!win && (authorization == null || !authorization.contains("enter-login-here"))) {
             if (! query) {
                 responseHeaders.set(LOCATION, protocol + "://enter-login-here:blah@" + host + "/logout?logout");
-                exchange.sendResponseHeaders(307, -1);
+                exchange.sendResponseHeaders(TEMPORARY_REDIRECT, -1);
                 return;
             }
 
@@ -114,6 +142,6 @@ class LogoutHandler implements ManagementHttpHandler {
 
         // Success, now back to the login screen
         responseHeaders.set(LOCATION, protocol + "://" + host + "/");
-        exchange.sendResponseHeaders(307, -1);
+        exchange.sendResponseHeaders(TEMPORARY_REDIRECT, -1);
     }
 }

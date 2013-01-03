@@ -79,13 +79,19 @@ public class PersistenceUnitSearch {
     }
 
     private static PersistenceUnitMetadata findWithinApplication(DeploymentUnit unit, String persistenceUnitName) {
+        if (traceEnabled) {
+            ROOT_LOGGER.tracef("pu findWithinApplication for %s", persistenceUnitName);
+        }
+
         PersistenceUnitMetadata name = findWithinDeployment(unit, persistenceUnitName);
         if (name != null) {
+            if (traceEnabled) {
+                ROOT_LOGGER.tracef("pu findWithinApplication matched for %s", persistenceUnitName);
+            }
             return name;
         }
 
         List<ResourceRoot> resourceRoots = unit.getAttachmentList(Attachments.RESOURCE_ROOTS);
-
         for (ResourceRoot resourceRoot : resourceRoots) {
             if (!SubDeploymentMarker.isSubDeployment(resourceRoot)) {
                 name = findWithinLibraryJar(unit, resourceRoot, persistenceUnitName);
@@ -102,8 +108,12 @@ public class PersistenceUnitSearch {
 
         final ResourceRoot deploymentRoot = moduleResourceRoot;
         PersistenceUnitMetadataHolder holder = deploymentRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
-        if (holder == null || holder.getPersistenceUnits() == null)
+        if (holder == null || holder.getPersistenceUnits() == null) {
+            if (traceEnabled) {
+                ROOT_LOGGER.tracef("findWithinLibraryJar checking for '%s' found no persistence units", persistenceUnitName);
+            }
             return null;
+        }
 
         ambiguousPUError(unit, persistenceUnitName, holder);
 
@@ -125,10 +135,16 @@ public class PersistenceUnitSearch {
      * When finding the default persistence unit, the first persistence unit encountered is returned.
      */
     private static PersistenceUnitMetadata findWithinDeployment(DeploymentUnit unit, String persistenceUnitName) {
+        if (traceEnabled) {
+            ROOT_LOGGER.tracef("pu findWithinDeployment searching for %s", persistenceUnitName);
+        }
 
         for (ResourceRoot root : DeploymentUtils.allResourceRoots(unit)) {
             PersistenceUnitMetadataHolder holder = root.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
             if (holder == null || holder.getPersistenceUnits() == null) {
+                if (traceEnabled) {
+                    ROOT_LOGGER.tracef("pu findWithinDeployment skipping empty pu holder for %s", persistenceUnitName);
+                }
                 continue;
             }
 

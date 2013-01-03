@@ -28,13 +28,15 @@ import static org.jboss.logging.Logger.Level.WARN;
 import java.io.Serializable;
 
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.LogMessage;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.Logger;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageLogger;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
 
 /**
- * Date: 26.08.2011
+ * ClusteringApiLogger
+ *
+ * logging id range: 10200 - 10209
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */

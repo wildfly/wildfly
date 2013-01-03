@@ -24,22 +24,20 @@ package org.jboss.as.test.smoke.managedbean;
 import javax.naming.InitialContext;
 
 import junit.framework.Assert;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
+ * @author Thomas.Diesler@jboss.com
  */
 @RunWith(Arquillian.class)
 public class ManagedBeanTestCase {
@@ -49,29 +47,23 @@ public class ManagedBeanTestCase {
 
     @Deployment
     public static EnterpriseArchive createDeployment() throws Exception {
-        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "managedbean-example.ear");
-
-
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "managedbean-example.jar");
-        jar.addAsManifestResource(new StringAsset("Manifest-Version: 1.0\n" +
-                "Dependencies: org.jboss.as.ee,org.jboss.as.naming,org.jboss.msc,org.jboss.logging,javax.api"), "MANIFEST.MF");
-        jar.addAsManifestResource(EmptyAsset.INSTANCE,"beans.xml");
+        jar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
         jar.addPackage(SimpleManagedBean.class.getPackage());
-        jar.addPackage(ManagedBeanTestCase.class.getPackage());
-        jar.addPackage(BeanWithSimpleInjected.class.getPackage());
-        ear.add(jar, "/", ZipExporter.class);
-
+        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "managedbean-example.ear");
+        ear.addAsModule(jar);
         return ear;
     }
 
     @Test
     public void testManagedBean() throws Exception {
         BeanWithSimpleInjected bean = (BeanWithSimpleInjected) context.lookup("java:module/" + BeanWithSimpleInjected.class.getSimpleName());
-        Assert.assertNotNull(bean);
         Assert.assertNotNull(bean.getSimple());
+        Assert.assertNotNull(bean.getSimple2());
         String s = bean.echo("Hello");
-        Assert.assertNotNull(s);
         Assert.assertEquals("#InterceptorFromParent##InterceptorBean##OtherInterceptorBean##BeanParent##BeanWithSimpleInjected#Hello#CDIBean#CDIBean", s);
+        Assert.assertEquals(100, bean.getNumber());
+        Assert.assertEquals("value", bean.getValue());
+        Assert.assertEquals("value", bean.getValue2());
     }
-
 }

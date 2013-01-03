@@ -48,7 +48,7 @@ public abstract class QueryMetricsHandler extends AbstractRuntimeOnlyHandler {
     @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
         handleQueryStatistics(context, operation);
-        context.completeStep();
+        context.stepCompleted();
     }
 
     protected abstract void handle(QueryStatistics statistics, OperationContext context, String attributeName, String originalQueryName);

@@ -32,22 +32,17 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
-
-import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.ControlledProcessState;
-import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
-import org.jboss.as.controller.RunningMode;
-import org.jboss.as.controller.RunningModeControl;
+import org.jboss.as.controller.TestModelControllerService;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.AbstractConfigurationPersister;
@@ -62,8 +57,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.After;
 import org.junit.Before;
@@ -100,19 +93,48 @@ public abstract class AbstractControllerTestBase {
         return container;
     }
 
+    protected ModelNode createOperation(String operationName, String...address) {
+        ModelNode operation = new ModelNode();
+        operation.get(OP).set(operationName);
+        if (address.length > 0) {
+            for (String addr : address) {
+                operation.get(OP_ADDR).add(addr);
+            }
+        } else {
+            operation.get(OP_ADDR).setEmptyList();
+        }
+
+        return operation;
+    }
+
+    public ModelNode executeForResult(ModelNode operation) throws OperationFailedException {
+        ModelNode rsp = getController().execute(operation, null, null, null);
+        if (FAILED.equals(rsp.get(OUTCOME).asString())) {
+            throw new OperationFailedException(rsp.get(FAILURE_DESCRIPTION));
+        }
+        return rsp.get(RESULT);
+    }
+
+    public void executeForFailure(ModelNode operation) throws OperationFailedException {
+        try {
+            executeForResult(operation);
+            Assert.fail("Should have given error");
+        } catch (OperationFailedException expected) {
+            // good
+        }
+    }
+
     @Before
     public void setupController() throws InterruptedException {
         container = ServiceContainer.Factory.create("test");
         ServiceTarget target = container.subTarget();
-        ControlledProcessState processState = new ControlledProcessState(true);
-        ModelControllerService svc = new ModelControllerService(container, processState, processType);
+        ModelControllerService svc = new ModelControllerService(processType);
         ServiceBuilder<ModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
         builder.install();
-        svc.latch.await();
+        svc.awaitStartup(30, TimeUnit.SECONDS);
         controller = svc.getValue();
         ModelNode setup = Util.getEmptyOperation("setup", new ModelNode());
         controller.execute(setup, null, null, null);
-        processState.setRunning();
     }
 
     @After
@@ -130,67 +152,21 @@ public abstract class AbstractControllerTestBase {
         }
     }
 
-    public ModelNode executeForResult(ModelNode operation) throws OperationFailedException {
-        ModelNode rsp = getController().execute(operation, null, null, null);
-        if (FAILED.equals(rsp.get(OUTCOME).asString())) {
-            throw new OperationFailedException(rsp.get(FAILURE_DESCRIPTION));
-        }
-        return rsp.get(RESULT);
-    }
-
-    public void executeForFailure(ModelNode operation) throws OperationFailedException {
-        try {
-            executeForResult(operation);
-            Assert.fail("Should have given error");
-        } catch (OperationFailedException expected) {
-        }
-    }
-
-    protected ModelNode createOperation(String operationName, String...address) {
-        ModelNode operation = new ModelNode();
-        operation.get(OP).set(operationName);
-        if (address.length > 0) {
-            for (String addr : address) {
-                operation.get(OP_ADDR).add(addr);
-            }
-        } else {
-            operation.get(OP_ADDR).setEmptyList();
-        }
-
-        return operation;
-    }
-
-
     protected void addBootOperations(List<ModelNode> bootOperations) {
 
     }
 
-    class ModelControllerService extends AbstractControllerService {
+    class ModelControllerService extends TestModelControllerService {
 
-        private final CountDownLatch latch = new CountDownLatch(2);
-
-        ModelControllerService(final ServiceContainer serviceContainer, final ControlledProcessState processState, final ProcessType processType) {
-            super(processType, new RunningModeControl(RunningMode.NORMAL), new EmptyConfigurationPersister(), processState, getRootDescriptionProvider(), null, ExpressionResolver.DEFAULT);
-        }
-
-        @Override
-        public void start(StartContext context) throws StartException {
-            try {
-                super.start(context);
-            } finally {
-                latch.countDown();
-            }
+        ModelControllerService(final ProcessType processType) {
+            super(processType, new EmptyConfigurationPersister(), new ControlledProcessState(true), getRootDescriptionProvider());
         }
 
         @Override
         protected boolean boot(List<ModelNode> bootOperations, boolean rollbackOnRuntimeFailure)
                 throws ConfigurationPersistenceException {
-            try {
-                addBootOperations(bootOperations);
-                return super.boot(bootOperations, rollbackOnRuntimeFailure);
-            } finally {
-                latch.countDown();
-            }
+            addBootOperations(bootOperations);
+            return super.boot(bootOperations, rollbackOnRuntimeFailure);
         }
 
         protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {

@@ -22,8 +22,9 @@
 
 package org.jboss.as.messaging.jms;
 
-import java.util.Arrays;
-import java.util.List;
+
+import static org.jboss.as.messaging.CommonAttributes.NAME;
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.management.JMSQueueControl;
@@ -35,26 +36,12 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.ManagementUtil;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-
-import static org.jboss.as.messaging.CommonAttributes.CONSUMER_COUNT;
-import static org.jboss.as.messaging.CommonAttributes.DEAD_LETTER_ADDRESS;
-import static org.jboss.as.messaging.CommonAttributes.DELIVERING_COUNT;
-import static org.jboss.as.messaging.CommonAttributes.EXPIRY_ADDRESS;
-import static org.jboss.as.messaging.CommonAttributes.MESSAGES_ADDED;
-import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNT;
-import static org.jboss.as.messaging.CommonAttributes.NAME;
-import static org.jboss.as.messaging.CommonAttributes.PAUSED;
-import static org.jboss.as.messaging.CommonAttributes.QUEUE_ADDRESS;
-import static org.jboss.as.messaging.CommonAttributes.SCHEDULED_COUNT;
-import static org.jboss.as.messaging.CommonAttributes.TEMPORARY;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 /**
  * Implements the {@code read-attribute} operation for runtime attributes exposed by a HornetQ
@@ -65,11 +52,6 @@ import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 public class JMSQueueReadAttributeHandler extends AbstractRuntimeOnlyHandler {
 
     public static final JMSQueueReadAttributeHandler INSTANCE = new JMSQueueReadAttributeHandler();
-
-    public static final List<String> METRICS = Arrays.asList( MESSAGE_COUNT, SCHEDULED_COUNT, CONSUMER_COUNT, DELIVERING_COUNT, MESSAGES_ADDED );
-
-    public static final List<String> READ_ATTRIBUTES = Arrays.asList( QUEUE_ADDRESS.getName(),
-            EXPIRY_ADDRESS.getName(), DEAD_LETTER_ADDRESS.getName(), PAUSED, TEMPORARY );
 
     private ParametersValidator validator = new ParametersValidator();
 
@@ -85,11 +67,11 @@ public class JMSQueueReadAttributeHandler extends AbstractRuntimeOnlyHandler {
 
         JMSQueueControl control = getControl(context, operation);
         if (control == null) {
-            ManagementUtil.rollbackOperationWithNoHandler(context, operation);
+            ManagementUtil.rollbackOperationWithResourceNotFound(context, operation);
             return;
         }
 
-        if (MESSAGE_COUNT.equals(attributeName)) {
+        if (CommonAttributes.MESSAGE_COUNT.getName().equals(attributeName)) {
             try {
                 context.getResult().set(control.getMessageCount());
             } catch (RuntimeException e) {
@@ -97,21 +79,31 @@ public class JMSQueueReadAttributeHandler extends AbstractRuntimeOnlyHandler {
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-        } else if (SCHEDULED_COUNT.equals(attributeName)) {
+        } else if (CommonAttributes.SCHEDULED_COUNT.getName().equals(attributeName)) {
             context.getResult().set(control.getScheduledCount());
-        } else if (CONSUMER_COUNT.equals(attributeName)) {
+        } else if (CommonAttributes.CONSUMER_COUNT.getName().equals(attributeName)) {
             context.getResult().set(control.getConsumerCount());
-        } else if (DELIVERING_COUNT.equals(attributeName)) {
+        } else if (CommonAttributes.DELIVERING_COUNT.getName().equals(attributeName)) {
             context.getResult().set(control.getDeliveringCount());
-        } else if (MESSAGES_ADDED.equals(attributeName)) {
+        } else if (CommonAttributes.MESSAGES_ADDED.getName().equals(attributeName)) {
             context.getResult().set(control.getMessagesAdded());
-        } else if (QUEUE_ADDRESS.getName().equals(attributeName)) {
+        } else if (JMSQueueDefinition.QUEUE_ADDRESS.getName().equals(attributeName)) {
             context.getResult().set(control.getAddress());
-        } else if (EXPIRY_ADDRESS.getName().equals(attributeName)) {
-            context.getResult().set(control.getExpiryAddress());
-        } else if (DEAD_LETTER_ADDRESS.getName().equals(attributeName)) {
-            context.getResult().set(control.getDeadLetterAddress());
-        } else if (PAUSED.equals(attributeName)) {
+        } else if (JMSQueueDefinition.EXPIRY_ADDRESS.getName().equals(attributeName)) {
+            // create the result node in all cases
+            ModelNode result = context.getResult();
+            String expiryAddress = control.getExpiryAddress();
+            if (expiryAddress != null) {
+                result.set(expiryAddress);
+            }
+        } else if (JMSQueueDefinition.DEAD_LETTER_ADDRESS.getName().equals(attributeName)) {
+            // create the result node in all cases
+            ModelNode result = context.getResult();
+            String dla = control.getDeadLetterAddress();
+            if (dla != null) {
+                result.set(dla);
+            }
+        } else if (CommonAttributes.PAUSED.getName().equals(attributeName)) {
             try {
                 context.getResult().set(control.isPaused());
             } catch (RuntimeException e) {
@@ -119,22 +111,12 @@ public class JMSQueueReadAttributeHandler extends AbstractRuntimeOnlyHandler {
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-        } else if (TEMPORARY.equals(attributeName)) {
+        } else if (CommonAttributes.TEMPORARY.getName().equals(attributeName)) {
             context.getResult().set(control.isTemporary());
-        } else if (METRICS.contains(attributeName) || READ_ATTRIBUTES.contains(attributeName)) {
-            // Bug
+        } else {
             throw MESSAGES.unsupportedAttribute(attributeName);
         }
-        context.completeStep();
-    }
-
-    public void registerAttributes(final ManagementResourceRegistration registration) {
-        for (String attr : READ_ATTRIBUTES) {
-            registration.registerReadOnlyAttribute(attr, this, AttributeAccess.Storage.RUNTIME);
-        }
-        for (String metric : METRICS) {
-            registration.registerMetric(metric, this);
-        }
+        context.stepCompleted();
     }
 
     private JMSQueueControl getControl(OperationContext context, ModelNode operation) {

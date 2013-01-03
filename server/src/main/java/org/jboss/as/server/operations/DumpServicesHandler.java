@@ -24,15 +24,16 @@ package org.jboss.as.server.operations;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.util.Locale;
 
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.server.Services;
-import org.jboss.as.server.controller.descriptions.ServerRootDescription;
+import org.jboss.as.server.controller.descriptions.ServerDescriptions;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 
 /**
@@ -40,9 +41,13 @@ import org.jboss.msc.service.ServiceController;
  *
  * @author Jason T. Greene
  */
-public class DumpServicesHandler implements OperationStepHandler, DescriptionProvider {
+public class DumpServicesHandler implements OperationStepHandler {
 
-    public static final String OPERATION_NAME = "dump-services";
+    private static final String OPERATION_NAME = "dump-services";
+    public static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, ServerDescriptions.getResourceDescriptionResolver())
+            .setRuntimeOnly()
+            .setReplyType(ModelType.STRING)
+            .build();
     public static final DumpServicesHandler INSTANCE = new DumpServicesHandler();
 
     private DumpServicesHandler() {
@@ -60,14 +65,10 @@ public class DumpServicesHandler implements OperationStepHandler, DescriptionPro
                 service.getServiceContainer().dumpServices(print);
                 print.flush();
                 context.getResult().set(new String(out.toByteArray()));
-                context.completeStep();
+                context.stepCompleted();
             }
         }, OperationContext.Stage.RUNTIME);
-        context.completeStep();
+        context.stepCompleted();
     }
 
-    /** {@inheritDoc} */
-    public ModelNode getModelDescription(final Locale locale) {
-        return ServerRootDescription.getDumpServicesOperationDescription(locale);
-    }
 }

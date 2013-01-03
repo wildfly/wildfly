@@ -134,8 +134,12 @@ public class PlaceholderResource implements Resource {
 
         final PathElement path;
 
+        public PlaceholderResourceEntry(final PathElement path) {
+            this.path = path;
+        }
+
         public PlaceholderResourceEntry(final String type, final String name) {
-            path = PathElement.pathElement(type, name);
+            this.path = PathElement.pathElement(type, name);
         }
 
         @Override

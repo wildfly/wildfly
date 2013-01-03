@@ -53,7 +53,6 @@ import org.jboss.ejb.client.StatelessEJBLocator;
 import org.jboss.ejb.iiop.EJBMetaDataImplIIOP;
 import org.jboss.ejb.iiop.HandleImplIIOP;
 import org.jboss.ejb.iiop.HomeHandleImplIIOP;
-import org.jboss.logging.Logger;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.MarshallingConfiguration;
@@ -99,8 +98,6 @@ import org.omg.PortableServer.POA;
  * bean's <code>EJBObject</code>s.
  */
 public class EjbIIOPService implements Service<EjbIIOPService> {
-
-    private static final Logger logger = Logger.getLogger(EjbIIOPService.class);
 
     /**
      * The service name
@@ -270,7 +267,7 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
                 iri.mapClass(remoteView.getValue().getViewClass());
                 iri.mapClass(homeView.getValue().getViewClass());
                 iri.finishBuild();
-                logger.info("CORBA interface repository for " + name + ": " + orb.object_to_string(iri.getReference()));
+                EjbLogger.ROOT_LOGGER.cobraInterfaceRepository(name, orb.object_to_string(iri.getReference()));
             }
 
             IORSecurityConfigMetaData iorSecurityConfigMetaData = null;
@@ -300,7 +297,7 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
                 Policy sslPolicy = orb.create_policy(SSL_POLICY_TYPE.value, sslPolicyValue);
                 policyList.add(sslPolicy);
 
-                logger.debug("container's SSL policy: " + sslPolicy);
+                EjbLogger.ROOT_LOGGER.debug("container's SSL policy: " + sslPolicy);
             }
 
             String securityDomain = "CORBA_REMOTE"; //TODO: what should this default to
@@ -371,7 +368,7 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
 
             // Register bean home in local CORBA naming context
             rebind(corbaNamingContext.getValue(), name, corbaRef);
-            logger.debug("Home IOR for " + component.getComponentName() + " bound to " + this.name + " in CORBA naming service");
+            EjbLogger.ROOT_LOGGER.debug("Home IOR for " + component.getComponentName() + " bound to " + this.name + " in CORBA naming service");
 
             //now eagerly force stub creation, so de-serialization of stubs will work correctly
             final ClassLoader cl = SecurityActions.getContextClassLoader();
@@ -407,23 +404,23 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
             NameComponent[] name = corbaContext.to_name(this.name);
             corbaContext.unbind(name);
         } catch (InvalidName invalidName) {
-            logger.error("Cannot unregister EJBHome from CORBA naming service", invalidName);
+            EjbLogger.ROOT_LOGGER.cannotUnregisterEJBHomeFromCobra(invalidName);
         } catch (NotFound notFound) {
-            logger.error("Cannot unregister EJBHome from CORBA naming service", notFound);
+            EjbLogger.ROOT_LOGGER.cannotUnregisterEJBHomeFromCobra(notFound);
         } catch (CannotProceed cannotProceed) {
-            logger.error("Cannot unregister EJBHome from CORBA naming service", cannotProceed);
+            EjbLogger.ROOT_LOGGER.cannotUnregisterEJBHomeFromCobra(cannotProceed);
         }
 
         // Deactivate the home servant and the bean servant
         try {
             homeServantRegistry.unbind(homeServantName(this.name));
         } catch (Exception e) {
-            logger.error("Cannot deactivate home servant", e);
+            EjbLogger.ROOT_LOGGER.cannotDeactivateHomeServant(e);
         }
         try {
             beanServantRegistry.unbind(beanServantName(this.name));
         } catch (Exception e) {
-            logger.error("Cannot deactivate bean servant", e);
+            EjbLogger.ROOT_LOGGER.cannotDeactivateBeanServant(e);
         }
 
         if (iri != null) {

@@ -37,6 +37,7 @@ import java.util.Set;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathEntry.PathResolver;
 import org.jboss.as.controller.services.path.PathManager.Callback.Handle;
@@ -56,6 +57,8 @@ import org.jboss.msc.service.StopContext;
 public abstract class PathManagerService implements PathManager, Service<PathManager> {
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("path", "manager");
+
+    private static final ServiceListener[] NO_LISTENERS = new ServiceListener[0];
 
     //@GuardedBy(pathEntries)
     private final Map<String, PathEntry> pathEntries = new HashMap<String, PathEntry>();
@@ -126,7 +129,7 @@ public abstract class PathManagerService implements PathManager, Service<PathMan
     }
 
     protected final ServiceController<?> addHardcodedAbsolutePath(final ServiceTarget serviceTarget, final String pathName, final String path) {
-        ServiceController<?>  controller = addAbsolutePathService(serviceTarget, pathName, path);
+        ServiceController<?>  controller = addAbsolutePathService(serviceTarget, pathName, path, null);
         addPathEntry(pathName, path, null, true);
         return controller;
     }
@@ -141,25 +144,25 @@ public abstract class PathManagerService implements PathManager, Service<PathMan
         }
     }
 
-    final void changePathServices(final OperationContext operationContext, String pathName, String path) {
+    final void changePathServices(final OperationContext operationContext, String pathName, String path, ServiceVerificationHandler verificationHandler) {
         PathEntry pathEntry = findPathEntry(pathName);
 
         removePathService(operationContext, pathName);
         if (pathEntry.getRelativeTo() == null) {
-            addAbsolutePathService(operationContext.getServiceTarget(), pathEntry.getName(), path);
+            addAbsolutePathService(operationContext.getServiceTarget(), pathEntry.getName(), path, verificationHandler);
         } else {
-            addRelativePathService(operationContext.getServiceTarget(), pathEntry.getName(), path, false, pathEntry.getRelativeTo());
+            addRelativePathService(operationContext.getServiceTarget(), pathEntry.getName(), path, false, pathEntry.getRelativeTo(), verificationHandler);
         }
     }
 
-    final void changeRelativePathServices(final OperationContext operationContext, String pathName, String relativeTo) {
+    final void changeRelativePathServices(final OperationContext operationContext, String pathName, String relativeTo, ServiceVerificationHandler verificationHandler) {
         PathEntry pathEntry = findPathEntry(pathName);
 
         removePathService(operationContext, pathEntry.getName());
         if (relativeTo == null) {
-            addAbsolutePathService(operationContext.getServiceTarget(), pathEntry.getName(), pathEntry.getPath());
+            addAbsolutePathService(operationContext.getServiceTarget(), pathEntry.getName(), pathEntry.getPath(), verificationHandler);
         } else {
-            addRelativePathService(operationContext.getServiceTarget(), pathEntry.getName(), pathEntry.getPath(), false, relativeTo);
+            addRelativePathService(operationContext.getServiceTarget(), pathEntry.getName(), pathEntry.getPath(), false, relativeTo, verificationHandler);
         }
     }
 
@@ -201,16 +204,24 @@ public abstract class PathManagerService implements PathManager, Service<PathMan
         }
     }
 
-    final ServiceController<?> addAbsolutePathService(final ServiceTarget serviceTarget, final String pathName, final String path, final ServiceListener<?>... listeners) {
-        return AbsolutePathService.addService(pathName, path, serviceTarget, null, listeners);
+    final ServiceController<?> addAbsolutePathService(final ServiceTarget serviceTarget, final String pathName, final String path, final ServiceVerificationHandler verificationHandler) {
+        if (verificationHandler == null) {
+            return AbsolutePathService.addService(pathName, path, serviceTarget, null, NO_LISTENERS);
+        } else {
+            return AbsolutePathService.addService(pathName, path, serviceTarget, null, verificationHandler);
+        }
     }
 
     final ServiceController<?> addRelativePathService(final ServiceTarget serviceTarget, final String pathName, final String path,
-            final boolean possiblyAbsolute, final String relativeTo, final ServiceListener<?>... listeners) {
+            final boolean possiblyAbsolute, final String relativeTo, final ServiceVerificationHandler verificationHandler) {
         if (possiblyAbsolute && AbstractPathService.isAbsoluteUnixOrWindowsPath(path)) {
-            return addAbsolutePathService(serviceTarget, pathName, path, listeners);
+            return addAbsolutePathService(serviceTarget, pathName, path, verificationHandler);
         } else {
-            return RelativePathService.addService(AbstractPathService.pathNameOf(pathName), path, possiblyAbsolute, relativeTo, serviceTarget, null, listeners);
+            if (verificationHandler == null) {
+                return RelativePathService.addService(AbstractPathService.pathNameOf(pathName), path, possiblyAbsolute, relativeTo, serviceTarget, null, NO_LISTENERS);
+            } else {
+                return RelativePathService.addService(AbstractPathService.pathNameOf(pathName), path, possiblyAbsolute, relativeTo, serviceTarget, null, verificationHandler);
+            }
         }
     }
 

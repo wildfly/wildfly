@@ -28,6 +28,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.ejb.security.EjbSecurityDomainSetup;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -35,6 +36,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
@@ -49,6 +51,7 @@ import static org.junit.Assert.assertTrue;
 @RunAsClient
 @SuppressWarnings({"rawtypes","unchecked"})
 @ServerSetup(JBossAppXMLSecurityTestCase.JBossAppXMLSecurityTestCaseSetup.class)
+@Category(CommonCriteria.class)
 public class JBossAppXMLSecurityTestCase {
     private static final String APP_NAME = "myapp";
     private static final String DISTINCT_NAME = "";
@@ -80,6 +83,7 @@ public class JBossAppXMLSecurityTestCase {
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         jar.addClasses(BeanInterface.class,FirstBean.class, SecondBean.class);
+        jar.addPackage(CommonCriteria.class.getPackage());
 
         logger.info(jar.toString(true));
 

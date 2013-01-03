@@ -53,7 +53,8 @@ public class MultiplePersistenceContextInjectionsTestCase {
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "multiplepuinjections.war");
         war.addPackage(MultiplePersistenceContextInjectionsTestCase.class.getPackage());
-        war.addAsResource(getPersistenceXml(), "META-INF/persistence.xml");
+        // WEB-INF/classes is implied
+        war.addAsResource(MultiplePersistenceContextInjectionsTestCase.class.getPackage(), "persistence.xml", "META-INF/persistence.xml");
         return war;
     }
 
@@ -65,20 +66,6 @@ public class MultiplePersistenceContextInjectionsTestCase {
         Assert.assertNotNull(bean.getEntityManager2());
         Assert.assertNotNull(bean.getExtendedEntityManager());
         Assert.assertNotNull(bean.getExtendedEntityManager2());
-    }
-
-
-    private static StringAsset getPersistenceXml() {
-        return new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
-                "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
-                "  <persistence-unit name=\"mainPu\">" +
-                "    <description>Persistence Unit." +
-                "    </description>" +
-                "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
-                "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
-                "</properties>" +
-                "  </persistence-unit>" +
-                "</persistence>");
     }
 
 }

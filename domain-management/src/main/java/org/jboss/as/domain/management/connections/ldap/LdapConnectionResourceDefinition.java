@@ -31,7 +31,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.ManagementDescription;
+import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -53,21 +53,24 @@ public class LdapConnectionResourceDefinition extends SimpleResourceDefinition {
     public static final SimpleAttributeDefinition URL = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.URL, ModelType.STRING, false)
             .setAllowExpression(true).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true)).build();
 
-    public static final SimpleAttributeDefinition SEARCH_DN = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SEARCH_DN, ModelType.STRING, false)
-            .setAllowExpression(true).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true)).build();
+    public static final SimpleAttributeDefinition SEARCH_DN = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SEARCH_DN, ModelType.STRING, true)
+            .setAllowExpression(true).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true)).build();
 
-    public static final SimpleAttributeDefinition SEARCH_CREDENTIAL = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SEARCH_CREDENTIAL, ModelType.STRING, false)
-            .setAllowExpression(true).setValidator(new StringLengthValidator(0, Integer.MAX_VALUE, false, true)).build();
+    public static final SimpleAttributeDefinition SEARCH_CREDENTIAL = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SEARCH_CREDENTIAL, ModelType.STRING, true)
+            .setAllowExpression(true).setValidator(new StringLengthValidator(0, Integer.MAX_VALUE, true, true)).build();
+
+    public static final SimpleAttributeDefinition SECURITY_REALM = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SECURITY_REALM, ModelType.STRING, true)
+            .setAllowExpression(false).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true)).build();
 
     public static final SimpleAttributeDefinition INITIAL_CONTEXT_FACTORY = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.INITIAL_CONTEXT_FACTORY, ModelType.STRING, true)
             .setAllowExpression(true).setDefaultValue(new ModelNode(DEFAULT_INITIAL_CONTEXT)).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true)).build();
 
-    public static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = {URL, SEARCH_DN, SEARCH_CREDENTIAL, INITIAL_CONTEXT_FACTORY};
+    public static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = {URL, SEARCH_DN, SEARCH_CREDENTIAL, SECURITY_REALM, INITIAL_CONTEXT_FACTORY};
 
     public static final LdapConnectionResourceDefinition INSTANCE = new LdapConnectionResourceDefinition();
 
     private LdapConnectionResourceDefinition() {
-        super(RESOURCE_PATH, ManagementDescription.getResourceDescriptionResolver("core.management.ldap-connection"),
+        super(RESOURCE_PATH, ControllerResolver.getResolver("core.management.ldap-connection"),
                 LdapConnectionAddHandler.INSTANCE, LdapConnectionRemoveHandler.INSTANCE,
                 OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
     }

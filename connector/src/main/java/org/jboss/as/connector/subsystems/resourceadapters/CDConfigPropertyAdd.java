@@ -23,11 +23,9 @@
 package org.jboss.as.connector.subsystems.resourceadapters;
 
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFIG_PROPERTY_VALUE;
-import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.ADD_CONFIG_PROPERTIES_DESC;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.List;
-import java.util.Locale;
 
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -35,7 +33,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -45,24 +42,12 @@ import org.jboss.msc.service.ServiceTarget;
  * Adds a recovery-environment to the Transactions subsystem
  *
  */
-public class CDConfigPropertyAdd extends AbstractAddStepHandler implements DescriptionProvider {
+public class CDConfigPropertyAdd extends AbstractAddStepHandler {
 
     public static final CDConfigPropertyAdd INSTANCE = new CDConfigPropertyAdd();
 
-
-    /**
-     * Description provider for the add operation
-     */
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        // TODO use a ResourceDefinition and StandardResourceDescriptionResolver for this resource
-        return ADD_CONFIG_PROPERTIES_DESC.getModelDescription(Locale.getDefault());
-    }
-
-
     @Override
     protected void populateModel(ModelNode operation, ModelNode modelNode) throws OperationFailedException {
-
         CONFIG_PROPERTY_VALUE.validateAndSet(operation, modelNode);
 
     }
@@ -88,7 +73,5 @@ public class CDConfigPropertyAdd extends AbstractAddStepHandler implements Descr
             ServiceController<?> controller = serviceTarget.addService(serviceName, service).setInitialMode(ServiceController.Mode.ACTIVE)
                     .addDependency(cfServiceName, ModifiableConnDef.class, service.getRaInjector() )
                     .addListener(verificationHandler).install();
-
     }
-
 }

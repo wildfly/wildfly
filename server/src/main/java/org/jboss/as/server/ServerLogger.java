@@ -36,12 +36,13 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.module.ExtensionListEntry;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.Cause;
-import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageLogger;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.msc.service.ServiceController.Mode;
 
 /**
  * This module is using message IDs in the range 15700-15999 and 18700-18799.
@@ -126,11 +127,11 @@ public interface ServerLogger extends BasicLogger {
     @Message(id = 15855, value = "Two unique criteria addresses were seen: %s")
     void twoUniqueCriteriaAddresses(String addresses);
 
-    @LogMessage(level = INFO)
-    @Message(id = 15856, value = "Undeploy of deployment \"%s\" was rolled back with failure message %s")
+    @LogMessage(level = ERROR)
+    @Message(id = 15856, value = "Undeploy of deployment \"%s\" was rolled back with the following failure message: %s")
     void undeploymentRolledBack(String deployment, String message);
 
-    @LogMessage(level = INFO)
+    @LogMessage(level = ERROR)
     @Message(id = 15857, value = "Undeploy of deployment \"%s\" was rolled back with no failure message")
     void undeploymentRolledBackWithNoMessage(String deployment);
 
@@ -142,11 +143,11 @@ public interface ServerLogger extends BasicLogger {
     @Message(id = 18559, value = "Deployed \"%s\"")
     void deploymentDeployed(String deploymentUnitName);
 
-    @LogMessage(level = INFO)
-    @Message(id = 15860, value = "Redeploy of deployment \"%s\" was rolled back with failure message %s")
+    @LogMessage(level = ERROR)
+    @Message(id = 15860, value = "Redeploy of deployment \"%s\" was rolled back with the following failure message: %s")
     void redeployRolledBack(String deployment, String message);
 
-    @LogMessage(level = INFO)
+    @LogMessage(level = ERROR)
     @Message(id = 15861, value = "Redeploy of deployment \"%s\" was rolled back with no failure message")
     void redeployRolledBackWithNoMessage(String deployment);
 
@@ -154,11 +155,11 @@ public interface ServerLogger extends BasicLogger {
     @Message(id = 18562, value = "Redeployed \"%s\"")
     void deploymentRedeployed(String deploymentName);
 
-    @LogMessage(level = INFO)
-    @Message(id = 15863, value = "Replacement of deployment \"%s\" by deployment \"%s\" was rolled back with failure message %s")
+    @LogMessage(level = ERROR)
+    @Message(id = 15863, value = "Replacement of deployment \"%s\" by deployment \"%s\" was rolled back with the following failure message: %s")
     void replaceRolledBack(String replaced, String deployment, String message);
 
-    @LogMessage(level = INFO)
+    @LogMessage(level = ERROR)
     @Message(id = 15864, value = "Replacement of deployment \"%s\" by deployment \"%s\" was rolled back with no failure message")
     void replaceRolledBackWithNoMessage(String replaced, String deployment);
 
@@ -182,11 +183,11 @@ public interface ServerLogger extends BasicLogger {
     @Message(id = 18569, value = "Exception occurred removing deployment content %s")
     void failedToRemoveDeploymentContent(@Cause Throwable cause, String hash);
 
-    @LogMessage(level = INFO)
-    @Message(id = 15870, value = "Deploy of deployment \"%s\" was rolled back with failure message %s")
+    @LogMessage(level = ERROR)
+    @Message(id = 15870, value = "Deploy of deployment \"%s\" was rolled back with the following failure message: %s")
     void deploymentRolledBack(String deployment, String message);
 
-    @LogMessage(level = INFO)
+    @LogMessage(level = ERROR)
     @Message(id = 15871, value = "Deploy of deployment \"%s\" was rolled back with no failure message")
     void deploymentRolledBackWithNoMessage(String deployment);
 
@@ -377,5 +378,27 @@ public interface ServerLogger extends BasicLogger {
     @Message(id = 15964, value= "Http management interface is not enabled")
     void logNoHttpManagement();
 
-    // NOTE
+    @LogMessage(level = WARN)
+    @Message(id = 15965, value = "urn:jboss:deployment-structure namespace found in jboss.xml for a sub deployment %s. This is only valid in a top level deployment.")
+    void jbossDeploymentStructureNamespaceIgnored(String deploymentUnitName);
+
+    @LogMessage(level = Logger.Level.WARN)
+    @Message(id = 15966, value = "Failed to unmount deployment overlay")
+    void failedToUnmountContentOverride(@Cause Throwable cause);
+
+    //@LogMessage(level = WARN)
+    //@Message(id = 15967, value= "Cannot install reflection index for unresolved bundle: %s")
+    //void warnCannotInstallReflectionIndexForUnresolvedBundle(String bundle);
+
+    @LogMessage(level = WARN)
+    @Message(id = 15968, value= "jboss-deployment-dependencies cannot be used in a sub deployment, it must be specified at ear level: %s")
+    void deploymentDependenciesAreATopLevelElement(String name);
+
+    @LogMessage(level = Logger.Level.ERROR)
+    @Message(id = 15969, value = "No deployment overlay content with hash %s is available in the deployment content repository for deployment %s at location %s. Because this Host Controller is booting in ADMIN-ONLY mode, boot will be allowed to proceed to provide administrators an opportunity to correct this problem. If this Host Controller were not in ADMIN-ONLY mode this would be a fatal boot failure.")
+    void reportAdminOnlyMissingDeploymentOverlayContent(String contentHash, String deploymentName, String contentName);
+
+    @LogMessage(level = Logger.Level.INFO)
+    @Message(id = 15970, value = "Defer %s for %s making it %s")
+    void infoDeferDeploymentPhase(Phase phase, String deploymentName, Mode mode);
 }

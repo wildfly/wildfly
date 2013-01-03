@@ -211,7 +211,7 @@ public class PassivatingBackingCacheImpl<K extends Serializable, V extends Cache
 
         E entry = store.get(key, false);
         if (entry == null) {
-            EjbLogger.ROOT_LOGGER.cacheEntryNotFound(key);
+            log.debug("SFSB instance with session ID " + key + " not available in cache");
             return null;
         }
         entry.lock();

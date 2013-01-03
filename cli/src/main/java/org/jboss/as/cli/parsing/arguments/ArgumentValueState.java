@@ -24,9 +24,9 @@ package org.jboss.as.cli.parsing.arguments;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.parsing.CharacterHandler;
 import org.jboss.as.cli.parsing.DefaultParsingState;
-import org.jboss.as.cli.parsing.EscapeCharacterState;
-import org.jboss.as.cli.parsing.GlobalCharacterHandlers;
 import org.jboss.as.cli.parsing.ParsingContext;
+import org.jboss.as.cli.parsing.QuotesState;
+import org.jboss.as.cli.parsing.WordCharacterHandler;
 
 /**
  *
@@ -43,16 +43,18 @@ public class ArgumentValueState extends DefaultParsingState {
         setEnterHandler(new CharacterHandler(){
             @Override
             public void handle(ParsingContext ctx) throws CommandFormatException {
-                if(ctx.getCharacter() != '{') {
+                final char ch = ctx.getCharacter();
+                if(ch == '"') {
+                    ctx.enterState(QuotesState.QUOTES_EXCLUDED);
+                } else if(ch != '{') {
                     ctx.getCallbackHandler().character(ctx);
                 }
             }});
-        setDefaultHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
+        setDefaultHandler(WordCharacterHandler.IGNORE_LB_ESCAPE_ON);
         enterState('=', NameValueSeparatorState.INSTANCE);
         enterState(',', ListItemSeparatorState.INSTANCE);
         enterState('[', new ListState(this));
-        enterState('\\', EscapeCharacterState.INSTANCE);
-        //leaveState(',');
+        enterState('"', QuotesState.QUOTES_INCLUDED);
         leaveState(']');
         enterState('{', this);
         leaveState('}');

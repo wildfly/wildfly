@@ -22,18 +22,31 @@
 
 package org.jboss.as.test.integration.messaging.security;
 
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.fail;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 import junit.framework.Assert;
+
+import org.eclipse.jdt.internal.compiler.ast.AssertStatement;
+import org.hornetq.api.config.HornetQDefaultConfiguration;
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
+import org.hornetq.core.security.CheckType;
+import org.hornetq.core.security.Role;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
@@ -59,83 +72,67 @@ public class SecurityTestCase {
     @Test
     public void testFailedAuthenticationBadUserPass() throws Exception {
         final ClientSessionFactory sf = createClientSessionFactory(managementClient.getMgmtAddress(), 5445);
-        ClientSession session = null;
-        boolean success = false;
         try {
-            session = sf.createSession("fail", "epicfail", false, true, true, false, 1);
-        } catch (Exception e) {
-            if ("Unable to validate user: fail".equals(e.getMessage())) {
-                success = true;
-            }
+            sf.createSession("fail", "epicfail", false, true, true, false, 1);
+            fail("must not allow to create a session with bad authentication");
+        } catch (HornetQException e) {
+            assertEquals(HornetQExceptionType.SECURITY_EXCEPTION, e.getType());
+            assertTrue(e.getMessage().startsWith("HQ119061"));
         } finally {
-            if (session != null) {
-                session.close();
+            if (sf != null) {
+                sf.close();
             }
         }
-
-        Assert.assertTrue(success);
     }
 
     @Test
     public void testFailedAuthenticationBlankUserPass() throws Exception {
         final ClientSessionFactory sf = createClientSessionFactory(managementClient.getMgmtAddress(), 5445);
-        ClientSession session = null;
-        boolean success = false;
         try {
-            session = sf.createSession();
-        } catch (Exception e) {
-            if ("Unable to validate user: null".equals(e.getMessage())) {
-                success = true;
-            }
+            sf.createSession();
+            fail("must not allow to create a session without any authentication");
+        } catch (HornetQException e) {
+            assertEquals(HornetQExceptionType.SECURITY_EXCEPTION, e.getType());
+            assertTrue(e.getMessage().startsWith("HQ119061"));
         } finally {
-            if (session != null) {
-                session.close();
+            if (sf != null) {
+                sf.close();
             }
         }
-
-        Assert.assertTrue(success);
     }
 
     @Test
     public void testDefaultClusterUser() throws Exception {
         final ClientSessionFactory sf = createClientSessionFactory(managementClient.getMgmtAddress(), 5445);
-        ClientSession session = null;
-        boolean success = false;
         try {
-            session = sf.createSession(ConfigurationImpl.DEFAULT_CLUSTER_USER, ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD, false, true, true, false, 1);
-        } catch (Exception e) {
-            if (("Unable to validate user: " + ConfigurationImpl.DEFAULT_CLUSTER_USER).equals(e.getMessage())) {
-                success = true;
-            }
+            sf.createSession(HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER, HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD, false, true, true, false, 1);
+            fail("must not allow to create a session with the default cluster user credentials");
+        } catch (HornetQException e) {
+            assertEquals(HornetQExceptionType.SECURITY_EXCEPTION, e.getType());
+            assertTrue(e.getMessage().startsWith("HQ119061"));
         } finally {
-            if (session != null) {
-                session.close();
+            if (sf != null) {
+                sf.close();
             }
         }
-
-        Assert.assertTrue(success);
     }
 
     @Test
     public void testSuccessfulAuthentication() throws Exception {
         final ClientSessionFactory sf = createClientSessionFactory(managementClient.getMgmtAddress(), 5445);
         ClientSession session = null;
-        boolean success = false;
         try {
             session = sf.createSession("guest", "guest", false, true, true, false, 1);
-            success = true;
+            assertNotNull(session);
         } finally {
             if (session != null) {
                 session.close();
             }
         }
-
-        Assert.assertTrue(success);
     }
 
     @Test
     public void testSuccessfulAuthorization() throws Exception {
-        boolean success = false;
         final String queueName = "queue.testSuccessfulAuthorization";
 
         final ClientSessionFactory sf = createClientSessionFactory(managementClient.getMgmtAddress(), 5445);
@@ -149,39 +146,32 @@ public class SecurityTestCase {
             session.stop();
             messageConsumer.close();
             session.deleteQueue(queueName);
-            success = true;
         } finally {
             if (session != null) {
                 session.close();
             }
         }
-
-        Assert.assertTrue(success);
     }
 
 
     @Test
     public void testUnsuccessfulAuthorization() throws Exception {
-        boolean success = false;
         final String queueName = "queue.testUnsuccessfulAuthorization";
-
         final ClientSessionFactory sf = createClientSessionFactory(managementClient.getMgmtAddress(), 5445);
-
         ClientSession session = null;
         try {
             session = sf.createSession("guest", "guest", false, true, true, false, 1);
             session.createQueue(queueName, queueName, true);
-        } catch (Exception e) {
-            if ("User: guest doesn't have permission='CREATE_DURABLE_QUEUE' on address queue.testUnsuccessfulAuthorization".equals(e.getMessage())) {
-                success = true;
-            }
+            fail("Must not create a durable queue without the CREATE_DURABLE_QUEUE permission");
+        } catch (HornetQException e) {
+            assertEquals(HornetQExceptionType.SECURITY_EXCEPTION, e.getType());
+            assertTrue(e.getMessage().startsWith("HQ119062"));
+            assertTrue(e.getMessage().contains(CheckType.CREATE_DURABLE_QUEUE.toString()));
         } finally {
             if (session != null) {
                 session.close();
             }
         }
-
-        Assert.assertTrue(success);
     }
 
     static void applyUpdate(ModelNode update, final ModelControllerClient client) throws IOException {

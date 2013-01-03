@@ -69,6 +69,10 @@ import javax.naming.Name;
  * <DD> Context.listBindings permission.
  * <DT> createSubcontext
  * <DD> Context.createSubcontext permission.
+ * <DT> destroySubcontext
+ * <DD> Context.destroySubcontext permission.
+ * <DT> addNamingListener
+ * <DD> EventContext.addNamingListener permission.
  * </DL>
  * <p/>
  * Be careful when granting JndiPermissions. Think about the implications of
@@ -105,7 +109,10 @@ public final class JndiPermission extends Permission
         LIST("list", 16),
         LIST_BINDINGS("listBindings", 32),
         CREATE_SUBCONTEXT("createSubcontext", 64),
-        ALL("all", BIND.mask | REBIND.mask | UNBIND.mask | LOOKUP.mask | LIST.mask | LIST_BINDINGS.mask | CREATE_SUBCONTEXT.mask);
+        DESTROY_SUBCONTEXT("destroySubcontext", 128),
+        ADD_NAMING_LISTENER("addNamingListener", 256),
+        ALL("all", BIND.mask | REBIND.mask | UNBIND.mask | LOOKUP.mask | LIST.mask | LIST_BINDINGS.mask |
+            CREATE_SUBCONTEXT.mask | DESTROY_SUBCONTEXT.mask | ADD_NAMING_LISTENER.mask);
 
         private String actionName;
         private int mask;
@@ -121,6 +128,20 @@ public final class JndiPermission extends Permission
                     return action;
             }
             return null;
+        }
+    }
+
+    /**
+     * A utility method to check if the current access control context possesses
+     * the JndiPermission for given JNDI name and actions.
+     *
+     * @param name the JNDI name
+     * @param actions the actions to check the permission for
+     */
+    public static void check(Name name, Action... actions) {
+        SecurityManager sm = System.getSecurityManager();
+        if (sm != null) {
+            sm.checkPermission(new JndiPermission(name, actions));
         }
     }
 
@@ -202,7 +223,7 @@ public final class JndiPermission extends Permission
      * is the pathname of a file or directory, and <i>actions</i> contains a
      * comma-separated list of the desired actions granted on the file or
      * directory. Possible actions are "bind", "rebind", "unbind", "lookup",
-     * "list", "listBindings", and "createSubcontext".
+     * "list", "listBindings", "createSubcontext", "destroySubcontext" and "addNamingListener".
      * <p/>
      * <p/>
      * A pathname that ends in "/*" (where "/" is the file separator character,
@@ -225,7 +246,6 @@ public final class JndiPermission extends Permission
      * @throws IllegalArgumentException If actions is <code>null</code>, empty or contains an action
      *                                  other than the specified possible actions.
      */
-
     public JndiPermission(String path, Action... actions) {
         super(path);
         init(getMask(actions));
@@ -233,6 +253,19 @@ public final class JndiPermission extends Permission
 
     public JndiPermission(Name path, Action... actions) {
         this(path.toString(), actions);
+    }
+
+    /**
+     * @see #JndiPermission(String, Action...)
+     *
+     * The default policy file parser ({@code sun.security.provider.PolicyFile}) requires this constructor.
+     *
+     * @param path the pathname to grant the permission
+     * @param actions the comma separated string of actions granted
+     */
+    public JndiPermission(String path, String actions) {
+        super(path);
+        init(getMask(actions));
     }
 
     /**
@@ -399,7 +432,7 @@ public final class JndiPermission extends Permission
 
         String[] sa = actions.split(",");
         for (String s : sa) {
-            String key = s.toLowerCase(Locale.ENGLISH);
+            String key = s.trim().toLowerCase(Locale.ENGLISH);
             action = Action.forName(key);
             if (action == null) {
                 throw MESSAGES.invalidPermissionAction(s);
@@ -432,8 +465,9 @@ public final class JndiPermission extends Permission
         StringBuilder sb = new StringBuilder();
         boolean insertComma = false;
         final Action[] allActions = Action.values();
-        for (int n = 0; n < allActions.length; n++) {
-            int action = 1 << n;
+        //none is an illegal value, so we're skipping it
+        for (int n = 1; n < allActions.length; n++) {
+            int action = 1 << (n - 1);
             if ((mask & action) == action) {
                 if (insertComma)
                     sb.append(',');

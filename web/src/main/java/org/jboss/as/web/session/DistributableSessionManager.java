@@ -85,6 +85,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
     private static final String info = "DistributableSessionManager/1.0";
 
     private static final int TOTAL_PERMITS = Integer.MAX_VALUE;
+    private Logger log;
 
     private final DistributedCacheManager<O> distributedCacheManager;
 

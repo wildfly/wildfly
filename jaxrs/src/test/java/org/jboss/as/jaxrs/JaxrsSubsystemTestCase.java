@@ -37,7 +37,6 @@ public class JaxrsSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        //TODO This is just copied from standalone.xml, more extensive testing is a good idea
         return "<subsystem xmlns=\"urn:jboss:domain:jaxrs:1.0\"/>";
     }
 

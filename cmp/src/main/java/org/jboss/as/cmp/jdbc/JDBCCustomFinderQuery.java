@@ -92,7 +92,7 @@ public final class JDBCCustomFinderQuery implements JDBCQueryCommand {
         try {
             // invoke implementation method on ejb instance
             Object value;
-            final EntityBeanComponentInstance componentInstance = ctx.getComponent().getCache().get(ctx.getPrimaryKey());
+            final EntityBeanComponentInstance componentInstance = ctx.getComponent().getCache().get(ctx.getPrimaryKeyUnchecked());
             try {
                 value = finderMethod.invoke(componentInstance, args);
             } finally {

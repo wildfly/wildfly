@@ -28,6 +28,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 
 import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.Util;
 import org.jboss.as.cli.parsing.StateParser;
 import org.jboss.as.cli.parsing.arguments.ArgumentValueCallbackHandler;
 import org.jboss.as.cli.parsing.arguments.ArgumentValueInitialState;
@@ -274,6 +275,97 @@ public class ArgumentValueParsingTestCase {
         final ModelNode gh = prop.getValue();
         assertEquals(1, gh.keys().size());
         assertEquals("h", gh.get("g").asString());
+    }
+
+    @Test
+    public void testAny() throws Exception {
+        ModelNode value = parse("\"any(not(match(\\\"Prepared response is\\\")),match(\\\"Scanning\\\"))\"");
+        assertNotNull(value);
+        assertEquals(ModelType.STRING, value.getType());
+        assertEquals("any(not(match(\"Prepared response is\")),match(\"Scanning\"))", value.asString());
+
+        value = parse("any(not(match(\"Prepared response is\")),match(\"Scanning\"))");
+        assertNotNull(value);
+        assertEquals(ModelType.LIST, value.getType());
+        final List<ModelNode> list = value.asList();
+        assertEquals(2, list.size());
+
+        ModelNode item = list.get(0);
+        assertEquals(ModelType.STRING, item.getType());
+        assertEquals("any(not(match(\"Prepared response is\"))", item.asString());
+
+        item = list.get(1);
+        assertEquals(ModelType.STRING, item.getType());
+        assertEquals("match(\"Scanning\"))", item.asString());
+    }
+
+    @Test
+    public void testQuotesAndSpaces() throws Exception {
+        ModelNode value = parse("\" \"");
+        assertNotNull(value);
+        assertEquals(ModelType.STRING, value.getType());
+        assertEquals(" ", value.asString());
+
+        value = parse(" \" \"");
+        assertNotNull(value);
+        assertEquals(ModelType.STRING, value.getType());
+        assertEquals(" ", value.asString());
+
+        value = parse(" \" \\\"\"");
+        assertNotNull(value);
+        assertEquals(ModelType.STRING, value.getType());
+        assertEquals(" \"", value.asString());
+    }
+
+    @Test
+    public void testLoginModules() throws Exception {
+        ModelNode value = parse("[{code=Database, flag=required, module-options=[unauthenticatedIdentity=guest," +
+                "dsJndiName=java:jboss/jdbc/ApplicationDS," +
+                "principalsQuery= select password from users where username=? ," +
+                "rolesQuery = \"select name, 'Roles' FROM user_roless ur, roles r, user u WHERE u.username=? and u.id = ur.user_id and ur.role_id = r.id\" ," +
+                "hashAlgorithm = MD5,hashEncoding = hex] }]");
+        assertLoginModules(value);
+    }
+
+    @Test
+    public void testLoginModulesWithLineBreaks() throws Exception {
+        final StringBuilder buf = new StringBuilder();
+        buf.append("[ \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t{ \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t\tcode=Database, \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t\tflag= \\").append(Util.LINE_SEPARATOR).append("required, \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t\t").append("module-options=[ \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t\t\t\t").append("unauthenticatedIdentity=guest, \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t\t\t\t").append("dsJndiName=java:jboss/jdbc/ApplicationDS, \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t\t\t\t").append("principalsQuery= select password from users where username=? , \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t\t\t\t").append("rolesQuery = \"select name, 'Roles' FROM user_roless ur, roles r, user u WHERE u.username=? and u.id = ur.user_id and ur.role_id = r.id\" , \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t\t\t\t").append("hashAlgorithm = MD5, \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t\t\t\t").append("hashEncoding = hex \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t\t\t").append("] \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t} \\").append(Util.LINE_SEPARATOR);
+        buf.append(']');
+        ModelNode value = parse(buf.toString());
+        assertLoginModules(value);
+    }
+
+    protected void assertLoginModules(ModelNode value) {
+        assertNotNull(value);
+        assertEquals(ModelType.LIST, value.getType());
+        List<ModelNode> list = value.asList();
+        assertEquals(1, list.size());
+        value = list.get(0);
+        assertEquals("Database", value.get("code").asString());
+        assertEquals("required", value.get("flag").asString());
+        value = value.get("module-options");
+        assertEquals(ModelType.LIST, value.getType());
+        list = value.asList();
+        assertEquals(6, list.size());
+        assertEquals("guest", list.get(0).get("unauthenticatedIdentity").asString());
+        assertEquals("java:jboss/jdbc/ApplicationDS", list.get(1).get("dsJndiName").asString());
+        assertEquals("select password from users where username=?", list.get(2).get("principalsQuery").asString());
+        assertEquals("select name, 'Roles' FROM user_roless ur, roles r, user u WHERE u.username=? and u.id = ur.user_id and ur.role_id = r.id", list.get(3).get("rolesQuery").asString());
+        assertEquals("MD5", list.get(4).get("hashAlgorithm").asString());
+        assertEquals("hex", list.get(5).get("hashEncoding").asString());
     }
 
     protected ModelNode parse(String str) throws CommandFormatException {

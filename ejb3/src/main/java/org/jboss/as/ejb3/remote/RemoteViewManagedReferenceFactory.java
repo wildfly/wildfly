@@ -21,20 +21,21 @@
  */
 package org.jboss.as.ejb3.remote;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
+import javax.ejb.EJBHome;
+import javax.ejb.EJBLocalHome;
+
 import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
+import org.jboss.as.naming.JndiViewManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
-import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.EJBHomeLocator;
 import org.jboss.ejb.client.EJBLocator;
 import org.jboss.ejb.client.StatelessEJBLocator;
 import org.jboss.msc.value.ImmediateValue;
-
-import javax.ejb.EJBHome;
-import javax.ejb.EJBLocalHome;
-
-import static org.jboss.as.ejb3.EjbMessages.*;
 import org.jboss.msc.value.Value;
 
 
@@ -42,8 +43,9 @@ import org.jboss.msc.value.Value;
  * Managed reference factory for remote EJB views that are bound to java: JNDI locations
  *
  * @author Stuart Douglas
+ * @author Eduardo Martins
  */
-public class RemoteViewManagedReferenceFactory implements ManagedReferenceFactory {
+public class RemoteViewManagedReferenceFactory implements ContextListAndJndiViewManagedReferenceFactory {
 
     private final String appName;
     private final String moduleName;
@@ -52,10 +54,6 @@ public class RemoteViewManagedReferenceFactory implements ManagedReferenceFactor
     private final String viewClass;
     private final boolean stateful;
     private final Value<ClassLoader> viewClassLoader;
-
-    public RemoteViewManagedReferenceFactory(final String appName, final String moduleName, final String distinctName, final String beanName, final String viewClass, final boolean stateful) {
-        this(appName, moduleName, distinctName, beanName, viewClass, stateful, null);
-    }
 
     public RemoteViewManagedReferenceFactory(final String appName, final String moduleName, final String distinctName, final String beanName, final String viewClass, final boolean stateful, final Value<ClassLoader> viewClassLoader) {
         this.appName = appName == null ? "" : appName;
@@ -68,12 +66,23 @@ public class RemoteViewManagedReferenceFactory implements ManagedReferenceFactor
     }
 
     @Override
+    public String getInstanceClassName() {
+        return viewClass;
+    }
+
+    @Override
+    public String getJndiViewInstanceValue() {
+        return stateful ? JndiViewManagedReferenceFactory.DEFAULT_JNDI_VIEW_INSTANCE_VALUE : String.valueOf(getReference()
+                .getInstance());
+    }
+
+    @Override
     public ManagedReference getReference() {
         Class<?> viewClass;
         try {
             viewClass = Class.forName(this.viewClass, false, SecurityActions.getContextClassLoader());
         } catch (ClassNotFoundException e) {
-            if(viewClassLoader == null) {
+            if(viewClassLoader == null || viewClassLoader.getValue() == null) {
                 throw MESSAGES.failToLoadViewClassEjb(beanName, e);
             }
             try {

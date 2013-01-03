@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -60,18 +61,21 @@ public class HttpManagementResourceDefinition extends SimpleResourceDefinition {
     public static final SimpleAttributeDefinition INTERFACE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.INTERFACE, ModelType.STRING, false)
                 .setAllowExpression(true).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true))
                 .setAlternatives(ModelDescriptionConstants.SOCKET_BINDING, ModelDescriptionConstants.SECURE_SOCKET_BINDING)
+                .setDeprecated(ModelVersion.create(1,4))
                 .build();
 
     public static final SimpleAttributeDefinition HTTP_PORT = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PORT, ModelType.INT, true)
             .setAllowExpression(true).setValidator(new IntRangeValidator(0, 65535, true, true))
             .setAlternatives(ModelDescriptionConstants.SOCKET_BINDING, ModelDescriptionConstants.SECURE_SOCKET_BINDING)
             .setRequires(ModelDescriptionConstants.INTERFACE)
+            .setDeprecated(ModelVersion.create(1,4))
             .build();
 
     public static final SimpleAttributeDefinition HTTPS_PORT = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SECURE_PORT, ModelType.INT, true)
             .setAllowExpression(true).setValidator(new IntRangeValidator(0, 65535, true, true))
             .setAlternatives(ModelDescriptionConstants.SOCKET_BINDING, ModelDescriptionConstants.SECURE_SOCKET_BINDING)
             .setRequires(ModelDescriptionConstants.INTERFACE)
+            .setDeprecated(ModelVersion.create(1,4))
             .build();
 
     public static final SimpleAttributeDefinition SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SOCKET_BINDING, ModelType.STRING, true)

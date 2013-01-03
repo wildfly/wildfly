@@ -102,6 +102,8 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         marshallingConfiguration.setClassResolver(new ClassLoaderAwareClassResolver(ModularClassResolver.getInstance(componentConfiguration.getModuleLoader()), componentConfiguration.getModuleClassLoader()));
         marshallingConfiguration.setSerializabilityChecker(new StatefulSessionBeanSerializabilityChecker(componentConfiguration.getComponentClass()));
         marshallingConfiguration.setClassTable(new StatefulSessionBeanClassTable());
+        // ObjectTable which handles serialization of EJB proxies
+        marshallingConfiguration.setObjectTable(new EJBClientContextIdentifierObjectTable());
         this.marshallingConfigurations = Collections.singletonMap(CURRENT_MARSHALLING_VERSION, marshallingConfiguration);
         this.serializableInterceptorContextKeys = componentConfiguration.getInterceptorContextKeys();
     }

@@ -46,6 +46,8 @@ import javax.xml.stream.XMLStreamReader;
  */
 class SubsystemsParser {
 
+    static String NAMESPACE = "urn:subsystems-config:1.0";
+
     private final File inputFile;
     Map<String, SubsystemConfig[]> subsystemConfigs = new HashMap<String, SubsystemConfig[]>();
 

@@ -24,6 +24,7 @@ package org.jboss.as.domain.controller.plan;
 
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
@@ -64,8 +65,9 @@ public abstract class ServerTaskExecutor {
      * @param identity the server identity
      * @param operation the operation
      * @return whether the operation was executed or not
+     * @throws OperationFailedException
      */
-    protected abstract boolean execute(final TransactionalProtocolClient.TransactionalOperationListener<ServerOperation> listener, final ServerIdentity identity, final ModelNode operation);
+    protected abstract boolean execute(final TransactionalProtocolClient.TransactionalOperationListener<ServerOperation> listener, final ServerIdentity identity, final ModelNode operation) throws OperationFailedException;
 
     /**
      * Execute a server task.
@@ -75,7 +77,17 @@ public abstract class ServerTaskExecutor {
      * @return whether the task was executed or not
      */
     public boolean executeTask(final TransactionalProtocolClient.TransactionalOperationListener<ServerOperation> listener, final ServerUpdateTask task) {
-        return execute(listener, task.getServerIdentity(), task.getOperation());
+        try {
+            return execute(listener, task.getServerIdentity(), task.getOperation());
+        } catch (OperationFailedException e) {
+            // Handle failures operation transformation failures
+            final ServerIdentity identity = task.getServerIdentity();
+            final ServerOperation serverOperation = new ServerOperation(identity, task.getOperation(), null, null, OperationResultTransformer.ORIGINAL_RESULT);
+            final TransactionalProtocolClient.PreparedOperation<ServerOperation> result = BlockingQueueOperationListener.FailedOperation.create(serverOperation, e);
+            listener.operationPrepared(result);
+            recordExecutedRequest(new ExecutedServerRequest(identity, result.getFinalResult(), OperationResultTransformer.ORIGINAL_RESULT));
+        }
+        return true;
     }
 
     /**
@@ -138,6 +150,16 @@ public abstract class ServerTaskExecutor {
     }
 
     static class ServerOperationListener extends BlockingQueueOperationListener<ServerOperation> {
+
+        @Override
+        public void operationPrepared(TransactionalProtocolClient.PreparedOperation<ServerOperation> prepared) {
+            super.operationPrepared(prepared);
+        }
+
+        @Override
+        public void operationComplete(ServerOperation operation, ModelNode result) {
+            super.operationComplete(operation, result);
+        }
 
         @Override
         protected void drainTo(Collection<TransactionalProtocolClient.PreparedOperation<ServerOperation>> preparedOperations) {

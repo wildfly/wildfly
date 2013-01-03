@@ -44,10 +44,10 @@ public class JPAUserTransactionListener implements org.jboss.tm.usertx.UserTrans
     @Override
     public void userTransactionStarted() throws SystemException {
 
-        Map<String, ReferenceCountedEntityManager> currentActiveEntityManagers = SFSBCallStack.currentSFSBCallStackInvocation();
+        Map<String, ExtendedEntityManager> currentActiveEntityManagers = SFSBCallStack.currentSFSBCallStackInvocation();
         if (currentActiveEntityManagers != null && currentActiveEntityManagers.size() > 0) {
-            for (ReferenceCountedEntityManager referenceCountedEntityManager: currentActiveEntityManagers.values()) {
-                referenceCountedEntityManager.getEntityManager().internalAssociateWithJtaTx();
+            for (ExtendedEntityManager extendedEntityManager: currentActiveEntityManagers.values()) {
+                extendedEntityManager.internalAssociateWithJtaTx();
             }
         }
     }

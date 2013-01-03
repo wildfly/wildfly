@@ -16,11 +16,9 @@
  */
 package org.jboss.as.arquillian.container.managed;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -40,7 +38,9 @@ import org.jboss.as.arquillian.container.CommonDeployableContainer;
  */
 public final class ManagedDeployableContainer extends CommonDeployableContainer<ManagedContainerConfiguration> {
 
-    private static final String CONFIG_PATH = "/standalone/configuration/";
+    private static final String CONFIG_DIR = "configuration";
+    private static final String SERVER_BASE_DIR = "standalone";
+    private static final String LOG_DIR = "log";
 
     private static final int PORT_RANGE_MIN = 1;
     private static final int PORT_RANGE_MAX = 65535;
@@ -114,9 +114,12 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
                 cmd.add("-ea");
             }
 
+            final String serverBaseDir = getSystemPropertyValue(cmd, "jboss.server.base.dir", jbossHome + File.separatorChar + SERVER_BASE_DIR);
+            final String bootLogFileDefaultValue = serverBaseDir + File.separatorChar + LOG_DIR + File.separatorChar + "boot.log";
+            final String loggingConfigurationDefaultValue = serverBaseDir + File.separatorChar + CONFIG_DIR + File.separatorChar + "logging.properties";
             cmd.add("-Djboss.home.dir=" + jbossHome);
-            cmd.add("-Dorg.jboss.boot.log.file=" + jbossHome + "/standalone/log/boot.log");
-            cmd.add("-Dlogging.configuration=file:" + jbossHome + CONFIG_PATH + "logging.properties");
+            cmd.add("-Dorg.jboss.boot.log.file=" + getSystemPropertyValue(cmd, "org.jboss.boot.log.file", getFile(bootLogFileDefaultValue, jbossHome).getAbsolutePath()));
+            cmd.add("-Dlogging.configuration=" + getSystemPropertyValue(cmd, "logging.configuration", getFile(loggingConfigurationDefaultValue, jbossHome).toURI().toString()));
             cmd.add("-Djboss.bundles.dir=" + bundlesPath);
             cmd.add("-jar");
             cmd.add(modulesJar.getAbsolutePath());
@@ -296,7 +299,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
     private void failDueToRunning() throws LifecycleException {
         throw new LifecycleException(
                 "The server is already running! " +
-                        "Managed containers does not support connecting to running server instances due to the " +
+                        "Managed containers do not support connecting to running server instances due to the " +
                         "possible harmful effect of connecting to the wrong server. Please stop server before running or " +
                         "change to another type of container.\n" +
                         "To disable this check and allow Arquillian to connect to a running server, " +
@@ -339,5 +342,45 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
            }
         }
 
+    }
+
+    /**
+     * Get the value of the system property from a list of command line arguments.
+     *
+     * @param cmdArguments list of command line arguments
+     * @param systemPropertyName name of the system property
+     * @param defaultValue the default value
+     * @return The value of the {@code systemPropertyName} if found in the {@code cmdArguments}
+     *         or the {@code defaultValue}
+     */
+    private String getSystemPropertyValue(List<String> cmdArguments, String systemPropertyName, String defaultValue) {
+        final String argument = "-D" + systemPropertyName + "=";
+        for (String cmdArgument : cmdArguments) {
+            if (cmdArgument.startsWith(argument)) {
+                return cmdArgument.substring(argument.length());
+            }
+        }
+        return defaultValue;
+    }
+
+    /**
+     * Get a File from a file pathname.<br/>
+     * If the file or directory denoted by {@code pathname} doesn't exist,
+     * check if a relative path to the {@code jbossHome} dir exists.
+     *
+     * @param filePathname the file pathname
+     * @param jbossHome the jboss home directory
+     * @return the File form for the file pathname.
+     */
+    private File getFile(final String filePathname, final String jbossHome) {
+        File result = new File(filePathname);
+        // AS7-1752 see if a non-existent relative path exists relative to the home dir
+        if (!result.exists() && !result.isAbsolute()) {
+            File relative = new File(jbossHome, filePathname);
+            if (relative.exists()) {
+                result = relative;
+            }
+        }
+        return result;
     }
 }

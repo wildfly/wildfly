@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.Operation;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 
@@ -37,6 +38,14 @@ public class ManagementOperations {
     }
 
     /**
+     * Executes a management operation and returns the 'result' ModelNode of the server output. If the operation fails an exception will be thrown
+     */
+    public static ModelNode executeOperation(final ModelControllerClient client, final Operation op) throws IOException, MgmtOperationException {
+        return executeOperation(client, op, true);
+    }
+
+
+    /**
      * Executes a management operation and returns the raw ModelNode that is returned from the server.
      *
      * It is up to the client to check it the result is a success or not
@@ -60,4 +69,14 @@ public class ManagementOperations {
         return ret.get(RESULT);
     }
 
+
+    private static ModelNode executeOperation(final ModelControllerClient client, final Operation op, boolean unwrapResult) throws IOException, MgmtOperationException {
+        ModelNode ret = client.execute(op);
+        if (!unwrapResult) return ret;
+
+        if (!SUCCESS.equals(ret.get(OUTCOME).asString())) {
+            throw new MgmtOperationException("Management operation failed: " + ret.get(FAILURE_DESCRIPTION), op.getOperation(), ret);
+        }
+        return ret.get(RESULT);
+    }
 }

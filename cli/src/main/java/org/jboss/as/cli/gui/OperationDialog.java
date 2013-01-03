@@ -45,6 +45,7 @@ import javax.swing.JTextField;
 import javax.swing.text.JTextComponent;
 import org.jboss.as.cli.gui.ManagementModelNode.UserObject;
 import org.jboss.as.cli.gui.component.ListEditor;
+import org.jboss.as.cli.gui.component.WordWrapLabel;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -79,9 +80,11 @@ public class OperationDialog extends JDialog {
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout(10, 10));
 
-        JLabel opNameLabel = new JLabel("Params for " + opName + ":");
-        opNameLabel.setToolTipText(strDescription);
-        contentPane.add(opNameLabel, BorderLayout.NORTH);
+        // the html table allows word wrap and constant max width
+        JLabel opDescription = new WordWrapLabel(strDescription, 400);
+        JPanel opDescPanel = new JPanel();
+        opDescPanel.add(opDescription);
+        contentPane.add(opDescPanel, BorderLayout.NORTH);
 
         contentPane.add(makeInputPanel(), BorderLayout.CENTER);
 
@@ -112,10 +115,10 @@ public class OperationDialog extends JDialog {
             props.add(new RequestProp("/" + usrObj.getName() + "=<name>/", "Resource name for the new " + usrObj.getName(), true, ModelType.STRING));
         }
 
-        if (opName.equals("write-attribute")) {
+        if (opName.equals("write-attribute") && node.isLeaf()) {
             ModelNode nameNode = requestProperties.get("name");
             nameNode.get("type").set(ModelType.UNDEFINED); // undefined type will display as uneditable String
-            UserObject usrObj = (UserObject)OperationDialog.this.node.getUserObject();
+            UserObject usrObj = (UserObject)node.getUserObject();
             ModelNode nameNodeValue = new ModelNode();
             nameNodeValue.set(usrObj.getName());
             props.add(new RequestProp("name", requestProperties.get("name"), nameNodeValue));
@@ -212,15 +215,22 @@ public class OperationDialog extends JDialog {
             boolean addedProps = false;
             command.append("(");
             for (RequestProp prop : reqProps) {
-                String value = prop.getValueAsString();
+                String submittedValue = prop.getValueAsString();
 
-                if (value == null) continue;
-                if (value.equals("")) continue;
+                if (submittedValue == null) continue;
+                if (submittedValue.equals("")) continue;
+
+                // Don't display boolean values that are already the default.
+                // This only works if the default value is provided by read-operation-description.
+                if (prop.type == ModelType.BOOLEAN) {
+                    ModelNode defaultValue = prop.getDefaultValue();
+                    if ((defaultValue != null) && (defaultValue.asBoolean() == Boolean.parseBoolean(submittedValue))) continue;
+                }
 
                 addedProps = true;
                 command.append(prop.getName());
                 command.append("=");
-                command.append(value);
+                command.append(submittedValue);
 
                 command.append(",");
             }
@@ -309,6 +319,10 @@ public class OperationDialog extends JDialog {
 
         public JLabel getLabel() {
             return this.label;
+        }
+
+        public ModelNode getDefaultValue() {
+            return this.defaultValue;
         }
 
         public String getValueAsString() {

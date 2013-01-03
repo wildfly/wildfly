@@ -26,6 +26,7 @@ import static org.jboss.as.domain.http.server.Constants.LOCATION;
 import static org.jboss.as.domain.http.server.Constants.METHOD_NOT_ALLOWED;
 import static org.jboss.as.domain.http.server.Constants.MOVED_PERMENANTLY;
 import static org.jboss.as.domain.http.server.Constants.NOT_FOUND;
+import static org.jboss.as.domain.http.server.DomainUtil.constructUrl;
 
 import java.io.IOException;
 import java.net.URI;
@@ -71,7 +72,7 @@ public class RootHandler implements ManagementHttpHandler {
         String path = uri.getPath();
         if (path.equals("/") && consoleHandler != null) {
             Headers responseHeaders = http.getResponseHeaders();
-            responseHeaders.add(LOCATION, consoleHandler.getDefaultUrl());
+            responseHeaders.add(LOCATION, constructUrl(http, consoleHandler.getDefaultPath()));
             http.sendResponseHeaders(MOVED_PERMENANTLY, 0);
             http.close();
         } else {

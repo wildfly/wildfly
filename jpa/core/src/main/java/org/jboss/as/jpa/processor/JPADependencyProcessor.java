@@ -44,6 +44,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
+import org.jboss.as.server.deployment.JPADeploymentMarker;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
@@ -132,16 +133,15 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
 
         // add dependencies for the default persistence provider module
         if (defaultProviderCount > 0) {
-            moduleDependencies.add(Configuration.PROVIDER_MODULE_DEFAULT);
+            moduleDependencies.add(Configuration.getDefaultProviderModuleName());
             ROOT_LOGGER.debugf("added (default provider) %s dependency to %s (since %d PU(s) didn't specify %s",
-                Configuration.PROVIDER_MODULE_DEFAULT, deploymentUnit.getName(),defaultProviderCount, Configuration.PROVIDER_MODULE + ")");
+                Configuration.getDefaultProviderModuleName(), deploymentUnit.getName(),defaultProviderCount, Configuration.PROVIDER_MODULE + ")");
             // only inject default envers for default Hibernate module
             addDependency(moduleSpecification, moduleLoader, deploymentUnit, HIBERNATE_ENVERS_ID);
         }
 
         // add persistence provider dependency
         for (String dependency : moduleDependencies) {
-
             addDependency(moduleSpecification, moduleLoader, deploymentUnit, ModuleIdentifier.fromString(dependency));
         }
     }
@@ -172,6 +172,13 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
                         }
                     }
                 }
+                if (adapterModule == null && pu.getPersistenceProviderClassName() != null) {
+                    adapterModule = Configuration.getProviderAdapterModuleNameFromProviderClassName(pu.getPersistenceProviderClassName());
+                    if (adapterModule != null) {
+                        pu.getProperties().put(Configuration.ADAPTER_MODULE, adapterModule);
+                    }
+                }
+
                 if (adapterModule != null) {
                     ROOT_LOGGER.debugf("%s is configured to use adapter module '%s'", pu.getPersistenceUnitName(), adapterModule);
                     moduleDependencies.add(adapterModule);

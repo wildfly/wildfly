@@ -42,9 +42,6 @@ rem #
 rem # JVM memory allocation pool parameters - modify as appropriate.
 set "JAVA_OPTS=-Xms64M -Xmx512M -XX:MaxPermSize=256M"
 
-rem # Reduce the RMI GCs to once per hour for Sun JVMs.
-set "JAVA_OPTS=%JAVA_OPTS% -Dsun.rmi.dgc.client.gcInterval=3600000 -Dsun.rmi.dgc.server.gcInterval=3600000"
-
 rem # Prefer IPv4
 set "JAVA_OPTS=%JAVA_OPTS%  -Djava.net.preferIPv4Stack=true "
 
@@ -56,10 +53,10 @@ rem # This is necessary to inject Byteman rules into AS7 deployments
 set "JAVA_OPTS=%JAVA_OPTS% -Djboss.modules.system.pkgs=org.jboss.byteman"
 
 rem # Sample JPDA settings for remote socket debugging
-rem set "JAVA_OPTS=%JAVA_OPTS% -Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=n"
+rem set "JAVA_OPTS=%JAVA_OPTS% -agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=n"
 
 rem # Sample JPDA settings for shared memory debugging
-rem set "JAVA_OPTS=%JAVA_OPTS% -Xrunjdwp:transport=dt_shmem,address=jboss,server=y,suspend=n"
+rem set "JAVA_OPTS=%JAVA_OPTS% -agentlib:jdwp=transport=dt_shmem,address=jboss,server=y,suspend=n"
 
 rem # Use JBoss Modules lockless mode
 rem set "JAVA_OPTS=%JAVA_OPTS% -Djboss.modules.lockless=true"

@@ -22,22 +22,19 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
-import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.ADD_CONNECTION_DEFINITION_DESC;
-import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.CONNECTIONDEFINITIONS_NODEATTRIBUTE;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
+import static org.jboss.as.connector.subsystems.resourceadapters.CommonAttributes.CONNECTION_DEFINITIONS_NODE_ATTRIBUTE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.List;
-import java.util.Locale;
 
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
 import org.jboss.jca.common.api.validator.ValidateException;
@@ -49,31 +46,15 @@ import org.jboss.msc.service.ServiceTarget;
  * Adds a recovery-environment to the Transactions subsystem
  *
  */
-public class ConnectionDefinitionAdd extends AbstractAddStepHandler implements DescriptionProvider {
+public class ConnectionDefinitionAdd extends AbstractAddStepHandler {
 
     public static final ConnectionDefinitionAdd INSTANCE = new ConnectionDefinitionAdd();
 
-
-    /**
-     * Description provider for the add operation
-     */
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        // TODO use a ResourceDefinition and StandardResourceDescriptionResolver for this resource
-        return ADD_CONNECTION_DEFINITION_DESC.getModelDescription(Locale.getDefault());
-    }
-
-
     @Override
     protected void populateModel(ModelNode operation, ModelNode modelNode) throws OperationFailedException {
-        for (SimpleAttributeDefinition attribute : CONNECTIONDEFINITIONS_NODEATTRIBUTE) {
-            if (!attribute.isAllowed(operation) && operation.hasDefined(attribute.getName())) {
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalid(attribute.getName())));
-            }
-            attribute.validateAndSet(operation, modelNode);
+        for (AttributeDefinition attribute : CONNECTION_DEFINITIONS_NODE_ATTRIBUTE) {
+           attribute.validateAndSet(operation, modelNode);
         }
-
-
     }
 
     @Override
@@ -107,7 +88,7 @@ public class ConnectionDefinitionAdd extends AbstractAddStepHandler implements D
             serviceControllers.add(controller);
 
         } catch (ValidateException e) {
-            throw new OperationFailedException(e, operation);
+            throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToCreate("ConnectionDefinition", operation, e.getLocalizedMessage())));
         }
     }
 

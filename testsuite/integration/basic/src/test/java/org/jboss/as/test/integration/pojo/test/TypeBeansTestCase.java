@@ -37,7 +37,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class TypeBeansTestCase {
     @Deployment(name = "type-beans")
-    public static JavaArchive getCycleBeansJar() {
+    public static JavaArchive getTypeBeansJar() {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "type-beans.jar");
         archive.addPackage(TFactory.class.getPackage());
         archive.addAsManifestResource(TypeBeansTestCase.class.getPackage(), "type-jboss-beans.xml", "type-jboss-beans.xml");

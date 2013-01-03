@@ -22,6 +22,8 @@
 
 package org.jboss.as.modcluster;
 
+import java.util.Set;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -30,7 +32,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 
 public class ModClusterRemoveCustomMetric implements OperationStepHandler {
 
@@ -42,7 +43,7 @@ public class ModClusterRemoveCustomMetric implements OperationStepHandler {
         PathAddress parent = PathAddress.pathAddress(
                 ModClusterExtension.SUBSYSTEM_PATH,
                 ModClusterExtension.CONFIGURATION_PATH,
-                ModClusterExtension.DYNAMIC_LOAD_PROVIDER);
+                ModClusterExtension.DYNAMIC_LOAD_PROVIDER_PATH);
 
         String clazz = CustomLoadMetricDefinition.CLASS.resolveModelAttribute(context, operation).asString();
 
@@ -52,23 +53,19 @@ public class ModClusterRemoveCustomMetric implements OperationStepHandler {
             context.setRollbackOnly();
             return;
         }
-        ModelNode targetOperation = Util.createRemoveOperation(parent.append(PathElement.pathElement(ModClusterExtension.CUSTOM_LOAD_METRIC.getKey(), name)));
+        ModelNode targetOperation = Util.createRemoveOperation(parent.append(PathElement.pathElement(ModClusterExtension.CUSTOM_LOAD_METRIC_PATH.getKey(), name)));
 
         context.addStep(targetOperation, new ReloadRequiredRemoveStepHandler(), OperationContext.Stage.IMMEDIATE);
-        context.completeStep();
+        context.stepCompleted();
     }
 
-    private String getMetricName(OperationContext context, String clazz) {
-        ModelNode loadProvider = context.readResource(PathAddress.pathAddress(ModClusterExtension.DYNAMIC_LOAD_PROVIDER)).getModel();
-        ModelNode loadMetrics = loadProvider.get(CommonAttributes.CUSTOM_LOAD_METRIC);
-        for (Property p : loadMetrics.asPropertyList()) {
-            String metricClass = p.getValue().get(CommonAttributes.TYPE).asString();
-            if (metricClass.equals(clazz)) {
-                return p.getName();
+    private String getMetricName(OperationContext context, String type) {
+        Set<String> metrics = context.readResource(PathAddress.pathAddress(ModClusterExtension.DYNAMIC_LOAD_PROVIDER_PATH)).getChildrenNames(CommonAttributes.CUSTOM_LOAD_METRIC);
+        for (String name : metrics) {
+            if (name.equals(type)) {
+                return name;
             }
         }
         return null;
     }
-
-
 }

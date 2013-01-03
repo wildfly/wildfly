@@ -39,13 +39,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.ejb.EJBException;
+
 import javax.ejb.EJBLocalObject;
 import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.RemoveException;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
+
 import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.bridge.EntityBridge;
 import org.jboss.as.cmp.bridge.FieldBridge;
@@ -502,7 +503,7 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
             if (value != null) {
                 Object relatedId = getPrimaryKey(value);
                 addRelatedId(ctx, relatedId);
-                relatedCMRField.invokeAddRelatedId(ctx, relatedId, ctx.getPrimaryKey());
+                relatedCMRField.invokeAddRelatedId(ctx, relatedId, ctx.getPrimaryKeyUnchecked());
                 localObject = (EJBLocalObject) value;
             } else {
                 destroyExistingRelationships(ctx);
@@ -510,7 +511,7 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
         }
 
         public void cascadeDelete(CmpEntityBeanContext ctx) throws RemoveException {
-            if (manager.registerCascadeDelete(ctx.getPrimaryKey(), ctx.getPrimaryKey())) {
+            if (manager.registerCascadeDelete(ctx.getPrimaryKeyUnchecked(), ctx.getPrimaryKeyUnchecked())) {
                 EJBLocalObject value = (EJBLocalObject) getValue(ctx);
                 if (value != null) {
                     changeValue(null);
@@ -523,7 +524,7 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
                     }
                 }
 
-                manager.unregisterCascadeDelete(ctx.getPrimaryKey());
+                manager.unregisterCascadeDelete(ctx.getPrimaryKeyUnchecked());
             }
         }
 
@@ -531,7 +532,7 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
             Object value = getLoadedValue(ctx);
             if (value != null) {
                 removeRelatedId(ctx, value);
-                relatedCMRField.invokeRemoveRelatedId(ctx, value, ctx.getPrimaryKey());
+                relatedCMRField.invokeRemoveRelatedId(ctx, value, ctx.getPrimaryKeyUnchecked());
             }
         }
 
@@ -553,7 +554,7 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
         public boolean addRelatedId(CmpEntityBeanContext ctx, Object relatedId) {
             Object value = getLoadedValue(ctx);
             if (value != null) {
-                relatedCMRField.invokeRemoveRelatedId(ctx, value, ctx.getPrimaryKey());
+                relatedCMRField.invokeRemoveRelatedId(ctx, value, ctx.getPrimaryKeyUnchecked());
             }
 
             changeValue(relatedId);
@@ -652,19 +653,16 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
                 for (Iterator iter = copy.iterator(); iter.hasNext(); ) {
                     Object relatedId = getPrimaryKey(iter.next());
                     addRelatedId(ctx, relatedId);
-                    relatedCMRField.invokeAddRelatedId(ctx, relatedId, ctx.getPrimaryKey());
+                    relatedCMRField.invokeAddRelatedId(ctx, relatedId, ctx.getPrimaryKeyUnchecked());
                     loader.addRelatedId(ctx, relatedId);
                 }
             }
         }
 
         public void cascadeDelete(CmpEntityBeanContext ctx) throws RemoveException {
-            Collection value = (Collection) getValue(ctx);
-            if (!value.isEmpty()) {
-                EJBLocalObject[] locals = (EJBLocalObject[]) value.toArray();
-                for (int i = 0; i < locals.length; ++i) {
-                    locals[i].remove();
-                }
+            Collection<EJBLocalObject> cmrs = (Collection<EJBLocalObject>) getValue(ctx);
+            for (EJBLocalObject localEjb : cmrs) {
+                localEjb.remove();
             }
         }
 
@@ -675,7 +673,7 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
                 for (int i = 0; i < copy.length; ++i) {
                     Object relatedId = copy[i];
                     removeRelatedId(ctx, relatedId);
-                    relatedCMRField.invokeRemoveRelatedId(ctx, relatedId, ctx.getPrimaryKey());
+                    relatedCMRField.invokeRemoveRelatedId(ctx, relatedId, ctx.getPrimaryKeyUnchecked());
                     loader.removeRelatedId(ctx, relatedId);
                 }
             }
@@ -953,7 +951,7 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
 
                 JDBCCMPFieldBridge2[] pkFields = (JDBCCMPFieldBridge2[]) entity.getPrimaryKeyFields();
 
-                Object myPk = ctx.getPrimaryKey();
+                Object myPk = ctx.getPrimaryKeyUnchecked();
                 int paramInd = 1;
                 for (int i = 0; i < pkFields.length; ++i) {
                     JDBCCMPFieldBridge2 pkField = pkFields[i];
@@ -979,11 +977,11 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
         }
 
         public void removeRelatedId(CmpEntityBeanContext ctx, Object relatedId) {
-            relationTable.removeRelation(JDBCCMRFieldBridge2.this, ctx.getPrimaryKey(), relatedCMRField, relatedId);
+            relationTable.removeRelation(JDBCCMRFieldBridge2.this, ctx.getPrimaryKeyUnchecked(), relatedCMRField, relatedId);
         }
 
         public void addRelatedId(CmpEntityBeanContext ctx, Object relatedId) {
-            relationTable.addRelation(JDBCCMRFieldBridge2.this, ctx.getPrimaryKey(), relatedCMRField, relatedId);
+            relationTable.addRelation(JDBCCMRFieldBridge2.this, ctx.getPrimaryKeyUnchecked(), relatedCMRField, relatedId);
         }
     }
 
@@ -1029,7 +1027,7 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
                 JDBCCMPFieldBridge2[] relatedFkFields = relatedCMRField.foreignKeyFields;
                 JDBCCMPFieldBridge2[] myPkFields = relatedCMRField.relatedPKFields;
 
-                Object myPk = ctx.getPrimaryKey();
+                Object myPk = ctx.getPrimaryKeyUnchecked();
                 int paramInd = 1;
                 for (int i = 0; i < relatedFkFields.length; ++i) {
                     JDBCCMPFieldBridge2 myPkField = myPkFields[i];
@@ -1117,8 +1115,7 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
         void addRelatedId(CmpEntityBeanContext ctx, Object relatedId);
     }
 
-    private class CMRSet
-            implements Set {
+    private class CMRSet implements Set {
         private final CmpEntityBeanContext ctx;
         private final CollectionValuedFieldState state;
 
@@ -1144,7 +1141,7 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
             boolean modified = addRelatedId(ctx, relatedId);
 
             if (modified) {
-                relatedCMRField.invokeAddRelatedId(ctx, relatedId, ctx.getPrimaryKey());
+                relatedCMRField.invokeAddRelatedId(ctx, relatedId, ctx.getPrimaryKeyUnchecked());
                 loader.addRelatedId(ctx, relatedId);
             }
 
@@ -1297,7 +1294,7 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
         private boolean removeById(Object relatedId) {
             boolean modified = removeRelatedId(ctx, relatedId);
             if (modified) {
-                relatedCMRField.invokeRemoveRelatedId(ctx, relatedId, ctx.getPrimaryKey());
+                relatedCMRField.invokeRemoveRelatedId(ctx, relatedId, ctx.getPrimaryKeyUnchecked());
                 loader.removeRelatedId(ctx, relatedId);
             }
             return modified;

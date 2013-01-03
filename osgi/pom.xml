@@ -40,7 +40,7 @@
     <name>JBoss Application Server: OSGi</name>
 
     <modules>
-        <module>configadmin</module>
         <module>service</module>
+        <module>integration</module>
     </modules>
 </project>

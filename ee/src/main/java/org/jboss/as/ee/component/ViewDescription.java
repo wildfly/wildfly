@@ -25,6 +25,7 @@ package org.jboss.as.ee.component;
 import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
@@ -34,6 +35,7 @@ import org.jboss.as.ee.component.interceptors.ComponentDispatcherInterceptor;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.ImmediateInterceptorFactory;
@@ -54,6 +56,10 @@ import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public class ViewDescription {
+
+    //JVM bridge method flag
+    public static final int BRIDGE = 0x0040;
+
     private final String viewClassName;
     private final ComponentDescription componentDescription;
     private final List<String> viewNameParts = new ArrayList<String>();
@@ -75,8 +81,8 @@ public class ViewDescription {
     /**
      * Construct a new instance.
      *
-     * @param componentDescription the associated component description
-     * @param viewClassName        the view class name
+     * @param componentDescription        the associated component description
+     * @param viewClassName               the view class name
      * @param defaultConfiguratorRequired
      */
     public ViewDescription(final ComponentDescription componentDescription, final String viewClassName, final boolean defaultConfiguratorRequired) {
@@ -163,7 +169,7 @@ public class ViewDescription {
     /**
      * Create the injection source
      *
-     * @param serviceName The view service name
+     * @param serviceName     The view service name
      * @param viewClassLoader
      */
     protected InjectionSource createInjectionSource(final ServiceName serviceName, Value<ClassLoader> viewClassLoader) {
@@ -186,8 +192,19 @@ public class ViewDescription {
             final DeploymentReflectionIndex reflectionIndex = context.getDeploymentUnit().getAttachment(REFLECTION_INDEX);
             final List<Method> methods = configuration.getProxyFactory().getCachedMethods();
             for (final Method method : methods) {
-                final Method componentMethod = ClassReflectionIndexUtil.findMethod(reflectionIndex, componentConfiguration.getComponentClass(), MethodIdentifier.getIdentifierForMethod(method));
+                MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifierForMethod(method);
+                Method componentMethod = ClassReflectionIndexUtil.findMethod(reflectionIndex, componentConfiguration.getComponentClass(), methodIdentifier);
+
                 if (componentMethod != null) {
+
+                    if ((BRIDGE & componentMethod.getModifiers()) != 0) {
+                        Method other = findRealMethodForBridgeMethod(componentMethod, componentConfiguration, reflectionIndex, methodIdentifier);
+                        //try and find the non-bridge method to delegate to
+                        if(other != null) {
+                                componentMethod = other;
+                        }
+                    }
+
                     configuration.addViewInterceptor(method, new ImmediateInterceptorFactory(new ComponentDispatcherInterceptor(componentMethod)), InterceptorOrder.View.COMPONENT_DISPATCHER);
                     configuration.addClientInterceptor(method, CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
                 }
@@ -195,6 +212,28 @@ public class ViewDescription {
 
             configuration.addClientPostConstructInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ClientPostConstruct.TERMINAL_INTERCEPTOR);
             configuration.addClientPreDestroyInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ClientPreDestroy.TERMINAL_INTERCEPTOR);
+        }
+
+        private Method findRealMethodForBridgeMethod(final Method componentMethod, final ComponentConfiguration componentConfiguration, final DeploymentReflectionIndex reflectionIndex, final MethodIdentifier methodIdentifier) {
+            final ClassReflectionIndex<?> classIndex = reflectionIndex.getClassIndex(componentMethod.getDeclaringClass()); //the non-bridge method will be on the same class as the bridge method
+            final Collection<Method> methods = classIndex.getAllMethods(componentMethod.getName(), componentMethod.getParameterTypes().length);
+            for(final Method method : methods) {
+                if ((BRIDGE & method.getModifiers()) == 0) {
+                    if(componentMethod.getReturnType().isAssignableFrom(method.getReturnType())) {
+                        boolean ok = true;
+                        for(int i = 0; i < method.getParameterTypes().length; ++i) {
+                            if(!componentMethod.getParameterTypes()[i].isAssignableFrom(method.getParameterTypes()[i])) {
+                                ok = false;
+                                break;
+                            }
+                        }
+                        if(ok) {
+                            return method;
+                        }
+                    }
+                }
+            }
+            return null;
         }
     }
 

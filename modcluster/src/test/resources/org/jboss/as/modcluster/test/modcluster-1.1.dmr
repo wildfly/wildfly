@@ -9,7 +9,7 @@
             "history" => 10,
             "load-metric" => [
                 {
-                    "capacity" => "512",
+                    "capacity" => "512.0",
                     "type" => "send-traffic",
                     "weight" => "3"
                 },
@@ -24,7 +24,7 @@
                     "weight" => "1"
                 },
                 {
-                    "capacity" => "1000",
+                    "capacity" => "1000.0",
                     "type" => "sessions",
                     "weight" => "2"
                 },
@@ -35,7 +35,7 @@
                     "weight" => "1"
                 },
                 {
-                    "capacity" => "1024",
+                    "capacity" => "1024.0",
                     "type" => "receive-traffic",
                     "weight" => "1"
                 },
@@ -45,7 +45,7 @@
                     "weight" => "1"
                 },
                 {
-                    "capacity" => "1000",
+                    "capacity" => "1000.0",
                     "type" => "requests",
                     "weight" => "1"
                 }

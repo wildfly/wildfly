@@ -22,16 +22,13 @@
 package org.jboss.as.jaxr.extension;
 
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.jaxr.JAXRConfiguration;
-import org.jboss.as.jaxr.ModelConstants;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * Handles write-attribute operation for a JAXR property resource.
@@ -41,13 +38,10 @@ import org.jboss.dmr.ModelType;
  */
 public class JAXRPropertyWrite extends AbstractWriteAttributeHandler<Void> {
 
-    static final SimpleAttributeDefinition VALUE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.VALUE, ModelType.STRING, false)
-            .setAllowExpression(true).build();
-
     private final JAXRConfiguration config;
 
-    public JAXRPropertyWrite(JAXRConfiguration config) {
-        super(VALUE);
+    public JAXRPropertyWrite(JAXRConfiguration config, AttributeDefinition attribute) {
+        super(attribute);
         this.config = config;
     }
 

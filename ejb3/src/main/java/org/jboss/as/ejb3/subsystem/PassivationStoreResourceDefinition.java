@@ -42,7 +42,7 @@ import org.jboss.dmr.ModelType;
  */
 public abstract class PassivationStoreResourceDefinition extends SimpleResourceDefinition {
 
-    public static final SimpleAttributeDefinition IDLE_TIMEOUT =
+    static final SimpleAttributeDefinition IDLE_TIMEOUT =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.IDLE_TIMEOUT, ModelType.LONG, true)
                     .setXmlName(EJB3SubsystemXMLAttribute.IDLE_TIMEOUT.getLocalName())
                     .setDefaultValue(new ModelNode().set(BackingCacheEntryStoreConfig.DEFAULT_IDLE_TIMEOUT))
@@ -50,14 +50,14 @@ public abstract class PassivationStoreResourceDefinition extends SimpleResourceD
                     .setValidator(new LongRangeValidator(1, Integer.MAX_VALUE, true, true))
                     .setFlags(AttributeAccess.Flag.RESTART_NONE)
                     .build();
-    public static final SimpleAttributeDefinition IDLE_TIMEOUT_UNIT =
+    static final SimpleAttributeDefinition IDLE_TIMEOUT_UNIT =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.IDLE_TIMEOUT_UNIT, ModelType.STRING, true)
                     .setXmlName(EJB3SubsystemXMLAttribute.IDLE_TIMEOUT_UNIT.getLocalName())
                     .setValidator(TimeUnitValidator.ANY_OPTIONAL)
                     .setDefaultValue(new ModelNode().set(BackingCacheEntryStoreConfig.DEFAULT_IDLE_TIMEOUT_UNIT.name()))
                     .setFlags(AttributeAccess.Flag.RESTART_NONE)
                     .build();
-    public static final SimpleAttributeDefinitionBuilder MAX_SIZE_BUILDER =
+    static final SimpleAttributeDefinitionBuilder MAX_SIZE_BUILDER =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.MAX_SIZE, ModelType.INT, true)
                     .setXmlName(EJB3SubsystemXMLAttribute.MAX_SIZE.getLocalName())
                     .setDefaultValue(new ModelNode().set(BackingCacheEntryStoreConfig.DEFAULT_MAX_SIZE))

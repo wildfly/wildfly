@@ -33,7 +33,7 @@ import java.net.UnknownHostException;
 import junit.framework.Assert;
 
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.test.integration.domain.DomainTestSupport;
+import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.management.util.ModelUtil;
@@ -60,7 +60,8 @@ public class ValidateOperationOperationTestCase extends AbstractMgmtTestBase {
 
     @BeforeClass
     public static void setup() throws UnknownHostException {
-        client = ModelControllerClient.Factory.create(DomainTestSupport.masterAddress, TestSuiteEnvironment.getServerPort());
+        DomainTestSupport testSupport = DomainTestSuite.createSupport(ValidateOperationOperationTestCase.class.getSimpleName());
+        client = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
     }
 
     @AfterClass

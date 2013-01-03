@@ -29,6 +29,7 @@ import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -39,6 +40,7 @@ import org.jboss.msc.service.ServiceName;
 
 /**
  * Base class for operation step handlers that expose thread pool resource metrics.
+ *
  * @author Alexey Loubyansky
  */
 public abstract class ThreadPoolMetricsHandler extends AbstractRuntimeOnlyHandler {
@@ -59,9 +61,7 @@ public abstract class ThreadPoolMetricsHandler extends AbstractRuntimeOnlyHandle
 
     @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
-
         final String attributeName = operation.require(ModelDescriptionConstants.NAME).asString();
-
         ServiceController<?> serviceController = getService(context, operation);
         final Service<?> service = serviceController.getService();
 
@@ -74,12 +74,12 @@ public abstract class ThreadPoolMetricsHandler extends AbstractRuntimeOnlyHandle
 
     protected ServiceController<?> getService(final OperationContext context, final ModelNode operation)
             throws OperationFailedException {
-                final String name = Util.getNameFromAddress(operation.require(OP_ADDR));
-                ServiceController<?> controller = context.getServiceRegistry(false).getService(serviceNameBase.append(name));
-                if(controller == null) {
-                    throw ThreadsMessages.MESSAGES.threadPoolServiceNotFoundForMetrics(serviceNameBase.append(name));
-                }
-                return controller;
-            }
+        final String name = Util.getNameFromAddress(operation.require(OP_ADDR));
+        ServiceController<?> controller = context.getServiceRegistry(false).getService(serviceNameBase.append(name));
+        if (controller == null) {
+            throw ThreadsMessages.MESSAGES.threadPoolServiceNotFoundForMetrics(serviceNameBase.append(name));
+        }
+        return controller;
+    }
 
 }

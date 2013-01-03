@@ -31,21 +31,21 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STO
 
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.Stage;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.controller.descriptions.DomainRootDescription;
-import org.jboss.as.domain.controller.descriptions.ServerGroupDescription;
+import org.jboss.as.domain.controller.descriptions.DomainResolver;
 import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.dmr.ModelNode;
@@ -66,32 +66,33 @@ public class DomainServerLifecycleHandlers {
     private static final int TIMEOUT = 10000;
 
     public static void initializeServerInventory(ServerInventory serverInventory) {
-        StopServersLifecycleHandler.DOMAIN_INSTANCE.setServerInventory(serverInventory);
-        StartServersLifecycleHandler.DOMAIN_INSTANCE.setServerInventory(serverInventory);
-        RestartServersLifecycleHandler.DOMAIN_INSTANCE.setServerInventory(serverInventory);
-        StopServersLifecycleHandler.SERVER_GROUP_INSTANCE.setServerInventory(serverInventory);
-        StartServersLifecycleHandler.SERVER_GROUP_INSTANCE.setServerInventory(serverInventory);
-        RestartServersLifecycleHandler.SERVER_GROUP_INSTANCE.setServerInventory(serverInventory);
+        StopServersLifecycleHandler.INSTANCE.setServerInventory(serverInventory);
+        StartServersLifecycleHandler.INSTANCE.setServerInventory(serverInventory);
+        RestartServersLifecycleHandler.INSTANCE.setServerInventory(serverInventory);
     }
 
     public static void registerDomainHandlers(ManagementResourceRegistration registration) {
-        registration.registerOperationHandler(StopServersLifecycleHandler.OPERATION_NAME, StopServersLifecycleHandler.DOMAIN_INSTANCE, StopServersLifecycleHandler.DOMAIN_INSTANCE);
-        registration.registerOperationHandler(StartServersLifecycleHandler.OPERATION_NAME, StartServersLifecycleHandler.DOMAIN_INSTANCE, StartServersLifecycleHandler.DOMAIN_INSTANCE);
-        registration.registerOperationHandler(RestartServersLifecycleHandler.OPERATION_NAME, RestartServersLifecycleHandler.DOMAIN_INSTANCE, RestartServersLifecycleHandler.DOMAIN_INSTANCE);
+        registerHandlers(registration, false);
     }
 
     public static void registerServerGroupHandlers(ManagementResourceRegistration registration) {
-        registration.registerOperationHandler(StopServersLifecycleHandler.OPERATION_NAME, StopServersLifecycleHandler.SERVER_GROUP_INSTANCE, StopServersLifecycleHandler.SERVER_GROUP_INSTANCE);
-        registration.registerOperationHandler(StartServersLifecycleHandler.OPERATION_NAME, StartServersLifecycleHandler.SERVER_GROUP_INSTANCE, StartServersLifecycleHandler.SERVER_GROUP_INSTANCE);
-        registration.registerOperationHandler(RestartServersLifecycleHandler.OPERATION_NAME, RestartServersLifecycleHandler.SERVER_GROUP_INSTANCE, RestartServersLifecycleHandler.SERVER_GROUP_INSTANCE);
+        registerHandlers(registration, true);
     }
 
-    private abstract static class AbstractHackLifecycleHandler implements OperationStepHandler, DescriptionProvider {
-        volatile ServerInventory serverInventory;
-        final boolean domain;
+    private static void registerHandlers(ManagementResourceRegistration registration, boolean serverGroup) {
+        registration.registerOperationHandler(getOperationDefinition(serverGroup, StopServersLifecycleHandler.OPERATION_NAME), StopServersLifecycleHandler.INSTANCE);
+        registration.registerOperationHandler(getOperationDefinition(serverGroup, StartServersLifecycleHandler.OPERATION_NAME), StartServersLifecycleHandler.INSTANCE);
+        registration.registerOperationHandler(getOperationDefinition(serverGroup, RestartServersLifecycleHandler.OPERATION_NAME), RestartServersLifecycleHandler.INSTANCE);
+    }
 
-        protected AbstractHackLifecycleHandler(final boolean domain) {
-            this.domain = domain;
+    private static OperationDefinition getOperationDefinition(boolean serverGroup, String operationName) {
+        return new SimpleOperationDefinition(operationName, DomainResolver.getResolver(serverGroup ? ModelDescriptionConstants.SERVER_GROUP : ModelDescriptionConstants.DOMAIN));
+    }
+
+    private abstract static class AbstractHackLifecycleHandler implements OperationStepHandler {
+        volatile ServerInventory serverInventory;
+
+        protected AbstractHackLifecycleHandler() {
         }
 
         /**
@@ -131,12 +132,7 @@ public class DomainServerLifecycleHandlers {
 
     private static class StopServersLifecycleHandler extends AbstractHackLifecycleHandler {
         static final String OPERATION_NAME = STOP_SERVERS_NAME;
-        static final StopServersLifecycleHandler DOMAIN_INSTANCE = new StopServersLifecycleHandler(true);
-        static final StopServersLifecycleHandler SERVER_GROUP_INSTANCE = new StopServersLifecycleHandler(false);
-
-        public StopServersLifecycleHandler(final boolean domain) {
-            super(domain);
-        }
+        static final StopServersLifecycleHandler INSTANCE = new StopServersLifecycleHandler();
 
         @Override
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
@@ -152,30 +148,17 @@ public class DomainServerLifecycleHandlers {
                     } else {
                         serverInventory.stopServers(TIMEOUT);
                     }
-                    context.completeStep();
+                    context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                 }
             }, Stage.RUNTIME);
-            context.completeStep();
-        }
 
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            if (domain) {
-                return DomainRootDescription.getStopServersOperation(locale);
-            } else {
-                return ServerGroupDescription.getStopServersOperation(locale);
-            }
+            context.stepCompleted();
         }
     }
 
     private static class StartServersLifecycleHandler extends AbstractHackLifecycleHandler {
         static final String OPERATION_NAME = START_SERVERS_NAME;
-        static final StartServersLifecycleHandler DOMAIN_INSTANCE = new StartServersLifecycleHandler(true);
-        static final StartServersLifecycleHandler SERVER_GROUP_INSTANCE = new StartServersLifecycleHandler(false);
-
-        public StartServersLifecycleHandler(final boolean domain) {
-            super(domain);
-        }
+        static final StartServersLifecycleHandler INSTANCE = new StartServersLifecycleHandler();
 
         @Override
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
@@ -200,31 +183,17 @@ public class DomainServerLifecycleHandlers {
                             }
                         }
                     }
-                    context.completeStep();
+                    context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                 }
             }, Stage.RUNTIME);
 
-            context.completeStep();
-        }
-
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            if (domain) {
-                return DomainRootDescription.getStartServersOperation(locale);
-            } else {
-                return ServerGroupDescription.getStartServersOperation(locale);
-            }
+            context.stepCompleted();
         }
     }
 
     private static class RestartServersLifecycleHandler extends AbstractHackLifecycleHandler {
         static final String OPERATION_NAME = RESTART_SERVERS_NAME;
-        static final RestartServersLifecycleHandler DOMAIN_INSTANCE = new RestartServersLifecycleHandler(true);
-        static final RestartServersLifecycleHandler SERVER_GROUP_INSTANCE = new RestartServersLifecycleHandler(false);
-
-        public RestartServersLifecycleHandler(final boolean domain) {
-            super(domain);
-        }
+        static final RestartServersLifecycleHandler INSTANCE = new RestartServersLifecycleHandler();
 
 
         @Override
@@ -246,22 +215,13 @@ public class DomainServerLifecycleHandlers {
                                     serverInventory.restartServer(serverModelName, TIMEOUT, model);
                                 }
                             }
-                            context.completeStep();
+                            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                         }
                     }, Stage.RUNTIME);
-                    context.completeStep();
+                    context.stepCompleted();
                 }
             }, Stage.RUNTIME);
-            context.completeStep();
-        }
-
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            if (domain) {
-                return DomainRootDescription.getRestartServersOperation(locale);
-            } else {
-                return ServerGroupDescription.getRestartServersOperation(locale);
-            }
+            context.stepCompleted();
         }
     }
 }

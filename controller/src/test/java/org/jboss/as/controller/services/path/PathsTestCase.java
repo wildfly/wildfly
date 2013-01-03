@@ -30,13 +30,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_RESOURCES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_TYPES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ONLY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
@@ -47,7 +41,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -56,13 +49,10 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
-
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManager.Event;
 import org.jboss.as.controller.services.path.PathManager.PathEventContext;
@@ -76,7 +66,6 @@ import org.jboss.msc.service.ServiceName;
 import org.junit.Test;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class PathsTestCase extends AbstractControllerTestBase {
@@ -84,7 +73,7 @@ public class PathsTestCase extends AbstractControllerTestBase {
     PathManagerService pathManagerService;
 
     @Test
-    public void testReadResourceDescription() throws Exception{
+    public void testReadResourceDescription() throws Exception {
         //Just a sanity check to make sure the resource description can be read
         ModelNode operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION);
         operation.get(RECURSIVE).set(true);
@@ -123,6 +112,32 @@ public class PathsTestCase extends AbstractControllerTestBase {
         checkPath(result, "hardcoded", "/hard/coded", null, true);
         checkPath(result, "add1", "xyz", null, false);
         checkPath(result, "add2", "123", "add1", false);
+    }
+
+    /**
+     * https://issues.jboss.org/browse/AS7-4917
+     */
+    @Test
+    public void testAddPathWithExpression() throws Exception {
+        String key = "my.path.expression";
+        String value = "log1234";
+        try {
+            System.setProperty(key, value);
+
+            ModelNode operation = createOperation(ADD);
+            operation.get(OP_ADDR).add(PATH, "path_with_expression");
+            operation.get(PATH).set("/path/${" + key + "}");
+            executeForResult(operation);
+
+            ModelNode result = readResource();
+            Assert.assertTrue(result.hasDefined(PATH));
+            Assert.assertEquals(2, result.get(PATH).keys().size());
+            checkPath(result, "path_with_expression", "/path/${" + key + "}", null, false);
+
+            checkServiceAndPathEntry("path_with_expression", "/path/" + value, null);
+        } finally {
+            System.clearProperty(key);
+        }
     }
 
     @Test
@@ -347,10 +362,10 @@ public class PathsTestCase extends AbstractControllerTestBase {
     private void checkServiceAndPathEntry(String name, String path, String relativeTo) {
         ServiceController<?> pathManagerService = getContainer().getRequiredService(PathManagerService.SERVICE_NAME);
         Assert.assertEquals(State.UP, pathManagerService.getState());
-        PathManagerService pathManager = (PathManagerService)pathManagerService.getValue();
+        PathManagerService pathManager = (PathManagerService) pathManagerService.getValue();
 
         ServiceController<?> pathService = getContainer().getRequiredService(AbstractPathService.pathNameOf(name));
-        String servicePath = (String)pathService.getValue();
+        String servicePath = (String) pathService.getValue();
 
         PathEntry pathEntry = pathManager.getPathEntry(name);
         Assert.assertNotNull(pathEntry);
@@ -364,7 +379,7 @@ public class PathsTestCase extends AbstractControllerTestBase {
     @Test
     public void testPathManagerAddNotifications() throws Exception {
         ServiceController<?> pathManagerService = getContainer().getRequiredService(PathManagerService.SERVICE_NAME);
-        PathManager pathManager = (PathManager)pathManagerService.getValue();
+        PathManager pathManager = (PathManager) pathManagerService.getValue();
 
         PerformChangeCallback allCallback1 = new PerformChangeCallback(pathManager, "add1", Event.ADDED, Event.REMOVED, Event.UPDATED);
         PerformChangeCallback addCallback1 = new PerformChangeCallback(pathManager, "add1", Event.ADDED);
@@ -424,7 +439,7 @@ public class PathsTestCase extends AbstractControllerTestBase {
     public void testPathManagerRemoveNotifications() throws Exception {
         testAddPath();
         ServiceController<?> pathManagerService = getContainer().getRequiredService(PathManagerService.SERVICE_NAME);
-        PathManager pathManager = (PathManager)pathManagerService.getValue();
+        PathManager pathManager = (PathManager) pathManagerService.getValue();
 
         PerformChangeCallback allCallback1 = new PerformChangeCallback(pathManager, "add1", Event.ADDED, Event.REMOVED, Event.UPDATED);
         PerformChangeCallback addCallback1 = new PerformChangeCallback(pathManager, "add1", Event.ADDED);
@@ -488,7 +503,7 @@ public class PathsTestCase extends AbstractControllerTestBase {
     public void testPathManagerChangeNotifications() throws Exception {
         testAddPath();
         ServiceController<?> pathManagerService = getContainer().getRequiredService(PathManagerService.SERVICE_NAME);
-        PathManager pathManager = (PathManager)pathManagerService.getValue();
+        PathManager pathManager = (PathManager) pathManagerService.getValue();
 
         ModelNode operation = createOperation(ADD);
         operation.get(OP_ADDR).add(PATH, "add3");
@@ -565,7 +580,7 @@ public class PathsTestCase extends AbstractControllerTestBase {
         testAddPath();
 
         ServiceController<?> pathManagerService = getContainer().getRequiredService(PathManagerService.SERVICE_NAME);
-        PathManager pathManager = (PathManager)pathManagerService.getValue();
+        PathManager pathManager = (PathManager) pathManagerService.getValue();
 
         PerformChangeCallback allCallback1 = new PerformChangeCallback(pathManager, "add2", Event.ADDED, Event.REMOVED, Event.UPDATED);
         PerformChangeCallback allCallback2 = new PerformChangeCallback(pathManager, "add2", Event.ADDED, Event.REMOVED, Event.UPDATED);
@@ -587,7 +602,7 @@ public class PathsTestCase extends AbstractControllerTestBase {
     @Test
     public void testBadAdd() throws Exception {
         ServiceController<?> pathManagerService = getContainer().getRequiredService(PathManagerService.SERVICE_NAME);
-        PathManager pathManager = (PathManager)pathManagerService.getValue();
+        PathManager pathManager = (PathManager) pathManagerService.getValue();
 
         PerformChangeCallback allCallback1 = new PerformChangeCallback(pathManager, "add1", Event.ADDED, Event.REMOVED, Event.UPDATED);
 
@@ -613,7 +628,7 @@ public class PathsTestCase extends AbstractControllerTestBase {
     @Test
     public void testBadChangeNoNotification() throws Exception {
         ServiceController<?> pathManagerService = getContainer().getRequiredService(PathManagerService.SERVICE_NAME);
-        PathManager pathManager = (PathManager)pathManagerService.getValue();
+        PathManager pathManager = (PathManager) pathManagerService.getValue();
 
         PerformChangeCallback allCallback1 = new PerformChangeCallback(pathManager, "add1", Event.ADDED, Event.REMOVED, Event.UPDATED);
 
@@ -644,7 +659,7 @@ public class PathsTestCase extends AbstractControllerTestBase {
         testAddPath();
 
         ServiceController<?> pathManagerService = getContainer().getRequiredService(PathManagerService.SERVICE_NAME);
-        PathManager pathManager = (PathManager)pathManagerService.getValue();
+        PathManager pathManager = (PathManager) pathManagerService.getValue();
 
         PerformChangeCallback allCallback1 = new PerformChangeCallback(pathManager, "add1", Event.ADDED, Event.REMOVED, Event.UPDATED);
         PerformChangeCallback allCallback2 = new PerformChangeCallback(pathManager, "add2", Event.ADDED, Event.REMOVED, Event.UPDATED);
@@ -811,16 +826,7 @@ public class PathsTestCase extends AbstractControllerTestBase {
                 super.addHardcodedAbsolutePath(getContainer(), "hardcoded", "/hard/coded");
             }
         };
-        registration.registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true, EnumSet.of(Flag.RUNTIME_ONLY));
-        registration.registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true, EnumSet.of(Flag.RUNTIME_ONLY));
-        registration.registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true, EnumSet.of(Flag.RUNTIME_ONLY));
-        registration.registerOperationHandler(READ_CHILDREN_NAMES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_NAMES, CommonProviders.READ_CHILDREN_NAMES_PROVIDER, true, EnumSet.of(Flag.RUNTIME_ONLY));
-        registration.registerOperationHandler(READ_CHILDREN_TYPES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_TYPES, CommonProviders.READ_CHILDREN_TYPES_PROVIDER, true, EnumSet.of(Flag.RUNTIME_ONLY));
-        registration.registerOperationHandler(READ_CHILDREN_RESOURCES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_RESOURCES, CommonProviders.READ_CHILDREN_RESOURCES_PROVIDER, true, EnumSet.of(Flag.RUNTIME_ONLY));
-        registration.registerOperationHandler(READ_OPERATION_NAMES_OPERATION, GlobalOperationHandlers.READ_OPERATION_NAMES, CommonProviders.READ_OPERATION_NAMES_PROVIDER, true, EnumSet.of(Flag.RUNTIME_ONLY));
-        registration.registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true, EnumSet.of(Flag.RUNTIME_ONLY));
-        registration.registerOperationHandler(UNDEFINE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.UNDEFINE_ATTRIBUTE, CommonProviders.UNDEFINE_ATTRIBUTE_PROVIDER, true);
-        registration.registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
+        GlobalOperationHandlers.registerGlobalOperations(registration, processType);
 
         TestServiceListener listener = new TestServiceListener();
         listener.reset(1);
@@ -840,7 +846,7 @@ public class PathsTestCase extends AbstractControllerTestBase {
         pathManagerService.addPathManagerResources(rootResource);
     }
 
-    private class TestServiceListener extends AbstractServiceListener<Object>{
+    private class TestServiceListener extends AbstractServiceListener<Object> {
 
         volatile CountDownLatch latch;
         Map<Transition, ServiceName> services = Collections.synchronizedMap(new LinkedHashMap<ServiceController.Transition, ServiceName>());
@@ -862,12 +868,12 @@ public class PathsTestCase extends AbstractControllerTestBase {
     private static class ExpectedResultBuilder {
         LinkedHashMap<Transition, ServiceName> map = new LinkedHashMap<ServiceController.Transition, ServiceName>();
 
-        ExpectedResultBuilder addUp(ServiceName name){
+        ExpectedResultBuilder addUp(ServiceName name) {
             map.put(Transition.STARTING_to_UP, name);
             return this;
         }
 
-        ExpectedResultBuilder addRemove(ServiceName name){
+        ExpectedResultBuilder addRemove(ServiceName name) {
             map.put(Transition.REMOVING_to_REMOVED, name);
             return this;
         }
@@ -878,7 +884,7 @@ public class PathsTestCase extends AbstractControllerTestBase {
         private LinkedHashMap<Event, PathEntry> paths = new LinkedHashMap<PathManager.Event, PathEntry>();
         private Handle handle;
 
-        PerformChangeCallback(PathManager pathManager, String pathName, Event...events) {
+        PerformChangeCallback(PathManager pathManager, String pathName, Event... events) {
             if (handle != null) {
                 throw new IllegalStateException("Already registered");
             }
@@ -919,4 +925,4 @@ public class PathsTestCase extends AbstractControllerTestBase {
         public void pathModelEvent(PathEventContext eventContext, String name) {
         }
     }
- }
+}

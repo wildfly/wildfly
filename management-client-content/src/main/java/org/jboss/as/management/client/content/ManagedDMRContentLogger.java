@@ -24,7 +24,7 @@ package org.jboss.as.management.client.content;
 
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
-import org.jboss.logging.MessageLogger;
+import org.jboss.logging.annotations.MessageLogger;
 
 /**
  * This module is using message IDs in the range 12200-12299. This file is using the subset 12200-12249 for

@@ -143,17 +143,24 @@ final class OperationContextImpl extends AbstractOperationContext {
             MGMT_OP_LOGGER.debugf("Entered VERIFY stage; waiting for service container to settle");
             // First wait until any removals we've initiated have begun processing, otherwise
             // the ContainerStateMonitor may not have gotten the notification causing it to untick
-            final Map<ServiceName, ServiceController<?>> map = realRemovingControllers;
-            synchronized (map) {
-                while (!map.isEmpty()) {
-                    map.wait();
-                }
-            }
+            waitForRemovals();
             ContainerStateMonitor.ContainerStateChangeReport changeReport = modelController.awaitContainerStateChangeReport(1);
             // If any services are missing, add a verification handler to see if we caused it
             if (changeReport != null && !changeReport.getMissingServices().isEmpty()) {
                 ServiceRemovalVerificationHandler removalVerificationHandler = new ServiceRemovalVerificationHandler(changeReport);
                 addStep(new ModelNode(), new ModelNode(), PathAddress.EMPTY_ADDRESS, removalVerificationHandler, Stage.VERIFY);
+            }
+        }
+    }
+
+    @Override
+    protected void waitForRemovals() throws InterruptedException {
+        if (affectsRuntime && !cancelled) {
+            final Map<ServiceName, ServiceController<?>> map = realRemovingControllers;
+            synchronized (map) {
+                while (!map.isEmpty() && !cancelled) {
+                    map.wait();
+                }
             }
         }
     }
@@ -290,7 +297,9 @@ final class OperationContextImpl extends AbstractOperationContext {
             acquireContainerMonitor();
             awaitContainerMonitor();
         }
-        doRemove(controller);
+        if (controller != null) {
+            doRemove(controller);
+        }
     }
 
     private void doRemove(final ServiceController<?> controller) {
@@ -463,8 +472,28 @@ final class OperationContextImpl extends AbstractOperationContext {
             throw MESSAGES.operationAlreadyComplete();
         }
         Resource model = this.model;
-        for (final PathElement element : address) {
-            model = requireChild(model, element, address);
+        final Iterator<PathElement> iterator = address.iterator();
+        while(iterator.hasNext()) {
+            final PathElement element = iterator.next();
+            // Allow wildcard navigation for the last element
+            if(element.isWildcard() && ! iterator.hasNext()) {
+                final Set<Resource.ResourceEntry> children = model.getChildren(element.getKey());
+                if(children.isEmpty()) {
+                    final PathAddress parent = address.subAddress(0, address.size() -1);
+                    final Set<String> childrenTypes = modelController.getRootRegistration().getChildNames(parent);
+                    if(! childrenTypes.contains(element.getKey())) {
+                        throw ControllerMessages.MESSAGES.managementResourceNotFound(address);
+                    }
+                    // Return an empty model
+                    return Resource.Factory.create();
+                }
+                model = Resource.Factory.create();
+                for(final Resource.ResourceEntry entry : children) {
+                    model.registerChild(entry.getPathElement(), entry);
+                }
+            } else {
+                model = requireChild(model, element, address);
+            }
         }
         if(recursive) {
             return model.clone();
@@ -641,7 +670,6 @@ final class OperationContextImpl extends AbstractOperationContext {
 
     @Override
     void releaseStepLocks(AbstractOperationContext.Step step) {
-
         try {
             if (this.lockStep == step) {
                 modelController.releaseLock();
@@ -659,6 +687,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                     modelController.awaitContainerMonitor(true, 1);
                 }  catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
+                    MGMT_OP_LOGGER.interruptedWaitingStability();
                 }
             }
         } finally {
@@ -1017,7 +1046,7 @@ final class OperationContextImpl extends AbstractOperationContext {
             if (!missingByStep.isEmpty() && context.isRollbackOnRuntimeFailure()) {
                 context.setRollbackOnly();
             }
-            context.completeStep();
+            context.completeStep(RollbackHandler.NOOP_ROLLBACK_HANDLER);
         }
     }
 

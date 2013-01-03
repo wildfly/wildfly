@@ -30,6 +30,7 @@ import javax.management.MBeanServer;
 import org.jboss.as.jmx.MBeanRegistrationService;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
+import org.jboss.as.service.component.ServiceComponentInstantiator;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -59,7 +60,16 @@ final class MBeanServices {
     private final ServiceTarget target;
     private boolean installed;
 
-    MBeanServices(final String mBeanName, final Object mBeanInstance, final List<ClassReflectionIndex<?>> mBeanClassHierarchy, final ServiceTarget target) {
+    /**
+     *
+     * @param mBeanName
+     * @param mBeanInstance
+     * @param mBeanClassHierarchy
+     * @param target
+     * @param componentInstantiator
+     * @param duServiceName the deployment unit's service name
+     */
+    MBeanServices(final String mBeanName, final Object mBeanInstance, final List<ClassReflectionIndex<?>> mBeanClassHierarchy, final ServiceTarget target,ServiceComponentInstantiator componentInstantiator, final ServiceName duServiceName) {
         if (mBeanClassHierarchy == null) {
             throw SarMessages.MESSAGES.nullVar("mBeanName");
         }
@@ -72,13 +82,17 @@ final class MBeanServices {
 
         final Method createMethod = ReflectionUtils.getMethod(mBeanClassHierarchy, CREATE_METHOD_NAME, NO_ARGS, false);
         final Method destroyMethod = ReflectionUtils.getMethod(mBeanClassHierarchy, DESTROY_METHOD_NAME, NO_ARGS, false);
-        createDestroyService = new CreateDestroyService(mBeanInstance, createMethod, destroyMethod);
+        createDestroyService = new CreateDestroyService(mBeanInstance, createMethod, destroyMethod,componentInstantiator, duServiceName);
         createDestroyServiceName = ServiceNameFactory.newCreateDestroy(mBeanName);
         createDestroyServiceBuilder = target.addService(createDestroyServiceName, createDestroyService);
+        if(componentInstantiator != null) {
+            // the service that starts the EE component needs to start first
+            createDestroyServiceBuilder.addDependency(componentInstantiator.getComponentStartServiceName());
+        }
 
         final Method startMethod = ReflectionUtils.getMethod(mBeanClassHierarchy, START_METHOD_NAME, NO_ARGS, false);
         final Method stopMethod = ReflectionUtils.getMethod(mBeanClassHierarchy, STOP_METHOD_NAME, NO_ARGS, false);
-        startStopService = new StartStopService(mBeanInstance, startMethod, stopMethod);
+        startStopService = new StartStopService(mBeanInstance, startMethod, stopMethod, duServiceName);
         startStopServiceName = ServiceNameFactory.newStartStop(mBeanName);
         startStopServiceBuilder = target.addService(startStopServiceName, startStopService);
         startStopServiceBuilder.addDependency(createDestroyServiceName);

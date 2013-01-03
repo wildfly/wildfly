@@ -51,21 +51,26 @@ class IgnoredDomainTypeAddHandler implements OperationStepHandler {
         ModelNode names = IgnoredDomainTypeResourceDefinition.NAMES.validateOperation(operation);
         ModelNode wildcardNode = IgnoredDomainTypeResourceDefinition.WILDCARD.validateOperation(operation);
         Boolean wildcard = wildcardNode.isDefined() ? wildcardNode.asBoolean() : null;
-        IgnoreDomainResourceTypeResource resource = new IgnoreDomainResourceTypeResource(type, names, wildcard);
+        final IgnoreDomainResourceTypeResource resource = new IgnoreDomainResourceTypeResource(type, names, wildcard);
         context.addResource(PathAddress.EMPTY_ADDRESS, resource);
 
-        boolean booting = context.isBooting();
+        final boolean booting = context.isBooting();
         if (!booting) {
             context.reloadRequired();
         }
 
-        if (context.completeStep() == OperationContext.ResultAction.KEEP) {
-            if (booting) {
-                resource.publish();
+        context.completeStep(new OperationContext.ResultHandler() {
+            @Override
+            public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
+                if (resultAction == OperationContext.ResultAction.KEEP) {
+                    if (booting) {
+                        resource.publish();
+                    }
+                } else if (!booting) {
+                    context.revertReloadRequired();
+                }
             }
-        } else if (!booting) {
-            context.revertReloadRequired();
-        }
+        });
 
     }
 }

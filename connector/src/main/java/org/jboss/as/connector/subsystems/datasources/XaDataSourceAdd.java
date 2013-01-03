@@ -23,7 +23,8 @@
 package org.jboss.as.connector.subsystems.datasources;
 
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCE_PROPERTIES;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.XA_DATASOURCE_ATTRIBUTE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE_ATTRIBUTE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE_PROPERTIES_ATTRIBUTES;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -42,24 +43,21 @@ public class XaDataSourceAdd extends AbstractDataSourceAdd {
     static final XaDataSourceAdd INSTANCE = new XaDataSourceAdd();
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        populateAddModel(operation, model, XADATASOURCE_PROPERTIES.getName(), XA_DATASOURCE_ATTRIBUTE);
+        populateAddModel(operation, model, XADATASOURCE_PROPERTIES.getName(), XA_DATASOURCE_ATTRIBUTE, XA_DATASOURCE_PROPERTIES_ATTRIBUTES);
     }
 
     protected AbstractDataSourceService createDataSourceService(final String jndiName) throws OperationFailedException {
-
-        XaDataSourceService service = new XaDataSourceService(jndiName);
-        return service;
+        return new XaDataSourceService(jndiName);
     }
 
     @Override
-    protected void startConfigAndAddDependency(ServiceBuilder<?> dataSourceServiceBuilder,
-                                               AbstractDataSourceService dataSourceService, String jndiName, ServiceTarget serviceTarget, final ModelNode operation, final ServiceVerificationHandler handler)
-            throws OperationFailedException {
+    protected void startConfigAndAddDependency(ServiceBuilder<?> dataSourceServiceBuilder, AbstractDataSourceService dataSourceService,
+                                               String jndiName, ServiceTarget serviceTarget, final ModelNode operation,
+                                               final ServiceVerificationHandler handler) throws OperationFailedException {
 
         final ServiceName dataSourceCongServiceName = XADataSourceConfigService.SERVICE_NAME_BASE.append(jndiName);
 
-        dataSourceServiceBuilder.addDependency(dataSourceCongServiceName, ModifiableXaDataSource.class,
-                ((XaDataSourceService) dataSourceService).getDataSourceConfigInjector());
+        dataSourceServiceBuilder.addDependency(dataSourceCongServiceName, ModifiableXaDataSource.class, ((XaDataSourceService) dataSourceService).getDataSourceConfigInjector());
 
     }
 }

@@ -45,7 +45,8 @@ public class PersistenceProviderLoader {
      * @throws ModuleLoadException
      */
     public static void loadDefaultProvider() throws ModuleLoadException {
-        loadProviderModuleByName(Configuration.PROVIDER_MODULE_DEFAULT);
+        String defaultProviderModule = Configuration.getDefaultProviderModuleName();
+        loadProviderModuleByName(defaultProviderModule);
     }
 
     /**

@@ -30,6 +30,7 @@ import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationRequestCompleter;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.parsing.command.CommandFormat;
+import org.jboss.as.cli.parsing.operation.OperationFormat;
 
 
 /**
@@ -71,6 +72,7 @@ public class CommandCompleter implements CommandLineCompleter {
                 }
             }
             Collections.sort(candidates);
+            candidates.add(OperationFormat.INSTANCE.getAddressOperationSeparator());
             return 0;
         }
 

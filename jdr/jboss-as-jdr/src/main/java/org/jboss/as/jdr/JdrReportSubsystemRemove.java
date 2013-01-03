@@ -25,22 +25,16 @@ package org.jboss.as.jdr;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
-
-import java.util.Locale;
 
 /**
  * Remove the JDR subsystem.
  *
  * @author Brian Stansberry
  */
-public class JdrReportSubsystemRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
+public class JdrReportSubsystemRemove extends AbstractRemoveStepHandler {
 
-    public static final String OPERATION_NAME = ModelDescriptionConstants.REMOVE;
-
-    public static final JdrReportSubsystemRemove INSTANCE = new JdrReportSubsystemRemove();
+    static final JdrReportSubsystemRemove INSTANCE = new JdrReportSubsystemRemove();
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
@@ -49,8 +43,4 @@ public class JdrReportSubsystemRemove extends AbstractRemoveStepHandler implemen
     }
 
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return JdrReportDescriptions.getSubsystemRemove(locale);
-    }
 }

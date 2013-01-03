@@ -41,9 +41,9 @@ public class CommonDomainContainerConfiguration implements ContainerConfiguratio
 
     private Map<String, String> containerModeMap;
 
-    private int serverGroupOperationTimeoutInSeconds = 60;
+    private int serverGroupOperationTimeoutInSeconds = 120;
 
-    private int serverOperationTimeoutInSeconds = 60;
+    private int serverOperationTimeoutInSeconds = 120;
 
     public CommonDomainContainerConfiguration() {
         managementAddress = getInetAddress("127.0.0.1");

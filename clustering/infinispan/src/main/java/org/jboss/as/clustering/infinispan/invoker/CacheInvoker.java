@@ -22,6 +22,7 @@
 package org.jboss.as.clustering.infinispan.invoker;
 
 import org.infinispan.Cache;
+import org.infinispan.context.Flag;
 
 /**
  * Encapsulates logic used to invoke an operation on a cache.
@@ -35,13 +36,15 @@ public interface CacheInvoker {
      * @param <R> the type of the cache operation result
      * @param cache an infinispan cache
      * @param operation a cache operation
+     * @param flags an optional set of invocation flags
      * @return the result of the cache operation
      */
-    <K, V, R> R invoke(Cache<K, V> cache, Operation<K, V, R> operation);
+    <K, V, R> R invoke(Cache<K, V> cache, Operation<K, V, R> operation, Flag... flags);
 
     /**
      * Encapsulates a cache operation.
-     *
+     * @param <K> the cache key
+     * @param <V> the cache value
      * @param <R> the return type of the cache operation
      */
     interface Operation<K, V, R> {

@@ -51,10 +51,103 @@
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-security</artifactId>
+            <exclusions>
+              <exclusion>
+                <groupId>org.hornetq</groupId>
+                <artifactId>hornetq-core</artifactId>
+              </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.jboss.marshalling</groupId>
             <artifactId>jboss-marshalling-river</artifactId>
+        </dependency>
+        <!-- dependencies for running tests -->
+        <dependency>
+          <groupId>org.jboss</groupId>
+          <artifactId>jboss-remote-naming</artifactId>
+          <exclusions>
+            <exclusion>
+              <groupId>org.jboss.xnio</groupId>
+              <artifactId>xnio-api</artifactId>
+            </exclusion>
+          </exclusions>
+        </dependency>
+        <dependency>
+          <groupId>javax.mail</groupId>
+          <artifactId>mail</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.jboss</groupId>
+          <artifactId>jboss-ejb-client</artifactId>
+          <exclusions>
+            <exclusion>
+              <groupId>org.jboss.remoting3</groupId>
+              <artifactId>jboss-remoting</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>org.jboss.xnio</groupId>
+              <artifactId>xnio-api</artifactId>
+            </exclusion>
+          </exclusions>
+        </dependency>
+        <dependency>
+          <groupId>org.jboss.ejb3</groupId>
+          <artifactId>jboss-ejb3-ext-api</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.javassist</groupId>
+          <artifactId>javassist</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.jboss</groupId>
+          <artifactId>jboss-common-core</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>xerces</groupId>
+          <artifactId>xercesImpl</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.jboss</groupId>
+          <artifactId>jbossxb</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.jboss.remotingjmx</groupId>
+          <artifactId>remoting-jmx</artifactId>
+          <exclusions>
+            <exclusion>
+              <groupId>org.jboss.xnio</groupId>
+              <artifactId>xnio-nio</artifactId>
+            </exclusion>
+          </exclusions>
+        </dependency>
+        <dependency>
+          <groupId>org.jboss.remoting3</groupId>
+          <artifactId>jboss-remoting</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.hornetq</groupId>
+          <artifactId>hornetq-jms-client</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.hornetq</groupId>
+          <artifactId>hornetq-jms-server</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.hornetq</groupId>
+          <artifactId>hornetq-core-client</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.hornetq</groupId>
+          <artifactId>hornetq-server</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.jboss.xnio</groupId>
+          <artifactId>xnio-api</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.jboss.xnio</groupId>
+          <artifactId>xnio-nio</artifactId>
         </dependency>
     </dependencies>
 

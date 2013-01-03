@@ -30,6 +30,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
@@ -45,11 +46,11 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.services.security.VaultReaderException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.invocation.proxy.MethodIdentifier;
-import org.jboss.logging.Cause;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageBundle;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.Messages;
-import org.jboss.logging.Param;
+import org.jboss.logging.annotations.Param;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
@@ -85,27 +86,33 @@ public interface ServerMessages {
     String argUsage();
 
     /**
-     * Instructions for the {@link CommandLineArgument#LEGACY_SHORT_SERVER_CONFIG} and {@link
-     * CommandLineArgument#SHORT_SERVER_CONFIG} and {@link CommandLineArgument#SERVER_CONFIG} command line arguments.
+     * Instructions for the {@link CommandLineConstants#SERVER_CONFIG} command line argument.
      *
      * @return the message.
      */
-    @Message(id = Message.NONE, value = "Name of the server configuration file to use (default is \"standalone.xml\")")
+    @Message(id = Message.NONE, value = "Name of the server configuration file to use (default is \"standalone.xml\") (Same as -c)")
     String argServerConfig();
 
     /**
-     * Instructions for the {@link CommandLineArgument#READ_ONLY_SERVER_CONFIG} command line arguments.
+     * Instructions for the {@link CommandLineConstants#SHORT_SERVER_CONFIG} command line argument.
+     *
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Name of the server configuration file to use (default is \"standalone.xml\") (Same as --server-config)")
+    String argShortServerConfig();
+
+    /**
+     * Instructions for the {@link CommandLineConstants#READ_ONLY_SERVER_CONFIG} command line arguments.
      *
      * @return the message.
      */
     @Message(id = Message.NONE, value = "Name of the server configuration file to use. This differs from '" + CommandLineConstants.SERVER_CONFIG +
-            "', '" + CommandLineConstants.SHORT_SERVER_CONFIG + "' and '" + CommandLineConstants.OLD_SERVER_CONFIG + "' in that the original file is never persisted.")
+            "' and '" + CommandLineConstants.SHORT_SERVER_CONFIG + "' in that the original file is never overwritten.")
     String argReadOnlyServerConfig();
 
 
     /**
-     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#SHORT_HELP} or {@link
-     * org.jboss.as.process.CommandLineArgument#HELP} command line argument.
+     * Instructions for the {@link CommandLineConstants#SHORT_HELP} or {@link CommandLineConstants#HELP} command line argument.
      *
      * @return the message.
      */
@@ -113,8 +120,7 @@ public interface ServerMessages {
     String argHelp();
 
     /**
-     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#SHORT_PROPERTIES} or {@link
-     * org.jboss.as.process.CommandLineArgument#PROPERTIES} command line argument.
+     * Instructions for the {@link CommandLineConstants#SHORT_PROPERTIES} or {@link CommandLineConstants#PROPERTIES} command line argument.
      *
      * @return the message.
      */
@@ -122,7 +128,7 @@ public interface ServerMessages {
     String argProperties();
 
     /**
-     * Instructions for the {@link org.jboss.as.server.CommandLineArgument#SECURITY_PROP} command line argument.
+     * Instructions for the {@link CommandLineConstants#SECURITY_PROP} command line argument.
      *
      * @return the message.
      */
@@ -130,7 +136,7 @@ public interface ServerMessages {
     String argSecurityProperty();
 
     /**
-     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#SYSTEM_PROPERTY} command line argument.
+     * Instructions for the {@link CommandLineConstants#SYS_PROP} command line argument.
      *
      * @return the message.
      */
@@ -138,8 +144,8 @@ public interface ServerMessages {
     String argSystem();
 
     /**
-     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#SHORT_VERSION}, {@link
-     * org.jboss.as.process.CommandLineArgument#LEGACY_SHORT_VERSION} or {@link org.jboss.as.process.CommandLineArgument#VERSION}
+     * Instructions for the {@link CommandLineConstants#SHORT_VERSION}, {@link
+     * CommandLineConstants#OLD_SHORT_VERSION or {@link CommandLineConstants#VERSION}
      * command line argument.
      *
      * @return the message.
@@ -148,8 +154,7 @@ public interface ServerMessages {
     String argVersion();
 
     /**
-     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#PUBLIC_BIND_ADDRESS} or {@link
-     * org.jboss.as.process.CommandLineArgument#LEGACY_PUBLIC_BIND_ADDRESS} command line argument.
+     * Instructions for the {@link CommandLineConstants#PUBLIC_BIND_ADDRESS} command line argument.
      *
      * @return the message.
      */
@@ -157,7 +162,7 @@ public interface ServerMessages {
     String argPublicBindAddress();
 
     /**
-     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#INTERFACE_BIND_ADDRESS} command line
+     * Instructions for the {code -b<interface></interface>} command line
      * argument.
      *
      * @return the message.
@@ -166,7 +171,7 @@ public interface ServerMessages {
     String argInterfaceBindAddress();
 
     /**
-     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#DEFAULT_MULTICAST_ADDRESS} command line
+     * Instructions for the {@link CommandLineConstants#DEFAULT_MULTICAST_ADDRESS} command line
      * argument.
      *
      * @return the message.
@@ -175,12 +180,20 @@ public interface ServerMessages {
     String argDefaultMulticastAddress();
 
     /**
-     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#ADMIN_ONLY} command line argument.
+     * Instructions for the {@link CommandLineConstants#ADMIN_ONLY} command line argument.
      *
      * @return the message.
      */
     @Message(id = Message.NONE, value = "Set the server's running type to ADMIN_ONLY causing it to open administrative interfaces and accept management requests but not start other runtime services or accept end user requests.")
     String argAdminOnly();
+
+    /**
+     * Instructions for the {@link CommandLineConstants#DEBUG} command line argument.
+     *
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Activate debug mode with an optional argument to specify the port. Only works if the launch script supports it.")
+    String argDebugPort();
 
     /**
      * Creates an error message indicating a value was expected for the given command line option.
@@ -441,7 +454,7 @@ public interface ServerMessages {
     @Message(id = 18716, value = "Could not create server base directory: %s")
     IllegalStateException couldNotCreateServerBaseDirectory(File file);
 
-    @Message(id = 18717, value = "No deployment content with hash %s is available in the deployment content repository for deployment '%s'. This is a fatal boot error. To correct the problem, either restart with the --admin-only switch set and use the CLI to install the missing content or remove it from the configuration, or remove the deployment from the xml configuraiton file and restart.")
+    @Message(id = 18717, value = "No deployment content with hash %s is available in the deployment content repository for deployment '%s'. This is a fatal boot error. To correct the problem, either restart with the --admin-only switch set and use the CLI to install the missing content or remove it from the configuration, or remove the deployment from the xml configuration file and restart.")
     OperationFailedException noSuchDeploymentContentAtBoot(String contentHash, String deploymentName);
 
     /** Label for DEBUG log listing of the server's system properties */
@@ -569,13 +582,13 @@ public interface ServerMessages {
     XMLStreamException unexpectedContent(String kind, QName name, String text, @Param Location location);
 
     @Message(id = 18755, value = "No method found with id: %s on class (or its super class) %s")
-    DeploymentUnitProcessingException noMethodFound(MethodIdentifier method, Class clazz);
+    DeploymentUnitProcessingException noMethodFound(MethodIdentifier method, Class<?> clazz);
 
     @Message(id = 18756, value = "Method cannot be null")
     IllegalArgumentException nullMethod();
 
     @Message(id = 18757, value = "Error getting reflective information for %s with ClassLoader %s")
-    RuntimeException errorGettingReflectiveInformation(Class clazz, ClassLoader cl, @Param Throwable cause);
+    RuntimeException errorGettingReflectiveInformation(Class<?> clazz, ClassLoader cl, @Param Throwable cause);
 
     @Message(id = 18758, value = "External Module Service already started")
     IllegalStateException externalModuleServiceAlreadyStarted();
@@ -583,8 +596,8 @@ public interface ServerMessages {
     @Message(id = 18759, value = "Failed to load module: %s")
     StartException failedToLoadModule(ModuleIdentifier module, @Cause ModuleLoadException cause);
 
-    @Message(id = 18760, value = "Timeout waiting for module service: %s")
-    ModuleLoadException timeoutWaitingForModuleService(ModuleIdentifier module);
+    //@Message(id = 18760, value = "Timeout waiting for module service: %s")
+    //ModuleLoadException timeoutWaitingForModuleService(ModuleIdentifier module);
 
     @Message(id = 18761, value = "%s cannot be defined when %s is also defined")
     OperationFailedException conflictingConfigs(String choice, String alternative);
@@ -619,6 +632,44 @@ public interface ServerMessages {
     @Message(id = 18771, value = "Can't use both --server-config and --initial-server-config")
     IllegalArgumentException cannotHaveBothInitialServerConfigAndServerConfig();
 
+    @Message(id = 18772, value = "Duplicate namespace %s in jboss-all.xml")
+    XMLStreamException duplicateJBossXmlNamespace(QName namespace, @Param Location location);
 
+    @Message(id = 18773, value = "Two different versions of the same namespaces are present in jboss-all.xml, %s and %s are both present")
+    DeploymentUnitProcessingException equivilentNamespacesInJBossXml(QName key, QName s);
+
+    @Message(id = 18774, value = "Error loading jboss-all.xml from %s")
+    DeploymentUnitProcessingException errorLoadingJBossXmlFile(String path, @Cause XMLStreamException e);
+
+    @Message(id = 18775, value = "Cannot obtain required module for: %s")
+    IllegalStateException nullModuleAttachment(DeploymentUnit depUnit);
+
+    @Message(id = 18776, value = "Failed to get content for deployment overlay %s at %s")
+    DeploymentUnitProcessingException deploymentOverlayFailed(@Cause Exception cause, String contentOverlay, String file);
+
+    @Message(id = 18777, value = "Wildcard character * is only allowed at the beginning or end of the deployment name %s")
+    OperationFailedException wildcardOnlyAllowedAtStartOrEnd(String str);
+
+
+    @Message(id = 18778, value = "No deployment overlay content with hash %s is available in the deployment content repository for deployment overlay '%s' at location %s. This is a fatal boot error. To correct the problem, either restart with the --admin-only switch set and use the CLI to install the missing content or remove it from the configuration, or remove the deployment overlay from the xml configuration file and restart.")
+    OperationFailedException noSuchDeploymentOverlayContentAtBoot(String contentHash, String deploymentOverlayName, String contentFile);
+
+    @Message(id = 18779, value = "No deployment overlay content with hash %s is available in the deployment content repository.")
+    OperationFailedException noSuchDeploymentOverlayContent(String hash);
+
+    @Message(id = 18780, value = "Failed to read file %s")
+    OperationFailedException failedToLoadFile(VirtualFile file, @Cause IOException e);
+
+    @Message(id = 18781, value = "Cannot have more than one of %s")
+    OperationFailedException cannotHaveMoreThanOneManagedContentItem(Set<String> managedAttributes);
+
+    @Message(id = 18782, value = "Unknown content item key: %s")
+    OperationFailedException unknownContentItemKey(String key);
+
+    @Message(id = 18783, value = "Cannot use %s when %s are used")
+    OperationFailedException cannotMixUnmanagedAndManagedContentItems(Set<String> usedManaged, Set<String> usedUnmanaged);
+
+    @Message(id = 18784, value = "Null '%s'")
+    OperationFailedException nullParameter(String name);
 
 }

@@ -24,31 +24,23 @@ package org.jboss.as.messaging;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.ConnectorServiceConfiguration;
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
 
 /**
  * Handler for adding a connector service.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ConnectorServiceAdd extends AbstractAddStepHandler implements DescriptionProvider {
+public class ConnectorServiceAdd extends HornetQReloadRequiredHandlers.AddStepHandler {
+
 
     public static final ConnectorServiceAdd INSTANCE = new ConnectorServiceAdd();
 
@@ -57,29 +49,9 @@ public class ConnectorServiceAdd extends AbstractAddStepHandler implements Descr
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-
-        model.setEmptyObject();
-
-        for (final AttributeDefinition attributeDefinition : CommonAttributes.CONNECTOR_SERVICE_ATTRIBUTES) {
+        for (final AttributeDefinition attributeDefinition : ConnectorServiceDefinition.ATTRIBUTES) {
             attributeDefinition.validateAndSet(operation, model);
         }
-    }
-
-    @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-
-        ServiceRegistry registry = context.getServiceRegistry(false);
-        final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
-        ServiceController<?> hqService = registry.getService(hqServiceName);
-        if (hqService != null) {
-            context.reloadRequired();
-        }
-        // else MessagingSubsystemAdd will add a handler that calls addConnectorServiceConfigs
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return MessagingDescriptions.getConnectorServiceAdd(locale);
     }
 
     static void addConnectorServiceConfigs(final OperationContext context, final Configuration configuration, final ModelNode model)  throws OperationFailedException {
@@ -97,10 +69,10 @@ public class ConnectorServiceAdd extends AbstractAddStepHandler implements Descr
         final Map<String, Object> params = new HashMap<String, Object>();
         if (model.hasDefined(CommonAttributes.PARAM)) {
             for (Property property : model.get(CommonAttributes.PARAM).asPropertyList()) {
-                params.put(property.getName(), property.getValue().asString());
+                String value = ConnectorServiceParamDefinition.VALUE.resolveModelAttribute(context, property.getValue()).asString();
+                params.put(property.getName(), value);
             }
         }
-
         return new ConnectorServiceConfiguration(factoryClass, params, name);
     }
 }

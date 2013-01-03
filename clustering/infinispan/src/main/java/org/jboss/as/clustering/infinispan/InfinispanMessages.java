@@ -29,15 +29,17 @@ import org.infinispan.configuration.cache.CacheMode;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.network.OutboundSocketBinding;
-import org.jboss.logging.Cause;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageBundle;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.Messages;
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.service.StartException;
 
 /**
- * Date: 29.08.2011
+ * InfinispanMessages
+ *
+ * logging id range: 10290 - 10299,10380 - 10389
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
@@ -70,21 +72,21 @@ public interface InfinispanMessages {
      * @param cause          the cause of the error.
      * @param cacheStoreName the name of the cache store.
      *
-     * @return an {@link IllegalArgumentException} for the error.
+     * @return an {@link OperationFailedException} for the error.
      */
     @Message(id = 10292, value = "%s is not a valid cache store")
-    IllegalArgumentException invalidCacheStore(@Cause Throwable cause, String cacheStoreName);
+    OperationFailedException invalidCacheStore(@Cause Throwable cause, String cacheStoreName);
 
     /**
      * Creates an exception indicating an invalid cache store.
      *
-     * @param cacheStoreName     the name of the cache store.
+     * @param cacheName     the name of the cache store.
      * @param cacheContainerName the container name.
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
     @Message(id = 10293, value = "%s is not a valid default cache. The %s cache container does not contain a cache with that name")
-    IllegalArgumentException invalidCacheStore(String cacheStoreName, String cacheContainerName);
+    IllegalArgumentException invalidDefaultCache(String cacheName, String cacheContainerName);
 
     /**
      * Creates an exception indicating the an executor property is invalid.
@@ -149,5 +151,54 @@ public interface InfinispanMessages {
      */
     @Message(id = 10299, value = "Value for property with key %s is not defined")
     OperationFailedException propertyValueNotDefined(String propertyKey);
+
+    /**
+     * A message indicating that the resource could not be located.
+     *
+     * @param resourceName the name of the resource.
+     *
+     * @return the String message.
+     */
+    @Message(id = 10380, value = "Failed to locate %s")
+    String notFound(String resourceName);
+
+    /**
+     * A message indicating that the resource could not be parsed.
+     *
+     * @param resourceName the name of the resource.
+     *
+     * @return IllegalStateException instance.
+     */
+    @Message(id = 10381, value = "Failed to parse %s")
+    IllegalStateException failedToParse(@Cause Throwable cause, String resourceName);
+
+    /**
+     * Creates an exception indicating a singleton resource already exists.
+     *
+     * @param resourceName the name of the resource.
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 10382, value = "Add operation failed: singleton %s already exists.")
+    OperationFailedException singletonResourceAlreadyExists(String resourceName);
+
+    /**
+     * Creates an exception indicating unable to remove an alias from an empty list of aliases.
+     *
+     * @param aliasName the name of the alias.
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 10383, value = "cannot remove alias % from empty list.")
+    OperationFailedException cannotRemoveAliasFromEmptyList(String aliasName);
+
+    /**
+     * Creates an exception indicating that an attribute has been deprecated.
+     *
+     * @param attributeName the name of the deprecated attribute
+     * @return an {@link OperationFailedException} for the error
+     */
+    @Message(id = 10384, value = "Attribute '%s' has been deprecated.")
+    OperationFailedException attributeDeprecated(String attributeName);
 
 }

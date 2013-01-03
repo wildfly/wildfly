@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
-
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
@@ -41,6 +40,8 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -65,9 +66,18 @@ public class SaslResource extends SimpleResourceDefinition {
     static final AttributeDefinition INCLUDE_MECHANISMS_ATTRIBUTE = new SaslListAttributeDefinition(Element.INCLUDE_MECHANISMS, INCLUDE_MECHANISMS, true);
     static final AttributeDefinition QOP_ATTRIBUTE = new SaslListAttributeDefinition(Element.QOP, QOP, true, QopParameterValidation.INSTANCE);
     static final AttributeDefinition STRENGTH_ATTRIBUTE = new SaslListAttributeDefinition(Element.STRENGTH, STRENGTH, true, StrengthParameterValidation.INSTANCE);
-    static final AttributeDefinition REUSE_SESSION_ATTRIBUTE = new NamedValueAttributeDefinition(REUSE_SESSION, Attribute.VALUE, new ModelNode().set(false), ModelType.BOOLEAN, true);
-    static final AttributeDefinition SERVER_AUTH_ATTRIBUTE = new NamedValueAttributeDefinition(SERVER_AUTH, Attribute.VALUE, new ModelNode().set(false), ModelType.BOOLEAN, true);
-
+    static final SimpleAttributeDefinition SERVER_AUTH_ATTRIBUTE = SimpleAttributeDefinitionBuilder.create(SERVER_AUTH, ModelType.BOOLEAN)
+            .setDefaultValue(new ModelNode(false))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setAttributeMarshaller(new WrappedAttributeMarshaller(Attribute.VALUE))
+            .build();
+    static final SimpleAttributeDefinition REUSE_SESSION_ATTRIBUTE = SimpleAttributeDefinitionBuilder.create(REUSE_SESSION, ModelType.BOOLEAN)
+            .setDefaultValue(new ModelNode(false))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setAttributeMarshaller(new WrappedAttributeMarshaller(Attribute.VALUE))
+            .build();
 
     private SaslResource() {
         super(SASL_CONFIG_PATH,
@@ -116,7 +126,7 @@ public class SaslResource extends SimpleResourceDefinition {
         }
 
         @Override
-        public void marshallAsElement(ModelNode resourceModel, XMLStreamWriter writer) throws XMLStreamException {
+        public void marshallAsElement(ModelNode resourceModel,boolean marshalDefault, XMLStreamWriter writer) throws XMLStreamException {
             if (resourceModel.hasDefined(getName())) {
                 List<ModelNode> list = resourceModel.get(getName()).asList();
                 if (list.size() > 0) {

@@ -28,7 +28,7 @@ import java.security.AccessController;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -148,7 +148,7 @@ class DeploymentScannerAdd implements OperationStepHandler {
 
             if (bootTimeScan) {
                 final AtomicReference<ModelNode> deploymentOperation = new AtomicReference<ModelNode>();
-                final AtomicReference<ModelNode> deploymentResults = new AtomicReference<ModelNode>();
+                final AtomicReference<ModelNode> deploymentResults = new AtomicReference<ModelNode>(new ModelNode());
                 final CountDownLatch scanDoneLatch = new CountDownLatch(1);
                 final CountDownLatch deploymentDoneLatch = new CountDownLatch(1);
                 final DeploymentOperations deploymentOps = new BootTimeScannerDeployment(deploymentOperation, deploymentDoneLatch, deploymentResults, scanDoneLatch);
@@ -158,12 +158,15 @@ class DeploymentScannerAdd implements OperationStepHandler {
                     public void run() {
                         try {
                             bootTimeScanner.oneOffScan(deploymentOps);
+                        } catch (Throwable t){
+                            DeploymentScannerLogger.ROOT_LOGGER.initialScanFailed(t);
                         } finally {
                             scanDoneLatch.countDown();
                         }
                     }
                 });
                 boolean interrupted = false;
+                boolean asyncCountDown = false;
                 try {
                     scanDoneLatch.await();
 
@@ -173,13 +176,20 @@ class DeploymentScannerAdd implements OperationStepHandler {
                         final PathAddress opPath = PathAddress.pathAddress(op.get(OP_ADDR));
                         final OperationStepHandler handler = context.getRootResourceRegistration().getOperationHandler(opPath, op.get(OP).asString());
                         context.addStep(result, op, handler, OperationContext.Stage.MODEL);
-                        try {
-                            stepCompleted = true;
-                            context.completeStep();
-                        } finally {
-                            deploymentResults.set(result);
-                            deploymentDoneLatch.countDown();
-                        }
+
+                        stepCompleted = true;
+                        context.completeStep(new OperationContext.ResultHandler() {
+                            @Override
+                            public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
+                                try {
+                                    deploymentResults.set(result);
+                                } finally {
+                                    deploymentDoneLatch.countDown();
+                                }
+                            }
+                        });
+                        asyncCountDown = true;
+
                     } else {
                         stepCompleted = true;
                         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
@@ -188,7 +198,9 @@ class DeploymentScannerAdd implements OperationStepHandler {
                     interrupted = true;
                     throw new RuntimeException(e);
                 } finally {
-                    deploymentDoneLatch.countDown();
+                    if (!asyncCountDown) {
+                        deploymentDoneLatch.countDown();
+                    }
                     if (interrupted) {
                         Thread.currentThread().interrupt();
                     }
@@ -279,8 +291,8 @@ class DeploymentScannerAdd implements OperationStepHandler {
         }
 
         @Override
-        public Set<String> getDeploymentNames() {
-            return Collections.emptySet();
+        public Map<String, Boolean> getDeploymentsStatus() {
+            return Collections.emptyMap();
         }
 
         @Override

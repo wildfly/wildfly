@@ -22,6 +22,9 @@
 
 package org.jboss.as.controller.descriptions;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPRECATED;
+
 import java.lang.ref.WeakReference;
 import java.util.Locale;
 import java.util.MissingResourceException;
@@ -144,6 +147,10 @@ public class StandardResourceDescriptionResolver implements ResourceDescriptionR
         return useUnprefixedChildTypes;
     }
 
+    public StandardResourceDescriptionResolver getChildResolver(String key){
+        return new StandardResourceDescriptionResolver(keyPrefix+"."+key,bundleBaseName,bundleLoader.get(),reuseAttributesForAdd,useUnprefixedChildTypes);
+    }
+
     /** {@inheritDoc} */
     @Override
     public ResourceBundle getResourceBundle(Locale locale) {
@@ -180,7 +187,7 @@ public class StandardResourceDescriptionResolver implements ResourceDescriptionR
     /** {@inheritDoc} */
     @Override
     public String getOperationParameterDescription(String operationName, String paramName, Locale locale, ResourceBundle bundle) {
-        if (reuseAttributesForAdd && ModelDescriptionConstants.ADD.equals(operationName)) {
+        if (reuseAttributesForAdd && ADD.equals(operationName)) {
             return bundle.getString(getBundleKey(paramName));
         }
         return bundle.getString(getBundleKey(operationName, paramName));
@@ -190,7 +197,7 @@ public class StandardResourceDescriptionResolver implements ResourceDescriptionR
     @Override
     public String getOperationParameterValueTypeDescription(String operationName, String paramName, Locale locale, ResourceBundle bundle, String... suffixes) {
         String[] fixed;
-        if (reuseAttributesForAdd && ModelDescriptionConstants.ADD.equals(operationName)) {
+        if (reuseAttributesForAdd && ADD.equals(operationName)) {
             fixed = new String[]{paramName};
         } else {
             fixed = new String[]{operationName, paramName};
@@ -225,6 +232,41 @@ public class StandardResourceDescriptionResolver implements ResourceDescriptionR
         return bundle.getString(bundleKey);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getResourceDeprecatedDescription(Locale locale, ResourceBundle bundle) {
+        return bundle.getString(getBundleKey(DEPRECATED));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getResourceAttributeDeprecatedDescription(String attributeName, Locale locale, ResourceBundle bundle) {
+        return bundle.getString(getBundleKey(attributeName, DEPRECATED));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getOperationDeprecatedDescription(String operationName, Locale locale, ResourceBundle bundle) {
+        return bundle.getString(getBundleKey(operationName, DEPRECATED));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getOperationParameterDeprecatedDescription(String operationName, String paramName, Locale locale, ResourceBundle bundle) {
+        if (reuseAttributesForAdd && ADD.equals(operationName)) {
+            return bundle.getString(getBundleKey(paramName,DEPRECATED));
+        }
+        return bundle.getString(getBundleKey(operationName, paramName,DEPRECATED));
+    }
+
     private String getBundleKey(String... args) {
         return getVariableBundleKey(args);
     }
@@ -232,12 +274,16 @@ public class StandardResourceDescriptionResolver implements ResourceDescriptionR
     private String getVariableBundleKey(String[] fixed, String... variable) {
         StringBuilder sb = new StringBuilder(keyPrefix);
         for (String arg : fixed) {
-            sb.append('.');
+            if (sb.length() > 0) {
+                sb.append('.');
+            }
             sb.append(arg);
         }
         if (variable != null) {
             for (String arg : variable) {
-                sb.append('.');
+                if (sb.length() > 0) {
+                    sb.append('.');
+                }
                 sb.append(arg);
             }
         }

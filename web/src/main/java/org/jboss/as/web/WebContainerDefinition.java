@@ -1,3 +1,25 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 package org.jboss.as.web;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -8,7 +30,6 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleListAttributeDefinition;
-import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -24,7 +45,7 @@ public class WebContainerDefinition extends SimpleResourceDefinition {
     public static final WebContainerDefinition INSTANCE = new WebContainerDefinition();
 
     protected static final SimpleListAttributeDefinition WELCOME_FILES =
-            SimpleListAttributeDefinition.Builder.of(Constants.WELCOME_FILE,
+            new SimpleListAttributeDefinition.Builder(Constants.WELCOME_FILE,
                     new SimpleAttributeDefinitionBuilder(Constants.WELCOME_FILE, ModelType.STRING, true)
                             .setXmlName(Constants.WELCOME_FILE)
                             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
@@ -32,7 +53,7 @@ public class WebContainerDefinition extends SimpleResourceDefinition {
                             .build())
                     .setAllowNull(true)
                     .build();
-    protected static final PropertiesAttributeDefinition MIME_MAPPINGS = new PropertiesAttributeDefinition(Constants.MIME_MAPPING, Constants.MIME_MAPPING, true);
+    protected static final PropertiesAttributeDefinition MIME_MAPPINGS = new PropertiesAttributeDefinition.Builder(Constants.MIME_MAPPING, true).build();
 
     private static final SimpleAttributeDefinition MIME_NAME = new SimpleAttributeDefinitionBuilder(Constants.NAME, ModelType.STRING, true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -48,7 +69,9 @@ public class WebContainerDefinition extends SimpleResourceDefinition {
             WELCOME_FILES,
             MIME_MAPPINGS,
     };
-    private static final OperationDefinition ADD_MIME = new SimpleOperationDefinition("add-mime", WebExtension.getResourceDescriptionResolver("container.mime-mapping"), MIME_NAME, MIME_VALUE);
+    private static final OperationDefinition ADD_MIME = new SimpleOperationDefinitionBuilder("add-mime", WebExtension.getResourceDescriptionResolver("container.mime-mapping"))
+            .setParameters(MIME_NAME, MIME_VALUE)
+            .build();
     private static final OperationDefinition REMOVE_MIME = new SimpleOperationDefinitionBuilder("remove-mime", WebExtension.getResourceDescriptionResolver("container.mime-mapping"))
                .addParameter(MIME_NAME)
                .build();

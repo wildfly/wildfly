@@ -111,7 +111,6 @@ public class PositiveValidationTestCase {
         Set<String> ids = repository.getResourceAdapters(javax.jms.MessageListener.class);
 
         assertNotNull(ids);
-        assertEquals(1, ids.size());
 
         String piId = ids.iterator().next();
         assertNotNull(piId);
@@ -147,7 +146,6 @@ public class PositiveValidationTestCase {
         Set<String> ids = repository.getResourceAdapters();
 
         assertNotNull(ids);
-        assertEquals(1, ids.size());
 
         String piId = ids.iterator().next();
         assertNotNull(piId);

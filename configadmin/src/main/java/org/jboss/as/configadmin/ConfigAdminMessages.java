@@ -22,7 +22,7 @@
 
 package org.jboss.as.configadmin;
 
-import org.jboss.logging.MessageBundle;
+import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.Messages;
 
 /**
@@ -38,5 +38,4 @@ import org.jboss.logging.Messages;
 public interface ConfigAdminMessages {
 
     ConfigAdminMessages MESSAGES = Messages.getBundle(ConfigAdminMessages.class);
-
 }

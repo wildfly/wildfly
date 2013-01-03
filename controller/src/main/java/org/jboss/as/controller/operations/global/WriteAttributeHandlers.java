@@ -24,7 +24,9 @@ package org.jboss.as.controller.operations.global;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
+import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -40,12 +42,17 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
+ * Deprecated {@link OperationStepHandler} handlers for handling {@code write-attribute} operations.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
- */
+ * @deprecated use {@link AbstractWriteAttributeHandler}
+*/
+@SuppressWarnings("deprecation")
+@Deprecated
 public class WriteAttributeHandlers {
 
+    /** @deprecated use {@link AbstractWriteAttributeHandler} */
+    @Deprecated
     public static class WriteAttributeOperationHandler implements OperationStepHandler {
         public static WriteAttributeOperationHandler INSTANCE = new WriteAttributeOperationHandler();
 
@@ -102,8 +109,9 @@ public class WriteAttributeHandlers {
         /**
          * Notification that the model has been changed. Subclasses can override
          * to apply additional processing. Any subclass that overrides MUST ensure
-         * that either {@link org.jboss.as.controller.OperationContext#completeStep()} is invoked
-         * or {@link OperationFailedException} is thrown.
+         * that either one of the
+         * {@link org.jboss.as.controller.OperationContext#completeStep(OperationContext.ResultHandler) context.completeStep variants}
+         * is invoked or an {@link OperationFailedException} is thrown.
          *
          * @param context the context of the operation
          * @param operation the operation
@@ -116,7 +124,7 @@ public class WriteAttributeHandlers {
         protected void modelChanged(final OperationContext context, final ModelNode operation, final String attributeName,
                                     final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
 
-            context.completeStep();
+            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         }
     }
 
@@ -124,7 +132,9 @@ public class WriteAttributeHandlers {
      * WriteAttributeOperationHandler that uses a ModelTypeValidator to validate the operation's
      * value attribute. The parameters in the constructors are passed to the equivalent
      * constructor in {@link ModelTypeValidator}.
+     * @deprecated use {@link AbstractWriteAttributeHandler}
      */
+    @Deprecated
     public static class ModelTypeValidatingHandler extends WriteAttributeOperationHandler {
 
         public ModelTypeValidatingHandler(final ModelType type) {
@@ -148,6 +158,8 @@ public class WriteAttributeHandlers {
         }
     }
 
+    /** @deprecated use {@link AbstractWriteAttributeHandler} */
+    @Deprecated
     public static class StringLengthValidatingHandler extends WriteAttributeOperationHandler {
 
         public StringLengthValidatingHandler(final int min) {
@@ -167,6 +179,8 @@ public class WriteAttributeHandlers {
         }
     }
 
+    /** @deprecated use {@link AbstractWriteAttributeHandler} */
+    @Deprecated
     public static class IntRangeValidatingHandler extends WriteAttributeOperationHandler {
 
         public IntRangeValidatingHandler(final int min) {
@@ -182,12 +196,16 @@ public class WriteAttributeHandlers {
         }
     }
 
+    /** @deprecated use {@link AbstractWriteAttributeHandler} */
+    @Deprecated
     public static class InetAddressValidatingHandler extends WriteAttributeOperationHandler {
         public InetAddressValidatingHandler(final boolean nullable, final boolean allowExpressions) {
             super(new InetAddressValidator(nullable, allowExpressions));
         }
     }
 
+    /** @deprecated use {@link AbstractWriteAttributeHandler} */
+    @Deprecated
     public static class ListValidatingHandler extends WriteAttributeOperationHandler {
 
         public ListValidatingHandler(ParameterValidator elementValidator) {
@@ -203,10 +221,25 @@ public class WriteAttributeHandlers {
         }
     }
 
+    /** @deprecated use {@link ModelOnlyWriteAttributeHandler} */
+    @Deprecated
     public static class AttributeDefinitionValidatingHandler extends WriteAttributeOperationHandler {
+
+        private final AttributeDefinition attributeDefinition;
 
         public AttributeDefinitionValidatingHandler(AttributeDefinition definition) {
             super(definition.getValidator());
+            this.attributeDefinition = definition;
+        }
+
+        @Override
+        protected void validateValue(String name, ModelNode value) throws OperationFailedException {
+            ModelNode mockOp = new ModelNode();
+            mockOp.get(name).set(value);
+            ModelNode validated = attributeDefinition.validateOperation(mockOp);
+            if (!value.equals(validated)) {
+                value.set(validated);
+            }
         }
     }
 

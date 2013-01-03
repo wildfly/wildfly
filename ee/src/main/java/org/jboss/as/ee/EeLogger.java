@@ -22,16 +22,18 @@
 
 package org.jboss.as.ee;
 
-import org.jboss.as.ee.component.ComponentInstance;
-import org.jboss.logging.BasicLogger;
-import org.jboss.logging.Cause;
-import org.jboss.logging.LogMessage;
-import org.jboss.logging.Logger;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageLogger;
-import org.jboss.vfs.VirtualFile;
-
+import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.WARN;
+
+import org.jboss.as.ee.component.ComponentInstance;
+import org.jboss.as.ee.component.InjectionTarget;
+import org.jboss.logging.BasicLogger;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
+import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
+import org.jboss.vfs.VirtualFile;
 
 /**
  * This module is using message IDs in the range 11000-11099 and 16700-16799.
@@ -185,4 +187,18 @@ public interface EeLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 11011, value = "Transactional datasource %s will not be enlisted in the transaction as the transaction subsystem is not available")
     void transactionSubsystemNotAvailable(String className);
+
+    /**
+     * Logs a debug message indicating the skipping of injection for a static member.
+     *
+     * @param member the member, which will not be injected.
+     */
+    @LogMessage(level = DEBUG)
+    @Message(id = 11012, value = "Injection for a member with static modifier is only acceptable on application clients, ignoring injection for target %s")
+    void ignoringStaticInjectionTarget(InjectionTarget injectionTarget);
+
+    @LogMessage(level = WARN)
+    @Message(id = 11013, value = "%s in subdeployment ignored. jboss-ejb-client.xml is only parsed for top level deployments.")
+    void subdeploymentIgnored(String pathName);
+
 }

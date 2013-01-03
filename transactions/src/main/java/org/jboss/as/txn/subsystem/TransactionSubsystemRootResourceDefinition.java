@@ -22,6 +22,7 @@
 
 package org.jboss.as.txn.subsystem;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.ResourceDefinition;
@@ -30,11 +31,14 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.validation.BytesValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
+import org.jboss.as.controller.operations.validation.StringBytesLengthValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -50,24 +54,26 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setValidator(new StringLengthValidator(1))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setXmlName(Attribute.BINDING.getLocalName())
-            .build();
+            .setAllowExpression(true).build();
 
     public static final SimpleAttributeDefinition STATUS_BINDING = new SimpleAttributeDefinitionBuilder(CommonAttributes.STATUS_BINDING, ModelType.STRING, false)
             .setValidator(new StringLengthValidator(1))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setXmlName(Attribute.STATUS_BINDING.getLocalName())
-            .build();
+            .setAllowExpression(true).build();
 
     public static final SimpleAttributeDefinition RECOVERY_LISTENER = new SimpleAttributeDefinitionBuilder(CommonAttributes.RECOVERY_LISTENER, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode().set(false))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setXmlName(Attribute.RECOVERY_LISTENER.getLocalName())
-            .build();
+            .setAllowExpression(true).build();
 
     //core environment
     public static final SimpleAttributeDefinition NODE_IDENTIFIER = new SimpleAttributeDefinitionBuilder(CommonAttributes.NODE_IDENTIFIER, ModelType.STRING, true)
             .setDefaultValue(new ModelNode().set("1"))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setAllowExpression(true)
+            .setValidator(new StringBytesLengthValidator(0,23,true,true))
             .build();
 
     public static final SimpleAttributeDefinition PROCESS_ID_UUID = new SimpleAttributeDefinitionBuilder("process-id-uuid", ModelType.BOOLEAN, false)
@@ -80,7 +86,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setAlternatives("process-id-uuid")
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setXmlName(Attribute.BINDING.getLocalName())
-            .build();
+            .setAllowExpression(true).build();
 
     public static final SimpleAttributeDefinition PROCESS_ID_SOCKET_MAX_PORTS = new SimpleAttributeDefinitionBuilder("process-id-socket-max-ports", ModelType.INT, true)
             .setValidator(new IntRangeValidator(1, true))
@@ -88,59 +94,60 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setRequires("process-id-socket-binding")
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setXmlName(Attribute.SOCKET_PROCESS_ID_MAX_PORTS.getLocalName())
-            .build();
+            .setAllowExpression(true).build();
 
-    public static final SimpleAttributeDefinition RELATIVE_TO = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.RELATIVE_TO, ModelType.STRING, true)
+    public static final SimpleAttributeDefinition RELATIVE_TO = new SimpleAttributeDefinitionBuilder(PathResourceDefinition.RELATIVE_TO)
             .setDefaultValue(new ModelNode().set("jboss.server.data.dir"))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
+            .setAllowExpression(true).build();
 
-    public static final SimpleAttributeDefinition PATH = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PATH, ModelType.STRING, true)
+    public static final SimpleAttributeDefinition PATH = new SimpleAttributeDefinitionBuilder(PathResourceDefinition.PATH)
             .setDefaultValue(new ModelNode().set("var"))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
+            .setAllowNull(true)
+            .setAllowExpression(true).build();
 
     //coordinator environment
     public static final SimpleAttributeDefinition ENABLE_STATISTICS = new SimpleAttributeDefinitionBuilder(CommonAttributes.ENABLE_STATISTICS, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode().set(false))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)  // TODO should be runtime-changeable
             .setXmlName(Attribute.ENABLE_STATISTICS.getLocalName())
-            .build();
+            .setAllowExpression(true).build();
 
     public static final SimpleAttributeDefinition ENABLE_TSM_STATUS = new SimpleAttributeDefinitionBuilder(CommonAttributes.ENABLE_TSM_STATUS, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode().set(false))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)  // TODO is this runtime-changeable?
             .setXmlName(Attribute.ENABLE_TSM_STATUS.getLocalName())
-            .build();
+            .setAllowExpression(true).build();
 
     public static final SimpleAttributeDefinition DEFAULT_TIMEOUT = new SimpleAttributeDefinitionBuilder(CommonAttributes.DEFAULT_TIMEOUT, ModelType.INT, true)
             .setMeasurementUnit(MeasurementUnit.SECONDS)
             .setDefaultValue(new ModelNode().set(300))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)  // TODO is this runtime-changeable?
             .setXmlName(Attribute.DEFAULT_TIMEOUT.getLocalName())
-            .build();
+            .setAllowExpression(true).build();
 
     //object store
     public static final SimpleAttributeDefinition OBJECT_STORE_RELATIVE_TO = new SimpleAttributeDefinitionBuilder(CommonAttributes.OBJECT_STORE_RELATIVE_TO, ModelType.STRING, true)
             .setDefaultValue(new ModelNode().set("jboss.server.data.dir"))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setXmlName(Attribute.RELATIVE_TO.getLocalName())
-            .build();
+            .setAllowExpression(true).build();
     public static final SimpleAttributeDefinition OBJECT_STORE_PATH = new SimpleAttributeDefinitionBuilder(CommonAttributes.OBJECT_STORE_PATH, ModelType.STRING, true)
             .setDefaultValue(new ModelNode().set("tx-object-store"))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setXmlName(Attribute.PATH.getLocalName())
-            .build();
+            .setAllowExpression(true).build();
 
     public static final SimpleAttributeDefinition JTS = new SimpleAttributeDefinitionBuilder(CommonAttributes.JTS, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode().set(false))
             .setFlags(AttributeAccess.Flag.RESTART_JVM)  //I think the use of statics in arjunta will require a JVM restart
-            .build();
+            .setAllowExpression(false).build();
 
     public static final SimpleAttributeDefinition USEHORNETQSTORE = new SimpleAttributeDefinitionBuilder(CommonAttributes.USEHORNETQSTORE, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode().set(false))
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
-            .build();
+            .setAllowExpression(false).build();
 
     private final boolean registerRuntimeOnly;
 
@@ -152,26 +159,19 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
+    static final AttributeDefinition[] attributes = new AttributeDefinition[] {
+            BINDING, STATUS_BINDING, RECOVERY_LISTENER, NODE_IDENTIFIER, PROCESS_ID_UUID, PROCESS_ID_SOCKET_BINDING,
+            PROCESS_ID_SOCKET_MAX_PORTS, RELATIVE_TO, PATH, ENABLE_STATISTICS, ENABLE_TSM_STATUS, DEFAULT_TIMEOUT,
+            OBJECT_STORE_RELATIVE_TO, OBJECT_STORE_PATH, JTS, USEHORNETQSTORE
+    };
+
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-
-        resourceRegistration.registerReadWriteAttribute(BINDING, null, new ReloadRequiredWriteAttributeHandler(BINDING));
-        resourceRegistration.registerReadWriteAttribute(STATUS_BINDING, null, new ReloadRequiredWriteAttributeHandler(STATUS_BINDING));
-        resourceRegistration.registerReadWriteAttribute(RECOVERY_LISTENER, null, new ReloadRequiredWriteAttributeHandler(RECOVERY_LISTENER));
-        resourceRegistration.registerReadWriteAttribute(NODE_IDENTIFIER, null, new ReloadRequiredWriteAttributeHandler(NODE_IDENTIFIER));
-        resourceRegistration.registerReadWriteAttribute(PROCESS_ID_UUID, null, new ReloadRequiredWriteAttributeHandler(PROCESS_ID_UUID));
-        resourceRegistration.registerReadWriteAttribute(PROCESS_ID_SOCKET_BINDING, null, new ReloadRequiredWriteAttributeHandler(PROCESS_ID_SOCKET_BINDING));
-        resourceRegistration.registerReadWriteAttribute(PROCESS_ID_SOCKET_MAX_PORTS, null, new ReloadRequiredWriteAttributeHandler(PROCESS_ID_SOCKET_MAX_PORTS));
-        resourceRegistration.registerReadWriteAttribute(RELATIVE_TO, null, new ReloadRequiredWriteAttributeHandler(RELATIVE_TO));
-        resourceRegistration.registerReadWriteAttribute(PATH, null, new ReloadRequiredWriteAttributeHandler(PATH));
-        resourceRegistration.registerReadWriteAttribute(ENABLE_STATISTICS, null, new ReloadRequiredWriteAttributeHandler(ENABLE_STATISTICS));
-        resourceRegistration.registerReadWriteAttribute(ENABLE_TSM_STATUS, null, new ReloadRequiredWriteAttributeHandler(ENABLE_TSM_STATUS));
-        resourceRegistration.registerReadWriteAttribute(DEFAULT_TIMEOUT, null, new ReloadRequiredWriteAttributeHandler(DEFAULT_TIMEOUT));
-        resourceRegistration.registerReadWriteAttribute(OBJECT_STORE_RELATIVE_TO, null, new ReloadRequiredWriteAttributeHandler(OBJECT_STORE_RELATIVE_TO));
-        resourceRegistration.registerReadWriteAttribute(OBJECT_STORE_PATH, null, new ReloadRequiredWriteAttributeHandler(OBJECT_STORE_PATH));
-        resourceRegistration.registerReadWriteAttribute(JTS, null, new ReloadRequiredWriteAttributeHandler(JTS));
-        resourceRegistration.registerReadWriteAttribute(USEHORNETQSTORE, null, new ReloadRequiredWriteAttributeHandler(USEHORNETQSTORE));
+        // Register all attributes
+        for(final AttributeDefinition def : attributes) {
+            resourceRegistration.registerReadWriteAttribute(def, null, new ReloadRequiredWriteAttributeHandler(def));
+        }
 
         if (registerRuntimeOnly) {
             TxStatsHandler.INSTANCE.registerMetrics(resourceRegistration);

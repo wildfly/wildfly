@@ -42,12 +42,13 @@ import org.jboss.as.cli.CliInitializationException;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandContextFactory;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.remote.ExistingChannelModelControllerClient;
+import org.jboss.as.controller.client.impl.ExistingChannelModelControllerClient;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.Connection;
 import org.jboss.remotingjmx.RemotingMBeanServerConnection;
 import org.jboss.threads.JBossThreadFactory;
+import org.xnio.IoFuture;
 import org.xnio.OptionMap;
 
 /**
@@ -95,7 +96,7 @@ public class JConsoleCLIPlugin extends JConsolePlugin {
         MBeanServerConnection mbeanServerConn = jcCtx.getMBeanServerConnection();
 
         if (mbeanServerConn instanceof RemotingMBeanServerConnection) {
-            connectUsingRemoting(cmdCtx, (RemotingMBeanServerConnection)mbeanServerConn);
+            return connectUsingRemoting(cmdCtx, (RemotingMBeanServerConnection)mbeanServerConn);
         } else {
             try {
                 connectUsingDefaults(cmdCtx);
@@ -113,11 +114,22 @@ public class JConsoleCLIPlugin extends JConsolePlugin {
         return true;
     }
 
-   private void connectUsingRemoting(CommandContext cmdCtx, RemotingMBeanServerConnection rmtMBeanSvrConn) throws IOException, CliInitializationException {
+    private boolean connectUsingRemoting(CommandContext cmdCtx, RemotingMBeanServerConnection rmtMBeanSvrConn)
+            throws IOException, CliInitializationException {
         Connection conn = rmtMBeanSvrConn.getConnection();
-        Channel channel = conn.openChannel("management", OptionMap.EMPTY).get();
+        Channel channel;
+        final IoFuture<Channel> futureChannel = conn.openChannel("management", OptionMap.EMPTY);
+        IoFuture.Status result = futureChannel.await(5, TimeUnit.SECONDS);
+        if (result == IoFuture.Status.DONE) {
+            channel = futureChannel.get();
+        } else {
+            return false;
+        }
+
         ModelControllerClient modelCtlrClient = ExistingChannelModelControllerClient.createReceiving(channel, createExecutor());
         cmdCtx.bindClient(modelCtlrClient);
+
+        return true;
     }
 
     private ExecutorService createExecutor() {

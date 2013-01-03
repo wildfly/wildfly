@@ -22,6 +22,8 @@
 
 package org.jboss.as.server.operations;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_MODE;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -52,14 +54,8 @@ public class RunningModeReadHandler implements OperationStepHandler {
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         context.getResult().set(runningModeControl.getRunningMode().name());
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.stepCompleted();
     }
 
-    public static void createAndRegister(final RunningModeControl runningModeControl, final ManagementResourceRegistration resourceRegistration) {
-        AttributeDefinition def = SimpleAttributeDefinitionBuilder.create("running-mode", ModelType.STRING)
-            .setValidator(new EnumValidator(RunningMode.class, false, false))
-                .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
 
-        resourceRegistration.registerReadOnlyAttribute(def, new RunningModeReadHandler(runningModeControl));
-    }
 }

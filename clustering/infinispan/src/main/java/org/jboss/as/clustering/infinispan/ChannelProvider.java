@@ -74,7 +74,7 @@ public class ChannelProvider implements JGroupsChannelLookup {
      */
     @Override
     public boolean shouldStartAndConnect() {
-        return false;
+        return true;
     }
 
     /**
@@ -83,6 +83,6 @@ public class ChannelProvider implements JGroupsChannelLookup {
      */
     @Override
     public boolean shouldStopAndDisconnect() {
-        return false;
+        return true;
     }
 }

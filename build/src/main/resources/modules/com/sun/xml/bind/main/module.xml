@@ -32,8 +32,14 @@
     </resources>
 
     <dependencies>
+        <module name="com.github.relaxng" export="true" />
+        <module name="com.sun.codemodel" export="true" />
+        <module name="com.sun.istack" export="true" />
+        <module name="com.sun.xml.txw2" export="true" />
+        <module name="com.sun.xsom" export="true" />
         <module name="javax.api" />
         <module name="javax.xml.bind.api" />
         <module name="javax.xml.stream.api" />
+        <module name="org.kohsuke.rngom" export="true" />
     </dependencies>
 </module>

@@ -30,6 +30,7 @@ import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -57,6 +58,18 @@ public class HornetQServerControlWriteHandler extends AbstractWriteAttributeHand
             if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
                 registry.registerReadWriteAttribute(attr, null, this);
             }
+        }
+
+        // handle deprecate attributes
+        registry.registerReadWriteAttribute(CommonAttributes.LIVE_CONNECTOR_REF, null, new DeprecatedAttributeWriteHandler(CommonAttributes.LIVE_CONNECTOR_REF.getName()));
+        // clustered attribute has become runtime read-only
+        if (registerRuntimeOnly) {
+            registry.registerReadWriteAttribute(CommonAttributes.CLUSTERED, HornetQServerControlHandler.INSTANCE, new OperationStepHandler() {
+                @Override
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                    throw MESSAGES.canNotWriteClusteredAttribute();
+                }
+            });
         }
     }
 
@@ -137,5 +150,4 @@ public class HornetQServerControlWriteHandler extends AbstractWriteAttributeHand
         }
 
     }
-
 }

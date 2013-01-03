@@ -24,13 +24,16 @@
 
 package org.jboss.as.controller;
 
+import java.util.EnumSet;
+import java.util.Locale;
+
 import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.OperationEntry.EntryType;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import java.util.EnumSet;
 
 /**
  * Defining characteristics of operation in a {@link org.jboss.as.controller.registry.Resource}
@@ -41,7 +44,8 @@ import java.util.EnumSet;
  */
 public class SimpleOperationDefinition extends OperationDefinition {
 
-    private ResourceDescriptionResolver resolver;
+    final ResourceDescriptionResolver resolver;
+    final ResourceDescriptionResolver attributeResolver;
 
     public SimpleOperationDefinition(final String name, final ResourceDescriptionResolver resolver) {
         this(name, resolver, EnumSet.noneOf(OperationEntry.Flag.class));
@@ -60,24 +64,38 @@ public class SimpleOperationDefinition extends OperationDefinition {
     }
 
     public SimpleOperationDefinition(final String name, final ResourceDescriptionResolver resolver, OperationEntry.EntryType entryType, EnumSet<OperationEntry.Flag> flags, AttributeDefinition... parameters) {
-        super(name, entryType, flags, null, null, parameters);
-        this.resolver = resolver;
+        this(name, resolver, resolver, entryType, flags, null, null, false, null, null, parameters);
     }
 
-    public SimpleOperationDefinition(final String name,
+    protected SimpleOperationDefinition(final String name,
                                      final ResourceDescriptionResolver resolver,
-                                     OperationEntry.EntryType entryType,
+                                     final ResourceDescriptionResolver attributeResolver,
+                                     final OperationEntry.EntryType entryType,
                                      final EnumSet<OperationEntry.Flag> flags,
                                      final ModelType replyType,
                                      final ModelType replyValueType,
-                                     AttributeDefinition... parameters) {
-        super(name, entryType, flags, replyType, replyValueType, parameters);
+                                     final boolean replyAllowNull,
+                                     final DeprecationData deprecationData,
+                                     final AttributeDefinition[] replyParameters,
+                                     final AttributeDefinition... parameters) {
+        super(name, entryType, flags, replyType, replyValueType, replyAllowNull, deprecationData, replyParameters, parameters);
         this.resolver = resolver;
+        this.attributeResolver = attributeResolver;
     }
 
     @Override
     public DescriptionProvider getDescriptionProvider() {
-        return new DefaultOperationDescriptionProvider(getName(), resolver, replyType, replyValueType, parameters);
+        if (entryType == EntryType.PRIVATE) {
+            return PRIVATE_PROVIDER;
+        }
+        return new DefaultOperationDescriptionProvider(getName(), resolver, attributeResolver, replyType, replyValueType, replyAllowNull, deprecationData, replyParameters, parameters);
     }
+
+    private static DescriptionProvider PRIVATE_PROVIDER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return new ModelNode();
+        }
+    };
 
 }

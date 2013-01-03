@@ -29,7 +29,8 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
-import org.jboss.as.host.controller.descriptions.HostRootDescription;
+import org.jboss.as.host.controller.descriptions.HostResolver;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Registry for excluded domain-level resources. To be used by slave Host Controllers to ignore requests
@@ -78,6 +79,11 @@ public class IgnoredDomainResourceRegistry {
         return root;
     }
 
+    public ModelNode getIgnoredResourcesAsModel() {
+        IgnoredDomainResourceRoot root = this.rootResource;
+        return (root == null ? new ModelNode() : Resource.Tools.readModel(root));
+    }
+
     void publish(IgnoredDomainResourceRoot root) {
         this.rootResource = root;
     }
@@ -89,7 +95,7 @@ public class IgnoredDomainResourceRegistry {
     private class ResourceDefinition extends SimpleResourceDefinition {
 
         public ResourceDefinition() {
-            super(IgnoredDomainResourceRoot.PATH_ELEMENT, HostRootDescription.getResourceDescriptionResolver(ModelDescriptionConstants.IGNORED_RESOURCES));
+            super(IgnoredDomainResourceRoot.PATH_ELEMENT, HostResolver.getResolver(ModelDescriptionConstants.IGNORED_RESOURCES));
         }
 
         @Override

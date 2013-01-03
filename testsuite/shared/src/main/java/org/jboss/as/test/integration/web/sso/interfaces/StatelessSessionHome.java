@@ -21,9 +21,10 @@
  */
 package org.jboss.as.test.integration.web.sso.interfaces;
 
-import javax.ejb.*;
-import java.rmi.*;
+import java.rmi.RemoteException;
+import javax.ejb.CreateException;
+import javax.ejb.EJBHome;
 
 public interface StatelessSessionHome extends EJBHome {
-    public StatelessSession create() throws RemoteException, CreateException;
+    StatelessSession create() throws RemoteException, CreateException;
 }

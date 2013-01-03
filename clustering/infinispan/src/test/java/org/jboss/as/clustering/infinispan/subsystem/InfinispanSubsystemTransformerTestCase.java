@@ -27,7 +27,7 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
-import org.jboss.dmr.ModelNode;
+import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.junit.Test;
 
 /**
@@ -48,9 +48,14 @@ public class InfinispanSubsystemTransformerTestCase extends AbstractSubsystemBas
 
     @Test
     public void testTransformer_1_3_0() throws Exception {
-        String dmr = readResource("infinispan-1.3.0.dmr");
-        ModelNode expected = ModelNode.fromString(dmr);
-        KernelServices services = super.installInController(AdditionalInitialization.MANAGEMENT, getSubsystemXml());
-        checkSubsystemTransformer(services, expected, ModelVersion.create(1, 3));
+        ModelVersion version = ModelVersion.create(1, 3);
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXml(getSubsystemXml());
+        builder.createLegacyKernelServicesBuilder(null, version)
+            .addMavenResourceURL("org.jboss.as:jboss-as-clustering-infinispan:7.1.2.Final");
+
+        KernelServices mainServices = builder.build();
+
+        checkSubsystemModelTransformation(mainServices, version);
     }
 }

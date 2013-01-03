@@ -32,7 +32,7 @@ import org.jboss.wsf.spi.invocation.Invocation;
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-final class InvocationHandlerEJB21 extends AbstractInvocationHandlerEJB {
+final class InvocationHandlerEJB21 extends AbstractInvocationHandler {
 
     @Override
     protected void prepareForInvocation(final InterceptorContext context, final Invocation wsInvocation) {

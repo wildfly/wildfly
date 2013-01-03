@@ -18,6 +18,12 @@
  */
 package org.jboss.as.controller.services.path;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.services.path.PathResourceDefinition.PATH_SPECIFIED;
+import static org.jboss.as.controller.services.path.PathResourceDefinition.RELATIVE_TO;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -30,13 +36,6 @@ import org.jboss.as.controller.services.path.PathManagerService.PathEventContext
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.services.path.PathResourceDefinition.PATH_SPECIFIED;
-import static org.jboss.as.controller.services.path.PathResourceDefinition.RELATIVE_TO;
 
 /**
  * Handler for the path resource add operation.
@@ -93,7 +92,6 @@ public class PathAddHandler implements OperationStepHandler {
         final ModelNode model = resource.getModel();
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
-        model.get(NAME).set(name);
         pathAttribute.validateAndSet(operation, model);
         RELATIVE_TO.validateAndSet(operation, model);
 

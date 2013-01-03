@@ -26,7 +26,6 @@ import static org.jboss.as.clustering.web.infinispan.InfinispanWebMessages.MESSA
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.Executors;
 
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
@@ -34,14 +33,14 @@ import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactory;
-import org.jboss.as.clustering.infinispan.affinity.LocalKeyAffinityServiceFactory;
+import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactoryService;
 import org.jboss.as.clustering.infinispan.atomic.AtomicMapCache;
+import org.jboss.as.clustering.infinispan.invoker.BatchCacheInvoker;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.as.clustering.infinispan.invoker.RetryingCacheInvoker;
 import org.jboss.as.clustering.infinispan.subsystem.AbstractCacheConfigurationService;
 import org.jboss.as.clustering.infinispan.subsystem.CacheService;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
-import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
 import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager;
 import org.jboss.as.clustering.lock.impl.SharedLocalYieldingClusterLockManagerService;
 import org.jboss.as.clustering.msc.AsynchronousService;
@@ -77,14 +76,14 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
     private static final ServiceName JVM_ROUTE_REGISTRY_SERVICE_NAME = DistributedCacheManagerFactoryService.JVM_ROUTE_REGISTRY_ENTRY_PROVIDER_SERVICE_NAME.getParent();
 
     private SessionAttributeStorageFactory storageFactory = new SessionAttributeStorageFactoryImpl();
-    private CacheInvoker invoker = new RetryingCacheInvoker(10, 100);
+    private CacheInvoker invoker = new RetryingCacheInvoker(new BatchCacheInvoker(), 10, 100);
     private SessionAttributeMarshallerFactory marshallerFactory = new SessionAttributeMarshallerFactoryImpl();
-    private KeyAffinityServiceFactory affinityFactory = new LocalKeyAffinityServiceFactory(Executors.newSingleThreadExecutor(), 10);
     @SuppressWarnings("rawtypes")
     private final InjectedValue<Registry> registry = new InjectedValue<Registry>();
     private final InjectedValue<SharedLocalYieldingClusterLockManager> lockManager = new InjectedValue<SharedLocalYieldingClusterLockManager>();
     @SuppressWarnings("rawtypes")
     private final InjectedValue<Cache> cache = new InjectedValue<Cache>();
+    private final InjectedValue<KeyAffinityServiceFactory> affinityFactory = new InjectedValue<KeyAffinityServiceFactory>();
 
     @Override
     public <T extends OutgoingDistributableSessionData> org.jboss.as.clustering.web.DistributedCacheManager<T> getDistributedCacheManager(LocalDistributableSessionManager manager) throws ClusteringNotSupportedException {
@@ -101,7 +100,7 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
         BatchingManager batchingManager = new TransactionBatchingManager(cache.getTransactionManager());
         SessionAttributeStorage<T> storage = this.storageFactory.createStorage(manager.getReplicationConfig().getReplicationGranularity(), this.marshallerFactory.createMarshaller(manager));
 
-        return new DistributedCacheManager<T>(manager, new AtomicMapCache<String, Object, Object>(cache), jvmRouteRegistry, this.lockManager.getOptionalValue(), storage, batchingManager, this.invoker, this.affinityFactory);
+        return new DistributedCacheManager<T>(manager, new AtomicMapCache<String, Object, Object>(cache), jvmRouteRegistry, this.lockManager.getOptionalValue(), storage, batchingManager, this.invoker, this.affinityFactory.getValue());
     }
 
     @Override
@@ -114,7 +113,13 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
         ServiceName containerServiceName = templateCacheServiceName.getParent();
         String containerName = containerServiceName.getSimpleName();
         ServiceName templateCacheConfigurationServiceName = AbstractCacheConfigurationService.getServiceName(containerName, templateCacheName);
-        String cacheName = deploymentServiceName.getParent().getSimpleName() + deploymentServiceName.getSimpleName();
+        String host = deploymentServiceName.getParent().getSimpleName();
+        String contextPath = deploymentServiceName.getSimpleName();
+        StringBuilder cacheNameBuilder = new StringBuilder(host).append(contextPath);
+        if (contextPath.equals("/")) {
+            cacheNameBuilder.append("ROOT");
+        }
+        String cacheName = cacheNameBuilder.toString();
         ServiceName cacheConfigurationServiceName = AbstractCacheConfigurationService.getServiceName(containerName, cacheName);
         ServiceName cacheServiceName = CacheService.getServiceName(containerName, cacheName);
 
@@ -141,13 +146,13 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
         AsynchronousService.addService(target, cacheServiceName, new CacheService<Object, Object>(cacheName, dependencies))
                 .addDependency(cacheConfigurationServiceName)
                 .addDependency(containerServiceName, EmbeddedCacheManager.class, cacheContainer)
-                .addDependency(DependencyType.OPTIONAL, ChannelService.getServiceName(containerName))
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()
         ;
         builder.addDependency(cacheServiceName, Cache.class, this.cache);
         builder.addDependency(JVM_ROUTE_REGISTRY_SERVICE_NAME, Registry.class, this.registry);
-        builder.addDependency(SharedLocalYieldingClusterLockManagerService.getServiceName(containerName), SharedLocalYieldingClusterLockManager.class, this.lockManager);
+        builder.addDependency(DependencyType.OPTIONAL, SharedLocalYieldingClusterLockManagerService.getServiceName(containerName), SharedLocalYieldingClusterLockManager.class, this.lockManager);
+        builder.addDependency(KeyAffinityServiceFactoryService.getServiceName(containerName), KeyAffinityServiceFactory.class, this.affinityFactory);
         return true;
     }
 
@@ -156,7 +161,7 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
     public Collection<ServiceController<?>> installServices(ServiceTarget target) {
         InjectedValue<Cache> cache = new InjectedValue<Cache>();
         InjectedValue<Registry.RegistryEntryProvider> providerValue = new InjectedValue<Registry.RegistryEntryProvider>();
-        ServiceController<?> controller = target.addService(JVM_ROUTE_REGISTRY_SERVICE_NAME, new RegistryService(cache, providerValue))
+        ServiceController<?> controller = AsynchronousService.addService(target, JVM_ROUTE_REGISTRY_SERVICE_NAME, new RegistryService(cache, providerValue))
                 .addDependency(CacheService.getServiceName(DEFAULT_CACHE_CONTAINER, null), Cache.class, cache)
                 .addDependency(DistributedCacheManagerFactoryService.JVM_ROUTE_REGISTRY_ENTRY_PROVIDER_SERVICE_NAME, Registry.RegistryEntryProvider.class, providerValue)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)

@@ -21,6 +21,9 @@
  */
 package org.jboss.as.test.integration.ejb.entity.cmp.commerce;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.util.Iterator;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -32,9 +35,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 @RunWith(CmpTestRunner.class)
 public class ManyToManyBiTestCase extends AbstractCmpTest {
 
@@ -43,7 +43,7 @@ public class ManyToManyBiTestCase extends AbstractCmpTest {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "cmp-commerce.jar");
         jar.addPackage(ManyToManyBiTestCase.class.getPackage());
         jar.addAsManifestResource(ManyToManyBiTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
-        jar.addAsManifestResource(ManyToManyBiTestCase.class.getPackage(), "jbosscmp-jdbc.xml", "jbosscmp-jdbc.xml");
+        jar.addAsManifestResource(ManyToManyBiTestCase.class.getPackage(), "jbosscmp-jdbc-"+ManyToManyBiTestCase.class.getSimpleName()+".xml", "jbosscmp-jdbc.xml");
         AbstractCmpTest.addDeploymentAssets(jar);
         return jar;
     }

@@ -22,22 +22,26 @@
 
 package org.jboss.as.naming.management;
 
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
+
 import javax.naming.Context;
 import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.Reference;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.naming.JndiViewManagedReferenceFactory;
+import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.NamingContext;
+import org.jboss.as.naming.NamingLogger;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
-
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
 /**
  * @author John Bailey
@@ -72,6 +76,14 @@ public class JndiViewOperation implements OperationStepHandler {
                         throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToReadContextEntries("java:jboss")));
                     }
 
+                    final ServiceController<?> exportedContextService = serviceRegistry.getService(ContextNames.EXPORTED_CONTEXT_SERVICE_NAME);
+                    final NamingStore exportedContextNamingStore = NamingStore.class.cast(exportedContextService.getValue());
+                    try {
+                        addEntries(contextsNode.get("java:jboss/exported"), new NamingContext(exportedContextNamingStore, null));
+                    } catch (NamingException e) {
+                        throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToReadContextEntries("java:jboss/exported")));
+                    }
+
                     final ServiceController<?> globalContextService = serviceRegistry.getService(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME);
                     final NamingStore globalContextNamingStore = NamingStore.class.cast(globalContextService.getValue());
                     try {
@@ -100,13 +112,13 @@ public class JndiViewOperation implements OperationStepHandler {
                             });
                         }
                     }
-                    context.completeStep();
+                    context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                 }
             }, OperationContext.Stage.RUNTIME);
         } else {
             throw new OperationFailedException(new ModelNode().set(MESSAGES.jndiViewNotAvailable()));
         }
-        context.completeStep();
+        context.stepCompleted();
     }
 
     private void addEntries(final ModelNode current, final Context context) throws NamingException {
@@ -117,16 +129,35 @@ public class JndiViewOperation implements OperationStepHandler {
             final ModelNode node = current.get(pair.getName());
             node.get("class-name").set(pair.getClassName());
             try {
-                final Object value = context.lookup(pair.getName());
+                final Object value;
+                if(context instanceof NamingContext) {
+                    value = ((NamingContext)context).lookup(pair.getName(), false);
+                } else {
+                    value = context.lookup(pair.getName());
+                }
                 if (value instanceof Context) {
                     addEntries(node.get("children"), Context.class.cast(value));
                 } else if (value instanceof Reference) {
                     //node.get("value").set(value.toString());
                 } else {
-                    node.get("value").set(value.toString());
+                    String jndiViewValue = JndiViewManagedReferenceFactory.DEFAULT_JNDI_VIEW_INSTANCE_VALUE;
+                    if (value instanceof JndiViewManagedReferenceFactory) {
+                       try {
+                           jndiViewValue = JndiViewManagedReferenceFactory.class.cast(value)
+                                .getJndiViewInstanceValue();
+                       }
+                       catch (Throwable e) {
+                           // just log, don't stop the operation
+                           NamingLogger.ROOT_LOGGER.failedToLookupJndiViewValue(pair.getName(),e);
+                       }
+                    } else if (!(value instanceof ManagedReferenceFactory)) {
+                       jndiViewValue = String.valueOf(value);
+                    }
+                    node.get("value").set(jndiViewValue);
                 }
             } catch (NamingException e) {
-                // Ignore for now..
+                // just log, don't stop the operation
+                NamingLogger.ROOT_LOGGER.failedToLookupJndiViewValue(pair.getName(),e);
             }
         }
     }

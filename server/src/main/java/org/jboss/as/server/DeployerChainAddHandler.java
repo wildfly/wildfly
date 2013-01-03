@@ -22,10 +22,11 @@
 
 package org.jboss.as.server;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
+
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 
@@ -33,8 +34,10 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.server.deployment.DeployerChainsService;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
@@ -42,16 +45,17 @@ import org.jboss.as.server.deployment.RegisteredDeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.dmr.ModelNode;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
-
 /**
  * @author John Bailey
  */
-public class DeployerChainAddHandler implements OperationStepHandler, DescriptionProvider {
+public class DeployerChainAddHandler implements OperationStepHandler {
     static final String NAME = "add-deployer-chains";
+    public static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(NAME, ControllerResolver.getResolver())
+            .setPrivateEntry()
+            .build();
     public static final DeployerChainAddHandler INSTANCE = new DeployerChainAddHandler();
 
-    static void addDeploymentProcessor(final String subsystemName, Phase phase, int priority, DeploymentUnitProcessor processor) {
+    public static void addDeploymentProcessor(final String subsystemName, Phase phase, int priority, DeploymentUnitProcessor processor) {
         final EnumMap<Phase, Set<RegisteredDeploymentUnitProcessor>> deployerMap = INSTANCE.deployerMap;
         deployerMap.get(phase).add(new RegisteredDeploymentUnitProcessor(priority, processor, subsystemName));
     }
@@ -99,18 +103,13 @@ public class DeployerChainAddHandler implements OperationStepHandler, Descriptio
 
                     context.addStep(new FinalRuntimeStepHandler(), OperationContext.Stage.RUNTIME);
 
-                    context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+                    context.stepCompleted();
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.stepCompleted();
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        //Since this instance should have EntryType.PRIVATE, there is no need for a description
-        return new ModelNode();
-    }
 
     private class FinalRuntimeStepHandler implements OperationStepHandler {
 

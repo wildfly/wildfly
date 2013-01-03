@@ -1,15 +1,14 @@
 package org.jboss.as.controller.transform;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.NoopOperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
-import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
+import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
+import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -22,7 +21,7 @@ public class SessionDefinition extends SimpleResourceDefinition {
     public static SessionDefinition INSTANCE = new SessionDefinition();
 
     private SessionDefinition() {
-        super(PathElement.pathElement("session"), new TestResourceDescriptionResolver());
+        super(PathElement.pathElement("session"), new NonResolvingResourceDescriptionResolver());
     }
 
     protected static final SimpleAttributeDefinition JNDI_NAME =
@@ -51,7 +50,7 @@ public class SessionDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(final ManagementResourceRegistration registry) {
         for (AttributeDefinition attr : ATTRIBUTES) {
-            registry.registerReadWriteAttribute(attr, null, new GlobalOperationHandlers.WriteAttributeHandler());
+            registry.registerReadWriteAttribute(attr, null, new WriteAttributeHandlers.WriteAttributeOperationHandler(){});
         }
     }
 
@@ -61,12 +60,7 @@ public class SessionDefinition extends SimpleResourceDefinition {
 
         final String name = "dump-session-info";
         DefaultOperationDescriptionProvider desc = new DefaultOperationDescriptionProvider(name, getResourceDescriptionResolver(), DEBUG);
-        registry.registerOperationHandler(name, new OperationStepHandler() {
-            @Override
-            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                context.completeStep();
-            }
-        }, desc);
+        registry.registerOperationHandler(name, NoopOperationStepHandler.WITHOUT_RESULT, desc);
 
     }
 }

@@ -21,7 +21,19 @@
  */
 package org.jboss.as.naming.subsystem;
 
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.BINDING_TYPE;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.CLASS;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.LOOKUP;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.MODULE;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.OBJECT_FACTORY;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.SIMPLE;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.TYPE;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.VALUE;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Arrays;
+import java.util.Hashtable;
 import java.util.List;
 
 import javax.naming.InitialContext;
@@ -33,6 +45,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
+import org.jboss.as.naming.ContextListManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.NamingMessages;
@@ -42,6 +56,7 @@ import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
@@ -50,19 +65,11 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
 
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.BINDING_TYPE;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.CLASS;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.LOOKUP;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.MODULE;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.OBJECT_FACTORY;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.SIMPLE;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.TYPE;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.VALUE;
-
 /**
  * A {@link org.jboss.as.controller.AbstractAddStepHandler} to handle the add operation for simple JNDI bindings
  *
  * @author Stuart Douglas
+ * @author Eduardo Martins
  */
 public class NamingBindingAdd extends AbstractAddStepHandler {
 
@@ -99,7 +106,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         } else if (type.equals(LOOKUP)) {
             installLookup(context, name, model, verificationHandler, newControllers);
         } else {
-            throw new OperationFailedException(new ModelNode().set("Unknown binding type " + type));
+            throw NamingMessages.MESSAGES.unknownBindingType(type);
         }
     }
 
@@ -145,7 +152,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         try {
             module = Module.getBootModuleLoader().loadModule(moduleID);
         } catch (ModuleLoadException e) {
-            throw new OperationFailedException(e, new ModelNode().set("Could not load module " + moduleID));
+            throw NamingMessages.MESSAGES.couldNotLoadModule(moduleID);
         }
 
         final ObjectFactory objectFactoryClassInstance;
@@ -156,13 +163,13 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
             final Class<?> clazz = module.getClassLoader().loadClass(className);
             objectFactoryClassInstance = (ObjectFactory) clazz.newInstance();
         } catch (ClassNotFoundException e) {
-            throw new OperationFailedException(e, new ModelNode().set("Could not load class " + className + " from module " + moduleID));
+            throw NamingMessages.MESSAGES.couldNotLoadClassFromModule(className, moduleID);
         } catch (InstantiationException e) {
-            throw new OperationFailedException(e, new ModelNode().set("Could not instantiate instance of class " + className + " from module " + moduleID));
+            throw NamingMessages.MESSAGES.couldNotInstantiateClassInstanceFromModule(className, moduleID);
         } catch (IllegalAccessException e) {
-            throw new OperationFailedException(e, new ModelNode().set("Could not instantiate instance of class " + className + " from module " + moduleID));
+            throw NamingMessages.MESSAGES.couldNotInstantiateClassInstanceFromModule(className, moduleID);
         } catch (ClassCastException e) {
-            throw new OperationFailedException(e, new ModelNode().set("Class " + className + " from module " + moduleID + " was not an instance of ObjectFactory"));
+            throw NamingMessages.MESSAGES.notAnInstanceOfObjectFactory(className, moduleID);
         } finally {
             SecurityActions.setContextClassLoader(cl);
         }
@@ -170,15 +177,40 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         final ServiceTarget serviceTarget = context.getServiceTarget();
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
 
+        final Hashtable<String, String> environment = getObjectFactoryEnvironment(context,model);
+
         final BinderService binderService = new BinderService(name, objectFactoryClassInstance);
-        binderService.getManagedObjectInjector().inject(new ManagedReferenceFactory() {
+        binderService.getManagedObjectInjector().inject(new ContextListAndJndiViewManagedReferenceFactory() {
             @Override
             public ManagedReference getReference() {
                 try {
-                    final Object value = objectFactoryClassInstance.getObjectInstance(name, null, null, null);
+                    final Object value = objectFactoryClassInstance.getObjectInstance(name, null, null, environment);
                     return new ValueManagedReference(new ImmediateValue<Object>(value));
                 } catch (Exception e) {
                     throw new RuntimeException(e);
+                }
+            }
+
+            @Override
+            public String getInstanceClassName() {
+                final ClassLoader cl = SecurityActions.getContextClassLoader();
+                try {
+                    SecurityActions.setContextClassLoader(objectFactoryClassInstance.getClass().getClassLoader());
+                    final Object value = getReference().getInstance();
+                    return value != null ? value.getClass().getName() : ContextListManagedReferenceFactory.DEFAULT_INSTANCE_CLASS_NAME;
+                } finally {
+                    SecurityActions.setContextClassLoader(cl);
+                }
+            }
+
+            @Override
+            public String getJndiViewInstanceValue() {
+                final ClassLoader cl = SecurityActions.getContextClassLoader();
+                try {
+                    SecurityActions.setContextClassLoader(objectFactoryClassInstance.getClass().getClassLoader());
+                    return String.valueOf(getReference().getInstance());
+                } finally {
+                    SecurityActions.setContextClassLoader(cl);
                 }
             }
         });
@@ -198,6 +230,19 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         }
     }
 
+    private Hashtable<String, String> getObjectFactoryEnvironment(OperationContext context, ModelNode model)
+            throws OperationFailedException {
+        Hashtable<String, String> environment = null;
+        ModelNode resolvedModelAttribute = NamingBindingResourceDefinition.OBJECT_FACTORY_ENV.resolveModelAttribute(context,
+                model);
+        if (resolvedModelAttribute.isDefined()) {
+            environment = new Hashtable<String, String>();
+            for (Property property : resolvedModelAttribute.asPropertyList()) {
+                environment.put(property.getName(), property.getValue().asString());
+            }
+        }
+        return environment;
+    }
 
     void installLookup(final OperationContext context, final String name, final ModelNode model, ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
@@ -207,7 +252,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
 
         final BinderService binderService = new BinderService(name);
-        binderService.getManagedObjectInjector().inject(new ManagedReferenceFactory() {
+        binderService.getManagedObjectInjector().inject(new ContextListAndJndiViewManagedReferenceFactory() {
             @Override
             public ManagedReference getReference() {
                 try {
@@ -216,6 +261,17 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
+            }
+
+            @Override
+            public String getInstanceClassName() {
+                final Object value = getReference().getInstance();
+                return value != null ? value.getClass().getName() : ContextListManagedReferenceFactory.DEFAULT_INSTANCE_CLASS_NAME;
+            }
+
+            @Override
+            public String getJndiViewInstanceValue() {
+                return String.valueOf(getReference().getInstance());
             }
         });
 
@@ -253,8 +309,14 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
             return Double.parseDouble(value);
         } else if (type.equals("boolean") || type.equals("java.lang.Boolean")) {
             return Boolean.parseBoolean(value);
+        } else if (type.equals(URL.class.getName())) {
+            try {
+                return new URL(value);
+            } catch (MalformedURLException e) {
+                throw NamingMessages.MESSAGES.unableToTransformURLBindingValue(value,e);
+            }
         } else {
-            throw new OperationFailedException(new ModelNode().set("Unknown primitive type " + type));
+            throw NamingMessages.MESSAGES.unsupportedSimpleBindingType(type);
         }
 
     }
@@ -271,10 +333,11 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         } else if (type.equals(OBJECT_FACTORY)) {
             model.get(MODULE).set(operation.require(MODULE).asString());
             model.get(CLASS).set(operation.require(CLASS).asString());
+            NamingBindingResourceDefinition.OBJECT_FACTORY_ENV.validateAndSet(operation, model);
         } else if (type.equals(LOOKUP)) {
             model.get(LOOKUP).set(operation.require(LOOKUP).asString());
         } else {
-            throw new OperationFailedException(new ModelNode().set("Unknown binding type " + type));
+            throw NamingMessages.MESSAGES.unknownBindingType(type);
         }
     }
 }

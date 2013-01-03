@@ -55,6 +55,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.security.ServerSecurityManager;
 import org.jboss.as.domain.management.AuthenticationMechanism;
 import org.jboss.as.domain.management.CallbackHandlerFactory;
+import org.jboss.as.domain.management.SSLIdentity;
 import org.jboss.as.domain.management.connections.ConnectionManager;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionManagerService;
 import org.jboss.dmr.ModelNode;
@@ -178,7 +179,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
 
         if (ssl != null || authTruststore != null) {
             ServiceName sslServiceName = addSSLService(context, ssl, authTruststore, realmServiceName, serviceTarget, newControllers);
-            realmBuilder.addDependency(sslServiceName, SSLIdentityService.class, securityRealmService.getSSLIdentityInjector());
+            realmBuilder.addDependency(sslServiceName, SSLIdentity.class, securityRealmService.getSSLIdentityInjector());
         }
 
         realmBuilder.setInitialMode(Mode.ACTIVE);
@@ -484,7 +485,8 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
     private ModelNode unmaskUsersPasswords(OperationContext context, ModelNode users) throws OperationFailedException {
         users = users.clone();
         for (Property property : users.get(USER).asPropertyList()) {
-            ModelNode user = property.getValue();
+            // Don't use the value from property as it is a clone and does not update the returned users ModelNode.
+            ModelNode user = users.get(USER, property.getName());
             if (user.hasDefined(PASSWORD)) {
                 //TODO This will be cleaned up once it uses attribute definitions
                 user.set(PASSWORD, context.resolveExpressions(user.get(PASSWORD)).asString());

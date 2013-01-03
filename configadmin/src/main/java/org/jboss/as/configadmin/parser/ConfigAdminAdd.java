@@ -21,24 +21,20 @@
  */
 package org.jboss.as.configadmin.parser;
 
-import static org.jboss.as.configadmin.ConfigAdminLogger.ROOT_LOGGER;
+import static org.jboss.as.configadmin.ConfigAdminLogger.LOGGER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
 
 import org.jboss.as.configadmin.service.ConfigAdminServiceImpl;
-import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -49,7 +45,7 @@ import org.jboss.msc.service.ServiceTarget;
  * @author Thomas.Diesler@jboss.com
  * @since 11-Sep-2010
  */
-class ConfigAdminAdd extends AbstractBoottimeAddStepHandler {
+class ConfigAdminAdd extends AbstractAddStepHandler {
 
     static final ConfigAdminAdd INSTANCE = new ConfigAdminAdd();
 
@@ -67,10 +63,10 @@ class ConfigAdminAdd extends AbstractBoottimeAddStepHandler {
     protected void populateModel(final ModelNode operation, final ModelNode model) {
     }
 
-    protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model,
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
             final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) {
 
-        ROOT_LOGGER.activatingSubsystem();
+        LOGGER.activatingSubsystem();
 
         context.addStep(new OperationStepHandler() {
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -81,23 +77,6 @@ class ConfigAdminAdd extends AbstractBoottimeAddStepHandler {
         }, OperationContext.Stage.RUNTIME);
 
 
-        ServiceTarget serviceTarget = context.getServiceTarget();
-        newControllers.add(ConfigAdminState.addService(serviceTarget));
-
-
-        ROOT_LOGGER.debugf("Activated ConfigAdmin Subsystem");
+        LOGGER.debugf("Activated ConfigAdmin Subsystem");
     }
-
-    static DescriptionProvider DESCRIPTION = new DescriptionProvider() {
-
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            ModelNode node = new ModelNode();
-            ResourceBundle resbundle = ConfigAdminProviders.getResourceBundle(locale);
-            node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.ADD);
-            node.get(ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("subsystem.add"));
-            node.get(ModelDescriptionConstants.REPLY_PROPERTIES).setEmptyObject();
-            return node;
-        }
-    };
 }

@@ -109,6 +109,11 @@ public enum Phase {
      */
     PARSE(null),
     /**
+     * In this phase parsing of deployment metadata is complete and the component may be registered with the subsystem.
+     * This is prior to working out the components dependency and equivalent to the OSGi INSTALL life cycle.
+     */
+    REGISTER(null),
+    /**
      * In this phase, the full structure of the deployment unit is made available and module dependencies may be assembled.
      * <p>
      * Upon entry, this phase performs the following actions:
@@ -133,10 +138,15 @@ public enum Phase {
      * <li>{@link Attachments#BLAH} - description here</li>
      * </ul>
      * <p>
-
      */
     DEPENDENCIES(null),
     CONFIGURE_MODULE(null),
+
+    /**
+     * Processors that need to start/complete before the deployment classloader is used to load application classes,
+     * belong in the FIRST_MODULE_USE phase.
+     */
+    FIRST_MODULE_USE(null),
     POST_MODULE(null),
     INSTALL(null),
     CLEANUP(null),
@@ -174,18 +184,26 @@ public enum Phase {
     }
 
     // STRUCTURE
-    public static final int STRUCTURE_EXPLODED_MOUNT                    = 0x0200;
-    public static final int STRUCTURE_MOUNT                             = 0x0300;
-    public static final int STRUCTURE_MANIFEST                          = 0x0400;
-    public static final int STRUCTURE_EE_SPEC_DESC_PROPERTY_REPLACEMENT = 0x0450;
-    public static final int STRUCTURE_EE_JBOSS_DESC_PROPERTY_REPLACEMENT= 0x0451;
-    // must be before osgi
-    public static final int STRUCTURE_JDBC_DRIVER                       = 0x0500;
-    public static final int STRUCTURE_OSGI_MANIFEST                     = 0x0600;
+    public static final int STRUCTURE_EXPLODED_MOUNT                    = 0x0100;
+    public static final int STRUCTURE_MOUNT                             = 0x0200;
+    public static final int STRUCTURE_MANIFEST                          = 0x0300;
+    public static final int STRUCTURE_OSGI_MANIFEST                     = 0x0400;
+    public static final int STRUCTURE_REMOUNT_EXPLODED                  = 0x0450;
+    public static final int STRUCTURE_EE_SPEC_DESC_PROPERTY_REPLACEMENT = 0x0500;
+    public static final int STRUCTURE_EE_JBOSS_DESC_PROPERTY_REPLACEMENT= 0x0550;
+    public static final int STRUCTURE_EE_DEPLOYMENT_PROPERTIES          = 0x0560;
+    public static final int STRUCTURE_EE_DEPLOYMENT_PROPERTY_RESOLVER   = 0x0561;
+    public static final int STRUCTURE_EE_VAULT_PROPERTY_RESOLVER        = 0x0562;
+    public static final int STRUCTURE_EE_SYSTEM_PROPERTY_RESOLVER       = 0x0563;
+    public static final int STRUCTURE_EE_PROPERTY_RESOLVER              = 0x0564;
+    public static final int STRUCTURE_JDBC_DRIVER                       = 0x0600;
     public static final int STRUCTURE_RAR                               = 0x0700;
     public static final int STRUCTURE_WAR_DEPLOYMENT_INIT               = 0x0800;
     public static final int STRUCTURE_WAR                               = 0x0900;
+    public static final int STRUCTURE_CONTENT_OVERRIDE                  = 0x0950;
     public static final int STRUCTURE_EAR_DEPLOYMENT_INIT               = 0x0A00;
+    public static final int STRUCTURE_REGISTER_JBOSS_ALL_XML_PARSER     = 0x0A10;
+    public static final int STRUCTURE_PARSE_JBOSS_ALL_XML               = 0x0A20;
     public static final int STRUCTURE_EAR_APP_XML_PARSE                 = 0x0B00;
     public static final int STRUCTURE_JBOSS_EJB_CLIENT_XML_PARSE        = 0x0C00;
     public static final int STRUCTURE_EJB_EAR_APPLICATION_NAME          = 0x0D00;
@@ -196,21 +214,18 @@ public enum Phase {
     public static final int STRUCTURE_EJB_JAR_IN_EAR                    = 0x1200;
     public static final int STRUCTURE_APPLICATION_CLIENT_IN_EAR         = 0x1300;
     public static final int STRUCTURE_MANAGED_BEAN_JAR_IN_EAR           = 0x1400;
+    public static final int STRUCTURE_BUNDLE_SUB_DEPLOYMENT             = 0x1450;
     public static final int STRUCTURE_SAR_SUB_DEPLOY_CHECK              = 0x1500;
     public static final int STRUCTURE_ADDITIONAL_MANIFEST               = 0x1600;
     public static final int STRUCTURE_SUB_DEPLOYMENT                    = 0x1700;
-    public static final int STRUCTURE_JBOSS_DEPLOYMENT_STRUCTURE_DESCRIPTOR = 0x1800;
+    public static final int STRUCTURE_JBOSS_DEPLOYMENT_STRUCTURE        = 0x1800;
     public static final int STRUCTURE_CLASS_PATH                        = 0x1900;
     public static final int STRUCTURE_MODULE_IDENTIFIERS                = 0x1A00;
     public static final int STRUCTURE_EE_MODULE_INIT                    = 0x1B00;
     public static final int STRUCTURE_EE_RESOURCE_INJECTION_REGISTRY    = 0x1C00;
+    public static final int STRUCTURE_DEPLOYMENT_DEPENDENCIES           = 0x1D00;
 
     // PARSE
-    public static final int PARSE_EE_DEPLOYMENT_PROPERTIES              = 0x0001;
-    public static final int PARSE_EE_DEPLOYMENT_PROPERTY_RESOLVER       = 0x0002;
-    public static final int PARSE_EE_VAULT_PROPERTY_RESOLVER            = 0x0003;
-    public static final int PARSE_EE_SYSTEM_PROPERTY_RESOLVER           = 0x0004;
-    public static final int PARSE_EE_PROPERTY_RESOLVER                  = 0x0005;
     public static final int PARSE_EE_MODULE_NAME                        = 0x0100;
     public static final int PARSE_EJB_DEFAULT_DISTINCT_NAME             = 0x0110;
     public static final int PARSE_EAR_SUBDEPLOYMENTS_ISOLATION_DEFAULT  = 0x0200;
@@ -219,8 +234,7 @@ public enum Phase {
     public static final int PARSE_EXTENSION_LIST                        = 0x0700;
     public static final int PARSE_EXTENSION_NAME                        = 0x0800;
     public static final int PARSE_OSGI_BUNDLE_INFO                      = 0x0900;
-    public static final int PARSE_OSGI_XSERVICE_PROPERTIES              = 0x0A00;
-    public static final int PARSE_OSGI_DEPLOYMENT                       = 0x0A80;
+    public static final int PARSE_OSGI_PROPERTIES                       = 0x0A00;
     public static final int PARSE_WEB_DEPLOYMENT                        = 0x0B00;
     public static final int PARSE_WEB_DEPLOYMENT_FRAGMENT               = 0x0C00;
     public static final int PARSE_JSF_VERSION                           = 0x0C50;
@@ -242,11 +256,12 @@ public enum Phase {
     public static final int PARSE_EJB_APPLICATION_EXCEPTION_ANNOTATION  = 0x1901;
     public static final int PARSE_WEB_COMPONENTS                        = 0x1F00;
     public static final int PARSE_WEB_MERGE_METADATA                    = 0x2000;
+    public static final int PARSE_OSGI_COMPONENTS                       = 0x2010;
     public static final int PARSE_WEBSERVICES_CONTEXT_INJECTION         = 0x2040;
     public static final int PARSE_WEBSERVICES_XML                       = 0x2050;
     public static final int PARSE_JBOSS_WEBSERVICES_XML                 = 0x2051;
     public static final int PARSE_JAXWS_EJB_INTEGRATION                 = 0x2052;
-    public static final int PARSE_JAXRPC_POJO_INTEGRATION                = 0x2053;
+    public static final int PARSE_JAXRPC_POJO_INTEGRATION               = 0x2053;
     public static final int PARSE_JAXRPC_EJB_INTEGRATION                = 0x2054;
     public static final int PARSE_JAXWS_HANDLER_CHAIN_ANNOTATION        = 0x2055;
     public static final int PARSE_WS_JMS_INTEGRATION                    = 0x2056;
@@ -260,11 +275,12 @@ public enum Phase {
     public static final int PARSE_MANAGED_BEAN_ANNOTATION               = 0x2900;
     public static final int PARSE_EE_ANNOTATIONS                        = 0x2901;
     public static final int PARSE_JAXRS_ANNOTATIONS                     = 0x2A00;
+    public static final int PARSE_CDI_ANNOTATIONS                       = 0x2A10;
     public static final int PARSE_WELD_DEPLOYMENT                       = 0x2B00;
-    public static final int PARSE_WELD_WEB_INTEGRATION                  = 0x2B10;
     public static final int PARSE_DATA_SOURCE_DEFINITION_ANNOTATION     = 0x2D00;
     public static final int PARSE_EJB_CONTEXT_BINDING                   = 0x2E00;
     public static final int PARSE_EJB_TIMERSERVICE_BINDING              = 0x2E01;
+    public static final int PARSE_EJB_DEFAULT_SECURITY_DOMAIN           = 0x2E02;
     public static final int PARSE_PERSISTENCE_UNIT                      = 0x2F00;
     public static final int PARSE_LIFECYCLE_ANNOTATION                  = 0x3200;
     public static final int PARSE_PASSIVATION_ANNOTATION                = 0x3250;
@@ -275,22 +291,27 @@ public enum Phase {
     public static final int PARSE_EJB_SECURITY_ROLE_REF_DD              = 0x3501;
     public static final int PARSE_EJB_ASSEMBLY_DESC_DD                  = 0x3600;
     public static final int PARSE_DISTINCT_NAME                         = 0x3601;
+    public static final int PARSE_OSGI_DEPLOYMENT                       = 0x3700;
+    public static final int PARSE_OSGI_SUBSYSTEM_ACTIVATOR              = 0x3800;
     // should be after all components are known
-    public static final int PARSE_EJB_INJECTION_ANNOTATION              = 0x3700;
-    public static final int PARSE_JACORB                                = 0x3A00;
-    public static final int PARSE_TRANSACTION_ROLLBACK_ACTION           = 0x3B00;
-    public static final int PARSE_WEB_INITIALIZE_IN_ORDER               = 0x3C00;
-    public static final int PARSE_EAR_MESSAGE_DESTINATIONS              = 0x3D00;
-    public static final int PARSE_DSXML_DEPLOYMENT                      = 0x3E00;
-    public static final int PARSE_MESSAGING_XML_RESOURCES               = 0x3F00;
+    public static final int PARSE_EJB_INJECTION_ANNOTATION              = 0x4000;
+    public static final int PARSE_JACORB                                = 0x4100;
+    public static final int PARSE_TRANSACTION_ROLLBACK_ACTION           = 0x4200;
+    public static final int PARSE_EAR_MESSAGE_DESTINATIONS              = 0x4400;
+    public static final int PARSE_DSXML_DEPLOYMENT                      = 0x4500;
+    public static final int PARSE_MESSAGING_XML_RESOURCES               = 0x4600;
+    public static final int PARSE_DESCRIPTOR_LIFECYCLE_METHOD_RESOLUTION = 0x4700;
+
+    // REGISTER
+    public static final int REGISTER_BUNDLE_INSTALL                     = 0x0100;
 
     // DEPENDENCIES
-    public static final int DEPENDENCIES_EJB                            = 0x0000;
-    public static final int DEPENDENCIES_MODULE                         = 0x0100;
-    public static final int DEPENDENCIES_RAR_CONFIG                     = 0x0300;
-    public static final int DEPENDENCIES_MANAGED_BEAN                   = 0x0400;
-    public static final int DEPENDENCIES_SAR_MODULE                     = 0x0500;
-    public static final int DEPENDENCIES_WAR_MODULE                     = 0x0600;
+    public static final int DEPENDENCIES_EJB                            = 0x0200;
+    public static final int DEPENDENCIES_MODULE                         = 0x0300;
+    public static final int DEPENDENCIES_RAR_CONFIG                     = 0x0400;
+    public static final int DEPENDENCIES_MANAGED_BEAN                   = 0x0500;
+    public static final int DEPENDENCIES_SAR_MODULE                     = 0x0600;
+    public static final int DEPENDENCIES_WAR_MODULE                     = 0x0700;
     public static final int DEPENDENCIES_CLASS_PATH                     = 0x0800;
     public static final int DEPENDENCIES_EXTENSION_LIST                 = 0x0900;
     public static final int DEPENDENCIES_WELD                           = 0x0A00;
@@ -299,8 +320,8 @@ public enum Phase {
     public static final int DEPENDENCIES_SECURITY                       = 0x0C50;
     public static final int DEPENDENCIES_JAXRS                          = 0x0D00;
     public static final int DEPENDENCIES_SUB_DEPLOYMENTS                = 0x0E00;
-    public static final int DEPENDENCIES_PERSISTENCE_ANNOTATION         = 0x1000;
-    public static final int DEPENDENCIES_JPA                            = 0x1005;
+    public static final int DEPENDENCIES_PERSISTENCE_ANNOTATION         = 0x0F00;
+    public static final int DEPENDENCIES_JPA                            = 0x1000;
     public static final int DEPENDENCIES_GLOBAL_MODULES                 = 0x1100;
     public static final int DEPENDENCIES_JDK                            = 0x1200;
     public static final int DEPENDENCIES_JACORB                         = 0x1300;
@@ -308,20 +329,31 @@ public enum Phase {
     public static final int DEPENDENCIES_JAXR                           = 0x1600;
     public static final int DEPENDENCIES_DRIVERS                        = 0x1700;
     public static final int DEPENDENCIES_JSF                            = 0x1800;
+    public static final int DEPENDENCIES_BUNDLE                         = 0x1900;
+    public static final int DEPENDENCIES_BUNDLE_CONTEXT_BINDING         = 0x1A00;
     //these must be last, and in this specific order
     public static final int DEPENDENCIES_APPLICATION_CLIENT             = 0x2000;
     public static final int DEPENDENCIES_VISIBLE_MODULES                = 0x2100;
     public static final int DEPENDENCIES_EE_CLASS_DESCRIPTIONS          = 0x2200;
 
-
     // CONFIGURE_MODULE
-    public static final int CONFIGURE_MODULE_SPEC                       = 0x0100;
+    public static final int CONFIGURE_RESOLVE_BUNDLE                    = 0x0100;
+    public static final int CONFIGURE_MODULE_SPEC                       = 0x0200;
+    public static final int CONFIGURE_DEFERRED_PHASE                    = 0x0300;
+
+    // FIRST_MODULE_USE
+    public static final int FIRST_MODULE_USE_PERSISTENCE_CLASS_FILE_TRANSFORMER = 0x0100; // need to be before POST_MODULE_REFLECTION_INDEX
+                                                                                         // and anything that could load class definitions
+    public static final int FIRST_MODULE_USE_INTERCEPTORS               = 0x0200;
+    public static final int FIRST_MODULE_USE_PERSISTENCE_PREPARE        = 0x0300;
+    public static final int FIRST_MODULE_USE_DSXML_DEPLOYMENT           = 0x0400;
+    public static final int FIRST_MODULE_USE_TRANSFORMER                = 0x0500;
 
 
     // POST_MODULE
     public static final int POST_MODULE_INJECTION_ANNOTATION            = 0x0100;
     public static final int POST_MODULE_REFLECTION_INDEX                = 0x0200;
-    public static final int POST_MODULE_TRANSFORMER                     = 0x0201;
+
     public static final int POST_MODULE_JSF_MANAGED_BEANS               = 0x0300;
     public static final int POST_MODULE_INTERCEPTOR_ANNOTATIONS         = 0x0301;
     public static final int POST_MODULE_EJB_BUSINESS_VIEW_ANNOTATION    = 0x0400;
@@ -352,11 +384,13 @@ public enum Phase {
     public static final int POST_MODULE_EJB_SECURITY_PRINCIPAL_ROLE_MAPPING_MERGE   = 0x0612;
     public static final int POST_MODULE_EJB_CACHE                       = 0x0614;
     public static final int POST_MODULE_EJB_CLUSTERED                   = 0x0615;
+    public static final int POST_MODULE_WELD_WEB_INTEGRATION            = 0x0700;
     public static final int POST_MODULE_WELD_COMPONENT_INTEGRATION      = 0x0800;
     public static final int POST_MODULE_INSTALL_EXTENSION               = 0x0A00;
     public static final int POST_MODULE_VALIDATOR_FACTORY               = 0x0B00;
     public static final int POST_MODULE_EAR_DEPENDENCY                  = 0x0C00;
     public static final int POST_MODULE_WELD_BEAN_ARCHIVE               = 0x0D00;
+    public static final int POST_MODULE_WELD_EXTERNAL_BEAN_ARCHIVE      = 0x0D50;
     public static final int POST_MODULE_WELD_PORTABLE_EXTENSIONS        = 0x0E00;
     // should come before ejb jndi bindings processor
     public static final int POST_MODULE_EJB_IMPLICIT_NO_INTERFACE_VIEW  = 0x1000;
@@ -367,7 +401,6 @@ public enum Phase {
     public static final int POST_MODULE_ENV_ENTRY                       = 0x1400;
     public static final int POST_MODULE_EJB_REF                         = 0x1500;
     public static final int POST_MODULE_PERSISTENCE_REF                 = 0x1600;
-    public static final int POST_MODULE_PERSISTENCE_CLASS_FILE_TRANSFORMER = 0x1620;
     public static final int POST_MODULE_DATASOURCE_REF                  = 0x1700;
     public static final int POST_MODULE_WS_REF_DESCRIPTOR               = 0x1800;
     public static final int POST_MODULE_WS_REF_ANNOTATION               = 0x1801;
@@ -377,7 +410,6 @@ public enum Phase {
     public static final int POST_MODULE_LOCAL_HOME                      = 0x1E00;
     public static final int POST_MODULE_APPLICATION_CLIENT_MANIFEST     = 0x1F00;
     public static final int POST_MODULE_APPLICATION_CLIENT_ACTIVE       = 0x2000;
-    public static final int POST_MODULE_APP_CLIENT_METHOD_RESOLUTION    = 0x2020;
     public static final int POST_MODULE_EJB_ORB_BIND                    = 0x2100;
     public static final int POST_MODULE_CMP_PARSE                       = 0x2300;
     public static final int POST_MODULE_CMP_ENTITY_METADATA             = 0x2400;
@@ -388,18 +420,17 @@ public enum Phase {
     public static final int POST_MODULE_APP_NAMING_CONTEXT              = 0x2900;
     public static final int POST_MODULE_CACHED_CONNECTION_MANAGER       = 0x2A00;
     public static final int POST_MODULE_LOGGING_CONFIG                  = 0x2B00;
+    public static final int POST_MODULE_EL_EXPRESSION_FACTORY           = 0x2C00;
+    public static final int POST_MODULE_SAR_SERVICE_COMPONENT           = 0x2D00;
 
     // INSTALL
-    public static final int INSTALL_JNDI_DEPENDENCY_SETUP               = 0x0100;
-    public static final int INSTALL_JPA_INTERCEPTORS                    = 0x0200;
     public static final int INSTALL_JACC_POLICY                         = 0x0350;
     public static final int INSTALL_COMPONENT_AGGREGATION               = 0x0400;
     public static final int INSTALL_RESOLVE_MESSAGE_DESTINATIONS        = 0x0403;
     public static final int INSTALL_EJB_CLIENT_CONTEXT                  = 0x0404;
-    public static final int INSTALL_EJB_JACC_PROCESSING                 = 0x0405;
+    public static final int INSTALL_EJB_JACC_PROCESSING                 = 0x1105;
     public static final int INSTALL_SERVICE_ACTIVATOR                   = 0x0500;
-    public static final int INSTALL_OSGI_DEPLOYMENT                     = 0x0600;
-    public static final int INSTALL_OSGI_MODULE                         = 0x0650;
+    public static final int INSTALL_RESOLVER_MODULE                     = 0x0600;
     public static final int INSTALL_RA_NATIVE                           = 0x0800;
     public static final int INSTALL_RA_DEPLOYMENT                       = 0x0801;
     public static final int INSTALL_SERVICE_DEPLOYMENT                  = 0x0900;
@@ -408,7 +439,7 @@ public enum Phase {
     public static final int INSTALL_EE_MODULE_CONFIG                    = 0x1101;
     public static final int INSTALL_MODULE_JNDI_BINDINGS                = 0x1200;
     public static final int INSTALL_DEPENDS_ON_ANNOTATION               = 0x1210;
-    public static final int INSTALL_PERSISTENCE_PROVIDER                = 0x1215;   // before INSTALL_PERSISTENTUNIT
+
     public static final int INSTALL_PERSISTENTUNIT                      = 0x1220;
     public static final int INSTALL_EE_COMPONENT                        = 0x1230;
     public static final int INSTALL_SERVLET_INIT_DEPLOYMENT             = 0x1300;
@@ -416,7 +447,6 @@ public enum Phase {
     public static final int INSTALL_JSF_ANNOTATIONS                     = 0x1600;
     public static final int INSTALL_JDBC_DRIVER                         = 0x1800;
     public static final int INSTALL_TRANSACTION_BINDINGS                = 0x1900;
-    public static final int INSTALL_BUNDLE_CONTEXT_BINDING              = 0x1A00;
     public static final int INSTALL_WELD_DEPLOYMENT                     = 0x1B00;
     public static final int INSTALL_WELD_BEAN_MANAGER                   = 0x1C00;
     public static final int INSTALL_JNDI_DEPENDENCIES                   = 0x1C01;
@@ -425,14 +455,19 @@ public enum Phase {
     // IMPORTANT: WS integration installs deployment aspects dynamically
     // so consider INSTALL 0x1C10 - 0x1CFF reserved for WS subsystem!
     public static final int INSTALL_WAR_DEPLOYMENT                      = 0x1D00;
-    public static final int INSTALL_DEPLOYMENT_REPOSITORY               = 0x1E00;
-    public static final int INSTALL_EJB_MANAGEMENT_RESOURCES            = 0x1F00;
-    public static final int INSTALL_APPLICATION_CLIENT                  = 0x2000;
-    public static final int INSTALL_DSXML_DEPLOYMENT                    = 0x2010;
-    public static final int INSTALL_MESSAGING_XML_RESOURCES             = 0x2011;
+    public static final int INSTALL_WAB_DEPLOYMENT                      = 0x1E00;
+    public static final int INSTALL_DEPLOYMENT_REPOSITORY               = 0x1F00;
+    public static final int INSTALL_EJB_MANAGEMENT_RESOURCES            = 0x2000;
+    public static final int INSTALL_APPLICATION_CLIENT                  = 0x2010;
+    public static final int INSTALL_MESSAGING_XML_RESOURCES             = 0x2030;
+    public static final int INSTALL_BUNDLE_ACTIVATE                     = 0x2040;
+    public static final int INSTALL_WAB_SERVLETCONTEXT_SERVICE          = 0x2050;
+    public static final int INSTALL_PERSISTENCE_SERVICES                = 0x2060;
+    public static final int INSTALL_DEPLOYMENT_COMPLETE_SERVICE         = 0x2100;
 
     // CLEANUP
     public static final int CLEANUP_REFLECTION_INDEX                    = 0x0100;
     public static final int CLEANUP_EE                                  = 0x0200;
     public static final int CLEANUP_EJB                                 = 0x0300;
+    public static final int CLEANUP_ANNOTATION_INDEX                    = 0x0400;
 }

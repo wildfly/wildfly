@@ -21,10 +21,28 @@
 */
 package org.jboss.as.txn;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+
 import java.io.IOException;
 
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.as.txn.subsystem.TransactionExtension;
+import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  *
@@ -38,7 +56,6 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        //This is just copied from standalone.xml testing more combinations would be good
         return readResource("subsystem.xml");
     }
 
@@ -46,4 +63,53 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     protected void compareXml(String configId, String original, String marshalled) throws Exception {
         super.compareXml(configId, original, marshalled, true);
     }
+
+    @Test
+    public void testExpressions() throws Exception {
+        standardSubsystemTest("expressions.xml");
+    }
+
+    @Test
+    public void testMinimalConfig() throws Exception {
+        standardSubsystemTest("minimal.xml");
+    }
+
+    @Test
+    public void testSocketId() throws Exception {
+        standardSubsystemTest("socket-id.xml");
+    }
+
+    @Test
+    public void testTransformers() throws Exception {
+        String subsystemXml = readResource("subsystem.xml");
+        ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
+        //Use the non-runtime version of the extension which will happen on the HC
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXml(subsystemXml);
+
+        // Add legacy subsystems
+        builder.createLegacyKernelServicesBuilder(null, modelVersion)
+            .addMavenResourceURL("org.jboss.as:jboss-as-transactions:7.1.2.Final");
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        Assert.assertNotNull(legacyServices);
+
+        checkSubsystemModelTransformation(mainServices, modelVersion);
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+        operation.get(OP_ADDR).add(SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME);
+        operation.get(NAME).set("status-socket-binding");
+        operation.get(VALUE).set("${org.jboss.test:default-socket-binding}");
+
+        final ModelNode mainResult = mainServices.executeOperation(operation);
+        Assert.assertTrue(SUCCESS.equals(mainResult.get(OUTCOME).asString()));
+
+        final OperationTransformer.TransformedOperation op = mainServices.transformOperation(modelVersion, operation);
+        ModelNode result = mainServices.executeOperation(modelVersion, op);
+        Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
+
+    }
+
 }

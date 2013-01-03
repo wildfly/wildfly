@@ -58,7 +58,8 @@ public class JGroupsSubsystemAdd extends AbstractAddStepHandler {
     }
 
     private static void populate(ModelNode source, ModelNode target) throws OperationFailedException {
-        CommonAttributes.DEFAULT_STACK.validateAndSet(source, target);
+
+        JGroupsSubsystemRootResource.DEFAULT_STACK.validateAndSet(source, target);
         target.get(ModelKeys.STACK).setEmptyObject();
     }
 
@@ -68,7 +69,6 @@ public class JGroupsSubsystemAdd extends AbstractAddStepHandler {
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
             throws OperationFailedException {
-
         installRuntimeServices(context, operation, model, verificationHandler, newControllers);
     }
 
@@ -83,7 +83,7 @@ public class JGroupsSubsystemAdd extends AbstractAddStepHandler {
             newControllers.add(pdsController);
         }
 
-        final String stack = CommonAttributes.DEFAULT_STACK.resolveModelAttribute(context, model).asString() ;
+        final String stack = JGroupsSubsystemRootResource.DEFAULT_STACK.resolveModelAttribute(context, model).asString() ;
 
         // install the default channel factory service
         ServiceController<ChannelFactory> dcfsController = installDefaultChannelFactoryService(target, stack, verificationHandler);

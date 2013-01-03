@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Hashtable;
 
+import javax.ejb.CreateException;
 import javax.ejb.DuplicateKeyException;
 import javax.naming.InitialContext;
 
@@ -675,14 +676,15 @@ public class SimpleCMPUnitTestCase extends AbstractCmpTest {
         assertEquals(objectValue, simple.getObjectValue());
     }
 
-    //@Ignore
-    public void testDuplicateKey() throws Exception {
+    @Test
+    public void testDuplicateKey() {
         try {
             SimpleHome simpleHome = getSimpleHome();
             simpleHome.create("simple");
             fail("Did not get DuplicateKeyException");
-        } catch (DuplicateKeyException e) {
-            // OK
+        } catch (DuplicateKeyException ignored) {
+        } catch (CreateException ignored) {
+            fail("Expected DuplicateKeyException instead of CreateException");
         }
     }
 
@@ -708,6 +710,16 @@ public class SimpleCMPUnitTestCase extends AbstractCmpTest {
         simpleA.setIntegerPrimitive(47);
         int i = simpleA.getIntegerPrimitive();
         assertTrue("i == 47 ", i == 47);
+    }
+
+    @Test
+    public void testCreateException() {
+        try {
+            SimpleHome simpleHome = getSimpleHome();
+            simpleHome.create(null);
+            fail("Did not get CreateException");
+        } catch (CreateException ignored) {
+        }
     }
 
     public void setUpEjb() throws Exception {

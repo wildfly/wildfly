@@ -22,12 +22,8 @@
 
 package org.jboss.as.controller;
 
-import java.beans.PropertyChangeSupport;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicStampedReference;
-
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 
 /**
  * The overall state of a process that is being managed by a {@link ModelController}.
@@ -80,6 +76,8 @@ public class ControlledProcessState {
     private final boolean reloadSupported;
     private final ControlledProcessStateService service;
 
+    private boolean restartRequiredFlag = false;
+
     public ControlledProcessState(final boolean reloadSupported) {
         this.reloadSupported = reloadSupported;
         service = new ControlledProcessStateService(State.STARTING);
@@ -102,9 +100,22 @@ public class ControlledProcessState {
     }
 
     public void setRunning() {
-        synchronized (service) {
-            state.set(State.RUNNING, stamp.incrementAndGet());
-            service.stateChanged(State.RUNNING);
+        AtomicStampedReference<State> stateRef = state;
+        int newStamp = stamp.incrementAndGet();
+        int[] receiver = new int[1];
+        // Keep trying until stateRef is set with our stamp
+        for (;;) {
+            State was = stateRef.get(receiver);
+            if (was != State.STARTING) { // AS7-1103 only transition to running from STARTING
+                break;
+            }
+            synchronized (service) {
+                State newState = restartRequiredFlag ? State.RESTART_REQUIRED : State.RUNNING;
+                if (state.compareAndSet(was, newState, receiver[0], newStamp)) {
+                    service.stateChanged(newState);
+                    break;
+                }
+            }
         }
     }
 
@@ -119,7 +130,6 @@ public class ControlledProcessState {
         if (!reloadSupported) {
             return setRestartRequired();
         }
-
         AtomicStampedReference<State> stateRef = state;
         int newStamp = stamp.incrementAndGet();
         int[] receiver = new int[1];
@@ -151,6 +161,7 @@ public class ControlledProcessState {
             }
             synchronized (service) {
                 if (stateRef.compareAndSet(was, State.RESTART_REQUIRED, receiver[0], newStamp)) {
+                    restartRequiredFlag = true;
                     service.stateChanged(State.RESTART_REQUIRED);
                     break;
                 }
@@ -178,6 +189,7 @@ public class ControlledProcessState {
         Integer theirStamp = Integer.class.cast(stamp);
         synchronized (service) {
             if (state.compareAndSet(State.RESTART_REQUIRED, State.RUNNING, theirStamp, this.stamp.incrementAndGet())) {
+                restartRequiredFlag = false;
                 service.stateChanged(State.RUNNING);
             }
         }

@@ -21,20 +21,35 @@
  */
 package org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToManyUnidirectional;
 
-import java.util.Collection;
-import java.util.Iterator;
-import org.jboss.as.test.integration.ejb.entity.cmp.CmpTestRunner;
-import org.jboss.as.test.integration.ejb.entity.cmp.CmpTestRunner;
-import org.jboss.as.test.integration.ejb.entity.cmp.CmpTestRunner;
-import org.jboss.as.test.integration.ejb.entity.cmp.relationship.AbstractRelationshipTest;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import java.util.Collection;
+import java.util.Iterator;
+
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.as.test.integration.ejb.entity.cmp.AbstractCmpTest;
+import org.jboss.as.test.integration.ejb.entity.cmp.CmpTestRunner;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(CmpTestRunner.class)
-public class ABTestCase extends AbstractRelationshipTest {
+public class ABTestCase extends AbstractCmpTest {
     static org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger(ABTestCase.class);
+
+    @Deployment
+    public static Archive<?> deploy() {
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "1toMuni-cmp-relationship.jar");
+        jar.addPackage(org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToManyUnidirectional.ABTestCase.class.getPackage());
+        jar.addAsManifestResource(ABTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
+        jar.addAsManifestResource(ABTestCase.class.getPackage(), "jbosscmp-jdbc.xml", "jbosscmp-jdbc.xml");
+
+        AbstractCmpTest.addDeploymentAssets(jar);
+        return jar;
+    }
 
     private AHome getTableAHome() {
         try {
@@ -292,6 +307,28 @@ public class ABTestCase extends AbstractRelationshipTest {
 
         // !(b1.contains(b1n))
         assertTrue(!(b1.contains(b1x[b1x.length - 1])));
+    }
+
+    @Test
+    public void Xtest_toArray() throws Exception {
+        AHome aHome = getFKAHome();
+        BHome bHome = getFKBHome();
+        // Before change:
+        A a1 = aHome.create(new Integer(1));        
+
+        Collection b1 = a1.getB();        
+
+        B[] b1x = new B[20];
+
+        for (int i = 0; i < b1x.length; i++) {
+            b1x[i] = bHome.create(new Integer(10000 + i));
+            b1.add(b1x[i]);
+        }
+
+        Object[] b1Array = a1.getB().toArray();
+        for(int i = 0; i < b1Array.length; i++) {
+            assertTrue(b1.contains(b1Array[i]));
+        }
     }
 
     public void tearDownEjb() throws Exception {

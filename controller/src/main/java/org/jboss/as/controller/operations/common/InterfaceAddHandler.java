@@ -19,23 +19,20 @@
 package org.jboss.as.controller.operations.common;
 
 
-import org.jboss.as.controller.AttributeDefinition;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.List;
-import java.util.Locale;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.InterfaceDescription;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
+import org.jboss.as.controller.resource.InterfaceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
@@ -45,14 +42,13 @@ import org.jboss.msc.service.ServiceController;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  * @author Emanuel Muckenhuber
  */
-public class InterfaceAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
+public class InterfaceAddHandler extends AbstractAddStepHandler {
 
-    private static final AttributeDefinition[] ATTRIBUTES = InterfaceDescription.ROOT_ATTRIBUTES;
-    public static final String OPERATION_NAME = ADD;
 
+    @Deprecated
     public static ModelNode getAddInterfaceOperation(ModelNode address, ModelNode criteria) {
         ModelNode op = Util.getEmptyOperation(ADD, address);
-        for(final AttributeDefinition def : ATTRIBUTES) {
+        for (final AttributeDefinition def : InterfaceDefinition.ROOT_ATTRIBUTES) {
             if(criteria.hasDefined(def.getName())) {
                 op.get(def.getName()).set(criteria.get(def.getName()));
             }
@@ -73,11 +69,7 @@ public class InterfaceAddHandler extends AbstractAddStepHandler implements Descr
     }
 
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-
-        PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
-        model.get(ModelDescriptionConstants.NAME).set(address.getLastElement().getValue());
-
-        for(final AttributeDefinition definition : ATTRIBUTES) {
+        for (final AttributeDefinition definition : InterfaceDefinition.ROOT_ATTRIBUTES) {
             if(specified || operation.hasDefined(definition.getName())) {
                 validateAndSet(definition, operation, model);
             }
@@ -122,9 +114,5 @@ public class InterfaceAddHandler extends AbstractAddStepHandler implements Descr
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers, String name, ParsedInterfaceCriteria criteria) {
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return specified ? InterfaceDescription.getSpecifiedInterfaceAddOperation(locale) : InterfaceDescription.getNamedInterfaceAddOperation(locale);
-    }
 
 }

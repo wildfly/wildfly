@@ -67,7 +67,7 @@ public class RelativePathService extends org.jboss.as.controller.services.path.R
     public static ServiceController<String> addService(final ServiceName name, final String path,
                                                        boolean possiblyAbsolute, final String relativeTo, final ServiceTarget serviceTarget, final List<ServiceController<?>> newControllers,
                                                        final ServiceListener... listeners) {
-        return RelativePathService.addService(name, path, possiblyAbsolute, relativeTo, serviceTarget, newControllers);
+        return org.jboss.as.controller.services.path.RelativePathService.addService(name, path, possiblyAbsolute, relativeTo, serviceTarget, newControllers, listeners);
     }
 
     @Deprecated

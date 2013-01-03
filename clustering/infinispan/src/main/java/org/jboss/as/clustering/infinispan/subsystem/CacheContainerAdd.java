@@ -25,8 +25,8 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.concurrent.Executor;
@@ -36,6 +36,7 @@ import javax.management.MBeanServer;
 
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactoryService;
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelFactoryService;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
@@ -87,17 +88,17 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         // AS7-3488 make default-cache non required attrinbute
         // target.get(ModelKeys.DEFAULT_CACHE).set(source.get(ModelKeys.DEFAULT_CACHE));
 
-        CommonAttributes.DEFAULT_CACHE.validateAndSet(source, target);
+        CacheContainerResource.DEFAULT_CACHE.validateAndSet(source, target);
         // TODO: need to handle list types
         if (source.hasDefined(ModelKeys.ALIASES)) {
             target.get(ModelKeys.ALIASES).set(source.get(ModelKeys.ALIASES));
         }
-        CommonAttributes.JNDI_NAME.validateAndSet(source, target);
-        CommonAttributes.START.validateAndSet(source, target);
-        CommonAttributes.LISTENER_EXECUTOR.validateAndSet(source, target);
-        CommonAttributes.EVICTION_EXECUTOR.validateAndSet(source, target);
-        CommonAttributes.REPLICATION_QUEUE_EXECUTOR.validateAndSet(source, target);
-        CommonAttributes.CACHE_CONTAINER_MODULE.validateAndSet(source, target);
+        CacheContainerResource.JNDI_NAME.validateAndSet(source, target);
+        CacheContainerResource.START.validateAndSet(source, target);
+        CacheContainerResource.LISTENER_EXECUTOR.validateAndSet(source, target);
+        CacheContainerResource.EVICTION_EXECUTOR.validateAndSet(source, target);
+        CacheContainerResource.REPLICATION_QUEUE_EXECUTOR.validateAndSet(source, target);
+        CacheContainerResource.CACHE_CONTAINER_MODULE.validateAndSet(source, target);
     }
 
     @Override
@@ -121,12 +122,12 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         // pick up the attribute values from the model
         ModelNode resolvedValue = null ;
         // make default cache non required (AS7-3488)
-        final String defaultCache = (resolvedValue = CommonAttributes.DEFAULT_CACHE.resolveModelAttribute(context, containerModel)).isDefined() ? resolvedValue.asString() : null ;
-        final String jndiNameString = (resolvedValue = CommonAttributes.JNDI_NAME.resolveModelAttribute(context, containerModel)).isDefined() ? resolvedValue.asString() : null ;
-        final String listenerExecutor = (resolvedValue = CommonAttributes.LISTENER_EXECUTOR.resolveModelAttribute(context, containerModel)).isDefined() ? resolvedValue.asString() : null ;
-        final String evictionExecutor = (resolvedValue = CommonAttributes.EVICTION_EXECUTOR.resolveModelAttribute(context, containerModel)).isDefined() ? resolvedValue.asString() : null ;
-        final String replicationQueueExecutor = (resolvedValue = CommonAttributes.REPLICATION_QUEUE_EXECUTOR.resolveModelAttribute(context, containerModel)).isDefined() ? resolvedValue.asString() : null ;
-        final ServiceController.Mode initialMode = StartMode.valueOf(CommonAttributes.START.resolveModelAttribute(context, containerModel).asString()).getMode();
+        final String defaultCache = (resolvedValue = CacheContainerResource.DEFAULT_CACHE.resolveModelAttribute(context, containerModel)).isDefined() ? resolvedValue.asString() : null ;
+        final String jndiName = (resolvedValue = CacheContainerResource.JNDI_NAME.resolveModelAttribute(context, containerModel)).isDefined() ? resolvedValue.asString() : null ;
+        final String listenerExecutor = (resolvedValue = CacheContainerResource.LISTENER_EXECUTOR.resolveModelAttribute(context, containerModel)).isDefined() ? resolvedValue.asString() : null ;
+        final String evictionExecutor = (resolvedValue = CacheContainerResource.EVICTION_EXECUTOR.resolveModelAttribute(context, containerModel)).isDefined() ? resolvedValue.asString() : null ;
+        final String replicationQueueExecutor = (resolvedValue = CacheContainerResource.REPLICATION_QUEUE_EXECUTOR.resolveModelAttribute(context, containerModel)).isDefined() ? resolvedValue.asString() : null ;
+        final ServiceController.Mode initialMode = StartMode.valueOf(CacheContainerResource.START.resolveModelAttribute(context, containerModel).asString()).getMode();
 
         ServiceName[] aliases = null;
         if (containerModel.hasDefined(ModelKeys.ALIASES)) {
@@ -137,30 +138,26 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
             }
         }
 
-        final ModuleIdentifier moduleId = (resolvedValue = CommonAttributes.CACHE_CONTAINER_MODULE.resolveModelAttribute(context, containerModel)).isDefined() ? ModuleIdentifier.fromString(resolvedValue.asString()) : null;
-
-        final boolean hasTransport = containerModel.hasDefined(ModelKeys.TRANSPORT) && containerModel.get(ModelKeys.TRANSPORT).hasDefined(ModelKeys.TRANSPORT_NAME);
+        final ModuleIdentifier moduleId = (resolvedValue = CacheContainerResource.CACHE_CONTAINER_MODULE.resolveModelAttribute(context, containerModel)).isDefined() ? ModuleIdentifier.fromString(resolvedValue.asString()) : null;
 
         // if we have a transport defined, pick up the transport-related attributes and install a channel
+        final Transport transportConfig = containerModel.hasDefined(ModelKeys.TRANSPORT) && containerModel.get(ModelKeys.TRANSPORT).hasDefined(ModelKeys.TRANSPORT_NAME) ? new Transport() : null;
+
         String stack = null ;
-        String cluster = null ;
-        long lockTimeout = 0;
         String transportExecutor = null ;
-        Transport transportConfig = null ;
 
-        Collection<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>(6);
+        Collection<ServiceController<?>> controllers = new LinkedList<ServiceController<?>>();
 
-        if (hasTransport) {
+        if (transportConfig != null) {
             ModelNode transport = containerModel.get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
 
-            stack = (resolvedValue = CommonAttributes.STACK.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null ;
+            stack = (resolvedValue = TransportResource.STACK.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null ;
             // if cluster is not defined, use the cache container name as the default
-            cluster = (resolvedValue = CommonAttributes.CLUSTER.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : name ;
-            lockTimeout = CommonAttributes.LOCK_TIMEOUT.resolveModelAttribute(context, transport).asLong();
-            transportExecutor = (resolvedValue = CommonAttributes.EXECUTOR.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null ;
+            final String cluster = (resolvedValue = TransportResource.CLUSTER.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : name ;
+            long lockTimeout = TransportResource.LOCK_TIMEOUT.resolveModelAttribute(context, transport).asLong();
+            transportExecutor = (resolvedValue = TransportResource.EXECUTOR.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null ;
 
             // initialise the Transport
-            transportConfig = new Transport() ;
             transportConfig.setLockTimeout(lockTimeout);
 
             controllers.add(this.installChannelService(target, name, cluster, stack, verificationHandler));
@@ -175,10 +172,12 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
                         transportExecutor, listenerExecutor, evictionExecutor, replicationQueueExecutor, verificationHandler));
 
         // install a cache container service
-        controllers.add(this.installContainerService(target, name, aliases, initialMode, verificationHandler));
+        controllers.add(this.installContainerService(target, name, aliases, transportConfig, initialMode, verificationHandler));
 
         // install a name service entry for the cache container
-        controllers.add(this.installJndiService(target, name, jndiNameString, verificationHandler));
+        controllers.add(this.installJndiService(target, name, InfinispanJndiName.createCacheContainerJndiName(jndiName, name), verificationHandler));
+
+        controllers.add(this.installKeyAffinityServiceFactoryService(target, name, verificationHandler));
 
         log.debugf("%s cache container installed", name);
         return controllers;
@@ -190,12 +189,13 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         final String containerName = address.getLastElement().getValue();
 
         // need to remove all container-related services started, in reverse order
+        context.removeService(KeyAffinityServiceFactoryService.getServiceName(containerName));
+
         // remove the BinderService entry
         ModelNode resolvedValue = null;
-        final String jndiNameString = (resolvedValue = CommonAttributes.JNDI_NAME.resolveModelAttribute(context, model)).isDefined() ? resolvedValue.asString() : null;
-        final String jndiName = InfinispanJndiName.createCacheContainerJndiNameOrDefault(jndiNameString, containerName);
-        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
-        context.removeService(bindInfo.getBinderServiceName()) ;
+        final String jndiName = (resolvedValue = CacheContainerResource.JNDI_NAME.resolveModelAttribute(context, model)).isDefined() ? resolvedValue.asString() : null;
+        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(InfinispanJndiName.createCacheContainerJndiName(jndiName, containerName));
+        context.removeService(bindInfo.getBinderServiceName());
 
         // remove the cache container
         context.removeService(EmbeddedCacheManagerService.getServiceName(containerName));
@@ -212,12 +212,18 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         }
     }
 
+    ServiceController<?> installKeyAffinityServiceFactoryService(ServiceTarget target, String containerName, ServiceVerificationHandler verificationHandler) {
+        return AsynchronousService.addService(target, KeyAffinityServiceFactoryService.getServiceName(containerName), new KeyAffinityServiceFactoryService(10), false, true)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .install()
+        ;
+    }
+
     ServiceController<?> installChannelService(ServiceTarget target, String containerName, String cluster, String stack, ServiceVerificationHandler verificationHandler) {
 
         final InjectedValue<ChannelFactory> channelFactory = new InjectedValue<ChannelFactory>();
         return AsynchronousService.addService(target, ChannelService.getServiceName(containerName), new ChannelService(cluster, channelFactory))
                 .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, channelFactory)
-                .addDependency(EmbeddedCacheManagerService.getServiceName(containerName))
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()
         ;
@@ -256,23 +262,24 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         return configBuilder.install();
     }
 
-    ServiceController<?> installContainerService(ServiceTarget target, String containerName, ServiceName[] aliases, ServiceController.Mode initialMode, ServiceVerificationHandler verificationHandler) {
+    ServiceController<?> installContainerService(ServiceTarget target, String containerName, ServiceName[] aliases, Transport transport, ServiceController.Mode initialMode, ServiceVerificationHandler verificationHandler) {
 
         final ServiceName containerServiceName = EmbeddedCacheManagerService.getServiceName(containerName);
         final ServiceName configServiceName = EmbeddedCacheManagerConfigurationService.getServiceName(containerName);
         final InjectedValue<EmbeddedCacheManagerConfiguration> config = new InjectedValue<EmbeddedCacheManagerConfiguration>();
         final Service<EmbeddedCacheManager> service = new EmbeddedCacheManagerService(config);
-        return target.addService(containerServiceName, service)
+        ServiceBuilder<EmbeddedCacheManager> builder = target.addService(containerServiceName, service)
                 .addDependency(configServiceName, EmbeddedCacheManagerConfiguration.class, config)
                 .addAliases(aliases)
                 .setInitialMode(initialMode)
-                .install()
         ;
+        if (transport != null) {
+            builder.addDependency(ChannelService.getServiceName(containerName));
+        }
+        return builder.install();
     }
 
-    ServiceController<?> installJndiService(ServiceTarget target, String containerName, String jndiNameString, ServiceVerificationHandler verificationHandler) {
-
-        final String jndiName = InfinispanJndiName.createCacheContainerJndiNameOrDefault(jndiNameString, containerName);
+    ServiceController<?> installJndiService(ServiceTarget target, String containerName, String jndiName, ServiceVerificationHandler verificationHandler) {
 
         final ServiceName containerServiceName = EmbeddedCacheManagerService.getServiceName(containerName);
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);

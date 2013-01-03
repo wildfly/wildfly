@@ -254,3 +254,27 @@ objectClass: top
 cn: R5
 member: cn=RG3,cn=RG1,ou=Roles,o=example4,dc=jboss,dc=org
 member: uid=jduke,ou=People,o=example4,dc=jboss,dc=org
+
+# Example5 - role name in user's attribute (employeeNumber)
+dn: o=example5,dc=jboss,dc=org
+objectclass: top
+objectclass: dcObject
+objectclass: organization
+dc: jboss
+o: JBoss
+
+dn: ou=People,o=example5,dc=jboss,dc=org
+objectclass: top
+objectclass: organizationalUnit
+ou: People
+
+dn: uid=jduke,ou=People,o=example5,dc=jboss,dc=org
+objectClass: top
+objectClass: uidObject
+objectClass: person
+objectClass: inetOrgPerson
+cn: Java Duke
+employeeNumber: R1
+sn: Duke
+uid: jduke
+userPassword: theduke

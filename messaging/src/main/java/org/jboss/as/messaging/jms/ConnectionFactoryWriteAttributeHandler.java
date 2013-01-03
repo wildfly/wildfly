@@ -22,11 +22,8 @@
 
 package org.jboss.as.messaging.jms;
 
+import static org.jboss.as.controller.OperationContext.Stage.MODEL;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
-
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.management.ConnectionFactoryControl;
@@ -38,9 +35,10 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.messaging.AlternativeAttributeCheckHandler;
 import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingServices;
+import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -55,23 +53,15 @@ public class ConnectionFactoryWriteAttributeHandler extends AbstractWriteAttribu
 
     public static final ConnectionFactoryWriteAttributeHandler INSTANCE = new ConnectionFactoryWriteAttributeHandler();
 
-    private static final EnumSet<AttributeAccess.Flag> RESTART_NONE = EnumSet.of(AttributeAccess.Flag.RESTART_NONE);
-    private static final EnumSet<AttributeAccess.Flag> RESTART_ALL = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
-
-    private final Map<String, AttributeDefinition> runtimeAttributes = new HashMap<String, AttributeDefinition>();
     private ConnectionFactoryWriteAttributeHandler() {
-        super(JMSServices.CONNECTION_FACTORY_ATTRS);
-        for (AttributeDefinition attr : JMSServices.CONNECTION_FACTORY_WRITE_ATTRS) {
-            runtimeAttributes.put(attr.getName(), attr);
-        }
+        super(ConnectionFactoryDefinition.ATTRIBUTES);
     }
 
-    public void registerAttributes(final ManagementResourceRegistration registry) {
-        for (AttributeDefinition attr : JMSServices.CONNECTION_FACTORY_ATTRS) {
-            String attrName = attr.getName();
-            EnumSet<AttributeAccess.Flag> flags = runtimeAttributes.containsKey(attrName) ? RESTART_NONE : RESTART_ALL;
-            registry.registerReadWriteAttribute(attrName, null, this, flags);
-        }
+    @Override
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        context.addStep(new AlternativeAttributeCheckHandler(ConnectionFactoryDefinition.ATTRIBUTES), MODEL);
+
+        super.execute(context, operation);
     }
 
     @Override
@@ -79,31 +69,28 @@ public class ConnectionFactoryWriteAttributeHandler extends AbstractWriteAttribu
                                            final String attributeName, final ModelNode newValue,
                                            final ModelNode currentValue,
                                            final HandbackHolder<Void> handbackHolder) throws OperationFailedException {
-
-        AttributeDefinition attr = runtimeAttributes.get(attributeName);
-        if (attr == null) {
-            // Not a runtime attribute; restart required
+        AttributeDefinition attr = getAttributeDefinition(attributeName);
+        if (attr.getFlags().contains(AttributeAccess.Flag.RESTART_ALL_SERVICES)) {
+            // Restart required
             return true;
         }
-        else {
-            ServiceRegistry registry = context.getServiceRegistry(true);
-            final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
-            ServiceController<?> hqService = registry.getService(hqServiceName);
-            if (hqService == null) {
-                // The service isn't installed, so the work done in the Stage.MODEL part is all there is to it
-                return false;
-            } else if (hqService.getState() != ServiceController.State.UP) {
-                // Service is installed but not up?
-                //throw new IllegalStateException(String.format("Cannot apply attribute %s to runtime; service %s is not in state %s, it is in state %s",
-                //            attributeName, MessagingServices.JBOSS_MESSAGING, ServiceController.State.UP, hqService.getState()));
-                // No, don't barf; just let the update apply to the model and put the server in a reload-required state
-                return true;
-            } else {
-                // Actually apply the update
-                applyOperationToHornetQService(context, getName(operation), attributeName, newValue, hqService);
-                return false;
-            }
 
+        ServiceRegistry registry = context.getServiceRegistry(true);
+        final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+        ServiceController<?> hqService = registry.getService(hqServiceName);
+        if (hqService == null) {
+            // The service isn't installed, so the work done in the Stage.MODEL part is all there is to it
+            return false;
+        } else if (hqService.getState() != ServiceController.State.UP) {
+            // Service is installed but not up?
+            //throw new IllegalStateException(String.format("Cannot apply attribute %s to runtime; service %s is not in state %s, it is in state %s",
+            //            attributeName, MessagingServices.JBOSS_MESSAGING, ServiceController.State.UP, hqService.getState()));
+            // No, don't barf; just let the update apply to the model and put the server in a reload-required state
+            return true;
+        } else {
+            // Actually apply the update
+            applyOperationToHornetQService(context, getName(operation), attributeName, newValue, hqService);
+            return false;
         }
     }
 
@@ -112,15 +99,12 @@ public class ConnectionFactoryWriteAttributeHandler extends AbstractWriteAttribu
                                          final String attributeName, final ModelNode valueToRestore,
                                          final ModelNode valueToRevert,
                                          final Void handback) throws OperationFailedException {
-
-        if (runtimeAttributes.containsKey(attributeName)) {
             ServiceRegistry registry = context.getServiceRegistry(true);
             final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
             ServiceController<?> hqService = registry.getService(hqServiceName);
             if (hqService != null && hqService.getState() == ServiceController.State.UP) {
                 applyOperationToHornetQService(context, getName(operation), attributeName, valueToRestore, hqService);
             }
-        }
     }
 
     private String getName(final ModelNode operation) {
@@ -133,61 +117,63 @@ public class ConnectionFactoryWriteAttributeHandler extends AbstractWriteAttribu
         try {
             if (attributeName.equals(CommonAttributes.CLIENT_ID.getName()))  {
                 control.setClientID(value.isDefined() ? value.asString() : null);
-            } else if (attributeName.equals(CommonAttributes.COMPRESS_LARGE_MESSAGES.getName())) {
+            } else if (attributeName.equals(Common.COMPRESS_LARGE_MESSAGES.getName())) {
                 control.setCompressLargeMessages(value.asBoolean());
-            } else if (attributeName.equals(CommonAttributes.CLIENT_FAILURE_CHECK_PERIOD.getName())) {
+            } else if (attributeName.equals(Common.CLIENT_FAILURE_CHECK_PERIOD.getName())) {
                 control.setClientFailureCheckPeriod(value.asLong());
             } else if (attributeName.equals(CommonAttributes.CALL_TIMEOUT.getName())) {
                 control.setCallTimeout(value.asLong());
-            } else if (attributeName.equals(CommonAttributes.DUPS_OK_BATCH_SIZE.getName())) {
+            } else if (attributeName.equals(CommonAttributes.CALL_FAILOVER_TIMEOUT.getName())) {
+                control.setCallFailoverTimeout(value.asLong());
+            }else if (attributeName.equals(Common.DUPS_OK_BATCH_SIZE.getName())) {
                 control.setDupsOKBatchSize(value.asInt());
-            } else if (attributeName.equals(CommonAttributes.CONSUMER_MAX_RATE.getName())) {
+            } else if (attributeName.equals(Common.CONSUMER_MAX_RATE.getName())) {
                 control.setConsumerMaxRate(value.asInt());
-            } else if (attributeName.equals(CommonAttributes.CONSUMER_WINDOW_SIZE.getName())) {
+            } else if (attributeName.equals(Common.CONSUMER_WINDOW_SIZE.getName())) {
                 control.setConsumerWindowSize(value.asInt());
-            } else if (attributeName.equals(CommonAttributes.PRODUCER_MAX_RATE.getName())) {
+            } else if (attributeName.equals(Common.PRODUCER_MAX_RATE.getName())) {
                 control.setProducerMaxRate(value.asInt());
-            } else if (attributeName.equals(CommonAttributes.CONFIRMATION_WINDOW_SIZE.getName())) {
+            } else if (attributeName.equals(Common.CONFIRMATION_WINDOW_SIZE.getName())) {
                 control.setConfirmationWindowSize(value.asInt());
-            } else if (attributeName.equals(CommonAttributes.BLOCK_ON_ACK.getName())) {
+            } else if (attributeName.equals(Common.BLOCK_ON_ACKNOWLEDGE.getName())) {
                 control.setBlockOnAcknowledge(value.asBoolean());
-            } else if (attributeName.equals(CommonAttributes.BLOCK_ON_DURABLE_SEND.getName())) {
+            } else if (attributeName.equals(Common.BLOCK_ON_DURABLE_SEND.getName())) {
                 control.setBlockOnDurableSend(value.asBoolean());
-            } else if (attributeName.equals(CommonAttributes.BLOCK_ON_NON_DURABLE_SEND.getName())) {
+            } else if (attributeName.equals(Common.BLOCK_ON_NON_DURABLE_SEND.getName())) {
                 control.setBlockOnNonDurableSend(value.asBoolean());
-            } else if (attributeName.equals(CommonAttributes.PRE_ACK.getName())) {
+            } else if (attributeName.equals(Common.PRE_ACKNOWLEDGE.getName())) {
                 control.setPreAcknowledge(value.asBoolean());
-            } else if (attributeName.equals(CommonAttributes.CONNECTION_TTL.getName())) {
+            } else if (attributeName.equals(Common.CONNECTION_TTL.getName())) {
                 control.setConnectionTTL(value.asLong());
-            } else if (attributeName.equals(CommonAttributes.TRANSACTION_BATCH_SIZE.getName())) {
+            } else if (attributeName.equals(Common.TRANSACTION_BATCH_SIZE.getName())) {
                 control.setTransactionBatchSize(value.asInt());
             } else if (attributeName.equals(CommonAttributes.MIN_LARGE_MESSAGE_SIZE.getName())) {
                 control.setMinLargeMessageSize(value.asInt());
-            } else if (attributeName.equals(CommonAttributes.AUTO_GROUP.getName())) {
+            } else if (attributeName.equals(Common.AUTO_GROUP.getName())) {
                 control.setAutoGroup(value.asBoolean());
-            } else if (attributeName.equals(CommonAttributes.RETRY_INTERVAL.getName())) {
+            } else if (attributeName.equals(Common.RETRY_INTERVAL.getName())) {
                 control.setRetryInterval(value.asLong());
-            } else if (attributeName.equals(CommonAttributes.RETRY_INTERVAL_MULTIPLIER.getName())) {
+            } else if (attributeName.equals(Common.RETRY_INTERVAL_MULTIPLIER.getName())) {
                 control.setRetryIntervalMultiplier(value.asDouble());
-            } else if (attributeName.equals(CommonAttributes.CONNECTION_FACTORY_RECONNECT_ATTEMPTS.getName())) {
+            } else if (attributeName.equals(Common.RECONNECT_ATTEMPTS.getName())) {
                 control.setReconnectAttempts(value.asInt());
-            } else if (attributeName.equals(CommonAttributes.FAILOVER_ON_INITIAL_CONNECTION.getName())) {
+            } else if (attributeName.equals(Common.FAILOVER_ON_INITIAL_CONNECTION.getName())) {
                 control.setFailoverOnInitialConnection(value.asBoolean());
-            } else if (attributeName.equals(CommonAttributes.PRODUCER_WINDOW_SIZE.getName())) {
+            } else if (attributeName.equals(Common.PRODUCER_WINDOW_SIZE.getName())) {
                 control.setProducerWindowSize(value.asInt());
-            } else if (attributeName.equals(CommonAttributes.CACHE_LARGE_MESSAGE_CLIENT.getName())) {
+            } else if (attributeName.equals(Common.CACHE_LARGE_MESSAGE_CLIENT.getName())) {
                 control.setCacheLargeMessagesClient(value.asBoolean());
             } else if (attributeName.equals(CommonAttributes.MAX_RETRY_INTERVAL.getName())) {
                 control.setMaxRetryInterval(value.asLong());
-            } else if (attributeName.equals(CommonAttributes.CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE.getName())) {
+            } else if (attributeName.equals(Common.SCHEDULED_THREAD_POOL_MAX_SIZE.getName())) {
                 control.setScheduledThreadPoolMaxSize(value.asInt());
-            } else if (attributeName.equals(CommonAttributes.CONNECTION_THREAD_POOL_MAX_SIZE.getName())) {
+            } else if (attributeName.equals(Common.THREAD_POOL_MAX_SIZE.getName())) {
                 control.setThreadPoolMaxSize(value.asInt());
-            } else if (attributeName.equals(CommonAttributes.GROUP_ID.getName())) {
+            } else if (attributeName.equals(Common.GROUP_ID.getName())) {
                 control.setGroupID(value.isDefined() ? value.asString() : null);
-            } else if (attributeName.equals(CommonAttributes.USE_GLOBAL_POOLS.getName())) {
+            } else if (attributeName.equals(Common.USE_GLOBAL_POOLS.getName())) {
                 control.setUseGlobalPools(value.asBoolean());
-            } else if (attributeName.equals(CommonAttributes.LOAD_BALANCING_CLASS_NAME.getName())) {
+            } else if (attributeName.equals(Common.CONNECTION_LOAD_BALANCING_CLASS_NAME.getName())) {
                 control.setConnectionLoadBalancingPolicyClassName(value.asString());
             } else {
                 // Bug! Someone added the attribute to the set but did not implement

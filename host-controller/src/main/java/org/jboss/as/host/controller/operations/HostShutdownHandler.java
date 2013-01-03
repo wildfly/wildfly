@@ -19,29 +19,39 @@
 package org.jboss.as.host.controller.operations;
 
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART;
-
-import java.util.Locale;
-
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.domain.controller.DomainController;
-import org.jboss.as.host.controller.descriptions.HostRootDescription;
+import org.jboss.as.host.controller.descriptions.HostResolver;
 import org.jboss.as.process.ExitCodes;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Stops a host.
  *
  * @author Kabir Khan
  */
-public class HostShutdownHandler implements OperationStepHandler, DescriptionProvider {
+public class HostShutdownHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = "shutdown";
 
     private final DomainController domainController;
+
+    private static final AttributeDefinition RESTART = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.RESTART, ModelType.BOOLEAN, true)
+            .setAllowNull(true)
+            .build();
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, HostResolver.getResolver("host"))
+            .addParameter(RESTART)
+            .withFlag(OperationEntry.Flag.HOST_CONTROLLER_ONLY)
+            .build();
 
     /**
      * Create the ServerAddHandler
@@ -55,7 +65,7 @@ public class HostShutdownHandler implements OperationStepHandler, DescriptionPro
      */
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        final boolean restart = operation.hasDefined(RESTART) ? operation.get(RESTART).asBoolean() : false;
+        final boolean restart = RESTART.validateOperation(operation).asBoolean(false);
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -65,14 +75,9 @@ public class HostShutdownHandler implements OperationStepHandler, DescriptionPro
                 } else {
                     domainController.stopLocalHost();
                 }
-                context.completeStep();
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
         }, OperationContext.Stage.RUNTIME);
-        context.completeStep();
-    }
-
-    @Override
-    public ModelNode getModelDescription(final Locale locale) {
-        return HostRootDescription.getHostShutdownHandler(locale);
+        context.stepCompleted();
     }
 }

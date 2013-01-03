@@ -22,33 +22,38 @@
 
 package org.jboss.as.controller;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.operations.validation.AllowedValuesValidator;
 import org.jboss.as.controller.operations.validation.MinMaxValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Date: 13.10.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  * @author Richard Achmatowicz (c) 2012 RedHat Inc.
+ * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
 public class SimpleListAttributeDefinition extends ListAttributeDefinition {
     private final AttributeDefinition valueType;
 
-    private SimpleListAttributeDefinition(final String name, final String xmlName, final AttributeDefinition valueType, final boolean allowNull, final int minSize, final int maxSize, final String[] alternatives, final String[] requires, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, allowNull, minSize, maxSize, valueType.getValidator(), alternatives, requires, flags);
+    protected SimpleListAttributeDefinition(final String name, final String xmlName, final AttributeDefinition valueType, final boolean allowNull, final int minSize, final int maxSize, final String[] alternatives, final String[] requires, AttributeMarshaller attributeMarshaller,final boolean resourceOnly, final DeprecationData deprecated, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, allowNull, false, minSize, maxSize, valueType.getValidator(), alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
         this.valueType = valueType;
+    }
+
+    public AttributeDefinition getValueType() {
+        return valueType;
     }
 
     @Override
@@ -92,17 +97,6 @@ public class SimpleListAttributeDefinition extends ListAttributeDefinition {
         node.get(ModelDescriptionConstants.VALUE_TYPE, valueType.getName()).set(valueTypeDesc);
     }
 
-    @Override
-    public void marshallAsElement(final ModelNode resourceModel, final XMLStreamWriter writer) throws XMLStreamException {
-        if (resourceModel.hasDefined(getName())) {
-            writer.writeStartElement(getXmlName());
-            for (ModelNode handler : resourceModel.get(getName()).asList()) {
-                valueType.marshallAsElement(handler, writer);
-            }
-            writer.writeEndElement();
-        }
-    }
-
     private ModelNode getValueTypeDescription(boolean forOperation) {
         final ModelNode result = new ModelNode();
         result.get(ModelDescriptionConstants.TYPE).set(valueType.getType());
@@ -141,6 +135,7 @@ public class SimpleListAttributeDefinition extends ListAttributeDefinition {
                     case STRING:
                     case LIST:
                     case OBJECT:
+                    case BYTES:
                         result.get(ModelDescriptionConstants.MIN_LENGTH).set(min);
                         break;
                     default:
@@ -153,6 +148,7 @@ public class SimpleListAttributeDefinition extends ListAttributeDefinition {
                     case STRING:
                     case LIST:
                     case OBJECT:
+                    case BYTES:
                         result.get(ModelDescriptionConstants.MAX_LENGTH).set(max);
                         break;
                     default:
@@ -160,77 +156,73 @@ public class SimpleListAttributeDefinition extends ListAttributeDefinition {
                 }
             }
         }
-        if (validator instanceof AllowedValuesValidator) {
-            AllowedValuesValidator avv = (AllowedValuesValidator) validator;
-            List<ModelNode> allowed = avv.getAllowedValues();
-            if (allowed != null) {
-                for (ModelNode ok : allowed) {
-                    result.get(ModelDescriptionConstants.ALLOWED).add(ok);
-                }
-            }
-        }
+        addAllowedValuesToDescription(result, validator);
         return result;
     }
 
-    public static class Builder {
-        private final String name;
+    public static class Builder extends AbstractAttributeDefinitionBuilder<Builder,SimpleListAttributeDefinition>{
         private final AttributeDefinition valueType;
-        private String xmlName;
-        private boolean allowNull;
-        private int minSize;
-        private int maxSize;
-        private String[] alternatives;
-        private String[] requires;
-        private AttributeAccess.Flag[] flags;
 
         public Builder(final String name, final AttributeDefinition valueType) {
-            this.name = name;
+            super(name, ModelType.LIST);
             this.valueType = valueType;
+        }
+
+        public Builder(final SimpleListAttributeDefinition basis) {
+            super(basis);
+            valueType = basis.getValueType();
         }
 
         public static Builder of(final String name, final AttributeDefinition valueType) {
             return new Builder(name, valueType);
         }
 
+        /**
+         * Reintroduced since some legacy subsystems require this method, and they now get booted up
+         * for transformers subsystem testing.
+         */
+        @Deprecated
+        public static Builder of(final String name, final SimpleAttributeDefinition valueType) {
+            return new Builder(name, valueType);
+        }
+
         public SimpleListAttributeDefinition build() {
             if (xmlName == null) xmlName = name;
             if (maxSize < 1) maxSize = Integer.MAX_VALUE;
-            return new SimpleListAttributeDefinition(name, xmlName, valueType, allowNull, minSize, maxSize, alternatives, requires, flags);
+            if (attributeMarshaller == null) {
+                attributeMarshaller = new AttributeMarshaller() {
+                    @Override
+                    public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+                        if (resourceModel.hasDefined(attribute.getName())) {
+                            writer.writeStartElement(attribute.getXmlName());
+                            for (ModelNode handler : resourceModel.get(attribute.getName()).asList()) {
+                                valueType.marshallAsElement(handler, writer);
+                            }
+                            writer.writeEndElement();
+                        }
+                    }
+                };
+            }
+            return new SimpleListAttributeDefinition(name, xmlName, valueType, allowNull, minSize, maxSize, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
         }
 
-        public Builder setAllowNull(final boolean allowNull) {
-            this.allowNull = allowNull;
-            return this;
+        /*
+        --------------------------
+        added for binary compatibility with older versions
+         */
+        @Override
+        public Builder setAllowNull(boolean allowNull) {
+            return super.setAllowNull(allowNull);
         }
 
-        public Builder setAlternates(final String... alternates) {
-            this.alternatives = alternates;
-            return this;
-        }
-
-        public Builder setFlags(final AttributeAccess.Flag... flags) {
-            this.flags = flags;
-            return this;
-        }
-
+        @Override
         public Builder setMaxSize(final int maxSize) {
-            this.maxSize = maxSize;
-            return this;
+            return super.setMaxSize(maxSize);
         }
 
+        @Override
         public Builder setMinSize(final int minSize) {
-            this.minSize = minSize;
-            return this;
-        }
-
-        public Builder setRequires(final String... requires) {
-            this.requires = requires;
-            return this;
-        }
-
-        public Builder setXmlName(final String xmlName) {
-            this.xmlName = xmlName;
-            return this;
+            return super.setMinSize(minSize);
         }
     }
 }

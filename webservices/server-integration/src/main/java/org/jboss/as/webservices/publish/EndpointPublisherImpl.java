@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -25,6 +25,7 @@ import static org.jboss.as.webservices.WSMessages.MESSAGES;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -39,6 +40,7 @@ import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.ContextConfig;
 import org.apache.tomcat.InstanceManager;
 import org.jboss.as.web.deployment.WebCtxLoader;
+import org.jboss.as.webservices.deployers.EndpointServiceDeploymentAspect;
 import org.jboss.as.webservices.deployers.deployment.DeploymentAspectsProvider;
 import org.jboss.as.webservices.deployers.deployment.WSDeploymentBuilder;
 import org.jboss.as.webservices.service.ServerConfigService;
@@ -50,16 +52,14 @@ import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.ServletMappingMetaData;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.ws.common.deployment.DeploymentAspectManagerImpl;
-import org.jboss.wsf.spi.SPIProvider;
-import org.jboss.wsf.spi.SPIProviderResolver;
+import org.jboss.ws.common.invocation.InvocationHandlerJAXWS;
 import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
 import org.jboss.wsf.spi.deployment.DeploymentAspectManager;
 import org.jboss.wsf.spi.deployment.Endpoint;
+import org.jboss.wsf.spi.deployment.EndpointState;
 import org.jboss.wsf.spi.deployment.WSFServlet;
-import org.jboss.wsf.spi.management.EndpointRegistry;
-import org.jboss.wsf.spi.management.EndpointRegistryFactory;
 import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
 import org.jboss.wsf.spi.publish.Context;
 import org.jboss.wsf.spi.publish.EndpointPublisher;
@@ -73,19 +73,26 @@ import org.jboss.wsf.spi.publish.EndpointPublisher;
 public final class EndpointPublisherImpl implements EndpointPublisher {
 
     private Host host;
+    private boolean runningInService = false;
+    private static List<DeploymentAspect> depAspects = null;
 
     public EndpointPublisherImpl(Host host) {
         this.host = host;
     }
 
+    public EndpointPublisherImpl(Host host, boolean runningInService) {
+        this(host);
+        this.runningInService = runningInService;
+    }
+
     @Override
     public Context publish(String context, ClassLoader loader, Map<String, String> urlPatternToClassNameMap) throws Exception {
-        return publish(null, context, loader, urlPatternToClassNameMap, null, null);
+        return publish(getBaseTarget(), context, loader, urlPatternToClassNameMap, null, null);
     }
 
     @Override
     public Context publish(String context, ClassLoader loader, Map<String, String> urlPatternToClassNameMap, WebservicesMetaData metadata) throws Exception {
-        return publish(null, context, loader, urlPatternToClassNameMap, null, metadata);
+        return publish(getBaseTarget(), context, loader, urlPatternToClassNameMap, null, metadata);
     }
 
     public Context publish(ServiceTarget target, String context, ClassLoader loader,
@@ -95,11 +102,15 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
         return new Context(context, publish(target, unit));
     }
 
+    private static ServiceTarget getBaseTarget() {
+        return WSServices.getContainerRegistry().getService(WSServices.CONFIG_SERVICE).getServiceContainer();
+    }
+
     /**
      * Publishes the endpoints declared to the provided WSEndpointDeploymentUnit
      */
     public List<Endpoint> publish(ServiceTarget target, WSEndpointDeploymentUnit unit) throws Exception {
-        List<DeploymentAspect> aspects = DeploymentAspectsProvider.getSortedDeploymentAspects();
+        List<DeploymentAspect> aspects = getDeploymentAspects();
         ClassLoader origClassLoader = SecurityActions.getContextClassLoader();
         Deployment dep = null;
         try {
@@ -110,16 +121,12 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
             DeploymentAspectManager dam = new DeploymentAspectManagerImpl();
             dam.setDeploymentAspects(aspects);
             dam.deploy(dep);
-            // TODO: [JBWS-3426] fix this. START workaround
-            if (target == null) {
-                SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
-                EndpointRegistryFactory factory = spiProvider.getSPI(EndpointRegistryFactory.class);
-                EndpointRegistry registry = factory.getEndpointRegistry();
-                for (final Endpoint endpoint : dep.getService().getEndpoints()) {
-                    registry.register(endpoint);
-                }
+            // [JBWS-3441] hack - fallback JAXWS invocation handler for dynamically generated deployments
+            for (Endpoint ep : dep.getService().getEndpoints()) {
+                ep.setState(EndpointState.STOPPED);
+                ep.setInvocationHandler(new InvocationHandlerJAXWS());
+                ep.setState(EndpointState.STARTED);
             }
-            // END workaround
         } finally {
             if (dep != null) {
                 dep.removeAttachment(ServiceTarget.class);
@@ -201,25 +208,13 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
             return;
         }
         Deployment deployment = eps.get(0).getService().getDeployment();
-        List<DeploymentAspect> aspects = DeploymentAspectsProvider.getSortedDeploymentAspects();
+        List<DeploymentAspect> aspects = getDeploymentAspects();
         try {
             stopWebApp(deployment.getAttachment(StandardContext.class));
         } finally {
             ClassLoader origClassLoader = SecurityActions.getContextClassLoader();
             try {
                 SecurityActions.setContextClassLoader(ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader());
-                // TODO: [JBWS-3426] fix this. START workaround
-                try {
-                    SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
-                    EndpointRegistryFactory factory = spiProvider.getSPI(EndpointRegistryFactory.class);
-                    EndpointRegistry registry = factory.getEndpointRegistry();
-                    for (final Endpoint endpoint : deployment.getService().getEndpoints()) {
-                        registry.unregister(endpoint);
-                    }
-                } catch (IllegalStateException e) {
-                    //ignore; there will be no need for unregistering here once 3426 is solved
-                }
-                // END workaround
                 DeploymentAspectManager dam = new DeploymentAspectManagerImpl();
                 dam.setDeploymentAspects(aspects);
                 dam.undeploy(deployment);
@@ -242,6 +237,29 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
         } catch (Exception e) {
             throw MESSAGES.destroyContextPhaseFailed(e);
         }
+    }
+
+    private List<DeploymentAspect> getDeploymentAspects() {
+        return runningInService ? DeploymentAspectsProvider.getSortedDeploymentAspects() : getPublisherDeploymentAspects();
+    }
+
+    private static synchronized List<DeploymentAspect> getPublisherDeploymentAspects() {
+        if (depAspects == null) {
+            depAspects = new LinkedList<DeploymentAspect>();
+            final List<DeploymentAspect> serverAspects = DeploymentAspectsProvider.getSortedDeploymentAspects();
+            // copy to replace the EndpointServiceDeploymentAspect
+            for (DeploymentAspect aspect : serverAspects) {
+                if (aspect instanceof EndpointServiceDeploymentAspect) {
+                    final EndpointServiceDeploymentAspect a = (EndpointServiceDeploymentAspect) aspect;
+                    EndpointServiceDeploymentAspect clone = (EndpointServiceDeploymentAspect) (a.clone());
+                    clone.setStopServices(true);
+                    depAspects.add(clone);
+                } else {
+                    depAspects.add(aspect);
+                }
+            }
+        }
+        return depAspects;
     }
 
     private static class LocalInstanceManager implements InstanceManager {

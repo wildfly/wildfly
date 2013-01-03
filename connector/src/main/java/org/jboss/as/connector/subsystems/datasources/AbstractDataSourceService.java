@@ -387,11 +387,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
             final MyXaMCF xaManagedConnectionFactory = new MyXaMCF();
 
             if (xaDataSourceConfig.getUrlDelimiter() != null) {
-                try {
-                    xaManagedConnectionFactory.setURLDelimiter(xaDataSourceConfig.getUrlDelimiter());
-                } catch (ResourceException e) {
-                    throw MESSAGES.failedToGetUrlDelimiter(e);
-                }
+                xaManagedConnectionFactory.setURLDelimiter(xaDataSourceConfig.getUrlDelimiter());
             }
             if (xaDataSourceConfig.getXaDataSourceClass() != null) {
                 xaManagedConnectionFactory.setXADataSourceClass(xaDataSourceConfig.getXaDataSourceClass());

@@ -19,21 +19,20 @@
 package org.jboss.as.controller.operations.common;
 
 
-import java.util.Locale;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
+
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URI;
-
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -43,21 +42,26 @@ import org.jboss.dmr.Property;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class SchemaLocationRemoveHandler implements OperationStepHandler, DescriptionProvider {
+public class SchemaLocationRemoveHandler implements OperationStepHandler {
 
-    public static final String OPERATION_NAME = "remove-schema-location";
+    private static final String OPERATION_NAME = "remove-schema-location";
+
+    private static final SimpleAttributeDefinition URI = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.URI, ModelType.STRING)
+            .setAllowNull(false)
+            .setValidator(new ModelTypeValidator(ModelType.STRING, false))
+            .build();
+
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, ControllerResolver.getResolver("schema-locations"))
+            .setParameters(URI)
+            .build();
 
     public static final SchemaLocationRemoveHandler INSTANCE = new SchemaLocationRemoveHandler();
 
     public static ModelNode getRemoveSchemaLocationOperation(ModelNode address, String schemaURI) {
-        ModelNode op = new ModelNode();
-        op.get(OP).set(OPERATION_NAME);
-        op.get(OP_ADDR).set(address);
-        op.get(URI).set(schemaURI);
+        ModelNode op = Util.createOperation(OPERATION_NAME, PathAddress.pathAddress(address));
+        op.get(URI.getName()).set(schemaURI);
         return op;
     }
-
-    private final ParameterValidator typeValidator = new ModelTypeValidator(ModelType.STRING);
 
     /**
      * Create the RemoveSchemaLocationHandler
@@ -68,8 +72,8 @@ public class SchemaLocationRemoveHandler implements OperationStepHandler, Descri
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         final ModelNode model = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
-        ModelNode param = operation.get(URI);
-        typeValidator.validateParameter(URI, param);
+        ModelNode param = URI.resolveModelAttribute(context, operation);
+
 
         ModelNode locations = model.get(SCHEMA_LOCATIONS);
         Property toRemove = null;
@@ -90,12 +94,7 @@ public class SchemaLocationRemoveHandler implements OperationStepHandler, Descri
             throw new OperationFailedException(new ModelNode().set(MESSAGES.schemaNotFound(uri)));
         }
 
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return CommonDescriptions.getRemoveSchemaLocationOperation(locale);
+        context.stepCompleted();
     }
 
 }

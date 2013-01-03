@@ -50,7 +50,7 @@ public abstract class SecondLevelCacheMetricsHandler extends AbstractRuntimeOnly
         if (statistics != null) {
             handle(statistics, context, operation.require(ModelDescriptionConstants.NAME).asString());
         }
-        context.completeStep();
+        context.stepCompleted();
     }
 
     protected abstract void handle(SecondLevelCacheStatistics statistics, OperationContext context, String attributeName);

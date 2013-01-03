@@ -38,7 +38,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
@@ -57,41 +57,25 @@ public class LocalDestinationOutboundSocketBindingAddHandler extends AbstractAdd
 
     static final LocalDestinationOutboundSocketBindingAddHandler INSTANCE = new LocalDestinationOutboundSocketBindingAddHandler();
 
+    @Deprecated
     public static ModelNode getOperation(final ModelNode address, final ModelNode localDestinationOutboundSocketBinding) {
         final ModelNode addOperation = new ModelNode();
         addOperation.get(OP).set(ADD);
         addOperation.get(OP_ADDR).set(address);
         // socket binding reference
-        addOperation.get(SOCKET_BINDING_REF).set(localDestinationOutboundSocketBinding.get(SOCKET_BINDING_REF));
-
-        // (optional) source interface
-        if (localDestinationOutboundSocketBinding.get(SOURCE_INTERFACE).isDefined()) {
-            addOperation.get(SOURCE_INTERFACE).set(localDestinationOutboundSocketBinding.get(SOURCE_INTERFACE));
-        }
-        // (optional) source port
-        if (localDestinationOutboundSocketBinding.get(SOURCE_PORT).isDefined()) {
-            addOperation.get(SOURCE_PORT).set(localDestinationOutboundSocketBinding.get(SOURCE_PORT));
-        }
-        if (localDestinationOutboundSocketBinding.get(FIXED_SOURCE_PORT).isDefined()) {
-            addOperation.get(FIXED_SOURCE_PORT).set(localDestinationOutboundSocketBinding.get(FIXED_SOURCE_PORT));
+        for (SimpleAttributeDefinition ad : LocalDestinationOutboundSocketBindingResourceDefinition.ATTRIBUTES) {
+            if (localDestinationOutboundSocketBinding.get(ad.getName()).isDefined()) {
+                addOperation.get(ad.getName()).set(localDestinationOutboundSocketBinding.get(ad.getName()));
+            }
         }
         return addOperation;
     }
 
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-
-        model.get(ModelDescriptionConstants.SOCKET_BINDING_REF).set(operation.get(ModelDescriptionConstants.SOCKET_BINDING_REF));
-        if (operation.hasDefined(ModelDescriptionConstants.SOURCE_INTERFACE)) {
-            model.get(ModelDescriptionConstants.SOURCE_INTERFACE).set(operation.get(ModelDescriptionConstants.SOURCE_INTERFACE));
+        for (SimpleAttributeDefinition ad : LocalDestinationOutboundSocketBindingResourceDefinition.ATTRIBUTES) {
+            ad.validateAndSet(operation, model);
         }
-        if (operation.hasDefined(ModelDescriptionConstants.SOURCE_PORT)) {
-            model.get(ModelDescriptionConstants.SOURCE_PORT).set(operation.get(ModelDescriptionConstants.SOURCE_PORT));
-        }
-        if (operation.hasDefined(FIXED_SOURCE_PORT)) {
-            model.get(ModelDescriptionConstants.FIXED_SOURCE_PORT).set(operation.get(FIXED_SOURCE_PORT));
-        }
-
     }
 
     @Override

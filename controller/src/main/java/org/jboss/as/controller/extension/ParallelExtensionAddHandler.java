@@ -68,7 +68,7 @@ public class ParallelExtensionAddHandler implements OperationStepHandler {
             context.addStep(op.response, op.operation, op.handler, OperationContext.Stage.IMMEDIATE);
         }
 
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.stepCompleted();
     }
 
     private OperationStepHandler getParallelExtensionInitializeStep() {
@@ -105,7 +105,7 @@ public class ParallelExtensionAddHandler implements OperationStepHandler {
                     MGMT_OP_LOGGER.debugf("Initialized extensions in [%d] ms", elapsed);
                 }
 
-                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+                context.stepCompleted();
             }
         };
     }

@@ -38,6 +38,7 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.osgi.repository.RepositoryResolutionException;
 import org.jboss.osgi.repository.URLResourceBuilderFactory;
 import org.jboss.osgi.repository.spi.AbstractRepository;
+import org.jboss.osgi.resolver.XCapability;
 import org.jboss.osgi.resolver.XResourceBuilder;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
@@ -71,17 +72,15 @@ final class ModuleIdentityRepository extends AbstractRepository {
             ModuleIdentifier moduleIdentifier = ModuleIdentifier.fromString(moduleId);
             try {
                 File contentFile = getRepositoryEntry(bundlesDir, moduleIdentifier);
+                if (contentFile == null) {
+                    contentFile = getRepositoryEntry(modulesDir, moduleIdentifier);
+                }
                 if (contentFile != null) {
                     URL contentURL = contentFile.toURI().toURL();
                     XResourceBuilder builder = URLResourceBuilderFactory.create(contentURL, null, true);
-                    result.add(builder.addGenericCapability(MODULE_IDENTITY_NAMESPACE, moduleId));
-                } else {
-                    contentFile = getRepositoryEntry(modulesDir, moduleIdentifier);
-                    if (contentFile != null) {
-                        URL contentURL = contentFile.toURI().toURL();
-                        XResourceBuilder builder = URLResourceBuilderFactory.create(contentURL, null, true);
-                        result.add(builder.addGenericCapability(MODULE_IDENTITY_NAMESPACE, moduleId));
-                    }
+                    XCapability cap = builder.addCapability(MODULE_IDENTITY_NAMESPACE, moduleId);
+                    builder.getResource();
+                    result.add(cap);
                 }
             } catch (RepositoryResolutionException ex) {
                 throw ex;
@@ -105,6 +104,7 @@ final class ModuleIdentityRepository extends AbstractRepository {
         }
 
         String[] files = entryDir.list(new FilenameFilter() {
+            @Override
             public boolean accept(File dir, String name) {
                 return name.endsWith(".jar");
             }

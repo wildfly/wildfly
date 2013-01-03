@@ -28,7 +28,6 @@
         ucast_send_buf_size="640000"
         mcast_recv_buf_size="25000000"
         mcast_send_buf_size="640000"
-        discard_incompatible_packets="true"
         enable_bundling="false"
         max_bundle_size="64000"
         max_bundle_timeout="30"
@@ -51,7 +50,6 @@
     <TCP
         recv_buf_size="20000000"
         send_buf_size="640000"
-        discard_incompatible_packets="true"
         max_bundle_size="64000"
         max_bundle_timeout="30"
         enable_bundling="false"
@@ -75,6 +73,7 @@
     <PING timeout="2000" num_initial_members="3"/>
     <MPING timeout="3000" num_initial_members="3" ip_ttl="2"/>
     <MERGE2 max_interval="100000" min_interval="20000"/>
+    <MERGE3 max_interval="100000" min_interval="20000"/>
     <FD_SOCK/>
     <FD timeout="6000" max_tries="5"/>
     <VERIFY_SUSPECT timeout="1500"/>
@@ -82,9 +81,20 @@
     <pbcast.NAKACK use_mcast_xmit="true"
         retransmit_timeout="300,600,1200,2400,4800"
         discard_delivered_msgs="true"/>
-    <UNICAST2 timeout="300,600,1200,2400,3600"
+    <pbcast.NAKACK2 max_msg_batch_size="100"
+        xmit_interval="1000"
+        xmit_table_num_rows="100"
+        xmit_table_msgs_per_row="10000"
+        xmit_table_max_compaction_time="10000"/>
+    <UNICAST timeout="300,600,1200,2400,3600"
         stable_interval="5000"
         max_bytes="1m"/>
+    <UNICAST2 stable_interval="5000"
+        max_bytes="1m"
+        max_msg_batch_size="100"
+        xmit_table_num_rows="20"
+        xmit_table_msgs_per_row="10000"
+        xmit_table_max_compaction_time="10000"/>
     <pbcast.STABLE stability_delay="1000"
         desired_avg_gossip="50000"
         max_bytes="400000"/>

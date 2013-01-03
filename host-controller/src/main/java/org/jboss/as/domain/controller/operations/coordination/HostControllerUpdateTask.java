@@ -22,8 +22,23 @@
 
 package org.jboss.as.domain.controller.operations.coordination;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_RESULTS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import org.jboss.as.controller.transform.OperationRejectionPolicy;
+import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.MessageSeverity;
@@ -34,12 +49,12 @@ import org.jboss.as.controller.remote.TransactionalOperationImpl;
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
-import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
 
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.Transformers;
 import org.jboss.as.controller.TransformingProxyController;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.threads.AsyncFuture;
 
@@ -78,18 +93,36 @@ class HostControllerUpdateTask {
         final TransactionalProtocolClient client = proxyController.getProtocolClient();
         final OperationMessageHandler messageHandler = new DelegatingMessageHandler(context);
         final OperationAttachments operationAttachments = new DelegatingOperationAttachments(context);
-        final OperationTransformer.TransformedOperation transformationResult = proxyController.transformOperation(context, operation);
-        final ModelNode transformedOperation = transformationResult.getTransformedOperation();
-        final OperationResultTransformer resultTransformer = transformationResult.getResultTransformer();
-        final ProxyOperation proxyOperation = new ProxyOperation(name, transformedOperation, messageHandler, operationAttachments);
         final SubsystemInfoOperationListener subsystemListener = new SubsystemInfoOperationListener(listener, proxyController.getTransformers());
         try {
-            final AsyncFuture<ModelNode> result = client.execute(subsystemListener, proxyOperation);
-            return new ExecutedHostRequest(result, resultTransformer);
-        } catch (IOException e) {
+
+            final OperationTransformer.TransformedOperation transformationResult = proxyController.transformOperation(context, operation);
+            final ModelNode transformedOperation = transformationResult.getTransformedOperation();
+            final ProxyOperation proxyOperation = new ProxyOperation(name, transformedOperation, messageHandler, operationAttachments);
+            try {
+                // Make sure we preserve the operation headers like PrepareStepHandler.EXECUTE_FOR_COORDINATOR
+                if(transformedOperation != null) {
+                    transformedOperation.get(OPERATION_HEADERS).set(operation.get(OPERATION_HEADERS));
+                    // If the operation was transformed in any way
+                    if(operation != transformedOperation) {
+                        // push all operations (incl. read-only) to the servers
+                        transformedOperation.get(OPERATION_HEADERS, ServerOperationsResolverHandler.DOMAIN_PUSH_TO_SERVERS).set(true);
+                    }
+                }
+                final AsyncFuture<ModelNode> result = client.execute(subsystemListener, proxyOperation);
+                return new ExecutedHostRequest(result, transformationResult);
+            } catch (IOException e) {
+                // Handle protocol failures
+                final TransactionalProtocolClient.PreparedOperation<ProxyOperation> result = BlockingQueueOperationListener.FailedOperation.create(proxyOperation, e);
+                subsystemListener.operationPrepared(result);
+                return new ExecutedHostRequest(result.getFinalResult(), transformationResult);
+            }
+        } catch (OperationFailedException e) {
+            // Handle transformation failures
+            final ProxyOperation proxyOperation = new ProxyOperation(name, operation, messageHandler, operationAttachments);
             final TransactionalProtocolClient.PreparedOperation<ProxyOperation> result = BlockingQueueOperationListener.FailedOperation.create(proxyOperation, e);
             subsystemListener.operationPrepared(result);
-            return new ExecutedHostRequest(result.getFinalResult(), resultTransformer);
+            return new ExecutedHostRequest(result.getFinalResult(), OperationResultTransformer.ORIGINAL_RESULT, OperationTransformer.DEFAULT_REJECTION_POLICY);
         }
     }
 
@@ -106,14 +139,20 @@ class HostControllerUpdateTask {
         }
     }
 
-    static class ExecutedHostRequest implements OperationResultTransformer {
+    static class ExecutedHostRequest implements OperationResultTransformer, OperationRejectionPolicy {
 
-        final AsyncFuture<ModelNode> futureResult;
-        final OperationResultTransformer resultTransformer;
+        private final AsyncFuture<ModelNode> futureResult;
+        private final OperationResultTransformer resultTransformer;
+        private final OperationRejectionPolicy rejectPolicy;
 
-        ExecutedHostRequest(AsyncFuture<ModelNode> futureResult, OperationResultTransformer resultTransformer) {
+        ExecutedHostRequest(AsyncFuture<ModelNode> futureResult, OperationResultTransformer resultTransformer, OperationRejectionPolicy rejectPolicy) {
             this.futureResult = futureResult;
             this.resultTransformer = resultTransformer;
+            this.rejectPolicy = rejectPolicy;
+        }
+
+        ExecutedHostRequest(AsyncFuture<ModelNode> futureResult, OperationTransformer.TransformedOperation transformedOperation) {
+            this(futureResult, transformedOperation, transformedOperation);
         }
 
         public Future<ModelNode> getFinalResult() {
@@ -121,8 +160,51 @@ class HostControllerUpdateTask {
         }
 
         @Override
+        public boolean rejectOperation(ModelNode preparedResult) {
+            // Check the host result and see if we have to reject it
+            if(preparedResult.get(RESULT).has(DOMAIN_RESULTS)) {
+                final ModelNode domainResults = preparedResult.get(RESULT, DOMAIN_RESULTS);
+                // Don't reject ignored operations
+                if(domainResults.getType() == ModelType.STRING && IGNORED.equals(domainResults.asString())) {
+                    return false;
+                }
+                // The format of the prepared operation of the domain coordination step1 is different from a normal operation
+                // a user would need to handle, therefore try to fix it up as good as possible
+                final ModelNode userOp = new ModelNode();
+                userOp.get(OUTCOME).set(SUCCESS);
+                userOp.get(RESULT).set(domainResults);
+                return rejectPolicy.rejectOperation(userOp);
+            } else {
+                return rejectPolicy.rejectOperation(preparedResult);
+            }
+        }
+
+        @Override
+        public String getFailureDescription() {
+            return rejectPolicy.getFailureDescription();
+        }
+
+        @Override
         public ModelNode transformResult(ModelNode result) {
-            return resultTransformer.transformResult(result);
+
+            if(result.get(RESULT).has(DOMAIN_RESULTS)) {
+                final ModelNode domainResults = result.get(RESULT, DOMAIN_RESULTS);
+                if(domainResults.getType() == ModelType.STRING && IGNORED.equals(domainResults.asString())) {
+                    // Untransformed
+                    return result;
+                }
+                final ModelNode userResult = new ModelNode();
+                userResult.get(OUTCOME).set(result.get(OUTCOME));
+                userResult.get(RESULT).set(domainResults);
+                if(result.hasDefined(FAILURE_DESCRIPTION)) {
+                    userResult.get(FAILURE_DESCRIPTION).set(result.get(FAILURE_DESCRIPTION));
+                }                // Transform the result
+                final ModelNode transformed = resultTransformer.transformResult(userResult);
+                result.get(RESULT, DOMAIN_RESULTS).set(transformed.get(RESULT));
+                return result;
+            } else {
+                return resultTransformer.transformResult(result);
+            }
         }
 
         public void asyncCancel() {

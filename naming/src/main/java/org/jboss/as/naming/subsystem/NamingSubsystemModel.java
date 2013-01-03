@@ -37,6 +37,7 @@ public interface NamingSubsystemModel {
     String LOOKUP = "lookup";
 
     String OBJECT_FACTORY = "object-factory";
+    String OBJECT_FACTORY_ENV = "environment";
 
     String MODULE = "module";
 

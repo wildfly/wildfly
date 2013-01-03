@@ -110,6 +110,9 @@ public abstract class AbstractSecurityDomainsServerSetupTask implements ServerSe
             op.get(OP).set(ADD);
             op.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_SECURITY);
             op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomainName);
+            if (StringUtils.isNotEmpty(securityDomain.getCacheType())) {
+                op.get(Constants.CACHE_TYPE).set(securityDomain.getCacheType());
+            }
             updates.add(op);
 
             //only one can occur - authenticationType or authenticationJaspiType

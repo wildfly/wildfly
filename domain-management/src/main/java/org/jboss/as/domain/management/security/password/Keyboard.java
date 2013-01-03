@@ -67,7 +67,7 @@ public interface Keyboard {
 
     /**
      * Detects sequence of keys in word. If {@link #siblings(String, int)} returns true for 'index', Than this method will
-     * return atleast '1' - indcating that after 'index' there is sequence of chars. Example:
+     * return at least '1' - indcating that after 'index' there is sequence of chars. Example:
      *
      * <pre>
      *  String word = "ASDFG";

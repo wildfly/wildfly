@@ -22,8 +22,9 @@
 
 package org.jboss.as.logging.validators;
 
-import static org.jboss.as.logging.CommonAttributes.PATH;
-import static org.jboss.as.logging.CommonAttributes.RELATIVE_TO;
+import static org.jboss.as.controller.services.path.PathResourceDefinition.PATH;
+import static org.jboss.as.controller.services.path.PathResourceDefinition.RELATIVE_TO;
+import static org.jboss.as.logging.Logging.createOperationFailure;
 import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
 import org.jboss.as.controller.OperationFailedException;
@@ -36,9 +37,9 @@ import org.jboss.dmr.ModelType;
  * Validates the {@link org.jboss.as.logging.CommonAttributes#FILE file} attribute.
  * <p/>
  * A valid {@link org.jboss.as.logging.CommonAttributes#FILE file} attribute must have an absolute
- * {@link org.jboss.as.logging.CommonAttributes#PATH path} attribute or a
- * {@link org.jboss.as.logging.CommonAttributes#PATH path} attribute with a valid
- * {@link org.jboss.as.logging.CommonAttributes#RELATIVE_TO relative-to} attribute.
+ * {@link org.jboss.as.controller.services.path.PathResourceDefinition#PATH path} attribute or a
+ * {@link org.jboss.as.controller.services.path.PathResourceDefinition#PATH path} attribute with a valid
+ * {@link org.jboss.as.controller.services.path.PathResourceDefinition#RELATIVE_TO relative-to} attribute.
  * <p/>
  * Date: 28.11.2011
  *
@@ -62,7 +63,7 @@ public class FileValidator extends ModelTypeValidator {
                 final String relativeTo = value.get(RELATIVE_TO.getName()).asString();
                 // Can't be an absolute path
                 if (AbstractPathService.isAbsoluteUnixOrWindowsPath(relativeTo)) {
-                    throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidRelativeTo(relativeTo)));
+                    throw createOperationFailure(MESSAGES.invalidRelativeTo(relativeTo));
                 }
             }
         }

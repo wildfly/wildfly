@@ -18,24 +18,21 @@
  */
 package org.jboss.as.domain.controller.operations.deployment;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.DeploymentDescription;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.repository.ContentRepository;
-import org.jboss.dmr.ModelNode;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UPLOAD_DEPLOYMENT_URL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
+import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Locale;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UPLOAD_DEPLOYMENT_URL;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
-import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.repository.ContentRepository;
+import org.jboss.as.server.controller.resources.DeploymentAttributes;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Handler for the upload-deployment-url operation.
@@ -43,31 +40,29 @@ import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class DeploymentUploadURLHandler
-extends AbstractDeploymentUploadHandler
-implements DescriptionProvider {
+extends AbstractDeploymentUploadHandler {
 
     public static final String OPERATION_NAME = UPLOAD_DEPLOYMENT_URL;
 
-    private final ParametersValidator urlValidator = new ParametersValidator();
-
-    /** Constructor for a slave Host Controller */
-    public DeploymentUploadURLHandler() {
-        this(null);
-    }
-
     /**
-     * Constructor for a master Host Controller
+     * Constructor
      *
      * @param repository the master content repository. If {@code null} this handler will function as a slave handler would.
      */
-    public DeploymentUploadURLHandler(final ContentRepository repository) {
-        super(repository);
-        this.urlValidator.registerValidator(URL, new StringLengthValidator(1));
+    private DeploymentUploadURLHandler(final ContentRepository repository) {
+        super(repository, DeploymentAttributes.URL_NOT_NULL);
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return DeploymentDescription.getUploadDeploymentURLOperation(locale);
+    public static void registerMaster(final ManagementResourceRegistration registration, final ContentRepository repository) {
+        new DeploymentUploadURLHandler(repository).register(registration);
+    }
+
+    public static void registerSlave(final ManagementResourceRegistration registration) {
+        new DeploymentUploadURLHandler(null).register(registration);
+    }
+
+    private void register(ManagementResourceRegistration registration) {
+        registration.registerOperationHandler(DeploymentAttributes.DOMAIN_UPLOAD_URL_DEFINITION, this);
     }
 
     /**
@@ -75,7 +70,6 @@ implements DescriptionProvider {
      */
     @Override
     protected InputStream getContentInputStream(OperationContext operationContext, ModelNode operation) throws OperationFailedException {
-        urlValidator.validate(operation);
 
         String urlSpec = operation.get(URL).asString();
         try {

@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<domain xmlns="urn:jboss:domain:1.3"
+<domain xmlns="urn:jboss:domain:1.4"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
     <extensions>
@@ -39,7 +39,7 @@
 
         <profile name="default">
 
-            <subsystem xmlns="urn:jboss:domain:logging:1.1">
+            <subsystem xmlns="urn:jboss:domain:logging:1.2">
                 <console-handler name="CONSOLE">
                     <level name="INFO"/>
                     <formatter>

@@ -26,11 +26,11 @@ import java.io.File;
 import java.util.Set;
 
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.Cause;
-import org.jboss.logging.LogMessage;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.Logger;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageLogger;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
 
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
@@ -233,4 +233,18 @@ public interface DeploymentScannerLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 15015, value = "Failed checking whether %s was a complete XML")
     void failedCheckingXMLFile(@Cause Throwable cause, String fileName);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 15016, value = "Initial deployment scan failed")
+    void initialScanFailed(@Cause Throwable t);
+
+    @LogMessage(level = INFO)
+    @Message(id = 15017, value = "Deployment %s was previously deployed by this scanner but has been undeployed by " +
+            "another management tool. Marker file %s is being added to record this fact.")
+    void scannerDeploymentUndeployedButNotByScanner(String deploymentName, File marker);
+
+    @LogMessage(level = INFO)
+    @Message(id = 15018, value = "Deployment %s was previously deployed by this scanner but has been removed from the " +
+            "server deployment list by another management tool. Marker file %s is being added to record this fact.")
+    void scannerDeploymentRemovedButNotByScanner(String deploymentName, File marker);
 }

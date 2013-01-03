@@ -88,11 +88,11 @@ public class WarMetaData {
      */
     private volatile JBossWebMetaData mergedJBossWebMetaData;
 
-    public JBossWebMetaData getJbossWebMetaData() {
+    public JBossWebMetaData getJBossWebMetaData() {
         return jbossWebMetaData;
     }
 
-    public void setJbossWebMetaData(JBossWebMetaData jbossWebMetaData) {
+    public void setJBossWebMetaData(JBossWebMetaData jbossWebMetaData) {
         this.jbossWebMetaData = jbossWebMetaData;
     }
 

@@ -97,7 +97,6 @@ public class CompositeIndexProcessor implements DeploymentUnitProcessor {
         allResourceRoots.addAll(handleClassPathItems(deploymentUnit));
 
         final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-
         if (ModuleRootMarker.isModuleRoot(deploymentRoot)) {
             allResourceRoots.add(deploymentRoot);
         }

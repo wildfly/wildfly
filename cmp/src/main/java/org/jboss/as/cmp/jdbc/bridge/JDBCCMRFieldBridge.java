@@ -51,7 +51,6 @@ import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 import org.jboss.as.cmp.CmpMessages;
-import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.bridge.EntityBridge;
 import org.jboss.as.cmp.bridge.FieldBridge;
 import org.jboss.as.cmp.component.CmpEntityBeanComponent;
@@ -72,6 +71,8 @@ import org.jboss.as.cmp.jdbc.metadata.JDBCRelationMetaData;
 import org.jboss.as.cmp.jdbc.metadata.JDBCRelationshipRoleMetaData;
 import org.jboss.logging.Logger;
 import org.jboss.tm.TransactionLocal;
+
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 
 /**
  * JDBCCMRFieldBridge a bean relationship. This class only supports
@@ -533,7 +534,7 @@ public final class JDBCCMRFieldBridge extends JDBCAbstractCMRFieldBridge {
     public void addRelatedPKsWaitedForMe(CmpEntityBeanContext ctx) {
         final Map relatedPKsMap = getRelatedPKsWaitingForMyPK();
         synchronized (relatedPKsMap) {
-            List relatedPKsWaitingForMe = (List) relatedPKsMap.get(ctx.getPrimaryKey());
+            List relatedPKsWaitingForMe = (List) relatedPKsMap.get(ctx.getPrimaryKeyUnchecked());
             if (relatedPKsWaitingForMe != null) {
                 for (Iterator waitingPKsIter = relatedPKsWaitingForMe.iterator(); waitingPKsIter.hasNext(); ) {
                     Object waitingPK = waitingPKsIter.next();
@@ -812,7 +813,7 @@ public final class JDBCCMRFieldBridge extends JDBCAbstractCMRFieldBridge {
         }
 
         addRelation(myCtx, relatedId, updateForeignKey);
-        relatedCMRField.invokeAddRelation(relatedId, myCtx.getPrimaryKey());
+        relatedCMRField.invokeAddRelation(relatedId, myCtx.getPrimaryKeyUnchecked());
     }
 
     /**
@@ -849,7 +850,7 @@ public final class JDBCCMRFieldBridge extends JDBCAbstractCMRFieldBridge {
         }
 
         removeRelation(myCtx, relatedId, updateValueCollection, updateForeignKey);
-        relatedCMRField.invokeRemoveRelation(relatedId, myCtx.getPrimaryKey());
+        relatedCMRField.invokeRemoveRelation(relatedId, myCtx.getPrimaryKeyUnchecked());
     }
 
     /**
@@ -970,7 +971,7 @@ public final class JDBCCMRFieldBridge extends JDBCAbstractCMRFieldBridge {
      */
     public void addRelation(CmpEntityBeanContext myCtx, Object fk) {
         addRelation(myCtx, fk, true);
-        relationManager.addRelation(this, myCtx.getPrimaryKey(), relatedCMRField, fk);
+        relationManager.addRelation(this, myCtx.getPrimaryKeyUnchecked(), relatedCMRField, fk);
     }
 
     private void addRelation(CmpEntityBeanContext myCtx, Object fk, boolean updateForeignKey) {
@@ -998,7 +999,7 @@ public final class JDBCCMRFieldBridge extends JDBCAbstractCMRFieldBridge {
      */
     public void removeRelation(CmpEntityBeanContext myCtx, Object fk) {
         removeRelation(myCtx, fk, true, true);
-        relationManager.removeRelation(this, myCtx.getPrimaryKey(), relatedCMRField, fk);
+        relationManager.removeRelation(this, myCtx.getPrimaryKeyUnchecked(), relatedCMRField, fk);
     }
 
     private void removeRelation(CmpEntityBeanContext myCtx,
@@ -1036,7 +1037,7 @@ public final class JDBCCMRFieldBridge extends JDBCAbstractCMRFieldBridge {
 
         // check the preload cache
         if (log.isTraceEnabled()) {
-            log.trace("Read ahead cache load: cmrField=" + getFieldName() + " pk=" + myCtx.getPrimaryKey());
+            log.trace("Read ahead cache load: cmrField=" + getFieldName() + " pk=" + myCtx.getPrimaryKeyUnchecked());
         }
 
         manager.getReadAheadCache().load(myCtx);
@@ -1074,12 +1075,12 @@ public final class JDBCCMRFieldBridge extends JDBCAbstractCMRFieldBridge {
             }
 
             if (loadWithManager) {
-                values = manager.loadRelation(this, myCtx.getPrimaryKey());
+                values = manager.loadRelation(this, myCtx.getPrimaryKeyUnchecked());
             } else {
                 values = (fk == null ? Collections.EMPTY_LIST : Collections.singletonList(fk));
             }
         } else {
-            values = manager.loadRelation(this, myCtx.getPrimaryKey());
+            values = manager.loadRelation(this, myCtx.getPrimaryKeyUnchecked());
         }
         load(myCtx, values);
     }
@@ -1759,7 +1760,7 @@ public final class JDBCCMRFieldBridge extends JDBCAbstractCMRFieldBridge {
         }
     }
 
-    public static interface RelationDataManager {
+    public interface RelationDataManager {
         void addRelation(JDBCCMRFieldBridge field, Object id, JDBCCMRFieldBridge relatedField, Object relatedId);
 
         void removeRelation(JDBCCMRFieldBridge field, Object id, JDBCCMRFieldBridge relatedField, Object relatedId);

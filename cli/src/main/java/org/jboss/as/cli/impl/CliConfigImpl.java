@@ -50,6 +50,8 @@ import org.jboss.staxmapper.XMLMapper;
 class CliConfigImpl implements CliConfig {
 
     private static final String JBOSS_XML_CONFIG = "jboss.cli.config";
+    private static final String CURRENT_WORKING_DIRECTORY = "user.dir";
+    private static final String JBOSS_CLI_FILE = "jboss-cli.xml";
 
     private static final String DEFAULT_CONTROLLER = "default-controller";
     private static final String ENABLED = "enabled";
@@ -60,23 +62,56 @@ class CliConfigImpl implements CliConfig {
     private static final String HOST = "host";
     private static final String MAX_SIZE = "max-size";
     private static final String PORT = "port";
+    private static final String CONNECTION_TIMEOUT = "connection-timeout";
     private static final String RESOLVE_PARAMETER_VALUES = "resolve-parameter-values";
     private static final String VALIDATE_OPERATION_REQUESTS = "validate-operation-requests";
 
     static CliConfig load(final CommandContext ctx) throws CliInitializationException {
-        final String jbossCliConfig = SecurityActions.getSystemProperty(JBOSS_XML_CONFIG);
-        final File jbossCliFile;
-        if(jbossCliConfig == null) {
-            final String jbossHome = SecurityActions.getEnvironmentVariable("JBOSS_HOME");
-            if(jbossHome == null) {
-                System.err.println("WARN: can't load the config file because JBOSS_HOME environment variable is not set.");
-                return new CliConfigImpl();
-            }
-            jbossCliFile = new File(jbossHome + File.separatorChar + "bin", "jboss-cli.xml");
-        } else {
-            jbossCliFile = new File(jbossCliConfig);
+        File jbossCliFile = findCLIFileFromSystemProperty();
+
+        if (jbossCliFile == null) {
+            jbossCliFile = findCLIFileInCurrentDirectory();
         }
+
+        if (jbossCliFile == null) {
+            jbossCliFile = findCLIFileInJBossHome();
+        }
+
+        if (jbossCliFile == null) {
+            System.err.println("WARN: can't find " + JBOSS_CLI_FILE + ". Using default configuration values.");
+            return new CliConfigImpl();
+        }
+
         return parse(ctx, jbossCliFile);
+    }
+
+    private static File findCLIFileFromSystemProperty() {
+        final String jbossCliConfig = SecurityActions.getSystemProperty(JBOSS_XML_CONFIG);
+        if (jbossCliConfig == null) return null;
+
+        return new File(jbossCliConfig);
+    }
+
+    private static File findCLIFileInCurrentDirectory() {
+        final String currentDir = SecurityActions.getSystemProperty(CURRENT_WORKING_DIRECTORY);
+        if (currentDir == null) return null;
+
+        File jbossCliFile = new File(currentDir, JBOSS_CLI_FILE);
+
+        if (!jbossCliFile.exists()) return null;
+
+        return jbossCliFile;
+    }
+
+    private static File findCLIFileInJBossHome() {
+        final String jbossHome = SecurityActions.getEnvironmentVariable("JBOSS_HOME");
+        if (jbossHome == null) return null;
+
+        File jbossCliFile = new File(jbossHome + File.separatorChar + "bin", JBOSS_CLI_FILE);
+
+        if (!jbossCliFile.exists()) return null;
+
+        return jbossCliFile;
     }
 
     static CliConfig parse(final CommandContext ctx, File f) throws CliInitializationException {
@@ -137,6 +172,8 @@ class CliConfigImpl implements CliConfig {
         historyFileName = ".jboss-cli-history";
         historyFileDir = SecurityActions.getSystemProperty("user.home");
         historyMaxSize = 500;
+
+        connectionTimeout = 5000;
     }
 
     private String defaultControllerHost;
@@ -146,6 +183,8 @@ class CliConfigImpl implements CliConfig {
     private String historyFileName;
     private String historyFileDir;
     private int historyMaxSize;
+
+    private int connectionTimeout;
 
     private boolean validateOperationRequests = true;
     private boolean resolveParameterValues = false;
@@ -180,6 +219,11 @@ class CliConfigImpl implements CliConfig {
     @Override
     public int getHistoryMaxSize() {
         return historyMaxSize;
+    }
+
+    @Override
+    public int getConnectionTimeout() {
+        return connectionTimeout;
     }
 
     @Override
@@ -308,6 +352,13 @@ class CliConfigImpl implements CliConfig {
                         config.validateOperationRequests = resolveBoolean(reader.getElementText());
                     } else if(localName.equals(RESOLVE_PARAMETER_VALUES)) {
                         config.resolveParameterValues = resolveBoolean(reader.getElementText());
+                    } else if (CONNECTION_TIMEOUT.equals(localName)) {
+                        final String text = reader.getElementText();
+                        try {
+                            config.connectionTimeout = Integer.parseInt(text);
+                        } catch(NumberFormatException e) {
+                            throw new XMLStreamException("Failed to parse " + JBOSS_CLI + " " + CONNECTION_TIMEOUT + " value '" + text + "'", e);
+                        }
                     } else {
                         throw new XMLStreamException("Unexpected element: " + localName);
                     }

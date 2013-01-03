@@ -1,17 +1,15 @@
-
 ###
 ###  Creates a list of Maven artifacts to be included in Public JBoss AS 7 API aggregated JavaDoc.
 ###
-
-
 PROGNAME=`basename $0`
 DIRNAME=`dirname $0`
-
 TARGET=$DIRNAME/target
 PROJECT_ROOT_DIR="$DIRNAME/../..";
+function error()  { echo    "$@" 1>&2; }
+function errore() { echo -e "$@" 1>&2; }
 
 if [ ! `which xsltproc` ]; then
-  echo "xsltproc not found. This script needs it. Please install it.";
+  error "xsltproc not found. This script needs it. Please install it.";
   exit 2;
 fi
 
@@ -20,62 +18,82 @@ mkdir -p $TARGET;
 
 #####  With exported dependencies, converted from module names to groupIDs:
 
-echo -e "\n\n===  Printing modules which don't have value=\"private\" and are not aliases.\n"
+errore "\n\n===  Printing modules which don't have value=\"private\" and are not aliases.\n"
 
-echo '' > $TARGET/packages.tmp.txt
+echo '' > $TARGET/modules.include.tmp.txt
+echo '' > $TARGET/modules.exclude.tmp.txt
 for i in `find $PROJECT_ROOT_DIR/build/src/main/resources/modules/ -name module.xml` ;  do
-  FILE=`grep 'value="private"' --files-without-match  $i`;
-  if [ "$FILE" == "" ] ; then continue; fi;
-  echo "  Public module: $i"
 
+  DEST='include';
+
+  FILE=`grep 'value="private"' --files-without-match  $i`;
+  if [ "$FILE" == "" ] ; then DEST='exclude'; fi;
+  FILE=`grep 'value="unsupported"' --files-without-match  $i`;
+  if [ "$FILE" == "" ] ; then DEST='exclude'; fi
+  error "  Module $i : $DEST";
+  
+  FILE=$i
   ##  Extract module name.
-  PKG=`grep '<module .* name="' $FILE | head -1 | sed 's#<module .* name="\([^"]*\).*"#\1#' | sed 's#/\?>##'`;
-  if grep --quiet '<module-alias ' $FILE; then  echo "     (Module alias.)"; continue; fi;
-  echo "    Module name: $PKG"
-  echo $PKG >> $TARGET/packages.tmp.txt
+  if grep --quiet '<module-alias ' $FILE; then  error "     (Module alias.)"; continue; fi;
+  MOD=`grep '<module .* name="' "$FILE" | head -1 | sed 's#<module .* name="\([^"]*\).*"#\1#' | sed 's#/\?>##'`;
+  error "    Module name: $MOD"
+  
+  echo $MOD >> $TARGET/modules.$DEST.tmp.txt
 
   ##  Exported dependencies.
-  grep '<module name="' $FILE | grep 'export="true"' | sed 's#<module name="\([^"]*\).*"#\1#' | sed 's#/\?>##' | sed 's#\s*\(.*\)\s*#\1#' | tee --append $TARGET/packages.tmp.txt | sed 's#.*#        Exported dep: \0#'
+  #grep '<module name="' $FILE | grep 'export="true"' | sed 's#<module name="\([^"]*\).*"#\1#' | sed 's#/\?>##' | sed 's#\s*\(.*\)\s*#\1#' | tee --append $TARGET/packages.include.tmp.txt | sed 's#.*#        Exported dep: \0#' 1>&2
 done
-sort $TARGET/packages.tmp.txt | uniq > $TARGET/modules.tmp2.txt
+sort $TARGET/modules.include.tmp.txt | uniq > $TARGET/modules.include.txt
+sort $TARGET/modules.exclude.tmp.txt | uniq > $TARGET/modules.exclude.txt
 
 
 
 ###  Now we have a list of public API modules, e.g. javax.management.j2ee.api
-###  Let's convert it into a list of groupIDs.
-echo -e "\n\n===  Converting list of public API modules into list of groupID:artifactID.\n"
+###  Let's convert it into a list of G:A's.
+errore "\n\n===  Converting list of public API modules into list of groupID:artifactID.\n"
 
-echo > $TARGET/groupIDs.tmp.txt
-while read -r MODULE ; do
-  echo "Artefacts for module $MODULE :"
-  GROUP_ID=`xsltproc --stringparam moduleName "$MODULE"  $DIRNAME/convertModuleNameToGroupID.xsl $PROJECT_ROOT_DIR/build/build.xml`
-  echo "  GroupID:ArtifactID = $GROUP_ID"
-  echo $GROUP_ID >> $TARGET/groupIDs.tmp.txt
-done < $TARGET/modules.tmp2.txt
-cat $TARGET/groupIDs.tmp.txt | sort | uniq > $TARGET/groupIDs.tmp-sorted.txt
+function convertModuleNameToGA() {
+  inFile=$1;
+  outFile=$2;
+  
+  echo > $outFile-unsorted;
+  while read -r MODULE ; do
+    error "Artifacts for module '$MODULE':"
+    GROUP_IDS=`xsltproc --stringparam moduleName "$MODULE"  $DIRNAME/convertModuleNameToGA.xsl $PROJECT_ROOT_DIR/build/build.xml`
+    error "$GROUP_IDS" | sed 's#.*#        \0#'
+    echo "$GROUP_IDS" >> $outFile-unsorted;
+  done < $inFile;
+  cat $outFile-unsorted | sort | uniq > $outFile;
+}
 
-###  Wrap it as includes for pom.xml.
-echo -e "\n\n===  Wrapping list of groupID:artifactID into <include> tags.\n"
-cat $TARGET/groupIDs.tmp-sorted.txt | sed 's#.*#<include>\0</include>#'
+convertModuleNameToGA $TARGET/modules.include.txt $TARGET/artifacts.in.tmp.txt;
+convertModuleNameToGA $TARGET/modules.exclude.txt $TARGET/artifacts.ex.tmp.txt;
+
+###  Blacklisted ->  prepend '#'.
+  echo > $TARGET/artifacts.in.tmp-blist.txt;
+  while read -r ARTIFACT ; do
+    if grep --quiet "$ARTIFACT\$" $DIRNAME/artifactsBlacklist.txt ; then echo -n "# " >> $TARGET/artifacts.in.tmp-blist.txt; fi
+    echo "$ARTIFACT" >> $TARGET/artifacts.in.tmp-blist.txt;
+  done < $TARGET/artifacts.in.tmp.txt;
+
+
+###  Wrap it as includes for pom.xml, removing empty lines first.
+errore "\n\n===  Wrapping list of groupID:artifactID into <include> / <exclude> tags.\n"
+echo '<?xml version="1.0" ?>'
+echo '<root>'
+echo '<dependencySourceIncludes>'
+cat $TARGET/artifacts.in.tmp-blist.txt | sed '/^$/d' | sed 's#.*#    <include>\0</include>#' | sed 's@    <.*#.*@    <!-- \0 -->@'
+echo '</dependencySourceIncludes>'
+echo '<dependencySourceExcludes>'
+cat $TARGET/artifacts.ex.tmp.txt       | sed '/^$/d' | sed 's#.*#    <exclude>\0</exclude>#'
+echo '    <!-- Blacklisted artifacts - see build/javadoc/artifactsBlacklist.txt. -->'
+echo '    <!-- [ERROR] java.lang.ClassCastException: com.sun.tools.javadoc.ClassDocImpl cannot be cast to com.sun.javadoc.AnnotationTypeDoc -->'
+cat $DIRNAME/artifactsBlacklist.txt   | sed '/^$/d' | sed 's#.*#    <exclude>\0</exclude>#'
+echo '</dependencySourceExcludes>'
+echo '</root>'
 
 
 
-###  This was intended to list where certain package comes from, but it would need extracting versions. Disabled now.
-FILTER="$1";
-M2_REPO="$2";
-
-if [ "DISABLED" == "" -a "$M2_REPO" != "" ] ; then
-  echo -e "\n\n===  Listing packages contained in public artifacts.\n"
-  if [ "$FILTER" == "" ] ; then FILTER="cat" ;
-  else FILTER="grep $FILTER"; fi
-
-  for JAR_PATH in `cat $TARGET/groupIDs.tmp-sorted.txt | tr .: / `; do
-    echo "=== Contents of $M2_REPO/$JAR_PATH :" 
-    jar -tf $M2_REPO/$JAR_PATH | $FILTER | sed 's#.*#        \0#'
-  done
-fi
-###  Instead, one can do:
-# for i in `find ../target/jboss-as-7.2.0.Alpha1-SNAPSHOT/modules/ -name *.jar`; do echo "====== $i"; jar -tf $i | grep $FILTER; done
 
 
 

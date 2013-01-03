@@ -21,16 +21,17 @@
  */
 package org.jboss.as.host.controller;
 
-import org.jboss.as.controller.OperationFailedException;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONCURRENT_GROUPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IN_SERIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILED_SERVERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILURE_PERCENTAGE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ACROSS_GROUPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLING_TO_SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLAN;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILED_SERVERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILURE_PERCENTAGE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
-import org.jboss.as.domain.controller.DomainModelUtil;
+
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.domain.controller.resources.DomainRootDefinition;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
@@ -46,7 +47,7 @@ public class RolloutPlanValidationUnitTestCase {
         final ModelNode rolloutPlan = new ModelNode();
         rolloutPlan.get(ROLLOUT_PLAN);
         try {
-            DomainModelUtil.validateRolloutPlanStructure(rolloutPlan);
+            validateRolloutPlanStructure(rolloutPlan);
             Assert.fail("Rollout plan is missing in-series");
         } catch(OperationFailedException e) {
             // expected
@@ -61,7 +62,7 @@ public class RolloutPlanValidationUnitTestCase {
         rolloutPlan.get(ROLLOUT_PLAN, ROLLBACK_ACROSS_GROUPS).set(true);
         rolloutPlan.get(ROLLOUT_PLAN, "unrecognized");
         try {
-            DomainModelUtil.validateRolloutPlanStructure(rolloutPlan);
+            validateRolloutPlanStructure(rolloutPlan);
             Assert.fail("Rollout plan has too many children");
         } catch(OperationFailedException e) {
             // expected
@@ -75,7 +76,7 @@ public class RolloutPlanValidationUnitTestCase {
         inSeries.add().get(SERVER_GROUP).get("group1");
         rolloutPlan.get(ROLLOUT_PLAN, "unrecognized");
         try {
-            DomainModelUtil.validateRolloutPlanStructure(rolloutPlan);
+            validateRolloutPlanStructure(rolloutPlan);
             Assert.fail("Rollout plan has unrecognized child.");
         } catch(OperationFailedException e) {
             // expected
@@ -87,7 +88,7 @@ public class RolloutPlanValidationUnitTestCase {
         final ModelNode rolloutPlan = new ModelNode();
         rolloutPlan.get(ROLLOUT_PLAN, IN_SERIES);
         try {
-            DomainModelUtil.validateRolloutPlanStructure(rolloutPlan);
+            validateRolloutPlanStructure(rolloutPlan);
             Assert.fail("in-series undefined");
         } catch(OperationFailedException e) {
             // expected
@@ -100,7 +101,7 @@ public class RolloutPlanValidationUnitTestCase {
         final ModelNode inSeries = rolloutPlan.get(ROLLOUT_PLAN, IN_SERIES);
         inSeries.add().get(SERVER_GROUP);
         try {
-            DomainModelUtil.validateRolloutPlanStructure(rolloutPlan);
+            validateRolloutPlanStructure(rolloutPlan);
             Assert.fail("server-group undefined");
         } catch(OperationFailedException e) {
             // expected
@@ -113,7 +114,7 @@ public class RolloutPlanValidationUnitTestCase {
         final ModelNode inSeries = rolloutPlan.get(ROLLOUT_PLAN, IN_SERIES);
         inSeries.add().get(SERVER_GROUP).setEmptyObject();
         try {
-            DomainModelUtil.validateRolloutPlanStructure(rolloutPlan);
+            validateRolloutPlanStructure(rolloutPlan);
             Assert.fail("server-group name missing");
         } catch(OperationFailedException e) {
             // expected
@@ -125,7 +126,7 @@ public class RolloutPlanValidationUnitTestCase {
         final ModelNode rolloutPlan = new ModelNode();
         final ModelNode inSeries = rolloutPlan.get(ROLLOUT_PLAN, IN_SERIES);
         inSeries.add().get(SERVER_GROUP).get("group1");
-        DomainModelUtil.validateRolloutPlanStructure(rolloutPlan);
+        validateRolloutPlanStructure(rolloutPlan);
     }
 
     @Test
@@ -136,7 +137,7 @@ public class RolloutPlanValidationUnitTestCase {
         serverGroup.get("group1");
         serverGroup.get("group2");
         try {
-            DomainModelUtil.validateRolloutPlanStructure(rolloutPlan);
+            validateRolloutPlanStructure(rolloutPlan);
             Assert.fail("server-group has too many names");
         } catch(OperationFailedException e) {
             // expected
@@ -149,7 +150,7 @@ public class RolloutPlanValidationUnitTestCase {
         final ModelNode inSeries = rolloutPlan.get(ROLLOUT_PLAN, IN_SERIES);
         final ModelNode group = inSeries.add().get(SERVER_GROUP).get("group1");
         group.get(MAX_FAILURE_PERCENTAGE).set(10);
-        DomainModelUtil.validateRolloutPlanStructure(rolloutPlan);
+        validateRolloutPlanStructure(rolloutPlan);
     }
 
     @Test
@@ -158,7 +159,7 @@ public class RolloutPlanValidationUnitTestCase {
         final ModelNode inSeries = rolloutPlan.get(ROLLOUT_PLAN, IN_SERIES);
         final ModelNode group = inSeries.add().get(SERVER_GROUP).get("group1");
         group.get(MAX_FAILED_SERVERS).set(10);
-        DomainModelUtil.validateRolloutPlanStructure(rolloutPlan);
+        validateRolloutPlanStructure(rolloutPlan);
     }
 
     @Test
@@ -167,7 +168,7 @@ public class RolloutPlanValidationUnitTestCase {
         final ModelNode inSeries = rolloutPlan.get(ROLLOUT_PLAN, IN_SERIES);
         final ModelNode group = inSeries.add().get(SERVER_GROUP).get("group1");
         group.get(ROLLING_TO_SERVERS).set(true);
-        DomainModelUtil.validateRolloutPlanStructure(rolloutPlan);
+        validateRolloutPlanStructure(rolloutPlan);
     }
 
     @Test
@@ -177,7 +178,7 @@ public class RolloutPlanValidationUnitTestCase {
         final ModelNode group = inSeries.add().get(SERVER_GROUP).get("group1");
         group.get("unrecognized").set(true);
         try {
-            DomainModelUtil.validateRolloutPlanStructure(rolloutPlan);
+            validateRolloutPlanStructure(rolloutPlan);
             Assert.fail("unrecognized property");
         } catch(OperationFailedException expected) {
         }
@@ -191,7 +192,7 @@ public class RolloutPlanValidationUnitTestCase {
         group.get(ROLLING_TO_SERVERS).set(true);
         group.get(MAX_FAILURE_PERCENTAGE).set(1);
         group.get(MAX_FAILED_SERVERS).set(1);
-        DomainModelUtil.validateRolloutPlanStructure(rolloutPlan);
+        validateRolloutPlanStructure(rolloutPlan);
     }
 
     @Test
@@ -200,7 +201,7 @@ public class RolloutPlanValidationUnitTestCase {
         final ModelNode inSeries = rolloutPlan.get(ROLLOUT_PLAN, IN_SERIES);
         inSeries.add().get(CONCURRENT_GROUPS);
         try {
-            DomainModelUtil.validateRolloutPlanStructure(rolloutPlan);
+            validateRolloutPlanStructure(rolloutPlan);
             Assert.fail("concurrent groups is empty");
         } catch(OperationFailedException expected) {
         }
@@ -213,7 +214,7 @@ public class RolloutPlanValidationUnitTestCase {
         final ModelNode inSeries = rolloutPlan.get(ROLLOUT_PLAN, IN_SERIES);
         final ModelNode concurrent = inSeries.add().get(CONCURRENT_GROUPS);
         concurrent.get("group1");
-        DomainModelUtil.validateRolloutPlanStructure(rolloutPlan);
+        validateRolloutPlanStructure(rolloutPlan);
     }
 
     @Test
@@ -224,7 +225,7 @@ public class RolloutPlanValidationUnitTestCase {
         final ModelNode concurrent = inSeries.add().get(CONCURRENT_GROUPS);
         concurrent.get("group1");
         concurrent.get("group2");
-        DomainModelUtil.validateRolloutPlanStructure(rolloutPlan);
+        validateRolloutPlanStructure(rolloutPlan);
     }
 
     @Test
@@ -238,7 +239,7 @@ public class RolloutPlanValidationUnitTestCase {
         group.get(ROLLING_TO_SERVERS).set(true);
         group.get(MAX_FAILURE_PERCENTAGE).set(1);
         group.get(MAX_FAILED_SERVERS).set(1);
-        DomainModelUtil.validateRolloutPlanStructure(rolloutPlan);
+        validateRolloutPlanStructure(rolloutPlan);
     }
 
     @Test
@@ -253,7 +254,7 @@ public class RolloutPlanValidationUnitTestCase {
         group.get(MAX_FAILURE_PERCENTAGE).set(1);
         group.get("unrecognized").set(1);
         try {
-            DomainModelUtil.validateRolloutPlanStructure(rolloutPlan);
+            validateRolloutPlanStructure(rolloutPlan);
             Assert.fail("unrecognized prop");
         } catch(OperationFailedException expected) {}
     }
@@ -281,6 +282,10 @@ public class RolloutPlanValidationUnitTestCase {
 
         inSeries.add().get(SERVER_GROUP).get("groupF");
 
-        DomainModelUtil.validateRolloutPlanStructure(rolloutPlan);
+        validateRolloutPlanStructure(rolloutPlan);
+    }
+
+    private void validateRolloutPlanStructure(ModelNode rolloutPlan) throws OperationFailedException {
+        new DomainRootDefinition.RolloutPlanValidator().validateParameter("plan", rolloutPlan);
     }
 }

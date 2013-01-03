@@ -21,6 +21,7 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -32,7 +33,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
@@ -51,6 +54,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
@@ -71,7 +75,7 @@ import org.jboss.threads.JBossExecutors;
 /**
  * @author Paul Ferraro
  */
-public class ProtocolStackAdd extends AbstractAddStepHandler {
+public class ProtocolStackAdd extends AbstractAddStepHandler implements DescriptionProvider {
 
     public static final ProtocolStackAdd INSTANCE = new ProtocolStackAdd();
 
@@ -79,6 +83,22 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
         ModelNode operation = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
         populate(existing, operation);
         return operation;
+    }
+
+    // need to override the description provider in order to not include the attribute protocols
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        ResourceBundle resources = ResourceBundle.getBundle(JGroupsExtension.RESOURCE_NAME, (locale == null) ? Locale.getDefault() : locale);
+
+        ModelNode stack = new ModelNode();
+        stack.get(ModelDescriptionConstants.OPERATION_NAME).set(ADD);
+        stack.get(ModelDescriptionConstants.DESCRIPTION).set(resources.getString("jgroups.stack.add"));
+
+        // optional TRANSPORT and PROTOCOLS parameters (to permit configuring a stack from add())
+        TransportResource.TRANSPORT.addOperationParameterDescription(resources,"jgroups.stack.add", stack);
+        ProtocolResource.PROTOCOLS.addOperationParameterDescription(resources, "jgroups.stack.add" , stack);
+
+        return stack ;
     }
 
     private static void populate(ModelNode source, ModelNode target) {
@@ -93,6 +113,7 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) {
+
         final ModelNode model = resource.getModel();
 
         // handle the basic add() operation parameters
@@ -110,7 +131,7 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
             addTransport.get(OP_ADDR).set(transportAddress);
 
             // execute the operation using the transport handler
-            context.addStep(addTransport, StackConfigOperationHandlers.TRANSPORT_ADD, OperationContext.Stage.IMMEDIATE);
+            context.addStep(addTransport, TransportResource.TRANSPORT_ADD, OperationContext.Stage.IMMEDIATE);
         }
 
         // add steps to initialize *optional* PROTOCOL parameters
@@ -133,7 +154,7 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
                 addProtocol.get(OP_ADDR).set(protocolAddress);
 
                 // execute the operation using the transport handler
-                context.addStep(addProtocol, StackConfigOperationHandlers.PROTOCOL_ADD, OperationContext.Stage.IMMEDIATE);
+                context.addStep(addProtocol, ProtocolResource.PROTOCOL_ADD_HANDLER, OperationContext.Stage.IMMEDIATE);
             }
         }
     }
@@ -163,34 +184,34 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
         // pick up the transport here and its values
         ModelNode transport = model.get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
         ModelNode resolvedValue = null;
-        final String type = (resolvedValue = CommonAttributes.TYPE.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null;
-        final boolean  shared = CommonAttributes.SHARED.resolveModelAttribute(context, transport).asBoolean();
-        final String machine = (resolvedValue = CommonAttributes.MACHINE.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null;
-        final String rack = (resolvedValue = CommonAttributes.RACK.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null;
-        final String site = (resolvedValue = CommonAttributes.SITE.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null;
-        final String timerExecutor = (resolvedValue = CommonAttributes.TIMER_EXECUTOR.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null;
-        final String threadFactory = (resolvedValue = CommonAttributes.THREAD_FACTORY.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null;
-        final String diagnosticsSocketBinding = (resolvedValue = CommonAttributes.DIAGNOSTICS_SOCKET_BINDING.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null;
-        final String defaultExecutor = (resolvedValue = CommonAttributes.DEFAULT_EXECUTOR.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null;
-        final String oobExecutor = (resolvedValue = CommonAttributes.OOB_EXECUTOR.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null;
-        final String transportSocketBinding = (resolvedValue = CommonAttributes.SOCKET_BINDING.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null;
+        final String type = (resolvedValue = TransportResource.TYPE.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null;
+        final boolean  shared = TransportResource.SHARED.resolveModelAttribute(context, transport).asBoolean();
+        final String machine = (resolvedValue = TransportResource.MACHINE.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null;
+        final String rack = (resolvedValue = TransportResource.RACK.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null;
+        final String site = (resolvedValue = TransportResource.SITE.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null;
+        final String timerExecutor = (resolvedValue = TransportResource.TIMER_EXECUTOR.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null;
+        final String threadFactory = (resolvedValue = TransportResource.THREAD_FACTORY.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null;
+        final String diagnosticsSocketBinding = (resolvedValue = TransportResource.DIAGNOSTICS_SOCKET_BINDING.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null;
+        final String defaultExecutor = (resolvedValue = TransportResource.DEFAULT_EXECUTOR.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null;
+        final String oobExecutor = (resolvedValue = TransportResource.OOB_EXECUTOR.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null;
+        final String transportSocketBinding = (resolvedValue = TransportResource.SOCKET_BINDING.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null;
 
         // set up the transport
         Transport transportConfig = new Transport(type);
         transportConfig.setShared(shared);
         transportConfig.setTopology(site, rack, machine);
-        initProtocolProperties(transport, transportConfig);
+        initProtocolProperties(context, transport, transportConfig);
 
         // set up the protocol stack Protocol objects
         ProtocolStack stackConfig = new ProtocolStack(name, transportConfig);
         List<Map.Entry<Protocol, String>> protocolSocketBindings = new ArrayList<Map.Entry<Protocol, String>>(orderedProtocols.size());
         for (Property protocolProperty : orderedProtocols) {
             ModelNode protocol = protocolProperty.getValue();
-            final String protocolType = (resolvedValue = CommonAttributes.TYPE.resolveModelAttribute(context, protocol)).isDefined() ? resolvedValue.asString() : null;
+            final String protocolType = (resolvedValue = ProtocolResource.TYPE.resolveModelAttribute(context, protocol)).isDefined() ? resolvedValue.asString() : null;
             Protocol protocolConfig = new Protocol(protocolType);
-            initProtocolProperties(protocol, protocolConfig);
+            initProtocolProperties(context, protocol, protocolConfig);
             stackConfig.getProtocols().add(protocolConfig);
-            final String protocolSocketBinding = (resolvedValue = CommonAttributes.SOCKET_BINDING.resolveModelAttribute(context, protocol)).isDefined() ? resolvedValue.asString() : null;
+            final String protocolSocketBinding = (resolvedValue = ProtocolResource.SOCKET_BINDING.resolveModelAttribute(context, protocol)).isDefined() ? resolvedValue.asString() : null;
             protocolSocketBindings.add(new AbstractMap.SimpleImmutableEntry<Protocol, String>(protocolConfig, protocolSocketBinding));
         }
 
@@ -257,7 +278,7 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
         return builder.install();
     }
 
-    private void initProtocolProperties(ModelNode protocol, Protocol protocolConfig) {
+    private void initProtocolProperties(OperationContext context, ModelNode protocol, Protocol protocolConfig) throws OperationFailedException {
 
         Map<String, String> properties = protocolConfig.getProperties();
         // properties are a child resource of protocol
@@ -268,9 +289,11 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
                 //       "relative-to" => {"value" => "fred"},
                 //   }
                 String propertyName = property.getName();
-                Property complexValue = property.getValue().asProperty();
-                String propertyValue = complexValue.getValue().asString();
-                properties.put(propertyName, propertyValue);
+                // get the value from the ModelNode {"value" => "fred"}
+                ModelNode propertyValue = null ;
+                propertyValue = PropertyResource.VALUE.resolveModelAttribute(context, property.getValue());
+
+                properties.put(propertyName, propertyValue.asString());
             }
        }
     }

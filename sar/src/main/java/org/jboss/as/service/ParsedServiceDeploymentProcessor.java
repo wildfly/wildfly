@@ -30,6 +30,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -38,6 +39,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.as.service.component.ServiceComponentInstantiator;
 import org.jboss.as.service.descriptor.JBossServiceAttributeConfig;
 import org.jboss.as.service.descriptor.JBossServiceAttributeConfig.Inject;
 import org.jboss.as.service.descriptor.JBossServiceAttributeConfig.ValueFactory;
@@ -47,7 +49,7 @@ import org.jboss.as.service.descriptor.JBossServiceConstructorConfig;
 import org.jboss.as.service.descriptor.JBossServiceConstructorConfig.Argument;
 import org.jboss.as.service.descriptor.JBossServiceDependencyConfig;
 import org.jboss.as.service.descriptor.JBossServiceXmlDescriptor;
-import org.jboss.common.beans.property.PropertyEditors;
+import org.jboss.common.beans.property.finder.PropertyEditorFinder;
 import org.jboss.modules.Module;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.inject.MethodInjector;
@@ -64,6 +66,7 @@ import org.jboss.msc.value.Values;
  *
  * @author John E. Bailey
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @author Eduardo Martins
  */
 public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor {
 
@@ -95,20 +98,21 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
         final ClassLoader classLoader = module.getClassLoader();
         final List<JBossServiceConfig> serviceConfigs = serviceXmlDescriptor.getServiceConfigs();
         final ServiceTarget target = phaseContext.getServiceTarget();
+        final Map<String,ServiceComponentInstantiator> serviceComponents = deploymentUnit.getAttachment(ServiceAttachments.SERVICE_COMPONENT_INSTANTIATORS);
         for (final JBossServiceConfig serviceConfig : serviceConfigs) {
-            addServices(target, serviceConfig, classLoader, reflectionIndex);
+            addServices(target, serviceConfig, classLoader, reflectionIndex, serviceComponents != null ? serviceComponents.get(serviceConfig.getName()) : null, phaseContext);
         }
     }
 
     public void undeploy(final DeploymentUnit context) {
     }
 
-    private void addServices(final ServiceTarget target, final JBossServiceConfig mBeanConfig, final ClassLoader classLoader, final DeploymentReflectionIndex index) throws DeploymentUnitProcessingException {
+    private void addServices(final ServiceTarget target, final JBossServiceConfig mBeanConfig, final ClassLoader classLoader, final DeploymentReflectionIndex index, ServiceComponentInstantiator componentInstantiator, final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final String mBeanClassName = mBeanConfig.getCode();
         final List<ClassReflectionIndex<?>> mBeanClassHierarchy = ReflectionUtils.getClassHierarchy(mBeanClassName, index, classLoader);
         final Object mBeanInstance = newInstance(mBeanConfig, mBeanClassHierarchy, classLoader);
         final String mBeanName = mBeanConfig.getName();
-        final MBeanServices mBeanServices = new MBeanServices(mBeanName, mBeanInstance, mBeanClassHierarchy, target);
+        final MBeanServices mBeanServices = new MBeanServices(mBeanName, mBeanInstance, mBeanClassHierarchy, target, componentInstantiator, phaseContext.getDeploymentUnit().getServiceName());
 
         final JBossServiceDependencyConfig[] dependencyConfigs = mBeanConfig.getDependencyConfigs();
         if (dependencyConfigs != null) {
@@ -212,7 +216,7 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
     }
 
     private static Object newValue(final Class<?> type, final String value) {
-        final PropertyEditor editor = PropertyEditors.findEditor(type);
+        final PropertyEditor editor = PropertyEditorFinder.getInstance().find(type);
         if (editor == null) {
             SarLogger.DEPLOYMENT_SERVICE_LOGGER.propertyNotFound(type);
             return null;

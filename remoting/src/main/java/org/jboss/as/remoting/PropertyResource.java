@@ -33,6 +33,7 @@ import org.jboss.as.controller.RestartParentResourceRemoveHandler;
 import org.jboss.as.controller.RestartParentWriteAttributeHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
@@ -45,14 +46,20 @@ import org.jboss.msc.service.ServiceName;
  */
 public class PropertyResource extends SimpleResourceDefinition {
 
+    static final PathElement PATH = PathElement.pathElement(PROPERTY);
+
     static final PropertyResource INSTANCE_CONNECTOR = new PropertyResource(CONNECTOR);
 
-    static final SimpleAttributeDefinition VALUE = new NamedValueAttributeDefinition(CommonAttributes.VALUE, Attribute.VALUE, null, ModelType.STRING, true);
+    static final SimpleAttributeDefinition VALUE = SimpleAttributeDefinitionBuilder.create(CommonAttributes.VALUE, ModelType.STRING)
+            .setDefaultValue(null)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .build();
 
     private final String parent;
 
     protected PropertyResource(String parent) {
-        super(PathElement.pathElement(PROPERTY),
+        super(PATH,
                 RemotingExtension.getResourceDescriptionResolver(PROPERTY),
                 new PropertyAdd(parent),
                 new PropertyRemove(parent));

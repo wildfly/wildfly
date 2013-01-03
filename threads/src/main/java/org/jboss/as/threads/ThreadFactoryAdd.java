@@ -57,10 +57,6 @@ public class ThreadFactoryAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        final String name = address.getLastElement().getValue();
-        model.get(NAME).set(name);
-
         for(final AttributeDefinition attribute : ATTRIBUTES) {
             attribute.validateAndSet(operation, model);
         }
@@ -70,8 +66,10 @@ public class ThreadFactoryAdd extends AbstractAddStepHandler {
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
             final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
+        ModelNode priorityModelNode = PoolAttributeDefinitions.PRIORITY.resolveModelAttribute(context, model);
+
         final String threadNamePattern = PoolAttributeDefinitions.THREAD_NAME_PATTERN.resolveModelAttribute(context, model).asString();
-        final int priority = PoolAttributeDefinitions.PRIORITY.resolveModelAttribute(context, model).asInt();
+        final Integer priority = priorityModelNode.isDefined() ? new Integer(priorityModelNode.asInt()) : null;
         final String groupName = PoolAttributeDefinitions.GROUP_NAME.resolveModelAttribute(context, model).asString();
 
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));

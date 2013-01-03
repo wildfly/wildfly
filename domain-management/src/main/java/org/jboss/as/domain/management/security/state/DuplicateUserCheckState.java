@@ -21,9 +21,9 @@
  */
 package org.jboss.as.domain.management.security.state;
 
-import org.jboss.as.domain.management.security.ConsoleWrapper;
-
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+
+import org.jboss.as.domain.management.security.ConsoleWrapper;
 
 /**
  * State to check that the user is not already defined in any of the resolved
@@ -54,7 +54,7 @@ public class DuplicateUserCheckState implements State {
                 continuingState = addState;
             } else {
                 String message = MESSAGES.aboutToAddUser(stateValues.getUserName(), stateValues.getRealm());
-                String prompt = MESSAGES.isCorrectPrompt();
+                String prompt = MESSAGES.isCorrectPrompt() + " " + MESSAGES.yes() + "/" + MESSAGES.no() + "?";
 
                 continuingState = new ConfirmationChoice(theConsole,message, prompt, addState, new PromptNewUserState(theConsole, stateValues));
             }
