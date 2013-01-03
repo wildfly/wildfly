@@ -29,6 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPRECATED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXPRESSIONS_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_DEFAULTS;
@@ -274,7 +275,7 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
                         expressionAttrs.put(attrName, expression);
                     }
                 }
-            } else {
+            } else /*if (!attrDesc.hasDefined(DEPRECATED))*/ {
                 otherAttrs.put(attrName, attrValue);
             }
         }
@@ -312,6 +313,18 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
                     return true;
                 }
             }
+        } else if ("policy-modules".equals(attrName) || "login-modules".equals(attrName)) {
+            if (address.size() > 2) {
+                PathElement subPe = address.getElement(address.size() - 3);
+                if ("subsystem".equals(subPe.getKey()) && "security".equals(subPe.getValue())
+                        && "security-domain".equals(address.getElement(address.size() - 2).getKey())) {
+                    // This is a kind of alias that shows child resources as a list. Validating it
+                    // after reload breaks because the real child resources get changed. It's deprecated, so
+                    // we could exclude all deprecated attributes, but for now I'd rather be specific
+                    return true;
+                }
+            }
+
         }
 
         return false;
