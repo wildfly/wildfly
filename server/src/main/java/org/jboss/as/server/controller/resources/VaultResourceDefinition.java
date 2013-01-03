@@ -52,6 +52,7 @@ public class VaultResourceDefinition extends SimpleResourceDefinition {
     public static SimpleAttributeDefinition CODE = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.CODE, ModelType.STRING, true)
             .addFlag(Flag.RESTART_ALL_SERVICES)
             .setValidator(new ModelTypeValidator(ModelType.STRING, true))
+            .setAllowExpression(true)
             .build();
 
     public static MapAttributeDefinition VAULT_OPTIONS = new SimpleMapAttributeDefinition.Builder(ModelDescriptionConstants.VAULT_OPTIONS, true)
