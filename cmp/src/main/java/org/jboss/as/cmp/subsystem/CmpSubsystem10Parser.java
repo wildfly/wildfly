@@ -28,7 +28,9 @@ import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -40,9 +42,6 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.cmp.subsystem.CmpSubsystemModel.HILO_KEY_GENERATOR;
 import static org.jboss.as.cmp.subsystem.CmpSubsystemModel.UUID_KEY_GENERATOR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequiredElement;
@@ -55,21 +54,17 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 /**
  * @author John Bailey
  */
-public class CmpSubsystem10Parser implements XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
+class CmpSubsystem10Parser implements XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
     static CmpSubsystem10Parser INSTANCE = new CmpSubsystem10Parser();
 
     protected CmpSubsystem10Parser() {
     }
 
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> operations) throws XMLStreamException {
-        final ModelNode address = new ModelNode();
-        address.add(SUBSYSTEM, CmpExtension.SUBSYSTEM_NAME);
-        address.protect();
+        final PathAddress address = PathAddress.EMPTY_ADDRESS.append(SUBSYSTEM, CmpExtension.SUBSYSTEM_NAME);
 
         requireNoAttributes(reader);
-        final ModelNode cmpSubsystem = new ModelNode();
-        cmpSubsystem.get(OP).set(ADD);
-        cmpSubsystem.get(OP_ADDR).set(address);
+        final ModelNode cmpSubsystem = Util.createAddOperation(address);
         operations.add(cmpSubsystem);
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -86,7 +81,7 @@ public class CmpSubsystem10Parser implements XMLElementReader<List<ModelNode>>, 
         }
     }
 
-    private void parseKeyGenerators(final XMLExtendedStreamReader reader, final List<ModelNode> operations, final ModelNode parentAddress) throws XMLStreamException {
+    private void parseKeyGenerators(final XMLExtendedStreamReader reader, final List<ModelNode> operations, final PathAddress parentAddress) throws XMLStreamException {
         requireNoAttributes(reader);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Element.forName(reader.getLocalName())) {
@@ -105,7 +100,7 @@ public class CmpSubsystem10Parser implements XMLElementReader<List<ModelNode>>, 
         }
     }
 
-    protected ModelNode parseUuid(final XMLExtendedStreamReader reader, final ModelNode parentAddress) throws XMLStreamException {
+    protected ModelNode parseUuid(final XMLExtendedStreamReader reader, final PathAddress parentAddress) throws XMLStreamException {
         String name = null;
         int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -125,18 +120,12 @@ public class CmpSubsystem10Parser implements XMLElementReader<List<ModelNode>>, 
             throw missingRequired(reader, Collections.singleton(Attribute.NAME));
         }
 
-        final ModelNode op = new ModelNode();
-        op.get(OP).set(ADD);
-        final ModelNode address = parentAddress.clone();
-        address.add(UUID_KEY_GENERATOR, name);
-        address.protect();
-        op.get(OP_ADDR).set(address);
-
+        final ModelNode op = Util.createAddOperation(parentAddress.append(UUID_KEY_GENERATOR, name));
         requireNoContent(reader);
         return op;
     }
 
-    protected ModelNode parseHilo(final XMLExtendedStreamReader reader, final ModelNode parentAddress) throws XMLStreamException {
+    protected ModelNode parseHilo(final XMLExtendedStreamReader reader, final PathAddress parentAddress) throws XMLStreamException {
         String name = null;
         int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -156,12 +145,7 @@ public class CmpSubsystem10Parser implements XMLElementReader<List<ModelNode>>, 
             throw missingRequired(reader, Collections.singleton(Attribute.NAME));
         }
 
-        final ModelNode op = new ModelNode();
-        op.get(OP).set(ADD);
-        final ModelNode address = parentAddress.clone();
-        address.add(HILO_KEY_GENERATOR, name);
-        address.protect();
-        op.get(OP_ADDR).set(address);
+        final ModelNode op = Util.createAddOperation(parentAddress.append(HILO_KEY_GENERATOR, name));
         final EnumSet<Element> required = EnumSet.of(Element.DATA_SOURCE, Element.TABLE_NAME, Element.ID_COLUMN, Element.SEQUENCE_COLUMN, Element.SEQUENCE_NAME);
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -170,7 +154,7 @@ public class CmpSubsystem10Parser implements XMLElementReader<List<ModelNode>>, 
             final Element element = Element.forName(tag);
             required.remove(element);
 
-            SimpleAttributeDefinition attribute = HiLoKeyGeneratorResourceDescription.ATTRIBUTE_MAP.get(tag);
+            SimpleAttributeDefinition attribute = HiLoKeyGeneratorResourceDefinition.ATTRIBUTE_MAP.get(tag);
             if(attribute == null) {
                 throw unexpectedElement(reader);
             }
@@ -211,10 +195,10 @@ public class CmpSubsystem10Parser implements XMLElementReader<List<ModelNode>>, 
     private void writeHilo(final XMLExtendedStreamWriter writer, final String name, final ModelNode model) throws XMLStreamException {
         writer.writeStartElement(Element.HILO.getLocalName());
         writer.writeAttribute(Attribute.NAME.getLocalName(), name);
-        HiLoKeyGeneratorResourceDescription.JNDI_NAME.marshallAsAttribute(model, writer);
+        HiLoKeyGeneratorResourceDefinition.JNDI_NAME.marshallAsAttribute(model, writer);
 
-        for(SimpleAttributeDefinition attribute : HiLoKeyGeneratorResourceDescription.ATTRIBUTES) {
-            if (!attribute.equals(HiLoKeyGeneratorResourceDescription.JNDI_NAME))
+        for(SimpleAttributeDefinition attribute : HiLoKeyGeneratorResourceDefinition.ATTRIBUTES) {
+            if (!attribute.equals(HiLoKeyGeneratorResourceDefinition.JNDI_NAME))
                 attribute.marshallAsElement(model, writer);
         }
         writer.writeEndElement();
@@ -223,7 +207,7 @@ public class CmpSubsystem10Parser implements XMLElementReader<List<ModelNode>>, 
     private void writeUuid(final XMLExtendedStreamWriter writer, final String name, final ModelNode model) throws XMLStreamException {
         writer.writeStartElement(Element.UUID.getLocalName());
         writer.writeAttribute(Attribute.NAME.getLocalName(), name);
-        UUIDKeyGeneratorResourceDescription.JNDI_NAME.marshallAsAttribute(model, writer);
+        UUIDKeyGeneratorResourceDefinition.JNDI_NAME.marshallAsAttribute(model, writer);
         writer.writeEndElement();
     }
 }

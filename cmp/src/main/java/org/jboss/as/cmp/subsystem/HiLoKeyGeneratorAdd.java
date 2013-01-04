@@ -42,7 +42,7 @@ import static org.jboss.as.cmp.subsystem.CmpSubsystemModel.DATA_SOURCE;
 /**
  * @author John Bailey
  */
-public class HiLoKeyGeneratorAdd extends AbstractKeyGeneratorAdd {
+class HiLoKeyGeneratorAdd extends AbstractKeyGeneratorAdd {
     static HiLoKeyGeneratorAdd INSTANCE = new HiLoKeyGeneratorAdd();
 
     protected Service<KeyGeneratorFactory> getKeyGeneratorFactory(final OperationContext context, final ModelNode model)
@@ -50,31 +50,31 @@ public class HiLoKeyGeneratorAdd extends AbstractKeyGeneratorAdd {
         final HiLoKeyGeneratorFactory factory = new HiLoKeyGeneratorFactory();
 
         ModelNode node;
-        if ((node = HiLoKeyGeneratorResourceDescription.BLOCK_SIZE.resolveModelAttribute(context, model)).isDefined()) {
+        if ((node = HiLoKeyGeneratorResourceDefinition.BLOCK_SIZE.resolveModelAttribute(context, model)).isDefined()) {
             factory.setBlockSize(node.asLong());
         }
-        if ((node = HiLoKeyGeneratorResourceDescription.CREATE_TABLE.resolveModelAttribute(context, model)).isDefined()) {
+        if ((node = HiLoKeyGeneratorResourceDefinition.CREATE_TABLE.resolveModelAttribute(context, model)).isDefined()) {
             factory.setCreateTable(node.asBoolean());
         }
-        if ((node = HiLoKeyGeneratorResourceDescription.CREATE_TABLE_DDL.resolveModelAttribute(context, model)).isDefined()) {
+        if ((node = HiLoKeyGeneratorResourceDefinition.CREATE_TABLE_DDL.resolveModelAttribute(context, model)).isDefined()) {
             factory.setCreateTableDdl(node.asString());
         }
-        if ((node = HiLoKeyGeneratorResourceDescription.DROP_TABLE.resolveModelAttribute(context, model)).isDefined()) {
+        if ((node = HiLoKeyGeneratorResourceDefinition.DROP_TABLE.resolveModelAttribute(context, model)).isDefined()) {
             factory.setDropTable(node.asBoolean());
         }
-        if ((node = HiLoKeyGeneratorResourceDescription.ID_COLUMN.resolveModelAttribute(context, model)).isDefined()) {
+        if ((node = HiLoKeyGeneratorResourceDefinition.ID_COLUMN.resolveModelAttribute(context, model)).isDefined()) {
             factory.setIdColumnName(node.asString());
         }
-        if ((node = HiLoKeyGeneratorResourceDescription.SELECT_HI_DDL.resolveModelAttribute(context, model)).isDefined()) {
+        if ((node = HiLoKeyGeneratorResourceDefinition.SELECT_HI_DDL.resolveModelAttribute(context, model)).isDefined()) {
             factory.setSelectHiSql(node.asString());
         }
-        if ((node = HiLoKeyGeneratorResourceDescription.SEQUENCE_COLUMN.resolveModelAttribute(context, model)).isDefined()) {
+        if ((node = HiLoKeyGeneratorResourceDefinition.SEQUENCE_COLUMN.resolveModelAttribute(context, model)).isDefined()) {
             factory.setSequenceColumn(node.asString());
         }
-        if ((node = HiLoKeyGeneratorResourceDescription.SEQUENCE_NAME.resolveModelAttribute(context, model)).isDefined()) {
+        if ((node = HiLoKeyGeneratorResourceDefinition.SEQUENCE_NAME.resolveModelAttribute(context, model)).isDefined()) {
             factory.setSequenceName(node.asString());
         }
-        if ((node = HiLoKeyGeneratorResourceDescription.TABLE_NAME.resolveModelAttribute(context, model)).isDefined()) {
+        if ((node = HiLoKeyGeneratorResourceDefinition.TABLE_NAME.resolveModelAttribute(context, model)).isDefined()) {
             factory.setTableName(node.asString());
         }
         return factory;
@@ -91,7 +91,7 @@ public class HiLoKeyGeneratorAdd extends AbstractKeyGeneratorAdd {
     }
 
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        for(AttributeDefinition attribute : HiLoKeyGeneratorResourceDescription.ATTRIBUTES) {
+        for(AttributeDefinition attribute : HiLoKeyGeneratorResourceDefinition.ATTRIBUTES) {
             attribute.validateAndSet(operation, model);
         }
     }

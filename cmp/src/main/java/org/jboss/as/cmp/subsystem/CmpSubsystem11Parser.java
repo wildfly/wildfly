@@ -1,39 +1,31 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ *  JBoss, Home of Professional Open Source.
+ *  Copyright 2013, Red Hat, Inc., and individual contributors
+ *  as indicated by the @author tags. See the copyright.txt file in the
+ *  distribution for a full listing of individual contributors.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ *  This is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU Lesser General Public License as
+ *  published by the Free Software Foundation; either version 2.1 of
+ *  the License, or (at your option) any later version.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *  This software is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this software; if not, write to the Free
+ *  Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ *  02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * /
  */
 package org.jboss.as.cmp.subsystem;
-
-import java.util.Collections;
-import java.util.EnumSet;
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.cmp.subsystem.CmpSubsystemModel.HILO_KEY_GENERATOR;
 import static org.jboss.as.cmp.subsystem.CmpSubsystemModel.UUID_KEY_GENERATOR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequiredElement;
@@ -41,6 +33,16 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+
+import java.util.Collections;
+import java.util.EnumSet;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
  * This class extends the parser for CMP_1_0 schema with extensions of CMP_1_1 schema.
@@ -54,9 +56,10 @@ public class CmpSubsystem11Parser extends CmpSubsystem10Parser {
     protected CmpSubsystem11Parser() {
     }
 
-    protected ModelNode parseHilo(final XMLExtendedStreamReader reader, final ModelNode parentAddress) throws XMLStreamException {
+    @Override
+    protected ModelNode parseHilo(final XMLExtendedStreamReader reader, final PathAddress parentAddress) throws XMLStreamException {
+        final ModelNode op = Util.createAddOperation();
         String name = null;
-        String jndiname = null;
         int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
@@ -68,7 +71,7 @@ public class CmpSubsystem11Parser extends CmpSubsystem10Parser {
                     break;
                 }
                 case JNDI_NAME: {
-                    jndiname = value;
+                    HiLoKeyGeneratorResourceDefinition.JNDI_NAME.parseAndSetParameter(value, op, reader);
                     break;
                 }
                 default:
@@ -79,16 +82,7 @@ public class CmpSubsystem11Parser extends CmpSubsystem10Parser {
             throw missingRequired(reader, Collections.singleton(Attribute.NAME));
         }
 
-        final ModelNode op = new ModelNode();
-        op.get(OP).set(ADD);
-        final ModelNode address = parentAddress.clone();
-        address.add(HILO_KEY_GENERATOR, name);
-        address.protect();
-        op.get(OP_ADDR).set(address);
-
-        if (jndiname != null) {
-            HiLoKeyGeneratorResourceDescription.JNDI_NAME.parseAndSetParameter(jndiname, op, reader);
-        }
+        op.get(OP_ADDR).set(parentAddress.append(HILO_KEY_GENERATOR, name).toModelNode());
 
         final EnumSet<Element> required = EnumSet.of(Element.DATA_SOURCE, Element.TABLE_NAME, Element.ID_COLUMN, Element.SEQUENCE_COLUMN, Element.SEQUENCE_NAME);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -97,7 +91,7 @@ public class CmpSubsystem11Parser extends CmpSubsystem10Parser {
             final Element element = Element.forName(tag);
             required.remove(element);
 
-            SimpleAttributeDefinition attribute = HiLoKeyGeneratorResourceDescription.ATTRIBUTE_MAP.get(tag);
+            SimpleAttributeDefinition attribute = HiLoKeyGeneratorResourceDefinition.ATTRIBUTE_MAP.get(tag);
             if(attribute == null) {
                 throw unexpectedElement(reader);
             }
@@ -109,9 +103,10 @@ public class CmpSubsystem11Parser extends CmpSubsystem10Parser {
         return op;
     }
 
-    protected ModelNode parseUuid(final XMLExtendedStreamReader reader, final ModelNode parentAddress) throws XMLStreamException {
+    @Override
+    protected ModelNode parseUuid(final XMLExtendedStreamReader reader, final PathAddress parentAddress) throws XMLStreamException {
+        final ModelNode op = Util.createAddOperation();
         String name = null;
-        String jndiname = null;
         int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
@@ -123,7 +118,7 @@ public class CmpSubsystem11Parser extends CmpSubsystem10Parser {
                     break;
                 }
                 case JNDI_NAME: {
-                    jndiname = value;
+                    UUIDKeyGeneratorResourceDefinition.JNDI_NAME.parseAndSetParameter(value, op, reader);
                     break;
                 }
                 default:
@@ -134,16 +129,8 @@ public class CmpSubsystem11Parser extends CmpSubsystem10Parser {
             throw missingRequired(reader, Collections.singleton(Attribute.NAME));
         }
 
-        final ModelNode op = new ModelNode();
-        op.get(OP).set(ADD);
-        final ModelNode address = parentAddress.clone();
-        address.add(UUID_KEY_GENERATOR, name);
-        address.protect();
-        op.get(OP_ADDR).set(address);
+        op.get(OP_ADDR).set(parentAddress.append(UUID_KEY_GENERATOR, name).toModelNode());
 
-        if (jndiname != null) {
-            UUIDKeyGeneratorResourceDescription.JNDI_NAME.parseAndSetParameter(jndiname, op, reader);
-        }
         requireNoContent(reader);
         return op;
     }

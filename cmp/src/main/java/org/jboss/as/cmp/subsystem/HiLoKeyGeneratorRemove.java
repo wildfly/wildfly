@@ -28,7 +28,7 @@ import org.jboss.msc.service.ServiceName;
 /**
  * @author John Bailey
  */
-public class HiLoKeyGeneratorRemove extends AbstractKeyGeneratorRemove {
+class HiLoKeyGeneratorRemove extends AbstractKeyGeneratorRemove {
     static HiLoKeyGeneratorRemove INSTANCE = new HiLoKeyGeneratorRemove();
 
     private HiLoKeyGeneratorRemove() {

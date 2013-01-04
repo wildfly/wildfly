@@ -46,7 +46,7 @@ import org.jboss.msc.service.ServiceName;
 /**
  * @author John Bailey
  */
-public abstract class AbstractKeyGeneratorAdd extends AbstractAddStepHandler {
+abstract class AbstractKeyGeneratorAdd extends AbstractAddStepHandler {
 
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         final String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
@@ -57,7 +57,7 @@ public abstract class AbstractKeyGeneratorAdd extends AbstractAddStepHandler {
                 .addListener(verificationHandler);
         addDependencies(operation, keyGeneratorFactory, factoryServiceBuilder);
 
-        ModelNode jndiNode = AbstractKeyGeneratorResourceDescription.JNDI_NAME.resolveModelAttribute(context, model);
+        ModelNode jndiNode = AbstractKeyGeneratorResourceDefinition.JNDI_NAME.resolveModelAttribute(context, model);
 
         if (jndiNode.isDefined()) {
             // Bind the KeyGeneratorFactory into JNDI

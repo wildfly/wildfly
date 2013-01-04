@@ -23,11 +23,13 @@
 package org.jboss.as.cmp.subsystem;
 
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 
 /**
  * @author John Bailey
  */
-public class CmpSubsystemModel {
+class CmpSubsystemModel {
+    static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, CmpExtension.SUBSYSTEM_NAME);
     public static String HILO_KEY_GENERATOR = "hilo-keygenerator";
     public static String UUID_KEY_GENERATOR = "uuid-keygenerator";
 
