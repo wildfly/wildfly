@@ -426,8 +426,8 @@ public abstract class AbstractResourceAdapterDeploymentService {
                             }
 
                             if (setValue)
-                                injector.inject(cpmd.getConfigPropertyType().getValue(), cpmd.getConfigPropertyName()
-                                        .getValue(), cpmd.getConfigPropertyValue().getValue(), o);
+                                injector.inject(o, cpmd.getConfigPropertyName()
+                                        .getValue(), cpmd.getConfigPropertyValue().getValue());
                         }
                     }
                 }

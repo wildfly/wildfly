@@ -475,4 +475,32 @@ public interface ConnectorMessages {
      */
     @Message(id = 10472, value = "Deployment %s failed")
     DeployException deploymentFailed(@Cause Throwable cause, String className);
+
+    /**
+     * Creates an exception indicating a method is undefined.
+     *
+     * @param name the name of the method.
+     * @return an {@link NoSuchMethodException} for the error.
+     */
+    @Message(id = 10473, value = "Method %s not found")
+    NoSuchMethodException noSuchMethod(String name);
+
+    /**
+     * Creates an exception indicating a field is undefined.
+     *
+     * @param name the name of the field.
+     * @return an {@link NoSuchMethodException} for the error.
+     */
+    @Message(id = 10474, value = "Field %s not found")
+    NoSuchMethodException noSuchField(String name);
+
+    /**
+     * Creates an exception indicating a prperty can't be resolved
+     *
+     * @param name the name of the property.
+     * @return an {@link NoSuchMethodException} for the error.
+     */
+    @Message(id = 10475, value = "Unknown property resolution for property %s")
+    IllegalArgumentException noPropertyResolution(String name);
+
 }
