@@ -58,7 +58,7 @@ public class WebServerService implements WebServer, Service<WebServer> {
     private Engine engine;
     private StandardServer server;
     private StandardService service;
-    private Map<String, AuthenticatorValve> authenvalves = null;
+    private Map<String, AuthenticatorValve> authenvalves = new Hashtable<String, AuthenticatorValve>();
 
     private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
     private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<PathManager>();
@@ -181,9 +181,7 @@ public class WebServerService implements WebServer, Service<WebServer> {
     }
 
     @Override
-    public void addValve(String name, Class classz, Hashtable<String, String> properties) {
-        if (this.authenvalves== null)
-            this.authenvalves = new HashMap<String, AuthenticatorValve>();
+    public synchronized void addValve(String name, Class classz, Hashtable<String, String> properties) {
         AuthenticatorValve authvalve = new AuthenticatorValve();
         authvalve.classz = classz;
         authvalve.properties = properties;

@@ -885,7 +885,7 @@ public class JBossContextConfig extends ContextConfig {
 
         // Configure configure global authenticators.
         if (ok) {
-            if (authenValves != null) {
+            if (! authenValves.isEmpty()) {
                 Map<String, Valve> authenvalves = new HashMap<String, Valve>();
                 for (String name : authenValves.keySet()) {
                     // Instantiate valve and add properties.
