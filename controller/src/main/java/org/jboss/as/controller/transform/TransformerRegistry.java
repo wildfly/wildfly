@@ -290,6 +290,11 @@ public final class TransformerRegistry {
         }
 
         @Override
+        public TransformersSubRegistration registerSubResource(PathElement element, CombinedTransformer transformer) {
+            return registerSubResource(element, (ResourceTransformer) transformer, (OperationTransformer) transformer);
+        }
+
+        @Override
         public TransformersSubRegistration registerSubResource(PathElement element, ResourceTransformer resourceTransformer, OperationTransformer operationTransformer) {
             final PathAddress address = current.append(element);
             for(final ModelVersion version : range.getVersions()) {
