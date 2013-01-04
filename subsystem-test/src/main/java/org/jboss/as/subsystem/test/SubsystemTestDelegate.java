@@ -44,14 +44,12 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
-
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import junit.framework.Assert;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.Extension;
@@ -452,9 +450,6 @@ final class SubsystemTestDelegate {
                 for (String namespace : entry.getValue().getXMLNamespaces()) {
                     epc.setSubsystemXmlMapping(entry.getKey(), namespace, null);
                 }
-            }
-            for (String namespace : extensionParsingRegistry.getUnnamedNamespaces(extension)) {
-                epc.setSubsystemXmlMapping(namespace, null);
             }
         }
 
