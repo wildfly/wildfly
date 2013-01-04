@@ -175,8 +175,7 @@ public class RespawnTestCase {
     @Test
     public void testDomainRespawn() throws Exception {
         //Make sure everything started
-        List<RunningProcess> processes = waitForAllProcesses();
-        readHostControllerServers();
+        List<RunningProcess> processes = waitForAllProcessesFullyStarted();
 
         //Kill the master HC and make sure that it gets restarted
         RunningProcess originalHc = processUtil.getProcess(processes, HOST_CONTROLLER);
@@ -193,7 +192,7 @@ public class RespawnTestCase {
 
     @Test
     public void testReloadHc() throws Exception {
-        List<RunningProcess> original = waitForAllProcesses();
+        List<RunningProcess> original = waitForAllProcessesFullyStarted();
         Set<String> serverIds = new HashSet<String>();
         for (RunningProcess proc : original) {
             if (!proc.getProcess().equals(HOST_CONTROLLER)) {
@@ -218,9 +217,7 @@ public class RespawnTestCase {
 
     @Test
     public void testReloadHcButNotServers() throws Exception {
-        List<RunningProcess> original = waitForAllProcesses();
-        //Wait for servers (last test restarted them)
-        readHostControllerServers();
+        List<RunningProcess> original = waitForAllProcessesFullyStarted();
 
         //Execute reload w/ restart-servers=false, admin-only=true
         executeReloadOperation(false, true);
@@ -258,9 +255,8 @@ public class RespawnTestCase {
 
     @Test
     public void testReloadHcButNotServersWithFailedServer() throws Exception {
-        List<RunningProcess> original = waitForAllProcesses();
-        //Wait for servers (last test restarted them)
-        readHostControllerServers();
+
+        List<RunningProcess> original = waitForAllProcessesFullyStarted();
 
         RunningProcess serverOne = processUtil.getProcess(original, SERVER_ONE);
         Assert.assertNotNull(serverOne);
@@ -285,7 +281,7 @@ public class RespawnTestCase {
 
     @Test
     public void testHCReloadAbortPreservesServers() throws Exception {
-        List<RunningProcess> original = waitForAllProcesses();
+        List<RunningProcess> original = waitForAllProcessesFullyStarted();
 
         try {
             // Replace host.xml with an invalid doc
@@ -444,9 +440,14 @@ public class RespawnTestCase {
         return PathAddress.pathAddress(PathElement.pathElement(HOST, host), PathElement.pathElement(SERVER_CONFIG, server)).toModelNode();
     }
 
-
     private List<RunningProcess> waitForAllProcesses() throws Exception {
         return waitForProcesses(HOST_CONTROLLER, SERVER_ONE, SERVER_TWO);
+    }
+
+    private List<RunningProcess> waitForAllProcessesFullyStarted() throws Exception {
+        List<RunningProcess> result = waitForProcesses(HOST_CONTROLLER, SERVER_ONE, SERVER_TWO);
+        readHostControllerServers();
+        return result;
     }
 
     private List<RunningProcess> waitForProcesses(String... requiredNames) throws Exception {
