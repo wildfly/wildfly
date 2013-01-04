@@ -83,7 +83,6 @@ public class MainKernelServicesImpl extends AbstractKernelServicesImpl {
         Map<PathAddress, ModelVersion> subsystemVersions = Collections.<PathAddress, ModelVersion>emptyMap();
         OperationTransformerRegistry registry = transformerRegistry.resolveHost(modelVersion, subsystemVersions);
 
-        //TODO Initialise this
         TransformationTarget target = TransformationTargetImpl.create(extensionRegistry.getTransformerRegistry(), modelVersion,
                 subsystemVersions, MOCK_IGNORED_DOMAIN_RESOURCE_REGISTRY, TransformationTarget.TransformationTargetType.DOMAIN);
         TransformationContext transformationContext = createTransformationContext(target);
