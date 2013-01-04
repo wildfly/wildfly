@@ -34,7 +34,7 @@ import org.jboss.msc.service.ServiceName;
 /**
  * @author John Bailey
  */
-public class UUIDKeyGeneratorAdd extends AbstractKeyGeneratorAdd {
+class UUIDKeyGeneratorAdd extends AbstractKeyGeneratorAdd {
     static UUIDKeyGeneratorAdd INSTANCE = new UUIDKeyGeneratorAdd();
 
     private UUIDKeyGeneratorAdd() {
@@ -49,7 +49,7 @@ public class UUIDKeyGeneratorAdd extends AbstractKeyGeneratorAdd {
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        for(AttributeDefinition attribute : UUIDKeyGeneratorResourceDescription.ATTRIBUTES) {
+        for(AttributeDefinition attribute : UUIDKeyGeneratorResourceDefinition.ATTRIBUTES) {
             attribute.validateAndSet(operation, model);
         }
     }

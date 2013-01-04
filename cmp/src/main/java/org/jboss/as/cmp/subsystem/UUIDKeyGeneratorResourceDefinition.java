@@ -36,9 +36,9 @@ import java.util.Map;
 /**
  * @author Stuart Douglas
  */
-public class UUIDKeyGeneratorResourceDescription extends AbstractKeyGeneratorResourceDescription {
+class UUIDKeyGeneratorResourceDefinition extends AbstractKeyGeneratorResourceDefinition {
 
-    public static final UUIDKeyGeneratorResourceDescription INSTANCE = new UUIDKeyGeneratorResourceDescription();
+    public static final UUIDKeyGeneratorResourceDefinition INSTANCE = new UUIDKeyGeneratorResourceDefinition();
 
     public static final Map<String, SimpleAttributeDefinition> ATTRIBUTE_MAP;
     public static final SimpleAttributeDefinition[] ATTRIBUTES;
@@ -55,9 +55,9 @@ public class UUIDKeyGeneratorResourceDescription extends AbstractKeyGeneratorRes
         ATTRIBUTE_MAP = Collections.unmodifiableMap(map);
     }
 
-    private UUIDKeyGeneratorResourceDescription() {
+    private UUIDKeyGeneratorResourceDefinition() {
         super(CmpSubsystemModel.UUID_KEY_GENERATOR_PATH,
-                CmpExtension.getResourceDescriptionResolver(CmpSubsystemModel.UUID_KEY_GENERATOR),
+                CmpExtension.getResolver(CmpSubsystemModel.UUID_KEY_GENERATOR),
                 UUIDKeyGeneratorAdd.INSTANCE, UUIDKeyGeneratorRemove.INSTANCE);
     }
 

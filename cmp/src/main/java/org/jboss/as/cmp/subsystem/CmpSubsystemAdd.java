@@ -77,6 +77,6 @@ public class CmpSubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        model.setEmptyObject();
+
     }
 }
