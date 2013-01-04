@@ -29,12 +29,15 @@ import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Handles read-attribute and write-attribute for the resource representing {@link java.lang.management.RuntimeMXBean}.
@@ -44,6 +47,10 @@ import org.jboss.dmr.ModelNode;
 public class RuntimeMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler {
 
     public static RuntimeMXBeanAttributeHandler INSTANCE = new RuntimeMXBeanAttributeHandler();
+
+    static final AttributeDefinition OBJECT_NAME = SimpleAttributeDefinitionBuilder.create(PlatformMBeanConstants.OBJECT_NAME, ModelType.STRING)
+            .setStorageRuntime()
+            .build();
 
     private RuntimeMXBeanAttributeHandler() {
 
@@ -83,7 +90,7 @@ public class RuntimeMXBeanAttributeHandler extends AbstractPlatformMBeanAttribut
     protected void register(ManagementResourceRegistration registration) {
 
         if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6) {
-            registration.registerReadOnlyAttribute(PlatformMBeanConstants.OBJECT_NAME, this, AttributeAccess.Storage.RUNTIME);
+            registration.registerReadOnlyAttribute(OBJECT_NAME, this);
         }
 
         for (String attribute : PlatformMBeanConstants.RUNTIME_READ_ATTRIBUTES) {
