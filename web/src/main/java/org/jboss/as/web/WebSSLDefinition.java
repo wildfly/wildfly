@@ -51,7 +51,6 @@ public class WebSSLDefinition extends SimpleResourceDefinition {
 
     protected static final SimpleAttributeDefinition KEY_ALIAS =
             new SimpleAttributeDefinitionBuilder(Constants.KEY_ALIAS, ModelType.STRING)
-                    .setXmlName(Constants.KEY_ALIAS)
                     .setAllowNull(true)
                     .setValidator(new StringLengthValidator(1, true))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -60,7 +59,6 @@ public class WebSSLDefinition extends SimpleResourceDefinition {
 
     protected static final SimpleAttributeDefinition PASSWORD =
             new SimpleAttributeDefinitionBuilder(Constants.PASSWORD, ModelType.STRING)
-                    .setXmlName(Constants.PASSWORD)
                     .setAllowNull(true)
                     .setAllowExpression(true)
                     .setValidator(new StringLengthValidator(1, true, true))
@@ -69,7 +67,6 @@ public class WebSSLDefinition extends SimpleResourceDefinition {
 
     protected static final SimpleAttributeDefinition CERTIFICATE_KEY_FILE =
             new SimpleAttributeDefinitionBuilder(Constants.CERTIFICATE_KEY_FILE, ModelType.STRING)
-                    .setXmlName(Constants.CERTIFICATE_KEY_FILE)
                     .setAllowNull(true)
                     .setAllowExpression(true)
                     .setValidator(new StringLengthValidator(1, true, true))
@@ -78,39 +75,38 @@ public class WebSSLDefinition extends SimpleResourceDefinition {
 
     protected static final SimpleAttributeDefinition CIPHER_SUITE =
             new SimpleAttributeDefinitionBuilder(Constants.CIPHER_SUITE, ModelType.STRING)
-                    .setXmlName(Constants.CIPHER_SUITE)
                     .setAllowNull(true)
+                    .setAllowExpression(true)
                     .setValidator(new StringLengthValidator(1, true))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
     protected static final SimpleAttributeDefinition PROTOCOL =
             new SimpleAttributeDefinitionBuilder(Constants.PROTOCOL, ModelType.STRING)
-                    .setXmlName(Constants.PROTOCOL)
                     .setAllowNull(true)
+                    .setAllowExpression(true)
                     .setValidator(new StringLengthValidator(1, true))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
     protected static final SimpleAttributeDefinition VERIFY_CLIENT =
             new SimpleAttributeDefinitionBuilder(Constants.VERIFY_CLIENT, ModelType.STRING)
-                    .setXmlName(Constants.VERIFY_CLIENT)
                     .setAllowNull(true)
+                    .setAllowExpression(true)
                     .setValidator(new StringLengthValidator(1, true))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
     protected static final SimpleAttributeDefinition VERIFY_DEPTH =
             new SimpleAttributeDefinitionBuilder(Constants.VERIFY_DEPTH, ModelType.INT)
-                    .setXmlName(Constants.VERIFY_DEPTH)
                     .setAllowNull(true)
+                    .setAllowExpression(true)
                     .setValidator(new IntRangeValidator(0, true))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
     protected static final SimpleAttributeDefinition CERTIFICATE_FILE =
             new SimpleAttributeDefinitionBuilder(Constants.CERTIFICATE_FILE, ModelType.STRING)
-                    .setXmlName(Constants.CERTIFICATE_FILE)
                     .setAllowNull(true)
                     .setAllowExpression(true)
                     .setValidator(new StringLengthValidator(1, true, true))
@@ -119,7 +115,6 @@ public class WebSSLDefinition extends SimpleResourceDefinition {
 
     protected static final SimpleAttributeDefinition CA_CERTIFICATE_FILE =
             new SimpleAttributeDefinitionBuilder(Constants.CA_CERTIFICATE_FILE, ModelType.STRING)
-                    .setXmlName(Constants.CA_CERTIFICATE_FILE)
                     .setAllowNull(true)
                     .setAllowExpression(true)
                     .setValidator(new StringLengthValidator(1, true, true))
@@ -128,7 +123,6 @@ public class WebSSLDefinition extends SimpleResourceDefinition {
 
     protected static final SimpleAttributeDefinition CA_CERTIFICATE_PASSWORD =
             new SimpleAttributeDefinitionBuilder(Constants.CA_CERTIFICATE_PASSWORD, ModelType.STRING)
-                    .setXmlName(Constants.CA_CERTIFICATE_PASSWORD)
                     .setAllowNull(true)
                     .setAllowExpression(true)
                     .setValidator(new StringLengthValidator(1, true, true))
@@ -137,40 +131,40 @@ public class WebSSLDefinition extends SimpleResourceDefinition {
 
     protected static final SimpleAttributeDefinition CA_REVOCATION_URL =
             new SimpleAttributeDefinitionBuilder(Constants.CA_REVOCATION_URL, ModelType.STRING)
-                    .setXmlName(Constants.CA_REVOCATION_URL)
                     .setAllowNull(true)
+                    .setAllowExpression(true)
                     .setValidator(new StringLengthValidator(1, true))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
     protected static final SimpleAttributeDefinition TRUSTSTORE_TYPE =
             new SimpleAttributeDefinitionBuilder(Constants.TRUSTSTORE_TYPE, ModelType.STRING)
-                    .setXmlName(Constants.TRUSTSTORE_TYPE)
                     .setAllowNull(true)
+                    .setAllowExpression(true)
                     .setValidator(new StringLengthValidator(1, true))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
     protected static final SimpleAttributeDefinition KEYSTORE_TYPE =
             new SimpleAttributeDefinitionBuilder(Constants.KEYSTORE_TYPE, ModelType.STRING)
-                    .setXmlName(Constants.KEYSTORE_TYPE)
                     .setAllowNull(true)
+                    .setAllowExpression(true)
                     .setValidator(new StringLengthValidator(1, true))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
     protected static final SimpleAttributeDefinition SESSION_CACHE_SIZE =
             new SimpleAttributeDefinitionBuilder(Constants.SESSION_CACHE_SIZE, ModelType.INT)
-                    .setXmlName(Constants.SESSION_CACHE_SIZE)
                     .setAllowNull(true)
+                    .setAllowExpression(true)
                     .setValidator(new IntRangeValidator(1, true))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
     protected static final SimpleAttributeDefinition SESSION_TIMEOUT =
             new SimpleAttributeDefinitionBuilder(Constants.SESSION_TIMEOUT, ModelType.INT)
-                    .setXmlName(Constants.SESSION_TIMEOUT)
                     .setAllowNull(true)
+                    .setAllowExpression(true)
                     .setValidator(new IntRangeValidator(1, true))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
