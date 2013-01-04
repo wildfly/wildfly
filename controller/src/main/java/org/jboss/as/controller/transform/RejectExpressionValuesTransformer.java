@@ -99,4 +99,23 @@ public class RejectExpressionValuesTransformer implements ResourceTransformer, O
                                   final Resource resource) throws OperationFailedException {
         resourceDelegate.transformResource(context, address, resource);
     }
+
+    /**
+     * Get the resource transformer.
+     *
+     * @return the resource transformer
+     */
+    public ResourceTransformer getResourceTransformer() {
+        return this;
+    }
+
+    /**
+     * Get the operation transformer.
+     *
+     * @return the operation transformer
+     */
+    public OperationTransformer getOperationTransformer() {
+        return this;
+    }
+
 }
