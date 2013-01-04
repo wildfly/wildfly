@@ -53,6 +53,7 @@ import static org.jboss.as.messaging.CommonAttributes.CALL_FAILOVER_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.CALL_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.CHECK_FOR_LIVE_SERVER;
 import static org.jboss.as.messaging.CommonAttributes.CHECK_PERIOD;
+import static org.jboss.as.messaging.CommonAttributes.CLIENT_ID;
 import static org.jboss.as.messaging.CommonAttributes.CLUSTERED;
 import static org.jboss.as.messaging.CommonAttributes.CLUSTER_CONNECTION;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY;
@@ -465,10 +466,18 @@ public class MessagingExtension implements Extension {
 
         rejectExpressions(server, QueueDefinition.PATH, QueueDefinition.ADDRESS, FILTER, DURABLE);
 
-        final String[] transports = { CommonAttributes.ACCEPTOR, CommonAttributes.REMOTE_ACCEPTOR, CommonAttributes.IN_VM_ACCEPTOR,
-                CommonAttributes.CONNECTOR, CommonAttributes.REMOTE_CONNECTOR, CommonAttributes.IN_VM_CONNECTOR };
-        for (String path : transports) {
+        for (String path :  new String[]{ CommonAttributes.ACCEPTOR, CommonAttributes.CONNECTOR }) {
             TransformersSubRegistration transport = rejectExpressions(server, PathElement.pathElement(path), CommonAttributes.FACTORY_CLASS);
+            rejectExpressions(transport, TransportParamDefinition.PATH, VALUE);
+        }
+
+        for (String path :  new String[]{ CommonAttributes.IN_VM_ACCEPTOR, CommonAttributes.IN_VM_CONNECTOR }) {
+            TransformersSubRegistration transport = rejectExpressions(server, PathElement.pathElement(path), InVMTransportDefinition.SERVER_ID);
+            rejectExpressions(transport, TransportParamDefinition.PATH, VALUE);
+        }
+
+        for (String path :  new String[]{ CommonAttributes.REMOTE_ACCEPTOR, CommonAttributes.REMOTE_CONNECTOR }) {
+            TransformersSubRegistration transport = server.registerSubResource(PathElement.pathElement(path));
             rejectExpressions(transport, TransportParamDefinition.PATH, VALUE);
         }
 
@@ -491,7 +500,7 @@ public class MessagingExtension implements Extension {
 
         RejectExpressionValuesTransformer rejectConnectionFactoryExpressions = new RejectExpressionValuesTransformer(Regular.FACTORY_TYPE,
                 HA, MIN_LARGE_MESSAGE_SIZE, CALL_TIMEOUT,
-                AUTO_GROUP, BLOCK_ON_ACKNOWLEDGE, BLOCK_ON_DURABLE_SEND, BLOCK_ON_NON_DURABLE_SEND, CACHE_LARGE_MESSAGE_CLIENT, CLIENT_FAILURE_CHECK_PERIOD,
+                AUTO_GROUP, BLOCK_ON_ACKNOWLEDGE, BLOCK_ON_DURABLE_SEND, BLOCK_ON_NON_DURABLE_SEND, CACHE_LARGE_MESSAGE_CLIENT, CLIENT_FAILURE_CHECK_PERIOD, CLIENT_ID,
                 COMPRESS_LARGE_MESSAGES, CONFIRMATION_WINDOW_SIZE, CONNECTION_LOAD_BALANCING_CLASS_NAME, Common.CONNECTION_TTL, CONSUMER_MAX_RATE,
                 CONSUMER_WINDOW_SIZE, FAILOVER_ON_INITIAL_CONNECTION, GROUP_ID, Common.MAX_RETRY_INTERVAL, Common.MIN_LARGE_MESSAGE_SIZE, PRE_ACKNOWLEDGE,
                 PRODUCER_MAX_RATE, PRODUCER_WINDOW_SIZE, Common.RECONNECT_ATTEMPTS, Common.RETRY_INTERVAL, Common.RETRY_INTERVAL_MULTIPLIER, TRANSACTION_BATCH_SIZE,
@@ -503,7 +512,7 @@ public class MessagingExtension implements Extension {
                 new OperationTransformers.FailUnignoredAttributesOperationTransformer(CALL_FAILOVER_TIMEOUT)));
 
         RejectExpressionValuesTransformer rejectPooledConnectionFactoryExpressions = new RejectExpressionValuesTransformer(MIN_LARGE_MESSAGE_SIZE, CALL_TIMEOUT,
-                AUTO_GROUP, BLOCK_ON_ACKNOWLEDGE, BLOCK_ON_DURABLE_SEND, BLOCK_ON_NON_DURABLE_SEND, CACHE_LARGE_MESSAGE_CLIENT, CLIENT_FAILURE_CHECK_PERIOD,
+                AUTO_GROUP, BLOCK_ON_ACKNOWLEDGE, BLOCK_ON_DURABLE_SEND, BLOCK_ON_NON_DURABLE_SEND, CACHE_LARGE_MESSAGE_CLIENT, CLIENT_FAILURE_CHECK_PERIOD, CLIENT_ID,
                 COMPRESS_LARGE_MESSAGES, CONFIRMATION_WINDOW_SIZE, CONNECTION_LOAD_BALANCING_CLASS_NAME, Common.CONNECTION_TTL, CONSUMER_MAX_RATE,
                 CONSUMER_WINDOW_SIZE, FAILOVER_ON_INITIAL_CONNECTION, GROUP_ID, Common.MAX_RETRY_INTERVAL, Common.MIN_LARGE_MESSAGE_SIZE, PRE_ACKNOWLEDGE,
                 PRODUCER_MAX_RATE, PRODUCER_WINDOW_SIZE, Common.RETRY_INTERVAL, Common.RETRY_INTERVAL_MULTIPLIER, TRANSACTION_BATCH_SIZE,

@@ -112,6 +112,7 @@ public interface CommonAttributes {
 
     AttributeDefinition CLIENT_ID = create("client-id", ModelType.STRING)
             .setAllowNull(true)
+            .setAllowExpression(true)
             .build();
 
     SimpleAttributeDefinition CHECK_FOR_LIVE_SERVER = create("check-for-live-server", BOOLEAN)
