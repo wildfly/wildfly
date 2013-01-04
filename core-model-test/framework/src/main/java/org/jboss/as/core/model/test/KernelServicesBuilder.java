@@ -58,7 +58,7 @@ public interface KernelServicesBuilder {
 
 
     /**
-     * Sets the subsystem xml resource containing the xml to be parsed to create the boot operations used to initialize the controller.The resource is loaded using similar
+     * Sets the subsystem xml resource containing the xml to be parsed to create the boot operations used to initialize the controller. The resource is loaded using similar
      * semantics to {@link Class#getResource(String)}
      * @param subsystemXml the subsystem xml
      * @return this builder
@@ -125,4 +125,21 @@ public interface KernelServicesBuilder {
      * @return the kernel services wrapping the controller
      */
     KernelServices build() throws Exception;
+
+    /**
+     * Parses the given xml into operations. This may be called after {@link #build()} has been called.
+     *
+     * @param xml a string containing the xml
+     * @return the parsed operations
+     */
+    List<ModelNode> parseXml(String xml) throws Exception;
+
+    /**
+     * Parses the given xml into operations. The resource is loaded using similar semantics to {@link Class#getResource(String)}.
+     * This may be called after {@link #build()} has been called.
+     *
+     * @param xml a string containing the xml resource
+     * @return the parsed operations
+     */
+    List<ModelNode> parseXmlResource(String xmlResource) throws Exception;
 }
