@@ -22,10 +22,12 @@
 
 package org.jboss.as.controller;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -49,6 +51,9 @@ import org.jboss.dmr.ModelType;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public abstract class AttributeDefinition {
+
+    /** The {@link ModelType} types that reflect complex DMR structures -- {@code LIST}, {@code OBJECT}, {@code PROPERTY}} */
+    protected static final Set<ModelType> COMPLEX_TYPES = Collections.unmodifiableSet(EnumSet.of(ModelType.LIST, ModelType.OBJECT, ModelType.PROPERTY));
 
     private final String name;
     private final String xmlName;
@@ -197,7 +202,7 @@ public abstract class AttributeDefinition {
      * @throws OperationFailedException if the value is not valid
      */
     public ModelNode validateOperation(final ModelNode operationObject) throws OperationFailedException {
-        return validateOperation(operationObject, true);
+        return validateOperation(operationObject, false);
     }
 
     /**
@@ -214,15 +219,12 @@ public abstract class AttributeDefinition {
             ControllerLogger.DEPRECATED_LOGGER.attributeDeprecated(getName());
         }
         // AS7-6224 -- convert expression strings to ModelType.EXPRESSION *before* correcting
-        ModelNode newValue = operationObject.get(name);
-        if (isAllowExpression() && newValue.getType() == ModelType.STRING) {
-            newValue = ParseUtils.parsePossibleExpression(newValue.asString());
-        }
+        ModelNode newValue = convertParameterExpressions(operationObject.get(name));
         final ModelNode correctedValue = correctValue(newValue, model.get(name));
         if (!correctedValue.equals(operationObject.get(name))) {
             operationObject.get(name).set(correctedValue);
         }
-        ModelNode node = validateOperation(operationObject, false);
+        ModelNode node = validateOperation(operationObject, true);
         model.get(name).set(node);
     }
 
@@ -528,20 +530,66 @@ public abstract class AttributeDefinition {
         return newValue;
     }
 
-    private ModelNode validateOperation(final ModelNode operationObject, final boolean correctValue) throws OperationFailedException {
+    /**
+     * Examine the given operation parameter value for any expression syntax, converting the relevant node to
+     * {@link ModelType#EXPRESSION} if such is supported.
+     * <p>
+     * This implementation checks if {@link #isAllowExpression() expressions are allowed} and if so, calls
+     * {@link #convertStringExpression(ModelNode)} to convert a {@link ModelType#STRING} to a {@link ModelType#EXPRESSION}.
+     * No other conversions are performed. For use cases requiring more complex behavior, a subclass that overrides
+     * this method should be used.
+     * </p>
+     * <p>
+     * If expressions are supported this implementation also checks if the {@link #getType() attribute type} is one of
+     * the {@link #COMPLEX_TYPES complex DMR types}. If it is, an {@link IllegalStateException} is thrown, as this
+     * implementation cannot properly handle such a combination, and a subclass that overrides this method should be used.
+     * </p>
+     *
+     * @param parameter the node to examine. Cannot not be {@code null}
+     * @return a node matching {@code parameter} but with expressions converted, or the original parameter if no
+     *         conversion was performed. Will not return {@code null}
+     *
+     * @throws IllegalStateException if expressions are supported, but the {@link #getType() attribute type} is {@link #COMPLEX_TYPES complex}
+     */
+    protected ModelNode convertParameterExpressions(final ModelNode parameter) {
+        if (isAllowExpression() && COMPLEX_TYPES.contains(type)) {
+            // They need to subclass and override
+            throw new IllegalStateException();
+        }
+        return isAllowExpression() ? convertStringExpression(parameter) : parameter;
+    }
+
+    /**
+     * Checks if the given node is of {@link ModelType#STRING} with a string value that includes expression syntax.
+     * If so returns a node of {@link ModelType#EXPRESSION}, else simply returns {@code node} unchanged
+     *
+     * @param node the node to examine. Will not be {@code null}
+     * @return the node with expressions converted, or the original node if no conversion was performed
+     *         Cannot return {@code null}
+     */
+    protected static ModelNode convertStringExpression(ModelNode node) {
+        if (node.getType() == ModelType.STRING) {
+            return ParseUtils.parsePossibleExpression(node.asString());
+        }
+        return node;
+    }
+
+    private ModelNode validateOperation(final ModelNode operationObject, final boolean immutableValue) throws OperationFailedException {
 
         ModelNode node = new ModelNode();
         if(operationObject.has(name)) {
             node.set(operationObject.get(name));
         }
-        if (isAllowExpression() && node.getType() == ModelType.STRING) {
-            node = ParseUtils.parsePossibleExpression(node.asString());
+
+        if (!immutableValue) {
+            node = convertParameterExpressions(node);
         }
+
         if (!node.isDefined() && defaultValue.isDefined()) {
-            if (correctValue) correctValue(node, node);
+            if (!immutableValue) correctValue(node, node);
             validator.validateParameter(name, defaultValue);
         } else {
-            if (correctValue) correctValue(node, node);
+            if (!immutableValue) correctValue(node, node);
             validator.validateParameter(name, node);
         }
 

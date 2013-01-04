@@ -203,6 +203,48 @@ public abstract class MapAttributeDefinition extends AttributeDefinition {
             attributeMarshaller.marshallAsElement(this, resourceModel, marshallDefault, writer);
         }
     }
+
+    /**
+     * Iterates through the items in the {@code parameter} map, calling {@link #convertParameterElementExpressions(ModelNode)}
+     * for each value.
+     * <p>
+     * <strong>Note</strong> that the default implementation of {@link #convertParameterElementExpressions(ModelNode)}
+     * will only convert simple {@link ModelType#STRING} values. If users need to handle complex values
+     * with embedded expressions, they should use a subclass that overrides that method.
+     * </p>
+     *
+     * {@inheritDoc}
+     */
+    @Override
+    protected ModelNode convertParameterExpressions(ModelNode parameter) {
+        ModelNode result = parameter;
+        if (parameter.isDefined()) {
+            boolean changeMade = false;
+            ModelNode newMap = new ModelNode().setEmptyObject();
+            for (Property prop : parameter.asPropertyList()) {
+                ModelNode converted = convertParameterElementExpressions(prop.getValue());
+                newMap.get(prop.getName()).set(converted);
+                changeMade |= !converted.equals(prop.getValue());
+            }
+            if (changeMade) {
+                result = newMap;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Examine the given value item of a parameter map for any expression syntax, converting the relevant node to
+     * {@link ModelType#EXPRESSION} if such is supported.
+     *
+     * @param parameterElementValue the node to examine. Will not be {@code null}
+     * @return the parameter element value with expressions converted, or the original parameter if no conversion
+     *         was performed. Cannot return {@code null}
+     */
+    protected ModelNode convertParameterElementExpressions(ModelNode parameterElementValue) {
+        return isAllowExpression() ? convertStringExpression(parameterElementValue) : parameterElementValue;
+    }
+
     public static ParameterCorrector LIST_TO_MAP_CORRECTOR = new ParameterCorrector() {
         public ModelNode correct(ModelNode newValue, ModelNode currentValue) {
             if (newValue.isDefined()) {

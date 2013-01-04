@@ -558,7 +558,7 @@ public interface CommonAttributes {
             .setMinSize(1)
             .setMaxSize(Integer.MAX_VALUE)
             .setRestartAllServices()
-            .setValidator(new StringLengthValidator(1))
+            .setValidator(new StringLengthValidator(1, false, true))
             .setAttributeMarshaller(new AttributeMarshaller() {
                 @Override
                 public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {

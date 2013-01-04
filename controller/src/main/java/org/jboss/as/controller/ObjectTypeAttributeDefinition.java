@@ -34,6 +34,7 @@ import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.MinMaxValidator;
+import org.jboss.as.controller.operations.validation.ObjectTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
@@ -54,7 +55,7 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
 
     protected ObjectTypeAttributeDefinition(final String name, final AttributeDefinition[] valueTypes, final boolean allowNull,
                                             final ParameterCorrector corrector) {
-        this(name, name, null, valueTypes, allowNull, null, corrector, null, null, null, false, null);
+        this(name, name, null, valueTypes, allowNull, new ObjectTypeValidator(allowNull, valueTypes), corrector, null, null, null, false, null);
     }
 
     protected ObjectTypeAttributeDefinition(final String name, final String xmlName, final String suffix, final AttributeDefinition[] valueTypes, final boolean allowNull,
@@ -87,6 +88,32 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
         };
     }
 
+    @Override
+    protected ModelNode convertParameterExpressions(ModelNode parameter) {
+        ModelNode result = parameter;
+        if (parameter.isDefined()) {
+            boolean changeMade = false;
+            ModelNode updated = new ModelNode().setEmptyObject();
+            for (AttributeDefinition ad : valueTypes) {
+                String fieldName = ad.getName();
+                if (parameter.has(fieldName)) {
+                    ModelNode orig = parameter.get(fieldName);
+                    if (!orig.isDefined()) {
+                        updated.get(fieldName); // establish undefined
+                    } else {
+                        ModelNode converted = ad.convertParameterExpressions(orig);
+                        changeMade |= !orig.equals(converted);
+                        updated.get(fieldName).set(converted);
+                    }
+                }
+            }
+
+            if (changeMade) {
+                result = updated;
+            }
+        }
+        return result;
+    }
 
     @Override
     public ModelNode parse(final String value, final XMLStreamReader reader) throws XMLStreamException {
@@ -256,6 +283,7 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
 
         public ObjectTypeAttributeDefinition build() {
             if (xmlName == null) { xmlName = name; }
+            if (validator == null) { validator = new ObjectTypeValidator(allowNull, valueTypes); }
             return new ObjectTypeAttributeDefinition(name, xmlName, suffix, valueTypes, allowNull, validator, corrector, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
         }
 

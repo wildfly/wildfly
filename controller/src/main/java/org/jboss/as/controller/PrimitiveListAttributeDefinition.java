@@ -43,6 +43,7 @@ import org.jboss.dmr.ModelType;
 public class PrimitiveListAttributeDefinition extends ListAttributeDefinition {
     private final ModelType valueType;
 
+    @Deprecated
     protected PrimitiveListAttributeDefinition(final String name, final String xmlName, final boolean allowNull, final boolean allowExpressions, final ModelType valueType, final int minSize, final int maxSize,
                                                final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller, final boolean resourceOnly,
                                                final DeprecationData deprecated, final AttributeAccess.Flag... flags) {
@@ -82,6 +83,15 @@ public class PrimitiveListAttributeDefinition extends ListAttributeDefinition {
     }
 
     @Override
+    protected ModelNode convertParameterElementExpressions(ModelNode parameterElement) {
+        if (isAllowExpression() && COMPLEX_TYPES.contains(valueType)) {
+            // This implementation isn't suitable. Must be overridden
+            throw new IllegalStateException();
+        }
+        return super.convertParameterElementExpressions(parameterElement);
+    }
+
+    @Override
     protected void addAttributeValueTypeDescription(final ModelNode node, final ResourceDescriptionResolver resolver, final Locale locale, final ResourceBundle bundle) {
         addValueTypeDescription(node);
     }
@@ -115,7 +125,7 @@ public class PrimitiveListAttributeDefinition extends ListAttributeDefinition {
             if (validator == null) {
                 validator = new ModelTypeValidator(valueType, allowNull, allowExpression);
             }
-            return new PrimitiveListAttributeDefinition(name, xmlName, allowNull, allowExpression, valueType, minSize, maxSize, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
+            return new PrimitiveListAttributeDefinition(name, xmlName, allowNull, allowExpression, valueType, minSize, maxSize, alternatives, requires, validator, attributeMarshaller, resourceOnly, deprecated, flags);
         }
     }
 }

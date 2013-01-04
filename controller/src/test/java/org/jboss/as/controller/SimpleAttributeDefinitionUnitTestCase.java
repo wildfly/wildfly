@@ -21,7 +21,6 @@
  */
 package org.jboss.as.controller;
 
-import java.util.EnumSet;
 import java.util.List;
 
 import org.jboss.as.controller.operations.validation.AllowedValuesValidator;
@@ -38,11 +37,11 @@ import org.junit.Test;
  * Unit Tests of {@link SimpleAttributeDefinition}
  */
 public class SimpleAttributeDefinitionUnitTestCase {
-    
+
     static enum TestEnum {
         A, B, C
     }
-    
+
     @Test
     public void testAllowedValues() {
         SimpleAttributeDefinition ad = new SimpleAttributeDefinitionBuilder("test", ModelType.STRING)
@@ -55,11 +54,11 @@ public class SimpleAttributeDefinitionUnitTestCase {
         Assert.assertNotNull(allowed);
         Assert.assertEquals(2, allowed.size());
         Assert.assertTrue(allowed.contains(new ModelNode("A")));
-        Assert.assertTrue(allowed.contains(new ModelNode("B")));   
-        
+        Assert.assertTrue(allowed.contains(new ModelNode("B")));
+
         ad = new SimpleAttributeDefinitionBuilder("test", ModelType.STRING)
-                .build();        
-        
+                .build();
+
         pv = ad.getValidator();
         Assert.assertTrue(pv instanceof AllowedValuesValidator);
         allowed = ((AllowedValuesValidator) pv).getAllowedValues();
@@ -90,5 +89,43 @@ public class SimpleAttributeDefinitionUnitTestCase {
         Assert.assertNull(min);
         max = ((MinMaxValidator) pv).getMax();
         Assert.assertNull(max);
+    }
+
+    @Test
+    public void testRejectComplexExpressions() throws OperationFailedException {
+
+
+        ModelNode op = new ModelNode();
+        op.get("test").add("${test:1}");
+        complexExpressionTest(ModelType.LIST, op);
+        op = new ModelNode();
+        op.get("test", "foo").set("${test:1}");
+        complexExpressionTest(ModelType.OBJECT, op);
+
+        op = new ModelNode();
+        op.get("test").set("foo", "${test:1}");
+        complexExpressionTest(ModelType.PROPERTY, op);
+    }
+
+    private void complexExpressionTest(ModelType type, ModelNode op) throws OperationFailedException {
+
+        SimpleAttributeDefinition ad = new SimpleAttributeDefinitionBuilder("test", type)
+                .setAllowExpression(true)
+                .build();
+
+        try {
+            ad.validateAndSet(op, new ModelNode());
+            Assert.fail("Did not reject " + type);
+        } catch (IllegalStateException ok) {
+            // good
+        }
+
+        try {
+            ad.validateOperation(op);
+            Assert.fail("Did not reject " + type);
+        } catch (IllegalStateException ok) {
+            // good
+        }
+
     }
 }

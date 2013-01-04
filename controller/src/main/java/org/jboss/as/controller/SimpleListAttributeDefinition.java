@@ -97,6 +97,26 @@ public class SimpleListAttributeDefinition extends ListAttributeDefinition {
         node.get(ModelDescriptionConstants.VALUE_TYPE, valueType.getName()).set(valueTypeDesc);
     }
 
+    /**
+     * Overrides {@link ListAttributeDefinition#convertParameterElementExpressions(ModelNode) the superclass}
+     * to check that expressions are supported yet the {@code valueType} passed to the constructor is one of
+     * the {@link #COMPLEX_TYPES complex DMR types}. If it is, an {@link IllegalStateException} is thrown, as this
+     * implementation cannot properly handle such a combination.
+     *
+     * {@inheritDoc}
+     *
+     * @throws IllegalStateException if expressions are supported, but the {@code valueType} is {@link #COMPLEX_TYPES complex}
+     */
+    @Override
+    protected ModelNode convertParameterElementExpressions(ModelNode parameterElement) {
+        boolean allowExp = isAllowExpression() || valueType.isAllowExpression();
+        if (allowExp && COMPLEX_TYPES.contains(valueType.getType())) {
+            // They need to subclass and override
+            throw new IllegalStateException();
+        }
+        return allowExp ? convertStringExpression(parameterElement) : parameterElement;
+    }
+
     private ModelNode getValueTypeDescription(boolean forOperation) {
         final ModelNode result = new ModelNode();
         result.get(ModelDescriptionConstants.TYPE).set(valueType.getType());
