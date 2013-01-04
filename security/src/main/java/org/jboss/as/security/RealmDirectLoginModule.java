@@ -117,7 +117,6 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
             validationMode = ValidationMode.VALIDATION;
         } else {
             if (chosenMech == AuthenticationMechanism.DIGEST) {
-                boolean plainTextDigest = true;
                 if (mechOpts.containsKey(DIGEST_PLAIN_TEXT) && Boolean.parseBoolean(mechOpts.get(DIGEST_PLAIN_TEXT))) {
                     validationMode = ValidationMode.PASSWORD;
                 } else {
