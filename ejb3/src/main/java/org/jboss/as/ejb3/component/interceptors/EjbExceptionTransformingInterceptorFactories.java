@@ -96,9 +96,13 @@ public class EjbExceptionTransformingInterceptorFactories {
                                                               // EJBTransactionRolledbackException - see org.jboss.as.ejb3.tx.CMTTxInterceptor.handleInCallerTx(...))
                                                               e.getCausedByException());
             } catch (NoSuchEJBException e) {
-                throw new NoSuchObjectLocalException(e.getMessage());
+                throw new NoSuchObjectLocalException(e.getMessage(),
+                                                     // AS7-5432: propagate the causing exception to the caller
+                                                     e.getCausedByException());
             } catch (NoSuchEntityException e) {
-                throw new NoSuchObjectLocalException(e.getMessage());
+                throw new NoSuchObjectLocalException(e.getMessage(),
+                                                     // AS7-5432: propagate the causing exception to the caller
+                                                     e.getCausedByException());
             } catch (EJBException e) {
                 CreateException createException = popCreateException();
                 if (createException != null) {
