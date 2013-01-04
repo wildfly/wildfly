@@ -58,12 +58,15 @@ public class SocketBindingGroupTransformersTestCase extends AbstractCoreModelTes
     }
 
     @Test
-    public void testPathsTransformer() throws Exception {
+    public void testSocketBindingGroupsTransformer() throws Exception {
+
+        boolean below14 = modelVersion.getMajor() == 1 && modelVersion.getMinor() <= 3;
+
         KernelServicesBuilder builder = createKernelServicesBuilder(TestModelType.DOMAIN)
-                .setXmlResource("domain.xml");
+                .setXmlResource(below14 ? "domain-transformers-1.3.xml" : "domain.xml");
 
         LegacyKernelServicesInitializer legacyInit = builder.createLegacyKernelServicesBuilder(modelVersion, testControllerVersion);
-        if (modelVersion.getMajor() == 1 && modelVersion.getMinor() <= 3) {
+        if (below14) {
             //The 7.1.2/3 operation validator does not like expressions very much
             legacyInit.setDontValidateOperations();
         }

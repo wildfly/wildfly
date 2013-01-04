@@ -34,7 +34,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COR
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESTINATION_ADDRESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESTINATION_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
@@ -50,7 +49,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOURCE_NETWORK;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
@@ -59,7 +57,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.invalidAttributeValue;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
-import static org.jboss.as.controller.parsing.ParseUtils.parseBoundedIntegerAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.parsePossibleExpression;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNamespace;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
@@ -770,10 +767,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     private ModelNode parseClientMapping(XMLExtendedStreamReader reader) throws XMLStreamException {
         final ModelNode mapping = new ModelNode();
 
-        // Ensure all fields exist, even if not defined
-        final ModelNode sourceNetwork = mapping.get(SOURCE_NETWORK);
-        final ModelNode destination = mapping.get(DESTINATION_ADDRESS);
-        final ModelNode destinationPort = mapping.get(DESTINATION_PORT);
+        boolean hasDestinationAddress = false;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
@@ -784,23 +778,19 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case SOURCE_NETWORK:
-                    validateAddressMask(value, reader.getLocation());
-                    sourceNetwork.set(value);
+                    AbstractSocketBindingResourceDefinition.CLIENT_MAPPING_SOURCE_NETWORK.parseAndSetParameter(value, mapping, reader);
                     break;
                 case DESTINATION_ADDRESS:
-                    if (value == null || value.isEmpty()) {
-                        throw invalidAttributeValue(reader, i);
-                    }
-                    // We can't validate the address since the client is allowed to resolve private DNS names
-                    destination.set(value);
+                    AbstractSocketBindingResourceDefinition.CLIENT_MAPPING_DESTINATION_ADDRESS.parseAndSetParameter(value, mapping, reader);
+                    hasDestinationAddress = true;
                     break;
                 case DESTINATION_PORT: {
-                    destinationPort.set(parseBoundedIntegerAttribute(reader, i, 0, 65535, true));
+                    AbstractSocketBindingResourceDefinition.CLIENT_MAPPING_DESTINATION_PORT.parseAndSetParameter(value, mapping, reader);
                     break;
                 }
             }
         }
-        if (!destination.isDefined()) {
+        if (!hasDestinationAddress) {
             throw MESSAGES.missingRequiredAttributes(new StringBuilder(DESTINATION_ADDRESS), reader.getLocation());
         }
 
@@ -1456,26 +1446,14 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 AbstractSocketBindingResourceDefinition.MULTICAST_ADDRESS.marshallAsAttribute(binding, writer);
                 AbstractSocketBindingResourceDefinition.MULTICAST_PORT.marshallAsAttribute(binding, writer);
 
-                // TODO do this in ClientMappingsAttributeDefinition
                 ModelNode attr = binding.get(CLIENT_MAPPINGS);
                 if (attr.isDefined()) {
                     for (ModelNode mapping : attr.asList()) {
                         writer.writeEmptyElement(Element.CLIENT_MAPPING.getLocalName());
 
-                        attr = mapping.get(SOURCE_NETWORK);
-                        if (attr.isDefined()) {
-                            writeAttribute(writer, Attribute.SOURCE_NETWORK, attr.asString());
-                        }
-
-                        attr = mapping.get(DESTINATION_ADDRESS);
-                        if (attr.isDefined()) {
-                            writeAttribute(writer, Attribute.DESTINATION_ADDRESS, attr.asString());
-                        }
-
-                        attr = mapping.get(DESTINATION_PORT);
-                        if (attr.isDefined()) {
-                            writeAttribute(writer, Attribute.DESTINATION_PORT, attr.asString());
-                        }
+                        AbstractSocketBindingResourceDefinition.CLIENT_MAPPING_SOURCE_NETWORK.marshallAsAttribute(mapping, writer);
+                        AbstractSocketBindingResourceDefinition.CLIENT_MAPPING_DESTINATION_ADDRESS.marshallAsAttribute(mapping, writer);
+                        AbstractSocketBindingResourceDefinition.CLIENT_MAPPING_DESTINATION_PORT.marshallAsAttribute(mapping, writer);
                     }
                 }
 

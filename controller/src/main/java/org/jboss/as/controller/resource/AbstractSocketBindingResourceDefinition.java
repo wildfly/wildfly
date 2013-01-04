@@ -22,6 +22,9 @@
 
 package org.jboss.as.controller.resource;
 
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ObjectListAttributeDefinition;
+import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
@@ -31,6 +34,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
+import org.jboss.as.controller.operations.validation.MaskedAddressValidator;
 import org.jboss.as.controller.operations.validation.MulticastAddressValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -75,7 +79,29 @@ public abstract class AbstractSocketBindingResourceDefinition extends SimpleReso
             .setAllowExpression(true).setValidator(new IntRangeValidator(1, 65535, true, true))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
 
-    public static final ClientMappingsAttributeDefinition CLIENT_MAPPINGS = new ClientMappingsAttributeDefinition(ModelDescriptionConstants.CLIENT_MAPPINGS);
+    public static final SimpleAttributeDefinition CLIENT_MAPPING_SOURCE_NETWORK =
+            new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SOURCE_NETWORK, ModelType.STRING, true)
+            .setAllowExpression(true)
+            .setValidator(new MaskedAddressValidator(true, true))
+            .build();
+
+    public static final SimpleAttributeDefinition CLIENT_MAPPING_DESTINATION_ADDRESS =
+            new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.DESTINATION_ADDRESS, ModelType.STRING, false)
+            .setAllowExpression(true)
+            .build();
+
+    public static final SimpleAttributeDefinition CLIENT_MAPPING_DESTINATION_PORT =
+            new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.DESTINATION_PORT, ModelType.INT, true)
+            .setAllowExpression(true)
+            .setValidator(new IntRangeValidator(0, 65535, true, true))
+            .build();
+
+    private static final ObjectTypeAttributeDefinition CLIENT_MAPPING = ObjectTypeAttributeDefinition.Builder.of("client-mapping", CLIENT_MAPPING_SOURCE_NETWORK, CLIENT_MAPPING_DESTINATION_ADDRESS, CLIENT_MAPPING_DESTINATION_PORT).build();
+
+    public static final AttributeDefinition CLIENT_MAPPINGS = ObjectListAttributeDefinition.Builder.of(ModelDescriptionConstants.CLIENT_MAPPINGS, CLIENT_MAPPING)
+            .setAllowNull(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build();
 
     public AbstractSocketBindingResourceDefinition(final OperationStepHandler addHandler, final OperationStepHandler removeHandler) {
         super(PATH,

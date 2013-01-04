@@ -48,7 +48,7 @@ public class ClientMappingsHandler extends AbstractBindingWriteHandler {
         try {
             binding.setClientMappings(BindingAddHandler.parseClientMappings(attributeValue));
         } catch (OperationFailedException e) {
-            ControllerMessages.MESSAGES.failedToRecoverServices(e);
+            throw ControllerMessages.MESSAGES.failedToRecoverServices(e);
         }
     }
 }

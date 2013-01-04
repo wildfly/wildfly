@@ -22,6 +22,10 @@
 
 package org.jboss.as.controller.transform;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -39,23 +43,37 @@ import org.jboss.dmr.ModelNode;
  */
 public class RejectExpressionValuesTransformer implements ResourceTransformer, OperationTransformer {
 
+    @SuppressWarnings("deprecation")
     private final ChainedResourceTransformer resourceDelegate;
     @SuppressWarnings("deprecation")
     private final RejectExpressionValuesChainedTransformer chainedExpressionTransformer;
 
+    @SuppressWarnings("deprecation")
     public RejectExpressionValuesTransformer(AttributeDefinition... attributes) {
         chainedExpressionTransformer = new RejectExpressionValuesChainedTransformer(attributes);
         resourceDelegate = new ChainedResourceTransformer(chainedExpressionTransformer);
     }
 
     public RejectExpressionValuesTransformer(Set<String> attributeNames) {
-        chainedExpressionTransformer = new RejectExpressionValuesChainedTransformer(attributeNames);
-        resourceDelegate = new ChainedResourceTransformer(chainedExpressionTransformer);
+        this(attributeNames, null);
     }
 
     public RejectExpressionValuesTransformer(String... attributeNames) {
-        chainedExpressionTransformer = new RejectExpressionValuesChainedTransformer(attributeNames);
+        this (new HashSet<String>(Arrays.asList(attributeNames)));
+    }
+
+    @SuppressWarnings("deprecation")
+    public RejectExpressionValuesTransformer(Set<String> allAttributeNames, Map<String, AttributeTransformationRequirementChecker> specialCheckers) {
+        chainedExpressionTransformer = new RejectExpressionValuesChainedTransformer(allAttributeNames, specialCheckers);
         resourceDelegate = new ChainedResourceTransformer(chainedExpressionTransformer);
+    }
+
+    public RejectExpressionValuesTransformer(Map<String, AttributeTransformationRequirementChecker> specialCheckers) {
+        this (specialCheckers.keySet(), specialCheckers);
+    }
+
+    public RejectExpressionValuesTransformer(String attributeName, AttributeTransformationRequirementChecker checker) {
+        this (Collections.singletonMap(attributeName, checker));
     }
 
     /**

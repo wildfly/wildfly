@@ -25,6 +25,7 @@ import java.io.IOException;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.model.test.ModelFixer;
+import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
 import org.junit.After;
 import org.junit.Before;
@@ -78,5 +79,15 @@ public abstract class AbstractCoreModelTest {
      */
     protected ModelNode checkCoreModelTransformation(KernelServices kernelServices, ModelVersion modelVersion, ModelFixer legacyModelFixer, ModelFixer transformedModelFixer) throws IOException {
         return delegate.checkCoreModelTransformation(kernelServices, modelVersion, legacyModelFixer, transformedModelFixer);
+    }
+
+    /**
+     * Checks that the result was successful
+     *
+     * @param result the result to check
+     * @return the result contents
+     */
+    protected static ModelNode checkOutcome(ModelNode result) {
+        return ModelTestUtils.checkOutcome(result);
     }
 }

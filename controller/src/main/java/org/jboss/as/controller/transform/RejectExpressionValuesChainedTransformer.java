@@ -21,13 +21,16 @@
 */
 package org.jboss.as.controller.transform;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.transform.AttributeTransformationRequirementChecker.SIMPLE_EXPRESSIONS;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ControllerLogger;
@@ -36,14 +39,11 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.chained.ChainedResourceTransformationContext;
 import org.jboss.as.controller.transform.chained.ChainedResourceTransformer;
 import org.jboss.as.controller.transform.chained.ChainedResourceTransformerEntry;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-import org.jboss.dmr.Property;
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -54,27 +54,42 @@ import org.jboss.dmr.Property;
 @SuppressWarnings("deprecation")
 public class RejectExpressionValuesChainedTransformer implements ChainedResourceTransformerEntry, OperationTransformer {
 
-    private static final Pattern EXPRESSION_PATTERN = Pattern.compile(".*\\$\\{.*\\}.*");
-
     private final Set<String> attributeNames;
+    private final Map<String, AttributeTransformationRequirementChecker> attributeCheckers;
     private final OperationTransformer writeAttributeTransformer = new WriteAttributeTransformer();
 
 
     public RejectExpressionValuesChainedTransformer(AttributeDefinition... attributes) {
+        this(namesFromDefinitions(attributes));
+    }
+
+    private static Set<String> namesFromDefinitions(AttributeDefinition... attributes) {
         final Set<String> names = new HashSet<String>();
         for(final AttributeDefinition def : attributes) {
             names.add(def.getName());
         }
-        this.attributeNames = names;
+        return names;
     }
 
     public RejectExpressionValuesChainedTransformer(Set<String> attributeNames) {
-        this.attributeNames = attributeNames;
+        this(attributeNames, null);
     }
 
     public RejectExpressionValuesChainedTransformer(String... attributeNames) {
-        this.attributeNames = new HashSet<String>();
-        this.attributeNames.addAll(Arrays.asList(attributeNames));
+        this (new HashSet<String>(Arrays.asList(attributeNames)));
+    }
+
+    public RejectExpressionValuesChainedTransformer(Set<String> allAttributeNames, Map<String, AttributeTransformationRequirementChecker> specialCheckers) {
+        this.attributeNames = allAttributeNames;
+        this.attributeCheckers = specialCheckers;
+    }
+
+    public RejectExpressionValuesChainedTransformer(Map<String, AttributeTransformationRequirementChecker> specialCheckers) {
+        this (specialCheckers.keySet(), specialCheckers);
+    }
+
+    public RejectExpressionValuesChainedTransformer(String attributeName, AttributeTransformationRequirementChecker checker) {
+        this (Collections.singletonMap(attributeName, checker));
     }
 
     /**
@@ -89,7 +104,7 @@ public class RejectExpressionValuesChainedTransformer implements ChainedResource
     @Override
     public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation) throws OperationFailedException {
         // Check the model
-        final Set<String> attributes = checkModel(operation);
+        final Set<String> attributes = checkModel(operation, context);
         final boolean reject = attributes.size() > 0;
         final OperationRejectionPolicy rejectPolicy;
         if(reject) {
@@ -104,7 +119,7 @@ public class RejectExpressionValuesChainedTransformer implements ChainedResource
                 public String getFailureDescription() {
                     // TODO OFE.getMessage
                     try {
-                        return logError(context, address, attributes, operation);
+                        return logWarning(context, address, attributes, operation);
                     } catch (OperationFailedException e) {
                         //This will not happen
                         return null;
@@ -123,9 +138,9 @@ public class RejectExpressionValuesChainedTransformer implements ChainedResource
                                   final Resource resource) throws OperationFailedException {
         // Check the model
         final ModelNode model = resource.getModel();
-        final Set<String> attributes = checkModel(model);
+        final Set<String> attributes = checkModel(model, context);
         if (attributes.size() > 0) {
-            logError(context, address, attributes, null);
+            logWarning(context, address, attributes, null);
         }
     }
 
@@ -135,11 +150,16 @@ public class RejectExpressionValuesChainedTransformer implements ChainedResource
      * @param model the model
      * @return the attribute containing an expression
      */
-    protected Set<String> checkModel(final ModelNode model) throws OperationFailedException {
+    private Set<String> checkModel(final ModelNode model, TransformationContext context) throws OperationFailedException {
         final Set<String> attributes = new HashSet<String>();
+        AttributeTransformationRequirementChecker checker;
         for(final String attribute : attributeNames) {
             if(model.hasDefined(attribute)) {
-                if(checkForExpression(model.get(attribute))) {
+                if (attributeCheckers != null && (checker = attributeCheckers.get(attribute)) != null) {
+                    if (checker.isAttributeTransformationRequired(attribute, model.get(attribute), context)) {
+                        attributes.add(attribute);
+                    }
+                } else if (SIMPLE_EXPRESSIONS.isAttributeTransformationRequired(attribute, model.get(attribute), context)) {
                     attributes.add(attribute);
                 }
             }
@@ -147,51 +167,26 @@ public class RejectExpressionValuesChainedTransformer implements ChainedResource
         return attributes;
     }
 
-    /**
-     * Check an attribute for expressions.
-     *
-     * @param node the attribute value
-     * @return whether an expression was found or not
-     */
-    protected boolean checkForExpression(final ModelNode node) {
-        if (!node.isDefined()) {
-            return false;
-        }
-
-        final ModelNode resolved = node.clone();
-        if (node.getType() == ModelType.EXPRESSION || node.getType() == ModelType.STRING) {
-            return checkForExpression(resolved.asString());
-        } else if (node.getType() == ModelType.OBJECT) {
-            for (Property prop : resolved.asPropertyList()) {
-                if(checkForExpression(prop.getValue())) {
-                    return true;
-                }
-            }
-        } else if (node.getType() == ModelType.LIST) {
-            for (ModelNode current : resolved.asList()) {
-                if(checkForExpression(current)) {
-                    return true;
-                }
-            }
-        } else if (node.getType() == ModelType.PROPERTY) {
-            return checkForExpression(resolved.asProperty().getValue());
-        }
-        return false;
-    }
-
     class WriteAttributeTransformer implements OperationTransformer {
 
         @Override
         public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation) throws OperationFailedException {
-            final String attribute = operation.require(ModelDescriptionConstants.NAME).asString();
+            final String attribute = operation.require(NAME).asString();
             boolean containsExpression = false;
             if(attributeNames.contains(attribute)) {
-                if(operation.hasDefined(ModelDescriptionConstants.VALUE)) {
-                    containsExpression = checkForExpression(operation.get(ModelDescriptionConstants.VALUE));
+                if (operation.hasDefined(VALUE)) {
+                    AttributeTransformationRequirementChecker checker;
+                    if (attributeCheckers != null && (checker = attributeCheckers.get(attribute)) != null) {
+                        if (checker.isAttributeTransformationRequired(attribute, operation.get(VALUE), context)) {
+                            containsExpression = true;
+                        }
+                    } else if (SIMPLE_EXPRESSIONS.isAttributeTransformationRequired(attribute, operation.get(VALUE), context)) {
+                        containsExpression = true;
+                    }
                 }
             }
             final boolean rejectResult = containsExpression;
-            if(rejectResult) {
+            if (rejectResult) {
                 // Create the rejection policy
                 final OperationRejectionPolicy rejectPolicy = new OperationRejectionPolicy() {
                     @Override
@@ -203,7 +198,7 @@ public class RejectExpressionValuesChainedTransformer implements ChainedResource
                     @Override
                     public String getFailureDescription() {
                         try {
-                            return logError(context, address, Collections.singleton(attribute), operation);
+                            return logWarning(context, address, Collections.singleton(attribute), operation);
                         } catch (OperationFailedException e) {
                             //This will not happen
                             return null;
@@ -217,11 +212,7 @@ public class RejectExpressionValuesChainedTransformer implements ChainedResource
         }
     }
 
-    protected boolean checkForExpression(final String value) {
-        return EXPRESSION_PATTERN.matcher(value).matches();
-    }
-
-    private String logError(TransformationContext context, PathAddress pathAddress, Set<String> attributes, ModelNode op) throws OperationFailedException {
+    private String logWarning(TransformationContext context, PathAddress pathAddress, Set<String> attributes, ModelNode op) throws OperationFailedException {
 
         //TODO the determining of whether the version is 1.4.0, i.e. knows about ignored resources or not could be moved to a utility method
 
