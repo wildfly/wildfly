@@ -45,6 +45,7 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
 
     private final Resource root;
     private final PathAddress current;
+    private final PathAddress read;
     private final OriginalModel originalModel;
 
     static ResourceTransformationContext create(final OperationContext context, final TransformationTarget target) {
@@ -63,49 +64,62 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
     }
 
     ResourceTransformationContextImpl(Resource root, PathAddress address, final OriginalModel originalModel) {
+        this(root, address, address, originalModel);
+    }
+
+    ResourceTransformationContextImpl(Resource root, PathAddress address, PathAddress read, final OriginalModel originalModel) {
         this.root = root;
         this.current = address;
+        this.read = read;
         this.originalModel = originalModel;
     }
 
     public Resource createResource(final PathAddress element) {
         final PathAddress absoluteAddress = this.current.append(element);
+        final PathAddress readAddress = this.read.append(element);
         final Resource resource = Resource.Factory.create();
-        addTransformedRecursiveResourceFromRoot(absoluteAddress, resource);
+        addTransformedRecursiveResourceFromRoot(absoluteAddress, readAddress, resource);
         return resource;
     }
 
     public Resource createResource(final PathAddress element, Resource copy) {
         final PathAddress absoluteAddress = this.current.append(element);
+        final PathAddress readAddress = this.read.append(element);
         final Resource resource = Resource.Factory.create();
         resource.writeModel(copy.getModel());
-        addTransformedRecursiveResourceFromRoot(absoluteAddress, resource);
+        addTransformedRecursiveResourceFromRoot(absoluteAddress, readAddress, resource);
         return resource;
     }
 
     @Override
     public ResourceTransformationContext addTransformedResource(PathAddress address, Resource toAdd) {
         final PathAddress absoluteAddress = this.current.append(address);
-        return addTransformedResourceFromRoot(absoluteAddress, toAdd);
+        final PathAddress read = this.read.append(address);
+        return addTransformedResourceFromRoot(absoluteAddress, read, toAdd);
     }
 
     @Override
     public ResourceTransformationContext addTransformedResourceFromRoot(PathAddress absoluteAddress, Resource toAdd) {
+        return addTransformedResourceFromRoot(absoluteAddress, absoluteAddress, toAdd);
+    }
+
+    public ResourceTransformationContext addTransformedResourceFromRoot(PathAddress absoluteAddress, PathAddress read, Resource toAdd) {
         // Only keep the mode, drop all children
         final Resource copy = Resource.Factory.create();
         if(toAdd != null) {
             copy.writeModel(toAdd.getModel());
         }
-        return addTransformedRecursiveResourceFromRoot(absoluteAddress, copy);
+        return addTransformedRecursiveResourceFromRoot(absoluteAddress, read, copy);
     }
 
     @Override
     public void addTransformedRecursiveResource(PathAddress relativeAddress, Resource resource) {
         final PathAddress absoluteAddress = this.current.append(relativeAddress);
-        addTransformedRecursiveResourceFromRoot(absoluteAddress, resource);
+        final PathAddress readAddress = this.read.append(relativeAddress);
+        addTransformedRecursiveResourceFromRoot(absoluteAddress, readAddress, resource);
     }
 
-    public ResourceTransformationContext addTransformedRecursiveResourceFromRoot(final PathAddress absoluteAddress, final Resource toAdd) {
+    private ResourceTransformationContext addTransformedRecursiveResourceFromRoot(final PathAddress absoluteAddress, final PathAddress read, final Resource toAdd) {
         Resource model = this.root;
         if (absoluteAddress.size() > 0) {
             final Iterator<PathElement> i = absoluteAddress.iterator();
@@ -139,7 +153,7 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
             //If this was the root address, replace the resource model
             model.writeModel(toAdd.getModel());
         }
-        return new ResourceTransformationContextImpl(root, absoluteAddress, originalModel);
+        return new ResourceTransformationContextImpl(root, absoluteAddress, read, originalModel);
     }
 
     @Override
@@ -170,9 +184,10 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
 
     @Override
     public void processChild(final PathElement element, Resource child) throws OperationFailedException {
-        final PathAddress childAddress = current.append(element);
+        final PathAddress childAddress = read.append(element); // read
+        final PathAddress currentAddress = current.append(element); // write
         final ResourceTransformer transformer = resolveTransformer(childAddress);
-        final ResourceTransformationContext childContext = new ResourceTransformationContextImpl(root, childAddress, originalModel);
+        final ResourceTransformationContext childContext = new ResourceTransformationContextImpl(root, currentAddress, childAddress, originalModel);
         transformer.transformResource(childContext, childAddress, child);
     }
 
@@ -193,7 +208,7 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
 
     @Override
     public ImmutableManagementResourceRegistration getResourceRegistration(PathAddress address) {
-        final PathAddress a = current.append(address);
+        final PathAddress a = read.append(address);
         return originalModel.getRegistration(a);
     }
 
@@ -204,7 +219,7 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
 
     @Override
     public Resource readResource(PathAddress address) {
-        final PathAddress a = current.append(address);
+        final PathAddress a = read.append(address);
         return originalModel.get(a);
     }
 
@@ -221,6 +236,15 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
     @Override
     public Resource getTransformedRoot() {
         return root;
+    }
+
+    static ResourceTransformationContext createAliasContext(final PathAddress address, final ResourceTransformationContext context) {
+        if(context instanceof ResourceTransformationContextImpl) {
+            final ResourceTransformationContextImpl impl = (ResourceTransformationContextImpl) context;
+            return new ResourceTransformationContextImpl(impl.root, address, impl.read, impl.originalModel);
+        } else {
+            throw new IllegalArgumentException("wrong context type");
+        }
     }
 
     static class OriginalModel {

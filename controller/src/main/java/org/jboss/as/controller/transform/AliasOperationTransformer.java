@@ -25,15 +25,19 @@ package org.jboss.as.controller.transform;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
 /**
- * {@code OperationTransformer} transforming the operation address only.
+ * {@code OperationTransformer} and {@code ResourceTransformer} transforming the operation address only.
  *
  * @author Emanuel Muckenhuber
  */
-public class AliasOperationTransformer implements OperationTransformer {
+public class AliasOperationTransformer implements CombinedTransformer {
 
     public interface AddressTransformer {
 
@@ -61,8 +65,23 @@ public class AliasOperationTransformer implements OperationTransformer {
         // Hand-off to a local operation transformer at the right address
         final String operationName = operation.get(ModelDescriptionConstants.OP).asString();
         final OperationTransformer aliasTransformer = context.getTarget().resolveTransformer(transformedAddress, operationName);
-        return aliasTransformer.transformOperation(context, transformedAddress, operation);
-        // return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
+        if(aliasTransformer != null) {
+            return aliasTransformer.transformOperation(context, transformedAddress, operation);
+        } else {
+            return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
+        }
+    }
+
+    @Override
+    public void transformResource(final ResourceTransformationContext currentCtx, final PathAddress address, final Resource resource) throws OperationFailedException {
+        final PathAddress transformedAddress = transformer.transformAddress(address);
+        final ResourceTransformationContext context = ResourceTransformationContextImpl.createAliasContext(transformedAddress, currentCtx);
+        final ResourceTransformer aliasTransformer = context.getTarget().resolveTransformer(transformedAddress);
+        if(aliasTransformer != null) {
+            aliasTransformer.transformResource(context, address, resource);
+        } else {
+            ResourceTransformer.DEFAULT.transformResource(context, transformedAddress, resource);
+        }
     }
 
     /**

@@ -1,7 +1,10 @@
 package org.jboss.as.subsystem.test;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_TRANSFORMED_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
@@ -182,6 +185,13 @@ public class KernelServicesImpl extends ModelTestKernelServicesImpl<KernelServic
                         }
                     }
                 });
+            // TODO this still does not really model the way rejection is handled in the domain
+            if(op.rejectOperation(result)) {
+                final ModelNode newResponse = new ModelNode();
+                newResponse.get(OUTCOME).set(FAILED);
+                newResponse.get(FAILURE_DESCRIPTION).set(op.getFailureDescription());
+                return newResponse;
+            }
         }
         OperationResultTransformer resultTransformer = op.getResultTransformer();
         if (resultTransformer != null) {
