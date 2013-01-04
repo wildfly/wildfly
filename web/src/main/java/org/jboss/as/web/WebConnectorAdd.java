@@ -93,27 +93,28 @@ class WebConnectorAdd extends AbstractAddStepHandler {
         final WebConnectorService service = new WebConnectorService(protocol, scheme);
         service.setSecure(WebConnectorDefinition.SECURE.resolveModelAttribute(context, fullModel).asBoolean());
         service.setEnableLookups(WebConnectorDefinition.ENABLE_LOOKUPS.resolveModelAttribute(context, fullModel).asBoolean());
-        if (operation.hasDefined(PROXY_NAME)) {
-            service.setProxyName(WebConnectorDefinition.PROXY_NAME.resolveModelAttribute(context, fullModel).asString());
+        ModelNode resolved;
+        if (operation.hasDefined(PROXY_NAME) && (resolved =  WebConnectorDefinition.PROXY_NAME.resolveModelAttribute(context, fullModel)).isDefined()) {
+            service.setProxyName(resolved.asString());
         }
-        if (operation.hasDefined(PROXY_PORT)) {
-            service.setProxyPort(WebConnectorDefinition.PROXY_PORT.resolveModelAttribute(context, fullModel).asInt());
+        if (operation.hasDefined(PROXY_PORT)&& (resolved =  WebConnectorDefinition.PROXY_PORT.resolveModelAttribute(context, fullModel)).isDefined()) {
+            service.setProxyPort(resolved.asInt());
         }
-        if (operation.hasDefined(REDIRECT_PORT)) {
-            service.setRedirectPort(WebConnectorDefinition.REDIRECT_PORT.resolveModelAttribute(context, fullModel).asInt());
+        if (operation.hasDefined(REDIRECT_PORT)&& (resolved =  WebConnectorDefinition.REDIRECT_PORT.resolveModelAttribute(context, fullModel)).isDefined()) {
+            service.setRedirectPort(resolved.asInt());
         }
-        if (operation.hasDefined(MAX_POST_SIZE)) {
-            service.setMaxPostSize(WebConnectorDefinition.MAX_POST_SIZE.resolveModelAttribute(context, fullModel).asInt());
+        if (operation.hasDefined(MAX_POST_SIZE)&& (resolved =  WebConnectorDefinition.MAX_POST_SIZE.resolveModelAttribute(context, fullModel)).isDefined()) {
+            service.setMaxPostSize(resolved.asInt());
         }
-        if (operation.hasDefined(MAX_SAVE_POST_SIZE)) {
-            service.setMaxSavePostSize(WebConnectorDefinition.MAX_SAVE_POST_SIZE.resolveModelAttribute(context, fullModel).asInt());
+        if (operation.hasDefined(MAX_SAVE_POST_SIZE)&& (resolved =  WebConnectorDefinition.MAX_SAVE_POST_SIZE.resolveModelAttribute(context, fullModel)).isDefined()) {
+            service.setMaxSavePostSize(resolved.asInt());
         }
-        if (operation.hasDefined(MAX_CONNECTIONS)) {
-            service.setMaxConnections(WebConnectorDefinition.MAX_CONNECTIONS.resolveModelAttribute(context, fullModel).asInt());
+        if (operation.hasDefined(MAX_CONNECTIONS)&& (resolved =  WebConnectorDefinition.MAX_CONNECTIONS.resolveModelAttribute(context, fullModel)).isDefined()) {
+            service.setMaxConnections(resolved.asInt());
         }
-        if (operation.hasDefined(VIRTUAL_SERVER)) {
+        if (operation.hasDefined(VIRTUAL_SERVER)&& (resolved =  WebConnectorDefinition.VIRTUAL_SERVER.resolveModelAttribute(context, fullModel)).isDefined()) {
             List<String> vServers = new LinkedList<String>();
-            for (ModelNode vServer:WebConnectorDefinition.VIRTUAL_SERVER.resolveModelAttribute(context,fullModel).asList()){
+            for (ModelNode vServer:resolved.asList()){
                 vServers.add(vServer.asString());
             }
             service.setVirtualServers(vServers);
