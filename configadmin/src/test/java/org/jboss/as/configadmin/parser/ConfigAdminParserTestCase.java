@@ -87,7 +87,9 @@ public class ConfigAdminParserTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testDescribeHandler() throws Exception {
-        KernelServices servicesA = installInController(AdditionalInitialization.MANAGEMENT, SUBSYSTEM_XML_1_0_1);
+        KernelServices servicesA = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXml(SUBSYSTEM_XML_1_0_1)
+                .build();
         ModelNode modelA = servicesA.readWholeModel();
         ModelNode describeOp = new ModelNode();
         describeOp.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.DESCRIBE);
@@ -95,7 +97,9 @@ public class ConfigAdminParserTestCase extends AbstractSubsystemBaseTest {
                 PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ConfigAdminExtension.SUBSYSTEM_NAME)).toModelNode());
         List<ModelNode> operations = checkResultAndGetContents(servicesA.executeOperation(describeOp)).asList();
 
-        KernelServices servicesB = installInController(AdditionalInitialization.MANAGEMENT, operations);
+        KernelServices servicesB = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setBootOperations(operations)
+                .build();
         ModelNode modelB = servicesB.readWholeModel();
 
         compare(modelA, modelB);
@@ -135,12 +139,6 @@ public class ConfigAdminParserTestCase extends AbstractSubsystemBaseTest {
         Assert.assertEquals("testingabc", entries.get("test456").asString());
     }
 
-    private void assertOSGiSubsystemAddress(ModelNode address) {
-        PathAddress addr = PathAddress.pathAddress(address);
-        PathElement element = addr.getElement(0);
-        Assert.assertEquals(ModelDescriptionConstants.SUBSYSTEM, element.getKey());
-        Assert.assertEquals(ConfigAdminExtension.SUBSYSTEM_NAME, element.getValue());
-    }
 
     protected AdditionalInitialization createAdditionalInitialization() {
         return AdditionalInitialization.MANAGEMENT;

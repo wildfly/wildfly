@@ -30,16 +30,16 @@ import java.net.URL;
  * Contains the initialization of a controller containing a legacy version of a subsystem.
  *
  *
- * @see KernelServicesBuilder#createLegacyKernelServicesBuilder(AdditionalInitialization, org.jboss.as.controller.ModelVersion, String, String...)
+ * @see KernelServicesBuilder#createLegacyKernelServicesBuilder(AdditionalInitialization, org.jboss.as.controller.ModelVersion) (AdditionalInitialization, org.jboss.as.controller.ModelVersion, String, String...)
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public interface LegacyKernelServicesInitializer {
 
     /**
-     * Sets the name of the extension class name. If not set the {@link AbstractSubsystemTest#mainExtension} will be used for the test class which created the
+     * Sets the name of the extension class name. If not set the {@link org.jboss.as.subsystem.test.AbstractSubsystemTest#getMainExtension()} will be used for the test class which created the
      * {@link KernelServicesBuilder} used to create this legacy kernel services initializer
      *
-     * @param extensionClassName The name of the extension class. If {@code null} the name of the class of {@link AbstractSubsystemTest#mainExtension} will be used
+     * @param extensionClassName The name of the extension class. If {@code null} the name of the class of {@link org.jboss.as.subsystem.test.AbstractSubsystemTest#getMainExtension()} will be used
      * @return this initializer
      */
     LegacyKernelServicesInitializer setExtensionClassName(String extensionClassName);
@@ -88,7 +88,7 @@ public interface LegacyKernelServicesInitializer {
     /**
      * Add a class name pattern that should be loaded from the parent classloader
      *
-     * @param the class name pattern
+     * @param pattern class name pattern
      * @return this initializer
      */
     LegacyKernelServicesInitializer addParentFirstClassPattern(String pattern);
@@ -96,7 +96,7 @@ public interface LegacyKernelServicesInitializer {
     /**
      * Add a class name pattern that should be loaded from the child classloader
      *
-     * @param the class name pattern
+     * @param pattern class name pattern
      * @return this initializer
      */
     LegacyKernelServicesInitializer addChildFirstClassPattern(String pattern);
