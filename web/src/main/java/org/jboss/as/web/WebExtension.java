@@ -208,6 +208,7 @@ public class WebExtension implements Extension {
                 }
             }
         });
+        transformers.registerSubResource(VALVE_PATH, true);
 
         TransformersSubRegistration connectors = transformers.registerSubResource(CONNECTOR_PATH);
         connectors.registerOperationTransformer(ADD, new OperationTransformer() {

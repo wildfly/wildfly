@@ -44,21 +44,18 @@ public class WebDefinition extends SimpleResourceDefinition {
     protected static final SimpleAttributeDefinition DEFAULT_VIRTUAL_SERVER =
             new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_VIRTUAL_SERVER, ModelType.STRING, true)
                     .setAllowExpression(true)
-                    .setXmlName(Constants.DEFAULT_VIRTUAL_SERVER)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode("default-host"))
                     .build();
     protected static final SimpleAttributeDefinition NATIVE =
             new SimpleAttributeDefinitionBuilder(Constants.NATIVE, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
-                    .setXmlName(Constants.NATIVE)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(true))
                     .build();
     protected static final SimpleAttributeDefinition INSTANCE_ID =
             new SimpleAttributeDefinitionBuilder(Constants.INSTANCE_ID, ModelType.STRING, true)
                     .setAllowExpression(true)
-                    .setXmlName(Constants.INSTANCE_ID)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(null)
                     .build();
@@ -74,7 +71,6 @@ public class WebDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
         registration.registerReadWriteAttribute(DEFAULT_VIRTUAL_SERVER, null, new ReloadRequiredWriteAttributeHandler(DEFAULT_VIRTUAL_SERVER));
-        //TODO remove this - to make model more readable while debugging
         registration.registerReadWriteAttribute(NATIVE, null, new ReloadRequiredWriteAttributeHandler(NATIVE));
         registration.registerReadWriteAttribute(INSTANCE_ID, null, new ReloadRequiredWriteAttributeHandler(INSTANCE_ID));
     }
