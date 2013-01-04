@@ -21,6 +21,7 @@
 */
 package org.jboss.as.core.model.test.jvm;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.host.controller.model.jvm.JvmAttributes.AGENT_PATH;
 import static org.jboss.as.host.controller.model.jvm.JvmAttributes.ENVIRONMENT_VARIABLES;
 import static org.jboss.as.host.controller.model.jvm.JvmAttributes.HEAP_SIZE;
@@ -45,6 +46,7 @@ import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.core.model.test.util.StandardServerGroupInitializers;
 import org.jboss.as.core.model.test.util.TransformersTestParameters;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
@@ -98,10 +100,27 @@ public class JvmTransformersTestCase extends AbstractCoreModelTest {
 
         //Run the standard tests trying to execute the parsed operations.
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, operations, getConfig());
+
+        checkCoreModelTransformation(mainServices,
+                modelVersion,
+                new ModelFixer() {
+                    @Override
+                    public ModelNode fixModel(ModelNode modelNode) {
+                        modelNode.remove(SOCKET_BINDING_GROUP);
+                        return modelNode;
+                    }
+                },
+                new ModelFixer() {
+                    @Override
+                    public ModelNode fixModel(ModelNode modelNode) {
+                        modelNode.remove(SOCKET_BINDING_GROUP);
+                        return isFailExpressions() ? modelNode.resolve() : modelNode;
+                    }
+                });
     }
 
     private FailedOperationTransformationConfig getConfig() {
-        if (modelVersion.getMajor() == 1 && modelVersion.getMinor() <=3) {
+        if (isFailExpressions()) {
             FailedOperationTransformationConfig config = new FailedOperationTransformationConfig()
                 .addFailedAttribute(PathAddress.pathAddress(PathElement.pathElement("server-group", "test"), PathElement.pathElement("jvm", "default")),
                         new FailedOperationTransformationConfig.RejectExpressionsConfig(AGENT_PATH, HEAP_SIZE, JAVA_HOME, MAX_HEAP_SIZE,
@@ -113,4 +132,7 @@ public class JvmTransformersTestCase extends AbstractCoreModelTest {
         return FailedOperationTransformationConfig.NO_FAILURES;
     }
 
+    private boolean isFailExpressions() {
+        return modelVersion.getMajor() == 1 && modelVersion.getMinor() <=3;
+    }
 }
