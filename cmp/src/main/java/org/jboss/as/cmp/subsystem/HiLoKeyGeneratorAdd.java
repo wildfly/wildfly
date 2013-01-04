@@ -29,6 +29,7 @@ import org.jboss.as.cmp.keygenerator.KeyGeneratorFactory;
 import org.jboss.as.cmp.keygenerator.hilo.HiLoKeyGeneratorFactory;
 import org.jboss.as.connector.subsystems.datasources.AbstractDataSourceService;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.txn.service.TransactionManagerService;
 import org.jboss.dmr.ModelNode;
@@ -36,16 +37,7 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
-import static org.jboss.as.cmp.subsystem.CmpSubsystemModel.BLOCK_SIZE;
-import static org.jboss.as.cmp.subsystem.CmpSubsystemModel.CREATE_TABLE;
-import static org.jboss.as.cmp.subsystem.CmpSubsystemModel.CREATE_TABLE_DDL;
 import static org.jboss.as.cmp.subsystem.CmpSubsystemModel.DATA_SOURCE;
-import static org.jboss.as.cmp.subsystem.CmpSubsystemModel.DROP_TABLE;
-import static org.jboss.as.cmp.subsystem.CmpSubsystemModel.ID_COLUMN;
-import static org.jboss.as.cmp.subsystem.CmpSubsystemModel.SELECT_HI_DDL;
-import static org.jboss.as.cmp.subsystem.CmpSubsystemModel.SEQUENCE_COLUMN;
-import static org.jboss.as.cmp.subsystem.CmpSubsystemModel.SEQUENCE_NAME;
-import static org.jboss.as.cmp.subsystem.CmpSubsystemModel.TABLE_NAME;
 
 /**
  * @author John Bailey
@@ -53,38 +45,37 @@ import static org.jboss.as.cmp.subsystem.CmpSubsystemModel.TABLE_NAME;
 public class HiLoKeyGeneratorAdd extends AbstractKeyGeneratorAdd {
     static HiLoKeyGeneratorAdd INSTANCE = new HiLoKeyGeneratorAdd();
 
-    private HiLoKeyGeneratorAdd() {
-    }
-
-    protected Service<KeyGeneratorFactory> getKeyGeneratorFactory(final ModelNode operation) {
+    protected Service<KeyGeneratorFactory> getKeyGeneratorFactory(final OperationContext context, final ModelNode model)
+            throws OperationFailedException {
         final HiLoKeyGeneratorFactory factory = new HiLoKeyGeneratorFactory();
 
-        if (operation.hasDefined(BLOCK_SIZE)) {
-            factory.setBlockSize(operation.get(BLOCK_SIZE).asLong());
+        ModelNode node;
+        if ((node = HiLoKeyGeneratorResourceDescription.BLOCK_SIZE.resolveModelAttribute(context, model)).isDefined()) {
+            factory.setBlockSize(node.asLong());
         }
-        if (operation.hasDefined(CREATE_TABLE)) {
-            factory.setCreateTable(operation.get(CREATE_TABLE).asBoolean());
+        if ((node = HiLoKeyGeneratorResourceDescription.CREATE_TABLE.resolveModelAttribute(context, model)).isDefined()) {
+            factory.setCreateTable(node.asBoolean());
         }
-        if (operation.hasDefined(CREATE_TABLE_DDL)) {
-            factory.setCreateTableDdl(operation.get(CREATE_TABLE_DDL).asString());
+        if ((node = HiLoKeyGeneratorResourceDescription.CREATE_TABLE_DDL.resolveModelAttribute(context, model)).isDefined()) {
+            factory.setCreateTableDdl(node.asString());
         }
-        if (operation.hasDefined(DROP_TABLE)) {
-            factory.setDropTable(operation.get(DROP_TABLE).asBoolean());
+        if ((node = HiLoKeyGeneratorResourceDescription.DROP_TABLE.resolveModelAttribute(context, model)).isDefined()) {
+            factory.setDropTable(node.asBoolean());
         }
-        if (operation.hasDefined(ID_COLUMN)) {
-            factory.setIdColumnName(operation.get(ID_COLUMN).asString());
+        if ((node = HiLoKeyGeneratorResourceDescription.ID_COLUMN.resolveModelAttribute(context, model)).isDefined()) {
+            factory.setIdColumnName(node.asString());
         }
-        if (operation.hasDefined(SELECT_HI_DDL)) {
-            factory.setSelectHiSql(operation.get(SELECT_HI_DDL).asString());
+        if ((node = HiLoKeyGeneratorResourceDescription.SELECT_HI_DDL.resolveModelAttribute(context, model)).isDefined()) {
+            factory.setSelectHiSql(node.asString());
         }
-        if (operation.hasDefined(SEQUENCE_COLUMN)) {
-            factory.setSequenceColumn(operation.get(SEQUENCE_COLUMN).asString());
+        if ((node = HiLoKeyGeneratorResourceDescription.SEQUENCE_COLUMN.resolveModelAttribute(context, model)).isDefined()) {
+            factory.setSequenceColumn(node.asString());
         }
-        if (operation.hasDefined(SEQUENCE_NAME)) {
-            factory.setSequenceName(operation.get(SEQUENCE_NAME).asString());
+        if ((node = HiLoKeyGeneratorResourceDescription.SEQUENCE_NAME.resolveModelAttribute(context, model)).isDefined()) {
+            factory.setSequenceName(node.asString());
         }
-        if (operation.hasDefined(TABLE_NAME)) {
-            factory.setTableName(operation.get(TABLE_NAME).asString());
+        if ((node = HiLoKeyGeneratorResourceDescription.TABLE_NAME.resolveModelAttribute(context, model)).isDefined()) {
+            factory.setTableName(node.asString());
         }
         return factory;
     }
