@@ -33,7 +33,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleMapAttributeDefinition;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -53,15 +52,12 @@ import org.jboss.security.SimplePrincipal;
 /**
  * @author Jason T. Greene
  */
-public class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
+class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
 
     public static final SimpleAttributeDefinition CACHE_TYPE = new SimpleAttributeDefinitionBuilder(Constants.CACHE_TYPE, ModelType.STRING, true)
             .setAllowExpression(true)
             .build();
-    /*static SimpleMapAttributeDefinition MODULE_OPTIONS = new SimpleMapAttributeDefinition.Builder(Constants.MODULE_OPTIONS, true)
-            .setXmlName(Element.MODULE_OPTION.getLocalName())
-            .setAllowExpression(true)
-            .build();*/
+
     private final boolean registerRuntimeOnly;
 
     SecurityDomainResourceDefinition(boolean registerRuntimeOnly) {
@@ -72,7 +68,7 @@ public class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
 
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadWriteAttribute(CACHE_TYPE, null, new SecurityDomainReloadWriteHandler(CACHE_TYPE));
-        //resourceRegistration.registerReadWriteAttribute(MODULE_OPTIONS, null, new SecurityDomainReloadWriteHandler(MODULE_OPTIONS));
+
     }
 
     @Override
