@@ -6,6 +6,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -102,10 +103,10 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     // cache store access
     protected static ModelNode getCacheStoreReadOperation(String containerName, String cacheType, String cacheName, String name) {
         // create the address of the subsystem
-        PathAddress cacheAddress = getCacheAddress(containerName, cacheType, cacheName);
+        PathAddress cacheStoreAddress = getCacheStoreAddress(containerName, cacheType, cacheName);
         ModelNode readOp = new ModelNode() ;
         readOp.get(OP).set(READ_ATTRIBUTE_OPERATION);
-        readOp.get(OP_ADDR).set(cacheAddress.toModelNode());
+        readOp.get(OP_ADDR).set(cacheStoreAddress.toModelNode());
         // required attributes
         readOp.get(NAME).set(name);
         return readOp ;
@@ -132,8 +133,25 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return Util.getWriteAttributeOperation(cacheStoreAddress, name, new ModelNode().set(value));
     }
 
+    //cache store property access
+    protected static ModelNode getCacheStorePropertyAddOperation(String containerName, String cacheName, String cacheType, String propertyName, String value) {
+        PathAddress cacheStorePropertyAddress = getCacheStorePropertyAddress(containerName,  cacheType, cacheName, propertyName);
+        ModelNode addOp = Util.createAddOperation(cacheStorePropertyAddress);
+        // required attributes
+        addOp.get(VALUE).set(value);
+        return addOp ;
+    }
+
+    protected static ModelNode getCacheStorePropertyWriteOperation(String containerName, String cacheName, String cacheType, String propertyName, String value) {
+        PathAddress cacheStorePropertyAddress = getCacheStorePropertyAddress(containerName, cacheType, cacheName, propertyName);
+        return Util.getWriteAttributeOperation(cacheStorePropertyAddress, "value", new ModelNode().set(value));
+    }
 
     // address generation
+    protected static PathAddress getCacheStorePropertyAddress(String containerName, String cacheType, String cacheName, String propertyName) {
+        return getCacheStoreAddress(containerName, cacheType, cacheName).append(ModelKeys.PROPERTY, propertyName);
+    }
+
     protected static PathAddress getMixedKeyedJDBCCacheStoreAddress(String containerName, String cacheType, String cacheName) {
         return getCacheAddress(containerName, cacheType, cacheName).append(ModelKeys.MIXED_KEYED_JDBC_STORE, ModelKeys.MIXED_KEYED_JDBC_STORE_NAME);
     }

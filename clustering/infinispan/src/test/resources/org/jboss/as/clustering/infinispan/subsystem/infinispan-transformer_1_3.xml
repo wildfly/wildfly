@@ -21,7 +21,7 @@
   ~  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   ~  */
   -->
-<subsystem xmlns="urn:jboss:domain:infinispan:1.4">
+<subsystem xmlns="urn:jboss:domain:infinispan:1.3">
     <cache-container name="minimal" default-cache="local">
         <local-cache name="local"/>
     </cache-container>
@@ -35,11 +35,7 @@
             <file-store fetch-state="false" passivation="false" path="path" preload="true" purge="false" relative-to="jboss.server.temp.dir" shared="true" singleton="true">
                 <write-behind flush-lock-timeout="2" modification-queue-size="2048" shutdown-timeout="20000" thread-pool-size="1" />
             </file-store>
-            <indexing index="LOCAL">
-                <property name="hibernate.search.default.directory_provider">infinispan</property>
-                <property name="hibernate.search.infinispan.cachemanager_jndiname">java:jboss/infinispan/container/HibernateSearch</property>
-                <property name="hibernate.search.default.worker.backend">jgroups</property>
-            </indexing>
+            <indexing index="LOCAL"/>
         </local-cache>
         <invalidation-cache name="invalid" mode="ASYNC" batching="true" queue-flush-interval="10" queue-size="1000" start="LAZY" async-marshalling="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_UNCOMMITTED" striping="true"/>
@@ -62,11 +58,11 @@
             <state-transfer enabled="true" timeout="60000" chunk-size="10000" />
             <store class="org.infinispan.loaders.file.FileCacheStore" fetch-state="true" passivation="true" preload="false" purge="true" shared="false" singleton="false">
                 <write-behind flush-lock-timeout="2" modification-queue-size="2048" shutdown-timeout="20000" thread-pool-size="1" />
-                <property name="location">location</property>
+                <property name="location">value</property>
             </store>
             <indexing index="NONE" />
         </replicated-cache>
-        <distributed-cache name="dist" mode="SYNC" batching="true" l1-lifespan="1200000" owners="4" remote-timeout="35000" start="EAGER" segments="2"  async-marshalling="true">
+        <distributed-cache name="dist" mode="SYNC" batching="true" l1-lifespan="1200000" owners="4" remote-timeout="35000" start="EAGER" virtual-nodes="2" async-marshalling="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_COMMITTED" striping="true"/>
             <transaction mode="FULL_XA" stop-timeout="60000"  locking="OPTIMISTIC"/>
             <eviction max-entries="20000" strategy="UNORDERED"/>
