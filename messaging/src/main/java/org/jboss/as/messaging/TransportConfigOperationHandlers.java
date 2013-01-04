@@ -98,7 +98,7 @@ class TransportConfigOperationHandlers {
                 final String acceptorName = property.getName();
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = getParameters(context, config);
-                parameters.put(InVMTransportDefinition.SERVER_ID.getName(), config.get(InVMTransportDefinition.SERVER_ID.getName()).asInt());
+                parameters.put(InVMTransportDefinition.SERVER_ID.getName(), InVMTransportDefinition.SERVER_ID.resolveModelAttribute(context, config).asInt());
                 acceptors.put(acceptorName, new TransportConfiguration(InVMAcceptorFactory.class.getName(), parameters, acceptorName));
             }
         }
@@ -161,7 +161,7 @@ class TransportConfigOperationHandlers {
                 final String connectorName = property.getName();
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = getParameters(context, config);
-                parameters.put(InVMTransportDefinition.SERVER_ID.getName(), config.get(InVMTransportDefinition.SERVER_ID.getName()).asInt());
+                parameters.put(InVMTransportDefinition.SERVER_ID.getName(), InVMTransportDefinition.SERVER_ID.resolveModelAttribute(context, config).asInt());
                 connectors.put(connectorName, new TransportConfiguration(InVMConnectorFactory.class.getName(), parameters, connectorName));
             }
         }
