@@ -60,6 +60,7 @@ public class WebReWriteDefinition extends SimpleResourceDefinition {
                     .setValidator(new StringLengthValidator(1, false))
                     .build();
 
+    protected static final SimpleAttributeDefinition[] ATTRIBUTES = {PATTERN, SUBSTITUTION, FLAGS};
 
     private WebReWriteDefinition() {
         super(WebExtension.REWRITE_PATH,
