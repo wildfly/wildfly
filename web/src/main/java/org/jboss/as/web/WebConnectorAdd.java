@@ -94,25 +94,25 @@ class WebConnectorAdd extends AbstractAddStepHandler {
         service.setSecure(WebConnectorDefinition.SECURE.resolveModelAttribute(context, fullModel).asBoolean());
         service.setEnableLookups(WebConnectorDefinition.ENABLE_LOOKUPS.resolveModelAttribute(context, fullModel).asBoolean());
         ModelNode resolved;
-        if (operation.hasDefined(PROXY_NAME) && (resolved =  WebConnectorDefinition.PROXY_NAME.resolveModelAttribute(context, fullModel)).isDefined()) {
+        if ((resolved =  WebConnectorDefinition.PROXY_NAME.resolveModelAttribute(context, fullModel)).isDefined()) {
             service.setProxyName(resolved.asString());
         }
-        if (operation.hasDefined(PROXY_PORT)&& (resolved =  WebConnectorDefinition.PROXY_PORT.resolveModelAttribute(context, fullModel)).isDefined()) {
+        if ((resolved =  WebConnectorDefinition.PROXY_PORT.resolveModelAttribute(context, fullModel)).isDefined()) {
             service.setProxyPort(resolved.asInt());
         }
-        if (operation.hasDefined(REDIRECT_PORT)&& (resolved =  WebConnectorDefinition.REDIRECT_PORT.resolveModelAttribute(context, fullModel)).isDefined()) {
+        if ((resolved =  WebConnectorDefinition.REDIRECT_PORT.resolveModelAttribute(context, fullModel)).isDefined()) {
             service.setRedirectPort(resolved.asInt());
         }
-        if (operation.hasDefined(MAX_POST_SIZE)&& (resolved =  WebConnectorDefinition.MAX_POST_SIZE.resolveModelAttribute(context, fullModel)).isDefined()) {
+        if ((resolved =  WebConnectorDefinition.MAX_POST_SIZE.resolveModelAttribute(context, fullModel)).isDefined()) {
             service.setMaxPostSize(resolved.asInt());
         }
-        if (operation.hasDefined(MAX_SAVE_POST_SIZE)&& (resolved =  WebConnectorDefinition.MAX_SAVE_POST_SIZE.resolveModelAttribute(context, fullModel)).isDefined()) {
+        if ((resolved =  WebConnectorDefinition.MAX_SAVE_POST_SIZE.resolveModelAttribute(context, fullModel)).isDefined()) {
             service.setMaxSavePostSize(resolved.asInt());
         }
-        if (operation.hasDefined(MAX_CONNECTIONS)&& (resolved =  WebConnectorDefinition.MAX_CONNECTIONS.resolveModelAttribute(context, fullModel)).isDefined()) {
+        if ((resolved =  WebConnectorDefinition.MAX_CONNECTIONS.resolveModelAttribute(context, fullModel)).isDefined()) {
             service.setMaxConnections(resolved.asInt());
         }
-        if (operation.hasDefined(VIRTUAL_SERVER)&& (resolved =  WebConnectorDefinition.VIRTUAL_SERVER.resolveModelAttribute(context, fullModel)).isDefined()) {
+        if ((resolved =  WebConnectorDefinition.VIRTUAL_SERVER.resolveModelAttribute(context, fullModel)).isDefined()) {
             List<String> vServers = new LinkedList<String>();
             for (ModelNode vServer:resolved.asList()){
                 vServers.add(vServer.asString());
@@ -120,13 +120,13 @@ class WebConnectorAdd extends AbstractAddStepHandler {
             service.setVirtualServers(vServers);
         }
         if (fullModel.get(SSL_PATH.getKey(), SSL_PATH.getValue()).isDefined()) {
-            service.setSsl(resolveExpressions(context, fullModel.get(SSL_PATH.getKey(), SSL_PATH.getValue())));
+            service.setSsl(resolveSslExpressions(context, fullModel.get(SSL_PATH.getKey(), SSL_PATH.getValue())));
         }
         final ServiceBuilder<Connector> serviceBuilder = context.getServiceTarget().addService(WebSubsystemServices.JBOSS_WEB_CONNECTOR.append(name), service)
                 .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getServer())
                 .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding());
-        if (operation.hasDefined(EXECUTOR)) {
-            String executorRef = operation.get(EXECUTOR).asString();
+        if ((resolved =  WebConnectorDefinition.EXECUTOR.resolveModelAttribute(context, fullModel)).isDefined()) {
+            String executorRef = resolved.asString();
             serviceBuilder.addDependency(ThreadsServices.executorName(executorRef), Executor.class, service.getExecutor());
         }
         serviceBuilder.setInitialMode(enabled ? Mode.ACTIVE : Mode.NEVER);
@@ -139,7 +139,7 @@ class WebConnectorAdd extends AbstractAddStepHandler {
         }
     }
 
-    private ModelNode resolveExpressions(OperationContext context, ModelNode ssl) throws OperationFailedException {
+    private ModelNode resolveSslExpressions(OperationContext context, ModelNode ssl) throws OperationFailedException {
         ModelNode result = new ModelNode();
         for (AttributeDefinition def : WebSSLDefinition.SSL_ATTRIBUTES) {
             result.get(def.getName()).set(def.resolveModelAttribute(context, ssl));

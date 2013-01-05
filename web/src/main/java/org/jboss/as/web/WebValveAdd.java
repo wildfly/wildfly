@@ -61,25 +61,28 @@ class WebValveAdd extends AbstractAddStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode baseOperation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        ModelNode operation = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
+        ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
         final PathAddress address = PathAddress.pathAddress(baseOperation.get(OP_ADDR));
 
         final String name = address.getLastElement().getValue();
         String classname = null;
-        if (WebValveDefinition.CLASS_NAME.resolveModelAttribute(context, operation).isDefined())
-            classname = WebValveDefinition.CLASS_NAME.resolveModelAttribute(context, operation).asString();
+        ModelNode resolved;
+        if ((resolved =  WebValveDefinition.CLASS_NAME.resolveModelAttribute(context, fullModel)).isDefined()) {
+            classname = resolved.asString();
+        }
         String module = null;
-        if (WebValveDefinition.MODULE.resolveModelAttribute(context, operation).isDefined())
-            module = WebValveDefinition.MODULE.resolveModelAttribute(context, operation).asString();
+        if ((resolved =  WebValveDefinition.MODULE.resolveModelAttribute(context, fullModel)).isDefined()) {
+            module = resolved.asString();
+        }
 
-        final boolean enabled = WebValveDefinition.ENABLED.resolveModelAttribute(context, operation).asBoolean();
+        final boolean enabled = WebValveDefinition.ENABLED.resolveModelAttribute(context, fullModel).asBoolean();
         final WebValveService service = new WebValveService(name, classname, module);
         final ServiceTarget serviceTarget = context.getServiceTarget();
         final ServiceBuilder<?> serviceBuilder = serviceTarget.addService(WebSubsystemServices.JBOSS_WEB_VALVE.append(name), service)
                 .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getWebServer());
 
-        if (operation.hasDefined(PARAM)) {
-            service.setParam(operation.get(PARAM).clone());
+        if ((resolved =  WebValveDefinition.PARAMS.resolveModelAttribute(context, fullModel)).isDefined()) {
+            service.setParam(resolved.clone());
         }
 
         serviceBuilder.setInitialMode(enabled ? Mode.ACTIVE : Mode.NEVER);

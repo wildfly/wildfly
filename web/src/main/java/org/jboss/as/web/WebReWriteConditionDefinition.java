@@ -61,6 +61,7 @@ public class WebReWriteConditionDefinition extends SimpleResourceDefinition {
                     .setValidator(new StringLengthValidator(1, false))
                     .build();
 
+    protected static final SimpleAttributeDefinition[] ATTRIBUTES = { TEST, PATTERN, FLAGS };
 
     private WebReWriteConditionDefinition() {
         super(WebExtension.REWRITECOND_PATH,

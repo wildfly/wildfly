@@ -65,7 +65,9 @@ public class WebValveDefinition extends SimpleResourceDefinition {
 
     protected static final SimpleAttributeDefinition[] ATTRIBUTES = { MODULE, CLASS_NAME, ENABLED};
 
-    protected static final PropertiesAttributeDefinition PARAMS = new PropertiesAttributeDefinition.Builder(Constants.PARAM, true).build();
+    protected static final PropertiesAttributeDefinition PARAMS = new PropertiesAttributeDefinition.Builder(Constants.PARAM, true)
+            .setAllowExpression(true)
+            .build();
 
     static final SimpleAttributeDefinition PARAM_NAME = new SimpleAttributeDefinitionBuilder(Constants.PARAM_NAME, ModelType.STRING, true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
