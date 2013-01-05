@@ -143,7 +143,7 @@ public class WebConnectorDefinition extends SimpleResourceDefinition {
                     .setAllowNull(true)
                     .setValidator(new IntRangeValidator(1, true))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(8433))
+                    .setDefaultValue(new ModelNode(443))
                     .setAllowExpression(true)
                     .build();
 
@@ -153,7 +153,6 @@ public class WebConnectorDefinition extends SimpleResourceDefinition {
                     .setValidator(new IntRangeValidator(1, true))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setAllowExpression(true)
-                            //.setDefaultValue(new ModelNode(8433))
                     .build();
 
     protected static final StringListAttributeDefinition VIRTUAL_SERVER = new StringListAttributeDefinition.Builder(Constants.VIRTUAL_SERVER)
