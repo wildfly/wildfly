@@ -190,7 +190,11 @@ public class ServerInventoryImpl implements ServerInventory {
             shutdownCondition.notifyAll();
         }
         if(blocking) {
+            // Block until the server started message
             server.awaitState(ManagedServer.InternalState.SERVER_STARTED);
+        } else {
+            // Wait until the server opens the mgmt connection
+            server.awaitState(ManagedServer.InternalState.SERVER_STARTING);
         }
         return server.getState();
     }
