@@ -66,6 +66,7 @@ import org.jboss.vfs.VirtualFile;
  * </ul>
  *
  * @author Stuart Douglas
+ * @author Ales Justin
  */
 public final class ManifestClassPathProcessor implements DeploymentUnitProcessor {
 
@@ -152,9 +153,13 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
                 //then resolve relative to the deployment root
                 final VirtualFile topLevelClassPathFile = deploymentRoot.getRoot().getParent().getChild(item);
                 if (item.startsWith("/")) {
-                    final ModuleIdentifier moduleIdentifier = externalModuleService.addExternalModule(item);
-                    target.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES, moduleIdentifier);
-                    ServerLogger.DEPLOYMENT_LOGGER.debugf("Resource %s added as external jar %s", classPathFile, resourceRoot.getRoot());
+                    if (externalModuleService.isValid(item)) {
+                        final ModuleIdentifier moduleIdentifier = externalModuleService.addExternalModule(item);
+                        target.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES, moduleIdentifier);
+                        ServerLogger.DEPLOYMENT_LOGGER.debugf("Resource %s added as external jar %s", classPathFile, resourceRoot.getRoot());
+                    } else {
+                        ServerLogger.DEPLOYMENT_LOGGER.classPathEntryNotValid(item, resourceRoot.getRoot().getPathName());
+                    }
                 } else {
                     if (classPathFile.exists()) {
                         //we need to check that this class path item actually lies within the deployment
