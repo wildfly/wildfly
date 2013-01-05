@@ -41,8 +41,7 @@ public interface KernelServices extends ModelTestKernelServices<KernelServices> 
      *
      * @param modelVersion the subsystem model version of the legacy subsystem model controller
      * @param op the operation for the main controller
-     * @throws IllegalStateException if this is not the test's main model controller
-     * @throws IllegalStateException if there is no legacy controller containing the version of the subsystem
+     * @throws IllegalStateException if this is not the test's main model controller or if there is no legacy controller containing the version of the subsystem
      */
     ModelNode executeOperation(final ModelVersion modelVersion, final TransformedOperation op);
 

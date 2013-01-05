@@ -40,7 +40,6 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.security.service.SecurityVaultService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
 
 /**
@@ -50,12 +49,12 @@ public class VaultResourceDefinition extends SimpleResourceDefinition {
 
     public static final VaultResourceDefinition INSTANCE = new VaultResourceDefinition();
 
-    public static final SimpleAttributeDefinition CODE =
-            new SimpleAttributeDefinitionBuilder(Constants.CODE, ModelType.STRING, true).build();
-
+    public static final SimpleAttributeDefinition CODE = new SimpleAttributeDefinitionBuilder(Constants.CODE, ModelType.STRING, true)
+                    .build();
 
     public static final PropertiesAttributeDefinition OPTIONS = new PropertiesAttributeDefinition.Builder(Constants.VAULT_OPTIONS, true)
             .setXmlName(Constants.VAULT_OPTION)
+            .setAllowExpression(true)
             .build();
 
 
@@ -68,7 +67,6 @@ public class VaultResourceDefinition extends SimpleResourceDefinition {
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadWriteAttribute(OPTIONS, null, new ReloadRequiredWriteAttributeHandler(OPTIONS));
         resourceRegistration.registerReadWriteAttribute(CODE, null, new ReloadRequiredWriteAttributeHandler(CODE));
-
     }
 
     static class VaultResourceDefinitionAdd extends AbstractBoottimeAddStepHandler {
@@ -83,19 +81,16 @@ public class VaultResourceDefinition extends SimpleResourceDefinition {
         @Override
         protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
             Map<String, Object> vaultOptions = new HashMap<String, Object>();
-            ModelNode vaultNode = operation;
             ModelNode vaultClassNode = CODE.resolveModelAttribute(context, model);
             String vaultClass = vaultClassNode.getType() == ModelType.UNDEFINED ? null : vaultClassNode.asString();
 
-            if (vaultNode.hasDefined(Constants.VAULT_OPTIONS)) {
-                List<Property> vaultOptionList = vaultNode.get(Constants.VAULT_OPTIONS).asPropertyList();
-                for (Property vaultOption : vaultOptionList) {
-                    vaultOptions.put(vaultOption.getName(), vaultOption.getValue().asString());
+            if (operation.hasDefined(Constants.VAULT_OPTIONS)) {
+                for (Map.Entry<String,String> vaultOption : OPTIONS.unwrap(context,model).entrySet()) {
+                    vaultOptions.put(vaultOption.getKey(), vaultOption.getValue());
                 }
             }
-
             // add security vault service
-            if (vaultClass != null || vaultOptions.isEmpty() == false) {
+            if (vaultClass != null || !vaultOptions.isEmpty()) {
                 final SecurityVaultService vaultService = new SecurityVaultService(vaultClass, vaultOptions);
                 newControllers.add(context.getServiceTarget()
                         .addService(SecurityVaultService.SERVICE_NAME, vaultService)

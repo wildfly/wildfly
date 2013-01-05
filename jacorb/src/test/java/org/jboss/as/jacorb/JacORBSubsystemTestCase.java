@@ -178,7 +178,9 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
             }
         };
 
-        KernelServices servicesA = super.installInController(additionalInit, subsystemXml);
+        KernelServices servicesA = createKernelServicesBuilder(additionalInit)
+                .setSubsystemXml(subsystemXml)
+                .build();
         // get the model and the describe operations from the first controller.
         ModelNode modelA = servicesA.readWholeModel();
         ModelNode describeOp = new ModelNode();
@@ -186,13 +188,13 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
         describeOp.get(OP_ADDR).set(
                 PathAddress.pathAddress(
                         PathElement.pathElement(SUBSYSTEM, JacORBExtension.SUBSYSTEM_NAME)).toModelNode());
-        List<ModelNode> operations = super.checkResultAndGetContents(servicesA.executeOperation(describeOp)).asList();
+        List<ModelNode> operations = checkResultAndGetContents(servicesA.executeOperation(describeOp)).asList();
         servicesA.shutdown();
 
         Assert.assertEquals(1, operations.size());
 
         // install the describe options from the first controller into a second controller.
-        KernelServices servicesB = super.installInController(additionalInit, operations);
+        KernelServices servicesB = createKernelServicesBuilder(additionalInit).setBootOperations(operations).build();
         ModelNode modelB = servicesB.readWholeModel();
         servicesB.shutdown();
 

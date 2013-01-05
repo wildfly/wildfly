@@ -255,16 +255,16 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         checkSubsystemModelTransformation(mainServices, modelVersion);
         //Check that start level was removed
-        ModelNode currentModule1 = current.get(ModelDescriptionConstants.SUBSYSTEM, mainSubsystemName, ModelConstants.CAPABILITY, "org.acme.module1");
+        ModelNode currentModule1 = current.get(ModelDescriptionConstants.SUBSYSTEM, getMainSubsystemName(), ModelConstants.CAPABILITY, "org.acme.module1");
         Assert.assertTrue(currentModule1.isDefined());
         Assert.assertTrue(currentModule1.has(ModelConstants.STARTLEVEL));
         Assert.assertFalse(currentModule1.hasDefined(ModelConstants.STARTLEVEL));
 
-        ModelNode legacyModule1 = legacy.get(ModelDescriptionConstants.SUBSYSTEM, mainSubsystemName, ModelConstants.CAPABILITY, "org.acme.module1");
+        ModelNode legacyModule1 = legacy.get(ModelDescriptionConstants.SUBSYSTEM, getMainSubsystemName(), ModelConstants.CAPABILITY, "org.acme.module1");
         Assert.assertTrue(legacyModule1.isDefined());
         Assert.assertFalse(legacyModule1.has(ModelConstants.STARTLEVEL));
 
-        ModelNode transformedModule1 = mainServices.readTransformedModel(modelVersion).get(SUBSYSTEM, mainSubsystemName, ModelConstants.CAPABILITY, "org.acme.module1");
+        ModelNode transformedModule1 = mainServices.readTransformedModel(modelVersion).get(SUBSYSTEM, getMainSubsystemName(), ModelConstants.CAPABILITY, "org.acme.module1");
         Assert.assertTrue(transformedModule1.isDefined());
         Assert.assertFalse(legacyModule1.has(ModelConstants.STARTLEVEL));
     }

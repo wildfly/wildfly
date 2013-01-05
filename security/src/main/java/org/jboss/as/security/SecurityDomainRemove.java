@@ -40,8 +40,6 @@ import org.jboss.dmr.ModelNode;
  */
 class SecurityDomainRemove extends AbstractRemoveStepHandler {
 
-    static final String OPERATION_NAME = REMOVE;
-
     static final SecurityDomainRemove INSTANCE = new SecurityDomainRemove();
 
     /**

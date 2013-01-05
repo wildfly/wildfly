@@ -156,10 +156,10 @@ public class InfinispanSubsystemTestCase extends ClusteringSubsystemTest {
        ModelNode describeOp = new ModelNode();
        describeOp.get(OP).set(DESCRIBE);
        describeOp.get(OP_ADDR).set(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, getMainSubsystemName())).toModelNode());
-       List<ModelNode> operations = super.checkResultAndGetContents(servicesA.executeOperation(describeOp)).asList();
+       List<ModelNode> operations = checkResultAndGetContents(servicesA.executeOperation(describeOp)).asList();
 
        // Install the describe options from the first controller into a second controller
-       KernelServices servicesB = super.installInController(operations);
+       KernelServices servicesB = createKernelServicesBuilder(null).setBootOperations(operations).build();
        ModelNode modelB = servicesB.readWholeModel();
 
        // Make sure the models from the two controllers are identical

@@ -163,8 +163,7 @@ public class SecurityExtension implements Extension {
         @Override
         public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
             transformModulesToAttributes(address, resourceName, oldName, context, operation);
-            TransformedOperation op = new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
-            return op;
+            return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
         }
 
         @Override

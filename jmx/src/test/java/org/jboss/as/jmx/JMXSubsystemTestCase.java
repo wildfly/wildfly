@@ -188,7 +188,9 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
                 "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
                 "<remoting-connector/>" +
                 "</subsystem>";
-        KernelServices services = super.installInController(new BaseAdditionalInitalization(),subsystemXml);
+        KernelServices services = createKernelServicesBuilder(new BaseAdditionalInitalization())
+                .setSubsystemXml(subsystemXml)
+                .build();
 
         //Read the whole model and make sure it looks as expected
         ModelNode model = services.readWholeModel();
@@ -229,7 +231,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
                         "<subsystem xmlns=\"" + Namespace.JMX_1_0.getUriString() + "\"/>";
         AdditionalInitialization additionalInit = new BaseAdditionalInitalization();
 
-        KernelServices servicesA = super.installInController(additionalInit, subsystemXml);
+        KernelServices servicesA = createKernelServicesBuilder(additionalInit).setSubsystemXml(subsystemXml).build();
         //Get the model and the persisted xml from the first controller
         ModelNode modelA = servicesA.readWholeModel();
         String marshalled = servicesA.getPersistedSubsystemXml();
@@ -240,7 +242,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         compareXml(null, finishedSubsystemXml, marshalled, true);
 
         //Install the persisted xml from the first controller into a second controller
-        KernelServices servicesB = super.installInController(additionalInit, marshalled);
+        KernelServices servicesB = createKernelServicesBuilder(additionalInit).setSubsystemXml(marshalled).build();
         ModelNode modelB = servicesB.readWholeModel();
 
         //Make sure the models from the two controllers are identical
@@ -262,7 +264,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
 
         AdditionalInitialization additionalInit = new BaseAdditionalInitalization();
 
-        KernelServices servicesA = super.installInController(additionalInit, subsystemXml);
+        KernelServices servicesA = createKernelServicesBuilder(additionalInit).setSubsystemXml(subsystemXml).build();
         //Get the model and the persisted xml from the first controller
         ModelNode modelA = servicesA.readWholeModel();
         String marshalled = servicesA.getPersistedSubsystemXml();
@@ -272,7 +274,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         compareXml(null, finishedXml, marshalled, true);
 
         //Install the persisted xml from the first controller into a second controller
-        KernelServices servicesB = super.installInController(additionalInit, marshalled);
+        KernelServices servicesB = createKernelServicesBuilder(additionalInit).setSubsystemXml(marshalled).build();
         ModelNode modelB = servicesB.readWholeModel();
 
         //Make sure the models from the two controllers are identical
@@ -291,7 +293,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
 
         AdditionalInitialization additionalInit = new BaseAdditionalInitalization();
 
-        KernelServices servicesA = super.installInController(additionalInit, subsystemXml);
+        KernelServices servicesA = createKernelServicesBuilder(additionalInit).setSubsystemXml(subsystemXml).build();
         //Get the model and the persisted xml from the first controller
         ModelNode modelA = servicesA.readWholeModel();
         String marshalled = servicesA.getPersistedSubsystemXml();
@@ -300,7 +302,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         compareXml(null, subsystemXml, marshalled, true);
 
         //Install the persisted xml from the first controller into a second controller
-        KernelServices servicesB = super.installInController(additionalInit, marshalled);
+        KernelServices servicesB = createKernelServicesBuilder(additionalInit).setSubsystemXml(marshalled).build();
         ModelNode modelB = servicesB.readWholeModel();
 
         //Make sure the models from the two controllers are identical
@@ -324,7 +326,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
 
         AdditionalInitialization additionalInit = new BaseAdditionalInitalization();
 
-        KernelServices servicesA = super.installInController(additionalInit, subsystemXml);
+        KernelServices servicesA = createKernelServicesBuilder(additionalInit).setSubsystemXml(subsystemXml).build();
         //Get the model and the persisted xml from the first controller
         ModelNode modelA = servicesA.readWholeModel();
         String marshalled = servicesA.getPersistedSubsystemXml();
@@ -334,7 +336,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         compareXml(null, finishedXml, marshalled, true);
 
         //Install the persisted xml from the first controller into a second controller
-        KernelServices servicesB = super.installInController(additionalInit, marshalled);
+        KernelServices servicesB = createKernelServicesBuilder(additionalInit).setSubsystemXml(marshalled).build();
         ModelNode modelB = servicesB.readWholeModel();
 
         //Make sure the models from the two controllers are identical
@@ -352,7 +354,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
 
         AdditionalInitialization additionalInit = new BaseAdditionalInitalization();
 
-        KernelServices servicesA = super.installInController(additionalInit, subsystemXml);
+        KernelServices servicesA = createKernelServicesBuilder(additionalInit).setSubsystemXml(subsystemXml).build();
         //Get the model and the persisted xml from the first controller
         ModelNode modelA = servicesA.readWholeModel();
         String marshalled = servicesA.getPersistedSubsystemXml();
@@ -362,7 +364,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         compareXml(null, subsystemXml, marshalled, true);
 
         //Install the persisted xml from the first controller into a second controller
-        KernelServices servicesB = super.installInController(additionalInit, marshalled);
+        KernelServices servicesB = createKernelServicesBuilder(additionalInit).setSubsystemXml(marshalled).build();
         ModelNode modelB = servicesB.readWholeModel();
 
         //Make sure the models from the two controllers are identical
@@ -380,7 +382,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
 
         AdditionalInitialization additionalInit = new BaseAdditionalInitalization();
 
-        KernelServices servicesA = super.installInController(additionalInit, subsystemXml);
+        KernelServices servicesA = createKernelServicesBuilder(additionalInit).setSubsystemXml(subsystemXml).build();
         //Get the model and the persisted xml from the first controller
         ModelNode modelA = servicesA.readWholeModel();
         Assert.assertTrue(modelA.get(SUBSYSTEM, "jmx", CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED).hasDefined(CommonAttributes.PROPER_PROPERTY_FORMAT));
@@ -392,7 +394,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         compareXml(null, subsystemXml, marshalled, true);
 
         //Install the persisted xml from the first controller into a second controller
-        KernelServices servicesB = super.installInController(additionalInit, marshalled);
+        KernelServices servicesB = createKernelServicesBuilder(additionalInit).setSubsystemXml(marshalled).build();
         ModelNode modelB = servicesB.readWholeModel();
 
         //Make sure the models from the two controllers are identical
@@ -408,7 +410,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
                 "   <expose-expression-model domain-name=\"jboss.EXPRESSION\"/>" +
                 "    <remoting-connector />" +
                 "</subsystem>";
-        KernelServices servicesA = super.installInController(subsystemXml);
+        KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
         //Get the model and the describe operations from the first controller
         ModelNode modelA = servicesA.readWholeModel();
         ModelNode describeOp = new ModelNode();
@@ -423,7 +425,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
 
 
         //Install the describe options from the first controller into a second controller
-        KernelServices servicesB = super.installInController(operations);
+        KernelServices servicesB = createKernelServicesBuilder(null).setBootOperations(operations).build();
         ModelNode modelB = servicesB.readWholeModel();
 
         //Make sure the models from the two controllers are identical
@@ -435,7 +437,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         String subsystemXml =
                 "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\"/>";
 
-        KernelServices services = super.installInController(subsystemXml);
+        KernelServices services = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
 
         ModelNode model = services.readWholeModel();
         Assert.assertFalse(model.get(SUBSYSTEM, JMXExtension.SUBSYSTEM_NAME, CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED).isDefined());
@@ -523,7 +525,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         checkOutcome(mainServices.executeOperation(op));
         checkOutcome(mainServices.executeOperation(oldVersion, transformedOp));
         legacyModel = checkSubsystemModelTransformation(mainServices, oldVersion);
-        check_1_0_0_Model(legacyModel.get(SUBSYSTEM, mainSubsystemName), true, false);
+        check_1_0_0_Model(legacyModel.get(SUBSYSTEM, getMainSubsystemName()), true, false);
 
 
         op = createOperation(ADD, CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED);
@@ -531,7 +533,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         checkOutcome(mainServices.executeOperation(op));
         checkOutcome(mainServices.executeOperation(oldVersion, transformedOp));
         legacyModel = checkSubsystemModelTransformation(mainServices, oldVersion);
-        check_1_0_0_Model(legacyModel.get(SUBSYSTEM, mainSubsystemName), true, true);
+        check_1_0_0_Model(legacyModel.get(SUBSYSTEM, getMainSubsystemName()), true, true);
 
     }
 
