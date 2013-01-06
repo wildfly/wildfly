@@ -54,7 +54,7 @@ public class CacheResource extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition BATCHING =
             new SimpleAttributeDefinitionBuilder(ModelKeys.BATCHING, ModelType.BOOLEAN, true)
                     .setXmlName(Attribute.BATCHING.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(false))
                     .build();
@@ -62,7 +62,7 @@ public class CacheResource extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition CACHE_MODULE =
             new SimpleAttributeDefinitionBuilder(ModelKeys.MODULE, ModelType.STRING, true)
                     .setXmlName(Attribute.MODULE.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new ModuleIdentifierValidator(true))
                     .build();
@@ -70,7 +70,7 @@ public class CacheResource extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition INDEXING =
             new SimpleAttributeDefinitionBuilder(ModelKeys.INDEXING, ModelType.STRING, true)
                     .setXmlName(Attribute.INDEX.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new EnumValidator<Indexing>(Indexing.class, true, false))
                     .setDefaultValue(new ModelNode().set(Indexing.NONE.name()))
@@ -98,14 +98,14 @@ public class CacheResource extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition JNDI_NAME =
             new SimpleAttributeDefinitionBuilder(ModelKeys.JNDI_NAME, ModelType.STRING, true)
                     .setXmlName(Attribute.JNDI_NAME.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
     static final SimpleAttributeDefinition START =
             new SimpleAttributeDefinitionBuilder(ModelKeys.START, ModelType.STRING, true)
                     .setXmlName(Attribute.START.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new EnumValidator<StartMode>(StartMode.class, true, false))
                     .setDefaultValue(new ModelNode().set(StartMode.LAZY.name()))

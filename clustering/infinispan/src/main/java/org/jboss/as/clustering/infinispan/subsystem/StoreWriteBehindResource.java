@@ -45,13 +45,13 @@ import org.jboss.dmr.ModelType;
  */
 public class StoreWriteBehindResource extends SimpleResourceDefinition {
 
-    private static final PathElement STORE_WRITE_BEHIND_PATH = PathElement.pathElement(ModelKeys.WRITE_BEHIND, ModelKeys.WRITE_BEHIND_NAME);
+    public static final PathElement STORE_WRITE_BEHIND_PATH = PathElement.pathElement(ModelKeys.WRITE_BEHIND, ModelKeys.WRITE_BEHIND_NAME);
 
     // attributes
     static final SimpleAttributeDefinition FLUSH_LOCK_TIMEOUT =
             new SimpleAttributeDefinitionBuilder(ModelKeys.FLUSH_LOCK_TIMEOUT, ModelType.LONG, true)
                     .setXmlName(Attribute.FLUSH_LOCK_TIMEOUT.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(1))
                     .build();
@@ -59,7 +59,7 @@ public class StoreWriteBehindResource extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition MODIFICATION_QUEUE_SIZE =
             new SimpleAttributeDefinitionBuilder(ModelKeys.MODIFICATION_QUEUE_SIZE, ModelType.INT, true)
                     .setXmlName(Attribute.MODIFICATION_QUEUE_SIZE.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(1024))
                     .build();
@@ -67,7 +67,7 @@ public class StoreWriteBehindResource extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition SHUTDOWN_TIMEOUT =
             new SimpleAttributeDefinitionBuilder(ModelKeys.SHUTDOWN_TIMEOUT, ModelType.LONG, true)
                     .setXmlName(Attribute.SHUTDOWN_TIMEOUT.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(25000))
                     .build();
@@ -75,7 +75,7 @@ public class StoreWriteBehindResource extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition THREAD_POOL_SIZE =
             new SimpleAttributeDefinitionBuilder(ModelKeys.THREAD_POOL_SIZE, ModelType.INT, true)
                     .setXmlName(Attribute.THREAD_POOL_SIZE.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(1))
                     .build();

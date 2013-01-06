@@ -48,7 +48,7 @@ public class ClusteredCacheResource extends CacheResource  {
     static final SimpleAttributeDefinition ASYNC_MARSHALLING =
             new SimpleAttributeDefinitionBuilder(ModelKeys.ASYNC_MARSHALLING, ModelType.BOOLEAN, true)
                     .setXmlName(Attribute.ASYNC_MARSHALLING.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(false))
                     .build();
@@ -66,7 +66,7 @@ public class ClusteredCacheResource extends CacheResource  {
             new SimpleAttributeDefinitionBuilder(ModelKeys.QUEUE_FLUSH_INTERVAL, ModelType.LONG, true)
                     .setXmlName(Attribute.QUEUE_FLUSH_INTERVAL.getLocalName())
                     .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(10))
                     .build();
@@ -74,7 +74,7 @@ public class ClusteredCacheResource extends CacheResource  {
     static final SimpleAttributeDefinition QUEUE_SIZE =
             new SimpleAttributeDefinitionBuilder(ModelKeys.QUEUE_SIZE, ModelType.INT, true)
                     .setXmlName(Attribute.QUEUE_SIZE.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(0))
                     .build();
@@ -83,7 +83,7 @@ public class ClusteredCacheResource extends CacheResource  {
             new SimpleAttributeDefinitionBuilder(ModelKeys.REMOTE_TIMEOUT, ModelType.LONG, true)
                     .setXmlName(Attribute.REMOTE_TIMEOUT.getLocalName())
                     .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(17500))
                     .build();

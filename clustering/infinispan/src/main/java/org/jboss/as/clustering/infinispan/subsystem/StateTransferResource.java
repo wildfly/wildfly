@@ -43,13 +43,13 @@ import org.jboss.dmr.ModelType;
  */
 public class StateTransferResource extends SimpleResourceDefinition {
 
-    private static final PathElement STATE_TRANSFER_PATH = PathElement.pathElement(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME);
+    public static final PathElement STATE_TRANSFER_PATH = PathElement.pathElement(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME);
 
     // attributes
     static final SimpleAttributeDefinition CHUNK_SIZE =
             new SimpleAttributeDefinitionBuilder(ModelKeys.CHUNK_SIZE, ModelType.INT, true)
                     .setXmlName(Attribute.CHUNK_SIZE.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(10000))
                     .build();
@@ -58,7 +58,7 @@ public class StateTransferResource extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition ENABLED =
             new SimpleAttributeDefinitionBuilder(ModelKeys.ENABLED, ModelType.BOOLEAN, true)
                     .setXmlName(Attribute.ENABLED.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(true))
                     .build();
@@ -68,7 +68,7 @@ public class StateTransferResource extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(ModelKeys.TIMEOUT, ModelType.LONG, true)
                     .setXmlName(Attribute.TIMEOUT.getLocalName())
                     .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(60000))
                     .build();
