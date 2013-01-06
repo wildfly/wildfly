@@ -43,14 +43,14 @@ import org.jboss.dmr.ModelType;
  */
 public class ExpirationResource extends SimpleResourceDefinition {
 
-    private static final PathElement EXPIRATION_PATH = PathElement.pathElement(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME);
+    public static final PathElement EXPIRATION_PATH = PathElement.pathElement(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME);
 
     // attributes
     static final SimpleAttributeDefinition INTERVAL =
             new SimpleAttributeDefinitionBuilder(ModelKeys.INTERVAL, ModelType.LONG, true)
                     .setXmlName(Attribute.INTERVAL.getLocalName())
                     .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(60000))
                     .build();
@@ -59,7 +59,7 @@ public class ExpirationResource extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(ModelKeys.LIFESPAN, ModelType.LONG, true)
                     .setXmlName(Attribute.LIFESPAN.getLocalName())
                     .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(-1))
                     .build();
@@ -68,7 +68,7 @@ public class ExpirationResource extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(ModelKeys.MAX_IDLE, ModelType.LONG, true)
                     .setXmlName(Attribute.MAX_IDLE.getLocalName())
                     .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(-1))
                     .build();

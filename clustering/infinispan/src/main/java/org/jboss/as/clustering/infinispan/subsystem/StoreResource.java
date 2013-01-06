@@ -51,7 +51,7 @@ public class StoreResource extends BaseStoreResource {
     static final SimpleAttributeDefinition CLASS =
             new SimpleAttributeDefinitionBuilder(ModelKeys.CLASS, ModelType.STRING, false)
                     .setXmlName(Attribute.CLASS.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 

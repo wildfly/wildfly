@@ -57,6 +57,28 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return readOp ;
     }
 
+    protected static ModelNode getCacheContainerAddAliasOperation(String containerName, String name, String value) {
+        // create the address of the subsystem
+        PathAddress cacheContainerAddress = getCacheContainerAddress(containerName);
+        ModelNode addAliasOp = new ModelNode() ;
+        addAliasOp.get(OP).set("add-alias");
+        addAliasOp.get(OP_ADDR).set(cacheContainerAddress.toModelNode());
+        // required attributes
+        addAliasOp.get(NAME).set(name);
+        return addAliasOp ;
+    }
+
+    protected static ModelNode getCacheContainerRemoveAliasOperation(String containerName, String name) {
+        // create the address of the subsystem
+        PathAddress cacheContainerAddress = getCacheContainerAddress(containerName);
+        ModelNode removeAliasOp = new ModelNode() ;
+        removeAliasOp.get(OP).set("remove-alias");
+        removeAliasOp.get(OP_ADDR).set(cacheContainerAddress.toModelNode());
+        // required attributes
+        removeAliasOp.get(NAME).set(name);
+        return removeAliasOp ;
+    }
+
     protected static ModelNode getCacheContainerWriteOperation(String containerName, String name, String value) {
         // create the address of the subsystem
         PathAddress cacheAddress = getCacheContainerAddress(containerName);
@@ -131,6 +153,11 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     protected static ModelNode getMixedKeyedJDBCCacheStoreWriteOperation(String containerName, String cacheType, String cacheName, String name, String value) {
         PathAddress cacheStoreAddress = getMixedKeyedJDBCCacheStoreAddress(containerName, cacheType, cacheName);
         return Util.getWriteAttributeOperation(cacheStoreAddress, name, new ModelNode().set(value));
+    }
+
+    protected static ModelNode getMixedKeyedJDBCCacheStoreWriteOperation(String containerName, String cacheType, String cacheName, String name, ModelNode value) {
+        PathAddress cacheStoreAddress = getMixedKeyedJDBCCacheStoreAddress(containerName, cacheType, cacheName);
+        return Util.getWriteAttributeOperation(cacheStoreAddress, name, value);
     }
 
     //cache store property access

@@ -21,6 +21,7 @@
 */
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import static org.jboss.as.clustering.infinispan.subsystem.ModelKeys.DEFAULT_CACHE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
@@ -29,6 +30,8 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -39,6 +42,15 @@ import org.junit.Test;
 
 /**
  * Test cases for transformers used in the Infinispan subsystem
+ *
+ * Here we perform two types of tests:
+ * - the basic subsystem model transformation to check resource and operation transformer
+ * integrity on the 1.4 model alone
+ * - rejection of expressions between the 1.4 model (which does accept expressions for attributes) and
+ * the 1.3 model (which does not accept expressions for all but three attributes)
+ *
+ * NOTE: some code for adding Byteman testing of transformed values has been added  and commented out
+ * due to current issues with Byteman. These will be reinstated when the issues are resolved.
  *
  * @author <a href="tomaz.cerar@redhat.com">Tomaz Cerar</a>
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
@@ -95,16 +107,70 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
         KernelServices legacyServices = mainServices.getLegacyServices(version_1_3_0);
         junit.framework.Assert.assertNotNull(legacyServices);
 
-        // build an ADD command to add a cache store property using expression value
-        ModelNode operation = getCacheStorePropertyAddOperation("maximal", "repl", ModelKeys.REPLICATED_CACHE, "some_property", "${some_property_value:new}");
+        // A number of cases to test:
+        // 1. cache store property ADD and write operations, to check expressions are rejected for 1.4 attributes
+        // 2. DEFAULT_CACHE ADD and write operation, to check that expressions are not rejected for 1.3 attributes which accept expressions
+        // 3. cache store table ADD and write operations, to check that expressions are rejected for primitive values in complex attributes
+
+        // 1. cache store property should reject
+        ModelNode cacheStorePropertyAddOp = getCacheStorePropertyAddOperation("maximal", "repl", ModelKeys.REPLICATED_CACHE, "some_property", "${some_property_value:new}");
+        testRejectExpressionsForOperation(mainServices, version_1_3_0, cacheStorePropertyAddOp, true);
+
+        ModelNode cacheStorePropertyWriteOp = getCacheStorePropertyWriteOperation("maximal", "repl", ModelKeys.REPLICATED_CACHE, "some_property", "${some_property_value:new}");
+        testRejectExpressionsForOperation(mainServices, version_1_3_0, cacheStorePropertyWriteOp, true);
+
+        // 2. cache container should accept expressions for DEFAULT_CACHE
+        ModelNode cacheContainerAddOp = Util.createAddOperation(getCacheContainerAddress("somecontainer"));
+        cacheContainerAddOp.get(DEFAULT_CACHE).set("${some_default_cache:default}");
+        testRejectExpressionsForOperation(mainServices, version_1_3_0, cacheContainerAddOp, false);
+
+        ModelNode cacheContainerWriteOp = getCacheContainerWriteOperation("maximal", ModelKeys.DEFAULT_CACHE, "${some_default_cache:local2}");
+        testRejectExpressionsForOperation(mainServices, version_1_3_0, cacheContainerWriteOp, false);
+
+        // 3. cache store table operations should reject expressions on non-complex attributes
+        ModelNode stringKeyedTable = createStringKeyedTable("ispn_bucket", 100, 100,
+                new String[] {"id", "VARCHAR"}, new String[] {"datun", "BINARY"}, new String[] {"version", "${someversion:BIGINT}"}) ;
+        ModelNode stringKeyedTableWriteOp = getMixedKeyedJDBCCacheStoreWriteOperation("maximal", ModelKeys.DISTRIBUTED_CACHE, "dist", "string-keyed-table", stringKeyedTable);
+        testRejectExpressionsForOperation(mainServices, version_1_3_0, stringKeyedTableWriteOp, true);
+    }
+
+    private void testRejectExpressionsForOperation(KernelServices services, ModelVersion version, ModelNode operation, boolean reject)
+            throws OperationFailedException {
 
         // perform operation on the 1.4.0 model
-        ModelNode mainResult = mainServices.executeOperation(operation);
+        ModelNode mainResult = services.executeOperation(operation);
         assertEquals(mainResult.toJSONString(true), SUCCESS, mainResult.get(OUTCOME).asString());
 
-        // perform transformed operation on the 1.3.0 model
-        OperationTransformer.TransformedOperation transformedOperation = mainServices.transformOperation(version_1_3_0, operation);
-        final ModelNode result = mainServices.executeOperation(version_1_3_0, transformedOperation);
-        junit.framework.Assert.assertEquals("should reject the expression", FAILED, result.get(OUTCOME).asString());
+        // perform transformed operation on the 1.3.0 model - expect rejection
+        OperationTransformer.TransformedOperation transformedOperation = services.transformOperation(version, operation);
+        final ModelNode addResult = services.executeOperation(version, transformedOperation);
+
+        if (reject)
+            junit.framework.Assert.assertEquals("should reject the expression", FAILED, addResult.get(OUTCOME).asString());
+        else
+            junit.framework.Assert.assertEquals("should not reject the expression", SUCCESS, addResult.get(OUTCOME).asString());
+    }
+
+    private ModelNode createStringKeyedTable(String prefix, int batchSize, int fetchSize, String[] idCol, String[] dataCol, String[] timestampCol) {
+
+        // create a string-keyed-table complex attribute
+        ModelNode stringKeyedTable = new ModelNode().setEmptyObject() ;
+        stringKeyedTable.get(ModelKeys.PREFIX).set(prefix);
+        stringKeyedTable.get(ModelKeys.BATCH_SIZE).set(batchSize);
+        stringKeyedTable.get(ModelKeys.FETCH_SIZE).set(fetchSize);
+
+        ModelNode idColumn = stringKeyedTable.get(ModelKeys.ID_COLUMN).setEmptyObject();
+        idColumn.get(ModelKeys.NAME).set(idCol[0]) ;
+        idColumn.get(ModelKeys.TYPE).set(idCol[1]) ;
+
+        ModelNode dataColumn = stringKeyedTable.get(ModelKeys.DATA_COLUMN).setEmptyObject();
+        dataColumn.get(ModelKeys.NAME).set(dataCol[0]) ;
+        dataColumn.get(ModelKeys.TYPE).set(dataCol[1]) ;
+
+        ModelNode timestampColumn = stringKeyedTable.get(ModelKeys.TIMESTAMP_COLUMN).setEmptyObject();
+        timestampColumn.get(ModelKeys.NAME).set(timestampCol[0]) ;
+        timestampColumn.get(ModelKeys.TYPE).set(timestampCol[1]) ;
+
+        return stringKeyedTable ;
     }
 }

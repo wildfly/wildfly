@@ -46,7 +46,7 @@ public class BaseJDBCStoreResource extends BaseStoreResource {
     static final SimpleAttributeDefinition DATA_SOURCE =
             new SimpleAttributeDefinitionBuilder(ModelKeys.DATASOURCE, ModelType.STRING, false)
                     .setXmlName(Attribute.DATASOURCE.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
@@ -55,29 +55,40 @@ public class BaseJDBCStoreResource extends BaseStoreResource {
     static final SimpleAttributeDefinition BATCH_SIZE =
             new SimpleAttributeDefinitionBuilder(ModelKeys.BATCH_SIZE, ModelType.INT, true)
                     .setXmlName(Attribute.BATCH_SIZE.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(100))
                     .build();
     static final SimpleAttributeDefinition FETCH_SIZE =
             new SimpleAttributeDefinitionBuilder(ModelKeys.FETCH_SIZE, ModelType.INT, true)
                     .setXmlName(Attribute.FETCH_SIZE.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(100))
                     .build();
     static final SimpleAttributeDefinition PREFIX =
             new SimpleAttributeDefinitionBuilder(ModelKeys.PREFIX, ModelType.STRING, true)
                     .setXmlName(Attribute.PREFIX.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
 //                   .setDefaultValue(new ModelNode().set("ispn_bucket"))
 //                   .setDefaultValue(new ModelNode().set("ispn_entry"))
                     .build();
 
-    static final SimpleAttributeDefinition COLUMN_NAME = new SimpleAttributeDefinition("name", ModelType.STRING, true);
-
-    static final SimpleAttributeDefinition COLUMN_TYPE = new SimpleAttributeDefinition("type", ModelType.STRING, true);
+    static final SimpleAttributeDefinition COLUMN_NAME =
+            new SimpleAttributeDefinitionBuilder("name", ModelType.STRING, true)
+                    .setXmlName("name")
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode().set("name"))
+                    .build();
+    static final SimpleAttributeDefinition COLUMN_TYPE =
+            new SimpleAttributeDefinitionBuilder("type", ModelType.STRING, true)
+                    .setXmlName("type")
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode().set("type"))
+                    .build();
 
     static final ObjectTypeAttributeDefinition ID_COLUMN = ObjectTypeAttributeDefinition.
             Builder.of("id-column", COLUMN_NAME, COLUMN_TYPE).

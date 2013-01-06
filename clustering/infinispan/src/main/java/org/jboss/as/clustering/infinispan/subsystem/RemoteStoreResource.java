@@ -55,13 +55,13 @@ public class RemoteStoreResource extends BaseStoreResource {
     static final SimpleAttributeDefinition CACHE =
             new SimpleAttributeDefinitionBuilder(ModelKeys.CACHE, ModelType.STRING, true)
                     .setXmlName(Attribute.CACHE.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
     static final SimpleAttributeDefinition TCP_NO_DELAY =
             new SimpleAttributeDefinitionBuilder(ModelKeys.TCP_NO_DELAY, ModelType.BOOLEAN, true)
                     .setXmlName(Attribute.TCP_NO_DELAY.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(true))
                     .build();
@@ -69,7 +69,7 @@ public class RemoteStoreResource extends BaseStoreResource {
             new SimpleAttributeDefinitionBuilder(ModelKeys.SOCKET_TIMEOUT, ModelType.LONG, true)
                     .setXmlName(Attribute.SOCKET_TIMEOUT.getLocalName())
                     .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(60000))
                     .build();

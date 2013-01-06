@@ -61,7 +61,7 @@ public class CacheContainerResource extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition CACHE_CONTAINER_MODULE =
             new SimpleAttributeDefinitionBuilder(ModelKeys.MODULE, ModelType.STRING, true)
                     .setXmlName(Attribute.MODULE.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new ModuleIdentifierValidator(true))
                     .setDefaultValue(new ModelNode().set("org.jboss.as.clustering.infinispan"))
@@ -85,7 +85,7 @@ public class CacheContainerResource extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition JNDI_NAME =
             new SimpleAttributeDefinitionBuilder(ModelKeys.JNDI_NAME, ModelType.STRING, true)
                     .setXmlName(Attribute.JNDI_NAME.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
@@ -113,7 +113,7 @@ public class CacheContainerResource extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition START =
             new SimpleAttributeDefinitionBuilder(ModelKeys.START, ModelType.STRING, true)
                     .setXmlName(Attribute.START.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new EnumValidator<StartMode>(StartMode.class, true, false))
                     .setDefaultValue(new ModelNode().set(StartMode.LAZY.name()))
