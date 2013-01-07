@@ -220,11 +220,9 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 writer.writeEndElement();
             }
             if (node.hasDefined(VALVE)) {
-                boolean valvestartwritten = false;
                 for (final Property valve : node.get(VALVE).asPropertyList()) {
                     final ModelNode config = valve.getValue();
                     writer.writeStartElement(Element.VALVE.getLocalName());
-                    valvestartwritten = true;
                     writer.writeAttribute(NAME, valve.getName());
                     for (SimpleAttributeDefinition attr : WebValveDefinition.ATTRIBUTES) {
                         attr.marshallAsAttribute(config, false, writer);
@@ -236,10 +234,9 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                             writer.writeAttribute(Attribute.PARAM_VALUE.getLocalName(), entry.getValue().asString());
                         }
                     }
+                    writer.writeEndElement();
 
                 }
-                if (valvestartwritten)
-                    writer.writeEndElement();
             }
 
         }
