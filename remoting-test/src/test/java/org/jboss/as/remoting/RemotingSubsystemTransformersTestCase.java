@@ -38,7 +38,6 @@ import static org.jboss.as.remoting.SaslPolicyResource.NO_DICTIONARY;
 import static org.jboss.as.remoting.SaslPolicyResource.NO_PLAIN_TEXT;
 import static org.jboss.as.remoting.SaslPolicyResource.PASS_CREDENTIALS;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -47,7 +46,11 @@ import java.io.IOException;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
@@ -66,8 +69,7 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
     @Test
     public void testExpressionsAreRejectedByVersion_1_1() throws Exception {
         String subsystemXml = readResource("remoting-with-expressions.xml");
-        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
-                .setSubsystemXml(subsystemXml);
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
         // Add legacy subsystems
         ModelVersion version_1_1 = ModelVersion.create(1, 1);
@@ -78,7 +80,53 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
         assertTrue(mainServices.isSuccessfulBoot());
         KernelServices legacyServices = mainServices.getLegacyServices(version_1_1);
         assertNotNull(legacyServices);
-        assertFalse(legacyServices.isSuccessfulBoot());
+        assertTrue(legacyServices.isSuccessfulBoot());
+
+        PathAddress rootAddr = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME));
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_1, parse(subsystemXml),
+                new FailedOperationTransformationConfig()
+                    .addFailedAttribute(rootAddr,
+                            new FailedOperationTransformationConfig.RejectExpressionsConfig(
+                                    RemotingSubsystemRootResource.WORKER_READ_THREADS,
+                                    RemotingSubsystemRootResource.WORKER_TASK_CORE_THREADS,
+                                    RemotingSubsystemRootResource.WORKER_TASK_KEEPALIVE,
+                                    RemotingSubsystemRootResource.WORKER_TASK_LIMIT,
+                                    RemotingSubsystemRootResource.WORKER_TASK_MAX_THREADS,
+                                    RemotingSubsystemRootResource.WORKER_WRITE_THREADS))
+                    .addFailedAttribute(rootAddr.append(PathElement.pathElement(CommonAttributes.CONNECTOR)).append(PathElement.pathElement(CommonAttributes.PROPERTY)),
+                            new FailedOperationTransformationConfig.RejectExpressionsConfig(VALUE))
+                    .addFailedAttribute(rootAddr.append(PathElement.pathElement(CommonAttributes.CONNECTOR)).append(PathElement.pathElement(CommonAttributes.SECURITY, CommonAttributes.SASL)),
+                            new FailedOperationTransformationConfig.RejectExpressionsConfig(CommonAttributes.SERVER_AUTH, CommonAttributes.REUSE_SESSION))
+                    .addFailedAttribute(rootAddr.append(PathElement.pathElement(CommonAttributes.CONNECTOR))
+                                .append(PathElement.pathElement(CommonAttributes.SECURITY, CommonAttributes.SASL)).append(PathElement.pathElement(CommonAttributes.SASL_POLICY)),
+                            new FailedOperationTransformationConfig.RejectExpressionsConfig(
+                                    CommonAttributes.FORWARD_SECRECY,
+                                    CommonAttributes.NO_ACTIVE,
+                                    CommonAttributes.NO_ANONYMOUS,
+                                    CommonAttributes.NO_DICTIONARY,
+                                    CommonAttributes.NO_PLAIN_TEXT,
+                                    CommonAttributes.PASS_CREDENTIALS))
+                    .addFailedAttribute(rootAddr.append(
+                            PathElement.pathElement(CommonAttributes.CONNECTOR))
+                                .append(PathElement.pathElement(CommonAttributes.SECURITY, CommonAttributes.SASL))
+                                .append(CommonAttributes.PROPERTY),
+                        new FailedOperationTransformationConfig.RejectExpressionsConfig(
+                                CommonAttributes.VALUE))
+                    .addFailedAttribute(rootAddr.append(
+                            PathElement.pathElement(CommonAttributes.OUTBOUND_CONNECTION))
+                                .append(CommonAttributes.PROPERTY),
+                        new FailedOperationTransformationConfig.RejectExpressionsConfig(
+                                CommonAttributes.VALUE))
+                    .addFailedAttribute(rootAddr.append(PathElement.pathElement(CommonAttributes.REMOTE_OUTBOUND_CONNECTION)),
+                        new FailedOperationTransformationConfig.RejectExpressionsConfig(CommonAttributes.USERNAME))
+                    .addFailedAttribute(rootAddr.append(
+                            PathElement.pathElement(CommonAttributes.REMOTE_OUTBOUND_CONNECTION))
+                                .append(PathElement.pathElement(CommonAttributes.PROPERTY)),
+                        new FailedOperationTransformationConfig.RejectExpressionsConfig(CommonAttributes.VALUE))
+                    .addFailedAttribute(rootAddr.append(
+                            PathElement.pathElement(CommonAttributes.LOCAL_OUTBOUND_CONNECTION))
+                                .append(PathElement.pathElement(CommonAttributes.PROPERTY)),
+                        new FailedOperationTransformationConfig.RejectExpressionsConfig(CommonAttributes.VALUE)));
     }
 
     @Test
