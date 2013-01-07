@@ -53,6 +53,6 @@ public abstract class AbstractSocketBindingGroupAddHandler extends AbstractAddSt
 
         SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.validateAndSet(operation, model);
 
-        model.get(SOCKET_BINDING);
+
     }
 }
