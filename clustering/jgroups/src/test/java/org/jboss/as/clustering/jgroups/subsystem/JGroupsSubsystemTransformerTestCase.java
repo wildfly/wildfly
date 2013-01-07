@@ -21,16 +21,21 @@
 */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
 import junit.framework.Assert;
+
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
@@ -52,7 +57,7 @@ import org.junit.runner.RunWith;
 public class JGroupsSubsystemTransformerTestCase extends OperationTestCaseBase {
 
     protected String getSubsystemXml() throws IOException {
-        return readResource("jgroups-transformer_1_1.xml") ;
+        return "jgroups-transformer_1_1.xml";
     }
 
     /**
@@ -70,7 +75,7 @@ public class JGroupsSubsystemTransformerTestCase extends OperationTestCaseBase {
     public void testTransformer_1_1_0() throws Exception {
         ModelVersion version = ModelVersion.create(1, 1, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXmlResource("jgroups-transformer_1_1.xml");
+                .setSubsystemXmlResource(getSubsystemXml());
         builder.createLegacyKernelServicesBuilder(null, version)
                 .addMavenResourceURL("org.jboss.as:jboss-as-clustering-jgroups:7.1.2.Final")
                 .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.2.Final")
@@ -126,8 +131,7 @@ public class JGroupsSubsystemTransformerTestCase extends OperationTestCaseBase {
     @Test
     public void testRejectExpressions_1_1_0() throws Exception {
         // create builder for current subsystem version
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXml(getSubsystemXml());
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
         // create builder for legacy subsystem version
         ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
@@ -135,32 +139,28 @@ public class JGroupsSubsystemTransformerTestCase extends OperationTestCaseBase {
             .addMavenResourceURL("org.jboss.as:jboss-as-clustering-jgroups:7.1.2.Final");
 
         KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
         KernelServices legacyServices = mainServices.getLegacyServices(version_1_1_0);
         Assert.assertNotNull(legacyServices);
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
-        // build an ADD command to add a transport property using expression value
-        ModelNode operation = getTransportPropertyAddOperation("maximal", "bundler_type", "${the_bundler_type:new}");
-
-        // perform operation on the 1.1.1 model
-        ModelNode mainResult = mainServices.executeOperation(operation);
-        assertEquals(mainResult.toJSONString(true), SUCCESS, mainResult.get(OUTCOME).asString());
-
-        // perform transformed operation on the 1.1.0 model
-        OperationTransformer.TransformedOperation transformedOperation = mainServices.transformOperation(version_1_1_0, operation);
-        final ModelNode result = mainServices.executeOperation(version_1_1_0, transformedOperation);
-        Assert.assertEquals("should reject the expression", FAILED, result.get(OUTCOME).asString());
-
-        // build an ADD command to add a protocol property using expression value
-        ModelNode operation1 = getProtocolPropertyAddOperation("maximal", "MPING", "timeout", "${the_timeout:1000}");
-
-        // perform operation on the 1.1.1 model
-        ModelNode mainResult1 = mainServices.executeOperation(operation1);
-        assertEquals(mainResult1.toJSONString(true), SUCCESS, mainResult1.get(OUTCOME).asString());
-
-        // perform operation on the 1.1.0 model
-        OperationTransformer.TransformedOperation transformedOperation1 = mainServices.transformOperation(version_1_1_0, operation1);
-        final ModelNode result1 = mainServices.executeOperation(version_1_1_0, transformedOperation1);
-        Assert.assertEquals("should reject the expression", FAILED, result1.get(OUTCOME).asString());
+        //Use the real xml with expressions for testing all the attributes
+        PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME));
+        ModelTestUtils.checkFailedTransformedBootOperations(
+                mainServices,
+                version_1_1_0,
+                builder.parseXmlResource("/subsystem-jgroups-test.xml"),
+                new FailedOperationTransformationConfig()
+                    .addFailedAttribute(
+                            subsystemAddress.append(PathElement.pathElement("stack"))
+                                .append(PathElement.pathElement("transport"))
+                                .append("property"),
+                            new FailedOperationTransformationConfig.RejectExpressionsConfig(VALUE))
+                    .addFailedAttribute(
+                            subsystemAddress.append(PathElement.pathElement("stack"))
+                                .append(PathElement.pathElement("protocol"))
+                                .append("property"),
+                            new FailedOperationTransformationConfig.RejectExpressionsConfig(VALUE)));
 
     }
 

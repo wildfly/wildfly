@@ -5,7 +5,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
@@ -70,7 +69,7 @@ public class OperationsTestCase extends OperationTestCaseBase {
         // read the default stack
         ModelNode result = servicesA.executeOperation(readSubsystemDefaultStackOp);
         Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(),SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertEquals("maximal", result.get(RESULT).asString());
+        Assert.assertEquals("maximal", result.get(RESULT).resolve().asString());
 
         // write the default stack
         result = servicesA.executeOperation(writeSubsystemDefaultStackOp);
@@ -100,7 +99,7 @@ public class OperationsTestCase extends OperationTestCaseBase {
         // read the transport rack attribute
         result = servicesA.executeOperation(readTransportRackOp);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertEquals("rack1", result.get(RESULT).asString());
+        Assert.assertEquals("rack1", result.get(RESULT).resolve().asString());
 
         // write the rack attribute
         result = servicesA.executeOperation(writeTransportRackOp);
@@ -146,7 +145,7 @@ public class OperationsTestCase extends OperationTestCaseBase {
          // read the enable_bundling transport property
         ModelNode result = servicesA.executeOperation(readTransportPropertyOp);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertEquals("true", result.get(RESULT).asString());
+        Assert.assertEquals("true", result.get(RESULT).resolve().asString());
 
         // write the enable_bundling transport property
         result = servicesA.executeOperation(writeTransportPropertyOp);
@@ -197,7 +196,7 @@ public class OperationsTestCase extends OperationTestCaseBase {
          // read the name protocol property
         ModelNode result = servicesA.executeOperation(readProtocolPropertyOp);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertEquals("value", result.get(RESULT).asString());
+        Assert.assertEquals("value", result.get(RESULT).resolve().asString());
 
         // write the property
         result = servicesA.executeOperation(writeProtocolPropertyOp);
