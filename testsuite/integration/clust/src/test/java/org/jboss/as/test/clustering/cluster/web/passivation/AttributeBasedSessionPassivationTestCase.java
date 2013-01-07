@@ -29,28 +29,26 @@ import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 
 /**
  * @author Radoslav Husar
  * @version April 2012
  */
-@Ignore // AS7-5279
 public class AttributeBasedSessionPassivationTestCase extends SessionPassivationAbstractCase {
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
     public static Archive<?> deployment0() {
-        return getDeployment();
+        return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
     @TargetsContainer(CONTAINER_2)
     public static Archive<?> deployment1() {
-        return getDeployment();
+        return createDeployment();
     }
 
-    private static Archive<?> getDeployment() {
+    private static Archive<?> createDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "passivating-attribute.war");
         war.addClass(SimpleServlet.class);
         war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");

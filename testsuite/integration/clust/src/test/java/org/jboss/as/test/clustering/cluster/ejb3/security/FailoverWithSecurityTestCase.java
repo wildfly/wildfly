@@ -22,15 +22,6 @@
 
 package org.jboss.as.test.clustering.cluster.ejb3.security;
 
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_2;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_2;
-
-import org.jboss.arquillian.container.test.api.ContainerController;
-import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -45,6 +36,7 @@ import org.jboss.as.test.clustering.NodeNameGetter;
 import org.jboss.as.test.clustering.RemoteEJBDirectory;
 import org.jboss.as.test.clustering.ViewChangeListener;
 import org.jboss.as.test.clustering.ViewChangeListenerBean;
+import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
@@ -59,35 +51,28 @@ import org.junit.runner.RunWith;
 
 /**
  * Test security login on failover.
- * 
+ *
  * @author Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class FailoverWithSecurityTestCase {
+public class FailoverWithSecurityTestCase extends ClusterAbstractTestCase {
     private static Logger log = Logger.getLogger(FailoverWithSecurityTestCase.class);
 
     private static final String PROPERTIES_FILE = "cluster/ejb3/security/jboss-ejb-client.properties";
     private static final String ARCHIVE_NAME = "cluster-security-domain-test";
     private static RemoteEJBDirectory context;
 
-    @ArquillianResource
-    private ContainerController controller;
-    @ArquillianResource
-    private Deployer deployer;
-
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
     public static Archive<?> deployment0() {
-        Archive<?> archive = createDeployment();
-        return archive;
+        return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
     @TargetsContainer(CONTAINER_2)
     public static Archive<?> deployment1() {
-        Archive<?> archive = createDeployment();
-        return archive;
+        return createDeployment();
     }
 
     private static Archive<?> createDeployment() {
@@ -104,29 +89,24 @@ public class FailoverWithSecurityTestCase {
         context = new RemoteEJBDirectory(ARCHIVE_NAME);
     }
 
-    @Test
-    @InSequence(-1)
-    public void startServers() {
-        // Container is unmanaged, need to start manually.
-        // This is a little hacky @see https://community.jboss.org/thread/176096
-        controller.start(CONTAINER_1);
-        deployer.deploy(DEPLOYMENT_1);
-        controller.start(CONTAINER_2);
-        deployer.deploy(DEPLOYMENT_2);
+    @Override
+    protected void setUp() {
+        super.setUp();
+        deploy(DEPLOYMENTS);
     }
 
     @Test
     @InSequence(1)
     public void testDomainSecurityAnnotation(@ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
                                              @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2)
-                    throws Exception {
-        
+            throws Exception {
+
         final ContextSelector<EJBClientContext> previousSelector = EJBClientContextSelector.setup(PROPERTIES_FILE);
-        
+
         try {
             ViewChangeListener listener = context.lookupStateless(ViewChangeListenerBean.class, ViewChangeListener.class);
             this.establishView(listener, NODE_1, NODE_2);
-            
+
             BeanRemote statelessBean = context.lookupStateless(StatelessBean.class, BeanRemote.class);
             BeanRemote statefulBean = context.lookupStateful(StatefulBean.class, BeanRemote.class);
 
@@ -134,10 +114,10 @@ public class FailoverWithSecurityTestCase {
             String statefulNodeName = statefulBean.getNodeName();
             Assert.assertNotNull("No name was returned from SLSB ", statelessNodeName);
             Assert.assertNotNull("No name was returned from SFSB ", statefulNodeName);
-            
+
             String stoppedContainer = null;
             String runningNode = null;
-            if(NODE_1.equals(statefulNodeName)) {
+            if (NODE_1.equals(statefulNodeName)) {
                 stoppedContainer = CONTAINER_1;
                 runningNode = NODE_2;
             } else {
@@ -152,10 +132,10 @@ public class FailoverWithSecurityTestCase {
             statefulNodeName = statefulBean.getNodeName();
             Assert.assertEquals("SLSB has to return the only running node " + runningNode, runningNode, statelessNodeName);
             Assert.assertEquals("SFSB has to return the only running node " + runningNode, runningNode, statefulNodeName);
-            
-            if(CONTAINER_1.equals(stoppedContainer)) {
+
+            if (CONTAINER_1.equals(stoppedContainer)) {
                 controller.start(CONTAINER_1);
-                
+
                 this.establishView(listener, NODE_1, NODE_2);
 
                 deployer.undeploy(DEPLOYMENT_2);
@@ -163,21 +143,22 @@ public class FailoverWithSecurityTestCase {
                 runningNode = NODE_1;
             } else {
                 controller.start(CONTAINER_2);
-                
+
                 this.establishView(listener, NODE_1, NODE_2);
 
                 deployer.undeploy(DEPLOYMENT_1);
                 controller.stop(CONTAINER_1);
                 runningNode = NODE_2;
             }
-            
+
             this.establishView(listener, runningNode);
-            
+
+
             statelessNodeName = statelessBean.getNodeName();
             statefulNodeName = statefulBean.getNodeName();
             Assert.assertEquals("SLSB has to return the only running node " + runningNode, runningNode, statelessNodeName);
             Assert.assertEquals("SFSB has to return the only running node " + runningNode, runningNode, statefulNodeName);
-            
+
         } finally {
             if (previousSelector != null) {
                 EJBClientContext.setSelector(previousSelector);
@@ -185,22 +166,9 @@ public class FailoverWithSecurityTestCase {
         }
     }
 
-    @Test
-    @InSequence(100)
-    public void stopServers(
-            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
-            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2) throws Exception {
-        if (client1.isServerInRunningState()) {
-            deployer.undeploy(DEPLOYMENT_1);
-            controller.stop(CONTAINER_1);
-        }
-        if (client2.isServerInRunningState()) {
-            deployer.undeploy(DEPLOYMENT_2);
-            controller.stop(CONTAINER_2);
-        }
-    }
 
     private void establishView(ViewChangeListener listener, String... members) throws InterruptedException {
         listener.establishView("ejb", members);
     }
+
 }
