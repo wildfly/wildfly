@@ -22,18 +22,21 @@
 package org.jboss.as.jpa.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
 
 import java.util.Collections;
 import java.util.List;
+
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
@@ -44,10 +47,16 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.AbstractOperationTransformer;
-import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
+import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.RejectExpressionValuesChainedTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.controller.transform.chained.ChainedOperationTransformer;
+import org.jboss.as.controller.transform.chained.ChainedResourceTransformationContext;
+import org.jboss.as.controller.transform.chained.ChainedResourceTransformer;
+import org.jboss.as.controller.transform.chained.ChainedResourceTransformerEntry;
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.persistenceprovider.PersistenceProviderLoader;
 import org.jboss.as.jpa.processor.PersistenceProviderAdaptorLoader;
@@ -126,25 +135,46 @@ public class JPAExtension implements Extension {
         // We need to reject all expressions, since they can't be resolved on the client
         // However, a slave running 1.1.0 has no way to tell us at registration that it has ignored a resource,
         // so we can't agressively fail on resource transformation
-        RejectExpressionValuesTransformer rejectNewerExpressions =
-                new RejectExpressionValuesTransformer(
+        final RejectExpressionValuesChainedTransformer rejectNewerExpressions =
+                new RejectExpressionValuesChainedTransformer(
                          JPADefinition.DEFAULT_DATASOURCE,
                          JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE);
 
         // Register the model transformers
-        TransformersSubRegistration reg = subsystemRegistration.registerModelTransformers(ModelVersion.create(1, 1, 0), new JPASubsystemTransformer_1_1());
-        //reg.registerOperationTransformer(ADD, rejectNewerExpressions);
-        //todo add reject expression
-        reg.registerOperationTransformer(ADD, new AbstractOperationTransformer() {
-            @Override
-            protected ModelNode transform(TransformationContext context, PathAddress address, ModelNode operation) {
-                if (operation.has(JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE.getName())) {
-                    operation.remove(JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE.getName());
+        TransformersSubRegistration reg = subsystemRegistration.registerModelTransformers(
+                ModelVersion.create(1, 1, 0),
+                new ChainedResourceTransformer(
+                        new ChainedResourceTransformerEntry() {
+                            @Override
+                            public void transformResource(ChainedResourceTransformationContext context, PathAddress address, Resource resource)
+                                    throws OperationFailedException {
+                                resource.getModel().remove(JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE.getName());
+                            }
+                        },
+                        rejectNewerExpressions));
+
+        reg.registerOperationTransformer(ADD, new ChainedOperationTransformer(
+                new AbstractOperationTransformer() {
+                    @Override
+                    protected ModelNode transform(TransformationContext context, PathAddress address, ModelNode operation) {
+                        if (operation.has(JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE.getName())) {
+                            operation.remove(JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE.getName());
+                        }
+                        return operation;
+                    }
+                },
+                rejectNewerExpressions));
+
+        reg.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, new ChainedOperationTransformer(new OperationTransformer() {
+                @Override
+                public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation)
+                        throws OperationFailedException {
+                    if (operation.get(NAME).equals(JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE.getName())) {
+                        return OperationTransformer.DEFAULT.transformOperation(context, address, operation);
+                    }
+                    return rejectNewerExpressions.getWriteAttributeTransformer().transformOperation(context, address, operation);
                 }
-                return operation;
-            }
-        });
-        reg.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, rejectNewerExpressions.getWriteAttributeTransformer());
+              }));
     }
 
 
