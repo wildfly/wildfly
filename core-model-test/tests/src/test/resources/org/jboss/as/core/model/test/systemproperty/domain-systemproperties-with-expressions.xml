@@ -3,7 +3,7 @@
 
     <system-properties>
         <property name="sys.prop.test.one" value="ONE"/>
-        <property name="sys.prop.test.two" value="${sys.prop.test.one}"/>
+        <property name="sys.prop.test.two" value="${sys.prop.test.one:UNO}"/>
     </system-properties>
     
 </domain>        
