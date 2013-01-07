@@ -29,11 +29,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -48,7 +50,7 @@ public class FailedOperationTransformationConfig {
 
     public static final FailedOperationTransformationConfig NO_FAILURES = new FailedOperationTransformationConfig();
 
-    private Map<PathAddress, PathAddressConfig> configs = new HashMap<PathAddress, PathAddressConfig>();
+    private PathAddressConfigRegistry registry = new PathAddressConfigRegistry();
 
     /**
      * Add a handler for failed operation transformers at a resource address
@@ -58,12 +60,12 @@ public class FailedOperationTransformationConfig {
      *  @return this setup
      */
     public FailedOperationTransformationConfig addFailedAttribute(PathAddress pathAddress, PathAddressConfig config) {
-        configs.put(pathAddress, config);
+        registry.addConfig(pathAddress.iterator(), config);
         return this;
     }
 
     boolean expectFailed(ModelNode operation) {
-        PathAddressConfig cfg = configs.get(PathAddress.pathAddress(operation.get(OP_ADDR)));
+        PathAddressConfig cfg = registry.getConfig(operation);
         if (cfg == null) {
             return false;
         }
@@ -74,7 +76,7 @@ public class FailedOperationTransformationConfig {
     }
 
     boolean canCorrectMore(ModelNode operation) {
-        PathAddressConfig cfg = configs.get(PathAddress.pathAddress(operation.get(OP_ADDR)));
+        PathAddressConfig cfg = registry.getConfig(operation);
         if (cfg == null) {
             return false;
         }
@@ -85,7 +87,7 @@ public class FailedOperationTransformationConfig {
     }
 
     ModelNode correctOperation(ModelNode operation) {
-        PathAddressConfig cfg = configs.get(PathAddress.pathAddress(operation.get(OP_ADDR)));
+        PathAddressConfig cfg = registry.getConfig(operation);
         if (cfg == null) {
             throw new IllegalStateException("No path address config found for " + PathAddress.pathAddress(operation.get(OP_ADDR)));
         }
@@ -94,7 +96,7 @@ public class FailedOperationTransformationConfig {
     }
 
     List<ModelNode> createWriteAttributeOperations(ModelNode operation) {
-        PathAddressConfig cfg = configs.get(PathAddress.pathAddress(operation.get(OP_ADDR)));
+        PathAddressConfig cfg = registry.getConfig(operation);
         if (cfg == null || !operation.get(OP).equals(ADD)) {
             return Collections.emptyList();
         }
@@ -102,7 +104,7 @@ public class FailedOperationTransformationConfig {
     }
 
     boolean expectFailedWriteAttributeOperation(ModelNode operation) {
-        PathAddressConfig cfg = configs.get(PathAddress.pathAddress(operation.get(OP_ADDR)));
+        PathAddressConfig cfg = registry.getConfig(operation);
         if (cfg == null) {
             return false;
         }
@@ -110,12 +112,67 @@ public class FailedOperationTransformationConfig {
     }
 
     ModelNode correctWriteAttributeOperation(ModelNode operation) {
-        PathAddressConfig cfg = configs.get(PathAddress.pathAddress(operation.get(OP_ADDR)));
+        PathAddressConfig cfg = registry.getConfig(operation);
         if (cfg == null) {
             return operation;
         }
         return cfg.correctWriteAttributeOperation(operation);
     }
+
+    private static class PathAddressConfigRegistry {
+        private final Map<PathElement,PathAddressConfigRegistry> children = new HashMap<PathElement, FailedOperationTransformationConfig.PathAddressConfigRegistry>();
+        private final Map<String, PathAddressConfigRegistry> wildcardChildren = new HashMap<String, FailedOperationTransformationConfig.PathAddressConfigRegistry>();
+        private PathAddressConfig config;
+
+        void addConfig(Iterator<PathElement> address, PathAddressConfig config) {
+            if (address.hasNext()) {
+                PathAddressConfigRegistry child = getOrCreateConfig(address.next());
+                child.addConfig(address, config);
+            } else {
+                this.config = config;
+            }
+        }
+
+        PathAddressConfigRegistry getOrCreateConfig(PathElement element) {
+            if (element.isWildcard()) {
+                PathAddressConfigRegistry reg = wildcardChildren.get(element.getKey());
+                if (reg == null) {
+                    reg = new PathAddressConfigRegistry();
+                    wildcardChildren.put(element.getKey(), reg);
+                }
+                return reg;
+            } else {
+                PathAddressConfigRegistry reg = children.get(element);
+                if (reg == null) {
+                    reg = new PathAddressConfigRegistry();
+                    children.put(element, reg);
+                }
+                return reg;
+            }
+        }
+
+        PathAddressConfig getConfig(ModelNode operation) {
+            return getConfig(PathAddress.pathAddress(operation.get(OP_ADDR)).iterator());
+        }
+
+        PathAddressConfig getConfig(Iterator<PathElement> address) {
+            if (address.hasNext()) {
+                PathElement element = address.next();
+                PathAddressConfigRegistry child = children.get(element);
+                if (child == null) {
+                    child = wildcardChildren.get(element.getKey());
+                }
+                if (child != null) {
+                    return child.getConfig(address);
+                }
+                return null;
+            } else {
+                return config;
+            }
+        }
+
+    }
+
 
     /**
      * Configuration of how to deal with rejected operations transformations for a PathAddress.

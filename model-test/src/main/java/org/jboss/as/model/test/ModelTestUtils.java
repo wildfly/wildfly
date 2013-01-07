@@ -475,9 +475,9 @@ public class ModelTestUtils {
         TransformedOperation transformedOperation = mainServices.transformOperation(modelVersion, operation);
         ModelNode result = mainServices.executeOperation(modelVersion, transformedOperation);
         if (!config.expectFailed(operation)) {
-            Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+            Assert.assertEquals("Failed: " + operation + "\n: " + result, SUCCESS, result.get(OUTCOME).asString());
         } else {
-            Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
+            Assert.assertEquals("Should not have worked: " + operation, FAILED, result.get(OUTCOME).asString());
             if (config.canCorrectMore(operation)) {
                 checkFailedTransformedAddOperation(mainServices, modelVersion, config.correctOperation(operation), config);
             }

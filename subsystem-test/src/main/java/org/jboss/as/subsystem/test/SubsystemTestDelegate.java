@@ -580,6 +580,21 @@ final class SubsystemTestDelegate {
         public List<ModelNode> parse(String subsystemXml) throws XMLStreamException {
             return SubsystemTestDelegate.this.parse(additionalInit, subsystemXml);
         }
+
+        @Override
+        public List<ModelNode> parseXml(String xml) throws Exception {
+            ModelTestBootOperationsBuilder builder = new ModelTestBootOperationsBuilder(testClass, this);
+            builder.setXml(xml);
+            return builder.build();
+        }
+
+        @Override
+        public List<ModelNode> parseXmlResource(String xmlResource) throws Exception {
+            ModelTestBootOperationsBuilder builder = new ModelTestBootOperationsBuilder(testClass, this);
+            builder.setXmlResource(xmlResource);
+            return builder.build();
+        }
+
     }
 
     private class LegacyKernelServiceInitializerImpl implements LegacyKernelServicesInitializer {
