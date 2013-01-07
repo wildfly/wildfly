@@ -33,7 +33,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-
 import javax.management.openmbean.ArrayType;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.CompositeDataSupport;
@@ -130,45 +129,48 @@ class TypeConverters {
                 description.hasDefined(VALUE_TYPE) ? description.get(VALUE_TYPE) : null);
     }
 
+    TypeConverter getConverter(ModelType modelType, ModelNode valueTypeNode) {
+        switch (modelType) {
+            case BIG_DECIMAL:
+                return expressions ? BIG_DECIMAL_EXPR : BIG_DECIMAL_NO_EXPR;
+            case BIG_INTEGER:
+                return expressions ? BIG_INTEGER_EXPR : BIG_INTEGER_NO_EXPR;
+            case BOOLEAN:
+                return expressions ? BOOLEAN_EXPR : BOOLEAN_NO_EXPR;
+            case BYTES:
+                //Allowing expressions for byte[] seems pointless
+                return BYTES_NO_EXPR;
+            case DOUBLE:
+                return expressions ? DOUBLE_EXPR : DOUBLE_NO_EXPR;
+            case STRING:
+                return expressions ? STRING_EXPR : STRING_NO_EXPR;
+            case PROPERTY:
+                //For the legacy setup properties are converted to a dmr string
+                //For the expr setup or legacy with legacyWithProperPropertyFormat=true we use a composite type
+                return expressions || legacyWithProperPropertyFormat ? new PropertyTypeConverter(valueTypeNode) : PROPERTY_NO_EXPR;
+            case INT:
+                return expressions ? INT_EXPR : INT_NO_EXPR;
+            case LONG:
+                return expressions ? LONG_EXPR : LONG_NO_EXPR;
+            case TYPE:
+                return expressions ? TYPE_EXPR : TYPE_NO_EXPR;
+            case UNDEFINED:
+                return expressions ? UNDEFINED_EXPR : UNDEFINED_NO_EXPR;
+            case OBJECT:
+                return new ObjectTypeConverter(valueTypeNode);
+            case LIST:
+                return new ListTypeConverter(valueTypeNode);
+            default:
+                throw MESSAGES.unknownType(modelType);
+        }
+    }
+
     TypeConverter getConverter(ModelNode typeNode, ModelNode valueTypeNode) {
         ModelType modelType = getType(typeNode);
         if (modelType == null) {
             return new ComplexTypeConverter(typeNode);
         }
-
-        switch (modelType) {
-        case BIG_DECIMAL:
-            return expressions ? BIG_DECIMAL_EXPR: BIG_DECIMAL_NO_EXPR;
-        case BIG_INTEGER:
-            return expressions ? BIG_INTEGER_EXPR : BIG_INTEGER_NO_EXPR;
-        case BOOLEAN:
-            return expressions ? BOOLEAN_EXPR : BOOLEAN_NO_EXPR;
-        case BYTES:
-            //Allowing expressions for byte[] seems pointless
-            return BYTES_NO_EXPR;
-        case DOUBLE:
-            return expressions ? DOUBLE_EXPR : DOUBLE_NO_EXPR;
-        case STRING:
-            return expressions ? STRING_EXPR : STRING_NO_EXPR;
-        case PROPERTY:
-            //For the legacy setup properties are converted to a dmr string
-            //For the expr setup or legacy with legacyWithProperPropertyFormat=true we use a composite type
-            return expressions || legacyWithProperPropertyFormat ? new PropertyTypeConverter(valueTypeNode) : PROPERTY_NO_EXPR;
-        case INT:
-            return expressions ? INT_EXPR : INT_NO_EXPR;
-        case LONG:
-            return expressions ? LONG_EXPR : LONG_NO_EXPR;
-        case TYPE:
-            return expressions ? TYPE_EXPR : TYPE_NO_EXPR;
-        case UNDEFINED:
-            return expressions ? UNDEFINED_EXPR : UNDEFINED_NO_EXPR;
-        case OBJECT:
-            return new ObjectTypeConverter(valueTypeNode);
-        case LIST:
-            return new ListTypeConverter(valueTypeNode);
-        default:
-            throw MESSAGES.unknownType(modelType);
-        }
+        return getConverter(modelType, valueTypeNode);
     }
 
     private static ModelNode nullNodeAsUndefined(ModelNode node) {
