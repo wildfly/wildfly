@@ -18,7 +18,7 @@ To contribute with BOMs, clone your own fork instead of cloning the main BOMs re
 
 5. Create a new topic branch to contain your feature, change, or fix (`git checkout -b <topic-branch-name>`).
 
-6. Make sure that your changes follow the General Guide Lines.
+6. Make sure that your changes follow the General Guidelines below.
 
 7. Commit your changes to your topic branch.
 
