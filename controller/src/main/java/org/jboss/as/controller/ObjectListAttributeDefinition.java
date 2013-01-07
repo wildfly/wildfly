@@ -101,6 +101,17 @@ public class ObjectListAttributeDefinition extends ListAttributeDefinition {
         }
     }
 
+    /**
+     * Uses the {@link ObjectTypeAttributeDefinition} passed to the constructor to
+     * {@link ObjectTypeAttributeDefinition#convertParameterExpressions(ModelNode) convert the element's expressions}.
+     *
+     * {@inheritDoc}
+     */
+    @Override
+    protected ModelNode convertParameterElementExpressions(ModelNode parameterElement) {
+        return valueType.convertParameterExpressions(parameterElement);
+    }
+
     protected void addValueTypeDescription(final ModelNode node, final String prefix, final ResourceBundle bundle,
                                            boolean forOperation, final ResourceDescriptionResolver resolver, Locale locale) {
         node.get(ModelDescriptionConstants.DESCRIPTION); // placeholder

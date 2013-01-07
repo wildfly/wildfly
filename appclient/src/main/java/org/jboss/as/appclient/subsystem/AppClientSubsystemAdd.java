@@ -29,7 +29,7 @@ import java.util.List;
 import org.jboss.as.appclient.deployment.ActiveApplicationClientProcessor;
 import org.jboss.as.appclient.deployment.AppClientJBossAllParser;
 import org.jboss.as.appclient.deployment.ApplicationClientDependencyProcessor;
-import org.jboss.as.ee.component.deployers.DescriptorEnvironmentLifecycleMethodProcessor;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.appclient.deployment.ApplicationClientManifestProcessor;
 import org.jboss.as.appclient.deployment.ApplicationClientParsingDeploymentProcessor;
 import org.jboss.as.appclient.deployment.ApplicationClientStartProcessor;
@@ -40,7 +40,6 @@ import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.Services;
@@ -69,7 +68,7 @@ class AppClientSubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        for(SimpleAttributeDefinition attr : AppClientSubsystemResourceDefinition.ATTRIBUTES) {
+        for(AttributeDefinition attr : AppClientSubsystemResourceDefinition.ATTRIBUTES) {
             attr.validateAndSet(operation, model);
         }
     }
@@ -79,10 +78,7 @@ class AppClientSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final File file = new File(AppClientSubsystemResourceDefinition.FILE.resolveModelAttribute(context, model).asString());
         final String hostUrl = model.hasDefined(HOST_URL) ? AppClientSubsystemResourceDefinition.HOST_URL.resolveModelAttribute(context, model).asString() : null;
         final String connectionPropertiesUrl = model.hasDefined(CONNECTION_PROPERTIES_URL) ? AppClientSubsystemResourceDefinition.CONNECTION_PROPERTIES_URL.resolveModelAttribute(context, model).asString() : null;
-        final List<String> parameters = new ArrayList<String>();
-        for (ModelNode param : AppClientSubsystemResourceDefinition.PARAMETERS.resolveModelAttribute(context, model).asList()) {
-            parameters.add(param.asString());
-        }
+        final List<String> parameters = AppClientSubsystemResourceDefinition.PARAMETERS.unwrap(context,model);
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
