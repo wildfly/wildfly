@@ -84,6 +84,22 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
 
     private DomainLifecycleUtil domainMasterLifecycleUtil;
 
+    private int conflicts;
+    private int noSimple;
+    private int noSimpleCollection;
+    private int noComplexList;
+    private int noObject;
+    private int noComplexProperty;
+    private int supportedUndefined;
+    private int simple;
+    private int simpleCollection;
+    private int complexList;
+    private int object;
+    private int complexProperty;
+
+    private final boolean immediateValidation = Boolean.getBoolean("immediate.expression.validation");
+    private final boolean logHandling = Boolean.getBoolean("expression.logging");
+
     /**
      * Launch a master HC in --admin-only. Iterate through all resources, converting any writable attribute that
      * support expressions and has a value or a default value to an expression (if it isn't already one), using the
@@ -101,6 +117,23 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
 
         Map<PathAddress, Map<String, ModelNode>> expectedValues = new HashMap<PathAddress, Map<String, ModelNode>>();
         setExpressions(PathAddress.EMPTY_ADDRESS, "master", expectedValues);
+
+        System.out.println();
+        System.out.println("Update statistics:");
+        System.out.println("==================");
+        System.out.println("conflicts: " + conflicts);
+        System.out.println("no expression simple: " + noSimple);
+        System.out.println("no expression simple collection: " + noSimpleCollection);
+        System.out.println("no expression complex list: " + noComplexList);
+        System.out.println("no expression object: " + noObject);
+        System.out.println("no expression complex property: " + noComplexProperty);
+        System.out.println("supported but undefined: " + supportedUndefined);
+        System.out.println("simple: " + simple);
+        System.out.println("simple collection: " + simpleCollection);
+        System.out.println("complex list: " + complexList);
+        System.out.println("object: " + object);
+        System.out.println("complex property: " + complexProperty);
+        System.out.println();
 
         // restart back to normal mode
         ModelNode op = new ModelNode();
@@ -141,6 +174,9 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
         final DomainLifecycleUtil utils = new DomainLifecycleUtil(config);
         utils.start(); // Start
         this.domainMasterLifecycleUtil = utils;
+
+        conflicts = noSimple = noSimpleCollection = noComplexList = noComplexProperty = noObject = noComplexProperty =
+                supportedUndefined = simple = simpleCollection = object = complexProperty = complexList = 0;
     }
 
     @After
@@ -192,7 +228,7 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
             writeAttribute(address, entry.getKey(), entry.getValue());
         }
 
-        if (expectedAttrs.size() > 0) {
+        if (expectedAttrs.size() > 0 && immediateValidation) {
             // Validate that our write-attribute calls resulted in the expected values in the model
             ModelNode modifiedResource = readResource(address, true);
             for (Map.Entry<String, ModelNode> entry : expectedAttrs.entrySet()) {
@@ -259,6 +295,8 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
                     }
                 }
                 if (conflict) {
+                    conflicts++;
+                    logHandling("Skipping conflicted attribute " + attrName + " at " + address.toModelNode().asString());
                     continue;
                 }
             }
@@ -276,9 +314,11 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
                             handleSimpleCollection(address, attrName, attrValue, valueType.asType(), expressionAttrs,
                                     otherAttrs, expectedAttrs);
                         } else if (valueType.isDefined()) {
-                            handleComplexCollection(address, attrName, attrValue, valueType, expressionAttrs, otherAttrs,
+                            handleComplexCollection(address, attrName, attrValue, attrType, valueType, expressionAttrs, otherAttrs,
                                     expectedAttrs);
                         } else {
+                            noSimple++;
+                            logNoExpressions(address, attrName);
                             otherAttrs.put(attrName, attrValue);
                             expectedAttrs.put(attrName, attrValue);
                         }
@@ -289,14 +329,28 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
                         String expression = "${exp.test:" + attrValue.asString() + "}";
                         expressionAttrs.put(attrName, new ModelNode(expression));
                         expectedAttrs.put(attrName, new ModelNode().setExpression(expression));
+                        simple++;
+                        logHandling("Added expression to simple attribute " + attrName + " at " + address.toModelNode().asString());
                     }
+                } else {
+                    if (attrType != ModelType.EXPRESSION) {
+                        supportedUndefined++;
+                        logHandling("Expression supported but value undefined on simple attribute " + attrName + " at " + address.toModelNode().asString());
+                    } else {
+                        simple++;
+                        logHandling("Already found an expression on simple attribute " + attrName + " at " + address.toModelNode().asString());
+                    }
+                    otherAttrs.put(attrName, attrValue);
+                    expectedAttrs.put(attrName, attrValue);
                 }
             } else if (COMPLEX_TYPES.contains(attrType)
                     && attrDesc.get(VALUE_TYPE).getType() != ModelType.TYPE
                     && attrDesc.get(VALUE_TYPE).isDefined()) {
-                handleComplexCollection(address, attrName, attrValue, attrDesc.get(VALUE_TYPE), expressionAttrs,
+                handleComplexCollection(address, attrName, attrValue, attrType, attrDesc.get(VALUE_TYPE), expressionAttrs,
                         otherAttrs, expectedAttrs);
             } else /*if (!attrDesc.hasDefined(DEPRECATED))*/ {
+                noSimple++;
+                logNoExpressions(address, attrName);
                 otherAttrs.put(attrName, attrValue);
                 expectedAttrs.put(attrName, attrValue);
             }
@@ -347,14 +401,14 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
                 }
             }
         } else if ("virtual-nodes".equals(attrName)) {
-            if (address.size() > 2) {
+            if (address.size() > 3) {
                 PathElement subPe = address.getElement(address.size() - 3);
                 PathElement containerPe = address.getElement(address.size() - 2);
                 PathElement distPe = address.getElement(address.size()-1);
                 if ("subsystem".equals(subPe.getKey()) && "infinispan".equals(subPe.getValue())
                         && "cache-container".equals(containerPe.getKey())
                         && "distributed-cache".equals(distPe.getKey())) {
-                    // This is a distributed cache attribute in Infinispan which has been depricated
+                    // This is a distributed cache attribute in Infinispan which has been deprecated
                     return true;
                 }
             }
@@ -363,11 +417,25 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
         return false;
     }
 
+    private void logNoExpressions(PathAddress address, String attrName) {
+        if (logHandling) {
+            logHandling("No expression support for attribute " + attrName + " at " + address.toModelNode().asString());
+        }
+    }
+
+    private void logHandling(String msg) {
+        if (logHandling) {
+            System.out.println(msg);
+        }
+    }
+
     private void handleSimpleCollection(PathAddress address, String attrName, ModelNode attrValue, ModelType valueType,
                                         Map<String, ModelNode> expressionAttrs, Map<String, ModelNode> otherAttrs,
                                         Map<String, ModelNode> expectedAttrs) {
         if (COMPLEX_TYPES.contains(valueType)) {
             // Too complicated
+            noSimpleCollection++;
+            logNoExpressions(address, attrName);
             otherAttrs.put(attrName, attrValue);
         } else {
             boolean hasExpression = false;
@@ -398,7 +466,6 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
                     if (itemType == ModelType.STRING) {
                         checkForUnconvertedExpression(address, attrName, item);
                     }
-                    ModelNode updatedItem = new ModelNode().setExpression("${exp.test:" + item.asString() + "}");
                     String expression = "${exp.test:" + item.asString() + "}";
                     updated.add(expression);
                     expected.add(new ModelNode().setExpression(expression));
@@ -410,22 +477,148 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
             }
 
             if (hasExpression) {
-                System.out.println("Added expression to collection attribute " + attrName + " at " + address.toModelNode().asString() + " with original value " + attrValue + " and new value " + updated);
+                simpleCollection++;
+                logHandling("Added expression to SIMPLE " + attrValue.getType() + " attribute " + attrName + " at " + address.toModelNode().asString());
                 expressionAttrs.put(attrName, updated);
                 expectedAttrs.put(attrName, expected);
             } else {
                 // We didn't change anything
+                noSimpleCollection++;
+                logNoExpressions(address, attrName);
                 otherAttrs.put(attrName, attrValue);
                 expectedAttrs.put(attrName, attrValue);
             }
         }
     }
 
-    private void handleComplexCollection(PathAddress address, String attrName, ModelNode attrValue, ModelNode valueTypeDesc,
+    private void handleComplexCollection(PathAddress address, String attrName, ModelNode attrValue,
+                                         ModelType attrType, ModelNode valueTypeDesc,
                                          Map<String, ModelNode> expressionAttrs, Map<String, ModelNode> otherAttrs,
                                          Map<String, ModelNode> expectedAttrs) {
-        //TODO implement handleComplexCollection
-        otherAttrs.put(attrName, attrValue);
+        switch (attrType) {
+            case LIST:
+                handleComplexList(address, attrName, attrValue, valueTypeDesc, expressionAttrs, otherAttrs,
+                        expectedAttrs);
+                break;
+            case OBJECT:
+                handleComplexObject(address, attrName, attrValue, valueTypeDesc, expressionAttrs, otherAttrs,
+                        expectedAttrs);
+                break;
+            case PROPERTY:
+                handleComplexProperty(address, attrName, attrValue, valueTypeDesc, expressionAttrs, otherAttrs,
+                        expectedAttrs);
+                break;
+            default:
+                throw new IllegalArgumentException(attrType.toString());
+        }
+    }
+
+    private void handleComplexList(PathAddress address, String attrName, ModelNode attrValue, ModelNode valueTypeDesc,
+                                         Map<String, ModelNode> expressionAttrs, Map<String, ModelNode> otherAttrs,
+                                         Map<String, ModelNode> expectedAttrs) {
+        ModelNode updatedList = new ModelNode().setEmptyList();
+        ModelNode expectedList = new ModelNode().setEmptyList();
+        boolean changed = false;
+
+        for (ModelNode item : attrValue.asList()) {
+            ModelNode updated = new ModelNode();
+            ModelNode toExpect = new ModelNode();
+            handleComplexItem(address, attrName, item, valueTypeDesc, updated, toExpect);
+            changed |= !updated.equals(item);
+            updatedList.add(updated);
+            expectedList.add(toExpect);
+        }
+
+        if (changed) {
+            complexList++;
+            logHandling("Added expression to COMPLEX LIST attribute " + attrName + " at " + address.toModelNode().asString());
+            expressionAttrs.put(attrName, updatedList);
+            expectedAttrs.put(attrName, expectedList);
+        } else {
+            noComplexList++;
+            logNoExpressions(address, attrName);
+            otherAttrs.put(attrName, attrValue);
+        }
+    }
+
+    private void handleComplexObject(PathAddress address, String attrName, ModelNode attrValue, ModelNode valueTypeDesc,
+                                         Map<String, ModelNode> expressionAttrs, Map<String, ModelNode> otherAttrs,
+                                         Map<String, ModelNode> expectedAttrs) {
+
+        ModelNode updated = new ModelNode();
+        ModelNode toExpect = new ModelNode();
+        handleComplexItem(address, attrName, attrValue, valueTypeDesc, updated, toExpect);
+        if (!updated.equals(attrValue)) {
+            object++;
+            logHandling("Added expression to OBJECT attribute " + attrName + " at " + address.toModelNode().asString());
+            expressionAttrs.put(attrName, updated);
+            expectedAttrs.put(attrName, toExpect);
+        } else {
+            noObject++;
+            logNoExpressions(address, attrName);
+            otherAttrs.put(attrName, attrValue);
+        }
+    }
+
+    private void handleComplexProperty(PathAddress address, String attrName, ModelNode attrValue, ModelNode valueTypeDesc,
+                                         Map<String, ModelNode> expressionAttrs, Map<String, ModelNode> otherAttrs,
+                                         Map<String, ModelNode> expectedAttrs) {
+        Property prop = attrValue.asProperty();
+        ModelNode propVal = prop.getValue();
+        ModelNode updatedPropVal = new ModelNode();
+        ModelNode propValToExpect = new ModelNode();
+        handleComplexItem(address, attrName, propVal, valueTypeDesc, updatedPropVal, propValToExpect);
+        if (!updatedPropVal.equals(propVal)) {
+            complexProperty++;
+            ModelNode updatedProp = new ModelNode().set(prop.getName(), updatedPropVal);
+            logHandling("Added expression to COMPLEX PROPERTY attribute " + attrName + " at " + address.toModelNode().asString());
+            expressionAttrs.put(attrName, updatedProp);
+            expectedAttrs.put(attrName, new ModelNode().set(prop.getName(), propValToExpect));
+        } else {
+            noComplexProperty++;
+            logNoExpressions(address, attrName);
+            otherAttrs.put(attrName, attrValue);
+        }
+    }
+
+    private void handleComplexItem(PathAddress address, String attrName, ModelNode item, ModelNode valueTypeDesc,
+                                   ModelNode updatedItem, ModelNode itemToExpect) {
+        // Hack to deal with time unit processing
+        Set<String> keys =  valueTypeDesc.keys();
+        boolean timeAttr = keys.size() == 2 && keys.contains("time") && keys.contains("unit");
+        boolean changed = false;
+        for (Property fieldProp : valueTypeDesc.asPropertyList()) {
+            String fieldName = fieldProp.getName();
+            if (!item.has(fieldName)) {
+                continue;
+            }
+            boolean timeunit = timeAttr && "unit".equals(fieldName);
+            ModelNode fieldDesc = fieldProp.getValue();
+            ModelNode fieldValue = item.get(fieldName);
+            ModelType valueType = fieldValue.getType();
+            if (valueType == ModelType.UNDEFINED
+                    || valueType == ModelType.EXPRESSION
+                    || COMPLEX_TYPES.contains(valueType) // too complex
+                    || !fieldDesc.get(EXPRESSIONS_ALLOWED).asBoolean(false)) {
+                updatedItem.get(fieldName).set(fieldValue);
+                itemToExpect.get(fieldName).set(fieldValue);
+            } else {
+                if (valueType == ModelType.STRING) {
+                    checkForUnconvertedExpression(address, attrName, item);
+                }
+                String valueString = timeunit ? fieldValue.asString().toLowerCase() : fieldValue.asString();
+                String expression = "${exp.test:" + valueString + "}";
+                updatedItem.get(fieldName).set(expression);
+                itemToExpect.get(fieldName).set(new ModelNode().setExpression(expression));
+                changed = true;
+            }
+        }
+
+        if (!changed) {
+            // Use unchanged 'item'
+            updatedItem.set(item);
+            itemToExpect.set(item);
+        }
     }
 
     private ModelNode readResourceDescription(PathAddress address) throws IOException, MgmtOperationException {
