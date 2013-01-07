@@ -21,28 +21,9 @@
 */
 package org.jboss.as.jpa.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-
 import java.io.IOException;
 
-import junit.framework.Assert;
-import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-import org.jboss.as.subsystem.test.KernelServices;
-import org.jboss.as.subsystem.test.KernelServicesBuilder;
-import org.jboss.dmr.ModelNode;
-import org.junit.Ignore;
-import org.junit.Test;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
