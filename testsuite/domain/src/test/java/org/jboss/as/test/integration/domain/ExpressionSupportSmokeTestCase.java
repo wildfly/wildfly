@@ -324,7 +324,18 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
                     return true;
                 }
             }
-
+        } else if ("virtual-nodes".equals(attrName)) {
+            if (address.size() > 2) {
+                PathElement subPe = address.getElement(address.size() - 3);
+                PathElement containerPe = address.getElement(address.size() - 2);
+                PathElement distPe = address.getElement(address.size()-1);
+                if ("subsystem".equals(subPe.getKey()) && "infinispan".equals(subPe.getValue())
+                        && "cache-container".equals(containerPe.getKey())
+                        && "distributed-cache".equals(distPe.getKey())) {
+                    // This is a distributed cache attribute in Infinispan which has been depricated
+                    return true;
+                }
+            }
         }
 
         return false;
