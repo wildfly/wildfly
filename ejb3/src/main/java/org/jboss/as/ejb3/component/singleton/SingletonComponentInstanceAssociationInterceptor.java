@@ -44,9 +44,8 @@ public class SingletonComponentInstanceAssociationInterceptor extends AbstractEJ
     @Override
     public Object processInvocation(InterceptorContext interceptorContext) throws Exception {
         SingletonComponent singletonComponent = getComponent(interceptorContext, SingletonComponent.class);
-        // get the component instance
         ComponentInstance singletonComponentInstance = singletonComponent.getComponentInstance();
-        if (singletonComponent == null) {
+        if (singletonComponentInstance == null) {
             throw MESSAGES.componentInstanceNotAvailable(interceptorContext);
         }
         interceptorContext.putPrivateData(ComponentInstance.class, singletonComponentInstance);
