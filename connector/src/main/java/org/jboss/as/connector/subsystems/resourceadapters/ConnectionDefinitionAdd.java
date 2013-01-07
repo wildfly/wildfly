@@ -74,7 +74,7 @@ public class ConnectionDefinitionAdd extends AbstractAddStepHandler {
             final ModifiableResourceAdapter ravalue = ((ModifiableResourceAdapter) context.getServiceRegistry(false).getService(raServiceName).getValue());
             boolean isXa = ravalue.getTransactionSupport() == TransactionSupportEnum.XATransaction;
 
-            final ModifiableConnDef connectionDefinitionValue = RaOperationUtil.buildConnectionDefinitionObject(context, operation, poolName, isXa);
+            final ModifiableConnDef connectionDefinitionValue = RaOperationUtil.buildConnectionDefinitionObject(context, recoveryEnvModel, poolName, isXa);
 
 
 
