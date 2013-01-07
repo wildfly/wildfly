@@ -55,7 +55,7 @@ public class ReplicationWebFailoverTestCase extends ClusteredWebFailoverAbstract
         war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");
         war.addClasses(ViewChangeListenerServlet.class, ViewChangeListener.class, ViewChangeListenerBean.class);
         war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
-        System.out.println(war.toString(true));
+        log.info(war.toString(true));
         return war;
     }
 

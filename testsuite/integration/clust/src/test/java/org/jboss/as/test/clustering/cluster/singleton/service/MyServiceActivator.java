@@ -32,6 +32,7 @@ import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
@@ -40,6 +41,8 @@ import org.jboss.msc.value.InjectedValue;
  * @author Paul Ferraro
  */
 public class MyServiceActivator implements ServiceActivator {
+
+    private static final Logger log = Logger.getLogger(MyServiceActivator.class);
 
     public static final String PREFERRED_NODE = NODE_2;
 
