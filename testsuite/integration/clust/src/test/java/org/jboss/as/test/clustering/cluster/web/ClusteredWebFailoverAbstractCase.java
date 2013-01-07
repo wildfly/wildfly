@@ -21,19 +21,10 @@
  */
 package org.jboss.as.test.clustering.cluster.web;
 
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_2;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_2;
-
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Properties;
 import java.util.concurrent.ExecutionException;
-
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
@@ -41,53 +32,32 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.jboss.arquillian.container.test.api.ContainerController;
-import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.ClusterHttpClientUtil;
+import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Test that failover and undeploy works.
+ * Test that HTTP session failover on shutdown and undeploy works.
  *
  * @author Radoslav Husar
+ * @version Oct 2012
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public abstract class ClusteredWebFailoverAbstractCase {
+public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTestCase {
 
-    /** Controller for testing failover and undeploy **/
-    @ArquillianResource
-    private ContainerController controller;
-    @ArquillianResource
-    private Deployer deployer;
-
-    @BeforeClass
-    public static void printSysProps() {
-        Properties sysprops = System.getProperties();
-        System.out.println("System properties:\n" + sysprops);
-    }
-
-    /**
-     * Workaround for Arquillian so that you can use "@ArquillianResource(C.class) @OperateOnDeployment(D)" because the
-     * containers need to be started beforehand.
-     */
-    @Test
-    @InSequence(1)
-    public void testStartContainersAndDeployments() {
-        // Container is unmanaged, need to start manually.
-        controller.start(CONTAINER_1);
-        deployer.deploy(DEPLOYMENT_1);
-        controller.start(CONTAINER_2);
-        deployer.deploy(DEPLOYMENT_2);
+    @Override
+    protected void setUp() {
+        super.setUp();
+        deploy(DEPLOYMENTS);
     }
 
     /**
@@ -105,7 +75,7 @@ public abstract class ClusteredWebFailoverAbstractCase {
      * @throws URISyntaxException 
      */
     @Test
-    @InSequence(2)
+    @InSequence(1)
     public void testGracefulSimpleFailover(
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
@@ -128,7 +98,7 @@ public abstract class ClusteredWebFailoverAbstractCase {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            // Lets do this twice to have more debug info if failover is slow.
+            // Let's do this twice to have more debug info if failover is slow.
             response = client.execute(new HttpGet(url1));
             try {
                 System.out.println("Requested " + url1 + ", got " + response.getFirstHeader("value").getValue() + ".");
@@ -139,7 +109,7 @@ public abstract class ClusteredWebFailoverAbstractCase {
             }
 
             // Gracefully shutdown the 1st container.
-            controller.stop(CONTAINER_1);
+            stop(CONTAINER_1);
 
             this.establishView(client, baseURL2, NODE_2);
             
@@ -157,7 +127,7 @@ public abstract class ClusteredWebFailoverAbstractCase {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            // Lets do one more check.
+            // Let's do one more check.
             response = client.execute(new HttpGet(url2));
             try {
                 System.out.println("Requested " + url2 + ", got " + response.getFirstHeader("value").getValue() + ".");
@@ -167,7 +137,7 @@ public abstract class ClusteredWebFailoverAbstractCase {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            controller.start(CONTAINER_1);
+            start(CONTAINER_1);
 
             this.establishView(client, baseURL2, NODE_1, NODE_2);
             
@@ -182,7 +152,7 @@ public abstract class ClusteredWebFailoverAbstractCase {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            // Lets do this twice to have more debug info if failover is slow.
+            // Let's do this twice to have more debug info if failover is slow.
             response = client.execute(new HttpGet(url1));
             try {
                 System.out.println("Requested " + url1 + ", got " + response.getFirstHeader("value").getValue() + ".");
@@ -195,24 +165,7 @@ public abstract class ClusteredWebFailoverAbstractCase {
             HttpClientUtils.closeQuietly(client);
         }
 
-        // Is would be done automatically, keep for 2nd test is added
-        deployer.undeploy(DEPLOYMENT_1);
-        controller.stop(CONTAINER_1);
-        deployer.undeploy(DEPLOYMENT_2);
-        controller.stop(CONTAINER_2);
-
         // Assert.fail("Show me the logs please!");
-    }
-
-    @Test
-    @InSequence(3)
-    public void testStartContainersAndDeploymentsForUndeployFailover() {
-        // Container is unmanaged, need to start manually.
-        controller.start(CONTAINER_1);
-        deployer.deploy(DEPLOYMENT_1);
-
-        controller.start(CONTAINER_2);
-        deployer.deploy(DEPLOYMENT_2);
     }
 
     /**
@@ -230,7 +183,7 @@ public abstract class ClusteredWebFailoverAbstractCase {
      * @throws URISyntaxException 
      */
     @Test
-    @InSequence(4)
+    @InSequence(2)
     public void testGracefulUndeployFailover(
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
@@ -264,7 +217,7 @@ public abstract class ClusteredWebFailoverAbstractCase {
             }
 
             // Gracefully undeploy from the 1st container.
-            deployer.undeploy(DEPLOYMENT_1);
+            undeploy(DEPLOYMENT_1);
 
             this.establishView(client, baseURL2, NODE_2);
             
@@ -292,7 +245,7 @@ public abstract class ClusteredWebFailoverAbstractCase {
             }
 
             // Redeploy
-            deployer.deploy(DEPLOYMENT_1);
+            deploy(DEPLOYMENT_1);
 
             this.establishView(client, baseURL2, NODE_1, NODE_2);
             
@@ -318,16 +271,17 @@ public abstract class ClusteredWebFailoverAbstractCase {
             HttpClientUtils.closeQuietly(client);
         }
 
-        // Is would be done automatically, keep for when 3nd test is added
-        deployer.undeploy(DEPLOYMENT_1);
-        controller.stop(CONTAINER_1);
-        deployer.undeploy(DEPLOYMENT_2);
-        controller.stop(CONTAINER_2);
-
         // Assert.fail("Show me the logs please!");
+    }
+
+    @Test
+    @InSequence(3)
+    public void testCleanup() {
+        undeploy(DEPLOYMENTS);
     }
 
     private void establishView(HttpClient client, URL baseURL, String... members) throws URISyntaxException, IOException {
         ClusterHttpClientUtil.establishView(client, baseURL, "web", members);
     }
+
 }

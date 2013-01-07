@@ -22,29 +22,20 @@
 
 package org.jboss.as.test.clustering.cluster.ejb3.stateful.remote.failover;
 
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_2;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_2;
-
 import javax.naming.NamingException;
 
-import org.jboss.arquillian.container.test.api.ContainerController;
-import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
-import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.EJBDirectory;
 import org.jboss.as.test.clustering.NodeNameGetter;
 import org.jboss.as.test.clustering.RemoteEJBDirectory;
 import org.jboss.as.test.clustering.ViewChangeListener;
 import org.jboss.as.test.clustering.ViewChangeListenerBean;
+import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
@@ -62,29 +53,23 @@ import org.junit.runner.RunWith;
 /**
  * Tests that invocations on a clustered stateful session bean from a remote EJB client, failover to
  * other node(s) in cases like a node going down
- *
+ * <p/>
  * This test also replicates some decorated CDI beans, to make sure they are replicated correctly.
  *
  * @author Jaikiran Pai
  * @author Radoslav Husar
+ * @version Oct 2012
  */
 @RunWith(Arquillian.class)
 @RunAsClient
 @Ignore("AS7-6379")
-public class RemoteEJBClientStatefulBeanFailoverTestCase {
+public class RemoteEJBClientStatefulBeanFailoverTestCase extends ClusterAbstractTestCase {
 
     private static final Logger logger = Logger.getLogger(RemoteEJBClientStatefulBeanFailoverTestCase.class);
 
     private static final String MODULE_NAME = "remote-ejb-client-stateful-bean-failover-test";
 
     private static EJBDirectory context;
-
-    @ArquillianResource
-    private ContainerController container;
-
-    @ArquillianResource
-    private Deployer deployer;
-
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
@@ -100,8 +85,13 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
 
     private static Archive<?> createDeployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
-        ejbJar.addPackage(CounterBean.class.getPackage());
-        ejbJar.addClasses(NodeNameGetter.class, ViewChangeListener.class, ViewChangeListenerBean.class);
+
+        // CounterBean package but don't include the tests
+        ejbJar.addClasses(CDIDecorator.class, ClientSFSBRemote.class, DestructionCounterSingleton.class,
+                NodeNameRetriever.class, CDIManagedBean.class, CounterBean.class, DecoratorInterface.class,
+                NodeNameSFSB.class, ClientSFSB.class, CounterResult.class, DestructionCounterRemote.class,
+                RemoteCounter.class, ViewChangeListener.class, ViewChangeListenerBean.class, NodeNameGetter.class);
+        ejbJar.addClass(NodeNameGetter.class);
         ejbJar.addAsManifestResource(new StringAsset("<beans>" +
                 "<decorators><class>" + CDIDecorator.class.getName() + "</class></decorators>" +
                 "</beans>"), "beans.xml");
@@ -119,6 +109,14 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
         context.close();
     }
 
+    @Override
+    protected void setUp() {
+        super.setUp();
+
+        // Also deploy
+        deploy(DEPLOYMENTS);
+    }
+
     /**
      * Starts 2 nodes with the clustered beans deployed on each node. Invokes a clustered SFSB a few times.
      * Then stops a node from among the cluster (the one which received the last invocation) and continues invoking
@@ -129,8 +127,8 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
      */
     @Test
     @InSequence(1)
-    public void testFailoverFromRemoteClientWhenOneNodeGoesDown() throws Exception {
-        this.failoverFromRemoteClient(false);
+    public void testRemoteClientFailoverOnShutdown() throws Exception {
+        this.remoteClientFailover(false);
     }
 
     /**
@@ -140,21 +138,14 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
      */
     @Test
     @InSequence(2)
-    public void testFailoverFromRemoteClientWhenOneNodeUndeploys() throws Exception {
-        this.failoverFromRemoteClient(true);
-
-        //Assert.fail("Show me the logs.");
+    public void testRemoteClientFailoverOnUndeploy() throws Exception {
+        this.remoteClientFailover(true);
     }
 
-    private void failoverFromRemoteClient(boolean undeployOnly) throws Exception {
-        // Container is unmanaged, so start it ourselves
-        this.container.start(CONTAINER_1);
-        // deploy to container1
-        this.deployer.deploy(DEPLOYMENT_1);
-
-        // start the other container too
-        this.container.start(CONTAINER_2);
-        this.deployer.deploy(DEPLOYMENT_2);
+    private void remoteClientFailover(boolean undeployOnly) throws Exception {
+        //DEBUG
+        //stop(CONTAINERS);
+        //start(CONTAINERS);
 
         final ContextSelector<EJBClientContext> previousSelector = EJBClientContextSelector.setup("cluster/ejb3/stateful/failover/sfsb-failover-jboss-ejb-client.properties");
         boolean container1Stopped = false;
@@ -183,19 +174,19 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
             final String previousInvocationNodeName = result.getNodeName();
             // the value is configured in arquillian.xml of the project
             if (previousInvocationNodeName.equals(NODE_1)) {
-                this.deployer.undeploy(DEPLOYMENT_1);
+                undeploy(DEPLOYMENT_1);
                 if (!undeployOnly) {
-                    this.container.stop(CONTAINER_1);
-                    container1Stopped = true;
+                    stop(CONTAINER_1);
                 }
+                container1Stopped = true;
 
                 this.establishView(listener, NODE_2);
             } else {
-                this.deployer.undeploy(DEPLOYMENT_2);
+                undeploy(DEPLOYMENT_2);
                 if (!undeployOnly) {
-                    this.container.stop(CONTAINER_2);
-                    container2Stopped = true;
+                    stop(CONTAINER_2);
                 }
+                container2Stopped = true;
                 
                 this.establishView(listener, NODE_1);
             }
@@ -233,15 +224,28 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
             if (previousSelector != null) {
                 EJBClientContext.setSelector(previousSelector);
             }
-            // shutdown the containers
-            if (!container1Stopped) {
-                this.deployer.undeploy(DEPLOYMENT_1);
-                this.container.stop(CONTAINER_1);
+
+            // Restore deployment for undeployment test
+            if (container1Stopped) {
+                if (undeployOnly) {
+                    undeploy(DEPLOYMENT_2);
+                    deploy(DEPLOYMENTS); // This test required redeployment :-(
+                } else {
+                    undeploy(DEPLOYMENT_2);
+                    start(CONTAINER_1);
+                    deploy(DEPLOYMENTS);
+                }
             }
 
-            if (!container2Stopped) {
-                this.deployer.undeploy(DEPLOYMENT_2);
-                this.container.stop(CONTAINER_2);
+            if (container2Stopped) {
+                if (undeployOnly) {
+                    undeploy(DEPLOYMENT_1);
+                    deploy(DEPLOYMENTS); // This test required redeployment :-(
+                } else {
+                    undeploy(DEPLOYMENT_1);
+                    start(CONTAINER_2);
+                    deploy(DEPLOYMENTS);
+                }
             }
         }
     }

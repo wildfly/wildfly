@@ -22,19 +22,11 @@
 
 package org.jboss.as.test.clustering.cluster.ejb3.stateful;
 
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_2;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_2;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Properties;
-
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
@@ -42,8 +34,6 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.jboss.arquillian.container.test.api.ContainerController;
-import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -58,6 +48,7 @@ import org.jboss.as.test.clustering.LocalEJBDirectory;
 import org.jboss.as.test.clustering.ViewChangeListener;
 import org.jboss.as.test.clustering.ViewChangeListenerBean;
 import org.jboss.as.test.clustering.ViewChangeListenerServlet;
+import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.ejb3.stateful.bean.CounterDecorator;
 import org.jboss.as.test.clustering.cluster.ejb3.stateful.bean.StatefulBean;
 import org.jboss.as.test.clustering.cluster.ejb3.stateful.bean.StatefulCDIInterceptor;
@@ -77,18 +68,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 @Ignore("AS7-5208 Intermittent failures")
-public class StatefulFailoverTestCase {
-
-    @ArquillianResource
-    private ContainerController controller;
-    @ArquillianResource
-    private Deployer deployer;
-
-    @BeforeClass
-    public static void printSysProps() {
-        Properties sysprops = System.getProperties();
-        System.out.println("System properties:\n" + sysprops);
-    }
+public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
@@ -117,30 +97,21 @@ public class StatefulFailoverTestCase {
         return war;
     }
 
-    @Test
-    @InSequence(1)
-    public void testArquillianWorkaround() {
-        // Container is unmanaged, need to start manually.
-        controller.start(CONTAINER_1);
-        deployer.deploy(DEPLOYMENT_1);
-
-        // TODO: This is nasty. I need to start it to be able to inject it later and then stop it again!
-        // https://community.jboss.org/thread/176096
-        controller.start(CONTAINER_2);
-        deployer.deploy(DEPLOYMENT_2);
+    @Override
+    protected void setUp() {
+        super.setUp();
+        deploy(DEPLOYMENTS);
     }
 
     @Test
-    @InSequence(2)
+    @InSequence(1)
     public void testRestart(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
             throws IOException, InterruptedException, URISyntaxException {
 
-        // TODO: This is nasty. I need to start it to be able to inject it later and then stop it again!
-        // https://community.jboss.org/thread/176096
-        deployer.undeploy(DEPLOYMENT_2);
-        controller.stop(CONTAINER_2);
+        // Only needed for injection
+        stop(CONTAINER_2);
 
         DefaultHttpClient client = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
 
@@ -155,8 +126,7 @@ public class StatefulFailoverTestCase {
             assertEquals(20010101, this.queryCount(client, url1));
             assertEquals(20020202, this.queryCount(client, url1));
 
-            controller.start(CONTAINER_2);
-            deployer.deploy(DEPLOYMENT_2);
+            start(CONTAINER_2);
 
             this.establishView(client, baseURL1, NODE_1, NODE_2);
             
@@ -166,14 +136,14 @@ public class StatefulFailoverTestCase {
             assertEquals(20050505, this.queryCount(client, url2));
             assertEquals(20060606, this.queryCount(client, url2));
 
-            controller.stop(CONTAINER_2);
+            stop(CONTAINER_2);
 
             this.establishView(client, baseURL1, NODE_1);
             
             assertEquals(20070707, this.queryCount(client, url1));
             assertEquals(20080808, this.queryCount(client, url1));
 
-            controller.start(CONTAINER_2);
+            start(CONTAINER_2);
 
             this.establishView(client, baseURL1, NODE_1, NODE_2);
             
@@ -183,14 +153,15 @@ public class StatefulFailoverTestCase {
             assertEquals(20111111, this.queryCount(client, url2));
             assertEquals(20121212, this.queryCount(client, url2));
 
-            controller.stop(CONTAINER_1);
+            stop(CONTAINER_1);
             
             this.establishView(client, baseURL2, NODE_2);
             
             assertEquals(20131313, this.queryCount(client, url2));
             assertEquals(20141414, this.queryCount(client, url2));
 
-            controller.start(CONTAINER_1);
+
+            start(CONTAINER_1);
 
             this.establishView(client, baseURL2, NODE_1, NODE_2);
             
@@ -200,37 +171,18 @@ public class StatefulFailoverTestCase {
             assertEquals(20171717, this.queryCount(client, url1));
             assertEquals(20181818, this.queryCount(client, url1));
         } finally {
-            HttpClientUtils.closeQuietly(client);
-
-            this.cleanup(DEPLOYMENT_1, CONTAINER_1);
-            this.cleanup(DEPLOYMENT_2, CONTAINER_2);
+            client.getConnectionManager().shutdown();
         }
     }
 
     @Test
-    @InSequence(10)
-    public void testArquillianWorkaroundSecond() {
-        // Container is unmanaged, need to start manually.
-        controller.start(CONTAINER_1);
-        deployer.deploy(DEPLOYMENT_1);
-
-        // TODO: This is nasty. I need to start it to be able to inject it later and then stop it again!
-        // https://community.jboss.org/thread/176096
-        controller.start(CONTAINER_2);
-        deployer.deploy(DEPLOYMENT_2);
-    }
-
-    @Test
-    @InSequence(11)
+    @InSequence(2)
     public void testRedeploy(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
             throws IOException, InterruptedException, URISyntaxException {
 
-        // TODO: This is nasty. I need to start it to be able to inject it later and then stop it again!
-        // https://community.jboss.org/thread/176096
-        deployer.undeploy(DEPLOYMENT_2);
-        controller.stop(CONTAINER_2);
+        stop(CONTAINER_2);
 
         DefaultHttpClient client = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
 
@@ -243,8 +195,8 @@ public class StatefulFailoverTestCase {
             assertEquals(20010101, this.queryCount(client, url1));
             assertEquals(20020202, this.queryCount(client, url1));
 
-            controller.start(CONTAINER_2);
-            deployer.deploy(DEPLOYMENT_2);
+            start(CONTAINER_2);
+            //deploy(DEPLOYMENT_2);
 
             this.establishView(client, baseURL1, NODE_1, NODE_2);
             
@@ -254,14 +206,14 @@ public class StatefulFailoverTestCase {
             assertEquals(20050505, this.queryCount(client, url2));
             assertEquals(20060606, this.queryCount(client, url2));
 
-            deployer.undeploy(DEPLOYMENT_2);
+            undeploy(DEPLOYMENT_2);
 
             this.establishView(client, baseURL1, NODE_1);
             
             assertEquals(20070707, this.queryCount(client, url1));
             assertEquals(20080808, this.queryCount(client, url1));
 
-            deployer.deploy(DEPLOYMENT_2);
+            deploy(DEPLOYMENT_2);
 
             this.establishView(client, baseURL1, NODE_1, NODE_2);
             
@@ -271,14 +223,14 @@ public class StatefulFailoverTestCase {
             assertEquals(20111111, this.queryCount(client, url2));
             assertEquals(20121212, this.queryCount(client, url2));
 
-            deployer.undeploy(DEPLOYMENT_1);
+            undeploy(DEPLOYMENT_1);
 
             this.establishView(client, baseURL2, NODE_2);
             
             assertEquals(20131313, this.queryCount(client, url2));
             assertEquals(20141414, this.queryCount(client, url2));
 
-            deployer.deploy(DEPLOYMENT_1);
+            deploy(DEPLOYMENT_1);
 
             this.establishView(client, baseURL2, NODE_1, NODE_2);
             
@@ -288,11 +240,14 @@ public class StatefulFailoverTestCase {
             assertEquals(20171717, this.queryCount(client, url2));
             assertEquals(20181818, this.queryCount(client, url2));
         } finally {
-            HttpClientUtils.closeQuietly(client);
-
-            this.cleanup(DEPLOYMENT_1, CONTAINER_1);
-            this.cleanup(DEPLOYMENT_2, CONTAINER_2);
+            client.getConnectionManager().shutdown();
         }
+    }
+
+    @Test
+    @InSequence(3)
+    public void testCleanup() {
+        undeploy(DEPLOYMENTS);
     }
 
     private int queryCount(HttpClient client, String url) throws IOException {
@@ -302,15 +257,6 @@ public class StatefulFailoverTestCase {
             return Integer.parseInt(response.getFirstHeader("count").getValue());
         } finally {
             HttpClientUtils.closeQuietly(response);
-        }
-    }
-
-    private void cleanup(String deployment, String container) {
-        try {
-            this.deployer.undeploy(deployment);
-            this.controller.stop(container);
-        } catch (Throwable e) {
-            e.printStackTrace(System.err);
         }
     }
 

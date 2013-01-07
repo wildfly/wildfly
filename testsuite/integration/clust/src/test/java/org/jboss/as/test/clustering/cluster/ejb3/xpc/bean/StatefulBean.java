@@ -103,14 +103,14 @@ public class StatefulBean implements Stateful {
     }
 
     @Override
-        @TransactionAttribute(TransactionAttributeType.REQUIRED)
-        public void deleteEmployee(int id) {
-            Employee employee = em.find(Employee.class, id, LockModeType.NONE);
-            em.remove(employee);
-            logStats("deleteEmployee");
-            version = "deletedEmployee";
-            valueBag.put("version",version);
-        }
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public void deleteEmployee(int id) {
+        Employee employee = em.find(Employee.class, id, LockModeType.NONE);
+        em.remove(employee);
+        logStats("deleteEmployee");
+        version = "deletedEmployee";
+        valueBag.put("version", version);
+    }
 
 
     @Override

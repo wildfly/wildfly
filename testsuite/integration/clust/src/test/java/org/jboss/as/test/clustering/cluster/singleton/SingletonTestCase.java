@@ -21,19 +21,10 @@
  */
 package org.jboss.as.test.clustering.cluster.singleton;
 
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_2;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_2;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Properties;
-
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
@@ -41,19 +32,17 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.jboss.arquillian.container.test.api.ContainerController;
-import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.ClusterHttpClientUtil;
 import org.jboss.as.test.clustering.ViewChangeListener;
 import org.jboss.as.test.clustering.ViewChangeListenerBean;
 import org.jboss.as.test.clustering.ViewChangeListenerServlet;
+import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.singleton.service.MyService;
 import org.jboss.as.test.clustering.cluster.singleton.service.MyServiceActivator;
 import org.jboss.as.test.clustering.cluster.singleton.service.MyServiceServlet;
@@ -62,24 +51,12 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
 @RunAsClient
-public class SingletonTestCase {
-
-    @ArquillianResource
-    private ContainerController controller;
-    @ArquillianResource
-    private Deployer deployer;
-
-    @BeforeClass
-    public static void printSysProps() {
-        Properties sysprops = System.getProperties();
-        System.out.println("System properties:\n" + sysprops);
-    }
+public class SingletonTestCase extends ClusterAbstractTestCase {
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
@@ -102,30 +79,20 @@ public class SingletonTestCase {
         return war;
     }
 
-    @Test
-    @InSequence(1)
-    public void testArquillianWorkaround() {
-        // Container is unmanaged, need to start manually.
-        controller.start(CONTAINER_1);
-        deployer.deploy(DEPLOYMENT_1);
-
-        // TODO: This is nasty. I need to start it to be able to inject it later and then stop it again!
-        // https://community.jboss.org/thread/176096
-        controller.start(CONTAINER_2);
-        deployer.deploy(DEPLOYMENT_2);
+    @Override
+    protected void setUp() {
+        super.setUp();
+        deploy(DEPLOYMENTS);
     }
 
     @Test
-    @InSequence(2)
     public void testSingletonService(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
             throws IOException, InterruptedException, URISyntaxException {
 
-        // TODO: This is nasty. I need to start it to be able to inject it later and then stop it again!
-        // https://community.jboss.org/thread/176096
-        deployer.undeploy(DEPLOYMENT_2);
-        controller.stop(CONTAINER_2);
+        // Needed to be able to inject ArquillianResource
+        stop(CONTAINER_2);
 
         DefaultHttpClient client = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
 
@@ -155,8 +122,7 @@ public class SingletonTestCase {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            controller.start(CONTAINER_2);
-            deployer.deploy(DEPLOYMENT_2);
+            start(CONTAINER_2);
 
             this.establishView(client, baseURL1, NODE_1, NODE_2);
 
@@ -192,7 +158,7 @@ public class SingletonTestCase {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            controller.stop(CONTAINER_2);
+            stop(CONTAINER_2);
 
             this.establishView(client, baseURL1, NODE_1);
 
@@ -248,7 +214,8 @@ public class SingletonTestCase {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            controller.stop(CONTAINER_1);
+
+            stop(CONTAINER_1);
 
             this.establishView(client, baseURL2, NODE_2);
 

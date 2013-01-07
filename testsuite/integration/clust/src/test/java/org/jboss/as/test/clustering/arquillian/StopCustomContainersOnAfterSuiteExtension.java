@@ -21,6 +21,9 @@
  */
 package org.jboss.as.test.clustering.arquillian;
 
+import java.io.File;
+import java.io.IOException;
+
 import org.jboss.arquillian.container.spi.Container;
 import org.jboss.arquillian.container.spi.Container.State;
 import org.jboss.arquillian.container.spi.ContainerRegistry;
