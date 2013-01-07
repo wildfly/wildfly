@@ -47,7 +47,7 @@ ARGUMENTS
                  the host name to reload.
 
  --restart-servers  - optional, allowed only in the domain mode. If true the
-                      servers will be reloaded, and if false the servers will
+                      servers will be restarted, and if false the servers will
                  be left running and reconnect to the Host Controller when
                  started again. If not present, true value is assumed.
                       

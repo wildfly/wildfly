@@ -140,6 +140,7 @@ public class CLIModelControllerClient extends AbstractModelControllerClient {
                 @Override
                 public void close() throws IOException {
                     channel.close(); // Probably should not be done here
+                    // TODO I never received a call here
                 }
             };
 
@@ -153,7 +154,9 @@ public class CLIModelControllerClient extends AbstractModelControllerClient {
 
     @Override
     public void close() throws IOException {
-        // TODO connection.close(); // Probably should not be done here
+        if(association != null) {
+            association.getChannel().getConnection().close();
+        }
     }
 
     public ModelNode execute(ModelNode operation, boolean awaitClose) throws IOException {
