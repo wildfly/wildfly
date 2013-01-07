@@ -26,7 +26,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.SocketBinding;
+import org.jboss.as.network.SocketBindingManager;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -68,6 +70,7 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
     private RecoveryManagerService recoveryManagerService;
     private boolean recoveryListener;
     private final boolean jts;
+    private InjectedValue<SocketBindingManager> bindingManager = new InjectedValue<SocketBindingManager>();
 
     public ArjunaRecoveryManagerService(final boolean recoveryListener, final boolean jts) {
         this.recoveryListener = recoveryListener;
@@ -85,6 +88,11 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
         recoveryEnvironmentBean.setTransactionStatusManagerInetAddress(statusBinding.getSocketAddress().getAddress());
         recoveryEnvironmentBean.setTransactionStatusManagerPort(statusBinding.getSocketAddress().getPort());
         recoveryEnvironmentBean.setRecoveryListener(recoveryListener);
+
+        if (recoveryListener){
+            ManagedBinding binding = ManagedBinding.Factory.createSimpleManagedBinding(recoveryBinding);
+            bindingManager.getValue().getNamedRegistry().registerBinding(binding);
+        }
 
         final List<String> recoveryExtensions = new ArrayList<String>();
         recoveryExtensions.add(AtomicActionRecoveryModule.class.getName());
@@ -160,5 +168,9 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
 
     public Injector<SocketBinding> getStatusBindingInjector() {
         return statusBindingInjector;
+    }
+
+    public Injector<SocketBindingManager> getBindingManager() {
+        return bindingManager;
     }
 }
