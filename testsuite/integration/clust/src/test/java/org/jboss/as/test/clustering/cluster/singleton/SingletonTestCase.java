@@ -100,6 +100,11 @@ public class SingletonTestCase extends ClusterAbstractTestCase {
         URI uri1 = MyServiceServlet.createURI(baseURL1);
         URI uri2 = MyServiceServlet.createURI(baseURL2);
 
+        log.info("URLs are: " + defaultURI1 + ", " + defaultURI2);
+
+        URI quorumURI1 = MyServiceServlet.createURI(baseURL1, MyService.QUORUM_SERVICE_NAME);
+        URI quorumURI2 = MyServiceServlet.createURI(baseURL2, MyService.QUORUM_SERVICE_NAME);
+        
         try {
             this.establishView(client, baseURL1, NODE_1);
 

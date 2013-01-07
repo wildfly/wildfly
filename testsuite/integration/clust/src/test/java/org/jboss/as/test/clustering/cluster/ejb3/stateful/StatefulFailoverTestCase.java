@@ -93,7 +93,7 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
                 "</beans>"), "beans.xml");
         war.addClasses(ViewChangeListener.class, ViewChangeListenerBean.class, ViewChangeListenerServlet.class);
         war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
-        System.out.println(war.toString(true));
+        log.info(war.toString(true));
         return war;
     }
 
@@ -118,7 +118,7 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
         String url1 = baseURL1.toString() + "count";
         String url2 = baseURL2.toString() + "count";
 
-        System.out.println("URLs are: " + url1 + ", " + url2);
+        log.info("URLs are: " + url1 + ", " + url2);
 
         try {
             this.establishView(client, baseURL1, NODE_1);

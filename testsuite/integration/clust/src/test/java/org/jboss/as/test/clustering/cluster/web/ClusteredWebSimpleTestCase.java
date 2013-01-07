@@ -94,7 +94,7 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
         war.addClass(SimpleServlet.class);
         war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");
-        System.out.println(war.toString(true));
+        log.info(war.toString(true));
         return war;
     }
 
@@ -111,7 +111,7 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
 
         // returns the URL of the deployment (http://127.0.0.1:8180/distributable)
         String url = baseURL.toString();
-        System.out.println("URL = " + url);
+        log.info("URL = " + url);
 
         try {
             HttpResponse response = client.execute(new HttpGet(url + "simple"));

@@ -53,7 +53,7 @@ public class SessionBasedSessionPassivationTestCase extends SessionPassivationAb
         war.addClass(SimpleServlet.class);
         war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");
         war.addAsWebInfResource(SessionPassivationAbstractCase.class.getPackage(), "jboss-web_passivation_session.xml", "jboss-web.xml");
-        System.out.println(war.toString(true));
+        log.info(war.toString(true));
         return war;
     }
 }

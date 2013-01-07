@@ -91,7 +91,7 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
             
             HttpResponse response = client.execute(new HttpGet(url1));
             try {
-                System.out.println("Requested " + url1 + ", got " + response.getFirstHeader("value").getValue() + ".");
+                log.info("Requested " + url1 + ", got " + response.getFirstHeader("value").getValue() + ".");
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(1, Integer.parseInt(response.getFirstHeader("value").getValue()));
             } finally {
@@ -101,7 +101,7 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
             // Let's do this twice to have more debug info if failover is slow.
             response = client.execute(new HttpGet(url1));
             try {
-                System.out.println("Requested " + url1 + ", got " + response.getFirstHeader("value").getValue() + ".");
+                log.info("Requested " + url1 + ", got " + response.getFirstHeader("value").getValue() + ".");
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader("value").getValue()));
             } finally {
@@ -120,7 +120,7 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
 
             response = client.execute(new HttpGet(url2));
             try {
-                System.out.println("Requested " + url2 + ", got " + response.getFirstHeader("value").getValue() + ".");
+                log.info("Requested " + url2 + ", got " + response.getFirstHeader("value").getValue() + ".");
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals("Session failed to replicate after container 1 was shutdown.", 3, Integer.parseInt(response.getFirstHeader("value").getValue()));
             } finally {
@@ -130,7 +130,7 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
             // Let's do one more check.
             response = client.execute(new HttpGet(url2));
             try {
-                System.out.println("Requested " + url2 + ", got " + response.getFirstHeader("value").getValue() + ".");
+                log.info("Requested " + url2 + ", got " + response.getFirstHeader("value").getValue() + ".");
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(4, Integer.parseInt(response.getFirstHeader("value").getValue()));
             } finally {
@@ -145,7 +145,7 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
 
             response = client.execute(new HttpGet(url1));
             try {
-                System.out.println("Requested " + url1 + ", got " + response.getFirstHeader("value").getValue() + ".");
+                log.info("Requested " + url1 + ", got " + response.getFirstHeader("value").getValue() + ".");
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals("Session failed to replicate after container 1 was brough up.", 5, Integer.parseInt(response.getFirstHeader("value").getValue()));
             } finally {
@@ -155,7 +155,7 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
             // Let's do this twice to have more debug info if failover is slow.
             response = client.execute(new HttpGet(url1));
             try {
-                System.out.println("Requested " + url1 + ", got " + response.getFirstHeader("value").getValue() + ".");
+                log.info("Requested " + url1 + ", got " + response.getFirstHeader("value").getValue() + ".");
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(6, Integer.parseInt(response.getFirstHeader("value").getValue()));
             } finally {
@@ -199,7 +199,7 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
             
             HttpResponse response = client.execute(new HttpGet(url1));
             try {
-                System.out.println("Requested " + url1 + ", got " + response.getFirstHeader("value").getValue() + ".");
+                log.info("Requested " + url1 + ", got " + response.getFirstHeader("value").getValue() + ".");
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(1, Integer.parseInt(response.getFirstHeader("value").getValue()));
             } finally {
@@ -209,7 +209,7 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
             // Lets do this twice to have more debug info if failover is slow.
             response = client.execute(new HttpGet(url1));
             try {
-                System.out.println("Requested " + url1 + ", got " + response.getFirstHeader("value").getValue() + ".");
+                log.info("Requested " + url1 + ", got " + response.getFirstHeader("value").getValue() + ".");
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader("value").getValue()));
             } finally {
@@ -227,7 +227,7 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
             // which is '127.0.0.1'. Otherwise you will have to spoof cookies. @Rado
             response = client.execute(new HttpGet(url2));
             try {
-                System.out.println("Requested " + url2 + ", got " + response.getFirstHeader("value").getValue() + ".");
+                log.info("Requested " + url2 + ", got " + response.getFirstHeader("value").getValue() + ".");
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals("Session failed to replicate after container 1 was shutdown.", 3, Integer.parseInt(response.getFirstHeader("value").getValue()));
             } finally {
@@ -237,7 +237,7 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
             // Lets do one more check.
             response = client.execute(new HttpGet(url2));
             try {
-                System.out.println("Requested " + url2 + ", got " + response.getFirstHeader("value").getValue() + ".");
+                log.info("Requested " + url2 + ", got " + response.getFirstHeader("value").getValue() + ".");
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(4, Integer.parseInt(response.getFirstHeader("value").getValue()));
             } finally {
@@ -251,7 +251,7 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
             
             response = client.execute(new HttpGet(url1));
             try {
-                System.out.println("Requested " + url1 + ", got " + response.getFirstHeader("value").getValue() + ".");
+                log.info("Requested " + url1 + ", got " + response.getFirstHeader("value").getValue() + ".");
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals("Session failed to replicate after container 1 was brough up.", 5, Integer.parseInt(response.getFirstHeader("value").getValue()));
             } finally {
@@ -261,7 +261,7 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
             // Lets do this twice to have more debug info if failover is slow.
             response = client.execute(new HttpGet(url1));
             try {
-                System.out.println("Requested " + url1 + ", got " + response.getFirstHeader("value").getValue() + ".");
+                log.info("Requested " + url1 + ", got " + response.getFirstHeader("value").getValue() + ".");
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(6, Integer.parseInt(response.getFirstHeader("value").getValue()));
             } finally {
