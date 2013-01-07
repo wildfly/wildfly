@@ -21,6 +21,19 @@
  */
 package org.jboss.as.embedded.ejb3;
 
+import org.jboss.as.embedded.EmbeddedServerFactory;
+import org.jboss.as.embedded.StandaloneServer;
+import org.jboss.dmr.ModelNode;
+import org.jboss.modules.Module;
+
+import javax.ejb.EJBException;
+import javax.ejb.embeddable.EJBContainer;
+import javax.ejb.spi.EJBContainerProvider;
+import java.io.File;
+import java.io.IOException;
+import java.security.PrivilegedAction;
+import java.util.Map;
+
 import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.controller.client.helpers.ClientConstants.ADD;
 import static org.jboss.as.controller.client.helpers.ClientConstants.EXTENSION;
@@ -30,25 +43,10 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.OUTCOME;
 import static org.jboss.as.controller.client.helpers.ClientConstants.SUCCESS;
 import static org.jboss.as.embedded.EmbeddedMessages.MESSAGES;
 
-import java.io.File;
-import java.io.IOException;
-import java.security.PrivilegedAction;
-import java.util.Map;
-
-import javax.ejb.EJBException;
-import javax.ejb.embeddable.EJBContainer;
-import javax.ejb.spi.EJBContainerProvider;
-
-import org.jboss.as.embedded.EmbeddedServerFactory;
-import org.jboss.as.embedded.StandaloneServer;
-import org.jboss.dmr.ModelNode;
-import org.jboss.modules.Module;
-
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class JBossStandaloneEJBContainerProvider implements EJBContainerProvider {
-
     private void addEmbeddedExtensionTo(final StandaloneServer server) throws IOException {
         // FIXME: doesn't work, because org.jboss.as.embedded lives on the wrong side of the CL
         final ModelNode address = new ModelNode().setEmptyList();
@@ -75,7 +73,7 @@ public class JBossStandaloneEJBContainerProvider implements EJBContainerProvider
 
         File jbossHomeDir = new File(jbossHomeProp);
         if (jbossHomeDir.isDirectory() == false)
-            throw MESSAGES.invalidJBossHome(jbossHomeProp);
+            throw MESSAGES.invalidJbossHome(jbossHomeDir);
 
         // Per default we assume that we're running in a modular environment.
         // To allow setting up the modular environment ourselves, set org.jboss.as.embedded.ejb3.BARREN to true.
@@ -83,9 +81,9 @@ public class JBossStandaloneEJBContainerProvider implements EJBContainerProvider
         final boolean barren = Boolean.getBoolean("org.jboss.as.embedded.ejb3.BARREN");
         final StandaloneServer server;
         if (barren)
-            server = EmbeddedServerFactory.create(jbossHomeProp, null, null, "org.jboss.logmanager");
+            server = EmbeddedServerFactory.create(jbossHomeDir, System.getProperties(), System.getenv(), "org.jboss.logmanager");
         else
-            server = EmbeddedServerFactory.create(Module.getContextModuleLoader(), jbossHomeDir);
+            server = EmbeddedServerFactory.create(Module.getContextModuleLoader(), jbossHomeDir, System.getProperties(), System.getenv());
         try {
             server.start();
 //            addEmbeddedExtensionTo(server);

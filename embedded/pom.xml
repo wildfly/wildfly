@@ -32,7 +32,10 @@
         <version>7.2.0.Alpha1-SNAPSHOT</version>
     </parent>
 
+    <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-embedded</artifactId>
+    <version>7.2.0.Alpha1-SNAPSHOT</version>
+
     <name>JBoss Application Server: Embedded</name>
 
     <build>

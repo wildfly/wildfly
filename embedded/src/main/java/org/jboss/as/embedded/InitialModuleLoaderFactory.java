@@ -47,10 +47,9 @@ final class InitialModuleLoaderFactory {
      * @return The default module loader
      */
     public static ModuleLoader getModuleLoader(File modulePath, String... systemPackages) {
-        if (modulePath == null)
-            throw MESSAGES.nullVar("modulePath");
-        if (modulePath.isDirectory() == false)
-            throw MESSAGES.invalidModulePath(modulePath.getAbsolutePath());
+
+        if (modulePath == null || modulePath.isDirectory() == false)
+            throw MESSAGES.invalidModulePath(modulePath);
 
         String oldClassPath = SecurityActions.getSystemProperty("java.class.path");
         try {
