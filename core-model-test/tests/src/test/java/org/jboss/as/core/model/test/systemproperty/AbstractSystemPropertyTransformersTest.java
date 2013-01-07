@@ -21,9 +21,9 @@
 */
 package org.jboss.as.core.model.test.systemproperty;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
@@ -41,9 +41,10 @@ import org.jboss.as.core.model.test.LegacyKernelServicesInitializer.TestControll
 import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.core.model.test.util.StandardServerGroupInitializers;
 import org.jboss.as.core.model.test.util.TransformersTestParameters;
+import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
@@ -123,9 +124,9 @@ public abstract class AbstractSystemPropertyTransformersTest extends AbstractCor
     }
 
     @Test
-    public void testSystemPropertiesWithExpressionsBoot() throws Exception {
-        KernelServicesBuilder builder = createKernelServicesBuilder(TestModelType.DOMAIN)
-                .setXmlResource(serverGroup ? "domain-servergroup-systemproperties-with-expressions.xml" : "domain-systemproperties-with-expressions.xml");
+    public void testSystemPropertiesWithExpressions() throws Exception {
+        System.setProperty("sys.prop.test.one", "ONE");
+        KernelServicesBuilder builder = createKernelServicesBuilder(TestModelType.DOMAIN);
         if (serverGroup) {
             builder.setModelInitializer(StandardServerGroupInitializers.XML_MODEL_INITIALIZER, StandardServerGroupInitializers.XML_MODEL_WRITE_SANITIZER);
         }
@@ -143,38 +144,29 @@ public abstract class AbstractSystemPropertyTransformersTest extends AbstractCor
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
-        //Now test the individual methods
-        PathAddress baseAddress = serverGroup ? PathAddress.pathAddress(PathElement.pathElement(SERVER_GROUP, "test")) : PathAddress.EMPTY_ADDRESS;
-        PathAddress propNewAddress = baseAddress.append(SYSTEM_PROPERTY, "sys.prop.test.new");
-        PathAddress propTwoAddress = baseAddress.append(SYSTEM_PROPERTY, "sys.prop.test.two");
 
-        ModelNode addParams = new ModelNode();
-        addParams.get(VALUE).setExpression("${sys.prop.test.two}");
-        ModelNode addWithExpression = Util.getOperation(ADD, propNewAddress, addParams);
-        ModelNode writeWithExpression = Util.getWriteAttributeOperation(propTwoAddress, VALUE, new ModelNode().setExpression("${sys.prop.test.one}"));
+        List<ModelNode> ops = builder.parseXmlResource(serverGroup ? "domain-servergroup-systemproperties-with-expressions.xml" : "domain-systemproperties-with-expressions.xml");
 
+        FailedOperationTransformationConfig config;
         if (allowExpressions()) {
-            ModelTestUtils.checkOutcome(mainServices.executeOperation(modelVersion, mainServices.transformOperation(modelVersion, addWithExpression)));
-            ModelTestUtils.checkOutcome(mainServices.executeOperation(modelVersion, mainServices.transformOperation(modelVersion, writeWithExpression)));
-
-            ModelNode legacyModel = legacyServices.readWholeModel();
-            ModelNode value = ModelTestUtils.getSubModel(legacyModel, propNewAddress).get(VALUE);
-            Assert.assertTrue(value.getType() == ModelType.EXPRESSION);
-            Assert.assertEquals("${sys.prop.test.two}", value.asString());
-
-            value = ModelTestUtils.getSubModel(legacyModel, propTwoAddress).get(VALUE);
-            Assert.assertTrue(value.getType() == ModelType.EXPRESSION);
-            Assert.assertEquals("${sys.prop.test.one}", value.asString());
+            config = FailedOperationTransformationConfig.NO_FAILURES;
         } else {
-            ModelTestUtils.checkFailed(mainServices.executeOperation(modelVersion, mainServices.transformOperation(modelVersion, addWithExpression)));
-            ModelTestUtils.checkFailed(mainServices.executeOperation(modelVersion, mainServices.transformOperation(modelVersion, writeWithExpression)));
+            PathAddress root = serverGroup ? PathAddress.pathAddress(PathElement.pathElement(SERVER_GROUP)) : PathAddress.EMPTY_ADDRESS;
+            config = new FailedOperationTransformationConfig()
+                .addFailedAttribute(root.append(PathElement.pathElement(SYSTEM_PROPERTY)), new FailedOperationTransformationConfig.RejectExpressionsConfig(VALUE));
         }
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops, config);
 
-        //Resource transformation should work on both 7.1.x and 7.2.x since
-        //-7.2.x does no transformation
-        //-7.1.x transformers are registered with RejectExpressionValuesTransformer.setWarnOnResource()
-        ModelNode model = mainServices.readTransformedModel(modelVersion);
-
+        checkCoreModelTransformation(mainServices, modelVersion, null, new ModelFixer() {
+            @Override
+            public ModelNode fixModel(ModelNode modelNode) {
+                modelNode.remove(SOCKET_BINDING_GROUP);
+                if (!allowExpressions()) {
+                    modelNode =  modelNode.resolve();
+                }
+                return modelNode;
+            }
+        });
     }
 
     private ModelNode getExpectedUndefined(ModelVersion modelVersion){
