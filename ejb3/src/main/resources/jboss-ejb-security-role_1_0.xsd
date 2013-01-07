@@ -26,35 +26,35 @@
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
            version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-spec-2_0.xsd">
-   <xs:import namespace="http://java.sun.com/xml/ns/javaee" schemaLocation="http://www.jboss.org/j2ee/schema/jboss-ejb3-spec-2_0.xsd"/>
+           xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-spec-2_0.xs">
+   <xs:import namespace="http://java.sun.com/xml/ns/javaee" schemaLocation="http://www.jboss.org/j2ee/schema/jboss-ejb3-spec-2_0.xs"/>
 
    <xs:element name="security-role" type="security-roleType" substitutionGroup="javaee:assembly-descriptor-entry"/>
 
-   <xsd:complexType name="security-roleType">
-      <xsd:annotation>
-         <xsd:documentation> The security-role element contains the definition of a security role.
-            The definition consists of an the security role name and principal name element(s). </xsd:documentation>
-      </xsd:annotation>
-      <xsd:sequence>
-         <xsd:element name="description"
+   <xs:complexType name="security-roleType">
+      <xs:annotation>
+         <xs:documentation> The security-role element contains the definition of a security role.
+            The definition consists of an the security role name and principal name element(s). </xs:documentation>
+      </xs:annotation>
+      <xs:sequence>
+         <xs:element name="description"
             type="javaee:descriptionType"
             minOccurs="0"
             maxOccurs="unbounded"/>
-         <xsd:element name="role-name"
+         <xs:element name="role-name"
             type="javaee:role-nameType"/>
-         <xsd:element name="principal-name" type="principal-nameType" maxOccurs="unbounded"/>
-      </xsd:sequence>
-      <xsd:attribute name="id" type="xsd:ID"/>
-   </xsd:complexType>
+         <xs:element name="principal-name" type="principal-nameType" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="id" type="xs:ID"/>
+   </xs:complexType>
    
-   <xsd:complexType name="principal-nameType">
-      <xsd:annotation>
-         <xsd:documentation> The principal-name element is the name of the principal that is mapped
-            to the assembly role-name. </xsd:documentation>
-      </xsd:annotation>
-      <xsd:simpleContent>
-         <xsd:restriction base="javaee:string"/>
-      </xsd:simpleContent>
-   </xsd:complexType>
+   <xs:complexType name="principal-nameType">
+      <xs:annotation>
+         <xs:documentation> The principal-name element is the name of the principal that is mapped
+            to the assembly role-name. </xs:documentation>
+      </xs:annotation>
+      <xs:simpleContent>
+         <xs:restriction base="javaee:string"/>
+      </xs:simpleContent>
+   </xs:complexType>
 </xs:schema>
