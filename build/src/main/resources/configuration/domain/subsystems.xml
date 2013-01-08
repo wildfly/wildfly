@@ -17,7 +17,6 @@
       <subsystem>configuration/subsystems/jsf.xml</subsystem>
       <subsystem>configuration/subsystems/mail.xml</subsystem>
       <subsystem>configuration/subsystems/naming.xml</subsystem>
-      <subsystem>configuration/subsystems/osgi.xml</subsystem>
       <subsystem>configuration/subsystems/pojo.xml</subsystem>
       <subsystem>configuration/subsystems/remoting.xml</subsystem>
       <subsystem>configuration/subsystems/resource-adapters.xml</subsystem>
@@ -47,7 +46,6 @@
       <subsystem>configuration/subsystems/mail.xml</subsystem>
       <subsystem>configuration/subsystems/modcluster.xml</subsystem>
       <subsystem>configuration/subsystems/naming.xml</subsystem>
-      <subsystem>configuration/subsystems/osgi.xml</subsystem>
       <subsystem>configuration/subsystems/pojo.xml</subsystem>
       <subsystem>configuration/subsystems/remoting.xml</subsystem>
       <subsystem>configuration/subsystems/resource-adapters.xml</subsystem>
@@ -80,7 +78,6 @@
       <subsystem>configuration/subsystems/mail.xml</subsystem>
       <subsystem>configuration/subsystems/messaging.xml</subsystem>
       <subsystem>configuration/subsystems/naming.xml</subsystem>
-      <subsystem>configuration/subsystems/osgi.xml</subsystem>
       <subsystem>configuration/subsystems/pojo.xml</subsystem>
       <subsystem>configuration/subsystems/remoting.xml</subsystem>
       <subsystem>configuration/subsystems/resource-adapters.xml</subsystem>
@@ -115,7 +112,6 @@
       <subsystem supplement="ha">configuration/subsystems/messaging.xml</subsystem>
       <subsystem>configuration/subsystems/modcluster.xml</subsystem>
       <subsystem>configuration/subsystems/naming.xml</subsystem>
-      <subsystem>configuration/subsystems/osgi.xml</subsystem>
       <subsystem>configuration/subsystems/pojo.xml</subsystem>
       <subsystem>configuration/subsystems/remoting.xml</subsystem>
       <subsystem>configuration/subsystems/resource-adapters.xml</subsystem>

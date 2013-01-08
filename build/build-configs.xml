@@ -44,12 +44,16 @@
     	<!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
     	
     	<!-- Core configs -->
-      <generate-server-config 
-           paramTemplateFile="configuration/standalone/template.xml" 
+      <generate-server-config
+           paramTemplateFile="configuration/standalone/template.xml"
            paramSubsystemsFile="configuration/standalone/subsystems.xml"
            paramOutputFile="${generated.configs.standalone}/standalone.xml"/>
-      <generate-server-config 
-           paramTemplateFile="configuration/standalone/template.xml" 
+      <generate-server-config
+           paramTemplateFile="configuration/standalone/template.xml"
+           paramSubsystemsFile="configuration/standalone/subsystems-osgi.xml"
+           paramOutputFile="${generated.configs.standalone}/standalone-osgi.xml"/>
+      <generate-server-config
+           paramTemplateFile="configuration/standalone/template.xml"
            paramSubsystemsFile="configuration/standalone/subsystems-full.xml"
            paramOutputFile="${generated.configs.standalone}/standalone-full.xml"/>
       <generate-server-config 

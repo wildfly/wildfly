@@ -69,18 +69,14 @@
                 <!-- Can't get this to work. -->
                 <!-- classpath path="${net.sf.saxon:saxon:jar}"/ -->
                 <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
-                    <include name="**/standalone-full.xml"/>
-                    <include name="**/standalone-ha.xml"/>
-                    <include name="**/standalone.xml"/>
+                    <include name="**/standalone-osgi.xml"/>
                 </fileset>
             </xslt>
 
             <!-- Move processed files back. -->
             <move todir="@{output.dir}/@{name}/@{config.dir.name}">
                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
-                   <include name="**/standalone-ha.xml.mod"/>
-                   <include name="**/standalone.xml.mod"/>
-                   <include name="**/standalone-full.xml.mod"/>
+                   <include name="**/standalone-osgi.xml.mod"/>
                </fileset>
                <mapper type="glob" from="*.mod" to="*"/>
              </move>
@@ -92,21 +88,20 @@
                 <!-- Can't get this to work. -->
                 <!-- classpath path="${net.sf.saxon:saxon:jar}"/ -->
                 <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
-                    <include name="**/standalone-full.xml"/>
-                    <include name="**/standalone-ha.xml"/>
-                    <include name="**/standalone.xml"/>
+                    <include name="**/standalone-osgi.xml"/>
                 </fileset>
             </xslt>
 
             <!-- Move processed files back. -->
             <move todir="@{output.dir}/@{name}/@{config.dir.name}">
                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
-                   <include name="**/standalone-ha.xml.mod"/>
-                   <include name="**/standalone.xml.mod"/>
-                   <include name="**/standalone-full.xml.mod"/>
+                   <include name="**/standalone-osgi.xml.mod"/>
                </fileset>
                <mapper type="glob" from="*.mod" to="*"/>
              </move>
+
+            <!-- Make osgi config the default -->
+            <copy overwrite="true" tofile="@{output.dir}/@{name}/@{config.dir.name}/standalone.xml" file="@{output.dir}/@{name}/@{config.dir.name}/standalone-osgi.xml"/>
         </sequential>
     </macrodef>
 
