@@ -21,12 +21,17 @@
 */
 package org.jboss.as.modcluster.test;
 
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.modcluster.ModClusterExtension;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.junit.Test;
 
 import java.io.IOException;
+
+import junit.framework.Assert;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -43,6 +48,24 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         standardSubsystemTest("subsystem_1_0.xml");
     }
 
+    @Test
+    public void testTransformers_1_1_0() throws Exception {
+        String subsystemXml = readResource("subsystem_1_0.xml");
+        ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXml(subsystemXml);
+
+        builder.createLegacyKernelServicesBuilder(null, modelVersion)
+        .addMavenResourceURL("org.jboss.as:jboss-as-modcluster:7.1.2.Final")
+        .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.2.Final")
+        .addParentFirstClassPattern("org.jboss.as.controller.*");
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        Assert.assertNotNull(legacyServices);
+        
+        checkSubsystemModelTransformation(mainServices, modelVersion);
+    }
 
     @Override
     protected String getSubsystemXml() throws IOException {
