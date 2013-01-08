@@ -679,4 +679,15 @@ public interface LoggingMessages {
      */
     @Message(id = 11591, value = "Extra data after filter expression")
     IllegalArgumentException extraData();
+
+    /**
+     * Logs a warning message indicating the {@link org.jboss.logmanager.LogManager} is required and the logging
+     * subsystem was not initialized.
+     *
+     * @return an {@link IllegalStateException} for the error
+     */
+    @Message(id = 11592, value = "The logging subsystem requires the log manager to be org.jboss.logmanager.LogManager. " +
+            "The subsystem has not be initialized and cannot be used. To use JBoss Log Manager you must add the system " +
+            "property \"java.util.logging.manager\" and set it to \"org.jboss.logmanager.LogManager\"")
+    IllegalStateException extensionNotInitialized();
 }

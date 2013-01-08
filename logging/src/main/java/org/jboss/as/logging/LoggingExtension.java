@@ -86,6 +86,11 @@ public class LoggingExtension implements Extension {
 
     @Override
     public void initialize(final ExtensionContext context) {
+        // The logging subsystem requires JBoss Log Manager to be used
+        // Testing the log manager must use the FQCN as the classes may be loaded via different class loaders
+        if (!java.util.logging.LogManager.getLogManager().getClass().getName().equals(org.jboss.logmanager.LogManager.class.getName())) {
+            throw LoggingMessages.MESSAGES.extensionNotInitialized();
+        }
         LogContext.setLogContextSelector(CONTEXT_SELECTOR);
         // Install STDIO context selector
         StdioContext.setStdioContextSelector(new LogContextStdioContextSelector(StdioContext.getStdioContext()));
