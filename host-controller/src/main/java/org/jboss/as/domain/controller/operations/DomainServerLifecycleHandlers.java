@@ -136,6 +136,7 @@ public class DomainServerLifecycleHandlers {
 
         @Override
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+            context.readResource(PathAddress.EMPTY_ADDRESS, false);
             final String group = getServerGroupName(operation);
             context.addStep(new OperationStepHandler() {
                 @Override
@@ -162,6 +163,7 @@ public class DomainServerLifecycleHandlers {
 
         @Override
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+            context.readResource(PathAddress.EMPTY_ADDRESS, false);
             final ModelNode model = Resource.Tools.readModel(context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, true));
             final String group = getServerGroupName(operation);
             context.addStep(new OperationStepHandler() {
@@ -195,33 +197,27 @@ public class DomainServerLifecycleHandlers {
         static final String OPERATION_NAME = RESTART_SERVERS_NAME;
         static final RestartServersLifecycleHandler INSTANCE = new RestartServersLifecycleHandler();
 
-
         @Override
-        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            context.readResource(PathAddress.EMPTY_ADDRESS, false);
+            final ModelNode model = Resource.Tools.readModel(context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, true));
+            final String group = getServerGroupName(operation);
             context.addStep(new OperationStepHandler() {
-
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    final ModelNode model = Resource.Tools.readModel(context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, true));
-                    final String group = getServerGroupName(operation);
-                    context.addStep(new OperationStepHandler() {
-                        @Override
-                        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                            Map<String, ProcessInfo> processes = serverInventory.determineRunningProcesses(true);
-                            final Set<String> serversInGroup = getServersForGroup(model, group);
-                            for (String serverName : processes.keySet()) {
-                                final String serverModelName = serverInventory.getProcessServerName(serverName);
-                                if (group == null || serversInGroup.contains(serverModelName)) {
-                                    serverInventory.restartServer(serverModelName, TIMEOUT, model);
-                                }
-                            }
-                            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+                    Map<String, ProcessInfo> processes = serverInventory.determineRunningProcesses(true);
+                    final Set<String> serversInGroup = getServersForGroup(model, group);
+                    for (String serverName : processes.keySet()) {
+                        final String serverModelName = serverInventory.getProcessServerName(serverName);
+                        if (group == null || serversInGroup.contains(serverModelName)) {
+                            serverInventory.restartServer(serverModelName, TIMEOUT, model);
                         }
-                    }, Stage.RUNTIME);
-                    context.stepCompleted();
+                    }
+                    context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                 }
             }, Stage.RUNTIME);
             context.stepCompleted();
         }
+
     }
 }
