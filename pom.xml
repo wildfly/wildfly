@@ -248,7 +248,7 @@
         <version.org.opensaml.xmltooling>1.3.2-1</version.org.opensaml.xmltooling>
         <version.org.picketbox>4.0.15.Final</version.org.picketbox>
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
-        <version.org.picketlink>2.1.4.Final</version.org.picketlink>
+        <version.org.picketlink>2.1.6.Final</version.org.picketlink>
         <version.org.powermock>1.4.11</version.org.powermock>
         <version.org.projectodd.stilts>0.1.26</version.org.projectodd.stilts>
         <version.org.rhq.helpers>3.0.4</version.org.rhq.helpers>
