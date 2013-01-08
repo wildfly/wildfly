@@ -28,13 +28,13 @@ import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
 
 import javax.management.MBeanServer;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationDefinition;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
@@ -42,11 +42,13 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
+import org.jboss.as.controller.transform.AbstractOperationTransformer;
 import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
 import org.jboss.as.controller.transform.ResourceTransformer;
+import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.txn.TransactionMessages;
-import org.jboss.dmr.ModelType;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -69,8 +71,8 @@ public class TransactionExtension implements Extension {
     private static final String RESOURCE_NAME = TransactionExtension.class.getPackage().getName() + ".LocalDescriptions";
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 1;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 2;
+    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     private static final ServiceName MBEAN_SERVER_SERVICE_NAME = ServiceName.JBOSS.append("mbean", "server");
     static final PathElement LOG_STORE_PATH = PathElement.pathElement(LogStoreConstants.LOG_STORE, LogStoreConstants.LOG_STORE);
@@ -133,7 +135,7 @@ public class TransactionExtension implements Extension {
             ManagementResourceRegistration partecipantChild = transactionChild.registerSubModel(LogStoreTransactionParticipantDefinition.INSTANCE);
         }
 
-        subsystem.registerXMLElementWriter(TransactionSubsystem12Parser.INSTANCE);
+        subsystem.registerXMLElementWriter(TransactionSubsystem13Parser.INSTANCE);
 
         // Register the model transformers
         registerTransformers(subsystem);
@@ -146,6 +148,7 @@ public class TransactionExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_1_0.getUriString(), TransactionSubsystem10Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_1_1.getUriString(), TransactionSubsystem11Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_1_2.getUriString(), TransactionSubsystem12Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_1_3.getUriString(), TransactionSubsystem13Parser.INSTANCE);
     }
 
     // Transformation
@@ -160,17 +163,40 @@ public class TransactionExtension implements Extension {
         // Check the resource and operations for expressions
 
         // Transformations to the 1.1.0 Model:
+        final ModelVersion version111 = ModelVersion.create(1, 1, 1);
+        // We need to reject all expressions, since they can't be resolved on the client
+        // However, a slave running 1.1.0 has no way to tell us at registration that it has ignored a resource,
+        // so we can't agressively fail on resource transformation
+        final ResourceTransformer resourceTransformer = new TransactionSubsystemTransformer_1_1_1();
+        final TransactionsOperationTransformer_1_1_1 operationTransformer = new TransactionsOperationTransformer_1_1_1();
+        final TransformersSubRegistration registration = subsystem.registerModelTransformers(version111, resourceTransformer);
+        registration.registerOperationTransformer(ADD, operationTransformer);
+        // Check the resource and operations for expressions
+
+        // Transformations to the 1.1.0 Model:
         final ModelVersion version110 = ModelVersion.create(1, 1, 0);
         // We need to reject all expressions, since they can't be resolved on the client
         // However, a slave running 1.1.0 has no way to tell us at registration that it has ignored a resource,
         // so we can't agressively fail on resource transformation
-        final ResourceTransformer resourceTransformer = ResourceTransformer.DEFAULT;
-        final RejectExpressionValuesTransformer operationTransformer =
+        final ResourceTransformer resourceTransformer_1_1_0 = new TransactionSubsystemTransformer_1_1_1();
+        final RejectExpressionValuesTransformer operationTransformer_1_1_0 =
                 new RejectExpressionValuesTransformer(TransactionSubsystemRootResourceDefinition.attributes);
-        final TransformersSubRegistration registration = subsystem.registerModelTransformers(version110, resourceTransformer);
-        registration.registerOperationTransformer(ADD, operationTransformer);
-        registration.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, operationTransformer.getWriteAttributeTransformer());
+        final TransformersSubRegistration registration_1_1_0 = subsystem.registerModelTransformers(version110, resourceTransformer_1_1_0);
+        registration_1_1_0.registerOperationTransformer(ADD, operationTransformer_1_1_0);
+        registration_1_1_0.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, operationTransformer_1_1_0.getWriteAttributeTransformer());
 
     }
+
+    private static class TransactionsOperationTransformer_1_1_1 extends AbstractOperationTransformer {
+            @Override
+            protected ModelNode transform(TransformationContext context, PathAddress address, ModelNode operation) {
+                for (AttributeDefinition attribute : TransactionSubsystemRootResourceDefinition.attributes_1_2) {
+                    if (operation.has(attribute.getName())) {
+                        operation.remove(attribute.getName());
+                    }
+                }
+                return operation;
+            }
+        }
 
 }
