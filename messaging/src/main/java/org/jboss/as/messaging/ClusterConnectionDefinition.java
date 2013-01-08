@@ -31,7 +31,6 @@ import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.STORAGE_RUNTIME;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR_REF_STRING;
-import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_REF;
 import static org.jboss.as.messaging.CommonAttributes.STATIC_CONNECTORS;
 import static org.jboss.dmr.ModelType.BIG_DECIMAL;
 import static org.jboss.dmr.ModelType.BOOLEAN;
@@ -192,6 +191,15 @@ public class ClusterConnectionDefinition extends SimpleResourceDefinition {
             CONNECTOR_REFS,
             ALLOW_DIRECT_CONNECTIONS_ONLY,
             DISCOVERY_GROUP_NAME,
+    };
+
+    public static final AttributeDefinition[] REJECTED_EXPRESSION_ATTRIBUTES = {
+            ADDRESS,
+            ALLOW_DIRECT_CONNECTIONS_ONLY, CHECK_PERIOD, CONNECTION_TTL, FORWARD_WHEN_NO_CONSUMERS, MAX_HOPS,
+            MAX_RETRY_INTERVAL,
+            CommonAttributes.MIN_LARGE_MESSAGE_SIZE, RETRY_INTERVAL, RETRY_INTERVAL_MULTIPLIER,
+            USE_DUPLICATE_DETECTION, CommonAttributes.CALL_TIMEOUT, CommonAttributes.CALL_FAILOVER_TIMEOUT,
+            RECONNECT_ATTEMPTS, CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE
     };
 
     public static final SimpleAttributeDefinition NODE_ID = create("node-id", STRING)

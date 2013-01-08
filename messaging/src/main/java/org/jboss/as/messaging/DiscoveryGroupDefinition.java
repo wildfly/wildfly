@@ -50,7 +50,7 @@ import org.jboss.dmr.ModelType;
 */
 public class DiscoveryGroupDefinition extends SimpleResourceDefinition {
 
-    static final PathElement PATH = PathElement.pathElement(CommonAttributes.DISCOVERY_GROUP);
+   public static final PathElement PATH = PathElement.pathElement(CommonAttributes.DISCOVERY_GROUP);
 
     public static SimpleAttributeDefinition REFRESH_TIMEOUT = create("refresh-timeout", ModelType.LONG)
             // FIXME the default value should be set to HornetQDefaultConfiguration.DEFAULT_BROADCAST_REFRESH_TIMEOUT,
@@ -76,7 +76,7 @@ public class DiscoveryGroupDefinition extends SimpleResourceDefinition {
     private final boolean registerRuntimeOnly;
 
     public DiscoveryGroupDefinition(final boolean registerRuntimeOnly) {
-        super(DiscoveryGroupDefinition.PATH,
+        super(PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.DISCOVERY_GROUP),
                 DiscoveryGroupAdd.INSTANCE,
                 DiscoveryGroupRemove.INSTANCE);

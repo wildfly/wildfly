@@ -51,7 +51,7 @@ import org.jboss.dmr.ModelType;
  */
 public class QueueDefinition extends SimpleResourceDefinition {
 
-    static final PathElement PATH = PathElement.pathElement(CommonAttributes.QUEUE);
+    public static final PathElement PATH = PathElement.pathElement(CommonAttributes.QUEUE);
 
     public static final SimpleAttributeDefinition ADDRESS = create("queue-address", ModelType.STRING)
             .setXmlName(CommonAttributes.ADDRESS)
@@ -78,6 +78,7 @@ public class QueueDefinition extends SimpleResourceDefinition {
     static final AttributeDefinition[] METRICS = { CommonAttributes.MESSAGE_COUNT, CommonAttributes.DELIVERING_COUNT, CommonAttributes.MESSAGES_ADDED,
             CommonAttributes.SCHEDULED_COUNT, CommonAttributes.CONSUMER_COUNT
             };
+    public static final AttributeDefinition[] REJECTED_EXPRESSION_ATTRIBUTES = { ADDRESS, CommonAttributes.FILTER, CommonAttributes.DURABLE };
 
     public static QueueDefinition newRuntimeQueueDefinition(final boolean registerRuntimeOnly) {
         return new QueueDefinition(registerRuntimeOnly, true, RUNTIME_QUEUE, null, null);

@@ -23,7 +23,44 @@
 package org.jboss.as.messaging.jms;
 
 import static java.lang.System.arraycopy;
+import static org.jboss.as.messaging.CommonAttributes.CALL_TIMEOUT;
+import static org.jboss.as.messaging.CommonAttributes.CLIENT_ID;
+import static org.jboss.as.messaging.CommonAttributes.HA;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttribute.getDefinitions;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.AUTO_GROUP;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.BLOCK_ON_ACKNOWLEDGE;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.BLOCK_ON_DURABLE_SEND;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.BLOCK_ON_NON_DURABLE_SEND;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.CACHE_LARGE_MESSAGE_CLIENT;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.CLIENT_FAILURE_CHECK_PERIOD;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.COMPRESS_LARGE_MESSAGES;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.CONFIRMATION_WINDOW_SIZE;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.CONNECTION_LOAD_BALANCING_CLASS_NAME;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.CONNECTION_TTL;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.CONSUMER_MAX_RATE;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.CONSUMER_WINDOW_SIZE;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.DUPS_OK_BATCH_SIZE;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.FAILOVER_ON_INITIAL_CONNECTION;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.GROUP_ID;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.MAX_RETRY_INTERVAL;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.MIN_LARGE_MESSAGE_SIZE;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.PRE_ACKNOWLEDGE;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.PRODUCER_MAX_RATE;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.PRODUCER_WINDOW_SIZE;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.RETRY_INTERVAL;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.RETRY_INTERVAL_MULTIPLIER;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.TRANSACTION_BATCH_SIZE;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.USE_GLOBAL_POOLS;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled.INITIAL_CONNECT_ATTEMPTS;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled.INITIAL_MESSAGE_PACKET_SIZE;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled.JNDI_PARAMS;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled.RECONNECT_ATTEMPTS;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled.SETUP_ATTEMPTS;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled.SETUP_INTERVAL;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled.TRANSACTION;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled.USE_AUTO_RECOVERY;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled.USE_JNDI;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled.USE_LOCAL_TX;
 
 import java.util.EnumSet;
 import java.util.Locale;
@@ -69,7 +106,7 @@ public class PooledConnectionFactoryDefinition extends SimpleResourceDefinition 
         for (int i = 0; i < result.length; i++) {
             ConnectionFactoryAttribute attribute = result[i];
             if (attribute.getDefinition() == Common.RECONNECT_ATTEMPTS) {
-                result[i] = ConnectionFactoryAttribute.create(Pooled.RECONNECT_ATTEMPTS, Pooled.RECONNECT_ATTEMPTS_PROP_NAME, true);
+                result[i] = ConnectionFactoryAttribute.create(RECONNECT_ATTEMPTS, Pooled.RECONNECT_ATTEMPTS_PROP_NAME, true);
             }
         }
         return result;
@@ -77,6 +114,14 @@ public class PooledConnectionFactoryDefinition extends SimpleResourceDefinition 
 
     public static final ConnectionFactoryAttribute[] ATTRIBUTES = define(Pooled.ATTRIBUTES, Common.ATTRIBUTES);
 
+    public static final AttributeDefinition[] REJECTED_EXPRESSION_ATTRIBUTES = { CALL_TIMEOUT,
+            AUTO_GROUP, BLOCK_ON_ACKNOWLEDGE, BLOCK_ON_DURABLE_SEND, BLOCK_ON_NON_DURABLE_SEND, CACHE_LARGE_MESSAGE_CLIENT, CLIENT_FAILURE_CHECK_PERIOD, CLIENT_ID,
+            COMPRESS_LARGE_MESSAGES, CONFIRMATION_WINDOW_SIZE, CONNECTION_LOAD_BALANCING_CLASS_NAME, CONNECTION_TTL, CONSUMER_MAX_RATE,
+            CONSUMER_WINDOW_SIZE, DUPS_OK_BATCH_SIZE, FAILOVER_ON_INITIAL_CONNECTION, GROUP_ID, HA, MAX_RETRY_INTERVAL, MIN_LARGE_MESSAGE_SIZE, PRE_ACKNOWLEDGE,
+            PRODUCER_MAX_RATE, PRODUCER_WINDOW_SIZE, RETRY_INTERVAL, RETRY_INTERVAL_MULTIPLIER, TRANSACTION_BATCH_SIZE,
+            USE_GLOBAL_POOLS, // end of common attributes
+            INITIAL_CONNECT_ATTEMPTS, INITIAL_MESSAGE_PACKET_SIZE, JNDI_PARAMS, RECONNECT_ATTEMPTS, SETUP_ATTEMPTS, SETUP_INTERVAL,
+            TRANSACTION, USE_AUTO_RECOVERY, USE_JNDI, USE_LOCAL_TX};
 
     private static final DescriptionProvider DESC = new DescriptionProvider() {
         @Override

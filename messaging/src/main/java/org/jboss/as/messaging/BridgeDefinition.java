@@ -25,7 +25,9 @@ package org.jboss.as.messaging;
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STOP;
+import static org.jboss.as.messaging.CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR_REF_STRING;
+import static org.jboss.as.messaging.CommonAttributes.HA;
 import static org.jboss.as.messaging.CommonAttributes.STATIC_CONNECTORS;
 import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.INT;
@@ -50,7 +52,7 @@ import org.jboss.dmr.ModelNode;
 public class BridgeDefinition extends SimpleResourceDefinition {
 
     public static final String[] OPERATIONS = {START, STOP};
-    static final PathElement PATH = PathElement.pathElement(CommonAttributes.BRIDGE);
+    public static final PathElement PATH = PathElement.pathElement(CommonAttributes.BRIDGE);
 
     private final boolean registerRuntimeOnly;
 
@@ -119,6 +121,12 @@ public class BridgeDefinition extends SimpleResourceDefinition {
             USER, PASSWORD,
             CONNECTOR_REFS, DISCOVERY_GROUP_NAME
     };
+    public static final AttributeDefinition[] REJECTED_EXPRESSION_ATTRIBUTES = { QUEUE_NAME, USE_DUPLICATE_DETECTION,
+            RECONNECT_ATTEMPTS, FORWARDING_ADDRESS,
+            CommonAttributes.FILTER, CommonAttributes.TRANSFORMER_CLASS_NAME, HA, CommonAttributes.MIN_LARGE_MESSAGE_SIZE,
+            CommonAttributes.CHECK_PERIOD, CommonAttributes.CONNECTION_TTL,
+            CommonAttributes.RETRY_INTERVAL, CommonAttributes.RETRY_INTERVAL_MULTIPLIER, CommonAttributes.MAX_RETRY_INTERVAL,
+            BRIDGE_CONFIRMATION_WINDOW_SIZE };
 
     public BridgeDefinition(final boolean registerRuntimeOnly) {
         super(PATH,

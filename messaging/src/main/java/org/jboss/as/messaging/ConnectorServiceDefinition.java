@@ -38,7 +38,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  */
 public class ConnectorServiceDefinition extends SimpleResourceDefinition {
 
-    static final PathElement PATH = PathElement.pathElement(CommonAttributes.CONNECTOR_SERVICE);
+    public static final PathElement PATH = PathElement.pathElement(CommonAttributes.CONNECTOR_SERVICE);
 
     public static final AttributeDefinition[] ATTRIBUTES = { CommonAttributes.FACTORY_CLASS };
 

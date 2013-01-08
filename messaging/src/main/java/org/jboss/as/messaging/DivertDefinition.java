@@ -42,7 +42,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class DivertDefinition extends SimpleResourceDefinition {
 
-    static final PathElement PATH = PathElement.pathElement(CommonAttributes.DIVERT);
+    public static final PathElement PATH = PathElement.pathElement(CommonAttributes.DIVERT);
 
     public static final SimpleAttributeDefinition ROUTING_NAME = create("routing-name", STRING)
             .setAllowNull(true)
@@ -72,10 +72,13 @@ public class DivertDefinition extends SimpleResourceDefinition {
     public static final AttributeDefinition[] ATTRIBUTES = { ROUTING_NAME, ADDRESS, FORWARDING_ADDRESS, CommonAttributes.FILTER,
         CommonAttributes.TRANSFORMER_CLASS_NAME, EXCLUSIVE };
 
+    public static final AttributeDefinition[] REJECTED_EXPRESSION_ATTRIBUTES = { ROUTING_NAME, ADDRESS, FORWARDING_ADDRESS, CommonAttributes.FILTER,
+            CommonAttributes.TRANSFORMER_CLASS_NAME, EXCLUSIVE };
+
     private final boolean registerRuntimeOnly;
 
     public DivertDefinition(boolean registerRuntimeOnly) {
-        super(DivertDefinition.PATH,
+        super(PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.DIVERT),
                 DivertAdd.INSTANCE,
                 DivertRemove.INSTANCE);

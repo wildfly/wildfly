@@ -22,41 +22,46 @@
 
 package org.jboss.as.messaging.test;
 
-import junit.framework.Assert;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import org.jboss.as.controller.transform.OperationTransformer;
-import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
-import static org.jboss.as.messaging.CommonAttributes.PARAM;
-import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
-import static org.jboss.as.messaging.CommonAttributes.REMOTE_CONNECTOR;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.IOException;
-
-import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.messaging.AddressSettingDefinition;
+import org.jboss.as.messaging.BridgeDefinition;
+import org.jboss.as.messaging.BroadcastGroupDefinition;
+import org.jboss.as.messaging.ClusterConnectionDefinition;
+import org.jboss.as.messaging.CommonAttributes;
+import org.jboss.as.messaging.ConnectorServiceDefinition;
+import org.jboss.as.messaging.ConnectorServiceParamDefinition;
+import org.jboss.as.messaging.DiscoveryGroupDefinition;
+import org.jboss.as.messaging.DivertDefinition;
+import org.jboss.as.messaging.GroupingHandlerDefinition;
+import org.jboss.as.messaging.HornetQServerResourceDefinition;
+import org.jboss.as.messaging.InVMTransportDefinition;
 import org.jboss.as.messaging.MessagingExtension;
+import org.jboss.as.messaging.QueueDefinition;
+import org.jboss.as.messaging.jms.ConnectionFactoryDefinition;
+import org.jboss.as.messaging.jms.JMSQueueDefinition;
+import org.jboss.as.messaging.jms.PooledConnectionFactoryDefinition;
+import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
+import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.util.List;
+
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
+import static org.jboss.as.controller.PathElement.pathElement;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.messaging.HornetQServerResourceDefinition.HORNETQ_SERVER_PATH;
+import static org.jboss.as.messaging.MessagingExtension.VERSION_1_1_0;
+import static org.jboss.as.model.test.FailedOperationTransformationConfig.RejectExpressionsConfig;
+import static org.jboss.as.model.test.ModelTestUtils.checkFailedTransformedBootOperations;
 
 /**
  *  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012 Red Hat inc
@@ -76,116 +81,144 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
         return readResource("subsystem_incompatible_1_3.xml");
     }
 
-    @Override
-    protected AdditionalInitialization createAdditionalInitialization() {
-        return AdditionalInitialization.MANAGEMENT;
+    @Test
+    public void testTransformers_1_1_0() throws Exception {
+        //Boot up empty controllers with the resources needed for the ops coming from the xml to work
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXmlResource("subsystem_1_3.xml");
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), VERSION_1_1_0)
+                .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.1.2.Final")
+                .addMavenResourceURL("org.hornetq:hornetq-core:2.2.16.Final")
+                .addMavenResourceURL("org.hornetq:hornetq-jms:2.2.16.Final")
+                .addMavenResourceURL("org.hornetq:hornetq-ra:2.2.16.Final");
+        KernelServices mainServices = builder.build();
+        assertTrue(mainServices.isSuccessfulBoot());
+        assertTrue(mainServices.getLegacyServices(VERSION_1_1_0).isSuccessfulBoot());
     }
 
+    /**
+     * Tests rejection of expressions in 1.1.0 model.
+     *
+     * @throws Exception
+     */
     @Test
-    public void testTransformers() throws Exception {
-        String subsystemXml = readResource("subsystem_1_3.xml");
-        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
-                .setSubsystemXml(subsystemXml);
+    public void testRejectExpressions_1_1_0() throws Exception {
+        // create builder for current subsystem version.
+        //
+        // AS7 7.1.2.Final does not allow to add an empty messaging subsystem [AS7-5767]
+        // To work around that, we add an empty "stuff" hornetq-server to boot the conf with AS7 7.1.2.Final
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXmlResource("empty_subsystem_1_3.xml");
 
-        // Add legacy subsystems
-        ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), version_1_1_0)
-            .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.1.2.Final")
-            .addMavenResourceURL("org.hornetq:hornetq-core:2.2.16.Final")
-            .addMavenResourceURL("org.hornetq:hornetq-jms:2.2.16.Final")
-            .addMavenResourceURL("org.hornetq:hornetq-ra:2.2.16.Final");
+        // create builder for legacy subsystem version
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), VERSION_1_1_0)
+                .addMavenResourceURL("org.hornetq:hornetq-core:2.2.16.Final")
+                .addMavenResourceURL("org.hornetq:hornetq-jms:2.2.16.Final")
+                .addMavenResourceURL("org.hornetq:hornetq-ra:2.2.16.Final")
+                .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.1.2.Final")
+                .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.2.Final")
+                .addParentFirstClassPattern("org.jboss.as.controller.*");
 
         KernelServices mainServices = builder.build();
-        KernelServices legacyServices = mainServices.getLegacyServices(version_1_1_0);
+        assertTrue(mainServices.isSuccessfulBoot());
+        KernelServices legacyServices = mainServices.getLegacyServices(VERSION_1_1_0);
         assertNotNull(legacyServices);
+        assertTrue(legacyServices.isSuccessfulBoot());
 
-        checkSubsystemModelTransformation(mainServices, version_1_1_0);
-
-        ModelNode operation = new ModelNode();
-        operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-        ModelNode address = new ModelNode();
-        address.add(SUBSYSTEM, MessagingExtension.SUBSYSTEM_NAME);
-        address.add("hornetq-server", "default");
-        address.add("path", "journal-directory");
-        operation.get(OP_ADDR).set(address);
-        operation.get(NAME).set("path");
-        operation.get(VALUE).set("${my.journal.dir:journal}");
-
-        ModelNode mainResult = mainServices.executeOperation(operation);
-        assertEquals(mainResult.toJSONString(true), SUCCESS, mainResult.get(OUTCOME).asString());
-
-        ModelNode successResult = new ModelNode();
-        successResult.get(OUTCOME).set(SUCCESS);
-        successResult.protect();
-        ModelNode failedResult = new ModelNode();
-        failedResult.get(OUTCOME).set(FAILED);
-        failedResult.protect();
-        ModelNode ignoreResult = new ModelNode();
-        ignoreResult.get(OUTCOME).set(IGNORED);
-        ignoreResult.protect();
-
-        final OperationTransformer.TransformedOperation op = mainServices.transformOperation(version_1_1_0, operation);
-        final ModelNode result = mainServices.executeOperation(version_1_1_0, op);
-        Assert.assertEquals("should reject the expression", FAILED, result.get(OUTCOME).asString());
-
-        operation = new ModelNode();
-        operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-        address = new ModelNode();
-        address.add(SUBSYSTEM, MessagingExtension.SUBSYSTEM_NAME);
-        address.add(HORNETQ_SERVER, "default");
-        address.add(POOLED_CONNECTION_FACTORY, "hornetq-ra-local");
-        operation.get(OP_ADDR).set(address);
-        operation.get(NAME).set("use-auto-recovery");
-        operation.get(VALUE).set("false");
-
-        mainResult = mainServices.executeOperation(operation);
-        assertEquals(mainResult.toJSONString(true), SUCCESS, mainResult.get(OUTCOME).asString());
-
-        TransformedOperation transformedOperation = mainServices.transformOperation(version_1_1_0, operation);
-        ModelNode transformedResult = transformedOperation.getResultTransformer().transformResult(successResult);
-        assertEquals("success transformed to failed", FAILED, transformedResult.get(OUTCOME).asString());
-        transformedResult = transformedOperation.getResultTransformer().transformResult(successResult);
-        assertEquals("failed transformed to failed", FAILED, transformedResult.get(OUTCOME).asString());
-        assertTrue("failed transformed with failure description", transformedResult.hasDefined(FAILURE_DESCRIPTION));
-        transformedResult = transformedOperation.getResultTransformer().transformResult(ignoreResult);
-        assertEquals("ignored result untransformed", IGNORED, transformedResult.get(OUTCOME).asString());
-    }
-
-    @Test
-    public void testRejectExpressionsForTransportParams() throws Exception {
-        String subsystemXml = readResource("subsystem_1_3.xml");
-        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
-                .setSubsystemXml(subsystemXml);
-
-        // Add legacy subsystems
-        ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), version_1_1_0)
-            .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.1.2.Final")
-            .addMavenResourceURL("org.hornetq:hornetq-core:2.2.16.Final")
-            .addMavenResourceURL("org.hornetq:hornetq-jms:2.2.16.Final")
-            .addMavenResourceURL("org.hornetq:hornetq-ra:2.2.16.Final");
-
-        KernelServices mainServices = builder.build();
-        KernelServices legacyServices = mainServices.getLegacyServices(version_1_1_0);
-        assertNotNull(legacyServices);
-
-        checkSubsystemModelTransformation(mainServices, version_1_1_0);
-
-        ModelNode operation = new ModelNode();
-        operation.get(OP).set(ADD);
-        ModelNode address = new ModelNode();
-        address.add(SUBSYSTEM, MessagingExtension.SUBSYSTEM_NAME);
-        address.add(HORNETQ_SERVER, "default");
-        address.add(REMOTE_CONNECTOR, "netty");
-        address.add(PARAM, "password");
-        operation.get(OP_ADDR).set(address);
-        operation.get(VALUE).set("${mypassword:default}");
-
-        ModelNode mainResult = mainServices.executeOperation(operation);
-        assertEquals(mainResult.toJSONString(true), SUCCESS, mainResult.get(OUTCOME).asString());
-
-        TransformedOperation transformedOperation = mainServices.transformOperation(version_1_1_0, operation);
-        final ModelNode result = mainServices.executeOperation(version_1_1_0, transformedOperation);
-        Assert.assertEquals("should reject the expression", FAILED, result.get(OUTCOME).asString());
+        //Use the real xml with expressions for testing all the attributes
+        PathAddress subsystemAddress = PathAddress.pathAddress(pathElement(SUBSYSTEM, MessagingExtension.SUBSYSTEM_NAME));
+        List<ModelNode> modelNodes = builder.parseXmlResource("subsystem_incompatible_1_3.xml");
+        // remote the messaging subsystem add operation that fails on AS7 7.1.2.Final
+        modelNodes.remove(0);
+        checkFailedTransformedBootOperations(
+                mainServices,
+                VERSION_1_1_0,
+                modelNodes,
+                new FailedOperationTransformationConfig()
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH),
+                                new RejectExpressionsConfig(HornetQServerResourceDefinition.REJECTED_EXPRESSION_ATTRIBUTES))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(pathElement(ModelDescriptionConstants.PATH)),
+                                new RejectExpressionsConfig(ModelDescriptionConstants.PATH))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(pathElement(CommonAttributes.IN_VM_CONNECTOR)),
+                                new RejectExpressionsConfig(InVMTransportDefinition.SERVER_ID))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(pathElement(CommonAttributes.CONNECTOR)),
+                                new RejectExpressionsConfig(CommonAttributes.FACTORY_CLASS))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(pathElement(CommonAttributes.IN_VM_ACCEPTOR)),
+                                new RejectExpressionsConfig(InVMTransportDefinition.SERVER_ID))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(pathElement(CommonAttributes.ACCEPTOR)),
+                                new RejectExpressionsConfig(CommonAttributes.FACTORY_CLASS))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(BroadcastGroupDefinition.PATH),
+                                new RejectExpressionsConfig(BroadcastGroupDefinition.BROADCAST_PERIOD) {
+                                    @Override
+                                    public boolean expectFailed(ModelNode operation) {
+                                        if ("groupT".equals(operation.get(OP_ADDR).get(2).get(CommonAttributes.BROADCAST_GROUP).asString())) {
+                                            // groupT use JGroups and do not define socket-binding or local address
+                                            return true;
+                                        }
+                                        return super.expectFailed(operation);
+                                    }
+                                })
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(DiscoveryGroupDefinition.PATH),
+                                new RejectExpressionsConfig(DiscoveryGroupDefinition.REFRESH_TIMEOUT, DiscoveryGroupDefinition.INITIAL_WAIT_TIMEOUT) {
+                                    @Override
+                                    public boolean expectFailed(ModelNode operation) {
+                                        if ("groupU".equals(operation.get(OP_ADDR).get(2).get(CommonAttributes.DISCOVERY_GROUP).asString())) {
+                                            // groupU use JGroups and do not define socket-binding or local address
+                                            return true;
+                                        }
+                                        return super.expectFailed(operation);
+                                    }
+                                })
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(DivertDefinition.PATH),
+                                new RejectExpressionsConfig(DivertDefinition.REJECTED_EXPRESSION_ATTRIBUTES))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(QueueDefinition.PATH),
+                                new RejectExpressionsConfig(QueueDefinition.REJECTED_EXPRESSION_ATTRIBUTES))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(ClusterConnectionDefinition.PATH),
+                                new RejectExpressionsConfig(ClusterConnectionDefinition.REJECTED_EXPRESSION_ATTRIBUTES))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(BridgeDefinition.PATH),
+                                new RejectExpressionsConfig(BridgeDefinition.REJECTED_EXPRESSION_ATTRIBUTES))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(GroupingHandlerDefinition.PATH),
+                                new RejectExpressionsConfig(GroupingHandlerDefinition.REJECTED_EXPRESSION_ATTRIBUTES))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(AddressSettingDefinition.PATH),
+                                new RejectExpressionsConfig(AddressSettingDefinition.REJECTED_EXPRESSION_ATTRIBUTES))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(ConnectorServiceDefinition.PATH),
+                                new RejectExpressionsConfig(CommonAttributes.FACTORY_CLASS))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(ConnectorServiceDefinition.PATH).append(ConnectorServiceParamDefinition.PATH),
+                                new RejectExpressionsConfig(ConnectorServiceParamDefinition.VALUE))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(ConnectionFactoryDefinition.PATH),
+                                new RejectExpressionsConfig(ConnectionFactoryDefinition.REJECTED_EXPRESSION_ATTRIBUTES))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(PooledConnectionFactoryDefinition.PATH),
+                                new RejectExpressionsConfig(PooledConnectionFactoryDefinition.REJECTED_EXPRESSION_ATTRIBUTES))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(JMSQueueDefinition.PATH),
+                                new RejectExpressionsConfig(JMSQueueDefinition.REJECTED_EXPRESSION_ATTRIBUTES))
+                        .addFailedAttribute(
+                                subsystemAddress.append(JMSBridgeDefinition.PATH),
+                                new RejectExpressionsConfig(new String[0]) {
+                                    @Override
+                                    public boolean expectFailed(ModelNode operation) {
+                                        // jms-bridge resource was introduced in version 1.2.0
+                                        return true;
+                                    }
+                                })
+        );
     }
 }
