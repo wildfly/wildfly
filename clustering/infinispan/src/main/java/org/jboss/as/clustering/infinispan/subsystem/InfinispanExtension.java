@@ -21,19 +21,15 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -41,10 +37,8 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
-import org.jboss.as.controller.transform.AbstractOperationTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
-import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.controller.transform.chained.ChainedOperationTransformer;
 import org.jboss.dmr.ModelNode;
@@ -113,19 +107,6 @@ public class InfinispanExtension implements Extension {
         }
     }
 
-    private static class InfinispanOperationTransformer_1_3 extends AbstractOperationTransformer {
-        @Override
-        protected ModelNode transform(TransformationContext context, PathAddress address, ModelNode operation) {
-            if (operation.has(ModelKeys.INDEXING_PROPERTIES)){
-                operation.remove(ModelKeys.INDEXING_PROPERTIES);
-            }
-            if (operation.has(ModelKeys.SEGMENTS)) {
-                operation.remove(ModelKeys.SEGMENTS);
-            }
-            return operation;
-        }
-    }
-
     /**
      * Register the transformers for transforming from 1.4.0 to 1.3.0 management api versions, in which:
      * - attributes INDEXING_PROPERTIES, SEGMENTS were added in 1.4
@@ -142,26 +123,9 @@ public class InfinispanExtension implements Extension {
         // define the resource and operation transformers
         final InfinispanOperationTransformer_1_3 removeSelectedCacheAttributes = new InfinispanOperationTransformer_1_3();
 
-        // cache container, cache and transport attributes which need to reject expressions in 1.3
-        final AttributeDefinition[] REJEXP_CONTAINER_ATTRIBUTES = remove(
-                CacheContainerResource.CACHE_CONTAINER_ATTRIBUTES,
-                new AttributeDefinition[]{CacheContainerResource.DEFAULT_CACHE}
-        );
-
-        final AttributeDefinition[] REJEXP_CACHE_ATTRIBUTES = concat(
-                CacheResource.CACHE_ATTRIBUTES,
-                ClusteredCacheResource.CLUSTERED_CACHE_ATTRIBUTES,
-                DistributedCacheResource.DISTRIBUTED_CACHE_ATTRIBUTES
-        );
-
-        final AttributeDefinition[] REJEXP_TRANSPORT_ATTRIBUTES = remove(
-                TransportResource.TRANSPORT_ATTRIBUTES,
-                new AttributeDefinition[] {TransportResource.CLUSTER}
-        ) ;
-
-        final RejectExpressionValuesTransformer cacheContainerReject = new RejectExpressionValuesTransformer(REJEXP_CONTAINER_ATTRIBUTES) ;
-        final RejectExpressionValuesTransformer transportReject = new RejectExpressionValuesTransformer(REJEXP_TRANSPORT_ATTRIBUTES) ;
-        final RejectExpressionValuesTransformer cacheReject = new RejectExpressionValuesTransformer(REJEXP_CACHE_ATTRIBUTES) ;
+        final RejectExpressionValuesTransformer cacheContainerReject = new RejectExpressionValuesTransformer(InfinispanRejectedExpressions_1_3.REJECT_CONTAINER_ATTRIBUTES) ;
+        final RejectExpressionValuesTransformer transportReject = new RejectExpressionValuesTransformer(InfinispanRejectedExpressions_1_3.REJECT_TRANSPORT_ATTRIBUTES) ;
+        final RejectExpressionValuesTransformer cacheReject = new RejectExpressionValuesTransformer(InfinispanRejectedExpressions_1_3.REJECT_CACHE_ATTRIBUTES) ;
         final ChainedOperationTransformer chained = new ChainedOperationTransformer(removeSelectedCacheAttributes,cacheReject);
 
         // Register the model transformers
@@ -183,18 +147,7 @@ public class InfinispanExtension implements Extension {
 
     private static void registerCacheChildrenTransformers(TransformersSubRegistration cacheReg) {
 
-        // cache child attributes which need to reject expressions in 1.3
-        final AttributeDefinition[] REJEXP_CHILD_ATTRIBUTES = remove(
-                concat(
-                        LockingResource.LOCKING_ATTRIBUTES,
-                        TransactionResource.TRANSACTION_ATTRIBUTES,
-                        ExpirationResource.EXPIRATION_ATTRIBUTES,
-                        EvictionResource.EVICTION_ATTRIBUTES,
-                        StateTransferResource.STATE_TRANSFER_ATTRIBUTES
-                ),
-                new AttributeDefinition[]{TransactionResource.MODE}
-        );
-        final RejectExpressionValuesTransformer childReject = new RejectExpressionValuesTransformer(REJEXP_CHILD_ATTRIBUTES) ;
+        final RejectExpressionValuesTransformer childReject = new RejectExpressionValuesTransformer(InfinispanRejectedExpressions_1_3.REJECT_CHILD_ATTRIBUTES) ;
 
         PathElement[] childPaths = {
                 LockingResource.LOCKING_PATH,
@@ -209,18 +162,7 @@ public class InfinispanExtension implements Extension {
             cacheReg.registerSubResource(childPaths[i], (OperationTransformer) childReject);
         }
 
-        // cache store attributes which need to reject expressions in 1.3
-        final AttributeDefinition[] REJEXP_STORE_ATTRIBUTES = concat(
-                StoreResource.STORE_ATTRIBUTES,
-                FileStoreResource.FILE_STORE_ATTRIBUTES,
-                StringKeyedJDBCStoreResource.STRING_KEYED_JDBC_STORE_ATTRIBUTES,
-                BinaryKeyedJDBCStoreResource.BINARY_KEYED_JDBC_STORE_ATTRIBUTES,
-                MixedKeyedJDBCStoreResource.MIXED_KEYED_JDBC_STORE_ATTRIBUTES,
-                RemoteStoreResource.REMOTE_STORE_ATTRIBUTES,
-                StoreWriteBehindResource.WRITE_BEHIND_ATTRIBUTES,
-                StorePropertyResource.STORE_PROPERTY_ATTRIBUTES
-        ) ;
-        final RejectExpressionValuesTransformer storeReject = new RejectExpressionValuesTransformer(REJEXP_STORE_ATTRIBUTES);
+        final RejectExpressionValuesTransformer storeReject = new RejectExpressionValuesTransformer(InfinispanRejectedExpressions_1_3.REJECT_STORE_ATTRIBUTES);
         PathElement[] storePaths = {
                 StoreResource.STORE_PATH,
                 FileStoreResource.FILE_STORE_PATH,
@@ -236,23 +178,6 @@ public class InfinispanExtension implements Extension {
             storeReg.registerSubResource(StoreWriteBehindResource.STORE_WRITE_BEHIND_PATH, (OperationTransformer) storeReject);
             storeReg.registerSubResource(StorePropertyResource.STORE_PROPERTY_PATH, (OperationTransformer) storeReject);
         }
-    }
-
-    /**
-     * Helper methods to create arrays of attributes which need to have transformers applied.
-     */
-    private static AttributeDefinition[] concat(AttributeDefinition[]... additions) {
-        HashSet<AttributeDefinition> result = new HashSet<AttributeDefinition>() ;
-        for (int i = 0; i < additions.length; i++)
-           result.addAll(Arrays.asList(additions[i]));
-        return result.toArray(new AttributeDefinition[0]) ;
-    }
-
-    private static AttributeDefinition[] remove(AttributeDefinition[] initial, AttributeDefinition[]... removals) {
-        HashSet<AttributeDefinition> result = new HashSet<AttributeDefinition>(Arrays.asList(initial)) ;
-        for (int i = 0; i < removals.length; i++)
-           result.removeAll(Arrays.asList(removals[i]));
-        return result.toArray(new AttributeDefinition[0]) ;
     }
 
     private static class InfinispanResourceDescriptionResolver extends StandardResourceDescriptionResolver {

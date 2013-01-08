@@ -132,6 +132,8 @@ public class BaseJDBCStoreResource extends BaseStoreResource {
             setSuffix("table").
             build();
 
+    static final AttributeDefinition[] COMMON_BASE_JDBC_STORE_ATTRIBUTES = {DATA_SOURCE, BATCH_SIZE, FETCH_SIZE, PREFIX,
+    COLUMN_NAME, COLUMN_TYPE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN, ENTRY_TABLE, BUCKET_TABLE, STRING_KEYED_TABLE, BINARY_KEYED_TABLE};
 
     public BaseJDBCStoreResource(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, OperationStepHandler addHandler, OperationStepHandler removeHandler) {
         super(pathElement, descriptionResolver, addHandler, removeHandler);
