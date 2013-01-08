@@ -347,6 +347,7 @@ public class FailedOperationTransformationConfig {
                         return true;
                     }
                 }
+                break;
             case PROPERTY:
                 if (hasExpressions(attribute.asProperty().getValue())) {
                     return true;

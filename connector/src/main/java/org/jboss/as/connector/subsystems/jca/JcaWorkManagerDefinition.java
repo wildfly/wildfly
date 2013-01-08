@@ -31,6 +31,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.threads.BoundedQueueThreadPoolResourceDefinition;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.dmr.ModelType;
@@ -72,11 +73,18 @@ public class JcaWorkManagerDefinition extends SimpleResourceDefinition {
     @Override
         public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerSubModel(BoundedQueueThreadPoolResourceDefinition.create(WORKMANAGER_SHORT_RUNNING, ThreadsServices.STANDARD_THREAD_FACTORY_RESOLVER, ThreadsServices.STANDARD_HANDOFF_EXECUTOR_RESOLVER,
-                            ThreadsServices.EXECUTOR.append(WORKMANAGER_SHORT_RUNNING), registerRuntimeOnly));
+                ThreadsServices.EXECUTOR.append(WORKMANAGER_SHORT_RUNNING), registerRuntimeOnly));
         resourceRegistration.registerSubModel(BoundedQueueThreadPoolResourceDefinition.create(WORKMANAGER_LONG_RUNNING, ThreadsServices.STANDARD_THREAD_FACTORY_RESOLVER, ThreadsServices.STANDARD_HANDOFF_EXECUTOR_RESOLVER,
                         ThreadsServices.EXECUTOR.append(WORKMANAGER_LONG_RUNNING), registerRuntimeOnly));
 
-        }
+    }
+
+    static void registerTransformers110(TransformersSubRegistration parent) {
+
+        TransformersSubRegistration ours = parent.registerSubResource(PATH_WORK_MANAGER);
+        BoundedQueueThreadPoolResourceDefinition.registerTransformers1_0(ours, WORKMANAGER_SHORT_RUNNING);
+        BoundedQueueThreadPoolResourceDefinition.registerTransformers1_0(ours, WORKMANAGER_LONG_RUNNING);
+    }
 
     public static enum WmParameters {
         NAME(SimpleAttributeDefinitionBuilder.create("name", ModelType.STRING)

@@ -63,6 +63,7 @@ class KnownVersions {
         addSubsystemVersion(map, "osgi", "1.0.0", "1.3.0");
         addSubsystemVersion(map, "security", "1.1.0", "1.2.0");
         addSubsystemVersion(map, "remoting", "1.1.0", "1.3.0");
+        addSubsystemVersion(map, "threads", "1.0.0", "1.2.0");
         addSubsystemVersion(map, "transactions", "1.1.0", "1.2.0");
         addSubsystemVersion(map, "transactions", "1.1.1", "1.3.0");
         addSubsystemVersion(map, "web", "1.1.0", "1.2.0");

@@ -22,10 +22,14 @@
 
 package org.jboss.as.connector.subsystems.jca;
 
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.ResourceTransformer;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
@@ -69,5 +73,12 @@ public class JcaSubsystemRootDefinition extends SimpleResourceDefinition {
 
         resourceRegistration.registerSubModel(JcaBootstrapContextDefinition.INSTANCE);
 
+    }
+
+    static void registerTransformers(SubsystemRegistration subsystem) {
+
+        ModelVersion subsystem110 = ModelVersion.create(1, 1);
+        TransformersSubRegistration transformers110 = subsystem.registerModelTransformers(subsystem110, ResourceTransformer.DEFAULT);
+        JcaWorkManagerDefinition.registerTransformers110(transformers110);
     }
 }
