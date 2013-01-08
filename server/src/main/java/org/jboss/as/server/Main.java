@@ -35,9 +35,6 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.process.ExitCodes;
 import org.jboss.as.version.ProductConfig;
-import org.jboss.logmanager.Level;
-import org.jboss.logmanager.Logger;
-import org.jboss.logmanager.handlers.ConsoleHandler;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceActivator;
@@ -70,23 +67,25 @@ public final class Main {
      */
     public static void main(String[] args) {
 
-        // Make sure our original stdio is properly captured.
         try {
-            Class.forName(ConsoleHandler.class.getName(), true, ConsoleHandler.class.getClassLoader());
-        } catch (Throwable ignored) {
-        }
+            if (java.util.logging.LogManager.getLogManager().getClass().getName().equals("org.jboss.logmanager.LogManager")) {
+                // Make sure our original stdio is properly captured.
+                try {
+                    Class.forName(org.jboss.logmanager.handlers.ConsoleHandler.class.getName(), true, org.jboss.logmanager.handlers.ConsoleHandler.class.getClassLoader());
+                } catch (Throwable ignored) {
+                }
+                // Install JBoss Stdio to avoid any nasty crosstalk, after command line arguments are processed.
+                StdioContext.install();
+                final StdioContext context = StdioContext.create(
+                        new NullInputStream(),
+                        new LoggingOutputStream(org.jboss.logmanager.Logger.getLogger("stdout"), org.jboss.logmanager.Level.INFO),
+                        new LoggingOutputStream(org.jboss.logmanager.Logger.getLogger("stderr"), org.jboss.logmanager.Level.ERROR)
+                );
+                StdioContext.setStdioContextSelector(new SimpleStdioContextSelector(context));
+            }
 
-        try {
             Module.registerURLStreamHandlerFactoryModule(Module.getBootModuleLoader().loadModule(ModuleIdentifier.create("org.jboss.vfs")));
             ServerEnvironment serverEnvironment = determineEnvironment(args, SecurityActions.getSystemProperties(), SecurityActions.getSystemEnvironment(), ServerEnvironment.LaunchType.STANDALONE);
-            // Install JBoss Stdio to avoid any nasty crosstalk, after command line arguments are processed.
-            StdioContext.install();
-            final StdioContext context = StdioContext.create(
-                    new NullInputStream(),
-                    new LoggingOutputStream(Logger.getLogger("stdout"), Level.INFO),
-                    new LoggingOutputStream(Logger.getLogger("stderr"), Level.ERROR)
-            );
-            StdioContext.setStdioContextSelector(new SimpleStdioContextSelector(context));
             if (serverEnvironment == null) {
                 abort(null);
             } else {
