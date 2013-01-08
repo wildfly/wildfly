@@ -92,7 +92,7 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
     }
 
     @Test
-    public void testRejectExpressions_1_3_0_Kabir() throws Exception {
+    public void testRejectExpressions_1_3_0() throws Exception {
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
@@ -173,7 +173,7 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
 
 
             FailedOperationTransformationConfig.RejectExpressionsConfig keyedTableComplexChildConfig =
-                    new FailedOperationTransformationConfig.RejectExpressionsConfig("prefix", "batch-size", "fetch-size", "id-column", "data-column", "timestamp-column");
+                    new FailedOperationTransformationConfig.RejectExpressionsConfig(BaseJDBCStoreResource.COMMON_JDBC_STORE_TABLE_ATTRIBUTES);
 
 
             // cache store attributes
@@ -181,8 +181,8 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
                 // reject expressions on operations on stores and store properties
                 config.addFailedAttribute(subsystemAddress.append(CacheContainerResource.CONTAINER_PATH).append(cachePaths[i]).append(storePaths[k]),
                         new FailedOperationTransformationConfig.RejectExpressionsConfig(InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_STORE_ATTRIBUTES)
-                            .configureComplexAttribute("string-keyed-table", keyedTableComplexChildConfig)
-                            .configureComplexAttribute("binary-keyed-table", keyedTableComplexChildConfig));
+                            .configureComplexAttribute(ModelKeys.STRING_KEYED_TABLE, keyedTableComplexChildConfig)
+                            .configureComplexAttribute(ModelKeys.BINARY_KEYED_TABLE, keyedTableComplexChildConfig));
 
                 config.addFailedAttribute(subsystemAddress.append(CacheContainerResource.CONTAINER_PATH).append(cachePaths[i]).append(storePaths[k]).append(StoreWriteBehindResource.STORE_WRITE_BEHIND_PATH),
                         new FailedOperationTransformationConfig.RejectExpressionsConfig(InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_STORE_ATTRIBUTES));
@@ -192,94 +192,5 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
             }
         }
         return config ;
-    }
-
-    @Test
-//    @BMRule(name="Debugging support",
-//            targetClass="^org.jboss.as.subsystem.test.SubsystemTestDelegate",
-//            targetMethod="checkSubsystemModelTransformation",
-//            targetLocation="AT INVOKE ModelTestUtils.compare",
-//            binding="legacy:ModelNode = $1; transformed:ModelNode = $2",
-//            condition="TRUE",
-//            action="traceln(\"legacy = \" + legacy.toString() + \" transformed = \" + transformed.toString()")
-    public void testRejectExpressions_1_3_0() throws Exception {
-        // create builder for current subsystem version
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXml(getSubsystemXml());
-
-        // create builder for legacy subsystem version
-        ModelVersion version_1_3_0 = ModelVersion.create(1, 3, 0);
-        builder.createLegacyKernelServicesBuilder(null, version_1_3_0)
-            .addMavenResourceURL("org.jboss.as:jboss-as-clustering-infinispan:7.1.2.Final");
-
-        KernelServices mainServices = builder.build();
-        KernelServices legacyServices = mainServices.getLegacyServices(version_1_3_0);
-        junit.framework.Assert.assertNotNull(legacyServices);
-
-        // A number of cases to test:
-        // 1. cache store property ADD and write operations, to check expressions are rejected for 1.4 attributes
-        // 2. DEFAULT_CACHE ADD and write operation, to check that expressions are not rejected for 1.3 attributes which accept expressions
-        // 3. cache store table ADD and write operations, to check that expressions are rejected for primitive values in complex attributes
-
-        // 1. cache store property should reject
-        ModelNode cacheStorePropertyAddOp = getCacheStorePropertyAddOperation("maximal", "repl", ModelKeys.REPLICATED_CACHE, "some_property", "${some_property_value:new}");
-        testRejectExpressionsForOperation(mainServices, version_1_3_0, cacheStorePropertyAddOp, true);
-
-        ModelNode cacheStorePropertyWriteOp = getCacheStorePropertyWriteOperation("maximal", "repl", ModelKeys.REPLICATED_CACHE, "some_property", "${some_property_value:new}");
-        testRejectExpressionsForOperation(mainServices, version_1_3_0, cacheStorePropertyWriteOp, true);
-
-        // 2. cache container should accept expressions for DEFAULT_CACHE
-        ModelNode cacheContainerAddOp = Util.createAddOperation(getCacheContainerAddress("somecontainer"));
-        cacheContainerAddOp.get(DEFAULT_CACHE).set("${some_default_cache:default}");
-        testRejectExpressionsForOperation(mainServices, version_1_3_0, cacheContainerAddOp, false);
-
-        ModelNode cacheContainerWriteOp = getCacheContainerWriteOperation("maximal", ModelKeys.DEFAULT_CACHE, "${some_default_cache:local2}");
-        testRejectExpressionsForOperation(mainServices, version_1_3_0, cacheContainerWriteOp, false);
-
-        // 3. cache store table operations should reject expressions on non-complex attributes
-        ModelNode stringKeyedTable = createStringKeyedTable("ispn_bucket", 100, 100,
-                new String[] {"id", "VARCHAR"}, new String[] {"datun", "BINARY"}, new String[] {"version", "${someversion:BIGINT}"}) ;
-        ModelNode stringKeyedTableWriteOp = getMixedKeyedJDBCCacheStoreWriteOperation("maximal", ModelKeys.DISTRIBUTED_CACHE, "dist", "string-keyed-table", stringKeyedTable);
-        testRejectExpressionsForOperation(mainServices, version_1_3_0, stringKeyedTableWriteOp, true);
-    }
-
-    private void testRejectExpressionsForOperation(KernelServices services, ModelVersion version, ModelNode operation, boolean reject)
-            throws OperationFailedException {
-
-        // perform operation on the 1.4.0 model
-        ModelNode mainResult = services.executeOperation(operation);
-        assertEquals(mainResult.toJSONString(true), SUCCESS, mainResult.get(OUTCOME).asString());
-
-        // perform transformed operation on the 1.3.0 model - expect rejection
-        OperationTransformer.TransformedOperation transformedOperation = services.transformOperation(version, operation);
-        final ModelNode addResult = services.executeOperation(version, transformedOperation);
-
-        if (reject)
-            junit.framework.Assert.assertEquals("should reject the expression", FAILED, addResult.get(OUTCOME).asString());
-        else
-            junit.framework.Assert.assertEquals("should not reject the expression", SUCCESS, addResult.get(OUTCOME).asString());
-    }
-
-    private ModelNode createStringKeyedTable(String prefix, int batchSize, int fetchSize, String[] idCol, String[] dataCol, String[] timestampCol) {
-
-        // create a string-keyed-table complex attribute
-        ModelNode stringKeyedTable = new ModelNode().setEmptyObject() ;
-        stringKeyedTable.get(ModelKeys.PREFIX).set(prefix);
-        stringKeyedTable.get(ModelKeys.BATCH_SIZE).set(batchSize);
-        stringKeyedTable.get(ModelKeys.FETCH_SIZE).set(fetchSize);
-
-        ModelNode idColumn = stringKeyedTable.get(ModelKeys.ID_COLUMN).setEmptyObject();
-        idColumn.get(ModelKeys.NAME).set(idCol[0]) ;
-        idColumn.get(ModelKeys.TYPE).set(idCol[1]) ;
-
-        ModelNode dataColumn = stringKeyedTable.get(ModelKeys.DATA_COLUMN).setEmptyObject();
-        dataColumn.get(ModelKeys.NAME).set(dataCol[0]) ;
-        dataColumn.get(ModelKeys.TYPE).set(dataCol[1]) ;
-
-        ModelNode timestampColumn = stringKeyedTable.get(ModelKeys.TIMESTAMP_COLUMN).setEmptyObject();
-        timestampColumn.get(ModelKeys.NAME).set(timestampCol[0]) ;
-        timestampColumn.get(ModelKeys.TYPE).set(timestampCol[1]) ;
-
-        return stringKeyedTable ;
     }
 }
