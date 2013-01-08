@@ -32,9 +32,10 @@ import javax.ejb.NoSuchEJBException;
 import javax.transaction.Synchronization;
 import javax.transaction.TransactionSynchronizationRegistry;
 
-import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
+
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Cache of entity bean component instances by transaction key
@@ -120,7 +121,7 @@ public class TransactionLocalEntityCache implements ReadyEntityCache {
         if (map != null) {
             final CacheEntry cacheEntry = map.get(instance.getPrimaryKey());
             if (cacheEntry == null) {
-                throw EjbLogger.EJB3_LOGGER.entityBeanInstanceNotFoundInCache(instance);
+                throw MESSAGES.entityBeanInstanceNotFoundInCache(instance);
             }
             if (cacheEntry.referenceCount.decrementAndGet() <= 0) {
                 final Object pk = instance.getPrimaryKey();
@@ -138,7 +139,7 @@ public class TransactionLocalEntityCache implements ReadyEntityCache {
         final Map<Object, CacheEntry> cache = prepareCache();
         final CacheEntry cacheEntry = cache.get(instance.getPrimaryKey());
         if (cacheEntry == null) {
-            throw EjbLogger.EJB3_LOGGER.entityBeanInstanceNotFoundInCache(instance);
+            throw MESSAGES.entityBeanInstanceNotFoundInCache(instance);
         }
         cacheEntry.referenceCount.incrementAndGet();
     }

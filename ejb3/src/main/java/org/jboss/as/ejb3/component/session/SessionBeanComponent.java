@@ -31,7 +31,6 @@ import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 import javax.ejb.TransactionAttributeType;
 
-import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.invocation.InterceptorContext;
@@ -105,7 +104,7 @@ public abstract class SessionBeanComponent extends EJBComponent {
     public void setRollbackOnly() throws IllegalStateException {
         // NOT_SUPPORTED and NEVER will not have a transaction context, so we can ignore those
         if (getCurrentTransactionAttribute() == TransactionAttributeType.SUPPORTS) {
-            throw EjbLogger.EJB3_LOGGER.setRollbackOnlyNotAllowedForSupportsTxAttr();
+            throw MESSAGES.setRollbackOnlyNotAllowedForSupportsTxAttr();
         }
         super.setRollbackOnly();
     }

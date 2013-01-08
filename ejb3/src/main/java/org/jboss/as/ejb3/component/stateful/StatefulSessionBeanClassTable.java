@@ -41,7 +41,7 @@ import javax.transaction.UserTransaction;
 
 import org.jboss.as.clustering.SimpleMarshalledValue;
 import org.jboss.as.ee.component.BasicComponentInstance;
-import org.jboss.as.ejb3.EjbLogger;
+import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.cache.Cacheable;
 import org.jboss.as.ejb3.cache.impl.backing.SerializationGroupImpl;
 import org.jboss.as.ejb3.cache.impl.backing.SerializationGroupMemberImpl;
@@ -108,7 +108,7 @@ public class StatefulSessionBeanClassTable implements ClassTable {
     public Class<?> readClass(final Unmarshaller unmarshaller) throws IOException, ClassNotFoundException {
         int index = unmarshaller.readUnsignedByte();
         if (index >= classes.length) {
-            throw EjbLogger.EJB3_LOGGER.classNotFoundInClassTable(this.getClass().getName(), index);
+            throw EjbMessages.MESSAGES.classNotFoundInClassTable(this.getClass().getName(), index);
         }
         return classes[index];
     }

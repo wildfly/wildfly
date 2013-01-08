@@ -76,6 +76,8 @@ import org.omg.CORBA.ORB;
 import org.omg.CosNaming.NamingContextExt;
 import org.omg.PortableServer.POA;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 /**
  * This is the DUP that sets up IIOP for EJB's
  */
@@ -155,14 +157,14 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
         try {
             remoteClass = classIndex.classIndex(remoteView.getViewClassName());
         } catch (ClassNotFoundException e) {
-            throw EjbLogger.EJB3_LOGGER.failedToLoadViewClassForComponent(e, componentDescription.getEJBClassName());
+            throw MESSAGES.failedToLoadViewClassForComponent(e, componentDescription.getEJBClassName());
         }
         final EJBViewDescription homeView = componentDescription.getEjbHomeView();
         final ClassIndex homeClass;
         try {
             homeClass = classIndex.classIndex(homeView.getViewClassName());
         } catch (ClassNotFoundException e) {
-            throw EjbLogger.EJB3_LOGGER.failedToLoadViewClassForComponent(e, componentDescription.getEJBClassName());
+            throw MESSAGES.failedToLoadViewClassForComponent(e, componentDescription.getEJBClassName());
         }
 
         componentDescription.getEjbHomeView().getConfigurators().add(new IIOPInterceptorViewConfigurator());
@@ -174,7 +176,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
             //TODO: change all this to use the deployment reflection index
             remoteInterfaceAnalysis = InterfaceAnalysis.getInterfaceAnalysis(remoteClass.getModuleClass());
         } catch (RMIIIOPViolationException e) {
-            throw EjbLogger.EJB3_LOGGER.failedToAnalyzeRemoteInterface(e, componentDescription.getComponentName());
+            throw MESSAGES.failedToAnalyzeRemoteInterface(e, componentDescription.getComponentName());
         }
 
         final Map<String, SkeletonStrategy> beanMethodMap = new HashMap<String, SkeletonStrategy>();
@@ -215,7 +217,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
             //TODO: change all this to use the deployment reflection index
             homeInterfaceAnalysis = InterfaceAnalysis.getInterfaceAnalysis(homeClass.getModuleClass());
         } catch (RMIIIOPViolationException e) {
-            throw EjbLogger.EJB3_LOGGER.failedToAnalyzeRemoteInterface(e, componentDescription.getComponentName());
+            throw MESSAGES.failedToAnalyzeRemoteInterface(e, componentDescription.getComponentName());
         }
 
         final Map<String, SkeletonStrategy> homeMethodMap = new HashMap<String, SkeletonStrategy>();

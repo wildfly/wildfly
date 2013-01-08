@@ -34,6 +34,7 @@ import java.util.concurrent.TimeoutException;
 import javax.ejb.ConcurrentAccessTimeoutException;
 import javax.ejb.EJBAccessException;
 import javax.ejb.EJBException;
+import javax.ejb.EJBTransactionRequiredException;
 import javax.ejb.IllegalLoopbackException;
 import javax.ejb.LockType;
 import javax.ejb.NoMoreTimeoutsException;
@@ -44,8 +45,15 @@ import javax.ejb.ObjectNotFoundException;
 import javax.ejb.RemoveException;
 import javax.ejb.ScheduleExpression;
 import javax.ejb.TimerHandle;
+import javax.ejb.TransactionAttributeType;
 import javax.interceptor.InvocationContext;
 import javax.naming.Context;
+import javax.resource.ResourceException;
+import javax.resource.spi.UnavailableException;
+import javax.resource.spi.endpoint.MessageEndpoint;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.transaction.Transaction;
 import javax.transaction.xa.Xid;
 import javax.xml.stream.Location;
 
@@ -54,23 +62,32 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentCreateServiceFactory;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentInstance;
+import org.jboss.as.ee.component.ResourceInjectionTarget;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
+import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponent;
 import org.jboss.as.ejb3.concurrency.LockableComponent;
 import org.jboss.as.ejb3.remote.TCCLEJBClientContextSelectorService;
 import org.jboss.as.ejb3.subsystem.deployment.EJBComponentType;
 import org.jboss.as.ejb3.timerservice.TimerImpl;
 import org.jboss.as.ejb3.timerservice.persistence.TimeoutMethod;
+import org.jboss.as.ejb3.tx.TimerTransactionRolledBackException;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.ejb.client.EJBLocator;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.jandex.AnnotationTarget;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.MethodInfo;
+import org.jboss.jca.core.spi.rar.NotFoundException;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
+import org.jboss.logging.annotations.Param;
 import org.jboss.logging.Messages;
 import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
 import org.jboss.msc.service.ServiceController;
@@ -91,6 +108,295 @@ public interface EjbMessages {
      * The default messages.
      */
     EjbMessages MESSAGES = Messages.getBundle(EjbMessages.class);
+
+    /**
+     * Returns a {@link IllegalStateException} indicating that {@link org.jboss.jca.core.spi.rar.ResourceAdapterRepository}
+     * was unavailable
+     *
+     * @return
+     */
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14144, value = "Resource adapter repository is not available")
+    IllegalStateException resourceAdapterRepositoryUnAvailable();
+
+    /**
+     * Returns a {@link IllegalArgumentException} indicating that no {@link org.jboss.jca.core.spi.rar.Endpoint}
+     * could be found for a resource adapter named <code>resourceAdapterName</code>
+     *
+     * @param resourceAdapterName The name of the resource adapter
+     * @param notFoundException   The original exception cause
+     * @return
+     */
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14145, value = "Could not find an Endpoint for resource adapter %s")
+    IllegalArgumentException noSuchEndpointException(final String resourceAdapterName, @Cause NotFoundException notFoundException);
+
+    /**
+     * Returns a {@link IllegalStateException} indicating that the {@link org.jboss.jca.core.spi.rar.Endpoint}
+     * is not available
+     *
+     * @param componentName The MDB component name
+     * @return
+     */
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14146, value = "Endpoint is not available for message driven component %s")
+    IllegalStateException endpointUnAvailable(String componentName);
+
+    /**
+     * Returns a {@link RuntimeException} indicating that the {@link org.jboss.jca.core.spi.rar.Endpoint}
+     * for the message driven component, could not be deactivated
+     *
+     * @param componentName The message driven component name
+     * @param cause         Original cause
+     * @return
+     */
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14147, value = "Could not deactive endpoint for message driven component %s")
+    RuntimeException failureDuringEndpointDeactivation(final String componentName, @Cause ResourceException cause);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14148, value = "")
+    UnsupportedCallbackException unsupportedCallback(@Param Callback current);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14149, value = "Could not create an instance of cluster node selector %s for cluster %s")
+    RuntimeException failureDuringLoadOfClusterNodeSelector(final String clusterNodeSelectorName, final String clusterName, @Cause Exception e);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14151, value = "Could not find view %s for EJB %s")
+    IllegalStateException viewNotFound(String viewClass, String ejbName);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14152, value = "Cannot perform asynchronous local invocation for component that is not a session bean")
+    RuntimeException asyncInvocationOnlyApplicableForSessionBeans();
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14153, value = "%s is not a Stateful Session bean in app: %s module: %s distinct-name: %s")
+    IllegalArgumentException notStatefulSessionBean(String ejbName, String appName, String moduleName, String distinctName);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14154, value = "Failed to marshal EJB parameters")
+    RuntimeException failedToMarshalEjbParameters(@Cause Exception e);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14155, value = "Unknown deployment - app name: %s module name: %s distinct name: %s")
+    IllegalArgumentException unknownDeployment(String appName, String moduleName, String distinctName);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14156, value = "Could not find EJB %s in deployment [app: %s module: %s distinct-name: %s]")
+    IllegalArgumentException ejbNotFoundInDeployment(String ejbName, String appName, String moduleName, String distinctName);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14157, value = "%s annotation is only valid on method targets")
+    IllegalArgumentException annotationApplicableOnlyForMethods(String annotationName);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14158, value = "Method %s, on class %s, annotated with @javax.interceptor.AroundTimeout is expected to accept a single param of type javax.interceptor.InvocationContext")
+    IllegalArgumentException aroundTimeoutMethodExpectedWithInvocationContextParam(String methodName, String className);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14159, value = "Method %s, on class %s, annotated with @javax.interceptor.AroundTimeout must return Object type")
+    IllegalArgumentException aroundTimeoutMethodMustReturnObjectType(String methodName, String className);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14160, value = "Wrong tx on thread: expected %s, actual %s")
+    IllegalStateException wrongTxOnThread(Transaction expected, Transaction actual);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14161, value = "Unknown transaction attribute %s on invocation %s")
+    IllegalStateException unknownTxAttributeOnInvocation(TransactionAttributeType txAttr, InterceptorContext invocation);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14162, value = "Transaction is required for invocation %s")
+    EJBTransactionRequiredException txRequiredForInvocation(InterceptorContext invocation);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14163, value = "Transaction present on server in Never call (EJB3 13.6.2.6)")
+    EJBException txPresentForNeverTxAttribute();
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14165, value = "View interface cannot be null")
+    IllegalArgumentException viewInterfaceCannotBeNull();
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14166, value = "Cannot call getEjbObject before the object is associated with a primary key")
+    IllegalStateException cannotCallGetEjbObjectBeforePrimaryKeyAssociation();
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14167, value = "Cannot call getEjbLocalObject before the object is associated with a primary key")
+    IllegalStateException cannotCallGetEjbLocalObjectBeforePrimaryKeyAssociation();
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14168, value = "Could not load view class for component %s")
+    RuntimeException failedToLoadViewClassForComponent(@Cause Exception e, String componentName);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14169, value = "Entities can not be created for %s bean since no create method is available.")
+    IllegalStateException entityCannotBeCreatedDueToMissingCreateMethod(String beanName);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14170, value = "%s is not an entity bean component")
+    IllegalArgumentException notAnEntityBean(Component component);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14171, value = "Instance for PK [%s] already registered")
+    IllegalStateException instanceAlreadyRegisteredForPK(Object primaryKey);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14172, value = "Instance [%s] not found in cache")
+    IllegalStateException entityBeanInstanceNotFoundInCache(EntityBeanComponentInstance instance);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14173, value = "Illegal call to EJBHome.remove(Object) on a session bean")
+    RemoveException illegalCallToEjbHomeRemove();
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14174, value = "EJB 3.1 FR 13.6.2.8 setRollbackOnly is not allowed with SUPPORTS transaction attribute")
+    IllegalStateException setRollbackOnlyNotAllowedForSupportsTxAttr();
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14175, value = "Cannot call getPrimaryKey on a session bean")
+    EJBException cannotCallGetPKOnSessionBean();
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14176, value = "Singleton beans cannot have EJB 2.x views")
+    RuntimeException ejb2xViewNotApplicableForSingletonBeans();
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14177, value = "ClassTable %s cannot find a class for class index %d")
+    ClassNotFoundException classNotFoundInClassTable(String classTableName, int index);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14178, value = "Bean %s does not have an EJBLocalObject")
+    IllegalStateException ejbLocalObjectUnavailable(String beanName);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14179, value = "[EJB 3.1 spec, section 14.1.1] Class: %s cannot be marked as an application exception because it is not of type java.lang.Exception")
+    IllegalArgumentException cannotBeApplicationExceptionBecauseNotAnExceptionType(Class klass);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14180, value = "[EJB 3.1 spec, section 14.1.1] Exception class: %s cannot be marked as an application exception because it is of type java.rmi.RemoteException")
+    IllegalArgumentException rmiRemoteExceptionCannotBeApplicationException(Class klass);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14181, value = "%s annotation is allowed only on classes. %s is not a class")
+    RuntimeException annotationOnlyAllowedOnClass(String annotationName, AnnotationTarget incorrectTarget);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14182, value = "Bean %s specifies @Remote annotation, but does not implement 1 interface")
+    DeploymentUnitProcessingException beanWithRemoteAnnotationImplementsMoreThanOneInterface(Class beanClass);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14183, value = "Bean %s specifies @Local annotation, but does not implement 1 interface")
+    DeploymentUnitProcessingException beanWithLocalAnnotationImplementsMoreThanOneInterface(Class beanClass);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14184, value = "Could not analyze remote interface for %s")
+    RuntimeException failedToAnalyzeRemoteInterface(@Cause Exception e, String beanName);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14185, value = "Exception while parsing %s")
+    DeploymentUnitProcessingException failedToParse(@Cause Exception e, String filePath);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14186, value = "Failed to install management resources for %s")
+    DeploymentUnitProcessingException failedToInstallManagementResource(@Cause Exception e, String componentName);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14187, value = "Could not load view %s")
+    RuntimeException failedToLoadViewClass(@Cause Exception e, String viewClassName);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14188, value = "Could not determine type of ejb-ref %s for injection target %s")
+    DeploymentUnitProcessingException couldNotDetermineEjbRefForInjectionTarget(String ejbRefName, ResourceInjectionTarget injectionTarget);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14189, value = "Could not determine type of ejb-local-ref %s for injection target %s")
+    DeploymentUnitProcessingException couldNotDetermineEjbLocalRefForInjectionTarget(String ejbLocalRefName, ResourceInjectionTarget injectionTarget);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14190, value = "@EJB injection target %s is invalid. Only setter methods are allowed")
+    IllegalArgumentException onlySetterMethodsAllowedToHaveEJBAnnotation(MethodInfo methodInfo);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14191, value = "@EJB attribute 'name' is required for class level annotations. Class: %s")
+    DeploymentUnitProcessingException nameAttributeRequiredForEJBAnnotationOnClass(String className);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14192, value = "@EJB attribute 'beanInterface' is required for class level annotations. Class: %s")
+    DeploymentUnitProcessingException beanInterfaceAttributeRequiredForEJBAnnotationOnClass(String className);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14193, value = "Module hasn't been attached to deployment unit %s")
+    IllegalStateException moduleNotAttachedToDeploymentUnit(DeploymentUnit deploymentUnit);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14194, value = "EJB 3.1 FR 5.4.2 MessageDrivenBean %s does not implement 1 interface nor specifies message listener interface")
+    DeploymentUnitProcessingException mdbDoesNotImplementNorSpecifyMessageListener(ClassInfo beanClass);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14195, value = "Unknown session bean type %s")
+    IllegalArgumentException unknownSessionBeanType(String sessionType);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14196, value = "More than one method found with name %s on %s")
+    DeploymentUnitProcessingException moreThanOneMethodWithSameNameOnComponent(String methodName, Class componentClass);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14197, value = "Unknown EJB locator type %s")
+    RuntimeException unknownEJBLocatorType(EJBLocator locator);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14198, value = "Could not create CORBA object for %s")
+    RuntimeException couldNotCreateCorbaObject(@Cause Exception cause, EJBLocator locator);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14199, value = "Provided locator %s was not for EJB %s")
+    IllegalArgumentException incorrectEJBLocatorForBean(EJBLocator locator, String beanName);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14200, value = "Failed to lookup java:comp/ORB")
+    IOException failedToLookupORB();
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14201, value = "%s is not an ObjectImpl")
+    IOException notAnObjectImpl(Class type);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14202, value = "Message endpoint %s has already been released")
+    UnavailableException messageEndpointAlreadyReleased(MessageEndpoint messageEndpoint);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14203, value = "Cannot handle client version %s")
+    RuntimeException ejbRemoteServiceCannotHandleClientVersion(byte version);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14204, value = "Could not find marshaller factory for marshaller strategy %s")
+    RuntimeException failedToFindMarshallerFactoryForStrategy(String marshallerStrategy);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14205, value = "%s is not an EJB component")
+    IllegalArgumentException notAnEJBComponent(Component component);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14206, value = "Could not load method param class %s of timeout method")
+    RuntimeException failedToLoadTimeoutMethodParamClass(@Cause Exception cause, String className);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14207, value = "Timer invocation failed, invoker is not started")
+    IllegalStateException timerInvocationFailedDueToInvokerNotBeingStarted();
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14208, value = "Could not load timer with id %s")
+    NoSuchObjectLocalException timerNotFound(String timerId);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14209, value = "Invalid value for second: %s")
+    IllegalArgumentException invalidValueForSecondInScheduleExpression(String value);
+
+    // NOTE: this message was moved from logger, do not change this id, or use next one
+    @Message(id = 14210, value = "Timer invocation failed, transaction rolled back")
+    TimerTransactionRolledBackException timerInvocationRolledBack();
 
     /**
      * Creates an exception indicating it could not find the EJB with specific id

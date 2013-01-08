@@ -115,7 +115,7 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
             final AnnotationTarget target = sessionBeanAnnotation.target();
             if (!(target instanceof ClassInfo)) {
                 // Let's just WARN and move on. No need to throw an error
-                EjbLogger.ROOT_LOGGER.annotationOnlyAllowedOnClass(sessionBeanAnnotation.name().toString(), target);
+                EjbMessages.MESSAGES.annotationOnlyAllowedOnClass(sessionBeanAnnotation.name().toString(), target);
                 continue;
             }
             final ClassInfo sessionBeanClassInfo = (ClassInfo) target;
@@ -149,7 +149,7 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
                     sessionBeanDescription = new SingletonComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnitServiceName, beanMetaData);
                     break;
                 default:
-                    throw EjbLogger.EJB3_LOGGER.unknownSessionBeanType(sessionBeanType.name());
+                    throw EjbMessages.MESSAGES.unknownSessionBeanType(sessionBeanType.name());
             }
 
             addComponent(deploymentUnit, sessionBeanDescription);
@@ -169,7 +169,7 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
             case Singleton:
                 return SessionBeanComponentDescription.SessionBeanType.SINGLETON;
             default:
-                throw EjbLogger.EJB3_LOGGER.unknownSessionBeanType(sessionType.name());
+                throw EjbMessages.MESSAGES.unknownSessionBeanType(sessionType.name());
         }
     }
 
@@ -236,7 +236,7 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
                 sessionBeanDescription = new SingletonComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName(), sessionBean);
                 break;
             default:
-                throw EjbLogger.EJB3_LOGGER.unknownSessionBeanType(sessionType.name());
+                throw EjbMessages.MESSAGES.unknownSessionBeanType(sessionType.name());
         }
         addComponent(deploymentUnit, sessionBeanDescription);
     }

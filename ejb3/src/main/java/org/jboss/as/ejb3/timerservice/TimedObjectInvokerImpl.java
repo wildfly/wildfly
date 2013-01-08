@@ -28,7 +28,6 @@ import java.util.Map;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.interceptors.InvocationType;
-import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.MethodIntf;
@@ -75,7 +74,7 @@ public class TimedObjectInvokerImpl implements TimedObjectInvoker, Serializable,
     public void callTimeout(final TimerImpl timer, final Method timeoutMethod) throws Exception {
         if(!started) {
             //this can happen if an invocation has been triggered as the deployment is shutting down
-            throw EjbLogger.EJB3_LOGGER.timerInvocationFailedDueToInvokerNotBeingStarted();
+            throw EjbMessages.MESSAGES.timerInvocationFailedDueToInvokerNotBeingStarted();
         }
         final Interceptor interceptor = timeoutInterceptors.get(timeoutMethod);
         if(interceptor == null) {

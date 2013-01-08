@@ -43,9 +43,9 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
-import org.jboss.logging.Logger;
 
 import static org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * {@link Phase#INSTALL} processor that adds management resources describing EJB components.
@@ -75,7 +75,7 @@ public class EjbManagementDeploymentUnitProcessor implements DeploymentUnitProce
                     installManagementResource(configuration, deploymentUnit);
                 }
             } catch (RuntimeException e) {
-                throw EjbLogger.EJB3_LOGGER.failedToInstallManagementResource(e, configuration.getComponentName());
+                throw MESSAGES.failedToInstallManagementResource(e, configuration.getComponentName());
             }
         }
     }

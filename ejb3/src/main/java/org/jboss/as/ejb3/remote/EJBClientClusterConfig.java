@@ -23,7 +23,7 @@
 package org.jboss.as.ejb3.remote;
 
 import org.jboss.as.ee.metadata.EJBClientDescriptorMetaData;
-import org.jboss.as.ejb3.EjbLogger;
+import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.ejb.client.ClusterNodeSelector;
 import org.jboss.ejb.client.EJBClientConfiguration;
 import org.jboss.logging.Logger;
@@ -77,7 +77,7 @@ public class EJBClientClusterConfig extends EJBClientCommonConnectionConfig impl
                 final Class<?> nodeSelectorClass = deploymentClassLoader.loadClass(nodeSelector);
                 this.clusterNodeSelector = (ClusterNodeSelector) nodeSelectorClass.newInstance();
             } catch (Exception e) {
-                throw EjbLogger.EJB3_LOGGER.failureDuringLoadOfClusterNodeSelector(nodeSelector, clusterConfig.getClusterName(), e);
+                throw EjbMessages.MESSAGES.failureDuringLoadOfClusterNodeSelector(nodeSelector, clusterConfig.getClusterName(), e);
             }
         } else {
             this.clusterNodeSelector = null;
