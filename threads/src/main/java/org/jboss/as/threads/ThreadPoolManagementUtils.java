@@ -190,7 +190,9 @@ class ThreadPoolManagementUtils {
             if (!keepaliveTime.hasDefined(UNIT)) {
                 throw ThreadsMessages.MESSAGES.missingKeepAliveUnit(UNIT, KEEPALIVE_TIME);
             }
-            params.keepAliveTime = new TimeSpec(Enum.valueOf(TimeUnit.class, keepaliveTime.get(UNIT).asString()), keepaliveTime.get(TIME).asLong());
+            long time = KeepAliveTimeAttributeDefinition.KEEPALIVE_TIME_TIME.resolveModelAttribute(context, keepaliveTime).asLong();
+            String unit = KeepAliveTimeAttributeDefinition.KEEPALIVE_TIME_UNIT.resolveModelAttribute(context, keepaliveTime).asString();
+            params.keepAliveTime = new TimeSpec(Enum.valueOf(TimeUnit.class, unit.toUpperCase()), time);
         }
 
         return params;

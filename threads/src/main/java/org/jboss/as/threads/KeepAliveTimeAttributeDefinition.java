@@ -54,11 +54,11 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  */
 class KeepAliveTimeAttributeDefinition extends ObjectTypeAttributeDefinition {
 
-    private static final SimpleAttributeDefinition KEEPALIVE_TIME_TIME = new SimpleAttributeDefinitionBuilder(CommonAttributes.TIME, ModelType.LONG, false)
+    static final SimpleAttributeDefinition KEEPALIVE_TIME_TIME = new SimpleAttributeDefinitionBuilder(CommonAttributes.TIME, ModelType.LONG, false)
             .setAllowExpression(true)
             .build();
 
-    private static final SimpleAttributeDefinition KEEPALIVE_TIME_UNIT = new SimpleAttributeDefinitionBuilder(CommonAttributes.UNIT, ModelType.STRING, false)
+    static final SimpleAttributeDefinition KEEPALIVE_TIME_UNIT = new SimpleAttributeDefinitionBuilder(CommonAttributes.UNIT, ModelType.STRING, false)
             .setAllowExpression(true)
             .setValidator(new EnumValidator<TimeUnit>(TimeUnit.class, false, true))
             .build();
