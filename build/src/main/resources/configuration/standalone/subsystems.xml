@@ -17,7 +17,6 @@
       <subsystem>configuration/subsystems/jsf.xml</subsystem>
       <subsystem>configuration/subsystems/mail.xml</subsystem>
       <subsystem>configuration/subsystems/naming.xml</subsystem>
-      <subsystem>configuration/subsystems/osgi.xml</subsystem>
       <subsystem>configuration/subsystems/pojo.xml</subsystem>
       <subsystem>configuration/subsystems/remoting.xml</subsystem>
       <subsystem>configuration/subsystems/resource-adapters.xml</subsystem>
