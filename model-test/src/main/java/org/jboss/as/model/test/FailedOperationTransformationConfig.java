@@ -22,16 +22,20 @@
 package org.jboss.as.model.test;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
@@ -224,11 +228,20 @@ public class FailedOperationTransformationConfig {
         ModelNode correctWriteAttributeOperation(ModelNode operation);
     }
 
-    public abstract static class AttributesPathAddressConfig implements PathAddressConfig {
-        protected final String[] attributes;
+    public abstract static class AttributesPathAddressConfig<T extends AttributesPathAddressConfig<T>> implements PathAddressConfig {
+        protected final Set<String> attributes;
+        protected final Map<String, T> complexAttributes = new HashMap<String, T>();
 
         protected AttributesPathAddressConfig(String...attributes) {
-            this.attributes = attributes;
+            this.attributes = new HashSet<String>(Arrays.asList(attributes));
+        }
+
+        public AttributesPathAddressConfig<T> configureComplexAttribute(String attribute, T childConfig) {
+            if (!attributes.contains(attribute)) {
+                throw new IllegalStateException("Attempt to configure a complex attribute that was not set up as one of the original attributes");
+            }
+            complexAttributes.put(attribute, childConfig);
+            return this;
         }
 
 
@@ -254,7 +267,7 @@ public class FailedOperationTransformationConfig {
      * A standard configuration for the reject expression values transformer
      *
      */
-    public static class RejectExpressionsConfig extends AttributesPathAddressConfig {
+    public static class RejectExpressionsConfig extends AttributesPathAddressConfig<RejectExpressionsConfig> {
 
         public RejectExpressionsConfig(String...attributes) {
             super(attributes);
@@ -264,7 +277,7 @@ public class FailedOperationTransformationConfig {
             super(convert(attributes));
         }
 
-        static String[] convert(AttributeDefinition...defs) {
+        private static String[] convert(AttributeDefinition...defs) {
             String[] attrs = new String[defs.length];
             for (int i = 0 ; i < defs.length ; i++) {
                 attrs[i] = defs[i].getName();
@@ -277,7 +290,7 @@ public class FailedOperationTransformationConfig {
         public boolean expectFailed(ModelNode operation) {
             ModelNode op = operation.clone();
             for (String attr : attributes) {
-                if (hasExpressions(op.get(attr))) {
+                if (hasExpressions(attr, op.get(attr))) {
                     return true;
                 }
             }
@@ -288,9 +301,17 @@ public class FailedOperationTransformationConfig {
         public ModelNode correctOperation(ModelNode operation) {
             ModelNode op = operation.clone();
             for (String attr : attributes) {
-                if (hasExpressions(op.get(attr))) {
-                    op.get(attr).set(op.get(attr).resolve());
-                    return op;
+                ModelNode value = op.get(attr);
+                if (value.isDefined()) {
+                    if (hasExpressions(attr, value)) {
+                        RejectExpressionsConfig complexChildConfig = complexAttributes.get(attr);
+                        if (complexChildConfig == null) {
+                            op.get(attr).set(op.get(attr).resolve());
+                        } else {
+                            op.get(attr).set(complexChildConfig.correctOperation(operation.get(attr)));
+                        }
+                        return op;
+                    }
                 }
             }
             return operation;
@@ -299,7 +320,7 @@ public class FailedOperationTransformationConfig {
         @Override
         public ModelNode correctWriteAttributeOperation(ModelNode operation) {
             ModelNode op = operation.clone();
-            if (hasExpressions(op.get(VALUE))) {
+            if (hasExpressions(op.get(NAME).asString(), op.get(VALUE))) {
                 op.get(VALUE).set(op.get(VALUE).resolve());
                 return op;
             }
@@ -315,7 +336,7 @@ public class FailedOperationTransformationConfig {
         public boolean canCorrectMore(ModelNode operation) {
             ModelNode op = operation.clone();
             for (String attr : attributes) {
-                if (hasExpressions(op.get(attr))) {
+                if (hasExpressions(attr, op.get(attr))) {
                     return true;
                 }
             }
@@ -324,38 +345,66 @@ public class FailedOperationTransformationConfig {
 
         @Override
         public boolean expectFailedWriteAttributeOperation(ModelNode operation) {
-            return hasExpressions(operation.clone().get(VALUE));
+            return hasExpressions(operation.get(NAME).asString(), operation.clone().get(VALUE));
         }
 
-        private boolean hasExpressions(ModelNode attribute) {
+        boolean hasExpressions(String attrName, ModelNode attribute) {
             if (!attribute.isDefined()) {
                 return false;
             }
+
+            RejectExpressionsConfig complexChildConfig = complexAttributes.get(attrName);
             switch (attribute.getType()) {
             case EXPRESSION:
                 return true;
             case LIST:
                 for (ModelNode entry : attribute.asList()) {
-                    if (hasExpressions(entry)) {
-                        return true;
+                    if (complexChildConfig == null) {
+                        if (hasExpressions(attrName, entry)) {
+                            return true;
+                        }
+                    } else {
+                        if (childHasExpressions(complexChildConfig, attribute.get(attrName))) {
+                            return true;
+                        }
                     }
                 }
                 break;
             case OBJECT:
                 for (Property prop : attribute.asPropertyList()) {
-                    if (hasExpressions(prop.getValue())) {
-                        return true;
+                    if (complexChildConfig == null) {
+                        if (hasExpressions(attrName, prop.getValue())) {
+                            return true;
+                        }
+                    } else {
+                        if (childHasExpressions(complexChildConfig, attribute)) {
+                            return true;
+                        }
                     }
                 }
                 break;
             case PROPERTY:
-                if (hasExpressions(attribute.asProperty().getValue())) {
-                    return true;
+                if (complexChildConfig == null) {
+                    if (hasExpressions(attrName, attribute.asProperty().getValue())) {
+                        return true;
+                    }
+                } else {
+                    if (childHasExpressions(complexChildConfig, attribute.asProperty().getValue())) {
+                        return true;
+                    }
                 }
             }
             return false;
         }
 
+        private boolean childHasExpressions(RejectExpressionsConfig complexChildConfig, ModelNode attribute) {
+            for (String child : complexChildConfig.attributes) {
+                if (complexChildConfig.hasExpressions(child, attribute.get(child))) {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 
 }
