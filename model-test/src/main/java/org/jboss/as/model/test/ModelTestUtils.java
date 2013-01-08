@@ -396,7 +396,7 @@ public class ModelTestUtils {
                 Assert.assertNotNull("Attribute " + name + " is not known", aa);
                 AttributeDefinition ad = aa.getAttributeDefinition();
                 if (!value.isDefined()) {
-                    Assert.assertTrue("Attribute is not allow null", ad.isAllowNull());
+                    Assert.assertTrue("Attribute " + name + " does not allow null", ad.isAllowNull());
                 } else {
                    // Assert.assertEquals("Attribute '" + name + "' type mismatch", value.getType(), ad.getType()); //todo re-enable this check
                 }

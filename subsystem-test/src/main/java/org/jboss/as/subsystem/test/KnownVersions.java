@@ -48,7 +48,7 @@ class KnownVersions {
 
         //Keep this list in alphabetical and subsystem version order
 
-        //1.0.0 of configadmin belongs to AS 7.1.3 (inferred from the 1.2.0 core model version)
+        //1.0.0 of configadmin belongs to AS 7.1.3 (inferred from the 1.3.0 core model version)
         addSubsystemVersion(map, "configadmin", "1.0.0", "1.3.0");
         addSubsystemVersion(map, "jacorb", "1.1.0", "1.3.0");
         addSubsystemVersion(map, "infinispan", "1.3.0", "1.3.0");

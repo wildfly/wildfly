@@ -32,21 +32,24 @@ import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationDefinition;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
-import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.controller.transform.chained.ChainedResourceTransformationContext;
+import org.jboss.as.controller.transform.chained.ChainedResourceTransformer;
+import org.jboss.as.controller.transform.chained.ChainedResourceTransformerEntry;
 import org.jboss.as.txn.TransactionMessages;
-import org.jboss.dmr.ModelType;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -130,7 +133,7 @@ public class TransactionExtension implements Extension {
         ManagementResourceRegistration logStoreChild = registration.registerSubModel(new LogStoreDefinition(resource));
         if (registerRuntimeOnly) {
             ManagementResourceRegistration transactionChild = logStoreChild.registerSubModel(new LogStoreTransactionDefinition(resource));
-            ManagementResourceRegistration partecipantChild = transactionChild.registerSubModel(LogStoreTransactionParticipantDefinition.INSTANCE);
+            transactionChild.registerSubModel(LogStoreTransactionParticipantDefinition.INSTANCE);
         }
 
         subsystem.registerXMLElementWriter(TransactionSubsystem12Parser.INSTANCE);
@@ -161,15 +164,23 @@ public class TransactionExtension implements Extension {
 
         // Transformations to the 1.1.0 Model:
         final ModelVersion version110 = ModelVersion.create(1, 1, 0);
-        // We need to reject all expressions, since they can't be resolved on the client
-        // However, a slave running 1.1.0 has no way to tell us at registration that it has ignored a resource,
-        // so we can't agressively fail on resource transformation
-        final ResourceTransformer resourceTransformer = ResourceTransformer.DEFAULT;
-        final RejectExpressionValuesTransformer operationTransformer =
+        final RejectExpressionValuesTransformer reject =
                 new RejectExpressionValuesTransformer(TransactionSubsystemRootResourceDefinition.attributes);
-        final TransformersSubRegistration registration = subsystem.registerModelTransformers(version110, resourceTransformer);
-        registration.registerOperationTransformer(ADD, operationTransformer);
-        registration.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, operationTransformer.getWriteAttributeTransformer());
+        final TransformersSubRegistration registration = subsystem.registerModelTransformers(version110, new ChainedResourceTransformer(
+                new ChainedResourceTransformerEntry() {
+                    @Override
+                    public void transformResource(ChainedResourceTransformationContext context, PathAddress address, Resource resource)
+                            throws OperationFailedException {
+                        ModelNode model = resource.getModel();
+                        if (!model.hasDefined(TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.getName())) {
+                            model.get(TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.getName()).set(false);
+                        }
+                        System.out.println(resource.getModel());
+                    }
+                },
+                reject.getChainedTransformer()));
+        registration.registerOperationTransformer(ADD, reject);
+        registration.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, reject.getWriteAttributeTransformer());
 
     }
 

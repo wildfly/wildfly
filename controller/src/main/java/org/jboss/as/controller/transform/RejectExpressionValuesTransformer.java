@@ -62,6 +62,10 @@ public class RejectExpressionValuesTransformer implements ResourceTransformer, O
         this (new HashSet<String>(Arrays.asList(attributeNames)));
     }
 
+    public RejectExpressionValuesChainedTransformer getChainedTransformer() {
+        return chainedExpressionTransformer;
+    }
+
     @SuppressWarnings("deprecation")
     public RejectExpressionValuesTransformer(Set<String> allAttributeNames, Map<String, AttributeTransformationRequirementChecker> specialCheckers) {
         chainedExpressionTransformer = new RejectExpressionValuesChainedTransformer(allAttributeNames, specialCheckers);
