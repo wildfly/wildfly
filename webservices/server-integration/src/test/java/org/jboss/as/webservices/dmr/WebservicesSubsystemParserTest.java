@@ -28,17 +28,23 @@ import java.io.IOException;
 import java.util.List;
 
 import org.jboss.as.controller.ExpressionResolver;
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.as.web.WebDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -59,22 +65,22 @@ public class WebservicesSubsystemParserTest extends AbstractSubsystemBaseTest {
     }
 
     protected AdditionalInitialization createAdditionalInitialization() {
-         return new AdditionalInitialization(){
-             @Override
-             protected RunningMode getRunningMode() {
-                 return RunningMode.ADMIN_ONLY;
-             }
+        return new AdditionalInitialization() {
+            @Override
+            protected RunningMode getRunningMode() {
+                return RunningMode.ADMIN_ONLY;
+            }
 
-             @Override
-             protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource, ManagementResourceRegistration rootRegistration) {
-                 super.initializeExtraSubystemsAndModel(extensionRegistry, rootResource, rootRegistration);
-                 rootRegistration.registerSubModel(WebDefinition.INSTANCE);
-                 Resource webSubsystem = Resource.Factory.create();
-                 webSubsystem.getModel().get("default-virtual-server").set("default-host");
-                 rootResource.registerChild(PathElement.pathElement("subsystem","web"),webSubsystem);
-             }
-         };
-     }
+            @Override
+            protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource, ManagementResourceRegistration rootRegistration) {
+                super.initializeExtraSubystemsAndModel(extensionRegistry, rootResource, rootRegistration);
+                rootRegistration.registerSubModel(WebDefinition.INSTANCE);
+                Resource webSubsystem = Resource.Factory.create();
+                webSubsystem.getModel().get("default-virtual-server").set("default-host");
+                rootResource.registerChild(PathElement.pathElement("subsystem", "web"), webSubsystem);
+            }
+        };
+    }
 
     @Override
     protected String getSubsystemXml(String configId) throws IOException {
@@ -143,5 +149,51 @@ public class WebservicesSubsystemParserTest extends AbstractSubsystemBaseTest {
         assertEquals("my-handlers", preHandlers.get(0).getName());
         assertEquals("org.jboss.ws.common.invocation.MyHandler", preHandlers.get(0).getValue().get(Constants.HANDLER).asPropertyList().get(0).getValue().get(Constants.CLASS).asString());
         assertEquals("my-handlers2", postHandlers.get(0).getName());
+    }
+
+    private FailedOperationTransformationConfig getConfig() {
+        PathAddress subsystemAddress = PathAddress.pathAddress(WSExtension.SUBSYSTEM_PATH);
+        return new FailedOperationTransformationConfig()
+                .addFailedAttribute(subsystemAddress, new FailedOperationTransformationConfig.RejectExpressionsConfig(Attributes.SUBSYSTEM_ATTRIBUTES));
+    }
+
+    @Test
+    public void testRejectExpressions_1_1_0() throws Exception {
+        // create builder for current subsystem version
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
+
+        // create builder for legacy subsystem version
+        ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
+        builder.createLegacyKernelServicesBuilder(null, version_1_1_0)
+                .addMavenResourceURL("org.jboss.as:jboss-as-webservices-server-integration:7.1.2.Final");
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(version_1_1_0);
+
+        Assert.assertNotNull(legacyServices);
+        Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+        List<ModelNode> xmlOps = builder.parseXmlResource("ws-subsystem12.xml");
+
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_1_0, xmlOps, getConfig());
+    }
+
+    @Test
+    public void testTransformers() throws Exception {
+        String subsystemXml = readResource("ws-subsystem12-noexpression.xml");   //This has no expressions
+        ModelVersion modelVersion = ModelVersion.create(1, 1, 0); //The old model version
+        //Use the non-runtime version of the extension which will happen on the HC
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXml(subsystemXml);
+
+        // Add legacy subsystems
+        builder.createLegacyKernelServicesBuilder(null, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-webservices-server-integration:7.1.2.Final");
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        Assert.assertNotNull(legacyServices);
+        checkSubsystemModelTransformation(mainServices, modelVersion);
     }
 }
