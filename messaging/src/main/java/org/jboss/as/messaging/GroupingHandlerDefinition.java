@@ -24,7 +24,6 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
-import static org.jboss.as.controller.registry.AttributeAccess.Flag.RESTART_ALL_SERVICES;
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.STORAGE_RUNTIME;
 import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.STRING;
@@ -45,7 +44,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class GroupingHandlerDefinition extends SimpleResourceDefinition {
 
-    static final PathElement PATH = PathElement.pathElement(CommonAttributes.GROUPING_HANDLER);
+    public static final PathElement PATH = PathElement.pathElement(CommonAttributes.GROUPING_HANDLER);
 
     public static final SimpleAttributeDefinition GROUPING_HANDLER_ADDRESS = create("grouping-handler-address", STRING)
             .setXmlName(CommonAttributes.ADDRESS)
@@ -70,6 +69,8 @@ public class GroupingHandlerDefinition extends SimpleResourceDefinition {
             .build();
 
     public static final AttributeDefinition[] ATTRIBUTES = { TYPE, GROUPING_HANDLER_ADDRESS, TIMEOUT };
+
+    public static final AttributeDefinition[] REJECTED_EXPRESSION_ATTRIBUTES = { TYPE, GROUPING_HANDLER_ADDRESS, TIMEOUT };
 
     private final boolean registerRuntimeOnly;
 

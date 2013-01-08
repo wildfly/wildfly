@@ -50,7 +50,7 @@ public class AddressSettingDefinition extends SimpleResourceDefinition {
 
     private final boolean registerRuntimeOnly;
 
-    static final PathElement PATH = PathElement.pathElement(CommonAttributes.ADDRESS_SETTING);
+    public static final PathElement PATH = PathElement.pathElement(CommonAttributes.ADDRESS_SETTING);
 
     public static final SimpleAttributeDefinition ADDRESS_FULL_MESSAGE_POLICY = create("address-full-policy", ModelType.STRING)
             .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_ADDRESS_FULL_MESSAGE_POLICY.toString()))
@@ -117,6 +117,12 @@ public class AddressSettingDefinition extends SimpleResourceDefinition {
             .setAllowNull(true)
             .setAllowExpression(true)
             .build();
+
+    public static final AttributeDefinition[] REJECTED_EXPRESSION_ATTRIBUTES = new AttributeDefinition[]{ DEAD_LETTER_ADDRESS,
+            EXPIRY_ADDRESS, REDELIVERY_DELAY, MAX_DELIVERY_ATTEMPTS, MAX_SIZE_BYTES,
+            PAGE_SIZE_BYTES, PAGE_MAX_CACHE_SIZE, ADDRESS_FULL_MESSAGE_POLICY, MESSAGE_COUNTER_HISTORY_DAY_LIMIT,
+            LAST_VALUE_QUEUE, REDISTRIBUTION_DELAY, SEND_TO_DLA_ON_NO_ROUTE
+    };
 
     /**
      * Attributes are defined in the <em>same order than in the XSD schema</em>

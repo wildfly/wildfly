@@ -59,7 +59,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class BroadcastGroupDefinition extends SimpleResourceDefinition {
 
-    static final PathElement PATH = PathElement.pathElement(CommonAttributes.BROADCAST_GROUP);
+    public static final PathElement PATH = PathElement.pathElement(CommonAttributes.BROADCAST_GROUP);
 
     public static final PrimitiveListAttributeDefinition CONNECTOR_REFS = PrimitiveListAttributeDefinition.Builder.of(CONNECTORS, STRING)
             .setAllowNull(true)

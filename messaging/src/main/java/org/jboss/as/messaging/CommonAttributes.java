@@ -185,7 +185,10 @@ public interface CommonAttributes {
             .setRestartAllServices()
             .build();
 
-    SimpleAttributeDefinition DEAD_LETTER_ADDRESS = new SimpleAttributeDefinition("dead-letter-address", ModelType.STRING, true);
+    SimpleAttributeDefinition DEAD_LETTER_ADDRESS = create("dead-letter-address", ModelType.STRING)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .build();
 
     AttributeDefinition DELIVERING_COUNT = create("delivering-count", INT)
             .setStorageRuntime()
@@ -210,7 +213,10 @@ public interface CommonAttributes {
             .setRestartAllServices()
             .build();
 
-    SimpleAttributeDefinition EXPIRY_ADDRESS = new SimpleAttributeDefinition("expiry-address", ModelType.STRING, true);
+    SimpleAttributeDefinition EXPIRY_ADDRESS = create("expiry-address", ModelType.STRING)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .build();
 
     SimpleAttributeDefinition FAILBACK_DELAY = create("failback-delay", LONG)
             .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_FAILBACK_DELAY))

@@ -1,0 +1,4 @@
+
+    <subsystem xmlns="urn:jboss:domain:messaging:1.3">
+        <hornetq-server name="stuff" />
+    </subsystem>
