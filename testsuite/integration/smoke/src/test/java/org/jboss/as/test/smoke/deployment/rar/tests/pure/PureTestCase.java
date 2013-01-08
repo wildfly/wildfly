@@ -97,11 +97,11 @@ public class PureTestCase extends ContainerResourceMgmtTestBase {
 
         ResourceAdapterArchive raa =
                 ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName);
-        JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "multiple.jar");
-        ja.addClasses(PureInflowResourceAdapter.class, PureTestCase.class,
-                MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class, PureTestCaseSetup.class);
-        ja.addPackage(AbstractMgmtTestBase.class.getPackage());
-        raa.addAsLibrary(ja);
+        JavaArchive javaArchive = ShrinkWrap.create(JavaArchive.class, "multiple.jar");
+        javaArchive.addClasses(PureTestCase.class, PureTestCaseSetup.class, MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class);
+        javaArchive.addPackage(PureInflowResourceAdapter.class.getPackage());
+        javaArchive.addPackage(AbstractMgmtTestBase.class.getPackage());
+        raa.addAsLibrary(javaArchive);
 
         raa.addAsManifestResource(PureTestCase.class.getPackage(), "ra.xml", "ra.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli,javax.inject.api,org.jboss.as.connector\n"), "MANIFEST.MF");
