@@ -88,6 +88,9 @@ public class DeploymentRemoveHandler implements OperationStepHandler {
                     context.completeStep(new OperationContext.ResultHandler() {
                         @Override
                         public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
+                            final ModelNode opAddr = operation.get(OP_ADDR);
+                            PathAddress address = PathAddress.pathAddress(opAddr);
+                            final String managementName = address.getLastElement().getValue();
                             if (resultAction == OperationContext.ResultAction.ROLLBACK) {
                                 if (enabled) {
                                     recoverServices(context, model, deployment, deploymentUnitName, contentNode,
@@ -101,7 +104,7 @@ public class DeploymentRemoveHandler implements OperationStepHandler {
                                 }
                             } else {
                                 if (enabled) {
-                                    ServerLogger.ROOT_LOGGER.deploymentUndeployed(deploymentUnitName);
+                                    ServerLogger.ROOT_LOGGER.deploymentUndeployed(managementName, deploymentUnitName);
                                 }
 
                                 for (byte[] hash : removedHashes) {

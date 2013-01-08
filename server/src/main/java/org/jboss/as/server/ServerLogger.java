@@ -136,12 +136,12 @@ public interface ServerLogger extends BasicLogger {
     void undeploymentRolledBackWithNoMessage(String deployment);
 
     @LogMessage(level = INFO)
-    @Message(id = 18558, value = "Undeployed \"%s\"")
-    void deploymentUndeployed(String deploymentName);
+    @Message(id = 18558, value = "Undeployed \"%s\" (runtime-name: \"%s\")")
+    void deploymentUndeployed(String managementName, String deploymentUnitName);
 
     @LogMessage(level = INFO)
-    @Message(id = 18559, value = "Deployed \"%s\"")
-    void deploymentDeployed(String deploymentUnitName);
+    @Message(id = 18559, value = "Deployed \"%s\" (runtime-name : \"%s\")")
+    void deploymentDeployed(String managementName, String deploymentUnitName);
 
     @LogMessage(level = ERROR)
     @Message(id = 15860, value = "Redeploy of deployment \"%s\" was rolled back with the following failure message: %s")
@@ -208,12 +208,12 @@ public interface ServerLogger extends BasicLogger {
     void startedWitErrors(String prettyVersionString, long time, int startedServices, int allServices, int problemServices, int passiveOnDemandServices);
 
     @LogMessage(level = INFO)
-    @Message(id = 15876, value = "Starting deployment of \"%s\"")
-    void startingDeployment(String deployment);
+    @Message(id = 15876, value = "Starting deployment of \"%s\" (runtime-name: \"%s\")")
+    void startingDeployment(String managementName, String deploymentUnitName);
 
     @LogMessage(level = INFO)
-    @Message(id = 15877, value = "Stopped deployment %s in %dms")
-    void stoppedDeployment(String deployment, int elapsedTime);
+    @Message(id = 15877, value = "Stopped deployment %s (runtime-name: %s) in %dms")
+    void stoppedDeployment(String managementName, String deploymentUnitName, int elapsedTime);
 
     @LogMessage(level = INFO)
     @Message(id = 15878, value = "Deployment '%s' started successfully")
