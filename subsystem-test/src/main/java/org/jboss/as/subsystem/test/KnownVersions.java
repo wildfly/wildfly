@@ -57,6 +57,7 @@ class KnownVersions {
         addSubsystemVersion(map, "jgroups", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "jmx", "1.0.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "jmx", "1.1.0", CORE_MODEL_7_1_3);
+        addSubsystemVersion(map, "jgroups", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "jpa", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "logging", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "mail", "1.1.0", CORE_MODEL_7_1_3);
@@ -67,6 +68,8 @@ class KnownVersions {
         addSubsystemVersion(map, "remoting", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "security", "1.1.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "threads", "1.0.0", CORE_MODEL_7_1_2);
+        addSubsystemVersion(map, "security", "1.1.0", CORE_MODEL_7_1_2);
+        addSubsystemVersion(map, "remoting", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "transactions", "1.1.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "transactions", "1.1.1", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "web", "1.1.0", CORE_MODEL_7_1_2);
