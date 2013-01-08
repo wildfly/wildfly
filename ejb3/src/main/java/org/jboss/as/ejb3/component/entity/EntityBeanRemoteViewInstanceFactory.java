@@ -34,7 +34,6 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.ViewInstanceFactory;
 import org.jboss.as.ee.component.interceptors.InvocationType;
-import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanHomeCreateInterceptorFactory;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.as.naming.ManagedReference;
@@ -44,6 +43,8 @@ import org.jboss.ejb.client.EntityEJBLocator;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.Interceptors;
 import org.jboss.msc.value.ImmediateValue;
+
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * @author John Bailey
@@ -73,13 +74,13 @@ public class EntityBeanRemoteViewInstanceFactory implements ViewInstanceFactory 
     private Object invokeCreate(final Component component, final Map<Object, Object> contextData) throws Exception {
         final Method ejbCreate = (Method) contextData.get(EntityBeanHomeCreateInterceptorFactory.EJB_CREATE_METHOD_KEY);
         if (ejbCreate == null) {
-            throw EjbLogger.EJB3_LOGGER.entityCannotBeCreatedDueToMissingCreateMethod(this.beanName);
+            throw MESSAGES.entityCannotBeCreatedDueToMissingCreateMethod(this.beanName);
         }
         final Method ejbPostCreate = (Method) contextData.get(EntityBeanHomeCreateInterceptorFactory.EJB_POST_CREATE_METHOD_KEY);
         final Object[] params = (Object[]) contextData.get(EntityBeanHomeCreateInterceptorFactory.PARAMETERS_KEY);
 
         if (!(component instanceof EntityBeanComponent)) {
-            throw EjbLogger.EJB3_LOGGER.notAnEntityBean(component);
+            throw MESSAGES.notAnEntityBean(component);
         }
         final EntityBeanComponent entityBeanComponent = (EntityBeanComponent) component;
         //grab an unassociated entity bean from the pool

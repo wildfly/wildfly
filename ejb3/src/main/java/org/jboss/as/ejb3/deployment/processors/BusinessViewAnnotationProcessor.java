@@ -40,13 +40,14 @@ import javax.ejb.Remote;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
-import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.modules.Module;
+
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Processes {@link Local @Local} and {@link @Remote} annotation of a session bean and sets up the {@link SessionBeanComponentDescription}
@@ -148,7 +149,7 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
         if (remoteViews == null || remoteViews.length == 0) {
             Set<Class<?>> interfaces = getPotentialBusinessInterfaces(sessionBeanClass);
             if (interfaces.size() != 1)
-                throw EjbLogger.EJB3_LOGGER.beanWithRemoteAnnotationImplementsMoreThanOneInterface(sessionBeanClass);
+                throw MESSAGES.beanWithRemoteAnnotationImplementsMoreThanOneInterface(sessionBeanClass);
             return interfaces;
         }
         return Arrays.asList(remoteViews);
@@ -167,7 +168,7 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
         if (localViews == null || localViews.length == 0) {
             Set<Class<?>> interfaces = getPotentialBusinessInterfaces(sessionBeanClass);
             if (interfaces.size() != 1)
-                throw EjbLogger.EJB3_LOGGER.beanWithLocalAnnotationImplementsMoreThanOneInterface(sessionBeanClass);
+                throw MESSAGES.beanWithLocalAnnotationImplementsMoreThanOneInterface(sessionBeanClass);
             return interfaces;
         }
         return Arrays.asList(localViews);

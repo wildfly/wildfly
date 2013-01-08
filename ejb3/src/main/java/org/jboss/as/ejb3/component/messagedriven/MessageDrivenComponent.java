@@ -48,9 +48,10 @@ import org.jboss.jca.core.spi.rar.Endpoint;
 
 import static java.util.Collections.emptyMap;
 import static javax.ejb.TransactionAttributeType.REQUIRED;
-import static org.jboss.as.ejb3.EjbLogger.EJB3_LOGGER;
 import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 import static org.jboss.as.ejb3.component.MethodIntf.BEAN;
+
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -163,7 +164,7 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
     @Override
     public void start() {
         if (endpoint == null) {
-            throw EJB3_LOGGER.endpointUnAvailable(this.getComponentName());
+            throw MESSAGES.endpointUnAvailable(this.getComponentName());
         }
 
         getShutDownInterceptorFactory().start();
@@ -192,7 +193,7 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
             SecurityActions.setContextClassLoader(classLoader);
             endpoint.deactivate(endpointFactory, activationSpec);
         } catch (ResourceException re) {
-            throw EJB3_LOGGER.failureDuringEndpointDeactivation(this.getComponentName(), re);
+            throw MESSAGES.failureDuringEndpointDeactivation(this.getComponentName(), re);
         } finally {
             SecurityActions.setContextClassLoader(oldTccl);
         }

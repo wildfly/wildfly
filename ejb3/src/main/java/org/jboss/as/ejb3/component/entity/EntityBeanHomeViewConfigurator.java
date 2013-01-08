@@ -36,8 +36,6 @@ import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.ViewService;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
-import org.jboss.as.ejb3.EjbLogger;
-import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.EjbHomeViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
@@ -113,7 +111,7 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
             } else if (method.getName().startsWith("find")) {
                 final Method ejbFind = resolveEjbFinderMethod(componentConfiguration.getComponentClass(), deploymentReflectionIndex, method, componentConfiguration.getComponentName(), componentDescription.getPersistenceType());
                 if(!Modifier.isPublic(ejbFind.getModifiers())) {
-                    throw EjbMessages.MESSAGES.ejbMethodMustBePublic("ejbFind", ejbFind);
+                    throw MESSAGES.ejbMethodMustBePublic("ejbFind", ejbFind);
                 }
                 final EntityBeanHomeFinderInterceptorFactory interceptorFactory = createHomeFindInterceptorFactory(ejbFind, localHome);
                 configuration.getDependencies().add(new DependencyConfigurator<ViewService>() {
@@ -137,7 +135,7 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
                     ejbObjectClass = classIndex.classIndex(createdView.getViewClassName()).getModuleClass();
                     pkClass = classIndex.classIndex(componentDescription.getPrimaryKeyType()).getModuleClass();
                 } catch (ClassNotFoundException e) {
-                    throw EjbLogger.EJB3_LOGGER.failedToLoadViewClassForComponent(e, componentDescription.getComponentName());
+                    throw MESSAGES.failedToLoadViewClassForComponent(e, componentDescription.getComponentName());
                 }
                 final EjbMetadataInterceptorFactory factory = new EjbMetadataInterceptorFactory(ejbObjectClass, configuration.getViewClass(), pkClass, false, false);
 
@@ -157,7 +155,7 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
                 //we have a home business method
                 Method home = resolveEjbHomeBusinessMethod(componentConfiguration.getComponentClass(), deploymentReflectionIndex, method, componentConfiguration.getComponentName());
                 if(!Modifier.isPublic(home.getModifiers())) {
-                    throw EjbMessages.MESSAGES.ejbMethodMustBePublic("ejbHome", home);
+                    throw MESSAGES.ejbMethodMustBePublic("ejbHome", home);
                 }
                 configuration.addViewInterceptor(method, new EntityBeanHomeMethodInterceptorFactory(home), InterceptorOrder.View.COMPONENT_DISPATCHER);
             }

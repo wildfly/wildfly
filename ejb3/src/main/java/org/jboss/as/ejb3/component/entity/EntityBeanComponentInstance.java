@@ -33,13 +33,14 @@ import javax.ejb.Timer;
 
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.interceptors.InvocationType;
-import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.EjbComponentInstance;
 import org.jboss.as.ejb3.context.EntityContextImpl;
 import org.jboss.as.ejb3.timerservice.TimerImpl;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * @author Stuart Douglas
@@ -238,7 +239,7 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
     public EJBObject getEjbObject() {
         final Object pk = getPrimaryKey();
         if (pk == null) {
-            throw EjbLogger.EJB3_LOGGER.cannotCallGetEjbObjectBeforePrimaryKeyAssociation();
+            throw MESSAGES.cannotCallGetEjbObjectBeforePrimaryKeyAssociation();
         }
         return getComponent().getEJBObject(pk);
     }
@@ -246,7 +247,7 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
     public EJBLocalObject getEjbLocalObject() {
         final Object pk = getPrimaryKey();
         if (pk == null) {
-            throw EjbLogger.EJB3_LOGGER.cannotCallGetEjbLocalObjectBeforePrimaryKeyAssociation();
+            throw MESSAGES.cannotCallGetEjbLocalObjectBeforePrimaryKeyAssociation();
         }
         return getComponent().getEJBLocalObject(pk);
     }

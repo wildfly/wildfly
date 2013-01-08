@@ -21,7 +21,6 @@
  */
 package org.jboss.as.ejb3.timerservice.schedule.attribute;
 
-import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.timerservice.schedule.ScheduleExpressionTypeUtil;
 import org.jboss.as.ejb3.timerservice.schedule.value.IncrementValue;
 import org.jboss.as.ejb3.timerservice.schedule.value.ListValue;
@@ -100,7 +99,7 @@ public abstract class IntegerBasedExpression {
                 break;
 
             default:
-                throw EjbLogger.EJB3_LOGGER.invalidValueForSecondInScheduleExpression(value);
+                throw MESSAGES.invalidValueForSecondInScheduleExpression(value);
         }
     }
 

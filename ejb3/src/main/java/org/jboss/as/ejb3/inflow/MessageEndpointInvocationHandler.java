@@ -21,12 +21,9 @@
  */
 package org.jboss.as.ejb3.inflow;
 
-import org.jboss.as.ejb3.EjbLogger;
-
 import javax.resource.ResourceException;
 import javax.resource.spi.ApplicationServerInternalException;
 import javax.resource.spi.LocalTransactionException;
-import javax.resource.spi.UnavailableException;
 import javax.resource.spi.endpoint.MessageEndpoint;
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
@@ -42,6 +39,7 @@ import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.security.AccessController.doPrivileged;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 import static org.jboss.as.ejb3.inflow.ContextClassLoaderActions.contextClassLoader;
 
 /**
@@ -130,7 +128,7 @@ public class MessageEndpointInvocationHandler extends AbstractInvocationHandler 
     protected Object doInvoke(Object proxy, Method method, Object[] args) throws Throwable {
         // Are we still usable?
         if (released.get())
-            throw EjbLogger.EJB3_LOGGER.messageEndpointAlreadyReleased(this);
+            throw MESSAGES.messageEndpointAlreadyReleased(this);
 
         // TODO: check for concurrent invocation
 

@@ -866,7 +866,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
 
         final TimerEntity timerEntity = timerPersistence.getValue().loadTimer(id, timedObjectId);
         if (timerEntity == null) {
-            throw EJB3_LOGGER.timerNotFound(id);
+            throw MESSAGES.timerNotFound(id);
         }
         if (timerEntity.isCalendarTimer()) {
             return new CalendarTimer((CalendarTimerEntity) timerEntity, this);

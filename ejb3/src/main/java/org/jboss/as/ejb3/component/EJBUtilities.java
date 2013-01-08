@@ -84,7 +84,7 @@ public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
             }
             final ResourceAdapterRepository resourceAdapterRepository = getResourceAdapterRepository();
             if (resourceAdapterRepository == null) {
-                throw EJB3_LOGGER.resourceAdapterRepositoryUnAvailable();
+                throw MESSAGES.resourceAdapterRepositoryUnAvailable();
             }
             // now get the message listeners for this specific ra identifier
             final List<MessageListener> messageListeners = resourceAdapterRepository.getMessageListeners(raIdentifier);
@@ -141,12 +141,12 @@ public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
         }
         final ResourceAdapterRepository resourceAdapterRepository = getResourceAdapterRepository();
         if (resourceAdapterRepository == null) {
-            throw EJB3_LOGGER.resourceAdapterRepositoryUnAvailable();
+            throw MESSAGES.resourceAdapterRepositoryUnAvailable();
         }
         try {
             return resourceAdapterRepository.getEndpoint(raIdentifier);
         } catch (NotFoundException nfe) {
-            throw EJB3_LOGGER.noSuchEndpointException(resourceAdapterName, nfe);
+            throw MESSAGES.noSuchEndpointException(resourceAdapterName, nfe);
         }
     }
 
