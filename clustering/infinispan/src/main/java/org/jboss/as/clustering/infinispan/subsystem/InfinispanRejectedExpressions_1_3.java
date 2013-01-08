@@ -67,8 +67,8 @@ public class InfinispanRejectedExpressions_1_3 {
             BaseJDBCStoreResource.TIMESTAMP_COLUMN,
             BaseJDBCStoreResource.ENTRY_TABLE,
             BaseJDBCStoreResource.BUCKET_TABLE,
-            BaseJDBCStoreResource.BINARY_KEYED_TABLE,
-            BaseJDBCStoreResource.STRING_KEYED_TABLE
+            //BaseJDBCStoreResource.BINARY_KEYED_TABLE,
+            //BaseJDBCStoreResource.STRING_KEYED_TABLE
     };
 
      // attributes which accept in 1.4.0 and in 1.3.0
@@ -174,6 +174,7 @@ public class InfinispanRejectedExpressions_1_3 {
                 MixedKeyedJDBCStoreResource.MIXED_KEYED_JDBC_STORE_ATTRIBUTES,
                 StoreWriteBehindResource.WRITE_BEHIND_ATTRIBUTES,
                 StorePropertyResource.STORE_PROPERTY_ATTRIBUTES
+
              ),
              NEVER_STORE_ATTRIBUTES
     );

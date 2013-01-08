@@ -109,9 +109,6 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
 
         List<ModelNode> xmlOps = builder.parseXmlResource("infinispan-transformer_1_4-expressions.xml");
 
-        FailedOperationTransformationConfig config = getConfig() ;
-
-
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_3_0, xmlOps, getConfig());
     }
 
@@ -174,11 +171,18 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
                     RemoteStoreResource.REMOTE_STORE_PATH
             } ;
 
+
+            FailedOperationTransformationConfig.RejectExpressionsConfig keyedTableComplexChildConfig =
+                    new FailedOperationTransformationConfig.RejectExpressionsConfig("prefix", "batch-size", "fetch-size", "id-column", "data-column", "timestamp-column");
+
+
             // cache store attributes
             for (int k=0; k < storePaths.length; k++) {
                 // reject expressions on operations on stores and store properties
                 config.addFailedAttribute(subsystemAddress.append(CacheContainerResource.CONTAINER_PATH).append(cachePaths[i]).append(storePaths[k]),
-                        new FailedOperationTransformationConfig.RejectExpressionsConfig(InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_STORE_ATTRIBUTES));
+                        new FailedOperationTransformationConfig.RejectExpressionsConfig(InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_STORE_ATTRIBUTES)
+                            .configureComplexAttribute("string-keyed-table", keyedTableComplexChildConfig)
+                            .configureComplexAttribute("binary-keyed-table", keyedTableComplexChildConfig));
 
                 config.addFailedAttribute(subsystemAddress.append(CacheContainerResource.CONTAINER_PATH).append(cachePaths[i]).append(storePaths[k]).append(StoreWriteBehindResource.STORE_WRITE_BEHIND_PATH),
                         new FailedOperationTransformationConfig.RejectExpressionsConfig(InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_STORE_ATTRIBUTES));
