@@ -27,7 +27,9 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttri
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -43,6 +45,7 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.controller.transform.AttributeTransformationRequirementChecker;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -62,6 +65,16 @@ class KeepAliveTimeAttributeDefinition extends ObjectTypeAttributeDefinition {
             .setAllowExpression(true)
             .setValidator(new EnumValidator<TimeUnit>(TimeUnit.class, false, true))
             .build();
+
+    static final AttributeTransformationRequirementChecker TRANSFORMATION_REQUIREMENT_CHECKER;
+
+    static {
+
+        Map<String, AttributeTransformationRequirementChecker> fieldCheckers = new HashMap<String, AttributeTransformationRequirementChecker>();
+        fieldCheckers.put(KeepAliveTimeAttributeDefinition.KEEPALIVE_TIME_TIME.getName(), AttributeTransformationRequirementChecker.SIMPLE_EXPRESSIONS);
+        fieldCheckers.put(KeepAliveTimeAttributeDefinition.KEEPALIVE_TIME_UNIT.getName(), AttributeTransformationRequirementChecker.SIMPLE_EXPRESSIONS);
+        TRANSFORMATION_REQUIREMENT_CHECKER = new AttributeTransformationRequirementChecker.ObjectFieldsAttributeTransformationRequirementChecker(fieldCheckers);
+    }
 
     KeepAliveTimeAttributeDefinition() {
         super(CommonAttributes.KEEPALIVE_TIME, new AttributeDefinition[]{KEEPALIVE_TIME_TIME, KEEPALIVE_TIME_UNIT}, true,
