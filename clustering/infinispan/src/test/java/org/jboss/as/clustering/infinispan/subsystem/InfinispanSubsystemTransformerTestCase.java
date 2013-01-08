@@ -24,15 +24,21 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.clustering.infinispan.subsystem.ModelKeys.DEFAULT_CACHE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
@@ -83,6 +89,105 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
         Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot()); ;
 
         checkSubsystemModelTransformation(mainServices, version);
+    }
+
+    @Test
+    public void testRejectExpressions_1_3_0_Kabir() throws Exception {
+        // create builder for current subsystem version
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+
+        // create builder for legacy subsystem version
+        ModelVersion version_1_3_0 = ModelVersion.create(1, 3, 0);
+        builder.createLegacyKernelServicesBuilder(null, version_1_3_0)
+            .addMavenResourceURL("org.jboss.as:jboss-as-clustering-infinispan:7.1.2.Final");
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(version_1_3_0);
+        Assert.assertNotNull(legacyServices);
+        Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot()); ;
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+        List<ModelNode> xmlOps = builder.parseXmlResource("infinispan-transformer_1_4-expressions.xml");
+
+        FailedOperationTransformationConfig config = getConfig() ;
+
+
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_3_0, xmlOps, getConfig());
+    }
+
+    /**
+     * Constructs a FailedOperationTransformationConfig which describes all attributes which should accept expressions
+     * in 1.4.0 but not accept expressions in 1.3.0
+     *
+     * @return config
+     */
+    private FailedOperationTransformationConfig getConfig() {
+
+        PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()));
+        FailedOperationTransformationConfig config = new FailedOperationTransformationConfig() ;
+
+        // cache-container attributes
+        config.addFailedAttribute(subsystemAddress.append(CacheContainerResource.CONTAINER_PATH),
+                new FailedOperationTransformationConfig.RejectExpressionsConfig(
+                        InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_CONTAINER_ATTRIBUTES));
+
+        // cache container-transport attributes
+        config.addFailedAttribute(subsystemAddress.append(CacheContainerResource.CONTAINER_PATH).append(TransportResource.TRANSPORT_PATH),
+                // cluster allowed expressions in 1.3.0
+                new FailedOperationTransformationConfig.RejectExpressionsConfig(
+                        InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_TRANSPORT_ATTRIBUTES)) ;
+
+        PathElement[] cachePaths = {
+                LocalCacheResource.LOCAL_CACHE_PATH,
+                InvalidationCacheResource.INVALIDATION_CACHE_PATH,
+                ReplicatedCacheResource.REPLICATED_CACHE_PATH,
+                DistributedCacheResource.DISTRIBUTED_CACHE_PATH};
+
+        // cache attributes
+        for (int i=0; i < cachePaths.length; i++) {
+            config.addFailedAttribute(subsystemAddress.append(CacheContainerResource.CONTAINER_PATH).append(cachePaths[i]),
+                    new FailedOperationTransformationConfig.RejectExpressionsConfig(
+                            InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_CACHE_ATTRIBUTES));
+
+            PathElement[] childPaths = {
+                    LockingResource.LOCKING_PATH,
+                    TransactionResource.TRANSACTION_PATH,
+                    ExpirationResource.EXPIRATION_PATH,
+                    EvictionResource.EVICTION_PATH,
+                    StateTransferResource.STATE_TRANSFER_PATH
+            } ;
+
+            // cache child attributes
+            for (int j=0; j < childPaths.length; j++) {
+                // reject expressions on operations in children
+                config.addFailedAttribute(subsystemAddress.append(CacheContainerResource.CONTAINER_PATH).append(cachePaths[i]).append(childPaths[j]),
+                        new FailedOperationTransformationConfig.RejectExpressionsConfig(
+                                InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_CHILD_ATTRIBUTES));
+            }
+
+            PathElement[] storePaths = {
+                    StoreResource.STORE_PATH,
+                    FileStoreResource.FILE_STORE_PATH,
+                    StringKeyedJDBCStoreResource.STRING_KEYED_JDBC_STORE_PATH,
+                    BinaryKeyedJDBCStoreResource.BINARY_KEYED_JDBC_STORE_PATH,
+                    MixedKeyedJDBCStoreResource.MIXED_KEYED_JDBC_STORE_PATH,
+                    RemoteStoreResource.REMOTE_STORE_PATH
+            } ;
+
+            // cache store attributes
+            for (int k=0; k < storePaths.length; k++) {
+                // reject expressions on operations on stores and store properties
+                config.addFailedAttribute(subsystemAddress.append(CacheContainerResource.CONTAINER_PATH).append(cachePaths[i]).append(storePaths[k]),
+                        new FailedOperationTransformationConfig.RejectExpressionsConfig(InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_STORE_ATTRIBUTES));
+
+                config.addFailedAttribute(subsystemAddress.append(CacheContainerResource.CONTAINER_PATH).append(cachePaths[i]).append(storePaths[k]).append(StoreWriteBehindResource.STORE_WRITE_BEHIND_PATH),
+                        new FailedOperationTransformationConfig.RejectExpressionsConfig(InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_STORE_ATTRIBUTES));
+
+                config.addFailedAttribute(subsystemAddress.append(CacheContainerResource.CONTAINER_PATH).append(cachePaths[i]).append(storePaths[k]).append(StorePropertyResource.STORE_PROPERTY_PATH),
+                        new FailedOperationTransformationConfig.RejectExpressionsConfig(InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_STORE_ATTRIBUTES));
+            }
+        }
+        return config ;
     }
 
     @Test
