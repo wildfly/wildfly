@@ -46,8 +46,8 @@ import org.infinispan.configuration.cache.CacheStoreConfigurationBuilder;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.FileCacheStoreConfigurationBuilder;
-import org.infinispan.configuration.cache.LoadersConfigurationBuilder;
 import org.infinispan.configuration.cache.FileCacheStoreConfigurationBuilder.FsyncMode;
+import org.infinispan.configuration.cache.LoadersConfigurationBuilder;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.configuration.parsing.ParserRegistry;
 import org.infinispan.eviction.EvictionStrategy;
@@ -66,6 +66,7 @@ import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.as.clustering.infinispan.InfinispanMessages;
 import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -665,19 +666,20 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         builder.batchSize(BaseJDBCStoreResource.BATCH_SIZE.resolveModelAttribute(context, table).asInt())
                 .fetchSize(BaseJDBCStoreResource.FETCH_SIZE.resolveModelAttribute(context, table).asInt())
                 .tableNamePrefix(tableNamePrefix.isDefined() ? tableNamePrefix.asString() : defaultTableNamePrefix)
-                .idColumnName(this.getColumnProperty(table, ModelKeys.ID_COLUMN, ModelKeys.NAME, "id"))
-                .idColumnType(this.getColumnProperty(table, ModelKeys.ID_COLUMN, ModelKeys.TYPE, "VARCHAR"))
-                .dataColumnName(this.getColumnProperty(table, ModelKeys.DATA_COLUMN, ModelKeys.NAME, "datum"))
-                .dataColumnType(this.getColumnProperty(table, ModelKeys.DATA_COLUMN, ModelKeys.TYPE, "BINARY"))
-                .timestampColumnName(this.getColumnProperty(table, ModelKeys.TIMESTAMP_COLUMN, ModelKeys.NAME, "version"))
-                .timestampColumnType(this.getColumnProperty(table, ModelKeys.TIMESTAMP_COLUMN, ModelKeys.TYPE, "BIGINT"))
-        ;
+                .idColumnName(this.getColumnProperty(context, table, ModelKeys.ID_COLUMN, BaseJDBCStoreResource.COLUMN_NAME, "id"))
+                .idColumnType(this.getColumnProperty(context, table, ModelKeys.ID_COLUMN, BaseJDBCStoreResource.COLUMN_TYPE, "VARCHAR"))
+                .dataColumnName(this.getColumnProperty(context, table, ModelKeys.DATA_COLUMN, BaseJDBCStoreResource.COLUMN_NAME, "datum"))
+                .dataColumnType(this.getColumnProperty(context, table, ModelKeys.DATA_COLUMN, BaseJDBCStoreResource.COLUMN_TYPE, "BINARY"))
+                .timestampColumnName(this.getColumnProperty(context, table, ModelKeys.TIMESTAMP_COLUMN, BaseJDBCStoreResource.COLUMN_NAME, "version"))
+                .timestampColumnType(this.getColumnProperty(context, table, ModelKeys.TIMESTAMP_COLUMN, BaseJDBCStoreResource.COLUMN_TYPE, "BIGINT"));
     }
 
-    private String getColumnProperty(ModelNode table, String columnKey, String key, String defaultValue) {
+    private String getColumnProperty(OperationContext context, ModelNode table, String columnKey, AttributeDefinition columnAttribute, String defaultValue) throws OperationFailedException
+    {
         if (!table.isDefined() || !table.hasDefined(columnKey)) return defaultValue;
         ModelNode column = table.get(columnKey);
-        return column.hasDefined(key) ? column.get(key).asString() : defaultValue;
+        ModelNode resolvedValue = null ;
+        return ((resolvedValue = columnAttribute.resolveModelAttribute(context, column)).isDefined()) ? resolvedValue.asString() : defaultValue;
     }
 
     /*

@@ -960,11 +960,11 @@ public final class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case NAME: {
-                    column.get(ModelKeys.NAME).set(value);
+                    BaseJDBCStoreResource.COLUMN_NAME.parseAndSetParameter(value, column, reader);
                     break;
                 }
                 case TYPE: {
-                    column.get(ModelKeys.TYPE).set(value);
+                    BaseJDBCStoreResource.COLUMN_TYPE.parseAndSetParameter(value, column, reader);
                     break;
                 }
                 default: {
