@@ -63,11 +63,13 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
         final String deploymentName = context.getController().getName().getSimpleName();
         final DeploymentServiceListener listener = new DeploymentServiceListener(deploymentName);
         this.listener = listener;
-        ServerLogger.DEPLOYMENT_LOGGER.startingDeployment(deploymentName);
         // Create the first phase deployer
         target.addListener(ServiceListener.Inheritance.ALL, listener);
         deploymentUnit = createAndInitializeDeploymentUnit(context.getController().getServiceContainer());
         deploymentUnit.putAttachment(Attachments.STATUS_LISTENER, listener);
+
+        final String managementName = deploymentUnit.getAttachment(Attachments.MANAGEMENT_NAME);
+        ServerLogger.DEPLOYMENT_LOGGER.startingDeployment(managementName, deploymentName);
 
         final ServiceName serviceName = deploymentUnit.getServiceName().append(FIRST_PHASE_NAME);
         final Phase firstPhase = Phase.values()[0];
@@ -88,8 +90,9 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
 
     public synchronized void stop(final StopContext context) {
         final String deploymentName = context.getController().getName().getSimpleName();
+        final String managementName = deploymentUnit.getAttachment(Attachments.MANAGEMENT_NAME);
+        ServerLogger.DEPLOYMENT_LOGGER.stoppedDeployment(managementName, deploymentName, (int) (context.getElapsedTime() / 1000000L));
         deploymentUnit = null;
-        ServerLogger.DEPLOYMENT_LOGGER.stoppedDeployment(deploymentName, (int) (context.getElapsedTime() / 1000000L));
     }
 
     public synchronized DeploymentUnit getValue() throws IllegalStateException, IllegalArgumentException {

@@ -134,7 +134,7 @@ public class DeploymentHandlerUtil {
                                         ServerLogger.ROOT_LOGGER.deploymentRolledBackWithNoMessage(deploymentUnitName);
                                     }
                                 } else {
-                                    ServerLogger.ROOT_LOGGER.deploymentDeployed(deploymentUnitName);
+                                    ServerLogger.ROOT_LOGGER.deploymentDeployed(managementName, deploymentUnitName);
                                 }
                             }
                         });
@@ -300,7 +300,7 @@ public class DeploymentHandlerUtil {
         }
     }
 
-    public static void undeploy(final OperationContext context, final String deploymentUnitName, final AbstractVaultReader vaultReader) {
+    public static void undeploy(final OperationContext context, final String managementName, final String deploymentUnitName, final AbstractVaultReader vaultReader) {
         if (context.isNormalServer()) {
             final Resource deployment = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
             final ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
@@ -331,7 +331,7 @@ public class DeploymentHandlerUtil {
                                     ServerLogger.ROOT_LOGGER.undeploymentRolledBackWithNoMessage(deploymentUnitName);
                                 }
                             } else {
-                                ServerLogger.ROOT_LOGGER.deploymentUndeployed(deploymentUnitName);
+                                ServerLogger.ROOT_LOGGER.deploymentUndeployed(managementName, deploymentUnitName);
                             }
                         }
                     });
