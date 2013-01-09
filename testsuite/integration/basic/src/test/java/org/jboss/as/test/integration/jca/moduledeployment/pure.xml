@@ -1,0 +1,12 @@
+<subsystem xmlns="urn:jboss:domain:resource-adapters:1.1">
+	<resource-adapters>
+		<resource-adapter>
+			<module slot="main" id="org.jboss.ironjacamar.ra16out" />
+			<connection-definitions>
+				<connection-definition
+					class-name="org.jboss.as.test.integration.jca.rar.MultipleManagedConnectionFactory1"
+					jndi-name="java:/testMeRA" pool-name="java:/testMeRA" />
+			</connection-definitions>
+		</resource-adapter>
+	</resource-adapters>
+</subsystem>

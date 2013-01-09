@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<connector xmlns="http://java.sun.com/xml/ns/j2ee"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
+           http://java.sun.com/xml/ns/j2ee/connector_1_6.xsd"
+           version="1.6">
+
+   <vendor-name>Red Hat Middleware LLC</vendor-name>
+   <eis-type>Test RA</eis-type>
+   <resourceadapter-version>0.1</resourceadapter-version>
+   <resourceadapter>
+      <resourceadapter-class>org.jboss.as.test.integration.jca.rar.MultipleResourceAdapter</resourceadapter-class>
+      <inbound-resourceadapter>
+         <messageadapter>
+            <messagelistener>
+               <messagelistener-type>javax.jms.MessageListener</messagelistener-type>
+               <activationspec>
+                  <activationspec-class>org.jboss.as.test.integration.jca.rar.MultipleActivationSpec</activationspec-class>
+               </activationspec>
+            </messagelistener>
+         </messageadapter>
+      </inbound-resourceadapter>
+   </resourceadapter>
+</connector>

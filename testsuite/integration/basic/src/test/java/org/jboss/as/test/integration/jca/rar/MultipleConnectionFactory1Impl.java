@@ -27,86 +27,117 @@ import javax.naming.NamingException;
 import javax.naming.Reference;
 
 import javax.resource.ResourceException;
+import javax.resource.cci.Connection;
+import javax.resource.cci.ConnectionSpec;
+import javax.resource.cci.RecordFactory;
+import javax.resource.cci.ResourceAdapterMetaData;
 import javax.resource.spi.ConnectionManager;
 
 /**
  * MultipleConnectionFactory1Impl
- *
+ * 
  * @version $Revision: $
  */
-public class MultipleConnectionFactory1Impl implements MultipleConnectionFactory1
-{
-   /** The serial version UID */
-   private static final long serialVersionUID = 1L;
+public class MultipleConnectionFactory1Impl implements
+		MultipleConnectionFactory1 {
+	/** The serial version UID */
+	private static final long serialVersionUID = 1L;
 
-   /** The logger */
-   private static Logger log = Logger.getLogger("MultipleConnectionFactory1Impl");
+	/** The logger */
+	private static Logger log = Logger
+			.getLogger("MultipleConnectionFactory1Impl");
 
-   /** Reference */
-   private Reference reference;
+	/** Reference */
+	private Reference reference;
 
-   /** ManagedConnectionFactory */
-   private MultipleManagedConnectionFactory1 mcf;
+	/** ManagedConnectionFactory */
+	private MultipleManagedConnectionFactory1 mcf;
 
-   /** ConnectionManager */
-   private ConnectionManager connectionManager;
+	/** ConnectionManager */
+	private ConnectionManager connectionManager;
 
-   /**
-    * Default constructor
-    */
-   public MultipleConnectionFactory1Impl()
-   {
+	/**
+	 * Default constructor
+	 */
+	public MultipleConnectionFactory1Impl() {
 
-   }
+	}
 
-   /**
-    * Default constructor
-    * @param mcf ManagedConnectionFactory
-    * @param cxManager ConnectionManager
-    */
-   public MultipleConnectionFactory1Impl(MultipleManagedConnectionFactory1 mcf, ConnectionManager cxManager)
-   {
-      this.mcf = mcf;
-      this.connectionManager = cxManager;
-   }
+	/**
+	 * Default constructor
+	 * 
+	 * @param mcf
+	 *            ManagedConnectionFactory
+	 * @param cxManager
+	 *            ConnectionManager
+	 */
+	public MultipleConnectionFactory1Impl(
+			MultipleManagedConnectionFactory1 mcf, ConnectionManager cxManager) {
+		this.mcf = mcf;
+		this.connectionManager = cxManager;
+	}
 
-   /** 
-    * Get connection from factory
-    *
-    * @return MultipleConnection1 instance
-    * @exception ResourceException Thrown if a connection can't be obtained
-    */
-   @Override
-   public MultipleConnection1 getConnection() throws ResourceException
-   {
-      log.finest("getConnection()");
-      return (MultipleConnection1)connectionManager.allocateConnection(mcf, null);
-   }
+	/**
+	 * Get connection from factory
+	 * 
+	 * @return MultipleConnection1 instance
+	 * @exception ResourceException
+	 *                Thrown if a connection can't be obtained
+	 */
+	@Override
+	public Connection getConnection() throws ResourceException {
+		log.finest("getConnection()");
+		return (MultipleConnection1) connectionManager.allocateConnection(mcf,
+				null);
+	}
 
-   /**
-    * Get the Reference instance.
-    *
-    * @return Reference instance
-    * @exception NamingException Thrown if a reference can't be obtained
-    */
-   @Override
-   public Reference getReference() throws NamingException
-   {
-      log.finest("getReference()");
-      return reference;
-   }
+	/**
+	 * Get the Reference instance.
+	 * 
+	 * @return Reference instance
+	 * @exception NamingException
+	 *                Thrown if a reference can't be obtained
+	 */
+	@Override
+	public Reference getReference() throws NamingException {
+		log.finest("getReference()");
+		return reference;
+	}
 
-   /**
-    * Set the Reference instance.
-    *
-    * @param reference A Reference instance
-    */
-   @Override
-   public void setReference(Reference reference)
-   {
-      log.finest("setReference()");
-      this.reference = reference;
-   }
+	/**
+	 * Set the Reference instance.
+	 * 
+	 * @param reference
+	 *            A Reference instance
+	 */
+	@Override
+	public void setReference(Reference reference) {
+		log.finest("setReference()");
+		this.reference = reference;
+	}
 
+	@Override
+	public Connection getConnection(ConnectionSpec arg0)
+			throws ResourceException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ResourceAdapterMetaData getMetaData() throws ResourceException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public RecordFactory getRecordFactory() throws ResourceException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String toString() {
+		return this.getClass().toString() + mcf.toString();
+	}
 
 }

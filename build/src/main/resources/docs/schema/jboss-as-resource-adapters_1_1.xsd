@@ -22,7 +22,7 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           targetNamespace="urn:jboss:domain:resource-adapters:1.0" xmlns="urn:jboss:domain:resource-adapters:1.0"
+           targetNamespace="urn:jboss:domain:resource-adapters:1.1" xmlns="urn:jboss:domain:resource-adapters:1.1"
            elementFormDefault="qualified" attributeFormDefault="unqualified">
 
   <xs:element name="subsystem" type="subsystemType"/>
@@ -70,7 +70,7 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
-        <xs:element name="module" type="xs:token" minOccurs="0" maxOccurs="1">
+        <xs:element name="module" type="moduleType" minOccurs="0" maxOccurs="1">
             <xs:annotation>
                 <xs:documentation>
                     <![CDATA[[
@@ -700,6 +700,27 @@
         </xs:annotation>
       </xs:element>
     </xs:sequence>
+   </xs:complexType>
+
+   <xs:complexType name="moduleType">
+       <xs:attribute name="id" type="xs:token" use="required">
+           <xs:annotation>
+               <xs:documentation>
+                   <![CDATA[[
+                   The module id
+                               ]]>
+               </xs:documentation>
+           </xs:annotation>
+       </xs:attribute>
+       <xs:attribute name="slot" type="xs:token" use="optional">
+             <xs:annotation>
+               <xs:documentation>
+                 <![CDATA[[
+                   The module slot
+                               ]]>
+                 </xs:documentation>
+               </xs:annotation>
+           </xs:attribute>
    </xs:complexType>
 
 </xs:schema>

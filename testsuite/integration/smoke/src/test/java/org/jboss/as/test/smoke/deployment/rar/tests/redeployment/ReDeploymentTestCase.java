@@ -88,7 +88,7 @@ public class ReDeploymentTestCase extends ContainerResourceMgmtTestBase {
 
     private void setup() throws Exception {
         String xml = FileUtils.readFile(ReDeploymentTestCase.class, "re-deployment.xml");
-        List<ModelNode> operations = xmlToModelOperations(xml, Namespace.CURRENT.getUriString(), new ResourceAdapterSubsystemParser());
+        List<ModelNode> operations = xmlToModelOperations(xml, Namespace.RESOURCEADAPTERS_1_0.getUriString(), new ResourceAdapterSubsystemParser());
         executeOperation(operationListToCompositeOperation(operations));
 
         //since it is created after deployment it needs activation

@@ -1,0 +1,7 @@
+<subsystem xmlns="urn:jboss:domain:resource-adapters:1.1">
+	<resource-adapters>
+		<resource-adapter id="inflow2">
+			<module slot="main" id="org.jboss.ironjacamar.ra16out" />
+		</resource-adapter>
+	</resource-adapters>
+</subsystem>

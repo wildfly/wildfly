@@ -64,7 +64,7 @@ public class BasicDeployment16TestCase extends ContainerResourceMgmtTestBase {
         @Override
         public void doSetup(final ManagementClient managementClient) throws Exception {
             String xml = FileUtils.readFile(BasicDeployment16TestCase.class, "basic16.xml");
-            List<ModelNode> operations = xmlToModelOperations(xml, Namespace.CURRENT.getUriString(), new ResourceAdapterSubsystemParser());
+            List<ModelNode> operations = xmlToModelOperations(xml, Namespace.RESOURCEADAPTERS_1_0.getUriString(), new ResourceAdapterSubsystemParser());
             executeOperation(operationListToCompositeOperation(operations));
         }
 

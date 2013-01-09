@@ -25,13 +25,14 @@ import java.io.Serializable;
 
 import javax.resource.Referenceable;
 import javax.resource.ResourceException;
-
+import javax.resource.cci.ConnectionFactory;
+import javax.resource.cci.Connection;
 /**
  * MultipleConnectionFactory1
  *
  * @version $Revision: $
  */
-public interface MultipleConnectionFactory1 extends Serializable, Referenceable
+public interface MultipleConnectionFactory1 extends Serializable, Referenceable, ConnectionFactory
 {
    /** 
     * Get connection from factory
@@ -39,6 +40,6 @@ public interface MultipleConnectionFactory1 extends Serializable, Referenceable
     * @return MultipleConnection1 instance
     * @exception ResourceException Thrown if a connection can't be obtained
     */
-   public MultipleConnection1 getConnection() throws ResourceException;
+   public Connection getConnection() throws ResourceException;
 
 }

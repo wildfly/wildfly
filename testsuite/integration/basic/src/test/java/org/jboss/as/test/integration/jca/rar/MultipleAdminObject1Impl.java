@@ -55,7 +55,7 @@ public class MultipleAdminObject1Impl implements MultipleAdminObject1,
     */
    public MultipleAdminObject1Impl()
    {
-
+	   setName("AO");
    }
 
    /** 
@@ -160,5 +160,8 @@ public class MultipleAdminObject1Impl implements MultipleAdminObject1,
       return result;
    }
 
-
+   @Override
+   public String toString(){
+	   return this.getClass().toString()+"name="+name;
+   }
 }
