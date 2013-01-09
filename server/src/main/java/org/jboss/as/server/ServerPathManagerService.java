@@ -21,10 +21,13 @@
 */
 package org.jboss.as.server;
 
+import java.io.File;
+
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.vfs.VFSUtils;
 
 /**
  * Service containing the paths for a server
@@ -36,6 +39,8 @@ public class ServerPathManagerService extends PathManagerService {
     public static ServiceController<?> addService(ServiceTarget serviceTarget, ServerPathManagerService service, ServerEnvironment serverEnvironment) {
         ServiceBuilder<?> serviceBuilder = serviceTarget.addService(SERVICE_NAME, service);
 
+        //clear environment paths
+        clearEnvironment(serverEnvironment);
         // Add environment paths
         service.addHardcodedAbsolutePath(serviceTarget, ServerEnvironment.HOME_DIR, serverEnvironment.getHomeDir().getAbsolutePath());
         service.addHardcodedAbsolutePath(serviceTarget, ServerEnvironment.SERVER_BASE_DIR, serverEnvironment.getServerBaseDir().getAbsolutePath());
@@ -63,4 +68,14 @@ public class ServerPathManagerService extends PathManagerService {
         return serviceBuilder.install();
     }
 
+    private static void clearEnvironment(ServerEnvironment serverEnvironment){
+        File tmp = serverEnvironment.getServerTempDir().getAbsoluteFile();
+        String[] directories = tmp.list();
+        for(String dir:directories){
+            File childDir = new File(tmp,dir);
+            if(childDir.exists()){
+                VFSUtils.recursiveDelete(childDir);
+            }
+        }
+    }
 }
