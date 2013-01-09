@@ -90,4 +90,8 @@
             <valve name="myvalve" module="org.jboss.some.module" class-name="org.jboss.some.class" enabled="${prop.valve-enabled:true}">
                <param param-name="param-name" param-value="${prop.valve-param:some-value}"/>
             </valve>
+            <valve name="myvalve2" module="org.jboss.some.module2" class-name="org.jboss.some.class" enabled="false">
+               <param param-name="param-name1" param-value="${prop.valve-param:some-value}"/>
+               <param param-name="param-name2" param-value="${prop.valve-param:some-value}"/>
+            </valve>
         </subsystem>
