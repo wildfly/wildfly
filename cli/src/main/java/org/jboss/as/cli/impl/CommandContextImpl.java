@@ -29,7 +29,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.MessageDigest;
@@ -99,6 +98,8 @@ import org.jboss.as.cli.handlers.PrintWorkingNodeHandler;
 import org.jboss.as.cli.handlers.QuitHandler;
 import org.jboss.as.cli.handlers.ReadAttributeHandler;
 import org.jboss.as.cli.handlers.ReadOperationHandler;
+import org.jboss.as.cli.handlers.ReloadHandler;
+import org.jboss.as.cli.handlers.ShutdownHandler;
 import org.jboss.as.cli.handlers.UndeployHandler;
 import org.jboss.as.cli.handlers.VersionHandler;
 import org.jboss.as.cli.handlers.batch.BatchClearHandler;
@@ -150,7 +151,7 @@ import org.jboss.sasl.util.HexConverter;
  *
  * @author Alexey Loubyansky
  */
-class CommandContextImpl implements CommandContext {
+class CommandContextImpl implements CommandContext, ModelControllerClientFactory.ConnectionCloseHandler {
 
     private static final Logger log = Logger.getLogger(CommandContext.class);
 
@@ -347,6 +348,8 @@ class CommandContextImpl implements CommandContext {
         cmdRegistry.registerHandler(new QuitHandler(), "quit", "q", "exit");
         cmdRegistry.registerHandler(new ReadAttributeHandler(this), "read-attribute");
         cmdRegistry.registerHandler(new ReadOperationHandler(this), "read-operation");
+        cmdRegistry.registerHandler(new ReloadHandler(this), "reload");
+        cmdRegistry.registerHandler(new ShutdownHandler(this), "shutdown");
         cmdRegistry.registerHandler(new VersionHandler(), "version");
 
         // deployment
@@ -771,13 +774,14 @@ class CommandContextImpl implements CommandContext {
                 if(log.isDebugEnabled()) {
                     log.debug("connecting to " + host + ':' + port + " as " + username);
                 }
-                ModelControllerClient tempClient = ModelControllerClient.Factory.create(host, port, cbh, sslContext, connectionTimeout);
+                ModelControllerClient tempClient = ModelControllerClientFactory.CUSTOM.
+                        getClient(host, port, cbh, sslContext, connectionTimeout, this);
                 retry = tryConnection(tempClient, host, port);
                 if(!retry) {
                     newClient = tempClient;
                 }
                 initNewClient(newClient, host, port);
-            } catch (UnknownHostException e) {
+            } catch (IOException e) {
                 throw new CommandLineException("Failed to resolve host '" + host + "': " + e.getLocalizedMessage());
             }
         } while (retry);
@@ -1185,6 +1189,19 @@ class CommandContextImpl implements CommandContext {
     @Override
     public void setResolveParameterValues(boolean resolve) {
         this.resolveParameterValues = resolve;
+    }
+
+    @Override
+    public void handleClose() {
+        if(parsedCmd.getFormat().equals(OperationFormat.INSTANCE) && "shutdown".equals(parsedCmd.getOperationName())) {
+            final String restart = parsedCmd.getPropertyValue("restart");
+            if(restart == null || !Util.TRUE.equals(restart)) {
+                disconnectController();
+                printLine("");
+                printLine("The connection to the controller has been closed as the result of the shutdown operation.");
+                printLine("(Although the command prompt will wrongly indicate connection until the next line is entered)");
+            }
+        }
     }
 
     private class AuthenticationCallbackHandler implements CallbackHandler {
