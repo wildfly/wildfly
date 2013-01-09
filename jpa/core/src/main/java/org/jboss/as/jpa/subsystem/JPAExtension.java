@@ -169,7 +169,7 @@ public class JPAExtension implements Extension {
                 @Override
                 public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation)
                         throws OperationFailedException {
-                    if (operation.get(NAME).equals(JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE.getName())) {
+                    if (operation.get(NAME).asString().equals(JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE.getName())) {
                         return OperationTransformer.DEFAULT.transformOperation(context, address, operation);
                     }
                     return rejectNewerExpressions.getWriteAttributeTransformer().transformOperation(context, address, operation);
