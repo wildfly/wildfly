@@ -22,10 +22,12 @@
 
 package org.jboss.as.appclient.subsystem;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -59,9 +61,9 @@ public class AppClientSubsystemResourceDefinition extends SimpleResourceDefiniti
             new SimpleAttributeDefinitionBuilder(Constants.CONNECTION_PROPERTIES_URL, ModelType.STRING, true)
                     .setAllowExpression(true).build();
 
-    public static final SimpleAttributeDefinition PARAMETERS =
-            new SimpleAttributeDefinitionBuilder(Constants.PARAMETERS, ModelType.LIST, true)
-                    .setAllowExpression(true).build();
+    public static final StringListAttributeDefinition PARAMETERS = new StringListAttributeDefinition.Builder(Constants.PARAMETERS)
+            .setAllowExpression(true)
+            .build();
 
     private AppClientSubsystemResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, AppClientExtension.SUBSYSTEM_NAME),
@@ -70,7 +72,7 @@ public class AppClientSubsystemResourceDefinition extends SimpleResourceDefiniti
                 OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
     }
 
-    static final SimpleAttributeDefinition[] ATTRIBUTES = {
+    static final AttributeDefinition[] ATTRIBUTES = {
             FILE,
             DEPLOYMENT,
             PARAMETERS,
@@ -80,7 +82,7 @@ public class AppClientSubsystemResourceDefinition extends SimpleResourceDefiniti
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        for(SimpleAttributeDefinition attr : ATTRIBUTES) {
+        for (AttributeDefinition attr : ATTRIBUTES) {
             resourceRegistration.registerReadOnlyAttribute(attr, null);
         }
     }

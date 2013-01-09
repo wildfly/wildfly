@@ -26,8 +26,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.util.ArrayList;
@@ -176,12 +179,19 @@ public class WebExtension implements Extension {
 
     private void registerTransformers_1_1_0(SubsystemRegistration registration) {
 
+        final int defaultRedirectPort = 443;
+
         final TransformersSubRegistration transformers = registration.registerModelTransformers(ModelVersion.create(1, 1, 0), new AbstractSubsystemTransformer(SUBSYSTEM_NAME) {
             @Override
             protected ModelNode transformModel(TransformationContext context, ModelNode model) {
                 if (model.hasDefined(Constants.CONNECTOR)) {
                     for (String name : model.get(Constants.CONNECTOR).keys()) {
-                        swap(model.get(Constants.CONNECTOR, name), SSL_PATH, SSL_ALIAS);
+                        ModelNode connector = model.get(Constants.CONNECTOR, name);
+                        if (!connector.hasDefined(WebConnectorDefinition.REDIRECT_PORT.getName())) {
+                            // AS7-5871 send the correct default value
+                            connector.get(WebConnectorDefinition.REDIRECT_PORT.getName()).set(defaultRedirectPort);
+                        }
+                        swap(connector, SSL_PATH, SSL_ALIAS);
                     }
                 }
                 if (model.hasDefined(Constants.VIRTUAL_SERVER)) {
@@ -208,6 +218,7 @@ public class WebExtension implements Extension {
                 }
             }
         });
+        transformers.registerSubResource(VALVE_PATH, true);
 
         TransformersSubRegistration connectors = transformers.registerSubResource(CONNECTOR_PATH);
         connectors.registerOperationTransformer(ADD, new OperationTransformer() {
@@ -215,9 +226,18 @@ public class WebExtension implements Extension {
             public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation)
                     throws OperationFailedException {
 
+                final ModelNode transformedOperation;
+                if (!operation.hasDefined(WebConnectorDefinition.REDIRECT_PORT.getName())) {
+                    // AS7-5871 send the correct default value
+                    transformedOperation = operation.clone();
+                    transformedOperation.get(WebConnectorDefinition.REDIRECT_PORT.getName()).set(defaultRedirectPort);
+                } else {
+                    transformedOperation = operation;
+                }
+
                 //Don't error on the way out, it might be ignored on the slave
                 final boolean hasDefinedVirtualServer = operation.hasDefined(Constants.VIRTUAL_SERVER);
-                return new TransformedOperation(operation, new OperationResultTransformer() {
+                return new TransformedOperation(transformedOperation, new OperationResultTransformer() {
 
                     @Override
                     public ModelNode transformResult(ModelNode result) {
@@ -238,9 +258,17 @@ public class WebExtension implements Extension {
             public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation)
                     throws OperationFailedException {
 
-                //Don't error on the way out, it might be ignored on the slave
-                final boolean isVirtualServer = operation.get(NAME).asString().equals(Constants.VIRTUAL_SERVER);
-                return new TransformedOperation(operation, new OperationResultTransformer() {
+                final String attributeName = operation.get(NAME).asString();
+                final ModelNode transformedOperation;
+                if (WebConnectorDefinition.REDIRECT_PORT.getName().equals(attributeName) && !operation.hasDefined(VALUE)) {
+                    // AS7-5871 send the correct default value
+                    transformedOperation = operation.clone();
+                    transformedOperation.get(VALUE).set(defaultRedirectPort);
+                } else {
+                    transformedOperation = operation;
+                }
+                final boolean isVirtualServer = attributeName.equals(Constants.VIRTUAL_SERVER);
+                return new TransformedOperation(transformedOperation, new OperationResultTransformer() {
 
                     @Override
                     public ModelNode transformResult(ModelNode result) {
@@ -255,6 +283,25 @@ public class WebExtension implements Extension {
                 });
                 }
             });
+        connectors.registerOperationTransformer(UNDEFINE_ATTRIBUTE_OPERATION, new OperationTransformer() {
+
+            @Override
+            public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation)
+                    throws OperationFailedException {
+
+                final String attributeName = operation.get(NAME).asString();
+                final ModelNode transformedOperation;
+                if (WebConnectorDefinition.REDIRECT_PORT.getName().equals(attributeName)) {
+                    // AS7-5871 send the correct default value
+                    transformedOperation = operation.clone();
+                    transformedOperation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+                    transformedOperation.get(VALUE).set(defaultRedirectPort);
+                } else {
+                    transformedOperation = operation;
+                }
+                return new TransformedOperation(transformedOperation, OperationResultTransformer.ORIGINAL_RESULT);
+            }
+        });
 
 
         TransformersSubRegistration ssl = connectors.registerSubResource(SSL_PATH, AliasOperationTransformer.replaceLastElement(SSL_ALIAS));

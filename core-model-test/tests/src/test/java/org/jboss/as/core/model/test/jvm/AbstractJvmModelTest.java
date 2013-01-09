@@ -174,8 +174,9 @@ public abstract class AbstractJvmModelTest extends AbstractCoreModelTest {
     @Test
     public void testWriteJvmOptionsWithExpression() throws Exception {
         KernelServices kernelServices = doEmptyJvmAdd();
-        ModelNode value = new ModelNode().add("-Xmx${my.xmx:100}m");
-        Assert.assertEquals(value, writeTest(kernelServices, "jvm-options", value));
+        String expression = "-Xmx${my.xmx:100}m";
+        ModelNode value = new ModelNode().add(expression);
+        Assert.assertEquals(new ModelNode().add(new ModelNode().setExpression(expression)), writeTest(kernelServices, "jvm-options", value));
     }
 
     @Test

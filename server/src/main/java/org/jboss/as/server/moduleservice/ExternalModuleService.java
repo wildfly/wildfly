@@ -47,6 +47,7 @@ import java.io.File;
  * TODO: support removing modules when msc can tell us that nothing depends on the service.
  *
  * @author Stuart Douglas
+ * @author Ales Justin
  *
  */
 public class ExternalModuleService implements Service<ExternalModuleService> {
@@ -54,6 +55,17 @@ public class ExternalModuleService implements Service<ExternalModuleService> {
     public static String EXTERNAL_MODULE_PREFIX = ServiceModuleLoader.MODULE_PREFIX + "external.";
 
     private volatile ServiceContainer serviceContainer;
+
+    /**
+     * Is external module item valid.
+     * Keep the File impl detail in this class.
+     *
+     * @param externalModule the external module class path item
+     * @return true if valid, false otherwise
+     */
+    public boolean isValid(String externalModule) {
+        return new File(externalModule).exists();
+    }
 
     public ModuleIdentifier addExternalModule(String externalModule) {
         ModuleIdentifier identifier = ModuleIdentifier.create(EXTERNAL_MODULE_PREFIX + externalModule);

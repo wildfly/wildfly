@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.clustering.infinispan.InfinispanLogger.ROOT_LOGGER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,6 +33,7 @@ import java.util.List;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ParseUtils;
@@ -690,6 +692,7 @@ public final class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<
         storeAddress.add(ModelKeys.STORE,ModelKeys.STORE_NAME) ;
         storeAddress.protect();
         ModelNode store = Util.getEmptyOperation(ModelDescriptionConstants.ADD, storeAddress);
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -709,7 +712,6 @@ public final class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<
             throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.CLASS));
         }
 
-        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
         this.parseStoreElements(reader, store, additionalConfigurationOperations);
         operations.add(store);
         operations.addAll(additionalConfigurationOperations);
@@ -721,6 +723,7 @@ public final class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<
         storeAddress.add(ModelKeys.FILE_STORE,ModelKeys.FILE_STORE_NAME) ;
         storeAddress.protect();
         ModelNode store = Util.getEmptyOperation(ModelDescriptionConstants.ADD, storeAddress);
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -740,7 +743,6 @@ public final class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<
             }
         }
 
-        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
         this.parseStoreElements(reader, store, additionalConfigurationOperations);
         operations.add(store);
         operations.addAll(additionalConfigurationOperations);
@@ -788,7 +790,7 @@ public final class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<
                     break;
                 }
                 default: {
-                    this.parseStoreProperty(reader, store);
+                    this.parseStoreProperty(reader, store, additionalConfigurationOperations);
                 }
             }
         }
@@ -855,7 +857,7 @@ public final class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<
                     break;
                 }
                 default: {
-                    this.parseStoreProperty(reader, store);
+                    this.parseStoreProperty(reader, store, additionalConfigurationOperations);
                 }
             }
         }
@@ -901,7 +903,7 @@ public final class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<
                     break;
                 }
                 default: {
-                    this.parseStoreProperty(reader, store);
+                    this.parseStoreProperty(reader, store, additionalConfigurationOperations);
                 }
             }
         }
@@ -950,7 +952,7 @@ public final class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<
                     break;
                 }
                 case PROPERTY: {
-                    parseStoreProperty(reader, store);
+                    parseStoreProperty(reader, store, additionalConfigurationOperations);
                     break;
                 }
                 default:
@@ -1013,11 +1015,11 @@ public final class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case NAME: {
-                    column.get(ModelKeys.NAME).set(value);
+                    BaseJDBCStoreResource.COLUMN_NAME.parseAndSetParameter(value, column, reader);
                     break;
                 }
                 case TYPE: {
-                    column.get(ModelKeys.TYPE).set(value);
+                    BaseJDBCStoreResource.COLUMN_TYPE.parseAndSetParameter(value, column, reader);
                     break;
                 }
                 default: {
@@ -1069,7 +1071,7 @@ public final class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<
                     break;
                 }
                 case PROPERTY: {
-                    parseStoreProperty(reader, store);
+                    parseStoreProperty(reader, store, operations);
                     break;
                 }
                 default:
@@ -1113,15 +1115,15 @@ public final class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<
         operations.add(writeBehind);
     }
 
-    private void parseStoreProperty(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
+    private void parseStoreProperty(XMLExtendedStreamReader reader, ModelNode node, final List<ModelNode> operations) throws XMLStreamException {
         int attributes = reader.getAttributeCount();
-        String property = null;
+        String propertyName = null;
         for (int i = 0; i < attributes; i++) {
             String value = reader.getAttributeValue(i);
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case NAME: {
-                    property = value;
+                    propertyName = value;
                     break;
                 }
                 default: {
@@ -1129,10 +1131,17 @@ public final class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<
                 }
             }
         }
-        if (property == null) {
+        if (propertyName == null) {
             throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
         }
-        String value = reader.getElementText();
-        node.get(ModelKeys.PROPERTIES).add(property, value);
+        String propertyValue = reader.getElementText();
+
+        PathAddress propertyAddress = PathAddress.pathAddress(node.get(OP_ADDR)).append(ModelKeys.PROPERTY, propertyName);
+        ModelNode property = Util.createAddOperation(propertyAddress);
+
+        // represent the value as a ModelNode to cater for expressions
+        StorePropertyResource.VALUE.parseAndSetParameter(propertyValue, property, reader);
+
+        operations.add(property);
     }
 }

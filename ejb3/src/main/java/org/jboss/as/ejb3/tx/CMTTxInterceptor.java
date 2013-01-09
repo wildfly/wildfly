@@ -78,7 +78,7 @@ public class CMTTxInterceptor implements Interceptor {
     protected void endTransaction(TransactionManager tm, Transaction tx) {
         try {
             if (tx != tm.getTransaction()) {
-                throw EjbLogger.EJB3_LOGGER.wrongTxOnThread(tx, tm.getTransaction());
+                throw EjbMessages.MESSAGES.wrongTxOnThread(tx, tm.getTransaction());
             }
 
             if (tx.getStatus() == Status.STATUS_MARKED_ROLLBACK) {
@@ -217,7 +217,7 @@ public class CMTTxInterceptor implements Interceptor {
             case SUPPORTS:
                 return supports(invocation, component);
             default:
-                throw EjbLogger.EJB3_LOGGER.unknownTxAttributeOnInvocation(attr, invocation);
+                throw EjbMessages.MESSAGES.unknownTxAttributeOnInvocation(attr, invocation);
         }
     }
 
@@ -272,7 +272,7 @@ public class CMTTxInterceptor implements Interceptor {
         final TransactionManager tm = component.getTransactionManager();
         Transaction tx = tm.getTransaction();
         if (tx == null) {
-            throw EjbLogger.EJB3_LOGGER.txRequiredForInvocation(invocation);
+            throw EjbMessages.MESSAGES.txRequiredForInvocation(invocation);
         }
         return invokeInCallerTx(invocation, tx, component);
     }
@@ -280,7 +280,7 @@ public class CMTTxInterceptor implements Interceptor {
     protected Object never(InterceptorContext invocation, final EJBComponent component) throws Exception {
         final TransactionManager tm = component.getTransactionManager();
         if (tm.getTransaction() != null) {
-            throw EjbLogger.EJB3_LOGGER.txPresentForNeverTxAttribute();
+            throw EjbMessages.MESSAGES.txPresentForNeverTxAttribute();
         }
         return invokeInNoTx(invocation, component);
     }

@@ -41,7 +41,7 @@ import org.jboss.dmr.ModelType;
  */
 public class ConnectorServiceParamDefinition extends SimpleResourceDefinition {
 
-    static final PathElement PATH = PathElement.pathElement(CommonAttributes.PARAM);
+    public static final PathElement PATH = PathElement.pathElement(CommonAttributes.PARAM);
 
     public static final SimpleAttributeDefinition VALUE = create("value", ModelType.STRING)
             .setAllowNull(false)

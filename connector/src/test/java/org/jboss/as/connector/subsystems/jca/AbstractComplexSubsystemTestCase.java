@@ -23,7 +23,6 @@ package org.jboss.as.connector.subsystems.jca;
 
 
 import junit.framework.Assert;
-
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
@@ -53,7 +52,9 @@ public class AbstractComplexSubsystemTestCase extends AbstractSubsystemTest {
 
         String xml = readResource(resourceFileName);
 
-        KernelServices services = super.installInController(AdditionalInitialization.MANAGEMENT, xml);
+        KernelServices services = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXml(xml)
+                .build();
 
         ModelNode model = services.readWholeModel();
         if (archiveName!=null)
@@ -64,7 +65,9 @@ public class AbstractComplexSubsystemTestCase extends AbstractSubsystemTest {
         if (checkMarshalledXML)
             Assert.assertEquals(normalizeXML(xml), normalizeXML(marshalled));
 
-        services = super.installInController(AdditionalInitialization.MANAGEMENT, marshalled);
+        services = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXml(marshalled)
+                .build();
 
         // Check that the model looks the same
         ModelNode modelReloaded = services.readWholeModel();

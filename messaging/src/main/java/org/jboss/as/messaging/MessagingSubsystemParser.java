@@ -834,7 +834,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             String name = null;
             String socketBinding = null;
-            int serverId = 0;
+            String serverId = null;
 
             int count = reader.getAttributeCount();
             for (int i = 0; i < count; i++) {
@@ -850,7 +850,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                         break;
                     }
                     case SERVER_ID: {
-                        serverId = Integer.valueOf(attrValue);
+                        serverId = attrValue;
                         break;
                     }
                     default: {
@@ -883,7 +883,9 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     break;
                 } case IN_VM_ACCEPTOR: {
                     acceptorAddress.add(IN_VM_ACCEPTOR, name);
-                    operation.get(InVMTransportDefinition.SERVER_ID.getName()).set(serverId);
+                    if (serverId != null) {
+                        InVMTransportDefinition.SERVER_ID.parseAndSetParameter(serverId, operation, reader);
+                    }
                     parseTransportConfiguration(reader, operation, false);
                     break;
                 } default: {
@@ -1062,7 +1064,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             String name = null;
             String socketBinding = null;
-            int serverId = 0;
+            String serverId = null;
 
             int count = reader.getAttributeCount();
             for (int i = 0; i < count; i++) {
@@ -1078,7 +1080,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                         break;
                     }
                     case SERVER_ID: {
-                        serverId = Integer.valueOf(attrValue);
+                        serverId = attrValue;
                         break;
                     }
                     default: {
@@ -1111,7 +1113,9 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     break;
                 } case IN_VM_CONNECTOR: {
                     connectorAddress.add(IN_VM_CONNECTOR, name);
-                    operation.get(InVMTransportDefinition.SERVER_ID.getName()).set(serverId);
+                    if (serverId != null) {
+                        InVMTransportDefinition.SERVER_ID.parseAndSetParameter(serverId, operation, reader);
+                    }
                     parseTransportConfiguration(reader, operation, false);
                     break;
                 } default: {

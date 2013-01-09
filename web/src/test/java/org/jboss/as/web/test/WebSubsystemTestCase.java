@@ -31,12 +31,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.web.Constants.ACCESS_LOG;
 import static org.jboss.as.web.Constants.CONFIGURATION;
 import static org.jboss.as.web.Constants.CONNECTOR;
 import static org.jboss.as.web.Constants.DIRECTORY;
+import static org.jboss.as.web.Constants.REDIRECT_PORT;
 import static org.jboss.as.web.Constants.SETTING;
 import static org.jboss.as.web.Constants.SSL;
 import static org.jboss.as.web.Constants.SSO;
@@ -49,6 +51,7 @@ import junit.framework.Assert;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
+import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -145,6 +148,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         checkSubsystemModelTransformation(mainServices, modelVersion);
 
+
         ModelNode mainModel = mainServices.readWholeModel().get(SUBSYSTEM, SUBSYSTEM_NAME);
         ModelNode legacyModel = legacyServices.readWholeModel().get(SUBSYSTEM, SUBSYSTEM_NAME);
 
@@ -197,6 +201,48 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         result = mainServices.executeOperation(modelVersion, transOp);
         Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
         Assert.assertEquals(WebMessages.MESSAGES.transformationVersion_1_1_0_JBPAPP_9314(), result.get(FAILURE_DESCRIPTION).asString());
+
+        //Now test the correction of the default redirect-port
+
+        // First, in add
+        connectorAdd = createOperation(ADD, SUBSYSTEM, WebExtension.SUBSYSTEM_NAME, Constants.CONNECTOR, "as75871");
+        for (String key: connectorValues.keys()) {
+            if (!key.equals(REDIRECT_PORT) && !key.equals(VIRTUAL_SERVER)) {
+                connectorAdd.get(key).set(connectorValues.get(key));
+            }
+        }
+        Assert.assertFalse(connectorAdd.hasDefined(REDIRECT_PORT));
+        checkOutcome(mainServices.executeOperation(connectorAdd));
+        transOp = mainServices.transformOperation(modelVersion, connectorAdd);
+        Assert.assertTrue(transOp.getTransformedOperation().hasDefined(REDIRECT_PORT));
+        Assert.assertEquals(443, transOp.getTransformedOperation().get(REDIRECT_PORT).asInt());
+        checkOutcome(mainServices.executeOperation(modelVersion, transOp));
+        ModelNode transformed = mainServices.readTransformedModel(modelVersion).get(SUBSYSTEM, WebExtension.SUBSYSTEM_NAME, CONNECTOR, "as75871");
+        Assert.assertTrue(transformed.hasDefined(REDIRECT_PORT));
+        Assert.assertEquals(443, transformed.get(REDIRECT_PORT).asInt());
+
+        // Next, in a write-attribute setting to undefined
+        ModelNode write = createOperation(WRITE_ATTRIBUTE_OPERATION, SUBSYSTEM, WebExtension.SUBSYSTEM_NAME, Constants.CONNECTOR, "as75871");
+        write.get(NAME).set(REDIRECT_PORT);
+        write.get(VALUE);
+        transOp = mainServices.transformOperation(modelVersion, write);
+        ModelNode translatedWrite = transOp.getTransformedOperation();
+        Assert.assertTrue(translatedWrite.hasDefined(VALUE));
+        Assert.assertEquals(443, translatedWrite.get(VALUE).asInt());
+        checkOutcome(mainServices.executeOperation(modelVersion, transOp));
+        transformed = mainServices.readTransformedModel(modelVersion).get(SUBSYSTEM, WebExtension.SUBSYSTEM_NAME, CONNECTOR, "as75871");
+        Assert.assertTrue(transformed.hasDefined(REDIRECT_PORT));
+        Assert.assertEquals(443, transformed.get(REDIRECT_PORT).asInt());
+
+        // Finally, test undefine-attribute translating to write-attribute
+        ModelNode undefine = createOperation(UNDEFINE_ATTRIBUTE_OPERATION, SUBSYSTEM, WebExtension.SUBSYSTEM_NAME, Constants.CONNECTOR, "as75871");
+        undefine.get(NAME).set(REDIRECT_PORT);
+        transOp = mainServices.transformOperation(modelVersion, undefine);
+        Assert.assertEquals(translatedWrite, transOp.getTransformedOperation());
+        checkOutcome(mainServices.executeOperation(modelVersion, transOp));
+        transformed = mainServices.readTransformedModel(modelVersion).get(SUBSYSTEM, WebExtension.SUBSYSTEM_NAME, CONNECTOR, "as75871");
+        Assert.assertTrue(transformed.hasDefined(REDIRECT_PORT));
+        Assert.assertEquals(443, transformed.get(REDIRECT_PORT).asInt());
     }
 
 

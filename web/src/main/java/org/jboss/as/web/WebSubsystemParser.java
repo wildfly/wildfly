@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireAttributes;
@@ -34,32 +35,25 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttri
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.web.Constants.ALIAS;
-import static org.jboss.as.web.Constants.CLASS_NAME;
 import static org.jboss.as.web.Constants.CONDITION;
 import static org.jboss.as.web.Constants.CONFIGURATION;
 import static org.jboss.as.web.Constants.CONNECTOR;
 import static org.jboss.as.web.Constants.CONTAINER;
-import static org.jboss.as.web.Constants.ENABLED;
-import static org.jboss.as.web.Constants.EXTENDED;
 import static org.jboss.as.web.Constants.FLAGS;
 import static org.jboss.as.web.Constants.JSP_CONFIGURATION;
 import static org.jboss.as.web.Constants.MIME_MAPPING;
-import static org.jboss.as.web.Constants.MODULE;
 import static org.jboss.as.web.Constants.NAME;
 import static org.jboss.as.web.Constants.PARAM;
 import static org.jboss.as.web.Constants.PATH;
 import static org.jboss.as.web.Constants.PATTERN;
-import static org.jboss.as.web.Constants.PREFIX;
 import static org.jboss.as.web.Constants.RELATIVE_TO;
-import static org.jboss.as.web.Constants.RESOLVE_HOSTS;
 import static org.jboss.as.web.Constants.REWRITE;
-import static org.jboss.as.web.Constants.ROTATE;
 import static org.jboss.as.web.Constants.SSO;
 import static org.jboss.as.web.Constants.STATIC_RESOURCES;
 import static org.jboss.as.web.Constants.SUBSTITUTION;
 import static org.jboss.as.web.Constants.TEST;
-import static org.jboss.as.web.Constants.VIRTUAL_SERVER;
 import static org.jboss.as.web.Constants.VALVE;
+import static org.jboss.as.web.Constants.VIRTUAL_SERVER;
 import static org.jboss.as.web.Constants.WELCOME_FILE;
 import static org.jboss.as.web.WebExtension.ACCESS_LOG_PATH;
 import static org.jboss.as.web.WebExtension.DIRECTORY_PATH;
@@ -112,7 +106,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
         ModelNode node = context.getModelNode();
         WebDefinition.DEFAULT_VIRTUAL_SERVER.marshallAsAttribute(node, true, writer);
         WebDefinition.INSTANCE_ID.marshallAsAttribute(node, false, writer);
-        WebDefinition.NATIVE.marshallAsAttribute(node, false, writer);
+        WebDefinition.NATIVE.marshallAsAttribute(node, true, writer);
         if (node.hasDefined(CONFIGURATION)) {
             writeContainerConfig(writer, node.get(CONFIGURATION));
         }
@@ -220,11 +214,9 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 writer.writeEndElement();
             }
             if (node.hasDefined(VALVE)) {
-                boolean valvestartwritten = false;
                 for (final Property valve : node.get(VALVE).asPropertyList()) {
                     final ModelNode config = valve.getValue();
                     writer.writeStartElement(Element.VALVE.getLocalName());
-                    valvestartwritten = true;
                     writer.writeAttribute(NAME, valve.getName());
                     for (SimpleAttributeDefinition attr : WebValveDefinition.ATTRIBUTES) {
                         attr.marshallAsAttribute(config, false, writer);
@@ -236,10 +228,9 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                             writer.writeAttribute(Attribute.PARAM_VALUE.getLocalName(), entry.getValue().asString());
                         }
                     }
+                    writer.writeEndElement();
 
                 }
-                if (valvestartwritten)
-                    writer.writeEndElement();
             }
 
         }
@@ -359,9 +350,13 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case NATIVE:
+                    WebDefinition.NATIVE.parseAndSetParameter(value, subsystem, reader);
+                    break;
                 case DEFAULT_VIRTUAL_SERVER:
+                    WebDefinition.DEFAULT_VIRTUAL_SERVER.parseAndSetParameter(value, subsystem, reader);
+                    break;
                 case INSTANCE_ID:
-                    subsystem.get(attribute.getLocalName()).set(value);
+                    WebDefinition.INSTANCE_ID.parseAndSetParameter(value, subsystem, reader);
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
@@ -625,7 +620,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 case JAVA_ENCODING:
                 case X_POWERED_BY:
                 case DISPLAY_SOURCE_FRAGMENT:
-                    jsp.get(attribute.getLocalName()).set(value);
+                    WebJSPDefinition.ATTRIBUTES_MAP.get(attribute.getLocalName()).parseAndSetParameter(value, jsp, reader);
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
@@ -796,10 +791,16 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case CACHE_CONTAINER:
+                    WebSSODefinition.CACHE_CONTAINER.parseAndSetParameter(value, operation, reader);
+                    break;
                 case CACHE_NAME:
+                    WebSSODefinition.CACHE_NAME.parseAndSetParameter(value, operation, reader);
+                    break;
                 case DOMAIN:
+                    WebSSODefinition.DOMAIN.parseAndSetParameter(value, operation, reader);
+                    break;
                 case REAUTHENTICATE:
-                    operation.get(attribute.getLocalName()).set(value);
+                    WebSSODefinition.REAUTHENTICATE.parseAndSetParameter(value, operation, reader);
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
@@ -905,19 +906,19 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case PATTERN:
-                    log.get(PATTERN).set(value);
+                    WebAccessLogDefinition.PATTERN.parseAndSetParameter(value, log, reader);
                     break;
                 case RESOLVE_HOSTS:
-                    log.get(RESOLVE_HOSTS).set(value);
+                    WebAccessLogDefinition.RESOLVE_HOSTS.parseAndSetParameter(value, log, reader);
                     break;
                 case EXTENDED:
-                    log.get(EXTENDED).set(value);
+                    WebAccessLogDefinition.EXTENDED.parseAndSetParameter(value, log, reader);
                     break;
                 case PREFIX:
-                    log.get(PREFIX).set(value);
+                    WebAccessLogDefinition.PREFIX.parseAndSetParameter(value, log, reader);
                     break;
                 case ROTATE:
-                    log.get(ROTATE).set(value);
+                    WebAccessLogDefinition.ROTATE.parseAndSetParameter(value, log, reader);
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
@@ -1026,8 +1027,8 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                             parseSsl(reader, address, list);
                             break;
                         case VIRTUAL_SERVER:
-                            connector.get(VIRTUAL_SERVER)
-                                    .add(readStringAttributeElement(reader, Attribute.NAME.getLocalName()));
+                            String value = readStringAttributeElement(reader, Attribute.NAME.getLocalName());
+                            WebConnectorDefinition.VIRTUAL_SERVER.parseAndAddParameterElement(value,connector,reader);
                             break;
                         default:
                             throw unexpectedElement(reader);

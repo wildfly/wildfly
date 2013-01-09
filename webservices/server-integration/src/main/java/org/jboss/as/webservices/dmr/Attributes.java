@@ -46,23 +46,26 @@ interface Attributes {
             .setAllowNull(true)
             .setMinSize(1)
             .setValidator(new IntRangeValidator(1, true, true))
+            .setAllowExpression(true)
             .build();
 
     SimpleAttributeDefinition WSDL_SECURE_PORT = new SimpleAttributeDefinitionBuilder(Constants.WSDL_SECURE_PORT, ModelType.INT)
             .setAllowNull(true)
             .setMinSize(1)
             .setValidator(new IntRangeValidator(1, true, true))
+            .setAllowExpression(true)
             .build();
 
     SimpleAttributeDefinition MODIFY_WSDL_ADDRESS = new SimpleAttributeDefinitionBuilder(Constants.MODIFY_WSDL_ADDRESS, ModelType.BOOLEAN)
             .setAllowNull(true)
             .setDefaultValue(new ModelNode(true))
-            .setMinSize(1)
+            .setAllowExpression(true)
             .build();
     SimpleAttributeDefinition[] SUBSYSTEM_ATTRIBUTES = {MODIFY_WSDL_ADDRESS, WSDL_HOST, WSDL_PORT, WSDL_SECURE_PORT};
 
     SimpleAttributeDefinition VALUE = new SimpleAttributeDefinitionBuilder(Constants.VALUE, ModelType.STRING)
             .setAllowNull(true)
+            .setAllowExpression(true)
             .build();
 
     SimpleAttributeDefinition CLASS = new SimpleAttributeDefinitionBuilder(Constants.CLASS, ModelType.STRING)
@@ -71,6 +74,7 @@ interface Attributes {
 
     SimpleAttributeDefinition PROTOCOL_BINDINGS = new SimpleAttributeDefinitionBuilder(Constants.PROTOCOL_BINDINGS, ModelType.STRING)
             .setAllowNull(true)
+            .setAllowExpression(true)
             .build();
 
 

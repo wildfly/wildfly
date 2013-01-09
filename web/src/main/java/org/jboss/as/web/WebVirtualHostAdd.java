@@ -33,6 +33,7 @@ import java.util.List;
 import org.jboss.as.clustering.web.sso.SSOClusterManager;
 import org.jboss.as.clustering.web.sso.SSOClusterManagerService;
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -43,6 +44,7 @@ import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.server.mgmt.HttpManagementService;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -58,7 +60,6 @@ import org.jboss.msc.service.ServiceTarget;
 class WebVirtualHostAdd extends AbstractAddStepHandler {
 
     static final WebVirtualHostAdd INSTANCE = new WebVirtualHostAdd();
-    private static final String DEFAULT_RELATIVE_TO = "jboss.server.log.dir";
     private static final String TEMP_DIR = "jboss.server.temp.dir";
     private static final String HOME_DIR = "jboss.home.dir";
     private static final String[] NO_ALIASES = new String[0];
@@ -80,27 +81,34 @@ class WebVirtualHostAdd extends AbstractAddStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode baseOperation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        ModelNode operation = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
+        ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
         final PathAddress address = PathAddress.pathAddress(baseOperation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
 
-        boolean welcome = WebVirtualHostDefinition.ENABLE_WELCOME_ROOT.resolveModelAttribute(context, operation).asBoolean();
+        boolean welcome = WebVirtualHostDefinition.ENABLE_WELCOME_ROOT.resolveModelAttribute(context, fullModel).asBoolean();
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
-        final WebVirtualHostService service = new WebVirtualHostService(name, aliases(operation), welcome, TEMP_DIR);
+        final WebVirtualHostService service = new WebVirtualHostService(name, aliases(fullModel), welcome, TEMP_DIR);
         final ServiceBuilder<?> serviceBuilder = serviceTarget.addService(WebSubsystemServices.JBOSS_WEB_HOST.append(name), service)
                 .addDependency(PathManagerService.SERVICE_NAME, PathManager.class, service.getPathManagerInjector())
                 .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getWebServer());
-        if (operation.get(ACCESS_LOG_PATH.getKey(), ACCESS_LOG_PATH.getValue()).isDefined()) {
-            final ModelNode accessLog = operation.get(ACCESS_LOG_PATH.getKey(), ACCESS_LOG_PATH.getValue());
-            service.setAccessLog(accessLog.clone());
-            service.setAccessLogPaths(getPath(context, accessLog, name), getRelativeTo(context, accessLog, name));
+
+        if (fullModel.get(ACCESS_LOG_PATH.getKey(), ACCESS_LOG_PATH.getValue()).isDefined()) {
+            final ModelNode unresolved = fullModel.get(ACCESS_LOG_PATH.getKey(), ACCESS_LOG_PATH.getValue());
+
+            service.setAccessLog(resolveExpressions(context, unresolved, WebAccessLogDefinition.ACCESS_LOG_ATTRIBUTES));
+
+            final ModelNode accessLogDir = unresolved.get(DIRECTORY_PATH.getKey(), DIRECTORY_PATH.getValue());
+            String relativeTo = WebAccessLogDirectoryDefinition.RELATIVE_TO.resolveModelAttribute(context, accessLogDir).asString();
+            ModelNode pathNode = WebAccessLogDirectoryDefinition.PATH.resolveModelAttribute(context, accessLogDir);
+            service.setAccessLogPaths(pathNode.isDefined() ? pathNode.asString() : name, relativeTo);
         }
-        if (operation.hasDefined(Constants.REWRITE)) {
-            service.setRewrite(operation.get(Constants.REWRITE).clone());
+        if (fullModel.hasDefined(Constants.REWRITE)) {
+            ModelNode resolvedRewrite = resolveRewriteExpressions(context, fullModel.get(Constants.REWRITE));
+            service.setRewrite(resolvedRewrite);
         }
-        if (operation.get(SSO_PATH.getKey(), SSO_PATH.getValue()).isDefined()) {
-            ModelNode sso = operation.get(SSO_PATH.getKey(), SSO_PATH.getValue()).clone();
+        if (fullModel.get(SSO_PATH.getKey(), SSO_PATH.getValue()).isDefined()) {
+            ModelNode sso = resolveExpressions(context, fullModel.get(SSO_PATH.getKey(), SSO_PATH.getValue()).clone(), WebSSODefinition.SSO_ATTRIBUTES);
             service.setSso(sso);
             if (sso.hasDefined(Constants.CACHE_CONTAINER)) {
                 ServiceName ssoName = WebSubsystemServices.JBOSS_WEB_HOST.append(name, Constants.SSO);
@@ -118,9 +126,11 @@ class WebVirtualHostAdd extends AbstractAddStepHandler {
             }
         }
 
-        if (operation.hasDefined(Constants.DEFAULT_WEB_MODULE)) {
+        // Don't follow the standard pattern of resolving and then checking isDefined() here
+        // because the default value from resolving will look like a conflict with 'welcome'
+        if (fullModel.hasDefined(WebVirtualHostDefinition.DEFAULT_WEB_MODULE.getName())) {
             if (welcome) { throw new OperationFailedException(new ModelNode().set(MESSAGES.noRootWebappWithWelcomeWebapp())); }
-            service.setDefaultWebModule(operation.get(Constants.DEFAULT_WEB_MODULE).asString());
+            service.setDefaultWebModule(WebVirtualHostDefinition.DEFAULT_WEB_MODULE.resolveModelAttribute(context, fullModel).asString());
         }
 
         serviceBuilder.addListener(verificationHandler);
@@ -149,31 +159,28 @@ class WebVirtualHostAdd extends AbstractAddStepHandler {
         return NO_ALIASES;
     }
 
-    static String getPath(OperationContext context, ModelNode node, String hostName) throws OperationFailedException {
-        return getPath(context, node, hostName, false);
-    }
-
-    static String getRelativeTo(OperationContext context, ModelNode node, String hostName) throws OperationFailedException {
-        return getPath(context, node, hostName, true);
-    }
-
-    static String getPath(OperationContext context, ModelNode node, String hostName, boolean relativePart) throws OperationFailedException {
-        if (node.get(DIRECTORY_PATH.getKey(), DIRECTORY_PATH.getValue()).isDefined()) {
-            final ModelNode directory = node.get(DIRECTORY_PATH.getKey(), DIRECTORY_PATH.getValue());
-
-            if (relativePart) {
-                return WebAccessLogDirectoryDefinition.RELATIVE_TO.resolveModelAttribute(context, directory).asString();
-            } else {
-                return WebAccessLogDirectoryDefinition.PATH.resolveModelAttribute(context, directory).asString();
-            }
-
-        } else {
-            if (relativePart) {
-                return DEFAULT_RELATIVE_TO;
-            } else {
-                return hostName;
+    private ModelNode resolveRewriteExpressions(OperationContext context, ModelNode unresolvedRewriteChildren) throws OperationFailedException {
+        ModelNode result = new ModelNode();
+        for (Property prop : unresolvedRewriteChildren.asPropertyList()) {
+            ModelNode resolvedParent = resolveExpressions(context, prop.getValue(), WebReWriteDefinition.ATTRIBUTES);
+            result.get(prop.getName()).set(resolvedParent);
+            if (prop.getValue().hasDefined(Constants.CONDITION)) {
+                for (Property conditionProp : prop.getValue().get(Constants.CONDITION).asPropertyList()) {
+                    ModelNode resolvedCondition = resolveExpressions(context, conditionProp.getValue(), WebReWriteConditionDefinition.ATTRIBUTES);
+                    resolvedParent.get(Constants.CONDITION, conditionProp.getName()).set(resolvedCondition);
+                }
             }
         }
+        return result;
+    }
+
+    private ModelNode resolveExpressions(OperationContext context, ModelNode fullModel,
+                                         AttributeDefinition...attributeDefinitions) throws OperationFailedException {
+        ModelNode result = new ModelNode();
+        for (AttributeDefinition def : attributeDefinitions) {
+            result.get(def.getName()).set(def.resolveModelAttribute(context, fullModel));
+        }
+        return result;
     }
 
 

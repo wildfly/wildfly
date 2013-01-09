@@ -27,6 +27,7 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
+import org.jboss.as.core.model.test.LegacyKernelServicesInitializer;
 import org.jboss.as.core.model.test.LegacyKernelServicesInitializer.TestControllerVersion;
 import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.core.model.test.util.TransformersTestParameters;
@@ -57,11 +58,18 @@ public class SocketBindingGroupTransformersTestCase extends AbstractCoreModelTes
     }
 
     @Test
-    public void testPathsTransformer() throws Exception {
-        KernelServicesBuilder builder = createKernelServicesBuilder(TestModelType.DOMAIN)
-                .setXmlResource("domain.xml");
+    public void testSocketBindingGroupsTransformer() throws Exception {
 
-        builder.createLegacyKernelServicesBuilder(modelVersion, testControllerVersion);
+        boolean below14 = modelVersion.getMajor() == 1 && modelVersion.getMinor() <= 3;
+
+        KernelServicesBuilder builder = createKernelServicesBuilder(TestModelType.DOMAIN)
+                .setXmlResource(below14 ? "domain-transformers-1.3.xml" : "domain.xml");
+
+        LegacyKernelServicesInitializer legacyInit = builder.createLegacyKernelServicesBuilder(modelVersion, testControllerVersion);
+        if (below14) {
+            //The 7.1.2/3 operation validator does not like expressions very much
+            legacyInit.setDontValidateOperations();
+        }
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());

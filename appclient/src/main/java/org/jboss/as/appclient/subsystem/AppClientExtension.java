@@ -28,9 +28,12 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -55,6 +58,7 @@ public class AppClientExtension implements Extension {
 
     public static final String NAMESPACE_1_0 = "urn:jboss:domain:appclient:1.0";
     public static final String SUBSYSTEM_NAME = "appclient";
+    static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
 
     private static final int MAJOR_VERSION = 1;
     private static final int MINOR_VERSION = 1;
@@ -96,15 +100,8 @@ public class AppClientExtension implements Extension {
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
             ParseUtils.requireNoAttributes(reader);
             ParseUtils.requireNoContent(reader);
-            list.add(createAddOperation());
+            list.add(Util.createAddOperation(PathAddress.pathAddress(SUBSYSTEM_PATH)));
         }
-    }
-
-    static ModelNode createAddOperation() {
-        final ModelNode subsystem = new ModelNode();
-        subsystem.get(OP).set(ADD);
-        subsystem.get(OP_ADDR).add(SUBSYSTEM, Constants.SUBSYSTEM_NAME);
-        return subsystem;
     }
 
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {

@@ -26,8 +26,8 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -51,15 +51,14 @@ public class WebConnectorDefinition extends SimpleResourceDefinition {
 
     protected static final SimpleAttributeDefinition PROTOCOL =
             new SimpleAttributeDefinitionBuilder(Constants.PROTOCOL, ModelType.STRING)
-                    .setXmlName(Constants.PROTOCOL)
                     .setAllowNull(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new StringLengthValidator(1))
+                    .setAllowExpression(true)
                     .build();
 
     protected static final SimpleAttributeDefinition SOCKET_BINDING =
             new SimpleAttributeDefinitionBuilder(Constants.SOCKET_BINDING, ModelType.STRING)
-                    .setXmlName(Constants.SOCKET_BINDING)
                     .setAllowNull(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new StringLengthValidator(1))
@@ -67,108 +66,100 @@ public class WebConnectorDefinition extends SimpleResourceDefinition {
 
     protected static final SimpleAttributeDefinition SCHEME =
             new SimpleAttributeDefinitionBuilder(Constants.SCHEME, ModelType.STRING)
-                    .setXmlName(Constants.SCHEME)
                     .setAllowNull(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new StringLengthValidator(1))
+                    .setAllowExpression(true)
                     //.setDefaultValue(new ModelNode("http"))
                     .build();
 
     protected static final SimpleAttributeDefinition EXECUTOR =
             new SimpleAttributeDefinitionBuilder(Constants.EXECUTOR, ModelType.STRING)
-                    .setXmlName(Constants.EXECUTOR)
                     .setAllowNull(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new StringLengthValidator(1, true))
                     .build();
 
-
     protected static final SimpleAttributeDefinition ENABLED =
             new SimpleAttributeDefinitionBuilder(Constants.ENABLED, ModelType.BOOLEAN)
-                    .setXmlName(Constants.ENABLED)
                     .setAllowNull(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(true))
+                    .setAllowExpression(true)
                     .build();
 
     protected static final SimpleAttributeDefinition ENABLE_LOOKUPS =
             new SimpleAttributeDefinitionBuilder(Constants.ENABLE_LOOKUPS, ModelType.BOOLEAN)
-                    .setXmlName(Constants.ENABLE_LOOKUPS)
                     .setAllowNull(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(false))
+                    .setAllowExpression(true)
                     .build();
 
     protected static final SimpleAttributeDefinition PROXY_NAME =
             new SimpleAttributeDefinitionBuilder(Constants.PROXY_NAME, ModelType.STRING)
-                    .setXmlName(Constants.PROXY_NAME)
                     .setAllowNull(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new StringLengthValidator(1, true))
+                    .setAllowExpression(true)
                     .build();
 
     protected static final SimpleAttributeDefinition PROXY_PORT =
             new SimpleAttributeDefinitionBuilder(Constants.PROXY_PORT, ModelType.INT)
-                    .setXmlName(Constants.PROXY_PORT)
                     .setAllowNull(true)
                     .setValidator(new IntRangeValidator(1, true))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setAllowExpression(true)
                     .build();
 
     protected static final SimpleAttributeDefinition MAX_POST_SIZE =
             new SimpleAttributeDefinitionBuilder(Constants.MAX_POST_SIZE, ModelType.INT)
-                    .setXmlName(Constants.MAX_POST_SIZE)
                     .setAllowNull(true)
                     .setValidator(new IntRangeValidator(0, true))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(2097152))
+                    .setAllowExpression(true)
                     .build();
 
     protected static final SimpleAttributeDefinition MAX_SAVE_POST_SIZE =
             new SimpleAttributeDefinitionBuilder(Constants.MAX_SAVE_POST_SIZE, ModelType.INT)
-                    .setXmlName(Constants.MAX_SAVE_POST_SIZE)
                     .setAllowNull(true)
                     .setValidator(new IntRangeValidator(0, true))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(4096))
+                    .setAllowExpression(true)
                     .build();
 
     protected static final SimpleAttributeDefinition SECURE =
             new SimpleAttributeDefinitionBuilder(Constants.SECURE, ModelType.BOOLEAN)
-                    .setXmlName(Constants.SECURE)
                     .setAllowNull(true)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(false))
                     .build();
 
     protected static final SimpleAttributeDefinition REDIRECT_PORT =
             new SimpleAttributeDefinitionBuilder(Constants.REDIRECT_PORT, ModelType.INT)
-                    .setXmlName(Constants.REDIRECT_PORT)
                     .setAllowNull(true)
                     .setValidator(new IntRangeValidator(1, true))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(8433))
+                    .setDefaultValue(new ModelNode(443))
+                    .setAllowExpression(true)
                     .build();
 
     protected static final SimpleAttributeDefinition MAX_CONNECTIONS =
-            new SimpleAttributeDefinitionBuilder(Constants.MAX_CONNECTIONS, ModelType.INT) //todo why is this string somewhere??
-                    .setXmlName(Constants.MAX_CONNECTIONS)
+            new SimpleAttributeDefinitionBuilder(Constants.MAX_CONNECTIONS, ModelType.INT)
                     .setAllowNull(true)
                     .setValidator(new IntRangeValidator(1, true))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                            //.setDefaultValue(new ModelNode(8433))
+                    .setAllowExpression(true)
                     .build();
 
-    protected static final SimpleListAttributeDefinition VIRTUAL_SERVER =
-                new SimpleListAttributeDefinition.Builder(Constants.VIRTUAL_SERVER,
-                        new SimpleAttributeDefinitionBuilder(Constants.VIRTUAL_SERVER, ModelType.STRING, false)
-                                .setXmlName(Constants.VIRTUAL_SERVER)
-                                .setAllowNull(false)
-                                .setValidator(new StringLengthValidator(1, false))
-                                .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                                .build())
-                        .setAllowNull(true)
-                        .build();
+    protected static final StringListAttributeDefinition VIRTUAL_SERVER = new StringListAttributeDefinition.Builder(Constants.VIRTUAL_SERVER)
+            .setAllowNull(true)
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .setValidator(new StringLengthValidator(1, false))
+            .build();
 
     protected static final SimpleAttributeDefinition[] CONNECTOR_ATTRIBUTES = {
             //NAME, // name is read-only

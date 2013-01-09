@@ -38,7 +38,6 @@ import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.ViewService;
 import org.jboss.as.ee.component.deployers.AbstractComponentConfigProcessor;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
-import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.interceptors.EjbMetadataInterceptorFactory;
@@ -125,7 +124,7 @@ public class SessionBeanHomeProcessor extends AbstractComponentConfigProcessor {
                         try {
                             ejbObjectClass = classIndex.classIndex(ejbObjectView.getViewClassName()).getModuleClass();
                         } catch (ClassNotFoundException e) {
-                            throw EjbLogger.EJB3_LOGGER.failedToLoadViewClassForComponent(e, componentDescription.getComponentName());
+                            throw MESSAGES.failedToLoadViewClassForComponent(e, componentDescription.getComponentName());
                         }
                         final EjbMetadataInterceptorFactory factory = new EjbMetadataInterceptorFactory(ejbObjectClass, configuration.getViewClass(), null, true, componentDescription instanceof StatelessComponentDescription);
 

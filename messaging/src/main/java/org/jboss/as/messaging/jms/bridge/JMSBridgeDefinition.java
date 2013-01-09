@@ -51,6 +51,8 @@ import org.jboss.dmr.ModelNode;
  */
 public class JMSBridgeDefinition extends SimpleResourceDefinition {
 
+    public static final PathElement PATH = PathElement.pathElement(CommonAttributes.JMS_BRIDGE);
+
     public static final JMSBridgeDefinition INSTANCE = new JMSBridgeDefinition();
 
     public static final String SOURCE = "source";
@@ -189,7 +191,7 @@ public class JMSBridgeDefinition extends SimpleResourceDefinition {
     };
 
     public JMSBridgeDefinition() {
-        super(PathElement.pathElement(CommonAttributes.JMS_BRIDGE),
+        super(PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.JMS_BRIDGE),
                 JMSBridgeAdd.INSTANCE,
                 JMSBridgeRemove.INSTANCE);

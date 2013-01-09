@@ -44,14 +44,12 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
-
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import junit.framework.Assert;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.Extension;
@@ -453,9 +451,6 @@ final class SubsystemTestDelegate {
                     epc.setSubsystemXmlMapping(entry.getKey(), namespace, null);
                 }
             }
-            for (String namespace : extensionParsingRegistry.getUnnamedNamespaces(extension)) {
-                epc.setSubsystemXmlMapping(namespace, null);
-            }
         }
 
         return clone;
@@ -580,6 +575,21 @@ final class SubsystemTestDelegate {
         public List<ModelNode> parse(String subsystemXml) throws XMLStreamException {
             return SubsystemTestDelegate.this.parse(additionalInit, subsystemXml);
         }
+
+        @Override
+        public List<ModelNode> parseXml(String xml) throws Exception {
+            ModelTestBootOperationsBuilder builder = new ModelTestBootOperationsBuilder(testClass, this);
+            builder.setXml(xml);
+            return builder.build();
+        }
+
+        @Override
+        public List<ModelNode> parseXmlResource(String xmlResource) throws Exception {
+            ModelTestBootOperationsBuilder builder = new ModelTestBootOperationsBuilder(testClass, this);
+            builder.setXmlResource(xmlResource);
+            return builder.build();
+        }
+
     }
 
     private class LegacyKernelServiceInitializerImpl implements LegacyKernelServicesInitializer {

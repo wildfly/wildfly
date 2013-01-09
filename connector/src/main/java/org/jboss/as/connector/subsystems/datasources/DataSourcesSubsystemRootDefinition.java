@@ -83,8 +83,8 @@ public class DataSourcesSubsystemRootDefinition extends SimpleResourceDefinition
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        if (! deployed )
-            resourceRegistration.registerReadOnlyAttribute(INSTALLED_DRIVERS, null);
+        if (registerRuntimeOnly && ! deployed )
+            resourceRegistration.registerReadOnlyAttribute(INSTALLED_DRIVERS, InstalledDriversListOperationHandler.INSTANCE);
 
     }
 

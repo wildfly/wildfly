@@ -123,8 +123,8 @@ public class WebVirtualHostService implements Service<VirtualHost> {
         return host;
     }
 
-    void setAccessLog(final ModelNode accessLog) {
-        this.accessLog = accessLog;
+    void setAccessLog(final ModelNode resolvedAccessLogModel) {
+        this.accessLog = resolvedAccessLogModel;
     }
 
     void setAccessLogPaths(String accessLogPath, String accessLogRelativeTo) {
@@ -132,14 +132,15 @@ public class WebVirtualHostService implements Service<VirtualHost> {
         this.accessLogRelativeTo = accessLogRelativeTo;
     }
 
-    void setRewrite(ModelNode rewrite) {
-        this.rewrite = rewrite;
+    void setRewrite(ModelNode resolvedRewriteModel) {
+        this.rewrite = resolvedRewriteModel;
     }
 
-    void setSso(final ModelNode sso) {
-        this.sso = sso;
+    void setSso(final ModelNode resolvedSsoModel) {
+        this.sso = resolvedSsoModel;
     }
 
+    @Deprecated
     protected String getDefaultWebModule() {
         return defaultWebModule;
     }
@@ -161,11 +162,7 @@ public class WebVirtualHostService implements Service<VirtualHost> {
     }
 
     static Valve createAccessLogValve(final String logDirectory, final ModelNode element) {
-        //todo this should all use AD.resolveModelAttribute()
-        boolean extended = false;
-        if (element.hasDefined(Constants.EXTENDED)) {
-            extended = element.get(Constants.EXTENDED).asBoolean();
-        }
+        boolean extended = element.get(Constants.EXTENDED).asBoolean(false);
         String pattern = null;
         if (element.hasDefined(Constants.PATTERN)) {
             pattern = element.get(Constants.PATTERN).asString();
@@ -197,7 +194,7 @@ public class WebVirtualHostService implements Service<VirtualHost> {
     static Valve createRewriteValve(final Container container, final ModelNode element) throws StartException {
         final RewriteValve rewriteValve = new RewriteValve();
         rewriteValve.setContainer(container);
-        StringBuffer configuration = new StringBuffer();
+        StringBuilder configuration = new StringBuilder();
         for (final ModelNode rewriteElement : element.asList()) {
             final ModelNode rewrite = rewriteElement.asProperty().getValue();
             if (rewrite.has(Constants.CONDITION)) {

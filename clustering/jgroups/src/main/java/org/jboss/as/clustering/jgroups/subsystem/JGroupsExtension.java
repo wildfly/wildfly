@@ -142,14 +142,14 @@ public class JGroupsExtension implements Extension {
         final TransformersSubRegistration stack = registration.registerSubResource(StackResource.STACK_PATH);
 
         // reject expressions for transport properties, for the add and write-attribute op
-        final TransformersSubRegistration transport = stack.registerSubResource(TransportResource.TRANSPORT_PATH) ;
+        final TransformersSubRegistration transport = stack.registerSubResource(TransportResource.TRANSPORT_PATH, (ResourceTransformer)TRANSFORMER) ;
         transport.registerOperationTransformer(ADD, TRANSFORMER);
         final TransformersSubRegistration transport_property = transport.registerSubResource(PropertyResource.PROPERTY_PATH) ;
         transport_property.registerOperationTransformer(ADD, TRANSFORMER);
         transport_property.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, TRANSFORMER.getWriteAttributeTransformer());
 
         // reject expressions for transport properties, for the add and write-attribute op
-        final TransformersSubRegistration protocol = stack.registerSubResource(ProtocolResource.PROTOCOL_PATH) ;
+        final TransformersSubRegistration protocol = stack.registerSubResource(ProtocolResource.PROTOCOL_PATH, (ResourceTransformer)TRANSFORMER) ;
         protocol.registerOperationTransformer(ADD, TRANSFORMER);
         final TransformersSubRegistration protocol_property = protocol.registerSubResource(PropertyResource.PROPERTY_PATH) ;
         protocol_property.registerOperationTransformer(ADD, TRANSFORMER);

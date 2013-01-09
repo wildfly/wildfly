@@ -45,14 +45,14 @@ import org.jboss.dmr.ModelType;
  */
 public class TransactionResource extends SimpleResourceDefinition {
 
-    private static final PathElement TRANSACTION_PATH = PathElement.pathElement(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME);
+    public static final PathElement TRANSACTION_PATH = PathElement.pathElement(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME);
 
     // attributes
     // cache mode required, txn mode not
     static final SimpleAttributeDefinition LOCKING =
             new SimpleAttributeDefinitionBuilder(ModelKeys.LOCKING, ModelType.STRING, true)
                     .setXmlName(Attribute.LOCKING.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setValidator(new EnumValidator<LockingMode>(LockingMode.class, true, false))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(LockingMode.OPTIMISTIC.name()))
@@ -69,7 +69,7 @@ public class TransactionResource extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(ModelKeys.STOP_TIMEOUT, ModelType.LONG, true)
                     .setXmlName(Attribute.STOP_TIMEOUT.getLocalName())
                     .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(30000))
                     .build();

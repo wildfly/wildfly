@@ -39,7 +39,6 @@ import org.jboss.as.ee.component.LookupInjectionSource;
 import org.jboss.as.ee.component.MethodInjectionTarget;
 import org.jboss.as.ee.component.OptionalLookupInjectionSource;
 import org.jboss.as.ee.component.ResourceInjectionConfiguration;
-import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -54,6 +53,8 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.logging.Logger;
+
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Deployment processor responsible for processing @EJB annotations within components.  Each @EJB annotation will be registered
@@ -104,7 +105,7 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
                     processClass(deploymentUnit, annotationWrapper, (ClassInfo) annotationTarget, moduleDescription);
                 }
             } else {
-                throw EjbLogger.EJB3_LOGGER.annotationOnlyAllowedOnClass(EJBs.class.getName(), annotation.target());
+                throw MESSAGES.annotationOnlyAllowedOnClass(EJBs.class.getName(), annotation.target());
             }
         }
     }
@@ -124,7 +125,7 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
     private void processMethod(final DeploymentUnit deploymentUnit, final EJBResourceWrapper annotation, final MethodInfo methodInfo, final EEModuleDescription eeModuleDescription) {
         final String methodName = methodInfo.name();
         if (!methodName.startsWith("set") || methodInfo.args().length != 1) {
-            throw EjbLogger.EJB3_LOGGER.onlySetterMethodsAllowedToHaveEJBAnnotation(methodInfo);
+            throw MESSAGES.onlySetterMethodsAllowedToHaveEJBAnnotation(methodInfo);
         }
         final String methodParamType = methodInfo.args()[0].name().toString();
         final InjectionTarget targetDescription = new MethodInjectionTarget(methodInfo.declaringClass().name().toString(), methodName, methodParamType);
@@ -136,10 +137,10 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
 
     private void processClass(final DeploymentUnit deploymentUnit, final EJBResourceWrapper annotation, final ClassInfo classInfo, final EEModuleDescription eeModuleDescription) throws DeploymentUnitProcessingException {
         if (isEmpty(annotation.name())) {
-            throw EjbLogger.EJB3_LOGGER.nameAttributeRequiredForEJBAnnotationOnClass(classInfo.toString());
+            throw MESSAGES.nameAttributeRequiredForEJBAnnotationOnClass(classInfo.toString());
         }
         if (isEmpty(annotation.beanInterface())) {
-            throw EjbLogger.EJB3_LOGGER.beanInterfaceAttributeRequiredForEJBAnnotationOnClass(classInfo.toString());
+            throw MESSAGES.beanInterfaceAttributeRequiredForEJBAnnotationOnClass(classInfo.toString());
         }
         process(deploymentUnit, annotation.beanInterface(), annotation.beanName(), annotation.lookup(), classInfo, null, annotation.name(), eeModuleDescription);
     }

@@ -21,21 +21,20 @@
 */
 package org.jboss.as.jpa.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.jpa.subsystem.JPADefinition.DEFAULT_DATASOURCE;
+import static org.jboss.as.jpa.subsystem.JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE;
 
 import java.io.IOException;
+import java.util.List;
 
 import junit.framework.Assert;
+
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
@@ -57,42 +56,54 @@ public class JPA11SubsystemTestCase extends AbstractSubsystemBaseTest {
         return readResource("subsystem-1.1.xml");
     }
 
+
     @Test
     public void testTransformers_1_1_0() throws Exception {
-        System.setProperty("org.jboss.as.jpa.testBadExpr", "hello");
+        ModelVersion oldVersion = ModelVersion.create(1, 1, 0);
+        KernelServicesBuilder builder = createKernelServicesBuilder(null)
+                .setSubsystemXmlResource("subsystem-1.1-no-expressions.xml");
 
-        try {
-            ModelVersion oldVersion = ModelVersion.create(1, 1, 0);
-            KernelServicesBuilder builder = createKernelServicesBuilder(null)
-                    .setSubsystemXml(getSubsystemXml());
-            builder.createLegacyKernelServicesBuilder(null, oldVersion)
-                    .setExtensionClassName(JPAExtension.class.getName())
-                    .addMavenResourceURL("org.jboss.as:jboss-as-jpa:7.1.2.Final")
-                    .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.2.Final")
-                    .addParentFirstClassPattern("org.jboss.as.controller.*");
-            KernelServices mainServices = builder.build();
-            KernelServices legacyServices = mainServices.getLegacyServices(oldVersion);
-            Assert.assertNotNull(legacyServices);
+        builder.createLegacyKernelServicesBuilder(null, oldVersion)
+                .setExtensionClassName(JPAExtension.class.getName())
+                .addMavenResourceURL("org.jboss.as:jboss-as-jpa:7.1.2.Final")
+                .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.2.Final")
+                .addParentFirstClassPattern("org.jboss.as.controller.*");
 
-            checkSubsystemModelTransformation(mainServices, oldVersion);
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(oldVersion);
+        Assert.assertNotNull(legacyServices);
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
-            final ModelNode operation = new ModelNode();
-            operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-            operation.get(OP_ADDR).add(SUBSYSTEM, JPAExtension.SUBSYSTEM_NAME);
-            operation.get(NAME).set(JPADefinition.DEFAULT_DATASOURCE.getName());
-            operation.get(VALUE).set("${org.jboss.as.jpa.testBadExpr}");
+        checkSubsystemModelTransformation(mainServices, oldVersion);
+    }
 
-            final ModelNode mainResult = mainServices.executeOperation(operation);
-            System.out.println(mainResult);
-            Assert.assertTrue(SUCCESS.equals(mainResult.get(OUTCOME).asString()));
+    @Test
+    public void testTransformers_1_1_0_RejectExpressions() throws Exception {
+        ModelVersion oldVersion = ModelVersion.create(1, 1, 0);
+        KernelServicesBuilder builder = createKernelServicesBuilder(null);
 
-            final OperationTransformer.TransformedOperation op = mainServices.transformOperation(oldVersion, operation);
-            final ModelNode result = mainServices.executeOperation(oldVersion, op);
-            Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
-        } catch (Throwable t) {
-            Assert.fail(t.getMessage());
-        } finally {
-            System.clearProperty("org.jboss.as.jpa.testBadExpr");
-        }
+        builder.createLegacyKernelServicesBuilder(null, oldVersion)
+                .setExtensionClassName(JPAExtension.class.getName())
+                .addMavenResourceURL("org.jboss.as:jboss-as-jpa:7.1.2.Final")
+                .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.2.Final")
+                .addParentFirstClassPattern("org.jboss.as.controller.*");
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(oldVersion);
+        Assert.assertNotNull(legacyServices);
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+        List<ModelNode> ops = builder.parseXml(getSubsystemXml());
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, oldVersion, ops,
+                new FailedOperationTransformationConfig()
+                    .addFailedAttribute(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, JPAExtension.SUBSYSTEM_NAME)),
+                            new FailedOperationTransformationConfig.RejectExpressionsConfig(DEFAULT_DATASOURCE, DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE)));
+
+        ModelNode legacyModel = legacyServices.readWholeModel().require(SUBSYSTEM).require(JPAExtension.SUBSYSTEM_NAME);
+        Assert.assertEquals(1, legacyModel.keys().size());
+        Assert.assertEquals("test-ds", legacyModel.get(DEFAULT_DATASOURCE.getName()).asString());
+
     }
 }

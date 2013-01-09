@@ -57,7 +57,7 @@ public class DistributedCacheResource extends SharedCacheResource {
             new SimpleAttributeDefinitionBuilder(ModelKeys.L1_LIFESPAN, ModelType.LONG, true)
                     .setXmlName(Attribute.L1_LIFESPAN.getLocalName())
                     .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(600000))
                     .build();
@@ -65,7 +65,7 @@ public class DistributedCacheResource extends SharedCacheResource {
     static final SimpleAttributeDefinition OWNERS =
             new SimpleAttributeDefinitionBuilder(ModelKeys.OWNERS, ModelType.INT, true)
                     .setXmlName(Attribute.OWNERS.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(2))
                     .build();
@@ -75,7 +75,7 @@ public class DistributedCacheResource extends SharedCacheResource {
     private static final SimpleAttributeDefinition VIRTUAL_NODES =
             new SimpleAttributeDefinitionBuilder(ModelKeys.VIRTUAL_NODES, ModelType.INT, true)
                     .setXmlName(Attribute.VIRTUAL_NODES.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(1))
                     .setDeprecated(ModelVersion.create(1, 4, 0))
@@ -84,7 +84,7 @@ public class DistributedCacheResource extends SharedCacheResource {
     static final SimpleAttributeDefinition SEGMENTS =
             new SimpleAttributeDefinitionBuilder(ModelKeys.SEGMENTS, ModelType.INT, true)
                     .setXmlName(Attribute.SEGMENTS.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(80)) // Recommended value is 10 * max_cluster_size.
                     .build();

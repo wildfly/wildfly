@@ -86,6 +86,8 @@ import org.omg.PortableServer.Current;
 import org.omg.PortableServer.CurrentHelper;
 import org.omg.PortableServer.POA;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 /**
  * This is an IIOP "proxy factory" for <code>EJBHome</code>s and
  * <code>EJBObject</code>s. Rather than creating Java proxies (as the JRMP
@@ -463,12 +465,12 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
                     marshaller.finish();
                     return beanReferenceFactory.createReferenceWithId(stream.toByteArray(), beanRepositoryIds[0]);
                 }
-                throw EjbLogger.EJB3_LOGGER.unknownEJBLocatorType(locator);
+                throw MESSAGES.unknownEJBLocatorType(locator);
             } else {
-                throw EjbLogger.EJB3_LOGGER.incorrectEJBLocatorForBean(locator, ejbComponent.getComponentName());
+                throw MESSAGES.incorrectEJBLocatorForBean(locator, ejbComponent.getComponentName());
             }
         } catch (Exception e) {
-            throw EjbLogger.EJB3_LOGGER.couldNotCreateCorbaObject(e, locator);
+            throw MESSAGES.couldNotCreateCorbaObject(e, locator);
         }
     }
 

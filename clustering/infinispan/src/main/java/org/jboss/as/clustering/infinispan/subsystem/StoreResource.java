@@ -45,13 +45,13 @@ import org.jboss.dmr.ModelType;
  */
 public class StoreResource extends BaseStoreResource {
 
-    private static final PathElement STORE_PATH = PathElement.pathElement(ModelKeys.STORE, ModelKeys.STORE_NAME);
+    public static final PathElement STORE_PATH = PathElement.pathElement(ModelKeys.STORE, ModelKeys.STORE_NAME);
 
     // attributes
     static final SimpleAttributeDefinition CLASS =
             new SimpleAttributeDefinitionBuilder(ModelKeys.CLASS, ModelType.STRING, false)
                     .setXmlName(Attribute.CLASS.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 

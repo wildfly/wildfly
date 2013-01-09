@@ -41,6 +41,7 @@ public abstract class AbstractSubsystemTest {
         this(mainSubsystemName, mainExtension, null);
     }
 
+    @SuppressWarnings("deprecation")
     protected AbstractSubsystemTest(final String mainSubsystemName, final Extension mainExtension, final Comparator<PathAddress> removeOrderComparator) {
         this.mainSubsystemName = mainSubsystemName;
         this.delegate = new SubsystemTestDelegate(this.getClass(), mainSubsystemName, mainExtension, removeOrderComparator);
@@ -121,6 +122,7 @@ public abstract class AbstractSubsystemTest {
      * @deprecated Use {@link #createKernelServicesBuilder(AdditionalInitialization)} instead
      */
     @Deprecated
+    @SuppressWarnings("deprecation")
     protected KernelServices installInController(String subsystemXml) throws Exception {
         return delegate.installInController(subsystemXml);
     }
@@ -133,6 +135,7 @@ public abstract class AbstractSubsystemTest {
      * @deprecated Use {@link #createKernelServicesBuilder(AdditionalInitialization)} instead
      */
     @Deprecated
+    @SuppressWarnings("deprecation")
     protected KernelServices installInController(AdditionalInitialization additionalInit, String subsystemXml) throws Exception {
         return delegate.installInController(additionalInit, subsystemXml);
     }
@@ -144,6 +147,7 @@ public abstract class AbstractSubsystemTest {
      * @deprecated Use {@link #createKernelServicesBuilder(AdditionalInitialization)} instead
      */
     @Deprecated
+    @SuppressWarnings("deprecation")
     protected KernelServices installInController(List<ModelNode> bootOperations) throws Exception {
         return delegate.installInController(bootOperations);
     }
@@ -241,6 +245,7 @@ public abstract class AbstractSubsystemTest {
      * @deprecated this might no longer be needed following refactoring of TransformerRegistry
      */
     @Deprecated
+    @SuppressWarnings("deprecation")
     protected void generateLegacySubsystemResourceRegistrationDmr(KernelServices kernelServices, ModelVersion modelVersion) throws IOException {
         delegate.generateLegacySubsystemResourceRegistrationDmr(kernelServices, modelVersion);
 

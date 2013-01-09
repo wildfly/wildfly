@@ -24,6 +24,8 @@ package org.jboss.as.appclient.subsystem;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
@@ -56,15 +58,13 @@ class AppClientServerConfiguration {
 
     private static void appclient(List<ModelNode> nodes, final String filePath, final String deploymentName, final String hostUrl, final String propertiesFileUrl, final List<String> parameters) {
         loadExtension(nodes, "org.jboss.as.appclient");
-        ModelNode add = new ModelNode();
-        add.get(OP_ADDR).set(new ModelNode().setEmptyList()).add(SUBSYSTEM, APPCLIENT);
-        add.get(OP).set(ADD);
+        ModelNode add = Util.createAddOperation(PathAddress.pathAddress(AppClientExtension.SUBSYSTEM_PATH));
         add.get(Constants.FILE).set(filePath);
         if (deploymentName != null) {
             add.get(Constants.DEPLOYMENT).set(deploymentName);
         }
         if (parameters.isEmpty()) {
-            add.get(Constants.PARAMETERS).addEmptyList();
+            add.get(Constants.PARAMETERS).setEmptyList();
         } else {
             for (String param : parameters) {
                 add.get(Constants.PARAMETERS).add(param);

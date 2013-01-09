@@ -46,7 +46,6 @@ import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.ejb.jboss.ejb3.JBossGenericBeanMetaData;
 import org.jboss.metadata.ejb.spec.ActivationConfigMetaData;
 import org.jboss.metadata.ejb.spec.ActivationConfigPropertiesMetaData;
@@ -59,13 +58,12 @@ import org.jboss.msc.service.ServiceRegistry;
 
 import static org.jboss.as.ejb3.deployment.processors.AbstractDeploymentUnitProcessor.getEjbJarDescription;
 import static org.jboss.as.ejb3.deployment.processors.ViewInterfaces.getPotentialViewInterfaces;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * User: jpai
  */
 public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescriptionFactory {
-
-    private static final Logger logger = Logger.getLogger(MessageDrivenComponentDescriptionFactory.class);
 
     private static final DotName MESSAGE_DRIVEN_ANNOTATION_NAME = DotName.createSimple(MessageDriven.class.getName());
 
@@ -180,7 +178,7 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
         }
 
         if (interfaces.size() != 1)
-            throw EjbLogger.EJB3_LOGGER.mdbDoesNotImplementNorSpecifyMessageListener(beanClass);
+            throw MESSAGES.mdbDoesNotImplementNorSpecifyMessageListener(beanClass);
         return interfaces.iterator().next().toString();
     }
 

@@ -100,4 +100,21 @@ public interface KernelServicesBuilder {
      * @throws IllegalArgumentException if any of the {@code resources} could not be found
      */
     KernelServices build() throws Exception;
+
+    /**
+     * Parses the given xml into operations. This may be called after {@link #build()} has been called.
+     *
+     * @param xml a string containing the xml
+     * @return the parsed operations
+     */
+    List<ModelNode> parseXml(String xml) throws Exception;
+
+    /**
+     * Parses the given xml into operations. The resource is loaded using similar semantics to {@link Class#getResource(String)}.
+     * This may be called after {@link #build()} has been called.
+     *
+     * @param xml a string containing the xml resource
+     * @return the parsed operations
+     */
+    List<ModelNode> parseXmlResource(String xmlResource) throws Exception;
 }

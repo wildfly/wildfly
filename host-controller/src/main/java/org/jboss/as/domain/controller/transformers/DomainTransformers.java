@@ -87,6 +87,7 @@ public class DomainTransformers {
             TransformersSubRegistration serverGroup = domain.registerSubResource(ServerGroupResourceDefinition.PATH);
             SystemPropertyTransformers.registerTransformers(serverGroup);
             JvmTransformers.registerTransformers(serverGroup);
+            SocketBindingGroupTransformers.registerTransformers(domain);
 
             //Add the domain interface and path name. This is from a read attribute handler but in < 1.4.0 it existed in the model
             domain.registerSubResource(PathElement.pathElement(INTERFACE), AddNameFromAddressResourceTransformer.INSTANCE);

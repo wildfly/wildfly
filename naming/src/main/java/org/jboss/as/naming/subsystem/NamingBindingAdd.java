@@ -36,7 +36,7 @@ import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
 
-import javax.naming.LinkRef;
+import javax.naming.InitialContext;
 import javax.naming.spi.ObjectFactory;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -252,9 +252,31 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
 
         final BinderService binderService = new BinderService(name);
+        binderService.getManagedObjectInjector().inject(new ContextListAndJndiViewManagedReferenceFactory() {
+            @Override
+            public ManagedReference getReference() {
+                try {
+                    final Object value = new InitialContext().lookup(lookup);
+                    return new ValueManagedReference(new ImmediateValue<Object>(value));
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            @Override
+            public String getInstanceClassName() {
+                final Object value = getReference().getInstance();
+                return value != null ? value.getClass().getName() : ContextListManagedReferenceFactory.DEFAULT_INSTANCE_CLASS_NAME;
+            }
+
+            @Override
+            public String getJndiViewInstanceValue() {
+                return String.valueOf(getReference().getInstance());
+            }
+        });
+
         ServiceBuilder<ManagedReferenceFactory> builder = serviceTarget.addService(bindInfo.getBinderServiceName(), binderService)
-                .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
-                .addInjection(binderService.getManagedObjectInjector(), new ValueManagedReferenceFactory(new ImmediateValue<LinkRef>(new LinkRef(lookup))));
+                .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector());
 
         if (verificationHandler != null) {
             builder.addListener(verificationHandler);

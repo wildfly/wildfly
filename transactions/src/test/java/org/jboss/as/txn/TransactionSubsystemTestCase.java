@@ -21,20 +21,31 @@
 */
 package org.jboss.as.txn;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.BINDING;
+import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.DEFAULT_TIMEOUT;
+import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.ENABLE_STATISTICS;
+import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.ENABLE_TSM_STATUS;
+import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.NODE_IDENTIFIER;
+import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.OBJECT_STORE_PATH;
+import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.OBJECT_STORE_RELATIVE_TO;
+import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.PATH;
+import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_BINDING;
+import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_MAX_PORTS;
+import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.RECOVERY_LISTENER;
+import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.RELATIVE_TO;
+import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.STATUS_BINDING;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -66,17 +77,12 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testExpressions() throws Exception {
-        standardSubsystemTest("expressions.xml");
+        standardSubsystemTest("full-expressions.xml");
     }
 
     @Test
     public void testMinimalConfig() throws Exception {
         standardSubsystemTest("minimal.xml");
-    }
-
-    @Test
-    public void testSocketId() throws Exception {
-        standardSubsystemTest("socket-id.xml");
     }
 
     @Test
@@ -96,20 +102,62 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertNotNull(legacyServices);
 
         checkSubsystemModelTransformation(mainServices, modelVersion);
+    }
 
-        final ModelNode operation = new ModelNode();
-        operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-        operation.get(OP_ADDR).add(SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME);
-        operation.get(NAME).set("status-socket-binding");
-        operation.get(VALUE).set("${org.jboss.test:default-socket-binding}");
 
-        final ModelNode mainResult = mainServices.executeOperation(operation);
-        Assert.assertTrue(SUCCESS.equals(mainResult.get(OUTCOME).asString()));
+    @Test
+    public void testTransformersFull() throws Exception {
+        String subsystemXml = readResource("full.xml");
+        ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
+        //Use the non-runtime version of the extension which will happen on the HC
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXml(subsystemXml);
 
-        final OperationTransformer.TransformedOperation op = mainServices.transformOperation(modelVersion, operation);
-        ModelNode result = mainServices.executeOperation(modelVersion, op);
-        Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
+        // Add legacy subsystems
+        builder.createLegacyKernelServicesBuilder(null, modelVersion)
+            .addMavenResourceURL("org.jboss.as:jboss-as-transactions:7.1.2.Final");
 
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        Assert.assertNotNull(legacyServices);
+
+        checkSubsystemModelTransformation(mainServices, modelVersion);
+
+    }
+
+    @Test
+    public void testRejectTransformers() throws Exception {
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
+
+        // Add legacy subsystems
+        ModelVersion version_1_1 = ModelVersion.create(1, 1);
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), version_1_1)
+            .addMavenResourceURL("org.jboss.as:jboss-as-transactions:7.1.2.Final");
+
+        KernelServices mainServices = builder.build();
+        assertTrue(mainServices.isSuccessfulBoot());
+        KernelServices legacyServices = mainServices.getLegacyServices(version_1_1);
+        assertNotNull(legacyServices);
+        assertTrue(legacyServices.isSuccessfulBoot());
+
+        List<ModelNode> ops = builder.parseXmlResource("full-expressions.xml");
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_1, ops, new FailedOperationTransformationConfig()
+            .addFailedAttribute(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME)),
+                    new FailedOperationTransformationConfig.RejectExpressionsConfig(
+                            DEFAULT_TIMEOUT,
+                            ENABLE_STATISTICS,
+                            ENABLE_TSM_STATUS,
+                            BINDING,
+                            STATUS_BINDING,
+                            RECOVERY_LISTENER,
+                            NODE_IDENTIFIER,
+                            PATH,
+                            RELATIVE_TO,
+                            PROCESS_ID_SOCKET_BINDING,
+                            PROCESS_ID_SOCKET_MAX_PORTS,
+                            OBJECT_STORE_PATH,
+                            OBJECT_STORE_RELATIVE_TO
+                            )));
     }
 
 }

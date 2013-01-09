@@ -21,8 +21,6 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -32,7 +30,6 @@ import java.util.ResourceBundle;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -40,9 +37,10 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
-import org.jboss.as.controller.transform.AbstractOperationTransformer;
-import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.controller.transform.chained.ChainedOperationTransformer;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 
@@ -91,30 +89,8 @@ public class InfinispanExtension implements Extension {
         }
 
         subsystem.registerSubsystemModel(new InfinispanSubsystemRootResource(resolvePathHandler));
-
         subsystem.registerXMLElementWriter(new InfinispanSubsystemXMLWriter());
-
-        // Register the model transformers
-        TransformersSubRegistration reg = subsystem.registerModelTransformers(ModelVersion.create(1, 3), new InfinispanSubsystemTransformer_1_3());
-        TransformersSubRegistration containerReg = reg.registerSubResource(CacheContainerResource.CONTAINER_PATH);
-        InfinispanOperationTransformer_1_3 ot = new InfinispanOperationTransformer_1_3();
-        containerReg.registerSubResource(LocalCacheResource.LOCAL_CACHE_PATH).registerOperationTransformer(ADD, ot);
-        containerReg.registerSubResource(InvalidationCacheResource.INVALIDATION_CACHE_PATH).registerOperationTransformer(ADD, ot);
-        containerReg.registerSubResource(ReplicatedCacheResource.REPLICATED_CACHE_PATH).registerOperationTransformer(ADD, ot);
-        containerReg.registerSubResource(DistributedCacheResource.DISTRIBUTED_CACHE_PATH).registerOperationTransformer(ADD, ot);
-    }
-
-    private static class InfinispanOperationTransformer_1_3 extends AbstractOperationTransformer {
-        @Override
-        protected ModelNode transform(TransformationContext context, PathAddress address, ModelNode operation) {
-            if (operation.has(ModelKeys.INDEXING_PROPERTIES)){
-                operation.remove(ModelKeys.INDEXING_PROPERTIES);
-            }
-            if (operation.has(ModelKeys.SEGMENTS)) {
-                operation.remove(ModelKeys.SEGMENTS);
-            }
-            return operation;
-        }
+        registerTransformers(subsystem);
     }
 
     /**
@@ -131,6 +107,78 @@ public class InfinispanExtension implements Extension {
         }
     }
 
+    /**
+     * Register the transformers for transforming from 1.4.0 to 1.3.0 management api versions, in which:
+     * - attributes INDEXING_PROPERTIES, SEGMENTS were added in 1.4
+     * - attribute VIRTUAL_NODES was deprecated in 1.4
+     * - expression support was added to most attributes in 1.4, except for CLUSTER, DEFAULT_CACHE and MODE
+     * for which it was already enabled in 1.3
+     *
+     * Chaining of transformers is used in cases where two transformers are required for the same operation.
+     *
+     * @param subsystem the subsystems registration
+     */
+    private static void registerTransformers(final SubsystemRegistration subsystem) {
+
+        // define the resource and operation transformers
+        final InfinispanOperationTransformer_1_3 removeSelectedCacheAttributes = new InfinispanOperationTransformer_1_3();
+
+        final RejectExpressionValuesTransformer cacheContainerReject = new RejectExpressionValuesTransformer(InfinispanRejectedExpressions_1_3.REJECT_CONTAINER_ATTRIBUTES) ;
+        final RejectExpressionValuesTransformer transportReject = new RejectExpressionValuesTransformer(InfinispanRejectedExpressions_1_3.REJECT_TRANSPORT_ATTRIBUTES) ;
+        final RejectExpressionValuesTransformer cacheReject = new RejectExpressionValuesTransformer(InfinispanRejectedExpressions_1_3.REJECT_CACHE_ATTRIBUTES) ;
+        final ChainedOperationTransformer chained = new ChainedOperationTransformer(removeSelectedCacheAttributes,cacheReject);
+
+        // Register the model transformers
+        TransformersSubRegistration registration = subsystem.registerModelTransformers(ModelVersion.create(1, 3), new InfinispanSubsystemTransformer_1_3());
+        TransformersSubRegistration containerRegistration = registration.registerSubResource(CacheContainerResource.CONTAINER_PATH, (OperationTransformer) cacheContainerReject);
+        containerRegistration.registerSubResource(TransportResource.TRANSPORT_PATH, (OperationTransformer) transportReject);
+
+        PathElement[] cachePaths = {
+                LocalCacheResource.LOCAL_CACHE_PATH,
+                InvalidationCacheResource.INVALIDATION_CACHE_PATH,
+                ReplicatedCacheResource.REPLICATED_CACHE_PATH,
+                DistributedCacheResource.DISTRIBUTED_CACHE_PATH};
+        for (int i=0; i < cachePaths.length; i++) {
+            // register chained operation transformers for cache ADD operations where we need to remove and reject
+            TransformersSubRegistration cacheRegistration = containerRegistration.registerSubResource(cachePaths[i], (OperationTransformer) chained);
+            registerCacheChildrenTransformers(cacheRegistration) ;
+        }
+    }
+
+    private static void registerCacheChildrenTransformers(TransformersSubRegistration cacheReg) {
+
+        final RejectExpressionValuesTransformer childReject = new RejectExpressionValuesTransformer(InfinispanRejectedExpressions_1_3.REJECT_CHILD_ATTRIBUTES) ;
+
+        PathElement[] childPaths = {
+                LockingResource.LOCKING_PATH,
+                TransactionResource.TRANSACTION_PATH,
+                ExpirationResource.EXPIRATION_PATH,
+                EvictionResource.EVICTION_PATH,
+                StateTransferResource.STATE_TRANSFER_PATH
+        } ;
+
+        for (int i=0; i < childPaths.length; i++) {
+            // reject expressions on operations in children
+            cacheReg.registerSubResource(childPaths[i], (OperationTransformer) childReject);
+        }
+
+        final RejectExpressionValuesTransformer storeReject = new RejectExpressionValuesTransformer(InfinispanRejectedExpressions_1_3.REJECT_STORE_ATTRIBUTES);
+        PathElement[] storePaths = {
+                StoreResource.STORE_PATH,
+                FileStoreResource.FILE_STORE_PATH,
+                StringKeyedJDBCStoreResource.STRING_KEYED_JDBC_STORE_PATH,
+                BinaryKeyedJDBCStoreResource.BINARY_KEYED_JDBC_STORE_PATH,
+                MixedKeyedJDBCStoreResource.MIXED_KEYED_JDBC_STORE_PATH,
+                RemoteStoreResource.REMOTE_STORE_PATH
+        } ;
+
+        for (int i=0; i < storePaths.length; i++) {
+            // reject expressions on operations on stores and store properties
+            TransformersSubRegistration storeReg = cacheReg.registerSubResource(storePaths[i], (OperationTransformer) storeReject);
+            storeReg.registerSubResource(StoreWriteBehindResource.STORE_WRITE_BEHIND_PATH, (OperationTransformer) storeReject);
+            storeReg.registerSubResource(StorePropertyResource.STORE_PROPERTY_PATH, (OperationTransformer) storeReject);
+        }
+    }
 
     private static class InfinispanResourceDescriptionResolver extends StandardResourceDescriptionResolver {
 

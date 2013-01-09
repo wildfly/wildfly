@@ -397,6 +397,20 @@ public class CoreModelTestDelegate {
         }
 
         @Override
+        public List<ModelNode> parseXml(String xml) throws Exception {
+            ModelTestBootOperationsBuilder builder = new ModelTestBootOperationsBuilder(testClass, this);
+            builder.setXml(xml);
+            return builder.build();
+        }
+
+        @Override
+        public List<ModelNode> parseXmlResource(String xmlResource) throws Exception {
+            ModelTestBootOperationsBuilder builder = new ModelTestBootOperationsBuilder(testClass, this);
+            builder.setXmlResource(xmlResource);
+            return builder.build();
+        }
+
+        @Override
         public KernelServicesBuilder setModelInitializer(ModelInitializer modelInitializer, ModelWriteSanitizer modelWriteSanitizer) {
             bootOperationBuilder.validateNotAlreadyBuilt();
             this.modelInitializer = modelInitializer;

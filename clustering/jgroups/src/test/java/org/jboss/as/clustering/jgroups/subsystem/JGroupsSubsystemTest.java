@@ -45,7 +45,7 @@ import org.junit.Test;
 public class JGroupsSubsystemTest extends ClusteringSubsystemTest {
 
     public JGroupsSubsystemTest() {
-        super(JGroupsExtension.SUBSYSTEM_NAME, new JGroupsExtension(), "subsystem-jgroups.xml");
+        super(JGroupsExtension.SUBSYSTEM_NAME, new JGroupsExtension(), "subsystem-jgroups-test.xml");
     }
 
     @Override

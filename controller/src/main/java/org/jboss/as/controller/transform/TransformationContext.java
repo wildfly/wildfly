@@ -97,7 +97,10 @@ public interface TransformationContext {
      * @param node the node
      * @return the resolved expression
      * @throws OperationFailedException
+     *
+     * @deprecated expressions cannot be reliably resolved during transformation
      */
+    @Deprecated
     ModelNode resolveExpressions(ModelNode node) throws OperationFailedException;
 
 }

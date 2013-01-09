@@ -263,7 +263,7 @@ final class LoggerOperations {
     private static void handleProperty(final AttributeDefinition attribute, final OperationContext context, final ModelNode model,
                                        final LoggerConfiguration configuration, final boolean resolveValue) throws OperationFailedException {
         if (FILTER_SPEC.equals(attribute)) {
-            final ModelNode valueNode = (resolveValue ? model.get(FILTER_SPEC.getName()) : model);
+            final ModelNode valueNode = (resolveValue ? FILTER_SPEC.resolveModelAttribute(context, model) : model);
             final String resolvedValue = (valueNode.isDefined() ? valueNode.asString() : null);
             configuration.setFilter(resolvedValue);
         } else if (LEVEL.equals(attribute)) {

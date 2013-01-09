@@ -40,6 +40,7 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.RealmCallback;
 import javax.security.sasl.RealmChoiceCallback;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentAction;
@@ -49,6 +50,7 @@ import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentActionR
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.security.Constants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.wsf.spi.deployer.Deployer;
@@ -71,12 +73,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.security.Constants.AUTHENTICATION;
 import static org.jboss.as.security.Constants.CLASSIC;
 import static org.jboss.as.security.Constants.CODE;
 import static org.jboss.as.security.Constants.FLAG;
 import static org.jboss.as.security.Constants.LOGIN_MODULE;
-import static org.jboss.as.security.Constants.LOGIN_MODULES;
 import static org.jboss.as.security.Constants.MODULE_OPTIONS;
 import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
 
@@ -209,29 +209,29 @@ public final class RemoteDeployer implements Deployer {
 
             final List<ModelNode> updates = new ArrayList<ModelNode>();
 
-            ModelNode op = new ModelNode();
-            op.get(OP).set(ADD);
-            op.get(OP_ADDR).add(SUBSYSTEM, "security");
-            op.get(OP_ADDR).add(SECURITY_DOMAIN, name);
-            updates.add(op);
+            final ModelNode compositeOp = new ModelNode();
+            compositeOp.get(OP).set(COMPOSITE);
+            compositeOp.get(OP_ADDR).setEmptyList();
 
-            op = new ModelNode();
-            op.get(OP).set(ADD);
-            op.get(OP_ADDR).add(SUBSYSTEM, "security");
-            op.get(OP_ADDR).add(SECURITY_DOMAIN, name);
-            op.get(OP_ADDR).add(AUTHENTICATION, CLASSIC);
-            op.get(OP_ADDR).add(LOGIN_MODULE, "UsersRoles");
-            op.get(CODE).set("UsersRoles");
-            op.get(FLAG).set(REQUIRED);
-            op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-            updates.add(op);
-
-            final ModelNode moduleOptions = op.get(MODULE_OPTIONS);
+            ModelNode steps = compositeOp.get(STEPS);
+            PathAddress address = PathAddress.pathAddress()
+                    .append(SUBSYSTEM, "security")
+                    .append(SECURITY_DOMAIN, name);
+            steps.add(Util.createAddOperation(address));
+            address = address.append(Constants.AUTHENTICATION, CLASSIC);
+            steps.add(Util.createAddOperation(address));
+            ModelNode loginModule = Util.createAddOperation(address.append(LOGIN_MODULE, "UsersRoles"));
+            loginModule.get(CODE).set("UsersRoles");
+            loginModule.get(FLAG).set(REQUIRED);
+            loginModule.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+            final ModelNode moduleOptions = loginModule.get(MODULE_OPTIONS);
             if (authenticationOptions != null) {
                 for (final String k : authenticationOptions.keySet()) {
                     moduleOptions.add(k, authenticationOptions.get(k));
                 }
             }
+            steps.add(loginModule);
+            updates.add(compositeOp);
 
             applyUpdates(updates);
         }

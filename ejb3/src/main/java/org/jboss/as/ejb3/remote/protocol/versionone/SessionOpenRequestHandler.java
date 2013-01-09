@@ -80,7 +80,7 @@ class SessionOpenRequestHandler extends EJBIdentifierBasedMessageHandler {
         }
         final Component component = ejbDeploymentInformation.getEjbComponent();
         if (!(component instanceof StatefulSessionComponent)) {
-            final String failureMessage = EjbLogger.ROOT_LOGGER.notStatefulSessionBean(beanName, appName, moduleName, distinctName).getLocalizedMessage();
+            final String failureMessage = EjbMessages.MESSAGES.notStatefulSessionBean(beanName, appName, moduleName, distinctName).getLocalizedMessage();
             this.writeInvocationFailure(channelAssociation, HEADER_EJB_NOT_STATEFUL, invocationId, failureMessage);
             return;
         }

@@ -50,10 +50,12 @@ public class ClientConstants {
     public static final String OPERATION_HEADERS = "operation-headers";
     public static final String OP_ADDR = "address";
     public static final String OUTCOME = "outcome";
+    public static final String PATH = "path";
     public static final String READ_ATTRIBUTE_OPERATION = "read-attribute";
     public static final String READ_CHILDREN_NAMES_OPERATION = "read-children-names";
     public static final String READ_RESOURCE_OPERATION = "read-resource";
     public static final String RECURSIVE = "recursive";
+    public static final String REMOVE_OPERATION = "remove";
     public static final String RESULT = "result";
     public static final String ROLLBACK_ON_RUNTIME_FAILURE = "rollback-on-runtime-failure";
     public static final String ROLLOUT_PLAN = "rollout-plan";
@@ -68,6 +70,9 @@ public class ClientConstants {
     public static final String SUBSYSTEM = "subsystem";
     public static final String SUCCESS = "success";
     public static final String TO_REPLACE = "to-replace";
+    public static final String UNDEFINE_ATTRIBUTE_OPERATION = "undefine-attribute";
+    public static final String VALUE = "value";
+    public static final String WRITE_ATTRIBUTE_OPERATION = "write-attribute";
 
     public static final String CONTROLLER_PROCESS_STATE_STARTING = "starting";
     public static final String CONTROLLER_PROCESS_STATE_RUNNING = "running";

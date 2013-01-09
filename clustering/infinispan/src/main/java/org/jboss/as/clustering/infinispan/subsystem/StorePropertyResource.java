@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
@@ -40,13 +41,13 @@ import org.jboss.dmr.ModelType;
  */
 public class StorePropertyResource extends SimpleResourceDefinition {
 
-    private static final PathElement STORE_PROPERTY_PATH = PathElement.pathElement(ModelKeys.PROPERTY);
+    public static final PathElement STORE_PROPERTY_PATH = PathElement.pathElement(ModelKeys.PROPERTY);
 
     // attributes
     static final SimpleAttributeDefinition VALUE =
             new SimpleAttributeDefinitionBuilder("value", ModelType.STRING, false)
                     .setXmlName("value")
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
@@ -56,6 +57,8 @@ public class StorePropertyResource extends SimpleResourceDefinition {
                 CacheConfigOperationHandlers.STORE_PROPERTY_ADD,
                 ReloadRequiredRemoveStepHandler.INSTANCE);
     }
+
+    static final AttributeDefinition[] STORE_PROPERTY_ATTRIBUTES = {VALUE};
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {

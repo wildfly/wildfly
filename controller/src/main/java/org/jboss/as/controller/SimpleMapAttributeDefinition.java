@@ -43,6 +43,8 @@ import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 
 /**
+ * {@link MapAttributeDefinition} for maps with keys of {@link ModelType#STRING}.
+ *
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  * @since 7.2
  */

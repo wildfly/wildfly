@@ -32,6 +32,8 @@ import org.jboss.security.authentication.JBossCachedAuthenticationManager.Domain
 /**
  * Listener to perform a JAAS logout when an entry is evicted from the cache.
  *
+ * TODO: https://issues.jboss.org/browse/AS7-6232
+ *
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  */
 public class AuthenticationCacheEvictionListener implements EvictionListener<Principal, DomainInfo> {
@@ -47,6 +49,16 @@ public class AuthenticationCacheEvictionListener implements EvictionListener<Pri
 
     @Override
     public void onEntryChosenForEviction(DomainInfo arg0) {
+        // Do nothing
+    }
+
+    @Override
+    public void onEntryActivated(Object key) {
+        // Do nothing
+    }
+
+    @Override
+    public void onEntryRemoved(Object key) {
         // Do nothing
     }
 }

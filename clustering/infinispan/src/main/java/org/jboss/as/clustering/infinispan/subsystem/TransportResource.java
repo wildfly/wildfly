@@ -43,7 +43,7 @@ import org.jboss.dmr.ModelType;
  */
 public class TransportResource extends SimpleResourceDefinition {
 
-    private static final PathElement TRANSPORT_PATH = PathElement.pathElement(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
+    public static final PathElement TRANSPORT_PATH = PathElement.pathElement(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
 
     // attributes
     static final SimpleAttributeDefinition CLUSTER =
@@ -64,7 +64,7 @@ public class TransportResource extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(ModelKeys.LOCK_TIMEOUT, ModelType.LONG, true)
                     .setXmlName(Attribute.LOCK_TIMEOUT.getLocalName())
                     .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(240000))
                     .build();
@@ -73,7 +73,7 @@ public class TransportResource extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition STACK =
             new SimpleAttributeDefinitionBuilder(ModelKeys.STACK, ModelType.STRING, true)
                     .setXmlName(Attribute.STACK.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 

@@ -25,7 +25,6 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
@@ -55,7 +54,7 @@ public class MethodResolutionUtils {
         final Collection<Method> method = resolveMethods(methodName, parameters, componentClass, reflectionIndex);
 
         if(method.size() >1) {
-            throw EjbLogger.EJB3_LOGGER.moreThanOneMethodWithSameNameOnComponent(methodName, componentClass);
+            throw MESSAGES.moreThanOneMethodWithSameNameOnComponent(methodName, componentClass);
         }
         return method.iterator().next();
     }

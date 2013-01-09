@@ -44,6 +44,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.jmx.JmxMessages.MESSAGES;
 
@@ -53,7 +54,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.management.Descriptor;
 import javax.management.ImmutableDescriptor;
 import javax.management.InstanceNotFoundException;
@@ -85,6 +85,7 @@ import org.jboss.as.jmx.model.ChildAddOperationFinder.ChildAddOperationEntry;
 import org.jboss.as.server.deployment.DeploymentUploadStreamAttachmentHandler;
 import org.jboss.as.server.operations.RootResourceHack;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 
 /**
@@ -93,12 +94,12 @@ import org.jboss.dmr.Property;
  */
 public class MBeanInfoFactory {
 
-    private final String DESC_MBEAN_EXPR = "mbean.expression.support";
-    private final String DESC_MBEAN_EXPR_DESCR = "mbean.expression.support.description";
-    private final String DESC_ALTERNATE_MBEAN = "alternate.mbean";
-    private final String DESC_ALTERNATE_MBEAN_DESCR = "alternate.mbean.description";
-    private final String DESC_EXPRESSIONS_ALLOWED = "expressions.allowed";
-    private final String DESC_EXPRESSIONS_ALLOWED_DESC = "expressions.allowed.description";
+    private static final String DESC_MBEAN_EXPR = "mbean.expression.support";
+    private static final String DESC_MBEAN_EXPR_DESCR = "mbean.expression.support.description";
+    private static final String DESC_ALTERNATE_MBEAN = "alternate.mbean";
+    private static final String DESC_ALTERNATE_MBEAN_DESCR = "alternate.mbean.description";
+    private static final String DESC_EXPRESSIONS_ALLOWED = "expressions.allowed";
+    private static final String DESC_EXPRESSIONS_ALLOWED_DESC = "expressions.allowed.description";
 
     private static final OpenMBeanParameterInfo[] EMPTY_PARAMETERS = new OpenMBeanParameterInfo[0];
     private final ObjectName name;
@@ -162,12 +163,7 @@ public class MBeanInfoFactory {
         final String escapedName = NameConverter.convertToCamelCase(name);
         ModelNode attribute = providedDescription.require(ATTRIBUTES).require(name);
         AttributeAccess access = resourceRegistration.getAttributeAccess(PathAddress.EMPTY_ADDRESS, name);
-        final boolean writable;
-        if (!standalone) {
-            writable = false;
-        } else {
-            writable = access != null ? access.getAccessType() == AccessType.READ_WRITE : false;
-        }
+        final boolean writable = standalone && (access != null && access.getAccessType() == AccessType.READ_WRITE);
 
         return new OpenMBeanAttributeInfoSupport(
                 escapedName,
@@ -208,7 +204,7 @@ public class MBeanInfoFactory {
                 }
             }
             final OperationEntry opEntry = entry.getValue();
-            if (standalone ? true : opEntry.getFlags().contains(OperationEntry.Flag.READ_ONLY)) {
+            if (standalone || opEntry.getFlags().contains(OperationEntry.Flag.READ_ONLY)) {
                 ops.add(getOperation(NameConverter.convertToCamelCase(entry.getKey()), null, opEntry));
             }
         }
@@ -265,8 +261,10 @@ public class MBeanInfoFactory {
                 Object defaultValue = getIfExists(value, DEFAULT);
                 descriptions.put(DEFAULT_VALUE_FIELD, defaultValue);
                 if (value.has(ALLOWED)) {
-                    List<ModelNode> allowed = value.get(ALLOWED).asList();
-                    descriptions.put(LEGAL_VALUES_FIELD,fromModelNodes(value, allowed));
+                    if (value.get(TYPE).asType()!=ModelType.LIST){
+                        List<ModelNode> allowed = value.get(ALLOWED).asList();
+                        descriptions.put(LEGAL_VALUES_FIELD, fromModelNodes(allowed));
+                    }
                 } else {
                     if (value.has(MIN)) {
                         descriptions.put(MIN_VALUE_FIELD, getIfExistsAsComparable(value, MIN));
@@ -289,10 +287,10 @@ public class MBeanInfoFactory {
         return params.toArray(new OpenMBeanParameterInfo[params.size()]);
     }
 
-    private Set<?> fromModelNodes(final ModelNode parentNode, final List<ModelNode> nodes) {
+    private Set<?> fromModelNodes(final List<ModelNode> nodes) {
         Set<Object> values = new HashSet<Object>(nodes.size());
         for (ModelNode node : nodes) {
-            values.add(converters.fromModelNode(parentNode, node));
+            values.add(converters.getConverter(ModelType.STRING,null).fromModelNode(node));
         }
         return values;
     }

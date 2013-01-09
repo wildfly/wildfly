@@ -266,4 +266,46 @@ public abstract class ListAttributeDefinition extends AttributeDefinition {
     public void marshallAsElement(ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
         attributeMarshaller.marshallAsElement(this,resourceModel,marshallDefault,writer);
     }
+
+    /**
+     * Iterates through the elements in the {@code parameter} list, calling {@link #convertParameterElementExpressions(ModelNode)}
+     * for each.
+     * <p>
+     * <strong>Note</strong> that the default implementation of {@link #convertParameterElementExpressions(ModelNode)}
+     * will only convert simple {@link ModelType#STRING} elements. If users need to handle complex elements
+     * with embedded expressions, they should use a subclass that overrides that method.
+     * </p>
+     *
+     * {@inheritDoc}
+     */
+    @Override
+    protected ModelNode convertParameterExpressions(ModelNode parameter) {
+        ModelNode result = parameter;
+        if (parameter.isDefined()) {
+            boolean changeMade = false;
+            ModelNode newList = new ModelNode().setEmptyList();
+            for (ModelNode item : parameter.asList()) {
+                ModelNode converted = convertParameterElementExpressions(item);
+                newList.add(converted);
+                changeMade |= !converted.equals(item);
+            }
+            if (changeMade) {
+                result = newList;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Examine the given element of a parameter list for any expression syntax, converting the relevant node to
+     * {@link ModelType#EXPRESSION} if such is supported. This implementation will only convert elements of
+     * {@link ModelType#STRING}. Subclasses that need to handle complex elements should override this method.
+     *
+     * @param parameterElement the node to examine. Will not be {@code null}
+     * @return the parameter element with expressions converted, or the original parameter if no conversion was performed
+     *         Cannot return {@code null}
+     */
+    protected ModelNode convertParameterElementExpressions(ModelNode parameterElement) {
+        return isAllowExpression() ? convertStringExpression(parameterElement) : parameterElement;
+    }
 }

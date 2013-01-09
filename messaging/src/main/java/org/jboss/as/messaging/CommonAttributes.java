@@ -112,6 +112,7 @@ public interface CommonAttributes {
 
     AttributeDefinition CLIENT_ID = create("client-id", ModelType.STRING)
             .setAllowNull(true)
+            .setAllowExpression(true)
             .build();
 
     SimpleAttributeDefinition CHECK_FOR_LIVE_SERVER = create("check-for-live-server", BOOLEAN)
@@ -184,7 +185,10 @@ public interface CommonAttributes {
             .setRestartAllServices()
             .build();
 
-    SimpleAttributeDefinition DEAD_LETTER_ADDRESS = new SimpleAttributeDefinition("dead-letter-address", ModelType.STRING, true);
+    SimpleAttributeDefinition DEAD_LETTER_ADDRESS = create("dead-letter-address", ModelType.STRING)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .build();
 
     AttributeDefinition DELIVERING_COUNT = create("delivering-count", INT)
             .setStorageRuntime()
@@ -209,7 +213,10 @@ public interface CommonAttributes {
             .setRestartAllServices()
             .build();
 
-    SimpleAttributeDefinition EXPIRY_ADDRESS = new SimpleAttributeDefinition("expiry-address", ModelType.STRING, true);
+    SimpleAttributeDefinition EXPIRY_ADDRESS = create("expiry-address", ModelType.STRING)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .build();
 
     SimpleAttributeDefinition FAILBACK_DELAY = create("failback-delay", LONG)
             .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_FAILBACK_DELAY))
@@ -557,7 +564,7 @@ public interface CommonAttributes {
             .setMinSize(1)
             .setMaxSize(Integer.MAX_VALUE)
             .setRestartAllServices()
-            .setValidator(new StringLengthValidator(1))
+            .setValidator(new StringLengthValidator(1, false, true))
             .setAttributeMarshaller(new AttributeMarshaller() {
                 @Override
                 public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {

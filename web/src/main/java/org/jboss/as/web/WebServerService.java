@@ -17,6 +17,9 @@ package org.jboss.as.web;
 import static org.jboss.as.web.WebMessages.MESSAGES;
 
 import java.net.MalformedURLException;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
 
 import javax.management.MBeanServer;
 
@@ -41,8 +44,9 @@ import org.jboss.msc.value.InjectedValue;
  * Service configuring and starting the web container.
  *
  * @author Emanuel Muckenhuber
+ * @author Jean-Frederic Clere
  */
-class WebServerService implements WebServer, Service<WebServer> {
+public class WebServerService implements WebServer, Service<WebServer> {
 
     private static final String JBOSS_WEB = "jboss.web";
 
@@ -54,6 +58,7 @@ class WebServerService implements WebServer, Service<WebServer> {
     private Engine engine;
     private StandardServer server;
     private StandardService service;
+    private Map<String, AuthenticatorValve> authenvalves = new Hashtable<String, AuthenticatorValve>();
 
     private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
     private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<PathManager>();
@@ -176,9 +181,20 @@ class WebServerService implements WebServer, Service<WebServer> {
     }
 
     @Override
+    public synchronized void addValve(String name, Class classz, Hashtable<String, String> properties) {
+        AuthenticatorValve authvalve = new AuthenticatorValve();
+        authvalve.classz = classz;
+        authvalve.properties = properties;
+        this.authenvalves.put(name, authvalve);
+    }
+
+    @Override
     public void removeValve(Valve valve) {
         final Engine engine = this.engine;
         ((StandardEngine) engine).removeValve(valve);
     }
 
+    public Map<String, AuthenticatorValve> getAuthenValves() {
+        return this.authenvalves;
+    }
 }

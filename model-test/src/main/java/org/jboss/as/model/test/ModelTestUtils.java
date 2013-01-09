@@ -44,12 +44,14 @@ import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -394,7 +396,7 @@ public class ModelTestUtils {
                 Assert.assertNotNull("Attribute " + name + " is not known", aa);
                 AttributeDefinition ad = aa.getAttributeDefinition();
                 if (!value.isDefined()) {
-                    Assert.assertTrue("Attribute is not allow null", ad.isAllowNull());
+                    Assert.assertTrue("Attribute " + name + " does not allow null", ad.isAllowNull());
                 } else {
                    // Assert.assertEquals("Attribute '" + name + "' type mismatch", value.getType(), ad.getType()); //todo re-enable this check
                 }
@@ -438,4 +440,47 @@ public class ModelTestUtils {
         }
     }
 
+    /**
+     * A standard test for transformers where things should be rejected.
+     * Takes the operations and installs them in the main controller.
+     * It then attempts to execute the same operations in the legacy controller, validating that expected failures take place.
+     * It then attempts to fix the operations so they can be executed in the legacy controller, since if an 'add' fails, there could be adds for children later in the list.
+     *
+     * @param mainServices The main controller services
+     * @param modelVersion The version of the legacy controller
+     * @param operations the operations
+     * @param config the config
+     */
+    public static void checkFailedTransformedBootOperations(ModelTestKernelServices<?> mainServices, ModelVersion modelVersion, List<ModelNode> operations, FailedOperationTransformationConfig config) throws OperationFailedException {
+        for (ModelNode op : operations) {
+            ModelTestUtils.checkOutcome(mainServices.executeOperation(op));
+            checkFailedTransformedAddOperation(mainServices, modelVersion, op.clone(), config);
+
+            List<ModelNode> writeOps = config.createWriteAttributeOperations(op);
+            for (ModelNode writeOp : writeOps) {
+                TransformedOperation transformedOperation = mainServices.transformOperation(modelVersion, writeOp);
+                ModelNode result = mainServices.executeOperation(modelVersion, transformedOperation);
+                if (!config.expectFailedWriteAttributeOperation(writeOp)) {
+                    Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+                } else {
+                    Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
+                    transformedOperation = mainServices.transformOperation(modelVersion, config.correctWriteAttributeOperation(writeOp));
+                    checkOutcome(mainServices.executeOperation(modelVersion, transformedOperation));
+                }
+            }
+        }
+    }
+
+    private static void checkFailedTransformedAddOperation(ModelTestKernelServices<?> mainServices, ModelVersion modelVersion, ModelNode operation, FailedOperationTransformationConfig config) throws OperationFailedException {
+        TransformedOperation transformedOperation = mainServices.transformOperation(modelVersion, operation);
+        ModelNode result = mainServices.executeOperation(modelVersion, transformedOperation);
+        if (!config.expectFailed(operation)) {
+            Assert.assertEquals("Failed: " + operation + "\n: " + result, SUCCESS, result.get(OUTCOME).asString());
+        } else {
+            Assert.assertEquals("Should not have worked: " + operation, FAILED, result.get(OUTCOME).asString());
+            if (config.canCorrectMore(operation)) {
+                checkFailedTransformedAddOperation(mainServices, modelVersion, config.correctOperation(operation), config);
+            }
+        }
+    }
 }

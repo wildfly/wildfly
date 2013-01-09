@@ -44,13 +44,13 @@ import org.jboss.dmr.ModelType;
  */
 public class EvictionResource extends SimpleResourceDefinition {
 
-    private static final PathElement EVICTION_PATH = PathElement.pathElement(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME);
+    public static final PathElement EVICTION_PATH = PathElement.pathElement(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME);
 
     // attributes
     static final SimpleAttributeDefinition EVICTION_STRATEGY =
             new SimpleAttributeDefinitionBuilder(ModelKeys.STRATEGY, ModelType.STRING, true)
                     .setXmlName(Attribute.STRATEGY.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new EnumValidator<EvictionStrategy>(EvictionStrategy.class, true, false))
                     .setDefaultValue(new ModelNode().set(EvictionStrategy.NONE.name()))
@@ -59,7 +59,7 @@ public class EvictionResource extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition MAX_ENTRIES =
             new SimpleAttributeDefinitionBuilder(ModelKeys.MAX_ENTRIES, ModelType.INT, true)
                     .setXmlName(Attribute.MAX_ENTRIES.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(-1))
                     .build();
