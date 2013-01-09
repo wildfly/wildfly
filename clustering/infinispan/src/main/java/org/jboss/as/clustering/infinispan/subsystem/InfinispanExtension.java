@@ -21,6 +21,10 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -37,10 +41,13 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
+import org.jboss.as.controller.transform.DiscardAttributesTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
+import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.controller.transform.chained.ChainedOperationTransformer;
+import org.jboss.as.controller.transform.chained.ChainedResourceTransformer;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 
@@ -121,17 +128,23 @@ public class InfinispanExtension implements Extension {
     private static void registerTransformers(final SubsystemRegistration subsystem) {
 
         // define the resource and operation transformers
-        final InfinispanOperationTransformer_1_3 removeSelectedCacheAttributes = new InfinispanOperationTransformer_1_3();
-
-        final RejectExpressionValuesTransformer cacheContainerReject = new RejectExpressionValuesTransformer(InfinispanRejectedExpressions_1_3.REJECT_CONTAINER_ATTRIBUTES) ;
-        final RejectExpressionValuesTransformer transportReject = new RejectExpressionValuesTransformer(InfinispanRejectedExpressions_1_3.REJECT_TRANSPORT_ATTRIBUTES) ;
-        final RejectExpressionValuesTransformer cacheReject = new RejectExpressionValuesTransformer(InfinispanRejectedExpressions_1_3.REJECT_CACHE_ATTRIBUTES) ;
-        final ChainedOperationTransformer chained = new ChainedOperationTransformer(removeSelectedCacheAttributes,cacheReject);
 
         // Register the model transformers
-        TransformersSubRegistration registration = subsystem.registerModelTransformers(ModelVersion.create(1, 3), new InfinispanSubsystemTransformer_1_3());
-        TransformersSubRegistration containerRegistration = registration.registerSubResource(CacheContainerResource.CONTAINER_PATH, (OperationTransformer) cacheContainerReject);
-        containerRegistration.registerSubResource(TransportResource.TRANSPORT_PATH, (OperationTransformer) transportReject);
+        TransformersSubRegistration registration = subsystem.registerModelTransformers(ModelVersion.create(1, 3), ResourceTransformer.DEFAULT);
+
+        final RejectExpressionValuesTransformer cacheContainerReject = new RejectExpressionValuesTransformer(InfinispanRejectedExpressions_1_3.REJECT_CONTAINER_ATTRIBUTES);
+        TransformersSubRegistration containerRegistration =
+                registerTransformer(registration, CacheContainerResource.CONTAINER_PATH, cacheContainerReject, cacheContainerReject, cacheContainerReject.getWriteAttributeTransformer(), null);
+
+        final RejectExpressionValuesTransformer transportReject = new RejectExpressionValuesTransformer(InfinispanRejectedExpressions_1_3.REJECT_TRANSPORT_ATTRIBUTES);
+        registerTransformer(containerRegistration, TransportResource.TRANSPORT_PATH, transportReject, transportReject, transportReject.getWriteAttributeTransformer(), null);
+
+        final DiscardAttributesTransformer removeSelectedCacheAttributes = new DiscardAttributesTransformer(ModelKeys.INDEXING_PROPERTIES, ModelKeys.SEGMENTS, ModelKeys.VIRTUAL_NODES);
+        final RejectExpressionValuesTransformer cacheReject = new RejectExpressionValuesTransformer(InfinispanRejectedExpressions_1_3.REJECT_CACHE_ATTRIBUTES);
+        final ChainedResourceTransformer chainedResource = new ChainedResourceTransformer(removeSelectedCacheAttributes, cacheReject.getChainedTransformer());
+        final ChainedOperationTransformer chainedAdd = new ChainedOperationTransformer(removeSelectedCacheAttributes, cacheReject);
+        final ChainedOperationTransformer chainedWrite = new ChainedOperationTransformer(removeSelectedCacheAttributes.getWriteAttributeTransformer(), cacheReject.getWriteAttributeTransformer());
+
 
         PathElement[] cachePaths = {
                 LocalCacheResource.LOCAL_CACHE_PATH,
@@ -140,9 +153,22 @@ public class InfinispanExtension implements Extension {
                 DistributedCacheResource.DISTRIBUTED_CACHE_PATH};
         for (int i=0; i < cachePaths.length; i++) {
             // register chained operation transformers for cache ADD operations where we need to remove and reject
-            TransformersSubRegistration cacheRegistration = containerRegistration.registerSubResource(cachePaths[i], (OperationTransformer) chained);
+            TransformersSubRegistration cacheRegistration = //containerRegistration.registerSubResource(cachePaths[i], (OperationTransformer) chainedAdd);
+                    registerTransformer(containerRegistration, cachePaths[i], chainedResource, chainedAdd, chainedWrite, removeSelectedCacheAttributes.getUndefineAttributeTransformer());
+
             registerCacheChildrenTransformers(cacheRegistration) ;
         }
+    }
+
+    private static TransformersSubRegistration registerTransformer(TransformersSubRegistration parent, PathElement path, ResourceTransformer resourceTransformer, OperationTransformer addTransformer,
+                        OperationTransformer writeAttributeTransformer, OperationTransformer undefineAttributeTransformer) {
+        TransformersSubRegistration childReg = parent.registerSubResource(path, resourceTransformer);
+        childReg.registerOperationTransformer(ADD, addTransformer);
+        childReg.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, writeAttributeTransformer);
+        if (undefineAttributeTransformer != null) {
+            childReg.registerOperationTransformer(UNDEFINE_ATTRIBUTE_OPERATION, undefineAttributeTransformer);
+        }
+        return childReg;
     }
 
     private static void registerCacheChildrenTransformers(TransformersSubRegistration cacheReg) {

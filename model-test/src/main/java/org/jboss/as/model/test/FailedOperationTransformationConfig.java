@@ -104,7 +104,7 @@ public class FailedOperationTransformationConfig {
 
     List<ModelNode> createWriteAttributeOperations(ModelNode operation) {
         PathAddressConfig cfg = registry.getConfig(operation);
-        if (cfg == null || !operation.get(OP).equals(ADD)) {
+        if (cfg == null || !operation.get(OP).asString().equals(ADD)) {
             return Collections.emptyList();
         }
         return cfg.createWriteAttributeOperations(operation);
@@ -234,6 +234,8 @@ public class FailedOperationTransformationConfig {
     public abstract static class AttributesPathAddressConfig<T extends AttributesPathAddressConfig<T>> implements PathAddressConfig {
         protected final Set<String> attributes;
         protected final Map<String, T> complexAttributes = new HashMap<String, T>();
+        protected final Set<String> noWriteFailureAttributes = new HashSet<String>();
+        protected final Set<String> readOnlyAttributes = new HashSet<String>();
 
         protected AttributesPathAddressConfig(String...attributes) {
             this.attributes = new HashSet<String>(Arrays.asList(attributes));
@@ -255,7 +257,7 @@ public class FailedOperationTransformationConfig {
                 if (operation.hasDefined(attr)) {
                     //TODO Should we also allow undefined here?
 
-                    if (isAttributeWritable(attr)) {
+                    if (!readOnlyAttributes.contains(attr) && isAttributeWritable(attr)) {
                         list.add(Util.getWriteAttributeOperation(PathAddress.pathAddress(operation.get(OP_ADDR)), attr, operation.get(attr)));
                     }
                 }
@@ -264,6 +266,35 @@ public class FailedOperationTransformationConfig {
         }
 
         protected abstract boolean isAttributeWritable(String attributeName);
+
+        public AttributesPathAddressConfig<T> setNotExpectedWriteFailure(String...attributes) {
+            for (String attr : attributes) {
+                noWriteFailureAttributes.add(attr);
+            }
+            return this;
+        }
+
+        public AttributesPathAddressConfig<T> setNotExpectedWriteFailure(AttributeDefinition...attributes) {
+            for (AttributeDefinition attr : attributes) {
+                noWriteFailureAttributes.add(attr.getName());
+            }
+            return this;
+        }
+
+        public AttributesPathAddressConfig<T> setReadOnly(String...attributes) {
+            for (String attr : attributes) {
+                readOnlyAttributes.add(attr);
+            }
+            return this;
+        }
+
+        public AttributesPathAddressConfig<T> setReadOnly(AttributeDefinition...attributes) {
+            for (AttributeDefinition attr : attributes) {
+                readOnlyAttributes.add(attr.getName());
+            }
+            return this;
+        }
+
     }
 
     /**
@@ -348,7 +379,8 @@ public class FailedOperationTransformationConfig {
 
         @Override
         public boolean expectFailedWriteAttributeOperation(ModelNode operation) {
-            return hasExpressions(operation.get(NAME).asString(), operation.clone().get(VALUE));
+            String name = operation.get(NAME).asString();
+            return !noWriteFailureAttributes.contains(name) && hasExpressions(name, operation.clone().get(VALUE));
         }
 
         boolean hasExpressions(String attrName, ModelNode attribute) {
@@ -492,7 +524,7 @@ public class FailedOperationTransformationConfig {
     /**
      * A standard configuration that allows multiple separate configs to be used.
      */
-    public static class ChainedConfig extends AttributesPathAddressConfig {
+    public static class ChainedConfig extends AttributesPathAddressConfig<ChainedConfig> {
 
         private final Map<String, PathAddressConfig> links = new TreeMap<String, PathAddressConfig>();
 
@@ -551,14 +583,15 @@ public class FailedOperationTransformationConfig {
 
         @Override
         public boolean expectFailedWriteAttributeOperation(ModelNode operation) {
-            for (PathAddressConfig link : links.values()) {
-                if (link.expectFailedWriteAttributeOperation(operation)) {
-                    return true;
+            if (!noWriteFailureAttributes.contains(operation.get(NAME).asString())) {
+                for (PathAddressConfig link : links.values()) {
+                    if (link.expectFailedWriteAttributeOperation(operation)) {
+                        return true;
+                    }
                 }
             }
             return false;
         }
-
     }
 
 }

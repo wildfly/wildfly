@@ -21,10 +21,10 @@
  */
 package org.jboss.as.messaging.jms;
 
-import static org.hornetq.api.core.client.HornetQClient.DEFAULT_CONNECTION_TTL;
-import static org.hornetq.api.core.client.HornetQClient.DEFAULT_MAX_RETRY_INTERVAL;
 import static org.hornetq.api.config.HornetQDefaultConfiguration.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
 import static org.hornetq.api.config.HornetQDefaultConfiguration.DEFAULT_THREAD_POOL_MAX_SIZE;
+import static org.hornetq.api.core.client.HornetQClient.DEFAULT_CONNECTION_TTL;
+import static org.hornetq.api.core.client.HornetQClient.DEFAULT_MAX_RETRY_INTERVAL;
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.BYTES;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;

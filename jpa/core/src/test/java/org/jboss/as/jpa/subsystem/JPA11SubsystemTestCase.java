@@ -99,7 +99,8 @@ public class JPA11SubsystemTestCase extends AbstractSubsystemBaseTest {
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, oldVersion, ops,
                 new FailedOperationTransformationConfig()
                     .addFailedAttribute(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, JPAExtension.SUBSYSTEM_NAME)),
-                            new FailedOperationTransformationConfig.RejectExpressionsConfig(DEFAULT_DATASOURCE, DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE)));
+                            new FailedOperationTransformationConfig.RejectExpressionsConfig(DEFAULT_DATASOURCE, DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE)
+                                .setNotExpectedWriteFailure(JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE)));
 
         ModelNode legacyModel = legacyServices.readWholeModel().require(SUBSYSTEM).require(JPAExtension.SUBSYSTEM_NAME);
         Assert.assertEquals(1, legacyModel.keys().size());
