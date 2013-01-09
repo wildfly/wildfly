@@ -39,6 +39,7 @@ public class VaultToolTestCase {
   public void testVaultTool() throws IOException, VaultReaderException {
     // Replaces standard output with a ByteArrayOutputStream to parse the ouput later.
     System.setOut(new PrintStream(SYSTEM_OUT));
+
     try {
       String[] args = generateArgs(); // Generate the required arguments
       VaultTool.main(args);
@@ -83,7 +84,7 @@ public class VaultToolTestCase {
 
   private String[] generateArgs() {
     List<String> args = new ArrayList<String>();
-    addAll(args, "-k", "/tmp/vault.keystore");
+    addAll(args, "-k", KEYSTORE_URL_VALUE);
     addAll(args, "-p", KEYSTORE_PASSWORD);
     addAll(args, "-e", ENC_FILE_DIR_VALUE);
     addAll(args, "-s", SALT_VALUE);
