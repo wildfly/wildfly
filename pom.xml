@@ -142,7 +142,7 @@
         <version.org.hibernate.validator>4.3.1.Final</version.org.hibernate.validator>
         <version.org.hibernate3>3.6.6.Final</version.org.hibernate3>
         <version.org.hibernate3.commons.annotations>3.2.0.Final</version.org.hibernate3.commons.annotations>
-        <version.org.hornetq>2.3.0.BETA2</version.org.hornetq>
+        <version.org.hornetq>2.3.0.BETA3</version.org.hornetq>
         <version.org.infinispan>5.2.0.CR1</version.org.infinispan>
         <version.org.jacorb>2.3.2.jbossorg-0</version.org.jacorb>
         <version.org.javassist>3.15.0-GA</version.org.javassist>
