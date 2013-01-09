@@ -47,6 +47,8 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * This class tests a global valve.
+ * A note: some more tests are in manualmode testsuite module 
+ *         reload is required for adding parameters and disabling valve 
  *
  * @author Jean-Frederic Clere
  */
