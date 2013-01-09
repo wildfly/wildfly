@@ -24,7 +24,6 @@ package org.jboss.as.ejb3.subsystem;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -32,12 +31,10 @@ import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
-import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
-import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.ejb3.subsystem.deployment.EntityBeanResourceDefinition;
 import org.jboss.as.ejb3.subsystem.deployment.MessageDrivenBeanResourceDefinition;
 import org.jboss.as.ejb3.subsystem.deployment.SingletonBeanDeploymentResourceDefinition;
@@ -62,6 +59,8 @@ public class EJB3Extension implements Extension {
     public static final String NAMESPACE_1_3 = EJB3SubsystemNamespace.EJB3_1_3.getUriString();
     public static final String NAMESPACE_1_4 = EJB3SubsystemNamespace.EJB3_1_4.getUriString();
 
+    static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
+
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
     private static final int MANAGEMENT_API_MINOR_VERSION = 2;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
@@ -85,41 +84,8 @@ public class EJB3Extension implements Extension {
 
         subsystem.registerXMLElementWriter(EJB3SubsystemXMLPersister.INSTANCE);
 
-        final ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(EJB3SubsystemRootResourceDefinition.INSTANCE);
-
-        // describe operation for the subsystem
-        subsystemRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
-
-        // subsystem=ejb3/service=remote
-        subsystemRegistration.registerSubModel(EJB3RemoteResourceDefinition.INSTANCE);
-
-        // subsystem=ejb3/service=async
-        subsystemRegistration.registerSubModel(EJB3AsyncResourceDefinition.INSTANCE);
-
-        // subsystem=ejb3/strict-max-bean-instance-pool=*
-        subsystemRegistration.registerSubModel(StrictMaxPoolResourceDefinition.INSTANCE);
-
-        subsystemRegistration.registerSubModel(CacheFactoryResourceDefinition.INSTANCE);
-        subsystemRegistration.registerSubModel(FilePassivationStoreResourceDefinition.INSTANCE);
-        subsystemRegistration.registerSubModel(ClusterPassivationStoreResourceDefinition.INSTANCE);
-
-        // subsystem=ejb3/service=timerservice
-        final ManagementResourceRegistration timerService = subsystemRegistration.registerSubModel(TimerServiceResourceDefinition.INSTANCE);
-        // Create the path resolver handler
-        if (context.getProcessType().isServer()) {
-            final ResolvePathHandler resolvePathHandler = ResolvePathHandler.Builder.of(context.getPathManager())
-                    .setPathAttribute(TimerServiceResourceDefinition.PATH)
-                    .setRelativeToAttribute(TimerServiceResourceDefinition.RELATIVE_TO)
-                    .build();
-            timerService.registerOperationHandler(resolvePathHandler.getOperationDefinition(), resolvePathHandler);
-        }
-
-        // subsystem=ejb3/thread-pool=*
-        subsystemRegistration.registerSubModel(UnboundedQueueThreadPoolResourceDefinition.create(EJB3SubsystemModel.THREAD_POOL,
-                new EJB3ThreadFactoryResolver(), EJB3SubsystemModel.BASE_THREAD_POOL_SERVICE_NAME, registerRuntimeOnly));
-
-        // subsystem=ejb3/service=iiop
-        subsystemRegistration.registerSubModel(EJB3IIOPResourceDefinition.INSTANCE);
+        PathManager pathManager = context.getProcessType().isServer() ? context.getPathManager() : null;
+        subsystem.registerSubsystemModel(new EJB3SubsystemRootResourceDefinition(registerRuntimeOnly, pathManager));
 
         if (registerRuntimeOnly) {
             ResourceDefinition deploymentsDef = new SimpleResourceDefinition(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME),
@@ -132,13 +98,8 @@ public class EJB3Extension implements Extension {
             deploymentsRegistration.registerSubModel(StatefulSessionBeanDeploymentResourceDefinition.INSTANCE);
         }
 
-        registerTransformers(subsystem);
-    }
-
-    private void registerTransformers(SubsystemRegistration subsystem) {
-        ModelVersion subsystem110 = ModelVersion.create(1, 1);
-        final TransformersSubRegistration transformers110 = subsystem.registerModelTransformers(subsystem110, ResourceTransformer.DEFAULT);
-        UnboundedQueueThreadPoolResourceDefinition.registerTransformers1_0(transformers110, EJB3SubsystemModel.THREAD_POOL);
+        // Transformers
+        EJB3SubsystemRootResourceDefinition.registerTransformers(subsystem);
     }
 
     /**
@@ -151,17 +112,5 @@ public class EJB3Extension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_2, EJB3Subsystem12Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_3, EJB3Subsystem13Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_4, EJB3Subsystem14Parser.INSTANCE);
-    }
-
-    private static class EJB3ThreadFactoryResolver extends ThreadFactoryResolver.SimpleResolver {
-
-        private EJB3ThreadFactoryResolver() {
-            super(ThreadsServices.FACTORY);
-        }
-
-        @Override
-        protected String getThreadGroupName(String threadPoolName) {
-            return "EJB " + threadPoolName;
-        }
     }
 }

@@ -50,19 +50,20 @@ class KnownVersions {
 
         //1.0.0 of configadmin belongs to AS 7.1.3 (inferred from the 1.3.0 core model version)
         addSubsystemVersion(map, "configadmin", "1.0.0", "1.3.0");
-        addSubsystemVersion(map, "jacorb", "1.1.0", "1.3.0");
+        addSubsystemVersion(map, "ejb3", "1.1.0", "1.2.0");
         addSubsystemVersion(map, "infinispan", "1.3.0", "1.3.0");
+        addSubsystemVersion(map, "jacorb", "1.1.0", "1.3.0");
+        addSubsystemVersion(map, "jgroups", "1.1.0", "1.3.0");
         addSubsystemVersion(map, "jmx", "1.0.0", "1.2.0");
         addSubsystemVersion(map, "jmx", "1.1.0", "1.3.0");
-        addSubsystemVersion(map, "jgroups", "1.1.0", "1.3.0");
         addSubsystemVersion(map, "jpa", "1.1.0", "1.3.0");
         addSubsystemVersion(map, "logging", "1.1.0", "1.3.0");
         addSubsystemVersion(map, "mail", "1.1.0", "1.3.0");
         addSubsystemVersion(map, "messaging", "1.1.0", "1.3.0");
         addSubsystemVersion(map, "naming", "1.1.0", "1.3.0");
         addSubsystemVersion(map, "osgi", "1.0.0", "1.3.0");
-        addSubsystemVersion(map, "security", "1.1.0", "1.2.0");
         addSubsystemVersion(map, "remoting", "1.1.0", "1.3.0");
+        addSubsystemVersion(map, "security", "1.1.0", "1.2.0");
         addSubsystemVersion(map, "threads", "1.0.0", "1.2.0");
         addSubsystemVersion(map, "transactions", "1.1.0", "1.2.0");
         addSubsystemVersion(map, "transactions", "1.1.1", "1.3.0");
