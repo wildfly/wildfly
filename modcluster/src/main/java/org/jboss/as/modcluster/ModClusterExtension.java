@@ -23,6 +23,7 @@
 package org.jboss.as.modcluster;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.modcluster.CustomLoadMetricDefinition.CLASS;
 import static org.jboss.as.modcluster.DynamicLoadProviderDefinition.DECAY;
@@ -44,22 +45,34 @@ import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.KEY_ALIAS;
 import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.PROTOCOL;
 
 import java.util.List;
+
 import javax.xml.stream.XMLStreamConstants;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.AbstractSubsystemTransformer;
+import org.jboss.as.controller.transform.OperationResultTransformer;
+import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
+import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.controller.transform.chained.ChainedOperationTransformer;
+import org.jboss.as.controller.transform.chained.ChainedResourceTransformationContext;
+import org.jboss.as.controller.transform.chained.ChainedResourceTransformer;
+import org.jboss.as.controller.transform.chained.ChainedResourceTransformerEntry;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.staxmapper.XMLElementReader;
 
 /**
@@ -137,32 +150,75 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
 
         // ModClusterConfigResourceDefinition
         RejectExpressionValuesTransformer configRejectExpressionTransformer = new RejectExpressionValuesTransformer(ADVERTISE, AUTO_ENABLE_CONTEXTS, FLUSH_PACKETS, STICKY_SESSION, STICKY_SESSION_REMOVE, STICKY_SESSION_FORCE, PING);
-        TransformersSubRegistration config = transformers.registerSubResource(CONFIGURATION_PATH);
+        TransformersSubRegistration config = transformers.registerSubResource(CONFIGURATION_PATH, (ResourceTransformer)configRejectExpressionTransformer);
         config.registerOperationTransformer(ModelDescriptionConstants.ADD, configRejectExpressionTransformer);
+
+
 
         // ModClusterSSLResourceDefinition
         RejectExpressionValuesTransformer sslRejectExpressionTransformer = new RejectExpressionValuesTransformer(CIPHER_SUITE, KEY_ALIAS, PROTOCOL);
-        TransformersSubRegistration ssl = transformers.registerSubResource(SSL_CONFIGURATION_PATH);
+        TransformersSubRegistration ssl = transformers.registerSubResource(SSL_CONFIGURATION_PATH, (ResourceTransformer)sslRejectExpressionTransformer);
         ssl.registerOperationTransformer(ADD, sslRejectExpressionTransformer);
         ssl.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, sslRejectExpressionTransformer.getWriteAttributeTransformer());
 
         // DynamicLoadProviderDefinition
         RejectExpressionValuesTransformer dynamicProviderRejectExpressionTransformer = new RejectExpressionValuesTransformer(DECAY, HISTORY);
-        TransformersSubRegistration dynamicProvider = transformers.registerSubResource(DYNAMIC_LOAD_PROVIDER_PATH);
+        TransformersSubRegistration dynamicProvider = config.registerSubResource(DYNAMIC_LOAD_PROVIDER_PATH, (ResourceTransformer)dynamicProviderRejectExpressionTransformer);
         dynamicProvider.registerOperationTransformer(ADD, dynamicProviderRejectExpressionTransformer);
         dynamicProvider.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, dynamicProviderRejectExpressionTransformer.getWriteAttributeTransformer());
 
         // CustomLoadMetricDefinition
         RejectExpressionValuesTransformer customRejectExpressionTransformer = new RejectExpressionValuesTransformer(CLASS);
-        TransformersSubRegistration customMetric = dynamicProvider.registerSubResource(CUSTOM_LOAD_METRIC_PATH);
+        TransformersSubRegistration customMetric = dynamicProvider.registerSubResource(CUSTOM_LOAD_METRIC_PATH, (ResourceTransformer)customRejectExpressionTransformer);
         customMetric.registerOperationTransformer(ADD, customRejectExpressionTransformer);
         customMetric.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, customRejectExpressionTransformer.getWriteAttributeTransformer());
 
         // LoadMetricDefinition
         RejectExpressionValuesTransformer loadMetricRejectExpressionTransformer = new RejectExpressionValuesTransformer(TYPE, WEIGHT, CAPACITY, PROPERTY);
-        TransformersSubRegistration metric = dynamicProvider.registerSubResource(LOAD_METRIC_PATH);
-        metric.registerOperationTransformer(ADD, loadMetricRejectExpressionTransformer);
-        metric.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, loadMetricRejectExpressionTransformer.getWriteAttributeTransformer());
+        ChainedResourceTransformer loadMetricResourceTransformer = new ChainedResourceTransformer(loadMetricRejectExpressionTransformer.getChainedTransformer(), ConvertCapacityTransformer.INSTANCE);
+        TransformersSubRegistration metric = dynamicProvider.registerSubResource(LOAD_METRIC_PATH, loadMetricResourceTransformer);
+        metric.registerOperationTransformer(ADD, new ChainedOperationTransformer(loadMetricRejectExpressionTransformer, ConvertCapacityTransformer.INSTANCE));
+        metric.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION,
+                new ChainedOperationTransformer(loadMetricRejectExpressionTransformer.getWriteAttributeTransformer(), ConvertCapacityTransformer.INSTANCE.getWriteAttributeTransformer()));
 
+    }
+
+    private static class ConvertCapacityTransformer implements ChainedResourceTransformerEntry, OperationTransformer {
+        private static final ConvertCapacityTransformer INSTANCE = new ConvertCapacityTransformer();
+
+        @Override
+        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation)
+                throws OperationFailedException {
+            return internalTransformOperation(operation, CAPACITY.getName());
+        }
+
+        @Override
+        public void transformResource(ChainedResourceTransformationContext context, PathAddress address, Resource resource)
+                throws OperationFailedException {
+            internalTransform(resource.getModel(), CAPACITY.getXmlName());
+        }
+
+        private TransformedOperation internalTransformOperation(ModelNode operation, String name) {
+            return new TransformedOperation(internalTransform(operation, name), OperationResultTransformer.ORIGINAL_RESULT);
+        }
+
+        private ModelNode internalTransform(ModelNode model, String name) {
+            model = model.clone();
+            if (model.hasDefined(name) && model.get(name).getType() != ModelType.EXPRESSION) {
+                model.get(name).set(Math.round(model.get(name).asDouble()));
+            }
+            return model;
+        }
+
+        OperationTransformer getWriteAttributeTransformer() {
+            return new OperationTransformer() {
+
+                @Override
+                public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation)
+                        throws OperationFailedException {
+                    return internalTransformOperation(operation, VALUE);
+                }
+            };
+        }
     }
 }
