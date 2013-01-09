@@ -89,7 +89,7 @@ public class LoggingPreferencesPerDeployFalseTestCase {
 	private static final File logFile = new File(logDir,
 			"jboss-logging-properties-test.log");
 
-	private static final File dummyLog1 = new File(logDir, "dummy-profile1.log");
+	private static final File dummyLog = new File(logDir, "dummy-profile.log");
 
 	static class LoggingPreferencesPerDeployFalseTestCaseSetup extends
 			AbstractMgmtServerSetupTask {
@@ -102,8 +102,8 @@ public class LoggingPreferencesPerDeployFalseTestCase {
 			if (loggingTestLog.exists()) {
 				loggingTestLog.delete();
 			}
-			if (dummyLog1.exists()) {
-				dummyLog1.delete();
+			if (dummyLog.exists()) {
+				dummyLog.delete();
 			}
 
 			// remove LOGGING_TEST from root-logger
@@ -122,11 +122,11 @@ public class LoggingPreferencesPerDeployFalseTestCase {
 					"LOGGING_TEST");
 			updates.add(op);
 
-			// remove dummy-profile1
+			// remove dummy-profile
 			op = new ModelNode();
 			op.get(OP).set(REMOVE);
 			op.get(OP_ADDR).add(SUBSYSTEM, "logging");
-			op.get(OP_ADDR).add("logging-profile", "dummy-profile1");
+			op.get(OP_ADDR).add("logging-profile", "dummy-profile");
 			updates.add(op);
 
 			// remove "org.jboss.as.logging.per-deployment=false" system
@@ -174,25 +174,25 @@ public class LoggingPreferencesPerDeployFalseTestCase {
 			op.get("name").set("LOGGING_TEST");
 			updates.add(op);
 
-			// create dummy-profile1
+			// create dummy-profile
 			op = new ModelNode();
 			op.get(OP).set(ADD);
 			op.get(OP_ADDR).add(SUBSYSTEM, "logging");
-			op.get(OP_ADDR).add("logging-profile", "dummy-profile1");
+			op.get(OP_ADDR).add("logging-profile", "dummy-profile");
 			updates.add(op);
 
 			// add file handler
 			op = new ModelNode();
 			op.get(OP).set(ADD);
 			op.get(OP_ADDR).add(SUBSYSTEM, "logging");
-			op.get(OP_ADDR).add("logging-profile", "dummy-profile1");
-			op.get(OP_ADDR).add("periodic-rotating-file-handler", "DUMMY1");
+			op.get(OP_ADDR).add("logging-profile", "dummy-profile");
+			op.get(OP_ADDR).add("periodic-rotating-file-handler", "DUMMY");
 			op.get("level").set("FATAL");
 			op.get("append").set("true");
 			op.get("suffix").set(".yyyy-MM-dd");
 			file = new ModelNode();
 			file.get("relative-to").set("jboss.server.log.dir");
-			file.get("path").set("dummy-profile1.log");
+			file.get("path").set("dummy-profile.log");
 			op.get("file").set(file);
 			op.get("formatter").set("%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n");
 			updates.add(op);
@@ -201,11 +201,11 @@ public class LoggingPreferencesPerDeployFalseTestCase {
 			op = new ModelNode();
 			op.get(OP).set(ADD);
 			op.get(OP_ADDR).add(SUBSYSTEM, "logging");
-			op.get(OP_ADDR).add("logging-profile", "dummy-profile1");
+			op.get(OP_ADDR).add("logging-profile", "dummy-profile");
 			op.get(OP_ADDR).add("root-logger", "ROOT");
 			op.get("level").set("INFO");
 			ModelNode handlers = op.get("handlers");
-			handlers.add("DUMMY1");
+			handlers.add("DUMMY");
 			op.get("handlers").set(handlers);
 			updates.add(op);
 
@@ -239,7 +239,7 @@ public class LoggingPreferencesPerDeployFalseTestCase {
 				StringBuffer dependencies = new StringBuffer();
 				builder.addManifestHeader("Dependencies",
 						dependencies.toString());
-				builder.addManifestHeader("Logging-Profile", "dummy-profile1");
+				builder.addManifestHeader("Logging-Profile", "dummy-profile");
 				return builder.openStream();
 			}
 		});
@@ -252,7 +252,7 @@ public class LoggingPreferencesPerDeployFalseTestCase {
 	@RunAsClient
 	@Test
 	@InSequence(1)
-	public void checkDummyLog1Test() throws IOException {
+	public void checkDummyLogTest() throws IOException {
 		// make some logs
 		HttpURLConnection http = (HttpURLConnection) new URL(url, "Logger")
 				.openConnection();
@@ -261,7 +261,7 @@ public class LoggingPreferencesPerDeployFalseTestCase {
 				statusCode == HttpServletResponse.SC_OK);
 		// check logs
 		BufferedReader br = new BufferedReader(new InputStreamReader(
-				new FileInputStream(dummyLog1), Charset.forName("UTF-8")));
+				new FileInputStream(dummyLog), Charset.forName("UTF-8")));
 		String line;
 		boolean logFound = false;
 		while ((line = br.readLine()) != null) {
