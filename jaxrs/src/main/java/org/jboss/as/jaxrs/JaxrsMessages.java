@@ -22,6 +22,8 @@
 
 package org.jboss.as.jaxrs;
 
+import java.util.List;
+
 import javax.ws.rs.core.Application;
 
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -82,12 +84,13 @@ public interface JaxrsMessages {
     /**
      * JAX-RS resource @Path annotation is on a class or interface that is not a view
      *
+     *
      * @param type    The class with the annotation
      * @param ejbName The ejb
      * @return
      */
     @Message(id = 11234, value = "JAX-RS resource %s does not correspond to a view on the EJB %s. @Path annotations can only be placed on classes or interfaces that represent a local, remote or no-interface view of an EJB.")
-    DeploymentUnitProcessingException typeNameNotAnEjbView(String type, String ejbName);
+    DeploymentUnitProcessingException typeNameNotAnEjbView(List<Class> type, String ejbName);
 
     @Message(id = 11235, value = "Invalid value for parameter %s: %s")
     DeploymentUnitProcessingException invalidParamValue(String param, String value);
