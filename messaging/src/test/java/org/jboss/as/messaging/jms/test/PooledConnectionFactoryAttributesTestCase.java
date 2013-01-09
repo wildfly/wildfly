@@ -39,6 +39,8 @@ public class PooledConnectionFactoryAttributesTestCase extends AttributesTestBas
         // FIXME HORNETQ-1048 we need to bind these properties to AS7 clustering subsystem
         UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("jgroupsChannelName");
         UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("jgroupsFile");
+        UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("jgroupsChannelLocatorClass");
+        UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("jgroupsChannelRefName");
 
         KNOWN_ATTRIBUTES = new TreeSet<String>();
         // these are supported but it is not found by JavaBeans introspector because of the type
