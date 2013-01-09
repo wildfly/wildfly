@@ -22,6 +22,9 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -37,6 +40,11 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.as.controller.services.path.ResolvePathHandler;
+import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
+import org.jboss.as.controller.transform.ResourceTransformer;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -45,8 +53,6 @@ import org.jboss.dmr.ModelType;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
-
-    public static final TimerServiceResourceDefinition INSTANCE = new TimerServiceResourceDefinition();
 
     public static final SimpleAttributeDefinition PATH =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.PATH, ModelType.STRING, true)
@@ -78,11 +84,14 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
         ATTRIBUTES = Collections.unmodifiableMap(map);
     }
 
-    private TimerServiceResourceDefinition() {
+    private final PathManager pathManager;
+
+    TimerServiceResourceDefinition(PathManager pathManager) {
         super(EJB3SubsystemModel.TIMER_SERVICE_PATH,
                 EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.TIMER_SERVICE),
                 TimerServiceAdd.INSTANCE, TimerServiceRemove.INSTANCE,
                 OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
+        this.pathManager = pathManager;
     }
 
     @Override
@@ -90,5 +99,26 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
         for (AttributeDefinition attr : ATTRIBUTES.values()) {
             resourceRegistration.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
         }
+    }
+
+    @Override
+    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
+        super.registerOperations(resourceRegistration);
+        if (pathManager != null) {
+            final ResolvePathHandler resolvePathHandler = ResolvePathHandler.Builder.of(pathManager)
+                    .setPathAttribute(TimerServiceResourceDefinition.PATH)
+                    .setRelativeToAttribute(TimerServiceResourceDefinition.RELATIVE_TO)
+                    .build();
+            resourceRegistration.registerOperationHandler(resolvePathHandler.getOperationDefinition(), resolvePathHandler);
+        }
+    }
+
+    static void registerTransformers_1_1_0(TransformersSubRegistration parent) {
+
+        RejectExpressionValuesTransformer transformer = new RejectExpressionValuesTransformer(PATH);
+        final TransformersSubRegistration transformers110 = parent.registerSubResource(EJB3SubsystemModel.TIMER_SERVICE_PATH,
+                (ResourceTransformer) transformer);
+        transformers110.registerOperationTransformer(ADD, transformer);
+        transformers110.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, transformer.getWriteAttributeTransformer());
     }
 }

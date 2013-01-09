@@ -308,7 +308,7 @@ public class ModelTestUtils {
                         Assert.assertTrue("key=" + key + "\n with child1 \n" + child1.toString() + "\n has child2 not defined\n node2 is:\n" + node2.toString(), child2.isDefined());
                     }
                     stack.push(key + "/");
-                    compare(child1, child2, ignoreUndefined);
+                    compare(child1, child2, ignoreUndefined, stack);
                     stack.pop();
                 } else if (!ignoreUndefined) {
                     Assert.assertFalse(child2.asString(), child2.isDefined());
@@ -321,7 +321,7 @@ public class ModelTestUtils {
 
             for (int i = 0; i < list1.size(); i++) {
                 stack.push(i + "/");
-                compare(list1.get(i), list2.get(i), ignoreUndefined);
+                compare(list1.get(i), list2.get(i), ignoreUndefined, stack);
                 stack.pop();
             }
 
@@ -330,7 +330,7 @@ public class ModelTestUtils {
             Property prop2 = node2.asProperty();
             Assert.assertEquals(prop1 + "\n" + prop2, prop1.getName(), prop2.getName());
             stack.push(prop1.getName() + "/");
-            compare(prop1.getValue(), prop2.getValue(), ignoreUndefined);
+            compare(prop1.getValue(), prop2.getValue(), ignoreUndefined, stack);
             stack.pop();
 
         } else {
@@ -386,6 +386,10 @@ public class ModelTestUtils {
     }
 
     public static void checkModelAgainstDefinition(final ModelNode model, ManagementResourceRegistration rr) {
+        checkModelAgainstDefinition(model, rr, new Stack<PathElement>());
+    }
+
+    private static void checkModelAgainstDefinition(final ModelNode model, ManagementResourceRegistration rr, Stack<PathElement> stack) {
         final Set<String> children = rr.getChildNames(PathAddress.EMPTY_ADDRESS);
         final Set<String> attributeNames = rr.getAttributeNames(PathAddress.EMPTY_ADDRESS);
         for (ModelNode el : model.asList()) {
@@ -393,10 +397,10 @@ public class ModelTestUtils {
             ModelNode value = el.asProperty().getValue();
             if (attributeNames.contains(name)) {
                 AttributeAccess aa = rr.getAttributeAccess(PathAddress.EMPTY_ADDRESS, name);
-                Assert.assertNotNull("Attribute " + name + " is not known", aa);
+                Assert.assertNotNull(getComparePathAsString(stack) + " Attribute " + name + " is not known", aa);
                 AttributeDefinition ad = aa.getAttributeDefinition();
                 if (!value.isDefined()) {
-                    Assert.assertTrue("Attribute " + name + " does not allow null", ad.isAllowNull());
+                    Assert.assertTrue(getComparePathAsString(stack) + " Attribute " + name + " does not allow null", ad.isAllowNull());
                 } else {
                    // Assert.assertEquals("Attribute '" + name + "' type mismatch", value.getType(), ad.getType()); //todo re-enable this check
                 }
@@ -405,11 +409,11 @@ public class ModelTestUtils {
                         ad.getValidator().validateParameter(name, value);
                     }
                 } catch (OperationFailedException e) {
-                    Assert.fail("validation for attribute '" + name + "' failed, " + e.getFailureDescription().asString());
+                    Assert.fail(getComparePathAsString(stack) + " validation for attribute '" + name + "' failed, " + e.getFailureDescription().asString());
                 }
 
             } else if (!children.contains(name)) {
-                Assert.fail("Element '" + name + "' is not known in target definition");
+                Assert.fail(getComparePathAsString(stack) + " Element '" + name + "' is not known in target definition");
             }
         }
 
@@ -420,9 +424,11 @@ public class ModelTestUtils {
                         String name = v.asProperty().getName();
                         ModelNode value = v.asProperty().getValue();
                         ManagementResourceRegistration sub = rr.getSubModel(PathAddress.pathAddress(pe));
-                        Assert.assertNotNull("Child with name '" + name + "' not found", sub);
+                        Assert.assertNotNull(getComparePathAsString(stack) + " Child with name '" + name + "' not found", sub);
                         if (value.isDefined()) {
-                            checkModelAgainstDefinition(value, sub);
+                            stack.push(pe);
+                            checkModelAgainstDefinition(value, sub, stack);
+                            stack.pop();
                         }
                     }
                 }
@@ -431,13 +437,23 @@ public class ModelTestUtils {
                     String name = pe.getValue();
                     ModelNode value = model.get(pe.getKeyValuePair());
                     ManagementResourceRegistration sub = rr.getSubModel(PathAddress.pathAddress(pe));
-                    Assert.assertNotNull("Child with name '" + name + "' not found", sub);
+                    Assert.assertNotNull(getComparePathAsString(stack) + " Child with name '" + name + "' not found", sub);
                     if (value.isDefined()) {
-                        checkModelAgainstDefinition(value, sub);
+                        stack.push(pe);
+                        checkModelAgainstDefinition(value, sub, stack);
+                        stack.pop();
                     }
                 }
             }
         }
+    }
+
+    private static String getComparePathAsString(Stack<PathElement> stack) {
+        PathAddress pa = PathAddress.EMPTY_ADDRESS;
+        for (PathElement element : stack) {
+            pa = pa.append(element);
+        }
+        return pa.toModelNode().asString();
     }
 
     /**

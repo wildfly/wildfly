@@ -21,6 +21,9 @@
  */
 package org.jboss.as.ejb3.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -37,6 +40,9 @@ import org.jboss.as.controller.operations.validation.AllowedValuesValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
+import org.jboss.as.controller.transform.ResourceTransformer;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.dmr.ModelNode;
@@ -182,6 +188,15 @@ class ChannelCreationOptionResource extends SimpleResourceDefinition {
                 }
             }
         }
+    }
+
+    static void registerTransformers_1_1_0(TransformersSubRegistration parent) {
+
+        RejectExpressionValuesTransformer transformer = new RejectExpressionValuesTransformer(CHANNEL_CREATION_OPTION_VALUE);
+        final TransformersSubRegistration transformers110 = parent.registerSubResource(INSTANCE.getPathElement(),
+                (ResourceTransformer) transformer);
+        transformers110.registerOperationTransformer(ADD, transformer);
+        transformers110.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, transformer.getWriteAttributeTransformer());
     }
 
 

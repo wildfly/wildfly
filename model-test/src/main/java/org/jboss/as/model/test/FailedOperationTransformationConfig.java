@@ -36,16 +36,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.transform.DiscardUndefinedAttributesTransformer;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
 /**
- * Sets up how to handle failed transformation for use with {@link ModelTestUtils#checkFailedTransformedAddOperations(ModelTestKernelServices, org.jboss.as.controller.ModelVersion, List, FailedOperationTransformationConfig)}
+ * Sets up how to handle failed transformation for use with {@link ModelTestUtils#checkFailedTransformedAddOperation(ModelTestKernelServices, ModelVersion, ModelNode, FailedOperationTransformationConfig)}
  *
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -405,6 +408,157 @@ public class FailedOperationTransformationConfig {
             }
             return false;
         }
+    }
+
+    /**
+     * A standard configuration for the {@link DiscardUndefinedAttributesTransformer}
+     * for use with attributes that are new in a version.
+     */
+    public static class NewAttributesConfig extends AttributesPathAddressConfig<NewAttributesConfig> {
+
+        public NewAttributesConfig(String...attributes) {
+            super(attributes);
+        }
+
+        public NewAttributesConfig(AttributeDefinition...attributes) {
+            super(convert(attributes));
+        }
+
+        static String[] convert(AttributeDefinition...defs) {
+            String[] attrs = new String[defs.length];
+            for (int i = 0 ; i < defs.length ; i++) {
+                attrs[i] = defs[i].getName();
+            }
+            return attrs;
+        }
+
+
+        @Override
+        public boolean expectFailed(ModelNode operation) {
+            ModelNode op = operation.clone();
+            for (String attr : attributes) {
+                if (op.hasDefined(attr)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public ModelNode correctOperation(ModelNode operation) {
+            ModelNode op = operation.clone();
+            for (String attr : attributes) {
+                if (op.has(attr)) {
+                    op.remove(attr);
+                    return op;
+                }
+            }
+            return operation;
+        }
+
+        @Override
+        public ModelNode correctWriteAttributeOperation(ModelNode operation) {
+            ModelNode op = operation.clone();
+            if (op.hasDefined(VALUE)) {
+                op.get(VALUE).set(new ModelNode());
+                return op;
+            }
+            return operation;
+        }
+
+        @Override
+        protected boolean isAttributeWritable(String attributeName) {
+            return true;
+        }
+
+        @Override
+        public boolean canCorrectMore(ModelNode operation) {
+            ModelNode op = operation.clone();
+            for (String attr : attributes) {
+                if (op.hasDefined(attr)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public boolean expectFailedWriteAttributeOperation(ModelNode operation) {
+            return operation.hasDefined(VALUE);
+        }
+
+    }
+
+    /**
+     * A standard configuration that allows multiple separate configs to be used.
+     */
+    public static class ChainedConfig extends AttributesPathAddressConfig {
+
+        private final Map<String, PathAddressConfig> links = new TreeMap<String, PathAddressConfig>();
+
+        public ChainedConfig(Map<String, PathAddressConfig> links) {
+            super(links.keySet().toArray(new String[links.size()]));
+            this.links.putAll(links);
+        }
+
+
+        @Override
+        public boolean expectFailed(ModelNode operation) {
+            for (PathAddressConfig link : links.values()) {
+                if (link.expectFailed(operation)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public ModelNode correctOperation(ModelNode operation) {
+            for (PathAddressConfig link : links.values()) {
+                ModelNode op = link.correctOperation(operation);
+                if (!op.equals(operation)) {
+                    return op;
+                }
+            }
+            return operation;
+        }
+
+        @Override
+        public ModelNode correctWriteAttributeOperation(ModelNode operation) {
+            for (PathAddressConfig link : links.values()) {
+                ModelNode op = link.correctWriteAttributeOperation(operation);
+                if (!op.equals(operation)) {
+                    return op;
+                }
+            }
+            return operation;
+        }
+
+        @Override
+        protected boolean isAttributeWritable(String attributeName) {
+            return true;
+        }
+
+        @Override
+        public boolean canCorrectMore(ModelNode operation) {
+            for (PathAddressConfig link : links.values()) {
+                if (link.canCorrectMore(operation)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public boolean expectFailedWriteAttributeOperation(ModelNode operation) {
+            for (PathAddressConfig link : links.values()) {
+                if (link.expectFailedWriteAttributeOperation(operation)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
     }
 
 }

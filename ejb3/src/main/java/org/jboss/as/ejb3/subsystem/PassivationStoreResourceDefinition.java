@@ -22,17 +22,25 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.LongRangeValidator;
 import org.jboss.as.controller.operations.validation.TimeUnitValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.transform.AddNameFromAddressResourceTransformer;
+import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
+import org.jboss.as.controller.transform.ResourceTransformer;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.controller.transform.chained.ChainedResourceTransformer;
 import org.jboss.as.ejb3.cache.spi.BackingCacheEntryStoreConfig;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -81,5 +89,13 @@ public abstract class PassivationStoreResourceDefinition extends SimpleResourceD
         for (AttributeDefinition definition: this.attributes) {
             resourceRegistration.registerReadWriteAttribute(definition, null, this.writeHandler);
         }
+    }
+
+    static void registerTransformers_1_1_0(PathElement path, TransformersSubRegistration parent) {
+
+        RejectExpressionValuesTransformer rejectTransformer = new RejectExpressionValuesTransformer(IDLE_TIMEOUT_UNIT);
+        final TransformersSubRegistration transformers110 = parent.registerSubResource(path, (ResourceTransformer) rejectTransformer);
+        transformers110.registerOperationTransformer(ModelDescriptionConstants.ADD, rejectTransformer);
+        transformers110.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, rejectTransformer.getWriteAttributeTransformer());
     }
 }

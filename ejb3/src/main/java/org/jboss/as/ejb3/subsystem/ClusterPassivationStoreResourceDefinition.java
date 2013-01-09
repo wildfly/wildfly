@@ -22,13 +22,19 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
+import org.jboss.as.controller.transform.ResourceTransformer;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.ejb3.cache.impl.backing.clustering.ClusteredBackingCacheEntryStoreConfig;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -38,7 +44,9 @@ import org.jboss.dmr.ModelType;
  */
 public class ClusterPassivationStoreResourceDefinition extends PassivationStoreResourceDefinition {
 
-    static final SimpleAttributeDefinition MAX_SIZE = MAX_SIZE_BUILDER.setDefaultValue(new ModelNode(ClusteredBackingCacheEntryStoreConfig.DEFAULT_MAX_SIZE)).build();
+    static final SimpleAttributeDefinition MAX_SIZE = new SimpleAttributeDefinitionBuilder(MAX_SIZE_BUILDER.build())
+            .setDefaultValue(new ModelNode(ClusteredBackingCacheEntryStoreConfig.DEFAULT_MAX_SIZE)).build();
+
     static final SimpleAttributeDefinition CACHE_CONTAINER =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.CACHE_CONTAINER, ModelType.STRING, true)
                     .setXmlName(EJB3SubsystemXMLAttribute.CACHE_CONTAINER.getLocalName())
@@ -76,6 +84,11 @@ public class ClusterPassivationStoreResourceDefinition extends PassivationStoreR
     static final ClusterPassivationStoreResourceDefinition INSTANCE = new ClusterPassivationStoreResourceDefinition();
 
     private ClusterPassivationStoreResourceDefinition() {
-        super(EJB3SubsystemModel.CLUSTER_PASSIVATION_STORE, ADD_HANDLER, REMOVE_HANDLER, OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_RESOURCE_SERVICES, WRITE_HANDLER, ATTRIBUTES);
+        super(EJB3SubsystemModel.CLUSTER_PASSIVATION_STORE, ADD_HANDLER, REMOVE_HANDLER, OperationEntry.Flag.RESTART_NONE,
+                OperationEntry.Flag.RESTART_RESOURCE_SERVICES, WRITE_HANDLER, ATTRIBUTES);
+    }
+
+    static void registerTransformers_1_1_0(TransformersSubRegistration parent) {
+        PassivationStoreResourceDefinition.registerTransformers_1_1_0(INSTANCE.getPathElement(), parent);
     }
 }

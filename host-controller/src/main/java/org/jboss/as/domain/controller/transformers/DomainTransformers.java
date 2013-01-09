@@ -35,13 +35,13 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.extension.SubsystemInformation;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.AddNameFromAddressResourceTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.domain.controller.resources.ServerGroupResourceDefinition;
-import org.jboss.as.host.controller.model.jvm.JvmResourceDefinition;
 
 /**
  * Global transformation rules for the domain, host and server-config model.

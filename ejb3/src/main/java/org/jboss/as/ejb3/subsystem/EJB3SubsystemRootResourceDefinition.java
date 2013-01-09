@@ -22,18 +22,34 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.operations.validation.LongRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.as.controller.transform.DiscardUndefinedAttributesTransformer;
+import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.controller.transform.chained.ChainedOperationTransformer;
+import org.jboss.as.controller.transform.chained.ChainedResourceTransformer;
 import org.jboss.as.ejb3.deployment.processors.EJBDefaultSecurityDomainProcessor;
+import org.jboss.as.threads.ThreadFactoryResolver;
+import org.jboss.as.threads.ThreadsServices;
+import org.jboss.as.threads.UnboundedQueueThreadPoolResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -113,14 +129,16 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
 
     private static final EJBDefaultSecurityDomainProcessor defaultSecurityDomainDeploymentProcessor = new EJBDefaultSecurityDomainProcessor(null);
 
-    public static final EJB3SubsystemRootResourceDefinition INSTANCE = new EJB3SubsystemRootResourceDefinition();
+    private final boolean registerRuntimeOnly;
+    private final PathManager pathManager;
 
-
-    private EJB3SubsystemRootResourceDefinition() {
+    EJB3SubsystemRootResourceDefinition(boolean registerRuntimeOnly, PathManager pathManager) {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME),
                 EJB3Extension.getResourceDescriptionResolver(EJB3Extension.SUBSYSTEM_NAME),
                 new EJB3SubsystemAdd(defaultSecurityDomainDeploymentProcessor), EJB3SubsystemRemove.INSTANCE,
                 OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
+        this.registerRuntimeOnly = registerRuntimeOnly;
+        this.pathManager = pathManager;
     }
 
     static final SimpleAttributeDefinition[] ATTRIBUTES = {
@@ -156,5 +174,75 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
 
         final EJBDefaultSecurityDomainWriteHandler defaultSecurityDomainWriteHandler = new EJBDefaultSecurityDomainWriteHandler(DEFAULT_SECURITY_DOMAIN, defaultSecurityDomainDeploymentProcessor);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_SECURITY_DOMAIN, null, defaultSecurityDomainWriteHandler);
+    }
+
+    @Override
+    public void registerOperations(ManagementResourceRegistration subsystemRegistration) {
+        super.registerOperations(subsystemRegistration);
+        subsystemRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
+    }
+
+    @Override
+    public void registerChildren(ManagementResourceRegistration subsystemRegistration) {
+
+        // subsystem=ejb3/service=remote
+        subsystemRegistration.registerSubModel(EJB3RemoteResourceDefinition.INSTANCE);
+
+        // subsystem=ejb3/service=async
+        subsystemRegistration.registerSubModel(EJB3AsyncResourceDefinition.INSTANCE);
+
+        // subsystem=ejb3/strict-max-bean-instance-pool=*
+        subsystemRegistration.registerSubModel(StrictMaxPoolResourceDefinition.INSTANCE);
+
+        subsystemRegistration.registerSubModel(CacheFactoryResourceDefinition.INSTANCE);
+        subsystemRegistration.registerSubModel(FilePassivationStoreResourceDefinition.INSTANCE);
+        subsystemRegistration.registerSubModel(ClusterPassivationStoreResourceDefinition.INSTANCE);
+
+        // subsystem=ejb3/service=timerservice
+        subsystemRegistration.registerSubModel(new TimerServiceResourceDefinition(pathManager));
+
+        // subsystem=ejb3/thread-pool=*
+        subsystemRegistration.registerSubModel(UnboundedQueueThreadPoolResourceDefinition.create(EJB3SubsystemModel.THREAD_POOL,
+                new EJB3ThreadFactoryResolver(), EJB3SubsystemModel.BASE_THREAD_POOL_SERVICE_NAME, registerRuntimeOnly));
+
+        // subsystem=ejb3/service=iiop
+        subsystemRegistration.registerSubModel(EJB3IIOPResourceDefinition.INSTANCE);
+    }
+
+    static void registerTransformers(SubsystemRegistration subsystemRegistration) {
+        registerTransformers_1_1_0(subsystemRegistration);
+    }
+
+    private static void registerTransformers_1_1_0(SubsystemRegistration subsystemRegistration) {
+
+        ModelVersion subsystem110 = ModelVersion.create(1, 1);
+
+        RejectExpressionValuesTransformer rejectTransformer = new RejectExpressionValuesTransformer(EJB3SubsystemRootResourceDefinition.ENABLE_STATISTICS);
+        DiscardUndefinedAttributesTransformer discardTransformer = new DiscardUndefinedAttributesTransformer(EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN);
+        ChainedResourceTransformer ctr = new ChainedResourceTransformer(rejectTransformer.getChainedTransformer(), discardTransformer);
+        final TransformersSubRegistration transformers110 = subsystemRegistration.registerModelTransformers(subsystem110, ctr);
+        transformers110.registerOperationTransformer(ADD, new ChainedOperationTransformer(rejectTransformer, discardTransformer));
+        transformers110.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION,
+                new ChainedOperationTransformer(rejectTransformer.getWriteAttributeTransformer(), discardTransformer.getWriteAttributeTransformer()));
+        transformers110.registerOperationTransformer(UNDEFINE_ATTRIBUTE_OPERATION, discardTransformer);
+
+        UnboundedQueueThreadPoolResourceDefinition.registerTransformers1_0(transformers110, EJB3SubsystemModel.THREAD_POOL);
+
+        StrictMaxPoolResourceDefinition.registerTransformers_1_1_0(transformers110);
+        FilePassivationStoreResourceDefinition.registerTransformers_1_1_0(transformers110);
+        ClusterPassivationStoreResourceDefinition.registerTransformers_1_1_0(transformers110);
+        TimerServiceResourceDefinition.registerTransformers_1_1_0(transformers110);
+    }
+
+    private static class EJB3ThreadFactoryResolver extends ThreadFactoryResolver.SimpleResolver {
+
+        private EJB3ThreadFactoryResolver() {
+            super(ThreadsServices.FACTORY);
+        }
+
+        @Override
+        protected String getThreadGroupName(String threadPoolName) {
+            return "EJB " + threadPoolName;
+        }
     }
 }
