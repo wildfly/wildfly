@@ -901,7 +901,11 @@ public class ComponentDescription implements ResourceInjectionTarget {
                 final ViewConfiguration viewConfiguration;
 
                 final ProxyConfiguration proxyConfiguration = new ProxyConfiguration();
-                proxyConfiguration.setProxyName(viewClass.getName() + "$$$view" + PROXY_ID.incrementAndGet());
+                if(viewClass.getName().startsWith("java.")) {
+                    proxyConfiguration.setProxyName("org.jboss.proxy.java.lang." + viewClass.getSimpleName() + "$$$view" + PROXY_ID.incrementAndGet());
+                } else {
+                    proxyConfiguration.setProxyName(viewClass.getName() + "$$$view" + PROXY_ID.incrementAndGet());
+                }
                 proxyConfiguration.setClassLoader(module.getClassLoader());
                 proxyConfiguration.setProtectionDomain(viewClass.getProtectionDomain());
                 proxyConfiguration.setMetadataSource(proxyReflectionIndex);
