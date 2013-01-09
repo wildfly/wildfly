@@ -29,6 +29,7 @@ import java.util.Map;
 
 import javax.ejb.TransactionManagementType;
 
+import org.jboss.as.iiop.IIOPServiceNames;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -47,15 +48,12 @@ import org.jboss.as.ejb3.iiop.EjbIIOPService;
 import org.jboss.as.ejb3.iiop.EjbIIOPTransactionInterceptor;
 import org.jboss.as.ejb3.iiop.POARegistry;
 import org.jboss.as.ejb3.subsystem.IIOPSettingsService;
-import org.jboss.as.jacorb.deployment.JacORBDeploymentMarker;
-import org.jboss.as.jacorb.rmi.AttributeAnalysis;
-import org.jboss.as.jacorb.rmi.InterfaceAnalysis;
-import org.jboss.as.jacorb.rmi.OperationAnalysis;
-import org.jboss.as.jacorb.rmi.RMIIIOPViolationException;
-import org.jboss.as.jacorb.rmi.marshal.strategy.SkeletonStrategy;
-import org.jboss.as.jacorb.service.CorbaNamingService;
-import org.jboss.as.jacorb.service.CorbaORBService;
-import org.jboss.as.jacorb.service.CorbaPOAService;
+import org.jboss.as.iiop.deployment.IIOPDeploymentMarker;
+import org.jboss.as.iiop.rmi.AttributeAnalysis;
+import org.jboss.as.iiop.rmi.InterfaceAnalysis;
+import org.jboss.as.iiop.rmi.OperationAnalysis;
+import org.jboss.as.iiop.rmi.RMIIIOPViolationException;
+import org.jboss.as.iiop.rmi.marshal.strategy.SkeletonStrategy;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -93,7 +91,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if (!JacORBDeploymentMarker.isJacORBDeployment(deploymentUnit)) {
+        if (!IIOPDeploymentMarker.isIIOPDeployment(deploymentUnit)) {
             return;
         }
 
@@ -251,10 +249,10 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
         builder.addDependency(componentDescription.getCreateServiceName(), EJBComponent.class, service.getEjbComponentInjectedValue());
         builder.addDependency(homeView.getServiceName(), ComponentView.class, service.getHomeView());
         builder.addDependency(remoteView.getServiceName(), ComponentView.class, service.getRemoteView());
-        builder.addDependency(CorbaORBService.SERVICE_NAME, ORB.class, service.getOrb());
+        builder.addDependency(IIOPServiceNames.ORB_SERVICE_NAME, ORB.class, service.getOrb());
         builder.addDependency(POARegistry.SERVICE_NAME, POARegistry.class, service.getPoaRegistry());
-        builder.addDependency(CorbaPOAService.INTERFACE_REPOSITORY_SERVICE_NAME, POA.class, service.getIrPoa());
-        builder.addDependency(CorbaNamingService.SERVICE_NAME, NamingContextExt.class, service.getCorbaNamingContext());
+        builder.addDependency(IIOPServiceNames.INTERFACE_REPOSITORY_SERVICE_NAME, POA.class, service.getIrPoa());
+        builder.addDependency(IIOPServiceNames.NAMING_SERVICE_NAME, NamingContextExt.class, service.getCorbaNamingContext());
         builder.addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, service.getServiceModuleLoaderInjectedValue());
 
         //we need the arjunta transaction manager to be up, as it performs some initialization that is required by the orb interceptors

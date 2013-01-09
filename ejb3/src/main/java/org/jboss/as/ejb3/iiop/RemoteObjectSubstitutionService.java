@@ -27,7 +27,7 @@ import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
-import org.jboss.com.sun.corba.se.impl.javax.rmi.RemoteObjectSubstitution;
+import com.sun.corba.se.impl.javax.rmi.RemoteObjectSubstitution;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.EJBHandle;
 import org.jboss.ejb.client.EJBHomeHandle;

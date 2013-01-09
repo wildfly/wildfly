@@ -2976,16 +2976,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.spec.javax.rmi</groupId>
-      <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License, Version 2.1</name>
-          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>org.jboss.spec.javax.security.auth.message</groupId>
       <artifactId>jboss-jaspi-api_1.0_spec</artifactId>
       <licenses>

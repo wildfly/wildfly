@@ -31,6 +31,7 @@
         <module name="org.omg.api"/>
         <module name="javax.transaction.api"/>
         <module name="org.jboss.as.jacorb"/>
+        <module name="org.jboss.corba"/>
 
 
         <!-- These must be below the org.omg.api import-->

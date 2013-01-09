@@ -47,14 +47,6 @@
             <artifactId>jboss-as-ee</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-jacorb</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jacorb</groupId>
-            <artifactId>jacorb</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-transaction-spi</artifactId>
         </dependency>
@@ -66,7 +58,10 @@
             <groupId>org.jboss.jbossts.jts</groupId>
             <artifactId>jbossjts-integration</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-iiop-common</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging-processor</artifactId>

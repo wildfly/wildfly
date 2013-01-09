@@ -32,10 +32,12 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SLSB_INSTAN
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT;
 
 import java.util.List;
+
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 
+import org.jboss.as.iiop.IIOPServiceNames;
 import org.jboss.as.clustering.registry.RegistryCollector;
 import org.jboss.as.clustering.registry.RegistryCollectorService;
 import org.jboss.as.connector.util.ConnectorServices;
@@ -113,8 +115,7 @@ import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.as.ejb3.remote.LocalEjbReceiver;
 import org.jboss.as.ejb3.remote.TCCLEJBClientContextSelectorService;
 import org.jboss.as.ejb3.util.ServiceLookupValue;
-import org.jboss.as.jacorb.rmi.DelegatingStubFactoryFactory;
-import org.jboss.as.jacorb.service.CorbaPOAService;
+import org.jboss.as.iiop.rmi.DelegatingStubFactoryFactory;
 import org.jboss.as.naming.InitialContext;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.as.remoting.RemotingServices;
@@ -125,7 +126,7 @@ import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringProcessor;
 import org.jboss.as.txn.service.TxnServices;
-import org.jboss.com.sun.corba.se.impl.javax.rmi.RemoteObjectSubstitutionManager;
+import com.sun.corba.se.impl.javax.rmi.RemoteObjectSubstitutionManager;
 import org.jboss.dmr.ModelNode;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.naming.ejb.EjbNamingContextSetup;
@@ -137,6 +138,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.remoting3.Endpoint;
 import org.omg.PortableServer.POA;
+
 
 /**
  * Add operation handler for the EJB3 subsystem.
@@ -327,7 +329,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
             // create the POA Registry use by iiop
             final POARegistry poaRegistry = new POARegistry();
             newControllers.add(context.getServiceTarget().addService(POARegistry.SERVICE_NAME, poaRegistry)
-                    .addDependency(CorbaPOAService.ROOT_SERVICE_NAME, POA.class, poaRegistry.getRootPOA())
+                    .addDependency(IIOPServiceNames.ROOT_SERVICE_NAME, POA.class, poaRegistry.getRootPOA())
                     .setInitialMode(ServiceController.Mode.PASSIVE)
                     .addListener(verificationHandler)
                     .install());

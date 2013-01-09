@@ -24,7 +24,7 @@ package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
-import org.jboss.as.jacorb.deployment.JacORBDeploymentMarker;
+import org.jboss.as.iiop.deployment.IIOPDeploymentMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -58,7 +58,7 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
     private static final ModuleIdentifier EJB_SUBSYSTEM = ModuleIdentifier.create("org.jboss.as.ejb3");
     private static final ModuleIdentifier EJB_CLIENT = ModuleIdentifier.create("org.jboss.ejb-client");
     private static final ModuleIdentifier EJB_IIOP_CLIENT = ModuleIdentifier.create("org.jboss.iiop-client");
-    private static final ModuleIdentifier JACORB = ModuleIdentifier.create("org.jboss.as.jacorb");
+    private static final ModuleIdentifier IIOP_COMMON = ModuleIdentifier.create("org.jboss.as.iiop.common");
 
 
     /**
@@ -85,9 +85,9 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
         //we always have to add this, as even non-ejb deployments may still lookup IIOP ejb's
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB_SUBSYSTEM, false, false, false, false));
 
-        if (JacORBDeploymentMarker.isJacORBDeployment(deploymentUnit)) {
+        if (IIOPDeploymentMarker.isIIOPDeployment(deploymentUnit)) {
             //needed for dynamic IIOP stubs
-            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JACORB, false, false, false, false));
+            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, IIOP_COMMON, false, false, false, false));
         }
 
         // fetch the EjbJarMetaData

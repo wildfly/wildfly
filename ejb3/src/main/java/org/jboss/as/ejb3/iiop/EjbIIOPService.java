@@ -32,18 +32,16 @@ import javax.ejb.EJBHome;
 import javax.ejb.EJBMetaData;
 import javax.rmi.PortableRemoteObject;
 
-import org.jacorb.ssl.SSLPolicyValue;
-import org.jacorb.ssl.SSLPolicyValueHelper;
-import org.jacorb.ssl.SSL_POLICY_TYPE;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.stateless.StatelessSessionComponent;
 import org.jboss.as.ejb3.iiop.stub.DynamicStubFactoryFactory;
-import org.jboss.as.jacorb.csiv2.CSIv2Policy;
-import org.jboss.as.jacorb.rmi.ir.InterfaceRepository;
-import org.jboss.as.jacorb.rmi.marshal.strategy.SkeletonStrategy;
+import org.jboss.as.iiop.CurrentOrbService;
+import org.jboss.as.iiop.csiv2.CSIv2Policy;
+import org.jboss.as.iiop.rmi.ir.InterfaceRepository;
+import org.jboss.as.iiop.rmi.marshal.strategy.SkeletonStrategy;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.ejb.client.EJBHomeLocator;
 import org.jboss.ejb.client.EJBLocator;
@@ -294,12 +292,11 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
                             || IORTransportConfigMetaData.CONFIDENTIALITY_REQUIRED.equals(tc.getConfidentiality())
                             || IORTransportConfigMetaData.ESTABLISH_TRUST_IN_CLIENT_REQUIRED.equals(tc.getEstablishTrustInClient());
                 }
-                final Any sslPolicyValue = orb.create_any();
-                SSLPolicyValueHelper.insert(sslPolicyValue, (sslRequired) ? SSLPolicyValue.SSL_REQUIRED : SSLPolicyValue.SSL_NOT_REQUIRED);
-                Policy sslPolicy = orb.create_policy(SSL_POLICY_TYPE.value, sslPolicyValue);
-                policyList.add(sslPolicy);
-
-                EjbLogger.ROOT_LOGGER.debug("container's SSL policy: " + sslPolicy);
+                final Policy sslPolicy = CurrentOrbService.current().createSSLPolicy(sslRequired);
+                if(sslPolicy != null) {
+                    policyList.add(sslPolicy);
+                    EjbLogger.ROOT_LOGGER.debug("container's SSL policy: " + sslPolicy);
+                }
             }
 
             String securityDomain = "CORBA_REMOTE"; //TODO: what should this default to

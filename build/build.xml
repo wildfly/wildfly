@@ -241,6 +241,10 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-server"/>
         </module-def>
 
+        <module-def name="org.jboss.as.jdkorb">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-jdkorb"/>
+        </module-def>
+
         <module-def name="org.jboss.as.standalone"/>
 
         <module-def name="org.jboss.as.threads">
@@ -480,7 +484,7 @@
         </module-def>
 
         <module-def name="javax.rmi.api">
-            <maven-resource group="org.jboss.spec.javax.rmi" artifact="jboss-rmi-api_1.0_spec"/>
+            <maven-resource group="org.jboss.corba" artifact="jboss-rmi-api"/>
         </module-def>
 
         <module-def name="javax.security.auth.message.api">
@@ -746,7 +750,7 @@
         </module-def>
 
         <module-def name="org.jacorb">
-            <maven-resource group="org.jacorb" artifact="jacorb"/>
+            <maven-resource group="org.jacorb" artifact="jacorb" exclude="org/omg/**" />
         </module-def>
 
         <module-def name="org.javassist">
@@ -855,6 +859,10 @@
 
         <module-def name="org.jboss.as.jsr77">
             <maven-resource group="org.jboss.as" artifact="jboss-as-jsr77"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.iiop.common">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-iiop-common"/>
         </module-def>
 
         <module-def name="org.jboss.as.jacorb">
@@ -1018,6 +1026,10 @@
 
         <module-def name="org.jboss.classfilewriter">
             <maven-resource group="org.jboss.classfilewriter" artifact="jboss-classfilewriter"/>
+        </module-def>
+
+        <module-def name="org.jboss.corba">
+            <maven-resource group="org.jboss.corba" artifact="jboss-corba-openjdk-orb"/>
         </module-def>
 
         <module-def name="org.jboss.ejb-client">
@@ -1278,7 +1290,10 @@
             <maven-resource group="org.kohsuke.rngom" artifact="rngom"/>
         </module-def>
 
-        <module-def name="org.omg.api" />
+        <module-def name="org.omg.api" >
+            <maven-resource group="org.jboss.corba" artifact="jboss-corba-api" />
+            <maven-resource group="org.jboss.corba" artifact="jboss-corba-ext-api" />
+        </module-def>
 
         <module-def name="org.osgi.core">
             <maven-resource group="org.osgi" artifact="org.osgi.core"/>

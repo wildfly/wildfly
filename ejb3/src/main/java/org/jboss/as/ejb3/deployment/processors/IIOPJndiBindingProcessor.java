@@ -28,8 +28,8 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.ejb3.iiop.handle.HandleDelegateImpl;
-import org.jboss.as.jacorb.deployment.JacORBDeploymentMarker;
-import org.jboss.as.jacorb.service.CorbaORBService;
+import org.jboss.as.iiop.IIOPServiceNames;
+import org.jboss.as.iiop.deployment.IIOPDeploymentMarker;
 import org.jboss.as.naming.ManagedReferenceInjector;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
@@ -65,7 +65,7 @@ public class IIOPJndiBindingProcessor implements DeploymentUnitProcessor {
         }
 
         //do not bind if jacORB not present
-        if (!JacORBDeploymentMarker.isJacORBDeployment(deploymentUnit)) {
+        if (!IIOPDeploymentMarker.isIIOPDeployment(deploymentUnit)) {
             return;
         }
 
@@ -97,7 +97,7 @@ public class IIOPJndiBindingProcessor implements DeploymentUnitProcessor {
         final ServiceName orbServiceName = contextServiceName.append("ORB");
         final BinderService orbService = new BinderService("ORB");
         serviceTarget.addService(orbServiceName, orbService)
-                .addDependency(CorbaORBService.SERVICE_NAME, ORB.class,
+                .addDependency(IIOPServiceNames.ORB_SERVICE_NAME, ORB.class,
                         new ManagedReferenceInjector<ORB>(orbService.getManagedObjectInjector()))
                 .addDependency(contextServiceName, ServiceBasedNamingStore.class, orbService.getNamingStoreInjector())
                 .install();

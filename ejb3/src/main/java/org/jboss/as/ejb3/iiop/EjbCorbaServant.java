@@ -39,11 +39,12 @@ import javax.transaction.TransactionManager;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
-import org.jboss.as.jacorb.csiv2.idl.SASCurrent;
-import org.jboss.as.jacorb.rmi.RmiIdlUtil;
-import org.jboss.as.jacorb.rmi.marshal.strategy.SkeletonStrategy;
+import org.jboss.as.iiop.csiv2.idl.SASCurrent;
+import org.jboss.as.iiop.rmi.RmiIdlUtil;
+import org.jboss.as.iiop.rmi.marshal.strategy.SkeletonStrategy;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.iiop.HandleImplIIOP;

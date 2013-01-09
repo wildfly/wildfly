@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
+<config>
+   <extension-module>org.jboss.as.jdkorb</extension-module>
+   <subsystem xmlns="urn:jboss:domain:jdkorb:1.0">
+       <orb socket-binding="jdkorb" ssl-socket-binding="jdkorb-ssl">
+           <initializers transactions="spec" security="off"/>
+       </orb>
+   </subsystem>
+   <socket-binding name="jdkorb" interface="unsecure" port="3528"/>
+   <socket-binding name="jdkorb-ssl" interface="unsecure" port="3529"/>
+</config>

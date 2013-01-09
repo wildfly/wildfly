@@ -56,6 +56,7 @@ public class IIOPNamingTestCase {
     }
 
     @Test
+    @Ignore("JDKORB does not support this form of lookup yet")
     public void testIIOPNamingInvocation() throws NamingException, RemoteException {
         final Properties prope = new Properties();
         prope.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.cosnaming.CNCtxFactory");
@@ -68,6 +69,7 @@ public class IIOPNamingTestCase {
     }
 
     @Test
+    @Ignore("JDKORB does not support this form of lookup yet")
     public void testStatefulIIOPNamingInvocation() throws NamingException, RemoteException, RemoveException {
         final Properties prope = new Properties();
         prope.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.cosnaming.CNCtxFactory");
@@ -165,6 +167,7 @@ public class IIOPNamingTestCase {
      * @throws RemoteException if an error occurs while invoking the remote bean.
      */
     @Test
+    @Ignore("JDKORB does not support this form of lookup yet")
     public void testCorbalocInvocationWithDDOverride() throws NamingException, RemoteException {
         final Properties prope = new Properties();
         prope.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.cosnaming.CNCtxFactory");

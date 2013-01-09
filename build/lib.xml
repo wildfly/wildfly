@@ -99,7 +99,7 @@
             </copy>
         </sequential>
     </macrodef>
-    
+
     <scriptdef name="define-module-dir" language="javascript">
         <attribute name="name"/>
         <attribute name="slot"/>
@@ -119,11 +119,12 @@
             project.setProperty("current.bundle.path", name + "/" + attributes.get("slot"));
         ]]>
     </scriptdef>
-    
+
     <macrodef name="maven-resource" >
         <attribute name="group"/>
         <attribute name="artifact"/>
         <attribute name="jandex" default="false" />
+        <attribute name="exclude" default="" />
 
         <sequential>
             <!-- Copy the jar to the module dir -->
@@ -138,7 +139,7 @@
                 <fileset dir="${module.repo.output.dir}/${current.module.path}" />
             </jandex>
             <!-- Update the resource entry in module.xml -->
-            <define-resource-root path="${resourcename.@{group}.@{artifact}}" jandex="@{jandex}"/>
+            <define-resource-root path="${resourcename.@{group}.@{artifact}}" jandex="@{jandex}" exclude="@{exclude}"/>
             <replace file="${module.repo.output.dir}/${current.module.path}/${module.xml}">
                 <replacefilter token="&lt;!-- Insert resources here --&gt;" value="${current.resource.root}&#10;        &lt;!-- Insert resources here --&gt;"/>
             </replace>
@@ -150,6 +151,7 @@
         <attribute name="artifact"/>
         <attribute name="classifier"/>
         <attribute name="jandex" default="false" />
+        <attribute name="exclude" default="" />
 
         <sequential>
             <!-- Copy the jar to the module dir -->
@@ -162,7 +164,7 @@
             <basename file="${@{group}:@{artifact}:jar:@{classifier}}" property="resourcename.@{group}.@{artifact}.@{classifier}"/>
 
             <!-- Update the resource entry in module.xml -->
-            <define-resource-root path="${resourcename.@{group}.@{artifact}.@{classifier}}"/>
+            <define-resource-root path="${resourcename.@{group}.@{artifact}.@{classifier}}" jandex="@{jandex}" exclude="@{exclude}"/>
             <replace file="${module.repo.output.dir}/${current.module.path}/${module.xml}">
                 <replacefilter token="&lt;!-- Insert resources here --&gt;" value="${current.resource.root}&#10;        &lt;!-- Insert resources here --&gt;"/>
             </replace>
@@ -184,9 +186,22 @@
     <scriptdef name="define-resource-root" language="javascript">
         <attribute name="path"/>
         <attribute name="jandex"/>
+        <attribute name="exclude"/>
         <![CDATA[
             path = attributes.get("path");
-            root = "<resource-root path=\"" + path + "\"/>";
+            exclude = attributes.get("exclude");
+            root = "";
+            if(exclude != "" ) {
+                root = "<resource-root path=\"" + path + "\">\n            <filter>\n";
+                var excludes = exclude.split(",");
+                for(i = 0; i < excludes.length; i++){
+                    root = root + "                <exclude path=\"" + excludes[i] + "\" />\n";
+                }
+                root = root + "                <include path=\"/**\" />\n"
+                root = root + "            </filter>\n        </resource-root>"
+            } else {
+                root = "<resource-root path=\"" + path + "\"/>";
+            }
             if(path.indexOf('${') != -1) {
                 throw "Module resource root not found, make sure it is listed in build/pom.xml" + path;
             }

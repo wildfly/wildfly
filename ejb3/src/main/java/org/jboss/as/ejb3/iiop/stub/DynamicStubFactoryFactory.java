@@ -25,9 +25,9 @@ package org.jboss.as.ejb3.iiop.stub;
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.classfilewriter.ClassFile;
-import org.jboss.com.sun.corba.se.impl.presentation.rmi.StubFactoryBase;
-import org.jboss.com.sun.corba.se.impl.presentation.rmi.StubFactoryFactoryDynamicBase;
-import org.jboss.com.sun.corba.se.spi.presentation.rmi.PresentationManager;
+import com.sun.corba.se.impl.presentation.rmi.StubFactoryBase;
+import com.sun.corba.se.impl.presentation.rmi.StubFactoryFactoryDynamicBase;
+import com.sun.corba.se.spi.presentation.rmi.PresentationManager;
 
 /**
  * @author Stuart Douglas

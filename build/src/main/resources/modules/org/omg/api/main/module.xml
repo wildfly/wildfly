@@ -22,78 +22,12 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 <module xmlns="urn:jboss:module:1.1" name="org.omg.api">
+
+    <resources>
+        <!-- Insert resources here -->
+    </resources>
+
     <dependencies>
-        <module name="org.jacorb" export="false">
-            <exports>
-                <include-set>
-                    <path name="org/omg/ATLAS"/>
-                    <path name="org/omg/BiDirPolicy"/>
-                    <path name="org/omg/CONV_FRAME"/>
-                    <path name="org/omg/CORBA"/>
-                    <path name="org/omg/CORBA/ContainedPackage"/>
-                    <path name="org/omg/CORBA/ContainerPackage"/>
-                    <path name="org/omg/CORBA/InterfaceDefPackage"/>
-                    <path name="org/omg/CORBA/ORBPackage"/>
-                    <path name="org/omg/CORBA/TypeCodePackage"/>
-                    <path name="org/omg/CORBA/ValueDefPackage"/>
-                    <path name="org/omg/CORBA/portable"/>
-                    <path name="org/omg/CORBA_2_3"/>
-                    <path name="org/omg/CORBA_2_3/portable"/>
-                    <path name="org/omg/CORBA_2_5"/>
-                    <path name="org/omg/CSI"/>
-                    <path name="org/omg/CSIIOP"/>
-                    <path name="org/omg/CosCollection"/>
-                    <path name="org/omg/CosConcurrencyControl"/>
-                    <path name="org/omg/CosEventChannelAdmin"/>
-                    <path name="org/omg/CosEventComm"/>
-                    <path name="org/omg/CosNaming"/>
-                    <path name="org/omg/CosNaming/NamingContextExtPackage"/>
-                    <path name="org/omg/CosNaming/NamingContextPackage"/>
-                    <path name="org/omg/CosNotification"/>
-                    <path name="org/omg/CosNotifyChannelAdmin"/>
-                    <path name="org/omg/CosNotifyChannelAdminAck"/>
-                    <path name="org/omg/CosNotifyComm"/>
-                    <path name="org/omg/CosNotifyCommAck"/>
-                    <path name="org/omg/CosNotifyFilter"/>
-                    <path name="org/omg/CosPropertyService"/>
-                    <path name="org/omg/CosTime"/>
-                    <path name="org/omg/CosTypedEventChannelAdmin"/>
-                    <path name="org/omg/CosTypedEventComm"/>
-                    <path name="org/omg/CosTypedNotifyChannelAdmin"/>
-                    <path name="org/omg/CosTypedNotifyComm"/>
-                    <path name="org/omg/Dynamic"/>
-                    <path name="org/omg/DynamicAny"/>
-                    <path name="org/omg/DynamicAny/DynAnyFactoryPackage"/>
-                    <path name="org/omg/DynamicAny/DynAnyPackage"/>
-                    <path name="org/omg/ETF"/>
-                    <path name="org/omg/GIOP"/>
-                    <path name="org/omg/GSSUP"/>
-                    <path name="org/omg/IIOP"/>
-                    <path name="org/omg/IOP"/>
-                    <path name="org/omg/IOP/CodecFactoryPackage"/>
-                    <path name="org/omg/IOP/CodecPackage"/>
-                    <path name="org/omg/Messaging"/>
-                    <path name="org/omg/PortableInterceptor"/>
-                    <path name="org/omg/PortableInterceptor/ORBInitInfoPackage"/>
-                    <path name="org/omg/PortableServer"/>
-                    <path name="org/omg/PortableServer/CurrentPackage"/>
-                    <path name="org/omg/PortableServer/POAManagerPackage"/>
-                    <path name="org/omg/PortableServer/POAPackage"/>
-                    <path name="org/omg/PortableServer/ServantLocatorPackage"/>
-                    <path name="org/omg/PortableServer/portable"/>
-                    <path name="org/omg/RTCORBA"/>
-                    <path name="org/omg/SSLIOP"/>
-                    <path name="org/omg/Security"/>
-                    <path name="org/omg/SecurityAdmin"/>
-                    <path name="org/omg/SecurityLevel1"/>
-                    <path name="org/omg/SecurityLevel2"/>
-                    <path name="org/omg/SecurityReplaceable"/>
-                    <path name="org/omg/SendingContext"/>
-                    <path name="org/omg/TimeBase"/>
-                    <path name="org/omg/dds"/>
-                </include-set>
-            </exports>
-        </module>
         <module name="org.jboss.jts" export="false">
             <exports>
                 <include-set>
