@@ -115,7 +115,7 @@ public class ServerGroupResourceDefinition extends SimpleResourceDefinition {
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         DomainServerLifecycleHandlers.registerServerGroupHandlers(resourceRegistration);
         resourceRegistration.registerSubModel(JvmResourceDefinition.GLOBAL);
-        resourceRegistration.registerSubModel(DomainDeploymentResourceDescription.createForServerGroup(contentRepo, fileRepository));
+        resourceRegistration.registerSubModel(DomainDeploymentResourceDefinition.createForServerGroup(contentRepo, fileRepository));
         resourceRegistration.registerSubModel(SystemPropertyResourceDefinition.createForDomainOrHost(Location.SERVER_GROUP));
         resourceRegistration.registerSubModel(new DeploymentOverlayDefinition(DeploymentOverlayPriority.SERVER_GROUP, null, null));
     }

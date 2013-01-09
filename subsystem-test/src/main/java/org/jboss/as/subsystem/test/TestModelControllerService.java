@@ -42,7 +42,7 @@ import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.DeployerChainAddHandler;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironment.LaunchType;
-import org.jboss.as.server.controller.resources.ServerDeploymentResourceDescription;
+import org.jboss.as.server.controller.resources.ServerDeploymentResourceDefinition;
 import org.jboss.as.server.operations.RootResourceHack;
 import org.jboss.dmr.ModelNode;
 import org.jboss.vfs.VirtualFile;
@@ -79,7 +79,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
     protected void initExtraModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
         rootResource.getModel().get(SUBSYSTEM);
 
-        ManagementResourceRegistration deployments = rootRegistration.registerSubModel(ServerDeploymentResourceDescription.create(contentRepository, null));
+        ManagementResourceRegistration deployments = rootRegistration.registerSubModel(ServerDeploymentResourceDefinition.create(contentRepository, null));
 
         //Hack to be able to access the registry for the jmx facade
 

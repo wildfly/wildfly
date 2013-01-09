@@ -35,29 +35,29 @@ import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymen
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.server.controller.resources.DeploymentAttributes;
-import org.jboss.as.server.controller.resources.DeploymentResourceDescription;
+import org.jboss.as.server.controller.resources.DeploymentResourceDefinition;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class DomainDeploymentResourceDescription extends DeploymentResourceDescription {
+public class DomainDeploymentResourceDefinition extends DeploymentResourceDefinition {
 
     private OperationDefinition addDefinition;
-    private DomainDeploymentResourceDescription(DeploymentResourceParent parent, OperationDefinition addDefinition, OperationStepHandler addHandler, OperationStepHandler removeHandler) {
+    private DomainDeploymentResourceDefinition(DeploymentResourceParent parent, OperationDefinition addDefinition, OperationStepHandler addHandler, OperationStepHandler removeHandler) {
         super(parent, addHandler, removeHandler);
         this.addDefinition = addDefinition;
     }
 
-    public static DomainDeploymentResourceDescription createForDomainRoot(boolean isMaster, ContentRepository contentRepository, HostFileRepository fileRepository) {
-        return new DomainDeploymentResourceDescription(DeploymentResourceParent.DOMAIN,
+    public static DomainDeploymentResourceDefinition createForDomainRoot(boolean isMaster, ContentRepository contentRepository, HostFileRepository fileRepository) {
+        return new DomainDeploymentResourceDefinition(DeploymentResourceParent.DOMAIN,
                 DeploymentAttributes.DOMAIN_DEPLOYMENT_ADD_DEFINITION,
                 isMaster ? new DeploymentAddHandler(contentRepository) : new DeploymentAddHandler(),
                 isMaster ? DeploymentRemoveHandler.createForMaster(contentRepository) : DeploymentRemoveHandler.createForSlave(fileRepository));
     }
 
-    public static DomainDeploymentResourceDescription createForServerGroup(ContentRepository contentRepository, HostFileRepository fileRepository) {
-        return new DomainDeploymentResourceDescription(DeploymentResourceParent.SERVER_GROUP, DeploymentAttributes.SERVER_GROUP_DEPLOYMENT_ADD_DEFINITION,
+    public static DomainDeploymentResourceDefinition createForServerGroup(ContentRepository contentRepository, HostFileRepository fileRepository) {
+        return new DomainDeploymentResourceDefinition(DeploymentResourceParent.SERVER_GROUP, DeploymentAttributes.SERVER_GROUP_DEPLOYMENT_ADD_DEFINITION,
                 new ServerGroupDeploymentAddHandler(fileRepository), ServerGroupRemoveHandler.INSTANCE);
     }
 

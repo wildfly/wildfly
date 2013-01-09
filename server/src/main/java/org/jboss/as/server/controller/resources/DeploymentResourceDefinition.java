@@ -36,11 +36,11 @@ import org.jboss.as.server.deployment.DeploymentStatusHandler;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public abstract class DeploymentResourceDescription extends SimpleResourceDefinition {
+public abstract class DeploymentResourceDefinition extends SimpleResourceDefinition {
 
     private DeploymentResourceParent parent;
 
-    protected DeploymentResourceDescription(DeploymentResourceParent parent, OperationStepHandler addHandler, OperationStepHandler removeHandler) {
+    protected DeploymentResourceDefinition(DeploymentResourceParent parent, OperationStepHandler addHandler, OperationStepHandler removeHandler) {
         super(PathElement.pathElement(DEPLOYMENT),
                 DeploymentAttributes.DEPLOYMENT_RESOLVER,
                 addHandler,
