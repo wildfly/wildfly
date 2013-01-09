@@ -22,6 +22,8 @@
 
 package org.jboss.as.jaxrs.deployment;
 
+import java.util.Arrays;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -79,24 +81,30 @@ public class JaxrsComponentDeployer implements DeploymentUnitProcessor {
             if (!GetRestful.isRootResource(componentClass)) continue;
 
             if (component instanceof SessionBeanComponentDescription) {
-                Class jaxrsType = GetRestful.getSubResourceClass(componentClass);
+                Class[] jaxrsType = GetRestful.getSubResourceClass(componentClass);
                 final String jndiName;
                 if (component.getViews().size() == 1) {
                     //only 1 view, just use the simple JNDI name
                     jndiName = "java:app/" + moduleDescription.getModuleName() + "/" + componentClass.getSimpleName();
                 } else {
-                    final String jaxRsTypeName = jaxrsType.getName();
                     boolean found = false;
+                    String foundType = null;
                     for (final ViewDescription view : component.getViews()) {
-                        if (view.getViewClassName().equals(jaxRsTypeName)) {
-                            found = true;
+                        for(Class subResource : jaxrsType) {
+                            if (view.getViewClassName().equals(subResource.getName())) {
+                                foundType = subResource.getName();
+                                found = true;
+                                break;
+                            }
+                        }
+                        if(found) {
                             break;
                         }
                     }
                     if (!found) {
-                        throw JaxrsMessages.MESSAGES.typeNameNotAnEjbView(jaxRsTypeName, component.getComponentName());
+                        throw JaxrsMessages.MESSAGES.typeNameNotAnEjbView(Arrays.asList(jaxrsType), component.getComponentName());
                     }
-                    jndiName = "java:app/" + moduleDescription.getModuleName() + "/" + componentClass.getSimpleName() + "!" + jaxRsTypeName;
+                    jndiName = "java:app/" + moduleDescription.getModuleName() + "/" + componentClass.getSimpleName() + "!" + foundType;
                 }
 
                 JAXRS_LOGGER.debugf("Found JAX-RS Managed Bean: %s local jndi jaxRsTypeName: %s", component.getComponentClassName(), jndiName);
