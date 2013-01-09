@@ -283,7 +283,7 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
         ));
         resourceRegistration.registerSubModel(new ProfileResourceDefinition(extensionRegistry));
         resourceRegistration.registerSubModel(PathResourceDefinition.createNamed(pathManager));
-        resourceRegistration.registerSubModel(DomainDeploymentResourceDescription.createForDomainRoot(isMaster, contentRepo, fileRepository));
+        resourceRegistration.registerSubModel(DomainDeploymentResourceDefinition.createForDomainRoot(isMaster, contentRepo, fileRepository));
         resourceRegistration.registerSubModel(new DeploymentOverlayDefinition(null, contentRepo, fileRepository));
         resourceRegistration.registerSubModel(new ServerGroupResourceDefinition(contentRepo, fileRepository));
 

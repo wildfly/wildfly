@@ -22,12 +22,12 @@
 
 package org.jboss.as.server.deployment;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.ENABLED;
 
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
@@ -40,36 +40,36 @@ import org.jboss.msc.service.ServiceController;
 public class DeploymentStatusHandler implements OperationStepHandler {
 
     public static final OperationStepHandler INSTANCE = new DeploymentStatusHandler();
-    private static final ModelNode NO_METRICS = new ModelNode().set("no metrics available");
+    private static final ModelNode NO_METRICS = new ModelNode("no metrics available");
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final PathElement element = address.getLastElement();
         final ModelNode deployment = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
-        final boolean isEnabled = deployment.get(ENABLED).asBoolean();
+        final boolean isEnabled = ENABLED.resolveModelAttribute(context, deployment).asBoolean();
         context.addStep(new OperationStepHandler() {
-                    @Override
-                    public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-                        final ModelNode result = context.getResult();
-                        if (!isEnabled) {
+            @Override
+            public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+                final ModelNode result = context.getResult();
+                if (!isEnabled) {
+                    result.set(AbstractDeploymentUnitService.DeploymentStatus.STOPPED.toString());
+                } else {
+                    final ServiceController<?> controller = context.getServiceRegistry(false).getService(Services.deploymentUnitName(element.getValue()));
+                    if (controller != null) {
+                        if (controller.getSubstate() == ServiceController.Substate.WONT_START &&
+                                controller.getState() == ServiceController.State.DOWN) {
                             result.set(AbstractDeploymentUnitService.DeploymentStatus.STOPPED.toString());
                         } else {
-                            final ServiceController<?> controller = context.getServiceRegistry(false).getService(Services.deploymentUnitName(element.getValue()));
-                            if (controller != null) {
-                                if (controller.getSubstate() == ServiceController.Substate.WONT_START &&
-                                        controller.getState() == ServiceController.State.DOWN) {
-                                    result.set(AbstractDeploymentUnitService.DeploymentStatus.STOPPED.toString());
-                                } else {
-                                    result.set(((AbstractDeploymentUnitService) controller.getService()).getStatus().toString());
-                                }
-                            } else {
-                                result.set(NO_METRICS);
-                            }
+                            result.set(((AbstractDeploymentUnitService) controller.getService()).getStatus().toString());
                         }
-                        context.stepCompleted();
+                    } else {
+                        result.set(NO_METRICS);
                     }
-                }, OperationContext.Stage.RUNTIME);
+                }
+                context.stepCompleted();
+            }
+        }, OperationContext.Stage.RUNTIME);
 
         context.stepCompleted();
     }

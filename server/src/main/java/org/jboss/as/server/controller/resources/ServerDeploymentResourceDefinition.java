@@ -36,17 +36,17 @@ import org.jboss.as.server.services.security.AbstractVaultReader;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class ServerDeploymentResourceDescription extends DeploymentResourceDescription {
+public class ServerDeploymentResourceDefinition extends DeploymentResourceDefinition {
 
     private final AbstractVaultReader vaultReader;
 
-    private ServerDeploymentResourceDescription(AbstractVaultReader vaultReader, OperationStepHandler addHandler, OperationStepHandler removeHandler) {
+    private ServerDeploymentResourceDefinition(AbstractVaultReader vaultReader, OperationStepHandler addHandler, OperationStepHandler removeHandler) {
         super(DeploymentResourceParent.SERVER, addHandler, removeHandler);
         this.vaultReader = vaultReader;
     }
 
-    public static ServerDeploymentResourceDescription create(ContentRepository contentRepository, AbstractVaultReader vaultReader) {
-        return new ServerDeploymentResourceDescription(vaultReader,
+    public static ServerDeploymentResourceDefinition create(ContentRepository contentRepository, AbstractVaultReader vaultReader) {
+        return new ServerDeploymentResourceDefinition(vaultReader,
                 DeploymentAddHandler.create(contentRepository, vaultReader),
                 new DeploymentRemoveHandler(contentRepository, vaultReader));
     }

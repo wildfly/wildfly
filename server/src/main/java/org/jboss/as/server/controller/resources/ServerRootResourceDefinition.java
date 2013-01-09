@@ -358,7 +358,7 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
                                         LocalDestinationOutboundSocketBindingResourceDefinition.INSTANCE));
 
         // Deployments
-        ManagementResourceRegistration deployments = resourceRegistration.registerSubModel(ServerDeploymentResourceDescription.create(contentRepository, vaultReader));
+        ManagementResourceRegistration deployments = resourceRegistration.registerSubModel(ServerDeploymentResourceDefinition.create(contentRepository, vaultReader));
 
         //deployment overlays
         resourceRegistration.registerSubModel(new DeploymentOverlayDefinition(DeploymentOverlayPriority.SERVER, contentRepository, null));
