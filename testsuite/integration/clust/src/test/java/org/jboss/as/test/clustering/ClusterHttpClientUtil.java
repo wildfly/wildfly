@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.clustering;
 
+import static org.jboss.as.test.clustering.ClusteringTestConstants.GRACE_TIME_TO_MEMBERSHIP_CHANGE;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -28,6 +30,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 /**
  * Helper class to start and stop container including a deployment.
@@ -49,6 +54,16 @@ public final class ClusterHttpClientUtil {
         return tryGet(client, url, ClusteringTestConstants.GRACE_TIME_TO_REPLICATE);
     }
 
+    public static HttpResponse tryGet(final HttpClient client, final HttpUriRequest r) throws IOException {
+        final long startTime;
+        HttpResponse response = client.execute(r);
+        startTime = System.currentTimeMillis();
+        while(response.getStatusLine().getStatusCode() != HttpServletResponse.SC_OK && startTime + GRACE_TIME_TO_MEMBERSHIP_CHANGE > System.currentTimeMillis()) {
+            response = client.execute(r);
+        }
+        return response;
+    }
+
     /**
      * Tries a get on the provided client with specified graceTime in milliseconds.
      *
@@ -59,13 +74,7 @@ public final class ClusterHttpClientUtil {
      * @throws IOException
      */
     public static HttpResponse tryGet(final HttpClient client, final String url, final long graceTime) throws IOException {
-        final long startTime;
-        HttpResponse response = client.execute(new HttpGet(url));
-        startTime = System.currentTimeMillis();
-        while (response.getStatusLine().getStatusCode() != HttpServletResponse.SC_OK && startTime + graceTime > System.currentTimeMillis()) {
-            response = client.execute(new HttpGet(url));
-        }
-        return response;
+        return tryGet(client, new HttpGet(url));
     }
 
     /**

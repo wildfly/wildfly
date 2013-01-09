@@ -34,12 +34,15 @@ import org.jboss.as.clustering.singleton.election.PreferredSingletonElectionPoli
 import org.jboss.as.clustering.singleton.election.SimpleSingletonElectionPolicy;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 
 @WebListener
 public class MyServiceContextListener implements ServletContextListener {
+
+    private static final Logger log = Logger.getLogger(MyServiceContextListener.class);
 
     public static final String PREFERRED_NODE = NODE_2;
 
@@ -62,9 +65,9 @@ public class MyServiceContextListener implements ServletContextListener {
 
     @Override
     public void contextDestroyed(ServletContextEvent event) {
-        System.out.println(String.format("Initiating removal of %s", MyService.SERVICE_NAME.getCanonicalName()));
+        log.info(String.format("Initiating removal of %s", MyService.SERVICE_NAME.getCanonicalName()));
         ServiceContainerHelper.remove(ServiceContainerHelper.getCurrentServiceContainer().getRequiredService(MyService.SERVICE_NAME));
-        System.out.println(String.format("Removal of %s complete", MyService.SERVICE_NAME.getCanonicalName()));
+        log.info(String.format("Removal of %s complete", MyService.SERVICE_NAME.getCanonicalName()));
         this.verifyRemoved(MyService.SERVICE_NAME.append("service"));
         this.verifyRemoved(MyService.SERVICE_NAME.append("singleton"));
     }

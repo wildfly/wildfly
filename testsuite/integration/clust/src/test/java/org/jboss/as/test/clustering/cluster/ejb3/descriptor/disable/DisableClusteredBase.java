@@ -42,7 +42,7 @@ public class DisableClusteredBase implements java.io.Serializable, DisableCluste
     }
 
     public void setUpFailover(String failover) {
-        // To setup the failover property
+        // To setUp the failover property
         log.info("Setting up failover property: " + failover);
         System.setProperty("JBossCluster-DoFail", failover);
     }

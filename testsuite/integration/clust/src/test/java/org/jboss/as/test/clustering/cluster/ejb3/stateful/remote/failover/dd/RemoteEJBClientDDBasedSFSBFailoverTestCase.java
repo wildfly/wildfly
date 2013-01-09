@@ -22,8 +22,13 @@
 
 package org.jboss.as.test.clustering.cluster.ejb3.stateful.remote.failover.dd;
 
-import org.jboss.arquillian.container.test.api.*;
+import org.jboss.arquillian.container.test.api.ContainerController;
+import org.jboss.arquillian.container.test.api.Deployer;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 
 import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
@@ -31,7 +36,9 @@ import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
 import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.EJBDirectory;
 import org.jboss.as.test.clustering.NodeNameGetter;
+import org.jboss.as.test.clustering.NodeUtil;
 import org.jboss.as.test.clustering.RemoteEJBDirectory;
+import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.ejb3.stateful.remote.failover.CounterResult;
 import org.jboss.as.test.clustering.cluster.ejb3.stateful.remote.failover.RemoteCounter;
 import org.jboss.ejb.client.ContextSelector;
@@ -53,19 +60,12 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class RemoteEJBClientDDBasedSFSBFailoverTestCase {
+public class RemoteEJBClientDDBasedSFSBFailoverTestCase extends ClusterAbstractTestCase {
     private static final Logger logger = Logger.getLogger(RemoteEJBClientDDBasedSFSBFailoverTestCase.class);
 
     private static final String MODULE_NAME = "remote-ejb-client-dd-based-stateful-bean-failover-test";
 
     private static EJBDirectory context;
-
-    @ArquillianResource
-    private ContainerController container;
-
-    @ArquillianResource
-    private Deployer deployer;
-
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
@@ -93,6 +93,12 @@ public class RemoteEJBClientDDBasedSFSBFailoverTestCase {
         context = new RemoteEJBDirectory(MODULE_NAME);
     }
 
+    @Override
+    protected void setUp() {
+        super.setUp();
+        deploy(DEPLOYMENTS);
+    }
+
     /**
      * Starts 2 nodes with the clustered beans deployed on each node. Invokes a (deployment descriptor based) clustered SFSB a few times.
      * Then stops a node from among the cluster (the one which received the last invocation) and continues invoking
@@ -102,15 +108,7 @@ public class RemoteEJBClientDDBasedSFSBFailoverTestCase {
      * @throws Exception
      */
     @Test
-    public void testFailoverFromRemoteClientWhenOneNodeGoesDown() throws Exception {
-        // Container is unmanaged, so start it ourselves
-        this.container.start(CONTAINER_1);
-        // deploy to container1
-        this.deployer.deploy(DEPLOYMENT_1);
-
-        // start the other container too
-        this.container.start(CONTAINER_2);
-        this.deployer.deploy(DEPLOYMENT_2);
+    public void testRemoteClientFailoverOnShutdown() throws Exception {
 
         final ContextSelector<EJBClientContext> previousSelector = EJBClientContextSelector.setup("cluster/ejb3/stateful/failover/sfsb-failover-jboss-ejb-client.properties");
         boolean container1Stopped = false;
@@ -132,12 +130,12 @@ public class RemoteEJBClientDDBasedSFSBFailoverTestCase {
             final String previousInvocationNodeName = result.getNodeName();
             // the value is configured in arquillian.xml of the project
             if (previousInvocationNodeName.equals(NODE_1)) {
-                this.deployer.undeploy(DEPLOYMENT_1);
-                this.container.stop(CONTAINER_1);
+                undeploy(DEPLOYMENT_1);
+                stop(CONTAINER_1);
                 container1Stopped = true;
             } else {
-                this.deployer.undeploy(DEPLOYMENT_2);
-                this.container.stop(CONTAINER_2);
+                undeploy(DEPLOYMENT_2);
+                stop(CONTAINER_2);
                 container2Stopped = true;
             }
             // invoke again
@@ -165,16 +163,6 @@ public class RemoteEJBClientDDBasedSFSBFailoverTestCase {
             // reset the selector
             if (previousSelector != null) {
                 EJBClientContext.setSelector(previousSelector);
-            }
-            // shutdown the containers
-            if (!container1Stopped) {
-                this.deployer.undeploy(DEPLOYMENT_1);
-                this.container.stop(CONTAINER_1);
-            }
-
-            if (!container2Stopped) {
-                this.deployer.undeploy(DEPLOYMENT_2);
-                this.container.stop(CONTAINER_2);
             }
         }
     }
