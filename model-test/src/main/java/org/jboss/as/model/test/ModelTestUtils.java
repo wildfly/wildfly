@@ -477,11 +477,12 @@ public class ModelTestUtils {
                 TransformedOperation transformedOperation = mainServices.transformOperation(modelVersion, writeOp);
                 ModelNode result = mainServices.executeOperation(modelVersion, transformedOperation);
                 if (!config.expectFailedWriteAttributeOperation(writeOp)) {
-                    Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+                    Assert.assertEquals("Failed: " + writeOp + "\n" + result, SUCCESS, result.get(OUTCOME).asString());
                 } else {
-                    Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
+                    Assert.assertEquals("Expected failure: " + writeOp,  FAILED, result.get(OUTCOME).asString());
                     transformedOperation = mainServices.transformOperation(modelVersion, config.correctWriteAttributeOperation(writeOp));
-                    checkOutcome(mainServices.executeOperation(modelVersion, transformedOperation));
+                    result = mainServices.executeOperation(modelVersion, transformedOperation);
+                    Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString() + " for\n:" + transformedOperation.getTransformedOperation(), SUCCESS, result.get(OUTCOME).asString());
                 }
             }
         }
@@ -495,7 +496,7 @@ public class ModelTestUtils {
         } else {
             Assert.assertEquals("Should not have worked: " + operation, FAILED, result.get(OUTCOME).asString());
             if (config.canCorrectMore(operation)) {
-                checkFailedTransformedAddOperation(mainServices, modelVersion, config.correctOperation(operation), config);
+                checkFailedTransformedAddOperation(mainServices, modelVersion, config.correctOperation(transformedOperation.getTransformedOperation()), config);
             }
         }
     }
