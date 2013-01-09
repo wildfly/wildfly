@@ -66,7 +66,7 @@ public class RaTestConnectionTestCase extends ContainerResourceMgmtTestBase {
             address.add("resource-adapter", deploymentName);
             address.protect();
             String xml = FileUtils.readFile(RaTestConnectionTestCase.class, "testcon_multiple.xml");
-            List<ModelNode> operations = xmlToModelOperations(xml, Namespace.CURRENT.getUriString(), new ResourceAdapterSubsystemParser());
+            List<ModelNode> operations = xmlToModelOperations(xml, Namespace.RESOURCEADAPTERS_1_0.getUriString(), new ResourceAdapterSubsystemParser());
             System.out.println(operations);
             executeOperation(operationListToCompositeOperation(operations));
         }

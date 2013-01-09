@@ -65,7 +65,7 @@ public class MultipleManagedConnectionFactory1 implements ManagedConnectionFacto
     */
    public MultipleManagedConnectionFactory1()
    {
-
+	   setName("MCF");
    }
 
    /** 
@@ -239,5 +239,9 @@ public class MultipleManagedConnectionFactory1 implements ManagedConnectionFacto
       return result;
    }
 
+   @Override
+   public String toString(){
+	   return this.getClass().toString()+"name="+name+ra.toString();
+   }
 
 }

@@ -1,0 +1,23 @@
+<subsystem xmlns="urn:jboss:domain:resource-adapters:1.1">
+	<resource-adapters>
+		<resource-adapter id="multi" >
+			<module slot="main" id="org.jboss.ironjacamar.ra16out" />
+			<connection-definitions>
+				<connection-definition
+					class-name="org.jboss.as.test.integration.jca.rar.MultipleManagedConnectionFactory1"
+					jndi-name="java:/testMeRA" pool-name="java:/testMeRA" />
+					<connection-definition
+					class-name="org.jboss.as.test.integration.jca.rar.MultipleManagedConnectionFactory2"
+					jndi-name="java:/testMeRA1" pool-name="java:/testMeRA1" />
+			</connection-definitions>
+			<admin-objects>
+				<admin-object
+					class-name="org.jboss.as.test.integration.jca.rar.MultipleAdminObject1Impl"
+					jndi-name="java:/testAO" pool-name="testAO"/>
+				<admin-object
+					class-name="org.jboss.as.test.integration.jca.rar.MultipleAdminObject2Impl"
+					jndi-name="java:/testAO1" pool-name="testAO1"/>
+			</admin-objects>
+		</resource-adapter>
+	</resource-adapters>
+</subsystem>

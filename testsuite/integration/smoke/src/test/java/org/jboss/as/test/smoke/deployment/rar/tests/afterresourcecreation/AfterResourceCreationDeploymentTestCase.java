@@ -84,7 +84,7 @@ public class AfterResourceCreationDeploymentTestCase extends ContainerResourceMg
 
     private void setup() throws Exception {
         String xml = FileUtils.readFile(AfterResourceCreationDeploymentTestCase.class, "basic-after.xml");
-        List<ModelNode> operations = xmlToModelOperations(xml, Namespace.CURRENT.getUriString(), new ResourceAdapterSubsystemParser());
+        List<ModelNode> operations = xmlToModelOperations(xml, Namespace.RESOURCEADAPTERS_1_0.getUriString(), new ResourceAdapterSubsystemParser());
         executeOperation(operationListToCompositeOperation(operations));
 
         //since it is created after deployment it needs activation

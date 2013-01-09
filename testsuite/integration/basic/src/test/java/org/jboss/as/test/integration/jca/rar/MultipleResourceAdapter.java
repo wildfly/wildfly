@@ -40,6 +40,11 @@ import javax.transaction.xa.XAResource;
 public class MultipleResourceAdapter implements ResourceAdapter, Serializable {
 
     /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
      * The logger
      */
     private static Logger log = Logger.getLogger("MultipleResourceAdapter");
@@ -53,7 +58,7 @@ public class MultipleResourceAdapter implements ResourceAdapter, Serializable {
      * Default constructor
      */
     public MultipleResourceAdapter() {
-
+    	setName("RA");
     }
 
     /**
@@ -170,5 +175,8 @@ public class MultipleResourceAdapter implements ResourceAdapter, Serializable {
         return result;
     }
 
-
+    @Override
+    public String toString(){
+ 	   return this.getClass().toString()+"name="+name;
+    }
 }

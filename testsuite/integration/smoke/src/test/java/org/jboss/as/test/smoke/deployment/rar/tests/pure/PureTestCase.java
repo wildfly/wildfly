@@ -70,7 +70,7 @@ public class PureTestCase extends ContainerResourceMgmtTestBase {
         @Override
         public void doSetup(final ManagementClient managementClient) throws Exception {
             String xml = FileUtils.readFile(PureTestCase.class, "pure.xml");
-            List<ModelNode> operations = xmlToModelOperations(xml, Namespace.CURRENT.getUriString(), new ResourceAdapterSubsystemParser());
+            List<ModelNode> operations = xmlToModelOperations(xml, Namespace.RESOURCEADAPTERS_1_0.getUriString(), new ResourceAdapterSubsystemParser());
             executeOperation(operationListToCompositeOperation(operations));
 
         }

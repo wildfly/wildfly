@@ -42,7 +42,7 @@ import static junit.framework.Assert.fail;
 
 /**
  * Resource adapters configuration and metrics unit test.
- * 
+ *
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
 @RunWith(Arquillian.class)
@@ -68,7 +68,7 @@ public class RaCfgMetricUnitTestCase extends DsMgmtTestBase {
         setBaseAddress(modelName + ".rar");
         String xml = readXmlResource(System.getProperty("jbossas.ts.integ.dir") + "/basic/src/test/resources/jca/metrics/ra/"
                 + modelName + ".xml");
-        List<ModelNode> operations = xmlToModelOperations(xml, Namespace.CURRENT.getUriString(),
+        List<ModelNode> operations = xmlToModelOperations(xml, Namespace.RESOURCEADAPTERS_1_0.getUriString(),
                 new ResourceAdapterSubsystemParser());
         executeOperation(operationListToCompositeOperation(operations));
     }

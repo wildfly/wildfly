@@ -21,12 +21,13 @@
  */
 package org.jboss.as.test.integration.jca.rar;
 
+import javax.resource.cci.Connection;
 /**
  * MultipleConnection1
  *
  * @version $Revision: $
  */
-public interface MultipleConnection1
+public interface MultipleConnection1 extends Connection
 {
    /**
     * test

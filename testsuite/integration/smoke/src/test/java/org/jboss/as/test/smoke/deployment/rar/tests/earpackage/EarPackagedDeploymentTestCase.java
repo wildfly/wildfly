@@ -65,7 +65,7 @@ public class EarPackagedDeploymentTestCase extends ContainerResourceMgmtTestBase
         @Override
         public void doSetup(final ManagementClient managementClient) throws Exception{
                 String xml = FileUtils.readFile(EarPackagedDeploymentTestCase.class, "ear_packaged.xml");
-                List<ModelNode> operations = xmlToModelOperations(xml, Namespace.CURRENT.getUriString(), new ResourceAdapterSubsystemParser());
+                List<ModelNode> operations = xmlToModelOperations(xml, Namespace.RESOURCEADAPTERS_1_0.getUriString(), new ResourceAdapterSubsystemParser());
                 executeOperation( operationListToCompositeOperation(operations));
         }
 
