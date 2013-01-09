@@ -55,11 +55,6 @@ case "`uname`" in
         ;;
 esac
 
-
-if [ "$DEBUG_MODE" = "true" ]; then
-    JAVA_OPTS="$JAVA_OPTS -agentlib:jdwp=transport=dt_socket,address=$DEBUG_PORT,server=y,suspend=n"
-fi
-
 # For Cygwin, ensure paths are in UNIX format before anything is touched
 if $cygwin ; then
     [ -n "$JBOSS_HOME" ] &&
@@ -94,6 +89,16 @@ if [ "x$RUN_CONF" = "x" ]; then
 fi
 if [ -r "$RUN_CONF" ]; then
     . "$RUN_CONF"
+fi
+
+# Set debug settings if not already set
+if [ "$DEBUG_MODE" = "true" ]; then
+    DEBUG_OPT=`echo $JAVA_OPTS | $GREP "\-agentlib:jdwp"`
+    if [ "x$DEBUG_OPT" = "x" ]; then
+        JAVA_OPTS="$JAVA_OPTS -agentlib:jdwp=transport=dt_socket,address=$DEBUG_PORT,server=y,suspend=n"
+    else
+        echo "Debug already enabled in JAVA_OPTS, ignoring --debug argument"
+    fi
 fi
 
 # Setup the JVM

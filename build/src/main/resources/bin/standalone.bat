@@ -58,10 +58,6 @@ if not "x%DEBUG_ARG" == "x" (
 rem $Id$
 )
 
-if "%DEBUG_MODE%" == "true" (
-   set "JAVA_OPTS=%JAVA_OPTS% -agentlib:jdwp=transport=dt_socket,address=%DEBUG_PORT%,server=y,suspend=n"
-)
-
 pushd %DIRNAME%..
 set "RESOLVED_JBOSS_HOME=%CD%"
 popd
@@ -93,6 +89,17 @@ if exist "%STANDALONE_CONF%" (
    call "%STANDALONE_CONF%" %*
 ) else (
    echo Config file not found "%STANDALONE_CONF%"
+)
+
+
+rem Set debug settings if not already set
+if "%DEBUG_MODE%" == "true" (
+   echo "%JAVA_OPTS%" | findstr /I "\-agentlib:jdwp" > nul
+  if errorlevel == 1 (
+     echo Debug already enabled in JAVA_OPTS, ignoring --debug argument
+  ) else (
+     set "JAVA_OPTS=%JAVA_OPTS% -agentlib:jdwp=transport=dt_socket,address=%DEBUG_PORT%,server=y,suspend=n"
+  )
 )
 
 set DIRNAME=
