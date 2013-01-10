@@ -161,7 +161,7 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
             if (nextPhase == Phase.FIRST_MODULE_USE) {
                 Mode initialMode = getDeferableInitialMode(deploymentUnit, deferredModules);
                 if (initialMode != Mode.ACTIVE) {
-                    DEPLOYMENT_LOGGER.infoDeferDeploymentPhase(nextPhase, name, initialMode);
+                    DEPLOYMENT_LOGGER.debug("Defer " + nextPhase + " for " + name + " making it " + initialMode);
                     phaseServiceBuilder.setInitialMode(initialMode);
                 }
             }
