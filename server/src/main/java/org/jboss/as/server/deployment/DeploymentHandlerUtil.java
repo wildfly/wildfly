@@ -167,7 +167,7 @@ public class DeploymentHandlerUtil {
                 .addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, service.getDeployerChainsInjector())
                 .addDependency(DeploymentMountProvider.SERVICE_NAME, DeploymentMountProvider.class, service.getServerDeploymentRepositoryInjector())
                 .addDependency(contentsServiceName, VirtualFile.class, service.contentsInjector)
-                .addListener(ServiceListener.Inheritance.ALL, verificationHandler)
+                .addListener(verificationHandler)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
         controllers.add(deploymentUnitController);
