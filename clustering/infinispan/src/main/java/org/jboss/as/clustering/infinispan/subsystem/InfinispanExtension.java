@@ -141,7 +141,7 @@ public class InfinispanExtension implements Extension {
         final RejectExpressionValuesTransformer transportReject = new RejectExpressionValuesTransformer(InfinispanRejectedExpressions_1_3.REJECT_TRANSPORT_ATTRIBUTES);
         registerTransformer(containerRegistration, TransportResource.TRANSPORT_PATH, transportReject, transportReject, transportReject.getWriteAttributeTransformer(), null);
 
-        final DiscardAttributesTransformer removeSelectedCacheAttributes = new DiscardAttributesTransformer(ModelKeys.INDEXING_PROPERTIES, ModelKeys.SEGMENTS, ModelKeys.VIRTUAL_NODES);
+        final InfinispanDiscardAttributesTransformer removeSelectedCacheAttributes = new InfinispanDiscardAttributesTransformer(ModelKeys.INDEXING_PROPERTIES, ModelKeys.SEGMENTS, ModelKeys.VIRTUAL_NODES);
         final RejectExpressionValuesTransformer cacheReject = new RejectExpressionValuesTransformer(InfinispanRejectedExpressions_1_3.REJECT_CACHE_ATTRIBUTES);
         final ChainedResourceTransformer chainedResource = new ChainedResourceTransformer(removeSelectedCacheAttributes, cacheReject.getChainedTransformer());
         final ChainedOperationTransformer chainedAdd = new ChainedOperationTransformer(removeSelectedCacheAttributes, cacheReject);
@@ -336,6 +336,12 @@ public class InfinispanExtension implements Extension {
                 }
             }
             return sb.toString();
+        }
+    }
+
+    private static class InfinispanDiscardAttributesTransformer extends DiscardAttributesTransformer {
+        InfinispanDiscardAttributesTransformer(String...attributes){
+            super(attributes);
         }
     }
 }

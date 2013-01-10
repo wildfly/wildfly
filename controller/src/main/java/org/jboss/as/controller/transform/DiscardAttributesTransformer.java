@@ -37,18 +37,24 @@ import org.jboss.as.controller.transform.chained.ChainedResourceTransformerEntry
 import org.jboss.dmr.ModelNode;
 
 /**
- * Discards attributes
+ * Discards attributes silently. This class should ONLY be used if you are 100% sure a new attribute can be discarded, even if set.
+ * Normally, you would want to use {@link DiscardUndefinedAttributesTransformer} instead.
+ * It is made abstract to make you think about using it.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public final class DiscardAttributesTransformer implements OperationTransformer, ResourceTransformer, ChainedResourceTransformerEntry {
+public abstract class DiscardAttributesTransformer implements OperationTransformer, ResourceTransformer, ChainedResourceTransformerEntry {
 
     private final Set<String> attributeNames;
         private final OperationTransformer writeAttributeTransformer = new WriteAttributeTransformer();
         private final OperationTransformer undefineAttributeTransformer = writeAttributeTransformer;
 
-    public DiscardAttributesTransformer(AttributeDefinition... attributes) {
+    protected DiscardAttributesTransformer(AttributeDefinition... attributes) {
         this(namesFromDefinitions(attributes));
+    }
+
+    protected DiscardAttributesTransformer(String... attributeNames) {
+        this(new HashSet<String>(Arrays.asList(attributeNames)));
     }
 
     private static Set<String> namesFromDefinitions(AttributeDefinition... attributes) {
@@ -59,9 +65,6 @@ public final class DiscardAttributesTransformer implements OperationTransformer,
         return names;
     }
 
-    public DiscardAttributesTransformer(String... attributeNames) {
-        this(new HashSet<String>(Arrays.asList(attributeNames)));
-    }
 
     public DiscardAttributesTransformer(Set<String> attributeNames) {
         this.attributeNames = attributeNames;

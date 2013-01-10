@@ -33,6 +33,7 @@ import java.util.List;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
@@ -135,7 +136,7 @@ public class JPAExtension implements Extension {
                 new RejectExpressionValuesTransformer(
                          JPADefinition.DEFAULT_DATASOURCE,
                          JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE);
-        final DiscardAttributesTransformer discardUndefinedAttributes = new DiscardAttributesTransformer(JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE);
+        final JPADiscardAttributesTransformer discardUndefinedAttributes = new JPADiscardAttributesTransformer(JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE);
 
         // Register the model transformers
         TransformersSubRegistration reg = subsystemRegistration.registerModelTransformers(
@@ -151,6 +152,11 @@ public class JPAExtension implements Extension {
         reg.registerOperationTransformer(UNDEFINE_ATTRIBUTE_OPERATION, discardUndefinedAttributes.getWriteAttributeTransformer());
     }
 
+    private static class JPADiscardAttributesTransformer extends DiscardAttributesTransformer {
+        JPADiscardAttributesTransformer(AttributeDefinition...attributes){
+            super(attributes);
+        }
+    }
 
     static class JPASubsystemElementParser1_1 implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
         XMLElementWriter<SubsystemMarshallingContext> {
