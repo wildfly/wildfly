@@ -1,12 +1,14 @@
 JBoss BOMs Contributing Guide
 =============================
 
-BOM's are maven pom.xml files that specify the versions of all runtime dependencies for a given module.  So by importing this BOM, you are specifying the versions of the dependencies required to use the specified stack.
+BOMs are Maven pom.xml files that specify the versions of all runtime dependencies for a given module.  So by importing this BOM, you are specifying the versions of the dependencies required to use the specified stack.
 
 Basic Steps
 -----------
 
-To contribute with BOMs, clone your own fork instead of cloning the main BOMs repository, commit your work on topic branches and make pull requests. In detail:
+To contribute BOMs, fork the main BOM repository, clone your fork, commit your work on topic branches, and make pull requests.
+
+Here are the steps:
 
 1. [Fork](https://github.com/jboss-jdf/jboss-bom/fork_select) the project.
 
