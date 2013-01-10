@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -39,7 +39,7 @@ import org.jboss.logmanager.ExtLogRecord;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-class Log4jAppenderHandler extends ExtHandler {
+public class Log4jAppenderHandler extends ExtHandler {
     private volatile Appender appender = null;
     private final boolean applyLayout;
 
@@ -47,7 +47,6 @@ class Log4jAppenderHandler extends ExtHandler {
 
     public Log4jAppenderHandler() {
         applyLayout = true;
-        appender.setLayout(null);
     }
 
     /**

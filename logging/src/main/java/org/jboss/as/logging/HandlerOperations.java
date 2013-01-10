@@ -43,11 +43,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Handler;
 
+import org.apache.log4j.Appender;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.logging.logmanager.Log4jAppenderHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.logmanager.LogContext;
@@ -56,7 +58,12 @@ import org.jboss.logmanager.Logger.AttachmentKey;
 import org.jboss.logmanager.config.FormatterConfiguration;
 import org.jboss.logmanager.config.HandlerConfiguration;
 import org.jboss.logmanager.config.LogContextConfiguration;
+import org.jboss.logmanager.config.PojoConfiguration;
+import org.jboss.logmanager.config.PropertyConfigurable;
 import org.jboss.logmanager.formatters.PatternFormatter;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
+import org.jboss.modules.ModuleLoader;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -204,12 +211,45 @@ final class HandlerOperations {
                 className = type.getName();
                 moduleName = null;
             }
+
             final HandlerConfiguration configuration;
-            // Check for construction parameters
-            if (constructionProperties == null) {
-                configuration = logContextConfiguration.addHandlerConfiguration(moduleName, className, name);
+
+            if (moduleName != null) {
+                // Check if this is a log4j appender
+                final ModuleLoader moduleLoader = ModuleLoader.forClass(HandlerOperations.class);
+                final ModuleIdentifier id = ModuleIdentifier.create(moduleName);
+                try {
+                    final Class<?> actualClass = Class.forName(className, false, moduleLoader.loadModule(id).getClassLoader());
+                    if (Appender.class.isAssignableFrom(actualClass)) {
+                        // Check for construction parameters
+                        if (constructionProperties == null) {
+                            logContextConfiguration.addPojoConfiguration(moduleName, className, name);
+                        } else {
+                            logContextConfiguration.addPojoConfiguration(moduleName, className, name, constructionProperties);
+                        }
+                        configuration = logContextConfiguration.addHandlerConfiguration("org.jboss.as.logging", Log4jAppenderHandler.class.getName(), name);
+                        configuration.addPostConfigurationMethod("activate");
+                        configuration.setPropertyValueString("appender", name);
+                    } else {
+                        // Check for construction parameters
+                        if (constructionProperties == null) {
+                            configuration = logContextConfiguration.addHandlerConfiguration(moduleName, className, name);
+                        } else {
+                            configuration = logContextConfiguration.addHandlerConfiguration(moduleName, className, name, constructionProperties);
+                        }
+                    }
+                } catch (ClassNotFoundException e) {
+                    throw createOperationFailure(LoggingMessages.MESSAGES.classNotFound(e, className));
+                } catch (ModuleLoadException e) {
+                    throw LoggingMessages.MESSAGES.cannotLoadModule(e, moduleName, "handler", name);
+                }
             } else {
-                configuration = logContextConfiguration.addHandlerConfiguration(moduleName, className, name, constructionProperties);
+                // Check for construction parameters
+                if (constructionProperties == null) {
+                    configuration = logContextConfiguration.addHandlerConfiguration(moduleName, className, name);
+                } else {
+                    configuration = logContextConfiguration.addHandlerConfiguration(moduleName, className, name, constructionProperties);
+                }
             }
             return configuration;
         }
@@ -285,6 +325,10 @@ final class HandlerOperations {
             // Remove the formatter if there is one
             if (logContextConfiguration.getFormatterNames().contains(name)) {
                 logContextConfiguration.removeFormatterConfiguration(name);
+            }
+            // Remove the POJO if it exists
+            if (logContextConfiguration.getPojoNames().contains(name)) {
+                logContextConfiguration.removePojoConfiguration(name);
             }
         }
     };
@@ -442,9 +486,17 @@ final class HandlerOperations {
         } else if (attribute.getName().equals(HANDLER_NAME.getName())) {
             // no-op just ignore the name attribute
         } else if (attribute.getName().equals(PROPERTIES.getName())) {
+            final PropertyConfigurable propertyConfigurable;
+            // A POJO configuration will have the same name as the handler
+            final PojoConfiguration pojoConfiguration = logContextConfiguration.getPojoConfiguration(configuration.getName());
+            if (pojoConfiguration == null) {
+                propertyConfigurable = configuration;
+            } else {
+                propertyConfigurable = pojoConfiguration;
+            }
             if (model.hasDefined(PROPERTIES.getName())) {
                 for (Property property : PROPERTIES.resolveModelAttribute(context, model).asPropertyList()) {
-                    configuration.setPropertyValueString(property.getName(), property.getValue().asString());
+                    propertyConfigurable.setPropertyValueString(property.getName(), property.getValue().asString());
                 }
             }
         } else {

@@ -45,6 +45,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.logmanager.LogContext;
+import org.jboss.logmanager.PropertyConfigurator;
 import org.jboss.modules.Module;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilter;
@@ -302,8 +303,8 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
                     LoggingLogger.ROOT_LOGGER.julConfigurationFileFound(configFile.getName());
                 } else {
                     // Load non-log4j types
-                    final ConfigurationPersistence configurationPersistence = ConfigurationPersistence.getOrCreateConfigurationPersistence(logContext);
-                    configurationPersistence.configure(properties);
+                    final PropertyConfigurator propertyConfigurator = new PropertyConfigurator(logContext);
+                    propertyConfigurator.configure(properties);
                 }
             }
         } catch (Exception e) {
