@@ -218,14 +218,14 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(PooledConnectionFactoryDefinition.PATH),
                                 new ChainedConfig(new HashMap<String, FailedOperationTransformationConfig.PathAddressConfig>() {{
                                     for (AttributeDefinition attr : PooledConnectionFactoryDefinition.REJECTED_EXPRESSION_ATTRIBUTES) {
-                                        put(attr.getName(), new RejectExpressionsConfig(attr));
+                                            put(attr.getName(), new RejectExpressionsConfig(attr));
                                     }
-                                    put(USE_AUTO_RECOVERY.getName(), new NewAttributesConfig(USE_AUTO_RECOVERY));
-                                    put(INITIAL_CONNECT_ATTEMPTS.getName(), new NewAttributesConfig(INITIAL_CONNECT_ATTEMPTS));
-                                    put(INITIAL_MESSAGE_PACKET_SIZE.getName(), new NewAttributesConfig(INITIAL_MESSAGE_PACKET_SIZE));
-                                    put(COMPRESS_LARGE_MESSAGES.getName(), new NewAttributesConfig(COMPRESS_LARGE_MESSAGES));
-                                    put(CALL_FAILOVER_TIMEOUT.getName(), new NewAttributesConfig(CALL_FAILOVER_TIMEOUT));
-                                }}))
+                                    //put(USE_AUTO_RECOVERY.getName(), new NewAttributesConfig(USE_AUTO_RECOVERY));
+                                    //put(INITIAL_CONNECT_ATTEMPTS.getName(), new NewAttributesConfig(INITIAL_CONNECT_ATTEMPTS));
+                                    //put(INITIAL_MESSAGE_PACKET_SIZE.getName(), new NewAttributesConfig(INITIAL_MESSAGE_PACKET_SIZE));
+                                    //put(COMPRESS_LARGE_MESSAGES.getName(), new NewAttributesConfig(COMPRESS_LARGE_MESSAGES));
+                                    //put(CALL_FAILOVER_TIMEOUT.getName(), new NewAttributesConfig(CALL_FAILOVER_TIMEOUT));
+                                }}).setReadOnly(ConnectionFactoryAttributes.Pooled.TRANSACTION))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(JMSQueueDefinition.PATH),
                                 new RejectExpressionsConfig(JMSQueueDefinition.REJECTED_EXPRESSION_ATTRIBUTES))
