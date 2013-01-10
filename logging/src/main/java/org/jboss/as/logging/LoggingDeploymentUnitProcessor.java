@@ -35,7 +35,6 @@ import java.util.Set;
 import java.util.jar.Manifest;
 
 import org.apache.log4j.xml.DOMConfigurator;
-import org.jboss.as.logging.logmanager.ConfigurationPersistence;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -166,8 +165,13 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
                 result = true;
                 // Get the module
                 final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
-                // Create the log context and load into the selector for the module.
-                final LogContext logContext = LogContext.create();
+                // Create the log context and load into the selector for the module and keep a strong reference
+                final LogContext logContext;
+                if (isLog4jConfiguration(configFile.getName())) {
+                    logContext = LogContext.create(true);
+                } else {
+                    logContext = LogContext.create();
+                }
                 // Configure the deployments logging based on the top-level configuration file
                 configure(configFile, module.getClassLoader(), logContext);
 
@@ -282,7 +286,7 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
             configStream = configFile.openStream();
 
             // Check the type of the configuration file
-            if (LOG4J_PROPERTIES.equals(fileName) || LOG4J_XML.equals(fileName) || JBOSS_LOG4J_XML.equals(fileName)) {
+            if (isLog4jConfiguration(fileName)) {
                 final ClassLoader current = SecurityActions.getThreadContextClassLoader();
                 final LogContext old = LoggingExtension.THREAD_LOCAL_CONTEXT_SELECTOR.getAndSet(CONTEXT_LOCK, logContext);
                 try {
@@ -332,6 +336,10 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
         } catch (Exception e) {
             // no-op
         }
+    }
+
+    private static boolean isLog4jConfiguration(final String fileName) {
+        return LOG4J_PROPERTIES.equals(fileName) || LOG4J_XML.equals(fileName) || JBOSS_LOG4J_XML.equals(fileName);
     }
 
     private static boolean isJulConfiguration(final Properties properties) {
