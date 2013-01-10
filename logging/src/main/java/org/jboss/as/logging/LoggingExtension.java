@@ -45,8 +45,12 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.as.logging.stdio.LogContextStdioContextSelector;
-import org.jboss.logmanager.ContextClassLoaderLogContextSelector;
+import org.jboss.logmanager.ClassLoaderLogContextSelector;
 import org.jboss.logmanager.LogContext;
+import org.jboss.logmanager.ThreadLocalLogContextSelector;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.stdio.StdioContext;
 
 /**
@@ -61,13 +65,26 @@ public class LoggingExtension implements Extension {
 
     static final PathElement LOGGING_PROFILE_PATH = PathElement.pathElement(CommonAttributes.LOGGING_PROFILE);
 
-    static final ContextClassLoaderLogContextSelector CONTEXT_SELECTOR = new ContextClassLoaderLogContextSelector();
+    static final ClassLoaderLogContextSelector CONTEXT_SELECTOR = new ClassLoaderLogContextSelector();
+
+    static final ThreadLocalLogContextSelector THREAD_LOCAL_CONTEXT_SELECTOR = new ThreadLocalLogContextSelector(CONTEXT_SELECTOR);
 
     static final GenericSubsystemDescribeHandler DESCRIBE_HANDLER = GenericSubsystemDescribeHandler.create(LoggingChildResourceComparator.INSTANCE);
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
     private static final int MANAGEMENT_API_MINOR_VERSION = 2;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+
+    private static ModuleIdentifier[] LOGGING_API_MODULES = new ModuleIdentifier[] {
+            ModuleIdentifier.create("org.apache.commons.logging"),
+            ModuleIdentifier.create("org.apache.log4j"),
+            ModuleIdentifier.create("org.jboss.logging"),
+            ModuleIdentifier.create("org.jboss.logging.jul-to-slf4j-stub"),
+            ModuleIdentifier.create("org.jboss.logmanager"),
+            ModuleIdentifier.create("org.slf4j"),
+            ModuleIdentifier.create("org.slf4j.ext"),
+            ModuleIdentifier.create("org.slf4j.impl"),
+    };
 
     static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
@@ -84,9 +101,23 @@ public class LoggingExtension implements Extension {
         if (!java.util.logging.LogManager.getLogManager().getClass().getName().equals(org.jboss.logmanager.LogManager.class.getName())) {
             throw LoggingMessages.MESSAGES.extensionNotInitialized();
         }
-        LogContext.setLogContextSelector(CONTEXT_SELECTOR);
+        LogContext.setLogContextSelector(THREAD_LOCAL_CONTEXT_SELECTOR);
         // Install STDIO context selector
         StdioContext.setStdioContextSelector(new LogContextStdioContextSelector(StdioContext.getStdioContext()));
+
+        // Load logging API modules
+        try {
+            final ModuleLoader moduleLoader = Module.forClass(LoggingExtension.class).getModuleLoader();
+            for (ModuleIdentifier moduleIdentifier : LOGGING_API_MODULES) {
+                try {
+                    CONTEXT_SELECTOR.addLogApiClassLoader(moduleLoader.loadModule(moduleIdentifier).getClassLoader());
+                } catch (Throwable ignore) {
+                    // ignore
+                }
+            }
+        } catch (Exception ignore) {
+            // ignore
+        }
 
 
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,

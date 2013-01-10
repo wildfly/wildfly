@@ -46,6 +46,7 @@ import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.logmanager.LogContext;
 import org.jboss.logmanager.PropertyConfigurator;
+import org.jboss.logmanager.ThreadLocalLogContextSelector;
 import org.jboss.modules.Module;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilter;
@@ -69,6 +70,7 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
     private static final String JBOSS_LOG4J_XML = "jboss-log4j.xml";
     private static final String DEFAULT_PROPERTIES = "logging.properties";
     private static final String JBOSS_PROPERTIES = "jboss-logging.properties";
+    private static final Object CONTEXT_LOCK = new Object();
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -282,6 +284,7 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
             // Check the type of the configuration file
             if (LOG4J_PROPERTIES.equals(fileName) || LOG4J_XML.equals(fileName) || JBOSS_LOG4J_XML.equals(fileName)) {
                 final ClassLoader current = SecurityActions.getThreadContextClassLoader();
+                final LogContext old = LoggingExtension.THREAD_LOCAL_CONTEXT_SELECTOR.getAndSet(CONTEXT_LOCK, logContext);
                 try {
                     SecurityActions.setThreadContextClassLoader(classLoader);
                     if (LOG4J_XML.equals(fileName) || JBOSS_LOG4J_XML.equals(fileName)) {
@@ -292,6 +295,7 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
                         new org.apache.log4j.PropertyConfigurator().doConfigure(properties, org.apache.log4j.JBossLogManagerFacade.getLoggerRepository(logContext));
                     }
                 } finally {
+                    LoggingExtension.THREAD_LOCAL_CONTEXT_SELECTOR.getAndSet(CONTEXT_LOCK, old);
                     SecurityActions.setThreadContextClassLoader(current);
                 }
             } else {
