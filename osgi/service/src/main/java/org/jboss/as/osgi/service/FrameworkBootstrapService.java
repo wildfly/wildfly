@@ -88,7 +88,7 @@ public class FrameworkBootstrapService implements Service<Void> {
         ServiceBuilder<Void> builder = target.addService(FrameworkBootstrapService.SERVICE_NAME, service);
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedServerEnvironment);
         builder.addDependency(OSGiConstants.SUBSYSTEM_STATE_SERVICE_NAME, SubsystemState.class, service.injectedSubsystemState);
-        builder.addListener(Inheritance.ONCE, verificationHandler);
+        builder.addListener(verificationHandler);
         return builder.install();
     }
 

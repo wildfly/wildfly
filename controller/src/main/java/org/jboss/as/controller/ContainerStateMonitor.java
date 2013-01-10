@@ -73,10 +73,8 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
 
     @Override
     public void listenerAdded(final ServiceController<?> controller) {
-        if (controller == controllerController) {
-            controller.removeListener(this);
-        }
         monitor.addController(controller);
+        controller.removeListener(this);
     }
 
     void awaitUninterruptibly() {
