@@ -81,7 +81,7 @@ public class NonExistingProfileTestCase {
 	System.getProperty("jbossas.ts.submodule.dir"), "target" + FS
 	+ "jbossas" + FS + "standalone" + FS + "log");
 	private static final File loggingTestLog = new File(logDir,
-			"logging-test.log");
+			"non-existing-profile-test.log");
 
 	static class NonExistingProfileTestCaseSetup extends
 			AbstractMgmtServerSetupTask {
@@ -133,7 +133,7 @@ public class NonExistingProfileTestCase {
 			op.get("suffix").set(".yyyy-MM-dd");
 			ModelNode file = new ModelNode();
 			file.get("relative-to").set("jboss.server.log.dir");
-			file.get("path").set("logging-test.log");
+			file.get("path").set("non-existing-profile-test.log");
 			op.get("file").set(file);
 			op.get("formatter").set("%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n");
 			updates.add(op);

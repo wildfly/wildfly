@@ -78,7 +78,7 @@ public class LoggingPerDeployFalseTestCase {
 	System.getProperty("jbossas.ts.submodule.dir"), "target" + FS
 	+ "jbossas" + FS + "standalone" + FS + "log");
 	private static final File loggingTestLog = new File(logDir,
-			"logging-test.log");
+			"per-deploy-false-test.log");
 	private static final File logFile = new File(logDir,
 			"jboss-logging-properties-test.log");
 
@@ -140,7 +140,7 @@ public class LoggingPerDeployFalseTestCase {
 			op.get("suffix").set(".yyyy-MM-dd");
 			ModelNode file = new ModelNode();
 			file.get("relative-to").set("jboss.server.log.dir");
-			file.get("path").set("logging-test.log");
+			file.get("path").set("per-deploy-false-test.log");
 			op.get("file").set(file);
 			op.get("formatter").set("%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n");
 			updates.add(op);
