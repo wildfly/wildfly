@@ -32,7 +32,7 @@
             <transaction mode="FULL_XA" stop-timeout="${test.xxx:60000}"  locking="${tst.xxx:OPTIMISTIC}"/>
             <eviction max-entries="${test.xxx:20000}" strategy="${test.xxx:LIRS}"/>
             <expiration interval="${test.xxx:10000}" lifespan="${test.xxx:10}" max-idle="${test.xxx:10}"/>
-            <file-store fetch-state="${test.xxx:false}" passivation="${test.xxx:false}" path="${test.xxx:path}" preload="${test.xxx:true}" purge="${test.xxx:false}" relative-to="${test.xxx:jboss.server.temp.dir}" shared="${test.xxx:true}" singleton="${tst.xxx:true}">
+            <file-store fetch-state="${test.xxx:false}" passivation="${test.xxx:false}" path="${test.xxx:path}" preload="${test.xxx:true}" purge="${test.xxx:false}" relative-to="jboss.server.temp.dir" shared="${test.xxx:true}" singleton="${tst.xxx:true}">
                 <write-behind flush-lock-timeout="${test.xxx:2}" modification-queue-size="${test.xxx:2048}" shutdown-timeout="${test.xxx:20000}" thread-pool-size="${test.xxx:1}" />
             </file-store>
             <indexing index="${test.xxx:LOCAL}">
