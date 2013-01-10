@@ -482,7 +482,7 @@ public class ModelTestUtils {
                     Assert.assertEquals("Expected failure: " + writeOp,  FAILED, result.get(OUTCOME).asString());
                     transformedOperation = mainServices.transformOperation(modelVersion, config.correctWriteAttributeOperation(writeOp));
                     result = mainServices.executeOperation(modelVersion, transformedOperation);
-                    //Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString() + " for\n:" + transformedOperation.getTransformedOperation(), SUCCESS, result.get(OUTCOME).asString());
+                    Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString() + " for\n:" + transformedOperation.getTransformedOperation(), SUCCESS, result.get(OUTCOME).asString());
                 }
             }
         }
