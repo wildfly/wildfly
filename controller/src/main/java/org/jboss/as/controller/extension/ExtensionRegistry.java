@@ -399,6 +399,11 @@ public class ExtensionRegistry {
             }
         }
 
+        @Override
+        public ProcessType getProcessType() {
+            return processType;
+        }
+
 
         @Override
         @SuppressWarnings("deprecation")

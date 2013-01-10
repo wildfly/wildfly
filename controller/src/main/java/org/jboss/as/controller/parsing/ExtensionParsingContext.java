@@ -25,6 +25,7 @@ package org.jboss.as.controller.parsing;
 import java.util.List;
 
 import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 
@@ -36,6 +37,12 @@ import org.jboss.staxmapper.XMLElementReader;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public interface ExtensionParsingContext {
+
+    /**
+     * Gets the type of the current process.
+     * @return the current process type. Will not be {@code null}
+     */
+    ProcessType getProcessType();
 
     /**
      * Set the parser for the profile-wide subsystem configuration XML element.  The element is always
