@@ -51,6 +51,7 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
 
     public synchronized void listenerAdded(final ServiceController<?> controller) {
         monitor.addController(controller);
+        controller.removeListener(this);
     }
 
     public synchronized void execute(final OperationContext context, final ModelNode operation) {

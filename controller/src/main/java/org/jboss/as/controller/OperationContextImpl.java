@@ -70,6 +70,7 @@ import org.jboss.msc.service.ServiceNotFoundException;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StabilityMonitor;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.Value;
@@ -930,6 +931,16 @@ final class OperationContextImpl extends AbstractOperationContext {
 
         public ServiceBuilder<T> addInjection(final Injector<? super T> target) {
             realBuilder.addInjection(target);
+            return this;
+        }
+
+        public ServiceBuilder<T> addMonitor(StabilityMonitor monitor) {
+            realBuilder.addMonitor(monitor);
+            return this;
+        }
+
+        public ServiceBuilder<T> addMonitors(StabilityMonitor... monitors) {
+            realBuilder.addMonitors(monitors);
             return this;
         }
 
