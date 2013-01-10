@@ -380,7 +380,10 @@ public class FailedOperationTransformationConfig {
         @Override
         public boolean expectFailedWriteAttributeOperation(ModelNode operation) {
             String name = operation.get(NAME).asString();
-            return !noWriteFailureAttributes.contains(name) && hasExpressions(name, operation.clone().get(VALUE));
+            if (attributes.contains(name)) {
+                return !noWriteFailureAttributes.contains(name) && hasExpressions(name, operation.clone().get(VALUE));
+            }
+            return false;
         }
 
         boolean hasExpressions(String attrName, ModelNode attribute) {
