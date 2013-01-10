@@ -35,6 +35,7 @@ import java.net.URL;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.transform.OperationRejectionPolicy;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
@@ -59,37 +60,37 @@ public class NameBindingAdd110OperationTransformer implements OperationTransform
             if (type.equals(SIMPLE) && resolvedModel.hasDefined(TYPE)) {
                 if (URL.class.getName().equals(resolvedModel.get(TYPE).asString())) {
                     // simple binding with type URL, not supported on 1.1.0
-                    return new TransformedOperation(operation, getOperationResultTransformer(NamingMessages.MESSAGES
-                            .failedToTransformSimpleURLNameBindingAddOperation("1.1.0")));
+                    return new TransformedOperation(operation, rejectOperation(NamingMessages.MESSAGES
+                            .failedToTransformSimpleURLNameBindingAddOperation("1.1.0")), OperationResultTransformer.ORIGINAL_RESULT);
                 }
             } else if (type.equals(OBJECT_FACTORY) && resolvedModel.hasDefined(OBJECT_FACTORY_ENV)) {
                 // object factory bind with environment, not supported on 1.1.0
-                return new TransformedOperation(operation, getOperationResultTransformer(NamingMessages.MESSAGES
-                        .failedToTransformObjectFactoryWithEnvironmentNameBindingAddOperation("1.1.0")));
+                return new TransformedOperation(operation, rejectOperation(NamingMessages.MESSAGES
+                        .failedToTransformObjectFactoryWithEnvironmentNameBindingAddOperation("1.1.0")), OperationResultTransformer.ORIGINAL_RESULT);
             }
         }
         // all good, return untransformed
         return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
     }
 
-    /*
-     * An ORT that enforces failure result, unless the original result has ignored outcome.
+    /**
+     * Reject an operation if applied successfully.
+     *
+     * @param failureMessage
+     * @return
      */
-    private OperationResultTransformer getOperationResultTransformer(final String failureMessage) {
-        return new OperationResultTransformer() {
+    private OperationRejectionPolicy rejectOperation(final String failureMessage) {
+        return new OperationRejectionPolicy() {
             @Override
-            public ModelNode transformResult(ModelNode result) {
-                if (result.get(OUTCOME).asString().equals(IGNORED)) {
-                    // operation was ignored, no need to fail
-                    return result;
-                }
-                // operation was not ignored, enforce fail
-                result = result.clone();
-                result.set(OUTCOME, new ModelNode().set(FAILED));
-                result.set(FAILURE_DESCRIPTION, new ModelNode().set(failureMessage));
-                return result;
+            public boolean rejectOperation(ModelNode preparedResult) {
+                return true;
+            }
+
+            @Override
+            public String getFailureDescription() {
+                return failureMessage;
             }
         };
-    }
+    };
 
 }
