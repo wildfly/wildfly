@@ -32,7 +32,6 @@ import java.util.Set;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.osgi.OSGiConstants;
@@ -71,7 +70,7 @@ public class InitialDeploymentTracker extends ServiceTracker<Object> {
 
     private ServiceTarget listenerTarget;
 
-    public InitialDeploymentTracker(OperationContext context, ServiceVerificationHandler verificationHandler) {
+    public InitialDeploymentTracker(OperationContext context) {
         super(InitialDeploymentTracker.class.getSimpleName());
 
         serviceTarget = context.getServiceTarget();
@@ -87,7 +86,7 @@ public class InitialDeploymentTracker extends ServiceTracker<Object> {
         if (expectedServices.isEmpty() == false) {
             ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
             listenerTarget = serviceRegistry.getService(JBOSS_SERVER_CONTROLLER).getServiceContainer();
-            listenerTarget.addListener(Inheritance.ALL, this);
+            listenerTarget.addListener(this);
         }
 
         // Check the tracker for completeness
