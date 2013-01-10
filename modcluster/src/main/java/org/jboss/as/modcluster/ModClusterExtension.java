@@ -45,7 +45,6 @@ import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.KEY_ALIAS;
 import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.PROTOCOL;
 
 import java.util.List;
-
 import javax.xml.stream.XMLStreamConstants;
 
 import org.jboss.as.controller.Extension;
@@ -60,7 +59,6 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.AbstractSubsystemTransformer;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
@@ -73,6 +71,7 @@ import org.jboss.as.controller.transform.chained.ChainedResourceTransformer;
 import org.jboss.as.controller.transform.chained.ChainedResourceTransformerEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementReader;
 
 /**
@@ -141,35 +140,29 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
 
     private static void registerTransformers_1_2_0(SubsystemRegistration subsystem) {
 
-        TransformersSubRegistration transformers = subsystem.registerModelTransformers(ModelVersion.create(1, 2, 0), new AbstractSubsystemTransformer(SUBSYSTEM_NAME) {
-            @Override
-            protected ModelNode transformModel(TransformationContext context, ModelNode model) {
-                return model;
-            }
-        });
+        TransformersSubRegistration transformers = subsystem.registerModelTransformers(ModelVersion.create(1, 2, 0), ResourceTransformer.DEFAULT);
 
         // ModClusterConfigResourceDefinition
         RejectExpressionValuesTransformer configRejectExpressionTransformer = new RejectExpressionValuesTransformer(ADVERTISE, AUTO_ENABLE_CONTEXTS, FLUSH_PACKETS, STICKY_SESSION, STICKY_SESSION_REMOVE, STICKY_SESSION_FORCE, PING);
-        TransformersSubRegistration config = transformers.registerSubResource(CONFIGURATION_PATH, (ResourceTransformer)configRejectExpressionTransformer);
+        TransformersSubRegistration config = transformers.registerSubResource(CONFIGURATION_PATH, (ResourceTransformer) configRejectExpressionTransformer);
         config.registerOperationTransformer(ModelDescriptionConstants.ADD, configRejectExpressionTransformer);
-
 
 
         // ModClusterSSLResourceDefinition
         RejectExpressionValuesTransformer sslRejectExpressionTransformer = new RejectExpressionValuesTransformer(CIPHER_SUITE, KEY_ALIAS, PROTOCOL);
-        TransformersSubRegistration ssl = transformers.registerSubResource(SSL_CONFIGURATION_PATH, (ResourceTransformer)sslRejectExpressionTransformer);
+        TransformersSubRegistration ssl = transformers.registerSubResource(SSL_CONFIGURATION_PATH, (ResourceTransformer) sslRejectExpressionTransformer);
         ssl.registerOperationTransformer(ADD, sslRejectExpressionTransformer);
         ssl.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, sslRejectExpressionTransformer.getWriteAttributeTransformer());
 
         // DynamicLoadProviderDefinition
         RejectExpressionValuesTransformer dynamicProviderRejectExpressionTransformer = new RejectExpressionValuesTransformer(DECAY, HISTORY);
-        TransformersSubRegistration dynamicProvider = config.registerSubResource(DYNAMIC_LOAD_PROVIDER_PATH, (ResourceTransformer)dynamicProviderRejectExpressionTransformer);
+        TransformersSubRegistration dynamicProvider = config.registerSubResource(DYNAMIC_LOAD_PROVIDER_PATH, (ResourceTransformer) dynamicProviderRejectExpressionTransformer);
         dynamicProvider.registerOperationTransformer(ADD, dynamicProviderRejectExpressionTransformer);
         dynamicProvider.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, dynamicProviderRejectExpressionTransformer.getWriteAttributeTransformer());
 
         // CustomLoadMetricDefinition
         RejectExpressionValuesTransformer customRejectExpressionTransformer = new RejectExpressionValuesTransformer(CLASS);
-        TransformersSubRegistration customMetric = dynamicProvider.registerSubResource(CUSTOM_LOAD_METRIC_PATH, (ResourceTransformer)customRejectExpressionTransformer);
+        TransformersSubRegistration customMetric = dynamicProvider.registerSubResource(CUSTOM_LOAD_METRIC_PATH, (ResourceTransformer) customRejectExpressionTransformer);
         customMetric.registerOperationTransformer(ADD, customRejectExpressionTransformer);
         customMetric.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, customRejectExpressionTransformer.getWriteAttributeTransformer());
 
@@ -178,8 +171,7 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         ChainedResourceTransformer loadMetricResourceTransformer = new ChainedResourceTransformer(loadMetricRejectExpressionTransformer.getChainedTransformer(), ConvertCapacityTransformer.INSTANCE);
         TransformersSubRegistration metric = dynamicProvider.registerSubResource(LOAD_METRIC_PATH, loadMetricResourceTransformer);
         metric.registerOperationTransformer(ADD, new ChainedOperationTransformer(loadMetricRejectExpressionTransformer, ConvertCapacityTransformer.INSTANCE));
-        metric.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION,
-                new ChainedOperationTransformer(loadMetricRejectExpressionTransformer.getWriteAttributeTransformer(), ConvertCapacityTransformer.INSTANCE.getWriteAttributeTransformer()));
+        metric.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, new ChainedOperationTransformer(loadMetricRejectExpressionTransformer.getWriteAttributeTransformer(), ConvertCapacityTransformer.INSTANCE.getWriteAttributeTransformer()));
 
     }
 
@@ -195,7 +187,18 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         @Override
         public void transformResource(ChainedResourceTransformationContext context, PathAddress address, Resource resource)
                 throws OperationFailedException {
-            internalTransform(resource.getModel(), CAPACITY.getXmlName());
+            resource.writeModel(internalTransform(resource.getModel(), CAPACITY.getName()));
+        }
+
+        private ModelNode fixProperties(ModelNode model) {
+            ModelNode fixed = model.clone();
+            ModelNode modelProps = model.get(LoadMetricDefinition.PROPERTY.getName());
+            if (modelProps.isDefined()) {
+                for (Property p : modelProps.asPropertyList()) {//legacy was broken, only one property can be passed trough
+                    fixed.get(LoadMetricDefinition.PROPERTY.getName()).set(p.getName(), p.getValue().asString());
+                }
+            }
+            return fixed;
         }
 
         private TransformedOperation internalTransformOperation(ModelNode operation, String name) {
@@ -207,12 +210,11 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
             if (model.hasDefined(name) && model.get(name).getType() != ModelType.EXPRESSION) {
                 model.get(name).set(Math.round(model.get(name).asDouble()));
             }
-            return model;
+            return fixProperties(model);
         }
 
         OperationTransformer getWriteAttributeTransformer() {
             return new OperationTransformer() {
-
                 @Override
                 public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation)
                         throws OperationFailedException {
