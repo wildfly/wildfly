@@ -85,7 +85,7 @@ public class LoggingProfilesTestCase {
 	System.getProperty("jbossas.ts.submodule.dir"), "target" + FS
 	+ "jbossas" + FS + "standalone" + FS + "log");
 	private static final File loggingTestLog = new File(logDir,
-			"logging-test.log");
+			"profiles-test.log");
 
 	private static final File dummyLog1 = new File(logDir, "dummy-profile1.log");
 	private static final File dummyLog2 = new File(logDir, "dummy-profile2.log");
@@ -168,7 +168,7 @@ public class LoggingProfilesTestCase {
 			op.get("suffix").set(".yyyy-MM-dd");
 			ModelNode file = new ModelNode();
 			file.get("relative-to").set("jboss.server.log.dir");
-			file.get("path").set("logging-test.log");
+			file.get("path").set("profiles-test.log");
 			op.get("file").set(file);
 			op.get("formatter").set("%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n");
 			updates.add(op);
