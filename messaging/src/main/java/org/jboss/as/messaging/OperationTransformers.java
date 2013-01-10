@@ -36,6 +36,7 @@ import java.util.List;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.transform.OperationRejectionPolicy;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
@@ -63,31 +64,24 @@ public interface OperationTransformers {
         public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation)
                 throws OperationFailedException {
 
-            OperationResultTransformer resultTransformer = ORIGINAL_RESULT;
             final List<String> found = new ArrayList<String>();
-
             for (AttributeDefinition attr : definitions) {
                 if (operation.require(NAME).asString().equals(attr.getName())) {
-                    if (found.size() == 0) {
-                        // Transform the result into a failure if the op wasn't ignored
-                        resultTransformer = new OperationResultTransformer() {
-                            @Override
-                            public ModelNode transformResult(ModelNode result) {
-                                ModelNode transformed = result;
-                                if (!IGNORED.equals(result.get(OUTCOME).asString())) {
-                                    transformed = new ModelNode();
-                                    transformed.get(OUTCOME).set(FAILED);
-                                    transformed.get(FAILURE_DESCRIPTION).set(MESSAGES.unsupportedAttributeInVersion(found.toString(), MessagingExtension.VERSION_1_1_0));
-                                }
-                                return transformed;
-                            }
-                        };
-                    }
                     found.add(attr.getName());
                 }
             }
 
-            return new TransformedOperation(operation, resultTransformer);
+            return new TransformedOperation(operation, new OperationRejectionPolicy() {
+                @Override
+                public boolean rejectOperation(ModelNode preparedResult) {
+                    return found.size() > 0;
+                }
+
+                @Override
+                public String getFailureDescription() {
+                    return MESSAGES.unsupportedAttributeInVersion(found.toString(), MessagingExtension.VERSION_1_1_0);
+                }
+            }, ORIGINAL_RESULT);
         }
     }
 
