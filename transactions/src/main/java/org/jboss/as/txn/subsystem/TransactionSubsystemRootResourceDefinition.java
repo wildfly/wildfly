@@ -162,30 +162,36 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_ACTION_STORE_TABLE_PREFIX, ModelType.STRING, true)
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setXmlName(Attribute.TABLE_PREFIX.getLocalName())
-            .setAllowExpression(true).build();
+            .setAllowExpression(true)
+            .setRequires(CommonAttributes.USE_JDBC_STORE).build();
     public static final SimpleAttributeDefinition JDBC_ACTION_STORE_DROP_TABLE = new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_ACTION_STORE_DROP_TABLE, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode(false))
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setXmlName(Attribute.DROP_TABLE.getLocalName())
-            .setAllowExpression(false).build();
+            .setAllowExpression(false)
+            .setRequires(CommonAttributes.USE_JDBC_STORE).build();
     public static final SimpleAttributeDefinition JDBC_COMMUNICATION_STORE_TABLE_PREFIX = new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_COMMUNICATION_STORE_TABLE_PREFIX, ModelType.STRING, true)
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setXmlName(Attribute.TABLE_PREFIX.getLocalName())
-            .setAllowExpression(true).build();
+            .setAllowExpression(true)
+            .setRequires(CommonAttributes.USE_JDBC_STORE).build();
     public static final SimpleAttributeDefinition JDBC_COMMUNICATION_STORE_DROP_TABLE = new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_COMMUNICATION_STORE_DROP_TABLE, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode(false))
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setXmlName(Attribute.DROP_TABLE.getLocalName())
-            .setAllowExpression(false).build();
+            .setAllowExpression(false)
+            .setRequires(CommonAttributes.USE_JDBC_STORE).build();
     public static final SimpleAttributeDefinition JDBC_STATE_STORE_TABLE_PREFIX = new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_STATE_STORE_TABLE_PREFIX, ModelType.STRING, true)
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setXmlName(Attribute.TABLE_PREFIX.getLocalName())
-            .setAllowExpression(true).build();
+            .setAllowExpression(true)
+            .setRequires(CommonAttributes.USE_JDBC_STORE).build();
     public static final SimpleAttributeDefinition JDBC_STATE_STORE_DROP_TABLE = new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_STATE_STORE_DROP_TABLE, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode(false))
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setXmlName(Attribute.DROP_TABLE.getLocalName())
-            .setAllowExpression(false).build();
+            .setAllowExpression(false)
+            .setRequires(CommonAttributes.USE_JDBC_STORE).build();
 
 
     private final boolean registerRuntimeOnly;
