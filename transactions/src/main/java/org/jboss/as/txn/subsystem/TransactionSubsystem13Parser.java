@@ -90,6 +90,7 @@ class TransactionSubsystem13Parser implements XMLStreamConstants, XMLElementRead
         // elements
         final EnumSet<Element> required = EnumSet.of(Element.RECOVERY_ENVIRONMENT, Element.CORE_ENVIRONMENT);
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
+        boolean choiceElementEncountered = false;
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case TRANSACTIONS_1_3: {
@@ -120,11 +121,21 @@ class TransactionSubsystem13Parser implements XMLStreamConstants, XMLElementRead
                             break;
                         }
                         case USEHORNETQSTORE: {
+                            if (choiceElementEncountered) {
+                                throw unexpectedElement(reader);
+                            }
+                            choiceElementEncountered = true;
+
                             parseUsehornetqstore(reader, logStoreOperation);
                             subsystem.get(CommonAttributes.USEHORNETQSTORE).set(true);
                             break;
                         }
                         case JDBC_STORE: {
+                            if (choiceElementEncountered) {
+                                throw unexpectedElement(reader);
+                            }
+                            choiceElementEncountered = true;
+
                             parseJdbcStoreElementAndEnrichOperation(reader, subsystem);
                             subsystem.get(CommonAttributes.USE_JDBC_STORE).set(true);
                             break;

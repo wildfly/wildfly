@@ -38,15 +38,19 @@
             ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:all>
-            <xs:element name="core-environment" type="core-environment"/>
-            <xs:element name="recovery-environment" type="recovery-environment"/>
-            <xs:element name="coordinator-environment" type="coordinator-environment" minOccurs="0"/>
-            <xs:element name="object-store" type="object-store" minOccurs="0"/>
+        <xs:sequence>
+            <xs:element name="core-environment" type="core-environment" maxOccurs="1"/>
+            <xs:element name="recovery-environment" type="recovery-environment" maxOccurs="1"/>
+            <xs:element name="coordinator-environment" type="coordinator-environment" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="object-store" type="object-store" minOccurs="0" maxOccurs="1"/>
             <xs:element name="jts" type="jts-Type" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="use-hornetq-store" type="use-hornetq-store-Type" minOccurs="0" maxOccurs="1" />
-            <xs:element name="jdbc-store" type="jdbc-store-Type" minOccurs="0" maxOccurs="1" />
-        </xs:all>
+            <xs:choice minOccurs="0" maxOccurs="1">
+                <xs:element name="use-hornetq-store" type="use-hornetq-store-Type" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="jdbc-store" type="jdbc-store-Type" minOccurs="0" maxOccurs="1"/>
+            </xs:choice>
+        </xs:sequence>
+
+
     </xs:complexType>
 
     <xs:complexType name="recovery-environment">
