@@ -197,7 +197,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
 
                     // invoke the method
                     Object result = null;
-                    RemotingContext.setConnection(channelAssociation.getChannel().getConnection());
+                    SecurityActions.remotingContextSetConnection(channelAssociation.getChannel().getConnection());
                     try {
                         result = invokeMethod(invocationId, componentView, invokedMethod, methodParams, locator, attachments);
                     } catch (Throwable throwable) {
@@ -219,7 +219,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
                             return;
                         }
                     } finally {
-                        RemotingContext.clear();
+                        SecurityActions.remotingContextClear();
                     }
                     // write out the (successful) method invocation result to the channel output stream
                     try {
