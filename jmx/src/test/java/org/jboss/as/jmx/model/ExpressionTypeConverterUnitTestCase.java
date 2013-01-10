@@ -173,7 +173,11 @@ public class ExpressionTypeConverterUnitTestCase {
         Assert.assertEquals(SimpleType.STRING, converter.getOpenType());
 
         ModelNode node = new ModelNode();
-        node.get("abc").set(BigInteger.valueOf(10));
+        // BES 2013/01/10 This uses BigInteger; I'm not sure why. But use a value > Long.MAX_VALUE
+        // so the json parser won't convert it down to a long or int resulting in a different value
+        // See AS7-4913
+        // Likely BigInteger was used *because of* the problem discussed in AS7-4913
+        node.get("abc").set(new BigInteger(String.valueOf(Long.MAX_VALUE) + "0"));
         node.get("def").set(false);
         node.protect();
 
