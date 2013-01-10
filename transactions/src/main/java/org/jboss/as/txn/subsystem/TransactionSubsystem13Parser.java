@@ -180,6 +180,19 @@ class TransactionSubsystem13Parser implements XMLStreamConstants, XMLElementRead
 
     static void parseJdbcStoreElementAndEnrichOperation(final XMLExtendedStreamReader reader, ModelNode operation) throws XMLStreamException {
 
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case DATASOURCE_JNDI_NAME:
+                    TransactionSubsystemRootResourceDefinition.JDBC_STORE_DATASOURCE.parseAndSetParameter(value, operation, reader);
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
 
@@ -197,21 +210,6 @@ class TransactionSubsystem13Parser implements XMLStreamConstants, XMLElementRead
                     parseJdbcStoreConfigElementAndEnrichOperation(reader, operation, TransactionSubsystemRootResourceDefinition.JDBC_COMMUNICATION_STORE_TABLE_PREFIX, TransactionSubsystemRootResourceDefinition.JDBC_COMMUNICATION_STORE_DROP_TABLE);
                     break;
                 }
-            }
-        }
-
-
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i++) {
-            requireNoNamespaceAttribute(reader, i);
-            final String value = reader.getAttributeValue(i);
-            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-            switch (attribute) {
-                case DATASOURCE_JNDI_NAME:
-                    TransactionSubsystemRootResourceDefinition.JDBC_STORE_DATASOURCE.parseAndSetParameter(value, operation, reader);
-                    break;
-                default:
-                    throw unexpectedAttribute(reader, i);
             }
         }
 
@@ -479,6 +477,28 @@ class TransactionSubsystem13Parser implements XMLStreamConstants, XMLElementRead
 
         if(node.hasDefined(CommonAttributes.USEHORNETQSTORE) && node.get(CommonAttributes.USEHORNETQSTORE).asBoolean()) {
             writer.writeStartElement(Element.USEHORNETQSTORE.getLocalName());
+            writer.writeEndElement();
+        } else if (node.hasDefined(CommonAttributes.USE_JDBC_STORE) && node.get(CommonAttributes.USE_JDBC_STORE).asBoolean()) {
+            writer.writeStartElement(Element.JDBC_STORE.getLocalName());
+            TransactionSubsystemRootResourceDefinition.JDBC_STORE_DATASOURCE.marshallAsAttribute(node, writer);
+            if (TransactionSubsystemRootResourceDefinition.JDBC_ACTION_STORE_TABLE_PREFIX.isMarshallable(node)
+                    || TransactionSubsystemRootResourceDefinition.JDBC_ACTION_STORE_DROP_TABLE.isMarshallable(node)) {
+                writer.writeEmptyElement(Element.JDBC_ACTION_STORE.getLocalName());
+                TransactionSubsystemRootResourceDefinition.JDBC_ACTION_STORE_TABLE_PREFIX.marshallAsAttribute(node, writer);
+                TransactionSubsystemRootResourceDefinition.JDBC_ACTION_STORE_DROP_TABLE.marshallAsAttribute(node, writer);
+            }
+            if (TransactionSubsystemRootResourceDefinition.JDBC_COMMUNICATION_STORE_TABLE_PREFIX.isMarshallable(node)
+                    || TransactionSubsystemRootResourceDefinition.JDBC_COMMUNICATION_STORE_DROP_TABLE.isMarshallable(node)) {
+                writer.writeEmptyElement(Element.JDBC_COMMUNICATION_STORE.getLocalName());
+                TransactionSubsystemRootResourceDefinition.JDBC_COMMUNICATION_STORE_TABLE_PREFIX.marshallAsAttribute(node, writer);
+                TransactionSubsystemRootResourceDefinition.JDBC_COMMUNICATION_STORE_DROP_TABLE.marshallAsAttribute(node, writer);
+            }
+            if (TransactionSubsystemRootResourceDefinition.JDBC_STATE_STORE_TABLE_PREFIX.isMarshallable(node)
+                    || TransactionSubsystemRootResourceDefinition.JDBC_STATE_STORE_DROP_TABLE.isMarshallable(node)) {
+                writer.writeEmptyElement(Element.JDBC_STATE_STORE.getLocalName());
+                TransactionSubsystemRootResourceDefinition.JDBC_STATE_STORE_TABLE_PREFIX.marshallAsAttribute(node, writer);
+                TransactionSubsystemRootResourceDefinition.JDBC_STATE_STORE_DROP_TABLE.marshallAsAttribute(node, writer);
+            }
             writer.writeEndElement();
         }
         writer.writeEndElement();

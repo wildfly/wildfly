@@ -26,6 +26,7 @@ import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
 import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
 import com.arjuna.ats.jts.common.jtsPropertyManager;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -106,6 +107,10 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         TransactionSubsystemRootResourceDefinition.JTS.validateAndSet(operation, model);
 
         TransactionSubsystemRootResourceDefinition.USEHORNETQSTORE.validateAndSet(operation, model);
+
+        for (AttributeDefinition ad : TransactionSubsystemRootResourceDefinition.attributes_1_2) {
+            ad.validateAndSet(operation, model);
+        }
     }
 
     private void populateModelWithObjectStoreConfig(ModelNode operation, ModelNode objectStoreModel) throws OperationFailedException {

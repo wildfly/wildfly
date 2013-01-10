@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:transactions:1.2">
+<subsystem xmlns="urn:jboss:domain:transactions:1.3">
     <core-environment node-identifier="1" path="var" relative-to="jboss.server.data.dir">
         <process-id>
             <socket socket-binding="txn-socket-id" socket-process-id-max-ports="10"/>

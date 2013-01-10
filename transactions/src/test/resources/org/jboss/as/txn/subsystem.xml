@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:transactions:1.2">
+<subsystem xmlns="urn:jboss:domain:transactions:1.3">
     <core-environment>
         <process-id>
             <uuid/>
