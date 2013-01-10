@@ -36,17 +36,18 @@ import javax.naming.NamingException;
 import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.naming.util.ThreadLocalStack;
-import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StabilityMonitor;
 import org.jboss.msc.value.ImmediateValue;
 
 /**
  * @author John Bailey
  * @author Eduardo Martins
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore implements WritableNamingStore {
     private static final ThreadLocalStack<ServiceName> WRITE_OWNER = new ThreadLocalStack<ServiceName>();
@@ -68,14 +69,22 @@ public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore imp
     private void bind(final Name name, final ServiceName bindName, final Object object, final ServiceName deploymentUnitServiceName) throws NamingException {
         try {
             final BinderService binderService = new BinderService(name.toString());
-            final BindListener listener = new BindListener();
             final ServiceBuilder<?> builder = serviceTarget.addService(bindName, binderService)
                     .addDependency(getServiceNameBase(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
                     .addInjection(binderService.getManagedObjectInjector(), new ValueManagedReferenceFactory(new ImmediateValue<Object>(object)))
-                    .setInitialMode(ServiceController.Mode.ACTIVE)
-                    .addListener(listener);
-            builder.install();
-            listener.await();
+                    .setInitialMode(ServiceController.Mode.ACTIVE);
+            final ServiceController<?> binderServiceController = builder.install();
+            final StabilityMonitor monitor = new StabilityMonitor();
+            monitor.addController(binderServiceController);
+            try {
+                monitor.awaitStability();
+            } finally {
+                monitor.removeController(binderServiceController);
+            }
+            final Exception startException = binderServiceController.getStartException();
+            if (startException != null) {
+                throw startException;
+            }
             binderService.acquire();
             // add the service name to runtime bindings management service, which on stop releases the services.
             final Set<ServiceName> duBindingReferences = (Set<ServiceName>) getServiceRegistry().getService(JndiNamingDependencyProcessor.serviceName(deploymentUnitServiceName)).getValue();
@@ -120,13 +129,15 @@ public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore imp
         if (controller == null) {
             throw MESSAGES.cannotResolveService(bindName);
         }
-        final UnbindListener listener = new UnbindListener();
-        controller.addListener(listener);
+        controller.setMode(ServiceController.Mode.REMOVE);
+        final StabilityMonitor monitor = new StabilityMonitor();
+        monitor.addController(controller);
         try {
-            // when added, the listener stops the binding service
-            listener.await();
+            monitor.awaitStability();
         } catch (Exception e) {
             throw namingException("Failed to unbind [" + bindName + "]", e);
+        } finally {
+            monitor.removeController(controller);
         }
     }
 
@@ -144,64 +155,6 @@ public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore imp
             throw MESSAGES.readOnlyNamingContext();
         }
         return owner;
-    }
-
-    private static class BindListener extends AbstractServiceListener<Object> {
-        private Exception exception;
-        private boolean complete;
-
-        public synchronized void transition(ServiceController<? extends Object> serviceController, ServiceController.Transition transition) {
-            switch (transition) {
-                case STARTING_to_UP: {
-                    complete = true;
-                    notifyAll();
-                    break;
-                }
-                case STARTING_to_START_FAILED: {
-                    complete = true;
-                    exception = serviceController.getStartException();
-                    notifyAll();
-                    break;
-                }
-                default:
-                    break;
-            }
-        }
-
-        public synchronized void await() throws Exception {
-            while(!complete) {
-                wait();
-            }
-            if (exception != null) {
-                throw exception;
-            }
-        }
-    }
-
-    private static class UnbindListener extends AbstractServiceListener<Object> {
-        private boolean complete;
-
-        public void listenerAdded(ServiceController<?> controller) {
-            controller.setMode(ServiceController.Mode.REMOVE);
-        }
-
-        public synchronized void transition(ServiceController<? extends Object> serviceController, ServiceController.Transition transition) {
-            switch (transition) {
-                case REMOVING_to_REMOVED: {
-                    complete = true;
-                    notifyAll();
-                    break;
-                }
-                default:
-                    break;
-            }
-        }
-
-        public synchronized void await() throws Exception {
-            while(!complete) {
-                wait();
-            }
-        }
     }
 
     public static void pushOwner(final ServiceName du) {

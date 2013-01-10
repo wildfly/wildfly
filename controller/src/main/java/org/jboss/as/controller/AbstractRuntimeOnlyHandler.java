@@ -22,15 +22,18 @@
 
 package org.jboss.as.controller;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceListener;
+import org.jboss.msc.service.StabilityMonitor;
 
 /**
  * Base class for operations that do nothing in {@link org.jboss.as.controller.OperationContext.Stage#MODEL} except
  * register a {@link org.jboss.as.controller.OperationContext.Stage#RUNTIME} step.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public abstract class AbstractRuntimeOnlyHandler implements OperationStepHandler {
 
@@ -44,32 +47,19 @@ public abstract class AbstractRuntimeOnlyHandler implements OperationStepHandler
      * @param controller the service to wait for
      * @throws OperationFailedException if the service is not available, or the thread was interrupted.
      */
-    public void waitFor(ServiceController<?> controller) throws OperationFailedException {
-        ServiceWaitListener listener = null;
-        int time = 100;
-        while (time > 0) {
-            if (controller.getState() == ServiceController.State.UP) {
-                return;
-            }
+    public void waitFor(final ServiceController<?> controller) throws OperationFailedException {
+        if (controller.getState() == ServiceController.State.UP) return;
 
-            if (listener == null) {
-                listener = new ServiceWaitListener();
-                controller.addListener(listener);
-            }
-            synchronized (listener) {
-                try {
-                    long start = System.currentTimeMillis();
-                    listener.wait(time);
-                    time -= System.currentTimeMillis() - start;
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    controller.removeListener(listener);
-                    throw new OperationFailedException((new ModelNode()).set("Interrupted waiting for service: " + controller.getName()));
-                }
-            }
+        final StabilityMonitor monitor = new StabilityMonitor();
+        monitor.addController(controller);
+        try {
+            monitor.awaitStability(100, MILLISECONDS);
+        } catch (final InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new OperationFailedException((new ModelNode()).set("Interrupted waiting for service: " + controller.getName()));
+        } finally {
+            monitor.removeController(controller);
         }
-
-        controller.removeListener(listener);
 
         if (controller.getState() != ServiceController.State.UP) {
             throw new OperationFailedException(new ModelNode().set("Required service is not available: " + controller.getName()));
@@ -109,51 +99,4 @@ public abstract class AbstractRuntimeOnlyHandler implements OperationStepHandler
      * @throws OperationFailedException if the operation failed <b>before</b> calling {@code context.completeStep()}
      */
     protected abstract void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException;
-
-    private static class ServiceWaitListener<T> implements ServiceListener<T> {
-        @Override
-        public void listenerAdded(ServiceController<? extends T> serviceController) {
-        }
-
-        @Override
-        public void transition(ServiceController<? extends T> serviceController, ServiceController.Transition transition) {
-         if (transition.getAfter() == ServiceController.Substate.UP) {
-                synchronized (this) {
-                    notify();
-                }
-            }
-        }
-
-        @Override
-        public void serviceRemoveRequested(ServiceController<? extends T> serviceController) {
-        }
-
-        @Override
-        public void serviceRemoveRequestCleared(ServiceController<? extends T> serviceController) {
-        }
-
-        @Override
-        public void dependencyFailed(ServiceController<? extends T> serviceController) {
-        }
-
-        @Override
-        public void dependencyFailureCleared(ServiceController<? extends T> serviceController) {
-        }
-
-        @Override
-        public void immediateDependencyUnavailable(ServiceController<? extends T> serviceController) {
-        }
-
-        @Override
-        public void immediateDependencyAvailable(ServiceController<? extends T> serviceController) {
-        }
-
-        @Override
-        public void transitiveDependencyUnavailable(ServiceController<? extends T> serviceController) {
-        }
-
-        @Override
-        public void transitiveDependencyAvailable(ServiceController<? extends T> serviceController) {
-        }
-    }
 }

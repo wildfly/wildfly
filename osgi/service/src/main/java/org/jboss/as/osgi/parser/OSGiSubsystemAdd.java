@@ -99,7 +99,7 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         final Activation activation = Activation.valueOf(OSGiRootResource.ACTIVATION.resolveModelAttribute(context, model).asString().toUpperCase(Locale.ENGLISH));
         final ServiceTarget serviceTarget = context.getServiceTarget();
-        final InitialDeploymentTracker deploymentTracker = new InitialDeploymentTracker(context, verificationHandler);
+        final InitialDeploymentTracker deploymentTracker = new InitialDeploymentTracker(context);
         final ModuleRegistrationTracker registrationTracker = new ModuleRegistrationTracker();
 
         // Collect the subsystem extensions
