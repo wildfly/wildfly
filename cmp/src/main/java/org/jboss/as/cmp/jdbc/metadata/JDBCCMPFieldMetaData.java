@@ -21,14 +21,16 @@
  */
 package org.jboss.as.cmp.jdbc.metadata;
 
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
 import org.jboss.as.cmp.CmpLogger;
-import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.jdbc.metadata.parser.ParsedCmpField;
 
 /**
@@ -42,6 +44,7 @@ import org.jboss.as.cmp.jdbc.metadata.parser.ParsedCmpField;
  * @author <a href="mailto:vincent.harcq@hubmethods.com">Vincent Harcq</a>
  * @author <a href="mailto:loubyansky@hotmail.com">Alex Loubyansky</a>
  * @author <a href="mailto:heiko.rupp@cellent.de">Heiko W.Rupp</a>
+ * @author <a href="mailto:wolfdieter.fink@gmail.com">Wolf-Dieter Fink</a>
  * @version $Revision: 81030 $
  */
 public final class JDBCCMPFieldMetaData {
@@ -474,8 +477,12 @@ public final class JDBCCMPFieldMetaData {
         }
 
         // read-only
-        if (parsedField.getReadOnly() != null) {
+        if (entity.isReadOnly()) {
+            // if the entity is read-only the field flag will be ignored
+            readOnly = true;
+        } else if (parsedField.getReadOnly() != null) {
             readOnly = parsedField.getReadOnly();
+
         } else {
             readOnly = defaultValues.isReadOnly();
         }
