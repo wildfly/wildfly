@@ -22,8 +22,11 @@
 package org.jboss.as.jpa.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
 
@@ -33,10 +36,10 @@ import java.util.List;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
@@ -47,17 +50,25 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.DiscardAttributesTransformer;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.DiscardUndefinedAttributesTransformer;
+import org.jboss.as.controller.transform.OperationResultTransformer;
+import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
+import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.controller.transform.chained.ChainedOperationTransformer;
+import org.jboss.as.controller.transform.chained.ChainedResourceTransformationContext;
 import org.jboss.as.controller.transform.chained.ChainedResourceTransformer;
+import org.jboss.as.controller.transform.chained.ChainedResourceTransformerEntry;
 import org.jboss.as.jpa.config.Configuration;
+import org.jboss.as.jpa.config.ExtendedPersistenceInheritance;
 import org.jboss.as.jpa.persistenceprovider.PersistenceProviderLoader;
 import org.jboss.as.jpa.processor.PersistenceProviderAdaptorLoader;
 import org.jboss.as.jpa.spi.ManagementAdaptor;
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -134,26 +145,22 @@ public class JPAExtension implements Extension {
                 new RejectExpressionValuesTransformer(
                          JPADefinition.DEFAULT_DATASOURCE,
                          JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE);
-        final JPADiscardAttributesTransformer discardUndefinedAttributes = new JPADiscardAttributesTransformer(JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE);
+        final RemoveDefaultExtendedPersistenceInheritanceTransformer removeDefaultExtendedPersistenceInheritance = new RemoveDefaultExtendedPersistenceInheritanceTransformer();
+        final DiscardUndefinedAttributesTransformer discardUndefinedAttributes = new DiscardUndefinedAttributesTransformer(JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE);
 
         // Register the model transformers
         TransformersSubRegistration reg = subsystemRegistration.registerModelTransformers(
                 ModelVersion.create(1, 1, 0),
                 new ChainedResourceTransformer(
+                        removeDefaultExtendedPersistenceInheritance,
                         discardUndefinedAttributes,
                         rejectNewerExpressions.getChainedTransformer()));
 
-        reg.registerOperationTransformer(ADD, new ChainedOperationTransformer(discardUndefinedAttributes, rejectNewerExpressions));
+        reg.registerOperationTransformer(ADD, new ChainedOperationTransformer(removeDefaultExtendedPersistenceInheritance, discardUndefinedAttributes, rejectNewerExpressions));
 
         reg.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION,
-                new ChainedOperationTransformer(discardUndefinedAttributes.getWriteAttributeTransformer(), rejectNewerExpressions.getWriteAttributeTransformer()));
+                new ChainedOperationTransformer(removeDefaultExtendedPersistenceInheritance.getWriteAttributeOperationTransformer(), discardUndefinedAttributes.getWriteAttributeTransformer(), rejectNewerExpressions.getWriteAttributeTransformer()));
         reg.registerOperationTransformer(UNDEFINE_ATTRIBUTE_OPERATION, discardUndefinedAttributes.getWriteAttributeTransformer());
-    }
-
-    private static class JPADiscardAttributesTransformer extends DiscardAttributesTransformer {
-        JPADiscardAttributesTransformer(AttributeDefinition...attributes){
-            super(attributes);
-        }
     }
 
     static class JPASubsystemElementParser1_1 implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
@@ -296,6 +303,62 @@ public class JPAExtension implements Extension {
             }
             return operation;
         }
-
     }
+
+    static class RemoveDefaultExtendedPersistenceInheritanceTransformer implements OperationTransformer, ChainedResourceTransformerEntry {
+        private static final RemoveDefaultExtendedPersistenceInheritanceTransformer INSTANCE = new RemoveDefaultExtendedPersistenceInheritanceTransformer();
+
+        @Override
+        public void transformResource(ChainedResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
+            clearUnneededAttributes(resource.getModel());
+        }
+
+        @Override
+        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
+            clearUnneededAttributes(operation);
+            return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
+        }
+
+        private void clearUnneededAttributes(ModelNode modelNode) {
+            if (shouldDiscard(modelNode, CommonAttributes.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE)) {
+                modelNode.remove(CommonAttributes.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE);
+            }
+        }
+
+        private static boolean shouldDiscard(ModelNode modelNode, String name) {
+            if (modelNode.hasDefined(name)) {
+                ModelNode defaultInheritance = modelNode.get(name);
+                if (defaultInheritance.getType() != ModelType.EXPRESSION && ExtendedPersistenceInheritance.valueOf(defaultInheritance.asString()) == ExtendedPersistenceInheritance.DEEP){
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public OperationTransformer getWriteAttributeOperationTransformer() {
+            return IGNORE;
+        }
+
+        public OperationTransformer getUndefineAttributeOperationTransformer() {
+            return IGNORE;
+        }
+
+        private static OperationTransformer IGNORE = new OperationTransformer() {
+
+            @Override
+            public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation)
+                    throws OperationFailedException {
+                if (!operation.get(NAME).equals(CommonAttributes.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE)) {
+                    return OperationTransformer.DEFAULT.transformOperation(context, address, operation);
+                }
+                if (operation.get(OP).equals(WRITE_ATTRIBUTE_OPERATION)) {
+                    if (!shouldDiscard(operation, VALUE)) {
+                        return OperationTransformer.DEFAULT.transformOperation(context, address, operation);
+                    }
+                }
+                return OperationTransformer.DISCARD.transformOperation(context, address, operation);
+            }
+        };
+    }
+
 }
