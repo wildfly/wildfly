@@ -100,6 +100,16 @@ public class DelegatingServiceContainer extends DelegatingServiceTarget implemen
     }
 
     @Override
+    public void awaitStability() throws InterruptedException {
+        this.container.awaitStability();
+    }
+
+    @Override
+    public boolean awaitStability(long timeout, TimeUnit unit) throws InterruptedException {
+        return this.container.awaitStability(timeout, unit);
+    }
+
+    @Override
     public void awaitStability(Set<? super ServiceController<?>> failed, Set<? super ServiceController<?>> problem)
             throws InterruptedException {
         this.container.awaitStability(failed, problem);
