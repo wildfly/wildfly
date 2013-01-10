@@ -265,7 +265,8 @@ public class MessagingExtension implements Extension {
 
     private static void registerTransformers_1_1_0(final SubsystemRegistration subsystem) {
 
-        final AttributeDefinition[] transformerdPooledCFAttributes = { Pooled.INITIAL_CONNECT_ATTEMPTS,
+        // attributes added to the pooled cf resources *after* 1.1.0
+        final AttributeDefinition[] addedPooledCFAttributes = { Pooled.INITIAL_CONNECT_ATTEMPTS,
                 Pooled.INITIAL_MESSAGE_PACKET_SIZE,
                 COMPRESS_LARGE_MESSAGES,
                 USE_AUTO_RECOVERY,
@@ -303,7 +304,7 @@ public class MessagingExtension implements Extension {
                         }
                         if (server.getValue().hasDefined(POOLED_CONNECTION_FACTORY)) {
                             for (Property pooledConnectionFactory : server.getValue().get(POOLED_CONNECTION_FACTORY).asPropertyList()) {
-                                for (AttributeDefinition attribute : transformerdPooledCFAttributes) {
+                                for (AttributeDefinition attribute : addedPooledCFAttributes) {
                                     oldModel.get(HORNETQ_SERVER, server.getName(), POOLED_CONNECTION_FACTORY, pooledConnectionFactory.getName()).remove(attribute.getName());
                                 }
                             }
@@ -333,18 +334,39 @@ public class MessagingExtension implements Extension {
         });
 
         RejectExpressionValuesTransformer rejectServerExpressionTransformer = new RejectExpressionValuesTransformer(HornetQServerResourceDefinition.REJECTED_EXPRESSION_ATTRIBUTES);
+        DiscardAttributesTransformer discardNewServerAttributes = new DiscardAttributesTransformer(CHECK_FOR_LIVE_SERVER, BACKUP_GROUP_NAME, REPLICATION_CLUSTERNAME);
         TransformersSubRegistration server = transformers.registerSubResource(PathElement.pathElement(HORNETQ_SERVER));
         server.registerOperationTransformer(ADD, new ChainedOperationTransformer(
                 new OperationTransformers.InsertDefaultValuesOperationTransformer(ID_CACHE_SIZE, CLUSTERED),
-                new DiscardAttributesTransformer(CHECK_FOR_LIVE_SERVER, BACKUP_GROUP_NAME, REPLICATION_CLUSTERNAME),
                 rejectServerExpressionTransformer));
         server.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, rejectServerExpressionTransformer.getWriteAttributeTransformer());
+        server.registerOperationTransformer(UNDEFINE_ATTRIBUTE_OPERATION, discardNewServerAttributes.getUndefineAttributeTransformer());
 
         rejectExpressions(server, AddressSettingDefinition.PATH, AddressSettingDefinition.REJECTED_EXPRESSION_ATTRIBUTES);
 
-        rejectExpressions(server, BroadcastGroupDefinition.PATH, BROADCAST_PERIOD);
+        DiscardAttributesTransformer discardNewJGroupsAttributes = new DiscardAttributesTransformer(JGROUPS_CHANNEL, JGROUPS_STACK);
 
-        rejectExpressions(server, DiscoveryGroupDefinition.PATH, INITIAL_WAIT_TIMEOUT, REFRESH_TIMEOUT);
+        RejectExpressionValuesTransformer rejectBroadcastGroupExpressions = new RejectExpressionValuesTransformer(BROADCAST_PERIOD);
+        TransformersSubRegistration broadcastGroup = server.registerSubResource(BroadcastGroupDefinition.PATH);
+        broadcastGroup.registerOperationTransformer(ADD, new ChainedOperationTransformer(
+                rejectBroadcastGroupExpressions,
+                discardNewJGroupsAttributes
+        ));
+        broadcastGroup.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, new ChainedOperationTransformer(
+                rejectBroadcastGroupExpressions.getWriteAttributeTransformer(),
+                discardNewJGroupsAttributes.getWriteAttributeTransformer()));
+        broadcastGroup.registerOperationTransformer(UNDEFINE_ATTRIBUTE_OPERATION, discardNewJGroupsAttributes.getUndefineAttributeTransformer());
+
+        RejectExpressionValuesTransformer rejectDiscoveryGroupExpressions = new RejectExpressionValuesTransformer(INITIAL_WAIT_TIMEOUT, REFRESH_TIMEOUT);
+        TransformersSubRegistration discoveryGroup = server.registerSubResource(DiscoveryGroupDefinition.PATH);
+        discoveryGroup.registerOperationTransformer(ADD, new ChainedOperationTransformer(
+                rejectDiscoveryGroupExpressions,
+                discardNewJGroupsAttributes
+        ));
+        discoveryGroup.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, new ChainedOperationTransformer(
+                rejectDiscoveryGroupExpressions.getWriteAttributeTransformer(),
+                discardNewJGroupsAttributes.getWriteAttributeTransformer()));
+        discoveryGroup.registerOperationTransformer(UNDEFINE_ATTRIBUTE_OPERATION, discardNewJGroupsAttributes.getUndefineAttributeTransformer());
 
         rejectExpressions(server, DivertDefinition.PATH, DivertDefinition.REJECTED_EXPRESSION_ATTRIBUTES);
 
@@ -372,13 +394,15 @@ public class MessagingExtension implements Extension {
         }
 
         RejectExpressionValuesTransformer rejectClusterConnectionExpressions = new RejectExpressionValuesTransformer(ClusterConnectionDefinition.REJECTED_EXPRESSION_ATTRIBUTES);
+        DiscardAttributesTransformer discardCallFailoverTimeoutAttribute = new DiscardAttributesTransformer(CALL_FAILOVER_TIMEOUT);
         TransformersSubRegistration clusterConnection = server.registerSubResource(ClusterConnectionDefinition.PATH, rejectClusterConnectionExpressions, rejectClusterConnectionExpressions);
         clusterConnection.registerOperationTransformer(ADD, new ChainedOperationTransformer(
                 rejectClusterConnectionExpressions,
-                new DiscardAttributesTransformer(CALL_FAILOVER_TIMEOUT)));
+                discardCallFailoverTimeoutAttribute));
         clusterConnection.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, new ChainedOperationTransformer(
                 rejectClusterConnectionExpressions.getWriteAttributeTransformer(),
                 new OperationTransformers.FailUnignoredAttributesOperationTransformer(CALL_FAILOVER_TIMEOUT)));
+        clusterConnection.registerOperationTransformer(UNDEFINE_ATTRIBUTE_OPERATION, discardCallFailoverTimeoutAttribute.getUndefineAttributeTransformer());
 
         TransformersSubRegistration connectorService = rejectExpressions(server, ConnectorServiceDefinition.PATH, CommonAttributes.FACTORY_CLASS);
         rejectExpressions(connectorService, ConnectorServiceParamDefinition.PATH, VALUE);
@@ -387,27 +411,25 @@ public class MessagingExtension implements Extension {
         TransformersSubRegistration connectionFactory = server.registerSubResource(ConnectionFactoryDefinition.PATH, rejectConnectionFactoryExpressions, rejectConnectionFactoryExpressions);
         connectionFactory.registerOperationTransformer(ADD, new ChainedOperationTransformer(
                 rejectConnectionFactoryExpressions,
-                new DiscardAttributesTransformer(CALL_FAILOVER_TIMEOUT)));
+                discardCallFailoverTimeoutAttribute));
         connectionFactory.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, new ChainedOperationTransformer(
                 rejectConnectionFactoryExpressions.getWriteAttributeTransformer(),
                 new OperationTransformers.FailUnignoredAttributesOperationTransformer(CALL_FAILOVER_TIMEOUT)));
+        connectionFactory.registerOperationTransformer(UNDEFINE_ATTRIBUTE_OPERATION, discardCallFailoverTimeoutAttribute.getUndefineAttributeTransformer());
 
         RejectExpressionValuesTransformer rejectPooledConnectionFactoryExpressions = new RejectExpressionValuesTransformer(PooledConnectionFactoryDefinition.REJECTED_EXPRESSION_ATTRIBUTES);
-        DiscardAttributesTransformer removePooledConnectionFactoryAttributes = new DiscardAttributesTransformer(transformerdPooledCFAttributes);
+        DiscardAttributesTransformer discardNewPooledConnectionFactoryAttributes = new DiscardAttributesTransformer(addedPooledCFAttributes);
         ChainedOperationTransformer chainedPooledConnectionFactoryOps = new ChainedOperationTransformer(
                 rejectConnectionFactoryExpressions,
-                removePooledConnectionFactoryAttributes,
+                new DiscardAttributesTransformer(addedPooledCFAttributes),
                 new OperationTransformers.InsertDefaultValuesOperationTransformer(Pooled.RECONNECT_ATTEMPTS));
         TransformersSubRegistration pooledConnectionFactory = server.registerSubResource(PooledConnectionFactoryDefinition.PATH, rejectPooledConnectionFactoryExpressions, chainedPooledConnectionFactoryOps);
         pooledConnectionFactory.registerOperationTransformer(ADD, chainedPooledConnectionFactoryOps);
         pooledConnectionFactory.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, new ChainedOperationTransformer(
                 rejectPooledConnectionFactoryExpressions.getWriteAttributeTransformer(),
-                removePooledConnectionFactoryAttributes.getWriteAttributeTransformer(),
-                new OperationTransformers.FailUnignoredAttributesOperationTransformer(transformerdPooledCFAttributes)));
+                new OperationTransformers.FailUnignoredAttributesOperationTransformer(addedPooledCFAttributes)));
         pooledConnectionFactory.registerOperationTransformer(UNDEFINE_ATTRIBUTE_OPERATION, new ChainedOperationTransformer(
-                rejectPooledConnectionFactoryExpressions.getWriteAttributeTransformer(),
-                removePooledConnectionFactoryAttributes.getUndefineAttributeTransformer(),
-                new OperationTransformers.FailUnignoredAttributesOperationTransformer(transformerdPooledCFAttributes)));
+                discardNewPooledConnectionFactoryAttributes.getUndefineAttributeTransformer()));
 
         rejectExpressions(server, GroupingHandlerDefinition.PATH, GroupingHandlerDefinition.REJECTED_EXPRESSION_ATTRIBUTES);
 
