@@ -60,7 +60,7 @@
         <jboss.as.scm.connection>git@github.com:jbossas/jboss-as.git</jboss.as.scm.connection>
 
         <!-- Build configuration -->
-
+        <version.surefire.plugin>2.11</version.surefire.plugin>
         <!--
             Dependency versions. Please keep alphabetical.
 
