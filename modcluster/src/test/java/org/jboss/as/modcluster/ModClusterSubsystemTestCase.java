@@ -24,25 +24,24 @@
 
 package org.jboss.as.modcluster;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
 import java.io.IOException;
 
 import junit.framework.Assert;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.junit.Assert.fail;
-
-import org.jboss.as.modcluster.CommonAttributes;
-
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.modcluster.ModClusterExtension;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.junit.Test;
 
 /**
@@ -62,7 +61,7 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testTransformers_1_2_0() throws Exception {
-        String subsystemXml = readResource("subsystem_1_0.xml");
+        String subsystemXml = readResource("subsystem-no-expressions.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 2, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXml(subsystemXml);
@@ -76,7 +75,28 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertTrue(mainServices.isSuccessfulBoot());
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
-        checkSubsystemModelTransformation(mainServices, modelVersion);
+        ModelNode legacySubsystem = checkSubsystemModelTransformation(mainServices, modelVersion, new ModelFixer() {
+            @Override
+            public ModelNode fixModel(ModelNode modelNode) {
+                ModelNode loadMetrics = modelNode.get(CommonAttributes.MOD_CLUSTER_CONFIG, CommonAttributes.CONFIGURATION, CommonAttributes.DYNAMIC_LOAD_PROVIDER, CommonAttributes.CONFIGURATION, CommonAttributes.LOAD_METRIC);
+                for (String key : loadMetrics.keys()) {
+                    ModelNode capacity = loadMetrics.get(key, CommonAttributes.CAPACITY);
+                    if (capacity.getType() == ModelType.DOUBLE && capacity.asString().equals("1.0")) {
+                        //There is a bug in 7.1.2 where this attribute is of type int, but its default is a double with value = 1.0
+                        capacity.set(1L);
+                    }
+                }
+                return modelNode;
+            }
+        });
+
+        ModelNode mainSessionCapacity = mainServices.readWholeModel().get(SUBSYSTEM, ModClusterExtension.SUBSYSTEM_NAME, CommonAttributes.MOD_CLUSTER_CONFIG, CommonAttributes.CONFIGURATION,
+                CommonAttributes.DYNAMIC_LOAD_PROVIDER, CommonAttributes.CONFIGURATION, CommonAttributes.LOAD_METRIC, "sessions", CommonAttributes.CAPACITY);
+        ModelNode legacySessionCapacity = legacySubsystem.get(SUBSYSTEM, ModClusterExtension.SUBSYSTEM_NAME, CommonAttributes.MOD_CLUSTER_CONFIG, CommonAttributes.CONFIGURATION,
+                CommonAttributes.DYNAMIC_LOAD_PROVIDER, CommonAttributes.CONFIGURATION, CommonAttributes.LOAD_METRIC, "sessions", CommonAttributes.CAPACITY);
+        Assert.assertEquals(ModelType.DOUBLE, mainSessionCapacity.getType());
+        Assert.assertFalse(mainSessionCapacity.asString().equals(legacySessionCapacity.asString()));
+        Assert.assertEquals(mainSessionCapacity.asLong(), legacySessionCapacity.asLong());
     }
 
     @Test
