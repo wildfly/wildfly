@@ -332,7 +332,7 @@ public class MessagingExtension implements Extension {
         });
 
         RejectExpressionValuesTransformer rejectServerExpressionTransformer = new RejectExpressionValuesTransformer(HornetQServerResourceDefinition.REJECTED_EXPRESSION_ATTRIBUTES);
-        DiscardAttributesTransformer discardNewServerAttributes = new DiscardAttributesTransformer(CHECK_FOR_LIVE_SERVER, BACKUP_GROUP_NAME, REPLICATION_CLUSTERNAME);
+        MessagingDiscardAttributesTransformer discardNewServerAttributes = new MessagingDiscardAttributesTransformer(CHECK_FOR_LIVE_SERVER, BACKUP_GROUP_NAME, REPLICATION_CLUSTERNAME);
         TransformersSubRegistration server = transformers.registerSubResource(PathElement.pathElement(HORNETQ_SERVER));
         server.registerOperationTransformer(ADD, new ChainedOperationTransformer(
                 new OperationTransformers.InsertDefaultValuesOperationTransformer(ID_CACHE_SIZE, CLUSTERED),
@@ -343,7 +343,7 @@ public class MessagingExtension implements Extension {
 
         rejectExpressions(server, AddressSettingDefinition.PATH, AddressSettingDefinition.REJECTED_EXPRESSION_ATTRIBUTES);
 
-        DiscardAttributesTransformer discardNewJGroupsAttributes = new DiscardAttributesTransformer(JGROUPS_CHANNEL, JGROUPS_STACK);
+        MessagingDiscardAttributesTransformer discardNewJGroupsAttributes = new MessagingDiscardAttributesTransformer(JGROUPS_CHANNEL, JGROUPS_STACK);
 
         RejectExpressionValuesTransformer rejectBroadcastGroupExpressions = new RejectExpressionValuesTransformer(BROADCAST_PERIOD);
         TransformersSubRegistration broadcastGroup = server.registerSubResource(BroadcastGroupDefinition.PATH);
@@ -393,7 +393,7 @@ public class MessagingExtension implements Extension {
         }
 
         RejectExpressionValuesTransformer rejectClusterConnectionExpressions = new RejectExpressionValuesTransformer(ClusterConnectionDefinition.REJECTED_EXPRESSION_ATTRIBUTES);
-        DiscardAttributesTransformer discardCallFailoverTimeoutAttribute = new DiscardAttributesTransformer(CALL_FAILOVER_TIMEOUT);
+        MessagingDiscardAttributesTransformer discardCallFailoverTimeoutAttribute = new MessagingDiscardAttributesTransformer(CALL_FAILOVER_TIMEOUT);
         TransformersSubRegistration clusterConnection = server.registerSubResource(ClusterConnectionDefinition.PATH, rejectClusterConnectionExpressions, rejectClusterConnectionExpressions);
         clusterConnection.registerOperationTransformer(ADD, new ChainedOperationTransformer(
                 rejectClusterConnectionExpressions,
@@ -417,10 +417,10 @@ public class MessagingExtension implements Extension {
         connectionFactory.registerOperationTransformer(UNDEFINE_ATTRIBUTE_OPERATION, discardCallFailoverTimeoutAttribute.getUndefineAttributeTransformer());
 
         RejectExpressionValuesTransformer rejectPooledConnectionFactoryExpressions = new RejectExpressionValuesTransformer(PooledConnectionFactoryDefinition.REJECTED_EXPRESSION_ATTRIBUTES);
-        DiscardAttributesTransformer discardNewPooledConnectionFactoryAttributes = new DiscardAttributesTransformer(addedPooledCFAttributes);
+        DiscardAttributesTransformer discardNewPooledConnectionFactoryAttributes = new MessagingDiscardAttributesTransformer(addedPooledCFAttributes);
         ChainedOperationTransformer chainedPooledConnectionFactoryOps = new ChainedOperationTransformer(
                 rejectConnectionFactoryExpressions,
-                new DiscardAttributesTransformer(addedPooledCFAttributes),
+                discardNewPooledConnectionFactoryAttributes,
                 new OperationTransformers.InsertDefaultValuesOperationTransformer(Pooled.RECONNECT_ATTEMPTS));
         TransformersSubRegistration pooledConnectionFactory = server.registerSubResource(PooledConnectionFactoryDefinition.PATH, rejectPooledConnectionFactoryExpressions, chainedPooledConnectionFactoryOps);
         pooledConnectionFactory.registerOperationTransformer(ADD, chainedPooledConnectionFactoryOps);
@@ -450,5 +450,11 @@ public class MessagingExtension implements Extension {
         resource.registerOperationTransformer(ADD, rejectExpressions);
         resource.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, rejectExpressions.getWriteAttributeTransformer());
         return resource;
+    }
+
+    private static class MessagingDiscardAttributesTransformer extends DiscardAttributesTransformer {
+        MessagingDiscardAttributesTransformer(AttributeDefinition...attributeDefinitions){
+            super(attributeDefinitions);
+        }
     }
 }
