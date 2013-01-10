@@ -1,24 +1,27 @@
 /*
-* JBoss, Home of Professional Open Source.
-* Copyright 2011, Red Hat Middleware LLC, and individual contributors
-* as indicated by the @author tags. See the copyright.txt file in the
-* distribution for a full listing of individual contributors.
-*
-* This is free software; you can redistribute it and/or modify it
-* under the terms of the GNU Lesser General Public License as
-* published by the Free Software Foundation; either version 2.1 of
-* the License, or (at your option) any later version.
-*
-* This software is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-* Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public
-* License along with this software; if not, write to the Free
-* Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-* 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-*/
+ *
+ *  JBoss, Home of Professional Open Source.
+ *  Copyright 2013, Red Hat, Inc., and individual contributors
+ *  as indicated by the @author tags. See the copyright.txt file in the
+ *  distribution for a full listing of individual contributors.
+ *
+ *  This is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU Lesser General Public License as
+ *  published by the Free Software Foundation; either version 2.1 of
+ *  the License, or (at your option) any later version.
+ *
+ *  This software is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this software; if not, write to the Free
+ *  Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ *  02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * /
+ */
+
 package org.jboss.as.modcluster;
 
 import java.io.IOException;
@@ -54,14 +57,14 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testXsd10() throws Exception {
-        standardSubsystemTest("subsystem_1_0.xml");
+        standardSubsystemTest("subsystem_1_0.xml",false);
     }
 
     @Test
-    public void testTransformers_1_1_0() throws Exception {
+    public void testTransformers_1_2_0() throws Exception {
         String subsystemXml = readResource("subsystem_1_0.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 2, 0);
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXml(subsystemXml);
 
         builder.createLegacyKernelServicesBuilder(null, modelVersion)
@@ -77,7 +80,7 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testExpressionsAreRejectedByVersion_1_1() throws Exception {
+    public void testExpressionsAreRejectedByVersion_1_2() throws Exception {
         String subsystemXml = readResource("subsystem.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 2, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
@@ -139,15 +142,5 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
     protected AdditionalInitialization createAdditionalInitialization() {
         return AdditionalInitialization.MANAGEMENT;
     }
-
-    @Override
-    protected void compareXml(String configId, String original, String marshalled) throws Exception {
-        if (configId != null && configId.equals("subsystem_1_0.xml")) {
-            return;
-        }
-
-        super.compareXml(configId, original, marshalled, true);
-    }
-
 
 }
