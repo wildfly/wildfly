@@ -338,7 +338,8 @@ public class MessagingExtension implements Extension {
         TransformersSubRegistration server = transformers.registerSubResource(PathElement.pathElement(HORNETQ_SERVER));
         server.registerOperationTransformer(ADD, new ChainedOperationTransformer(
                 new OperationTransformers.InsertDefaultValuesOperationTransformer(ID_CACHE_SIZE, CLUSTERED),
-                rejectServerExpressionTransformer));
+                rejectServerExpressionTransformer,
+                discardNewServerAttributes));
         server.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, rejectServerExpressionTransformer.getWriteAttributeTransformer());
         server.registerOperationTransformer(UNDEFINE_ATTRIBUTE_OPERATION, discardNewServerAttributes.getUndefineAttributeTransformer());
 
