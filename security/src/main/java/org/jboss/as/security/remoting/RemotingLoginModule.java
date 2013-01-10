@@ -56,7 +56,7 @@ public class RemotingLoginModule extends AbstractServerLoginModule {
             return true;
         }
 
-        Connection con = RemotingContext.getConnection();
+        Connection con = SecurityActions.remotingContextGetConnection();
         if (con != null) {
             UserPrincipal up = null;
             for (Principal current : con.getPrincipals()) {

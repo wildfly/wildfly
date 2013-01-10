@@ -287,11 +287,11 @@ public class SimpleSecurityManager implements ServerSecurityManager {
              * different identity.
              */
             boolean authenticated = false;
-            if (RemotingContext.isSet()) {
+            if (SecurityActions.remotingContextIsSet()) {
                 // In this case the principal and credential will not have been set to set some random values.
                 SecurityContextUtil util = current.getUtil();
 
-                UserInfo userInfo = RemotingContext.getConnection().getUserInfo();
+                UserInfo userInfo = SecurityActions.remotingContextGetConnection().getUserInfo();
                 Principal p = null;
                 String credential = null;
                 Subject subject = null;
@@ -304,7 +304,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
                         PasswordCredential pc = pcSet.iterator().next();
                         p = new SimplePrincipal(pc.getUserName());
                         credential = new String(pc.getCredential());
-                        RemotingContext.clear(); // Now that it has been used clear it.
+                        SecurityActions.remotingContextClear(); // Now that it has been used clear it.
                     }
                     if ((p == null || credential == null) && userInfo instanceof UniqueIdUserInfo) {
                         UniqueIdUserInfo uinfo = (UniqueIdUserInfo) userInfo;

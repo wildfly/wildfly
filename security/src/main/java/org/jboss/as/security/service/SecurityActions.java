@@ -29,17 +29,20 @@ import java.security.PrivilegedExceptionAction;
 import java.security.Security;
 
 import org.jboss.as.security.SecurityMessages;
+import org.jboss.as.security.remoting.RemotingContext;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
+import org.jboss.remoting3.Connection;
 
 /**
  * Privileged blocks for this package
  *
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  * @author Anil Saldhana
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 class SecurityActions {
 
@@ -144,5 +147,86 @@ class SecurityActions {
             }
             throw e != null ? e : SecurityMessages.MESSAGES.cnfe(name);
         }
+    }
+
+    static void remotingContextClear() {
+        remotingContextAccociationActions().clear();
+    }
+
+    static Connection remotingContextGetConnection() {
+        return remotingContextAccociationActions().getConnection();
+    }
+
+    static boolean remotingContextIsSet() {
+        return remotingContextAccociationActions().isSet();
+    }
+
+    private static RemotingContextAssociationActions remotingContextAccociationActions() {
+        return System.getSecurityManager() == null ? RemotingContextAssociationActions.NON_PRIVILEGED
+                : RemotingContextAssociationActions.PRIVILEGED;
+    }
+
+    private interface RemotingContextAssociationActions {
+
+        Connection getConnection();
+
+        boolean isSet();
+
+        void clear();
+
+        RemotingContextAssociationActions NON_PRIVILEGED = new RemotingContextAssociationActions() {
+
+            public boolean isSet() {
+                return RemotingContext.isSet();
+            }
+
+            @Override
+            public Connection getConnection() {
+                return RemotingContext.getConnection();
+            }
+
+            @Override
+            public void clear() {
+                RemotingContext.clear();
+            }
+        };
+
+        RemotingContextAssociationActions PRIVILEGED = new RemotingContextAssociationActions() {
+
+            private final PrivilegedAction<Boolean> IS_SET_ACTION = new PrivilegedAction<Boolean>() {
+
+                public Boolean run() {
+                    return NON_PRIVILEGED.isSet();
+                }
+            };
+
+            private final PrivilegedAction<Connection> GET_CONNECTION_ACTION = new PrivilegedAction<Connection>() {
+
+                public Connection run() {
+                    return NON_PRIVILEGED.getConnection();
+                }
+            };
+
+            private final PrivilegedAction<Void> CLEAR_ACTION = new PrivilegedAction<Void>() {
+
+                public Void run() {
+                    NON_PRIVILEGED.clear();
+                    return null;
+                }
+            };
+
+            public boolean isSet() {
+                return AccessController.doPrivileged(IS_SET_ACTION);
+            }
+
+            public Connection getConnection() {
+                return AccessController.doPrivileged(GET_CONNECTION_ACTION);
+            }
+
+            public void clear() {
+                AccessController.doPrivileged(CLEAR_ACTION);
+            }
+        };
+
     }
 }
