@@ -19,7 +19,7 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.connector.subsystems.jca;
+package org.jboss.as.connector.subsystems.resourceadapters;
 
 import java.io.IOException;
 
@@ -41,8 +41,7 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        //TODO: This is copied from standalone.xml you may want to try more combinations
-        return "<subsystem xmlns=\"urn:jboss:domain:resource-adapters:1.0\" />";
+        return readResource("empty-resourceadapters.xml");
     }
 
 
