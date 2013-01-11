@@ -211,7 +211,11 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         private ModelNode internalTransform(ModelNode model, String name) {
             model = model.clone();
             if (model.hasDefined(name) && model.get(name).getType() != ModelType.EXPRESSION) {
-                model.get(name).set(Math.round(model.get(name).asDouble()));
+                long rounded = Math.round(model.get(name).asDouble());
+                if (rounded > Integer.MAX_VALUE) {
+                    throw ModClusterMessages.MESSAGES.capacityIsGreaterThanIntegerMaxValue(rounded);
+                }
+                model.get(name).set((int)rounded);
             }
             return fixProperties(model);
         }

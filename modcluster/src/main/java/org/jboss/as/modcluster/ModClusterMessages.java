@@ -22,9 +22,9 @@
 
 package org.jboss.as.modcluster;
 
+import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
 
 /**
  * Date: 12.09.2011
@@ -75,4 +75,7 @@ interface ModClusterMessages {
      */
     @Message(id = 11733, value = "virtualhost: %s or context %s not found")
     String ContextorHostNotFound(String Host, String Context);
+
+    @Message(id = 11734, value = "'cacacity' has a bigger value than Integer.MAX_VALUE: %d")
+    IllegalArgumentException capacityIsGreaterThanIntegerMaxValue(long capacity);
 }

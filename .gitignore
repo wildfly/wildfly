@@ -46,3 +46,5 @@ PutObjectStoreDirHere
 # ignore eap repo
 local-repo-eap
 
+#These keep hanging around
+arquillian/*/server.log*
