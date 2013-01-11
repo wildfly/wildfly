@@ -83,7 +83,7 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
                     ModelNode capacity = loadMetrics.get(key, CommonAttributes.CAPACITY);
                     if (capacity.getType() == ModelType.DOUBLE && capacity.asString().equals("1.0")) {
                         //There is a bug in 7.1.2 where this attribute is of type int, but its default is a double with value = 1.0
-                        capacity.set(1L);
+                        capacity.set(1);
                     }
                 }
                 return modelNode;
@@ -95,8 +95,9 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         ModelNode legacySessionCapacity = legacySubsystem.get(SUBSYSTEM, ModClusterExtension.SUBSYSTEM_NAME, CommonAttributes.MOD_CLUSTER_CONFIG, CommonAttributes.CONFIGURATION,
                 CommonAttributes.DYNAMIC_LOAD_PROVIDER, CommonAttributes.CONFIGURATION, CommonAttributes.LOAD_METRIC, "sessions", CommonAttributes.CAPACITY);
         Assert.assertEquals(ModelType.DOUBLE, mainSessionCapacity.getType());
+        Assert.assertEquals(ModelType.INT, legacySessionCapacity.getType());
         Assert.assertFalse(mainSessionCapacity.asString().equals(legacySessionCapacity.asString()));
-        Assert.assertEquals(mainSessionCapacity.asLong(), legacySessionCapacity.asLong());
+        Assert.assertEquals(mainSessionCapacity.asInt(), legacySessionCapacity.asInt());
     }
 
     @Test
