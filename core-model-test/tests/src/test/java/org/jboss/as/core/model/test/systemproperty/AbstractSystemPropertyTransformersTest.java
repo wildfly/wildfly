@@ -45,7 +45,6 @@ import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.junit.Assert;
 import org.junit.Test;
@@ -168,10 +167,10 @@ public abstract class AbstractSystemPropertyTransformersTest extends AbstractCor
                     ModelNode sysPropRoot = serverGroup ? modelNode.get(SERVER_GROUP, "test") : modelNode;
                     for (Property sysprop : sysPropRoot.get(SYSTEM_PROPERTY).asPropertyList()) {
                         ModelNode bootTime;
-                        if (sysprop.getValue().hasDefined(BOOT_TIME) && (bootTime = sysprop.getValue().get(BOOT_TIME)).getType() == ModelType.STRING) {
-                            // Convert to boolean
-                            sysPropRoot.get(SYSTEM_PROPERTY, sysprop.getName(), BOOT_TIME).set(bootTime.asBoolean());
-                        }
+//                        if (sysprop.getValue().hasDefined(BOOT_TIME) && (bootTime = sysprop.getValue().get(BOOT_TIME)).getType() == ModelType.STRING) {
+//                            // Convert to boolean
+//                            sysPropRoot.get(SYSTEM_PROPERTY, sysprop.getName(), BOOT_TIME).set(bootTime.asBoolean());
+//                        }
                     }
                 }
                 return modelNode;
