@@ -36,7 +36,7 @@
                         max-attempts="10"
                         node-timeout="123"
                         ping="10"
-                        proxy-list="example.com:6666,example.com:6667}"
+                        proxy-list="example.com:6666,example.com:6667"
                         proxy-url="/"
                         smax="2"
                         socket-timeout="20"
@@ -64,9 +64,9 @@
         <ssl ca-certificate-file="/home/rhusar/client-keystore.jks"
              ca-revocation-url="/home/rhusar/revocations"
              certificate-key-file="/home/rhusar/client-keystore.jks"
-             cipher-suite="ALL:!ADH:@STRENGTH"
+             cipher-suite="SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA,SSL_RSA_WITH_RC4_128_MD5,SSL_RSA_WITH_RC4_128_SHA,SSL_RSA_WITH_3DES_EDE_CBC_SHA"
              key-alias="mykeyalias"
              password="mypassword"
-             protocol="TLS$"/>
+             protocol="TLS"/>
     </mod-cluster-config>
 </subsystem>
