@@ -233,7 +233,7 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
                     } else if (name.equals(CAPACITY.getName())) {
                         transformCapacity(transformed);
                     }
-                    return new TransformedOperation(transformed, OperationResultTransformer.ORIGINAL_RESULT);
+                    return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
                 }
             };
         }

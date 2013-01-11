@@ -218,4 +218,8 @@ class ModClusterService implements Service<ModCluster>, ModCluster {
     public Map<InetSocketAddress, String> getProxyConfiguration() {
         return service.getProxyConfiguration();
     }
+
+    ModClusterConfig getConfig() {
+        return config;
+    }
 }
