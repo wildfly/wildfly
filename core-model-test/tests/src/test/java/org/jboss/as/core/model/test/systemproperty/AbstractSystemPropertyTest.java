@@ -34,6 +34,7 @@ import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -47,11 +48,14 @@ public abstract class AbstractSystemPropertyTest extends AbstractCoreModelTest {
     static final String PROP_TWO = "sys.prop.test.two";
     static final String PROP_THREE = "sys.prop.test.three";
     static final String PROP_FOUR = "sys.prop.test.four";
+    static final String PROP_FIVE = "sys.prop.test.five";
 
     final boolean standalone;
+    final boolean domain;
 
-    public AbstractSystemPropertyTest(boolean standalone) {
+    public AbstractSystemPropertyTest(boolean standalone, boolean domain) {
         this.standalone = standalone;
+        this.domain = domain;
     }
 
     @Before
@@ -321,7 +325,7 @@ public abstract class AbstractSystemPropertyTest extends AbstractCoreModelTest {
         ModelTestUtils.compareXml(xmlOriginal, marshalled);
 
         ModelNode props = readSystemPropertiesParentModel(kernelServices);
-        Assert.assertEquals(4, props.keys().size());
+        Assert.assertEquals(standalone || domain ? 4 : 5, props.keys().size());
 
         Assert.assertEquals("1", props.get(PROP_ONE, VALUE).asString());
         Assert.assertEquals("2", props.get(PROP_TWO, VALUE).asString());
@@ -334,6 +338,12 @@ public abstract class AbstractSystemPropertyTest extends AbstractCoreModelTest {
             Assert.assertNull(System.getProperty(PROP_ONE));
             Assert.assertNull(System.getProperty(PROP_TWO));
             Assert.assertNull(System.getProperty(PROP_THREE));
+            if (!domain) {
+                Assert.assertEquals(ModelType.EXPRESSION, props.get(PROP_FIVE, VALUE).getType());
+                Assert.assertEquals("5", props.get(PROP_FIVE, VALUE).resolve().asString());
+                Assert.assertEquals(ModelType.EXPRESSION, props.get(PROP_FIVE, BOOT_TIME).getType());
+                Assert.assertFalse(props.get(PROP_FIVE, BOOT_TIME).resolve().asBoolean());
+            }
         } else {
             Assert.assertEquals("1", System.getProperty(PROP_ONE));
             Assert.assertEquals("2", System.getProperty(PROP_TWO));

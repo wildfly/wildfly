@@ -44,7 +44,7 @@ public class HostSystemPropertyTestCase extends AbstractSystemPropertyTest {
     final static PathAddress PARENT = PathAddress.pathAddress(PathElement.pathElement(HOST, "master"));
 
     public HostSystemPropertyTestCase() {
-        super(false);
+        super(false, false);
     }
 
     protected PathAddress getSystemPropertyAddress(String propName) {

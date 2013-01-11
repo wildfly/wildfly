@@ -45,7 +45,7 @@ public class DomainServerGroupSystemPropertyTestCase extends AbstractSystemPrope
     final static PathAddress PARENT = PathAddress.pathAddress(PathElement.pathElement(SERVER_GROUP, "test"));
 
     public DomainServerGroupSystemPropertyTestCase() {
-        super(false);
+        super(false, true);
     }
 
     protected PathAddress getSystemPropertyAddress(String propName) {

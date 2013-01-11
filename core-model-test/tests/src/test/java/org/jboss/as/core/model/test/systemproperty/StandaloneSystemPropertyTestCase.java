@@ -44,7 +44,7 @@ public class StandaloneSystemPropertyTestCase extends AbstractSystemPropertyTest
     static final PathAddress PARENT = PathAddress.EMPTY_ADDRESS;
 
     public StandaloneSystemPropertyTestCase() {
-        super(true);
+        super(true, false);
     }
 
     @Before
