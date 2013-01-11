@@ -44,6 +44,8 @@ import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.modcluster.config.impl.ModClusterConfig;
+import org.jboss.msc.service.ServiceController;
 import org.junit.Test;
 
 /**
@@ -166,10 +168,14 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         return AdditionalInitialization.MANAGEMENT;
     }
 
-    @Override
-    protected void validateModel(ModelNode model) {
-        super.validateModel(model);
-        ModelNode ssl = model.get(SUBSYSTEM, getMainSubsystemName()).get(MOD_CLUSTER_CONFIG, CONFIGURATION).get(SSL, CONFIGURATION);
+    @Test
+    public void testSSL() throws Exception {
+        KernelServicesBuilder builder = createKernelServicesBuilder(new AdditionalInitialization())
+                .setSubsystemXml(getSubsystemXml());
+        KernelServices services = builder.build();
+        ModelNode model = services.readWholeModel();
+        ModelNode config = model.get(SUBSYSTEM, getMainSubsystemName()).get(MOD_CLUSTER_CONFIG, CONFIGURATION);
+        ModelNode ssl = config.get(SSL, CONFIGURATION);
         Assert.assertEquals(ssl.get("ca-certificate-file").resolve().asString(), "/home/rhusar/client-keystore.jks");
         Assert.assertEquals(ssl.get("ca-revocation-url").resolve().asString(), "/home/rhusar/revocations");
         Assert.assertEquals(ssl.get("certificate-key-file").resolve().asString(), "/home/rhusar/client-keystore.jks");
@@ -177,7 +183,18 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertEquals(ssl.get("key-alias").resolve().asString(), "mykeyalias");
         Assert.assertEquals(ssl.get("password").resolve().asString(), "mypassword");
         Assert.assertEquals(ssl.get("protocol").resolve().asString(), "TLS");
+        ServiceController<ModCluster> service = (ServiceController<ModCluster>) services.getContainer().getService(ModClusterService.NAME);
+        ModClusterService modCluster = (ModClusterService) service.getService().getValue();
+        ModClusterConfig modClusterConfig = modCluster.getConfig();
+        Assert.assertTrue(modClusterConfig.isSsl());
+        Assert.assertEquals(modClusterConfig.getSslKeyAlias(), "mykeyalias");
+        Assert.assertEquals(modClusterConfig.getSslTrustStorePassword(), "mypassword");
+        Assert.assertEquals(modClusterConfig.getSslKeyStorePassword(), "mypassword");
+        Assert.assertEquals(modClusterConfig.getSslKeyStore(), "/home/rhusar/client-keystore.jks");
+        Assert.assertEquals(modClusterConfig.getSslCiphers(), "SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA,SSL_RSA_WITH_RC4_128_MD5,SSL_RSA_WITH_RC4_128_SHA,SSL_RSA_WITH_3DES_EDE_CBC_SHA");
+        Assert.assertEquals(modClusterConfig.getSslProtocol(), "TLS");
+        Assert.assertEquals(modClusterConfig.getSslTrustStore(), "/home/rhusar/client-keystore.jks");
+        Assert.assertEquals(modClusterConfig.getSslCrlFile(), "/home/rhusar/revocations");
     }
-
 
 }
