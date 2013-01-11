@@ -50,9 +50,9 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.integration.logging.util.AbstractLoggingTest;
 import org.jboss.as.test.integration.logging.util.LoggingServlet;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
@@ -72,104 +72,33 @@ import org.junit.runner.RunWith;
 
 @ServerSetup(LoggingPreferencesPerDeployFalseTestCase.LoggingPreferencesPerDeployFalseTestCaseSetup.class)
 @RunWith(Arquillian.class)
-public class LoggingPreferencesPerDeployFalseTestCase {
+public class LoggingPreferencesPerDeployFalseTestCase extends
+		AbstractLoggingTest {
 
 	private static Logger log = Logger
 			.getLogger(LoggingPreferencesPerDeployFalseTestCase.class);
-
-	private static final String FS = System.getProperty("file.separator");
-	private static final File logDir = new File(
-	System.getProperty("jbossas.ts.submodule.dir"), "target" + FS
-	+ "jbossas" + FS + "standalone" + FS + "log");
-	private static final File loggingTestLog = new File(logDir,
-			"preferences-per-deploy-false-test.log");
-	private static final File logFile = new File(logDir,
-			"jboss-logging-properties-test.log");
-
-	private static final File dummyLog = new File(logDir, "dummy-profile.log");
+	
+	private static final String PER_DEPLOY_NAME = "jboss-logging-properties-test.log";
+	private static final String PROFILE_LOG_NAME = "dummy-profile.log";
+	private static File perDeployLogFile;
+	private static File profileLog;
 
 	static class LoggingPreferencesPerDeployFalseTestCaseSetup extends
 			AbstractMgmtServerSetupTask {
 
 		@Override
-		public void tearDown(ManagementClient managementClient,
-				String containerId) throws Exception {
-			final List<ModelNode> updates = new ArrayList<ModelNode>();
-			// clean test log files
-			if (loggingTestLog.exists()) {
-				loggingTestLog.delete();
-			}
-			if (dummyLog.exists()) {
-				dummyLog.delete();
-			}
-
-			// remove LOGGING_TEST from root-logger
-			ModelNode op = new ModelNode();
-			op.get(OP).set("root-logger-unassign-handler");
-			op.get(OP_ADDR).add(SUBSYSTEM, "logging");
-			op.get(OP_ADDR).add("root-logger", "ROOT");
-			op.get("name").set("LOGGING_TEST");
-			updates.add(op);
-
-			// remove custom file handler
-			op = new ModelNode();
-			op.get(OP).set(REMOVE);
-			op.get(OP_ADDR).add(SUBSYSTEM, "logging");
-			op.get(OP_ADDR).add("periodic-rotating-file-handler",
-					"LOGGING_TEST");
-			updates.add(op);
-
-			// remove dummy-profile
-			op = new ModelNode();
-			op.get(OP).set(REMOVE);
-			op.get(OP_ADDR).add(SUBSYSTEM, "logging");
-			op.get(OP_ADDR).add("logging-profile", "dummy-profile");
-			updates.add(op);
-
-			// remove "org.jboss.as.logging.per-deployment=false" system
-			// property
-			op = new ModelNode();
-			op.get(OP).set(REMOVE);
-			op.get(OP_ADDR).add("system-property",
-					"org.jboss.as.logging.per-deployment");
-			updates.add(op);
-
-			// we want to perform all operations
-			for (ModelNode modelNode : updates) {
-				try {
-					executeOperation(modelNode);
-				} catch (MgmtOperationException exp) {
-					log.warn(exp.getMessage());
-				}
-			}
-		}
-
-		@Override
 		protected void doSetup(ManagementClient managementClient)
 				throws Exception {
 
+			// prepare log files
+			perDeployLogFile = prepareLogFile(managementClient,
+					PER_DEPLOY_NAME);
+			profileLog = prepareLogFile(managementClient, PROFILE_LOG_NAME);
+
 			final List<ModelNode> updates = new ArrayList<ModelNode>();
 
 			ModelNode op = new ModelNode();
-			op.get(OP).set(ADD);
-			op.get(OP_ADDR).add(SUBSYSTEM, "logging");
-			op.get(OP_ADDR).add("periodic-rotating-file-handler",
-					"LOGGING_TEST");
-			op.get("append").set("true");
-			op.get("suffix").set(".yyyy-MM-dd");
 			ModelNode file = new ModelNode();
-			file.get("relative-to").set("jboss.server.log.dir");
-			file.get("path").set("preferences-per-deploy-false-test.log");
-			op.get("file").set(file);
-			op.get("formatter").set("%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n");
-			updates.add(op);
-
-			op = new ModelNode();
-			op.get(OP).set("root-logger-assign-handler");
-			op.get(OP_ADDR).add(SUBSYSTEM, "logging");
-			op.get(OP_ADDR).add("root-logger", "ROOT");
-			op.get("name").set("LOGGING_TEST");
-			updates.add(op);
 
 			// create dummy-profile
 			op = new ModelNode();
@@ -189,7 +118,7 @@ public class LoggingPreferencesPerDeployFalseTestCase {
 			op.get("suffix").set(".yyyy-MM-dd");
 			file = new ModelNode();
 			file.get("relative-to").set("jboss.server.log.dir");
-			file.get("path").set("dummy-profile.log");
+			file.get("path").set(PROFILE_LOG_NAME);
 			op.get("file").set(file);
 			op.get("formatter").set("%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n");
 			updates.add(op);
@@ -212,6 +141,50 @@ public class LoggingPreferencesPerDeployFalseTestCase {
 			op.get(OP_ADDR).add("system-property",
 					"org.jboss.as.logging.per-deployment");
 			op.get("value").set("false");
+			updates.add(op);
+
+			// we want to perform all operations
+			for (ModelNode modelNode : updates) {
+				try {
+					executeOperation(modelNode);
+				} catch (MgmtOperationException exp) {
+					log.warn(exp.getMessage());
+				}
+			}
+		}
+
+		@Override
+		public void tearDown(ManagementClient managementClient,
+				String containerId) throws Exception {
+			final List<ModelNode> updates = new ArrayList<ModelNode>();
+
+			// delete log files
+			perDeployLogFile.delete();
+			profileLog.delete();
+
+			ModelNode op = new ModelNode();
+
+			// remove custom file handler
+			op = new ModelNode();
+			op.get(OP).set(REMOVE);
+			op.get(OP_ADDR).add(SUBSYSTEM, "logging");
+			op.get(OP_ADDR).add("periodic-rotating-file-handler",
+					"LOGGING_TEST");
+			updates.add(op);
+
+			// remove dummy-profile
+			op = new ModelNode();
+			op.get(OP).set(REMOVE);
+			op.get(OP_ADDR).add(SUBSYSTEM, "logging");
+			op.get(OP_ADDR).add("logging-profile", "dummy-profile");
+			updates.add(op);
+
+			// remove "org.jboss.as.logging.per-deployment=false" system
+			// property
+			op = new ModelNode();
+			op.get(OP).set(REMOVE);
+			op.get(OP_ADDR).add("system-property",
+					"org.jboss.as.logging.per-deployment");
 			updates.add(op);
 
 			// we want to perform all operations
@@ -258,7 +231,7 @@ public class LoggingPreferencesPerDeployFalseTestCase {
 				statusCode == HttpServletResponse.SC_OK);
 		// check logs
 		BufferedReader br = new BufferedReader(new InputStreamReader(
-				new FileInputStream(dummyLog), Charset.forName("UTF-8")));
+				new FileInputStream(profileLog), Charset.forName("UTF-8")));
 		String line;
 		boolean logFound = false;
 		while ((line = br.readLine()) != null) {
@@ -275,8 +248,8 @@ public class LoggingPreferencesPerDeployFalseTestCase {
 	@RunAsClient
 	@InSequence(2)
 	public void perDeployFilePresenceTest() {
-		Assert.assertFalse("File: " + logFile.toString()
-				+ " should not be created!", logFile.exists());
+		Assert.assertFalse("File: " + perDeployLogFile.toString()
+				+ " should not be created!", perDeployLogFile.exists());
 	}
 
 }

@@ -50,6 +50,7 @@ import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.integration.logging.util.AbstractLoggingTest;
 import org.jboss.as.test.integration.logging.util.LoggingBean;
 import org.jboss.as.test.integration.logging.util.LoggingServlet;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
@@ -68,28 +69,80 @@ import org.junit.runner.RunWith;
 
 @ServerSetup(LoggingPerDeployFalseTestCase.LoggingPerDeployFalseTestCaseSetup.class)
 @RunWith(Arquillian.class)
-public class LoggingPerDeployFalseTestCase {
+public class LoggingPerDeployFalseTestCase extends AbstractLoggingTest {
 
 	private static Logger log = Logger
 			.getLogger(LoggingPerDeployFalseTestCase.class);
 
-	private static final String FS = System.getProperty("file.separator");
-	private static final File logDir = new File(
-	System.getProperty("jbossas.ts.submodule.dir"), "target" + FS
-	+ "jbossas" + FS + "standalone" + FS + "log");
-	private static final File loggingTestLog = new File(logDir,
-			"per-deploy-false-test.log");
-	private static final File logFile = new File(logDir,
-			"jboss-logging-properties-test.log");
+	private static final String LOG_FILE_NAME = "per-deploy-false-test.log";
+	private static final String PER_DEPLOY_NAME = "jboss-logging-properties-test.log";
+	private static File logFile;
+	private static File perDeployLogFile;
 
 	static class LoggingPerDeployFalseTestCaseSetup extends
 			AbstractMgmtServerSetupTask {
 
 		@Override
+		protected void doSetup(ManagementClient managementClient)
+				throws Exception {
+			final List<ModelNode> updates = new ArrayList<ModelNode>();
+
+			// prepare log files
+			logFile = prepareLogFile(managementClient,
+					LOG_FILE_NAME);
+			perDeployLogFile = prepareLogFile(managementClient,
+					PER_DEPLOY_NAME);
+
+			// add custom file-handler
+			ModelNode op = new ModelNode();
+			op.get(OP).set(ADD);
+			op.get(OP_ADDR).add(SUBSYSTEM, "logging");
+			op.get(OP_ADDR).add("periodic-rotating-file-handler",
+					"LOGGING_TEST");
+			op.get("append").set("true");
+			op.get("suffix").set(".yyyy-MM-dd");
+			ModelNode file = new ModelNode();
+			file.get("relative-to").set("jboss.server.log.dir");
+			file.get("path").set(LOG_FILE_NAME);
+			op.get("file").set(file);
+			op.get("formatter").set("%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n");
+			updates.add(op);
+
+			// add handler to root-logger
+			op = new ModelNode();
+			op.get(OP).set("root-logger-assign-handler");
+			op.get(OP_ADDR).add(SUBSYSTEM, "logging");
+			op.get(OP_ADDR).add("root-logger", "ROOT");
+			op.get("name").set("LOGGING_TEST");
+			updates.add(op);
+
+			// add "org.jboss.as.logging.per-deployment=false" system property
+			op = new ModelNode();
+			op.get(OP).set(ADD);
+			op.get(OP_ADDR).add("system-property",
+					"org.jboss.as.logging.per-deployment");
+			op.get("value").set("false");
+			updates.add(op);
+
+			// we want all operations to perform
+			for (ModelNode modelNode : updates) {
+				try {
+					executeOperation(modelNode);
+				} catch (MgmtOperationException exp) {
+					log.warn(exp.getMessage());
+				}
+			}
+		}
+
+		@Override
 		public void tearDown(ManagementClient managementClient,
 				String containerId) throws Exception {
 			final List<ModelNode> updates = new ArrayList<ModelNode>();
-			loggingTestLog.delete();
+
+			// delete log files
+			logFile.delete();
+			perDeployLogFile.delete();
+
 			// remove LOGGING_TEST from root-logger
 			ModelNode op = new ModelNode();
 			op.get(OP).set("root-logger-unassign-handler");
@@ -125,51 +178,6 @@ public class LoggingPerDeployFalseTestCase {
 
 		}
 
-		@Override
-		protected void doSetup(ManagementClient managementClient)
-				throws Exception {
-			final List<ModelNode> updates = new ArrayList<ModelNode>();
-
-			// add custom file-handler
-			ModelNode op = new ModelNode();
-			op.get(OP).set(ADD);
-			op.get(OP_ADDR).add(SUBSYSTEM, "logging");
-			op.get(OP_ADDR).add("periodic-rotating-file-handler",
-					"LOGGING_TEST");
-			op.get("append").set("true");
-			op.get("suffix").set(".yyyy-MM-dd");
-			ModelNode file = new ModelNode();
-			file.get("relative-to").set("jboss.server.log.dir");
-			file.get("path").set("per-deploy-false-test.log");
-			op.get("file").set(file);
-			op.get("formatter").set("%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n");
-			updates.add(op);
-
-			// add handler to root-logger
-			op = new ModelNode();
-			op.get(OP).set("root-logger-assign-handler");
-			op.get(OP_ADDR).add(SUBSYSTEM, "logging");
-			op.get(OP_ADDR).add("root-logger", "ROOT");
-			op.get("name").set("LOGGING_TEST");
-			updates.add(op);
-
-			// add "org.jboss.as.logging.per-deployment=false" system property
-			op = new ModelNode();
-			op.get(OP).set(ADD);
-			op.get(OP_ADDR).add("system-property",
-					"org.jboss.as.logging.per-deployment");
-			op.get("value").set("false");
-			updates.add(op);
-
-			// we want all operations to perform
-			for (ModelNode modelNode : updates) {
-				try {
-					executeOperation(modelNode);
-				} catch (MgmtOperationException exp) {
-					log.warn(exp.getMessage());
-				}
-			}
-		}
 	}
 
 	@ArquillianResource(LoggingServlet.class)
@@ -197,7 +205,7 @@ public class LoggingPerDeployFalseTestCase {
 				statusCode == HttpServletResponse.SC_OK);
 		// check logs
 		BufferedReader br = new BufferedReader(new InputStreamReader(
-				new FileInputStream(loggingTestLog), Charset.forName("UTF-8")));
+				new FileInputStream(logFile), Charset.forName("UTF-8")));
 		String line;
 		boolean logFound = false;
 		while ((line = br.readLine()) != null) {
@@ -214,8 +222,8 @@ public class LoggingPerDeployFalseTestCase {
 	@RunAsClient
 	@InSequence(2)
 	public void perDeployFilePresenceTest() {
-		Assert.assertFalse("File: " + logFile.toString()
-				+ " should not be created!", logFile.exists());
+		Assert.assertFalse("File: " + perDeployLogFile.toString()
+				+ " should not be created!", perDeployLogFile.exists());
 	}
 
 }
