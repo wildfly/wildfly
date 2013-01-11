@@ -66,6 +66,13 @@ public interface ReadyEntityCache {
      */
     EntityBeanComponentInstance get(Object key) throws NoSuchEntityException;
 
+    /**
+     * Checks whether an entity bean instance for the given primary key is cached.
+     *
+     * @param key the identifier of the object
+     * @return <code>true</code> if the object is cached
+     */
+    boolean isCached(Object key);
 
     /**
      * Release the object from use. This will be called at transaction commit time.

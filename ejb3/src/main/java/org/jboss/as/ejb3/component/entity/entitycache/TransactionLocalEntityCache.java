@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.component.entity.entitycache;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,6 +53,11 @@ public class TransactionLocalEntityCache implements ReadyEntityCache {
     public TransactionLocalEntityCache(final EntityBeanComponent component) {
         this.component = component;
         this.transactionSynchronizationRegistry = component.getTransactionSynchronizationRegistry();
+    }
+
+    @Override
+    public boolean isCached(final Object key) {
+        return cache.containsKey(key);
     }
 
     @Override
