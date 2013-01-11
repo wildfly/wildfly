@@ -57,22 +57,24 @@ class TestModelControllerService extends ModelTestModelControllerService {
     private final ExtensionRegistry extensionRegistry;
     private final RunningModeControl runningModeControl;
     private final ContentRepository contentRepository = new MockContentRepository();
+    private final boolean registerTransformers;
 
     protected TestModelControllerService(final Extension mainExtension, final ControllerInitializer controllerInitializer,
-                                         final AdditionalInitialization additionalInit, RunningModeControl runningModeControl, final ExtensionRegistry extensionRegistry,
-                                         final StringConfigurationPersister persister, boolean validateOps) {
+                                         final AdditionalInitialization additionalInit, final RunningModeControl runningModeControl, final ExtensionRegistry extensionRegistry,
+                                         final StringConfigurationPersister persister, final boolean validateOps, final boolean registerTransformers) {
         super(additionalInit.getProcessType(), runningModeControl, extensionRegistry.getTransformerRegistry(), persister, validateOps, ModelTestModelControllerService.DESC_PROVIDER, new ControlledProcessState(true));
         this.mainExtension = mainExtension;
         this.additionalInit = additionalInit;
         this.controllerInitializer = controllerInitializer;
         this.extensionRegistry = extensionRegistry;
         this.runningModeControl = runningModeControl;
+        this.registerTransformers = registerTransformers;
     }
 
     static TestModelControllerService create(final Extension mainExtension, final ControllerInitializer controllerInitializer,
                                              final AdditionalInitialization additionalInit, final ExtensionRegistry extensionRegistry,
-                                             final StringConfigurationPersister persister, boolean validateOps) {
-        return new TestModelControllerService(mainExtension, controllerInitializer, additionalInit, new RunningModeControl(additionalInit.getRunningMode()), extensionRegistry, persister, validateOps);
+                                             final StringConfigurationPersister persister, final boolean validateOps, final boolean registerTransformers) {
+        return new TestModelControllerService(mainExtension, controllerInitializer, additionalInit, new RunningModeControl(additionalInit.getRunningMode()), extensionRegistry, persister, validateOps, registerTransformers);
     }
 
     @Override
@@ -94,7 +96,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
 
     @Override
     protected void preBoot(List<ModelNode> bootOperations, boolean rollbackOnRuntimeFailure) {
-        mainExtension.initialize(extensionRegistry.getExtensionContext("Test"));
+        mainExtension.initialize(extensionRegistry.getExtensionContext("Test", registerTransformers));
     }
 
     protected void postBoot() {

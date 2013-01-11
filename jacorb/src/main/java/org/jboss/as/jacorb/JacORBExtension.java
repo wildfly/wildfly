@@ -72,8 +72,11 @@ public class JacORBExtension implements Extension {
         final ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(JacORBSubsystemResource.INSTANCE);
         subsystemRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
         subsystem.registerXMLElementWriter(PARSER);
-        // Register the model transformers
-        registerTransformers(subsystem);
+
+        if (context.isRegisterTransformers()) {
+            // Register the model transformers
+            registerTransformers(subsystem);
+        }
     }
 
     @Override

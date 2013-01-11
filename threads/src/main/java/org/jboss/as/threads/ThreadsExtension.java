@@ -74,7 +74,9 @@ public class ThreadsExtension implements Extension {
         final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(new ThreadSubsystemResourceDefinition(registerRuntimeOnly));
         subsystem.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
-        registerTransformers1_0(registration);
+        if (context.isRegisterTransformers()) {
+            registerTransformers1_0(registration);
+        }
     }
 
     @Override

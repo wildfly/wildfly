@@ -103,7 +103,9 @@ public class JPAExtension implements Extension {
         nodeRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
         registration.registerXMLElementWriter(parser1_1);
 
-        initializeTransformers_1_1_0(registration);
+        if (context.isRegisterTransformers()) {
+            initializeTransformers_1_1_0(registration);
+        }
 
         try {
             PersistenceProviderLoader.loadDefaultProvider();

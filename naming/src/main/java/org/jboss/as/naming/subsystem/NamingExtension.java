@@ -23,7 +23,6 @@
 package org.jboss.as.naming.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
@@ -37,7 +36,6 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.naming.management.JndiViewOperation;
 import org.jboss.dmr.ModelNode;
@@ -87,9 +85,11 @@ public class NamingExtension implements Extension {
 
         subsystem.registerXMLElementWriter(NamingSubsystem13Parser.INSTANCE);
 
-        // register 1.1.0 transformer
-        final TransformersSubRegistration transformersSubRegistration110 = subsystem.registerModelTransformers(ModelVersion.create(1, 1, 0), new Naming110SubsystemTransformer());
-        transformersSubRegistration110.registerSubResource(NamingSubsystemModel.BINDING_PATH,new NameBindingAdd110OperationTransformer());
+        if (context.isRegisterTransformers()) {
+            // register 1.1.0 transformer
+            final TransformersSubRegistration transformersSubRegistration110 = subsystem.registerModelTransformers(ModelVersion.create(1, 1, 0), new Naming110SubsystemTransformer());
+            transformersSubRegistration110.registerSubResource(NamingSubsystemModel.BINDING_PATH,new NameBindingAdd110OperationTransformer());
+        }
     }
 
     /**

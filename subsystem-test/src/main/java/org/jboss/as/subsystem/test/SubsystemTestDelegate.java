@@ -44,12 +44,14 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import junit.framework.Assert;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.Extension;
@@ -212,7 +214,7 @@ final class SubsystemTestDelegate {
         outputExtensionRegistry.setWriterRegistry(persister);
 
         Extension extension = mainExtension.getClass().newInstance();
-        extension.initialize(outputExtensionRegistry.getExtensionContext("Test"));
+        extension.initialize(outputExtensionRegistry.getExtensionContext("Test", false));
 
         ConfigurationPersister.PersistenceResource resource = persister.store(model, Collections.<PathAddress>emptySet());
         resource.commit();
@@ -545,7 +547,7 @@ final class SubsystemTestDelegate {
         public KernelServices build() throws Exception {
             bootOperationBuilder.validateNotAlreadyBuilt();
             List<ModelNode> bootOperations = bootOperationBuilder.build();
-            KernelServicesImpl kernelServices = KernelServicesImpl.create(mainSubsystemName, additionalInit, cloneExtensionRegistry(additionalInit), bootOperations, testParser, mainExtension, null);
+            KernelServicesImpl kernelServices = KernelServicesImpl.create(mainSubsystemName, additionalInit, cloneExtensionRegistry(additionalInit), bootOperations, testParser, mainExtension, null, legacyControllerInitializers.size() > 0);
             SubsystemTestDelegate.this.kernelServices.add(kernelServices);
 
             validateDescriptionProviders(additionalInit, kernelServices);
@@ -657,7 +659,7 @@ final class SubsystemTestDelegate {
             extension.initializeParsers(extensionParsingRegistry.getExtensionParsingContext("Test", xmlMapper));
 
             //TODO extra parsers from additionalInit
-            return KernelServicesImpl.create(mainSubsystemName, additionalInit, cloneExtensionRegistry(additionalInit), bootOperations, testParser, extension, modelVersion);
+            return KernelServicesImpl.create(mainSubsystemName, additionalInit, cloneExtensionRegistry(additionalInit), bootOperations, testParser, extension, modelVersion, false);
         }
     }
 

@@ -34,15 +34,11 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.services.path.PathManager;
-import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.ejb3.subsystem.deployment.EntityBeanResourceDefinition;
 import org.jboss.as.ejb3.subsystem.deployment.MessageDrivenBeanResourceDefinition;
 import org.jboss.as.ejb3.subsystem.deployment.SingletonBeanDeploymentResourceDefinition;
 import org.jboss.as.ejb3.subsystem.deployment.StatefulSessionBeanDeploymentResourceDefinition;
 import org.jboss.as.ejb3.subsystem.deployment.StatelessSessionBeanDeploymentResourceDefinition;
-import org.jboss.as.threads.ThreadFactoryResolver;
-import org.jboss.as.threads.ThreadsServices;
-import org.jboss.as.threads.UnboundedQueueThreadPoolResourceDefinition;
 
 /**
  * Extension that provides the EJB3 subsystem.
@@ -99,7 +95,9 @@ public class EJB3Extension implements Extension {
         }
 
         // Transformers
-        EJB3SubsystemRootResourceDefinition.registerTransformers(subsystem);
+        if (context.isRegisterTransformers()) {
+            EJB3SubsystemRootResourceDefinition.registerTransformers(subsystem);
+        }
     }
 
     /**

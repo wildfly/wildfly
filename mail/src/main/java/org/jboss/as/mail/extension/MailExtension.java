@@ -97,8 +97,13 @@ public class MailExtension implements Extension {
         // /subsystem=mail/mail-session=java:/Mail/custom=*
         session.registerSubModel(MailServerDefinition.INSTANCE_CUSTOM);
 
-
+        if (context.isRegisterTransformers()) {
+            registerTransformers(subsystem);
+        }
         subsystem.registerXMLElementWriter(parser);
+    }
+
+    private void registerTransformers(SubsystemRegistration subsystem) {
         TransformersSubRegistration sessionTransformers = subsystem.registerModelTransformers(ModelVersion.create(1, 1, 0), null)
                 .registerSubResource(MAIL_SESSION_PATH);
         TransformersSubRegistration serverTransformers = sessionTransformers

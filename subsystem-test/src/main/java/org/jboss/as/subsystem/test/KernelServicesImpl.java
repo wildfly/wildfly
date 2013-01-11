@@ -57,21 +57,23 @@ public class KernelServicesImpl extends ModelTestKernelServicesImpl<KernelServic
 
     private final String mainSubsystemName;
     private final ExtensionRegistry extensionRegistry;
+    private final boolean registerTransformers;
 
 
     private static final AtomicInteger counter = new AtomicInteger();
 
 
     private KernelServicesImpl(ServiceContainer container, ModelTestModelControllerService controllerService, StringConfigurationPersister persister, ManagementResourceRegistration rootRegistration,
-            OperationValidator operationValidator, String mainSubsystemName, ExtensionRegistry extensionRegistry, ModelVersion legacyModelVersion, boolean successfulBoot, Throwable bootError) {
+            OperationValidator operationValidator, String mainSubsystemName, ExtensionRegistry extensionRegistry, ModelVersion legacyModelVersion, boolean successfulBoot, Throwable bootError, boolean registerTransformers) {
         super(container, controllerService, persister, rootRegistration, operationValidator, legacyModelVersion, successfulBoot, bootError);
 
         this.mainSubsystemName = mainSubsystemName;
         this.extensionRegistry = extensionRegistry;
+        this.registerTransformers = registerTransformers;
     }
 
     static KernelServicesImpl create(String mainSubsystemName, AdditionalInitialization additionalInit,
-            ExtensionRegistry controllerExtensionRegistry, List<ModelNode> bootOperations, ModelTestParser testParser, Extension mainExtension, ModelVersion legacyModelVersion) throws Exception {
+            ExtensionRegistry controllerExtensionRegistry, List<ModelNode> bootOperations, ModelTestParser testParser, Extension mainExtension, ModelVersion legacyModelVersion, boolean registerTransformers) throws Exception {
         ControllerInitializer controllerInitializer = additionalInit.createControllerInitializer();
 
         PathManagerService pathManager = new PathManagerService() {
@@ -94,7 +96,7 @@ public class KernelServicesImpl extends ModelTestKernelServicesImpl<KernelServic
         controllerExtensionRegistry.setWriterRegistry(persister);
         controllerExtensionRegistry.setPathManager(pathManager);
         ModelTestModelControllerService svc = TestModelControllerService.create(mainExtension, controllerInitializer, additionalInit, controllerExtensionRegistry,
-                persister, additionalInit.isValidateOperations());
+                persister, additionalInit.isValidateOperations(), registerTransformers);
         ServiceBuilder<ModelController> builder = target.addService(Services.JBOSS_SERVER_CONTROLLER, svc);
         builder.addDependency(PathManagerService.SERVICE_NAME); // ensure this is up before the ModelControllerService, as it would be in a real server
         builder.install();
@@ -107,7 +109,7 @@ public class KernelServicesImpl extends ModelTestKernelServicesImpl<KernelServic
         //processState.setRunning();
 
         KernelServicesImpl kernelServices = new KernelServicesImpl(container, svc, persister, svc.getRootRegistration(),
-                new OperationValidator(svc.getRootRegistration()), mainSubsystemName, controllerExtensionRegistry, legacyModelVersion, svc.isSuccessfulBoot(), svc.getBootError());
+                new OperationValidator(svc.getRootRegistration()), mainSubsystemName, controllerExtensionRegistry, legacyModelVersion, svc.isSuccessfulBoot(), svc.getBootError(), registerTransformers);
 
         return kernelServices;
     }

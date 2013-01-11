@@ -102,8 +102,11 @@ public class JGroupsExtension implements Extension {
 
         subsystem.registerSubModel(new StackResource(registerRuntimeOnly));
         registration.registerXMLElementWriter(new JGroupsSubsystemXMLWriter());
-        // Register the model transformers
-        registerTransformers(registration);
+
+        if (context.isRegisterTransformers()) {
+            // Register the model transformers
+            registerTransformers(registration);
+        }
     }
 
     /**

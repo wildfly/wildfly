@@ -90,7 +90,9 @@ public class InfinispanExtension implements Extension {
 
         subsystem.registerSubsystemModel(new InfinispanSubsystemRootResource(resolvePathHandler));
         subsystem.registerXMLElementWriter(new InfinispanSubsystemXMLWriter());
-        registerTransformers(subsystem);
+        if (context.isRegisterTransformers()) {
+            registerTransformers(subsystem);
+        }
     }
 
     /**

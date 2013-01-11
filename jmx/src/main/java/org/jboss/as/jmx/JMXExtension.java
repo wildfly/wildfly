@@ -100,7 +100,9 @@ public class JMXExtension implements Extension {
         registration.registerSubsystemModel(new JMXSubsystemRootResource());
         registration.registerXMLElementWriter(writer);
 
-        registerTransformers1_0_0(registration);
+        if (context.isRegisterTransformers()) {
+            registerTransformers1_0_0(registration);
+        }
     }
 
     /**
