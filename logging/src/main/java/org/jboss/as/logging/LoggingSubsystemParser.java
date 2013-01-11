@@ -31,6 +31,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.controller.services.path.PathResourceDefinition.PATH;
@@ -77,6 +78,13 @@ import static org.jboss.as.logging.PeriodicHandlerResourceDefinition.SUFFIX;
 import static org.jboss.as.logging.ConsoleHandlerResourceDefinition.TARGET;
 import static org.jboss.as.logging.LoggerResourceDefinition.USE_PARENT_HANDLERS;
 import static org.jboss.as.logging.LoggingMessages.MESSAGES;
+import static org.jboss.as.logging.SyslogHandlerResourceDefinition.APP_NAME;
+import static org.jboss.as.logging.SyslogHandlerResourceDefinition.FACILITY;
+import static org.jboss.as.logging.SyslogHandlerResourceDefinition.HOSTNAME;
+import static org.jboss.as.logging.SyslogHandlerResourceDefinition.PORT;
+import static org.jboss.as.logging.SyslogHandlerResourceDefinition.SERVER_ADDRESS;
+import static org.jboss.as.logging.SyslogHandlerResourceDefinition.SYSLOG_FORMATTER;
+import static org.jboss.as.logging.SyslogHandlerResourceDefinition.SYSLOG_HANDLER;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -177,6 +185,10 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                         }
                         case ASYNC_HANDLER: {
                             parseAsyncHandlerElement(reader, address, asyncHandlerOperations, handlerNames);
+                            break;
+                        }
+                        case SYSLOG_HANDLER: {
+                            parseSyslogHandler(reader, address, otherOperations, handlerNames);
                             break;
                         }
                         case LOGGING_PROFILES:
@@ -837,6 +849,99 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         list.add(node);
     }
 
+    private static void parseSyslogHandler(final XMLExtendedStreamReader reader, final PathAddress address, final List<ModelNode> list, final Set<String> names) throws XMLStreamException {
+        final ModelNode model = new ModelNode();
+        final Namespace namespace = Namespace.forUri(reader.getNamespaceURI());
+        // Attributes
+        String name = null;
+        final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case NAME: {
+                    name = value;
+                    break;
+                }
+                case ENABLED:
+                    ENABLED.parseAndSetParameter(value, model, reader);
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+        if (!required.isEmpty()) {
+            throw missingRequired(reader, required);
+        }
+        if (!names.add(name)) {
+            throw duplicateNamedElement(reader, name);
+        }
+
+        // Setup the operation
+        model.get(OP).set(ADD);
+        model.get(OP_ADDR).set(address.toModelNode()).add(SYSLOG_HANDLER, name);
+
+        final EnumSet<Element> requiredElem = EnumSet.noneOf(Element.class);
+        final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
+        while (reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            if (!encountered.add(element)) {
+                throw unexpectedElement(reader);
+            }
+            requiredElem.remove(element);
+            switch (element) {
+                case APP_NAME: {
+                    APP_NAME.parseAndSetParameter(readStringAttributeElement(reader, "value"), model, reader);
+                    break;
+                }
+                case FACILITY: {
+                    FACILITY.parseAndSetParameter(readStringAttributeElement(reader, "value"), model, reader);
+                    break;
+                }
+                case HOSTNAME: {
+                    HOSTNAME.parseAndSetParameter(readStringAttributeElement(reader, "value"), model, reader);
+                    break;
+                }
+                case LEVEL: {
+                    LEVEL.parseAndSetParameter(readStringAttributeElement(reader, "name"), model, reader);
+                    break;
+                }
+                case FORMATTER: {
+                    if (reader.nextTag() != START_ELEMENT) {
+                        throw new XMLStreamException(MESSAGES.missingRequiredNestedFilterElement(), reader.getLocation());
+                    }
+                    switch (Element.forName(reader.getLocalName())) {
+                        case SYSLOG_FORMATTER: {
+                            requireSingleAttribute(reader, Attribute.SYSLOG_TYPE.getLocalName());
+                            model.get(SYSLOG_FORMATTER.getName()).set(readStringAttributeElement(reader, Attribute.SYSLOG_TYPE.getLocalName()));
+                            requireNoContent(reader);
+                            break;
+                        }
+                        default: {
+                            throw unexpectedElement(reader);
+                        }
+                    }
+                    break;
+                }
+                case PORT: {
+                    PORT.parseAndSetParameter(readStringAttributeElement(reader, "value"), model, reader);
+                    break;
+                }
+                case SERVER_ADDRESS: {
+                    SERVER_ADDRESS.parseAndSetParameter(readStringAttributeElement(reader, "value"), model, reader);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+        list.add(model);
+    }
+
     private static void parseFileElement(final ModelNode node, final XMLExtendedStreamReader reader) throws XMLStreamException {
         final EnumSet<Attribute> required = EnumSet.of(Attribute.PATH);
         final int count = reader.getAttributeCount();
@@ -1073,6 +1178,10 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                 }
                 case ASYNC_HANDLER: {
                     parseAsyncHandlerElement(reader, profileAddress, asyncHandlerOperations, handlerNames);
+                    break;
+                }
+                case SYSLOG_HANDLER: {
+                    parseSyslogHandler(reader, profileAddress, otherOperations, handlerNames);
                     break;
                 }
                 default: {
@@ -1313,6 +1422,17 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                 }
             }
         }
+        if (node.hasDefined(SYSLOG_HANDLER)) {
+            final ModelNode handlers = node.get(SYSLOG_HANDLER);
+
+            for (Property handlerProp : handlers.asPropertyList()) {
+                final String name = handlerProp.getName();
+                final ModelNode handler = handlerProp.getValue();
+                if (handler.isDefined()) {
+                    writeSyslogHandler(writer, handler, name);
+                }
+            }
+        }
         if (node.hasDefined(LOGGER)) {
             for (String name : node.get(LOGGER).keys()) {
                 writeLogger(writer, name, node.get(LOGGER, name));
@@ -1395,6 +1515,21 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         ROTATE_SIZE.marshallAsElement(node, writer);
         MAX_BACKUP_INDEX.marshallAsElement(node, writer);
         APPEND.marshallAsElement(node, writer);
+
+        writer.writeEndElement();
+    }
+
+    private void writeSyslogHandler(final XMLExtendedStreamWriter writer, final ModelNode node, final String name) throws XMLStreamException {
+        writer.writeStartElement(Element.SYSLOG_HANDLER.getLocalName());
+        writer.writeAttribute(HANDLER_NAME.getXmlName(), name);
+        ENABLED.marshallAsAttribute(node, false, writer);
+        LEVEL.marshallAsElement(node, writer);
+        SERVER_ADDRESS.marshallAsElement(node, writer);
+        HOSTNAME.marshallAsElement(node, writer);
+        PORT.marshallAsElement(node, writer);
+        APP_NAME.marshallAsElement(node, writer);
+        SYSLOG_FORMATTER.marshallAsElement(node, writer);
+        FACILITY.marshallAsElement(node, writer);
 
         writer.writeEndElement();
     }

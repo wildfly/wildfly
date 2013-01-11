@@ -57,6 +57,7 @@ enum Attribute {
     REPLACE_ALL(CommonAttributes.REPLACE_ALL),
     ROTATE_SIZE(SizeRotatingHandlerResourceDefinition.ROTATE_SIZE),
     SUFFIX(PeriodicHandlerResourceDefinition.SUFFIX),
+    SYSLOG_TYPE("syslog-type"),
     TARGET(ConsoleHandlerResourceDefinition.TARGET),
     USE_PARENT_HANDLERS(LoggerResourceDefinition.USE_PARENT_HANDLERS),
     VALUE("value"),;

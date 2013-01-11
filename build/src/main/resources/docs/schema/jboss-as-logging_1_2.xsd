@@ -49,6 +49,7 @@
             <xs:element name="size-rotating-file-handler" type="sizeFileHandlerType"/>
             <xs:element name="async-handler" type="asyncHandlerType"/>
             <xs:element name="custom-handler" type="customHandlerType" />
+            <xs:element name="syslog-handler" type="syslogHandlerType"/>
             <xs:element name="logging-profiles" type="logging-profilesType" minOccurs="0" maxOccurs="1"/>
         </xs:choice>
     </xs:complexType>
@@ -79,6 +80,7 @@
             <xs:element name="size-rotating-file-handler" type="sizeFileHandlerType"/>
             <xs:element name="async-handler" type="asyncHandlerType"/>
             <xs:element name="custom-handler" type="customHandlerType"/>
+            <xs:element name="syslog-handler" type="syslogHandlerType"/>
         </xs:choice>
         <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
@@ -155,6 +157,7 @@
         <xs:all>
             <xs:element name="level" type="refType" minOccurs="0"/>
             <xs:element name="encoding" type="valueType" minOccurs="0"/>
+            <xs:element name="filter-spec" type="valueType" minOccurs="0"/>
             <xs:element name="filter" type="valueType" minOccurs="0"/>
             <xs:element name="formatter" type="formatterType" minOccurs="0"/>
             <xs:element name="target" minOccurs="0">
@@ -274,6 +277,51 @@
         <xs:attribute name="enabled" type="xs:boolean" use="optional" default="true"/>
     </xs:complexType>
 
+    <xs:complexType name="syslogHandlerType">
+        <xs:annotation>
+            <xs:documentation>
+                Defines a syslog handler for UNIX/Linux based operating systems.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:all>
+            <xs:element name="level" type="refType" minOccurs="0"/>
+            <xs:element name="server-address" type="valueType" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        The address of the syslog server. The default is localhost.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="hostname" type="valueType" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        The name of the host the messages are being sent from. For example the name of the host the
+                        application server is running on.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="port" type="positiveIntType" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        The port the syslog server is listening on. The default is 514.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="app-name" type="valueType" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        The app name used when formatting the message in RFC5424 format. By default the app name is
+                        &quot;java&quot;
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="formatter" type="syslogFormatterType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="facility" type="facilityType" minOccurs="0" maxOccurs="1"/>
+        </xs:all>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="enabled" type="xs:boolean" use="optional" default="true"/>
+    </xs:complexType>
+
     <xs:complexType name="queueLengthType">
         <xs:attribute name="value" use="required">
             <xs:simpleType>
@@ -323,6 +371,45 @@
         </xs:attribute>
     </xs:complexType>
 
+    <xs:complexType name="facilityType">
+        <xs:annotation>
+            <xs:documentation>
+                Facility as defined by RFC-5424 (http://tools.ietf.org/html/rfc5424)and RFC-3164
+                (http://tools.ietf.org/html/rfc3164).
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="value" use="required">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="kernel"/>
+                    <xs:enumeration value="user-level"/>
+                    <xs:enumeration value="mail-system"/>
+                    <xs:enumeration value="system-daemons"/>
+                    <xs:enumeration value="security"/>
+                    <xs:enumeration value="syslogd"/>
+                    <xs:enumeration value="line-printer"/>
+                    <xs:enumeration value="network-news"/>
+                    <xs:enumeration value="uucp"/>
+                    <xs:enumeration value="clock-daemon"/>
+                    <xs:enumeration value="security2"/>
+                    <xs:enumeration value="ftp-daemon"/>
+                    <xs:enumeration value="ntp"/>
+                    <xs:enumeration value="log-audit"/>
+                    <xs:enumeration value="log-alert"/>
+                    <xs:enumeration value="clock-daemon2"/>
+                    <xs:enumeration value="local-use-0"/>
+                    <xs:enumeration value="local-use-1"/>
+                    <xs:enumeration value="local-use-2"/>
+                    <xs:enumeration value="local-use-3"/>
+                    <xs:enumeration value="local-use-4"/>
+                    <xs:enumeration value="local-use-5"/>
+                    <xs:enumeration value="local-use-6"/>
+                    <xs:enumeration value="local-use-7"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:complexType>
+
     <!-- Formatters -->
 
     <xs:complexType name="formatterType">
@@ -344,6 +431,47 @@
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="pattern" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="syslogFormatterType">
+        <xs:annotation>
+            <xs:documentation>
+                Defines a formatter.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice minOccurs="1" maxOccurs="1">
+            <xs:element name="syslog-format" type="syslogFormatType" maxOccurs="1"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="syslogFormatType">
+        <xs:annotation>
+            <xs:documentation>
+                Formats the log message according to the RFC specification.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="syslog-type" use="required">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="RFC5424">
+                        <xs:annotation>
+                            <xs:documentation>
+                                Formats the message according the the RFC-5424 specification
+                                (http://tools.ietf.org/html/rfc5424#section-6)
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="RFC3164">
+                        <xs:annotation>
+                            <xs:documentation>
+                                Formats the message according the the RFC-3164 specification
+                                (http://tools.ietf.org/html/rfc3164#section-4.1)
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
     </xs:complexType>
 
 </xs:schema>

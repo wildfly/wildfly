@@ -68,6 +68,18 @@
         <append value="${test.file.append:false}"/>
     </size-rotating-file-handler>
 
+    <syslog-handler name="syslog" enabled="${test.syslog.enabled:false}">
+        <level name="${test.default.level:INFO}"/>
+        <server-address value="${test.syslog.server-address:127.0.0.1}"/>
+        <hostname value="${test.syslog.hostname:jboss.org}"/>
+        <port value="${test.syslog.port:514}"/>
+        <app-name value="${test.syslog.appname:jboss-as7}"/>
+        <formatter>
+            <syslog-format syslog-type="${test.syslog.format:RFC5424}"/>
+        </formatter>
+        <facility value="${test.syslog.facility:user-level}"/>
+    </syslog-handler>
+
     <logger category="com.example" use-parent-handlers="${test.logger.use.parent.handlers:false}">
         <level name="${test.logger.level:INFO}"/>
         <filter-spec value="${test.logger.filter:levelRange[TRACE,WARN)}"/>
@@ -96,6 +108,18 @@
                     <pattern-formatter pattern="${test.console.pattern:%K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n}"/>
                 </formatter>
             </console-handler>
+
+            <syslog-handler name="syslog" enabled="${test.syslog.enabled:false}">
+                <level name="${test.default.level:INFO}"/>
+                <server-address value="${test.syslog.server-address:127.0.0.1}"/>
+                <hostname value="${test.syslog.hostname:jboss.org}"/>
+                <port value="${test.syslog.port:514}"/>
+                <app-name value="${test.syslog.appname:jboss-as7}"/>
+                <formatter>
+                    <syslog-format syslog-type="${test.syslog.format:RFC5424}"/>
+                </formatter>
+                <facility value="${test.syslog.facility:user-level}"/>
+            </syslog-handler>
 
             <logger category="com.example" use-parent-handlers="${test.logger.use.parent.handlers:false}">
                 <level name="${test.logger.level:INFO}"/>
