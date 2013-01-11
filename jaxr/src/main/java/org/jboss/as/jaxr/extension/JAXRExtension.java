@@ -46,7 +46,7 @@ import org.jboss.as.jaxr.ModelConstants;
 public class JAXRExtension implements Extension {
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 1;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 2;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
     static final PathElement PROPERTY_PATH = PathElement.pathElement(ModelConstants.PROPERTY);
@@ -82,5 +82,7 @@ public class JAXRExtension implements Extension {
         registration.registerSubModel(new JAXRPropertyDefinition(config));
 
         subsystem.registerXMLElementWriter(JAXRSubsystemWriter.INSTANCE);
+
+        JAXRSubsystemRootResource.registerTransformerers(subsystem);
     }
 }

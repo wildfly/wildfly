@@ -1,0 +1,7 @@
+<subsystem xmlns="urn:jboss:domain:jaxr:1.1">
+    <connection-factory jndi-name="${text.exp:java:jboss/jaxr/ConnectionFactory}" class="clazz"/>
+    <properties>
+        <property name="javax.xml.registry.lifeCycleManagerURL" value="${text.exp:http://localhost:8080/juddi/publish}"/>
+        <property name="javax.xml.registry.queryManagerURL" value="${text.exp:http://localhost:8080/juddi/query}"/>
+    </properties>
+</subsystem>
