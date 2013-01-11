@@ -275,7 +275,8 @@ public class DataSourcesExtension implements Extension {
                         MAX_POOL_SIZE.isMarshallable(dataSourceNode) ||
                         POOL_PREFILL.isMarshallable(dataSourceNode) ||
                         POOL_USE_STRICT_MIN.isMarshallable(dataSourceNode) ||
-                        POOL_FLUSH_STRATEGY.isMarshallable(dataSourceNode);
+                        POOL_FLUSH_STRATEGY.isMarshallable(dataSourceNode) ||
+                        ALLOW_MULTIPLE_USERS.isMarshallable(dataSourceNode);
                 if (isXADataSource) {
                     poolRequired = poolRequired
                             || SAME_RM_OVERRIDE.isMarshallable(dataSourceNode) ||
