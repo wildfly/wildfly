@@ -64,7 +64,7 @@
         <ssl ca-certificate-file="${modcluster.ca-certificate-file:/home/rhusar/client-keystore.jks}"
              ca-revocation-url="${modcluster.ca-revocation-url:/home/rhusar/revocations}"
              certificate-key-file="${modcluster.certificate-key-file:/home/rhusar/client-keystore.jks}"
-             cipher-suite="${modcluster.cipher-suite:ALL:!ADH:@STRENGTH}"
+             cipher-suite="${modcluster.cipher-suite:SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA,SSL_RSA_WITH_RC4_128_MD5,SSL_RSA_WITH_RC4_128_SHA,SSL_RSA_WITH_3DES_EDE_CBC_SHA}"
              key-alias="${modcluster.key-alias:mykeyalias}"
              password="${modcluster.password:mypassword}"
              protocol="${modcluster.protocol:TLS}"/>

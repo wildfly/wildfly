@@ -23,6 +23,7 @@
 package org.jboss.as.modcluster;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.modcluster.CustomLoadMetricDefinition.CLASS;
@@ -45,7 +46,6 @@ import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.KEY_ALIAS;
 import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.PROTOCOL;
 
 import java.util.List;
-
 import javax.xml.stream.XMLStreamConstants;
 
 import org.jboss.as.controller.Extension;
@@ -182,42 +182,43 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         private static final ConvertCapacityTransformer INSTANCE = new ConvertCapacityTransformer();
 
         @Override
-        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation)
-                throws OperationFailedException {
-            return internalTransformOperation(operation, CAPACITY.getName());
+        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
+            return internalTransformOperation(operation);
         }
 
         @Override
         public void transformResource(ChainedResourceTransformationContext context, PathAddress address, Resource resource)
                 throws OperationFailedException {
-            resource.writeModel(internalTransform(resource.getModel(), CAPACITY.getName()));
+            resource.writeModel(internalTransform(resource.getModel()));
         }
 
-        private ModelNode fixProperties(ModelNode model) {
-            ModelNode fixed = model.clone();
-            ModelNode modelProps = model.get(LoadMetricDefinition.PROPERTY.getName());
-            if (modelProps.isDefined()) {
-                for (Property p : modelProps.asPropertyList()) {//legacy was broken, only one property can be passed trough
-                    fixed.get(LoadMetricDefinition.PROPERTY.getName()).set(p.getName(), p.getValue().asString());
+        private void transformProperties(ModelNode model) {
+            if (model.isDefined()) {
+                for (Property p : model.asPropertyList()) {//legacy was broken, only one property can be passed trough
+                    model.set(p.getName(), p.getValue().asString());
                 }
             }
-            return fixed;
         }
 
-        private TransformedOperation internalTransformOperation(ModelNode operation, String name) {
-            return new TransformedOperation(internalTransform(operation, name), OperationResultTransformer.ORIGINAL_RESULT);
+        private TransformedOperation internalTransformOperation(ModelNode operation) {
+            return new TransformedOperation(internalTransform(operation), OperationResultTransformer.ORIGINAL_RESULT);
         }
 
-        private ModelNode internalTransform(ModelNode model, String name) {
-            model = model.clone();
-            if (model.hasDefined(name) && model.get(name).getType() != ModelType.EXPRESSION) {
-                long rounded = Math.round(model.get(name).asDouble());
+        private void transformCapacity(ModelNode model) {
+            if (model.isDefined() && model.getType() != ModelType.EXPRESSION) {
+                long rounded = Math.round(model.asDouble());
                 if (rounded > Integer.MAX_VALUE) {
                     throw ModClusterMessages.MESSAGES.capacityIsGreaterThanIntegerMaxValue(rounded);
                 }
-                model.get(name).set((int)rounded);
+                model.set((int) rounded);
             }
-            return fixProperties(model);
+        }
+
+        private ModelNode internalTransform(ModelNode model) {
+            model = model.clone();
+            transformCapacity(model.get(CAPACITY.getName()));
+            transformProperties(model.get(LoadMetricDefinition.PROPERTY.getName()));
+            return model;
         }
 
         OperationTransformer getWriteAttributeTransformer() {
@@ -225,7 +226,14 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
                 @Override
                 public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation)
                         throws OperationFailedException {
-                    return internalTransformOperation(operation, VALUE);
+                    ModelNode transformed = operation.get(VALUE);
+                    String name = operation.get(NAME).asString();
+                    if (name.equals(PROPERTY.getName())) {
+                        transformProperties(transformed);
+                    } else if (name.equals(CAPACITY.getName())) {
+                        transformCapacity(transformed);
+                    }
+                    return new TransformedOperation(transformed, OperationResultTransformer.ORIGINAL_RESULT);
                 }
             };
         }

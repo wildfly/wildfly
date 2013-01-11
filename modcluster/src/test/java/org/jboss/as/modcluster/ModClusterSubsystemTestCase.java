@@ -24,12 +24,14 @@
 
 package org.jboss.as.modcluster;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.modcluster.CommonAttributes.CONFIGURATION;
+import static org.jboss.as.modcluster.CommonAttributes.MOD_CLUSTER_CONFIG;
 
 import java.io.IOException;
 
 import junit.framework.Assert;
-
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -56,7 +58,7 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testXsd10() throws Exception {
-        standardSubsystemTest("subsystem_1_0.xml",false);
+        standardSubsystemTest("subsystem_1_0.xml", false);
     }
 
     @Test
@@ -67,7 +69,7 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
                 .setSubsystemXml(subsystemXml);
 
         builder.createLegacyKernelServicesBuilder(null, modelVersion)
-        .addMavenResourceURL("org.jboss.as:jboss-as-modcluster:7.1.2.Final");
+                .addMavenResourceURL("org.jboss.as:jboss-as-modcluster:7.1.2.Final");
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
@@ -78,7 +80,7 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         ModelNode legacySubsystem = checkSubsystemModelTransformation(mainServices, modelVersion, new ModelFixer() {
             @Override
             public ModelNode fixModel(ModelNode modelNode) {
-                ModelNode loadMetrics = modelNode.get(CommonAttributes.MOD_CLUSTER_CONFIG, CommonAttributes.CONFIGURATION, CommonAttributes.DYNAMIC_LOAD_PROVIDER, CommonAttributes.CONFIGURATION, CommonAttributes.LOAD_METRIC);
+                ModelNode loadMetrics = modelNode.get(MOD_CLUSTER_CONFIG, CONFIGURATION, CommonAttributes.DYNAMIC_LOAD_PROVIDER, CONFIGURATION, CommonAttributes.LOAD_METRIC);
                 for (String key : loadMetrics.keys()) {
                     ModelNode capacity = loadMetrics.get(key, CommonAttributes.CAPACITY);
                     if (capacity.getType() == ModelType.DOUBLE && capacity.asString().equals("1.0")) {
@@ -90,10 +92,10 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
             }
         });
 
-        ModelNode mainSessionCapacity = mainServices.readWholeModel().get(SUBSYSTEM, ModClusterExtension.SUBSYSTEM_NAME, CommonAttributes.MOD_CLUSTER_CONFIG, CommonAttributes.CONFIGURATION,
-                CommonAttributes.DYNAMIC_LOAD_PROVIDER, CommonAttributes.CONFIGURATION, CommonAttributes.LOAD_METRIC, "sessions", CommonAttributes.CAPACITY);
-        ModelNode legacySessionCapacity = legacySubsystem.get(SUBSYSTEM, ModClusterExtension.SUBSYSTEM_NAME, CommonAttributes.MOD_CLUSTER_CONFIG, CommonAttributes.CONFIGURATION,
-                CommonAttributes.DYNAMIC_LOAD_PROVIDER, CommonAttributes.CONFIGURATION, CommonAttributes.LOAD_METRIC, "sessions", CommonAttributes.CAPACITY);
+        ModelNode mainSessionCapacity = mainServices.readWholeModel().get(SUBSYSTEM, ModClusterExtension.SUBSYSTEM_NAME, MOD_CLUSTER_CONFIG, CONFIGURATION,
+                CommonAttributes.DYNAMIC_LOAD_PROVIDER, CONFIGURATION, CommonAttributes.LOAD_METRIC, "sessions", CommonAttributes.CAPACITY);
+        ModelNode legacySessionCapacity = legacySubsystem.get(SUBSYSTEM, ModClusterExtension.SUBSYSTEM_NAME, MOD_CLUSTER_CONFIG, CONFIGURATION,
+                CommonAttributes.DYNAMIC_LOAD_PROVIDER, CONFIGURATION, CommonAttributes.LOAD_METRIC, "sessions", CommonAttributes.CAPACITY);
         Assert.assertEquals(ModelType.DOUBLE, mainSessionCapacity.getType());
         Assert.assertEquals(ModelType.INT, legacySessionCapacity.getType());
         Assert.assertFalse(mainSessionCapacity.asString().equals(legacySessionCapacity.asString()));
@@ -107,7 +109,7 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
         builder.createLegacyKernelServicesBuilder(null, modelVersion)
-        .addMavenResourceURL("org.jboss.as:jboss-as-modcluster:7.1.2.Final");
+                .addMavenResourceURL("org.jboss.as:jboss-as-modcluster:7.1.2.Final");
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
@@ -116,36 +118,36 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
         PathAddress rootAddr = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, ModClusterExtension.SUBSYSTEM_NAME));
-        PathAddress confAddr = rootAddr.append(PathElement.pathElement(CommonAttributes.MOD_CLUSTER_CONFIG, CommonAttributes.CONFIGURATION));
-        PathAddress simpAddr = confAddr.append(PathElement.pathElement(CommonAttributes.SIMPLE_LOAD_PROVIDER_FACTOR, CommonAttributes.CONFIGURATION));
-        PathAddress dynaAddr = confAddr.append(PathElement.pathElement(CommonAttributes.DYNAMIC_LOAD_PROVIDER, CommonAttributes.CONFIGURATION));
+        PathAddress confAddr = rootAddr.append(PathElement.pathElement(MOD_CLUSTER_CONFIG, CONFIGURATION));
+        PathAddress simpAddr = confAddr.append(PathElement.pathElement(CommonAttributes.SIMPLE_LOAD_PROVIDER_FACTOR, CONFIGURATION));
+        PathAddress dynaAddr = confAddr.append(PathElement.pathElement(CommonAttributes.DYNAMIC_LOAD_PROVIDER, CONFIGURATION));
         PathAddress metrAddr = dynaAddr.append(PathElement.pathElement(CommonAttributes.LOAD_METRIC, "*"));
         PathAddress custAddr = dynaAddr.append(PathElement.pathElement(CommonAttributes.CUSTOM_LOAD_METRIC, "*"));
-        PathAddress sslAddr = confAddr.append(PathElement.pathElement(CommonAttributes.SSL, CommonAttributes.CONFIGURATION));
+        PathAddress sslAddr = confAddr.append(PathElement.pathElement(CommonAttributes.SSL, CONFIGURATION));
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, parse(subsystemXml),
                 new FailedOperationTransformationConfig()
-                    .addFailedAttribute(metrAddr,
-                            new FailedOperationTransformationConfig.RejectExpressionsConfig(CommonAttributes.CAPACITY, CommonAttributes.WEIGHT
-                                    ))
-                     .addFailedAttribute(custAddr,
-                            new FailedOperationTransformationConfig.RejectExpressionsConfig(CommonAttributes.CAPACITY, CommonAttributes.WEIGHT,
-                                    CommonAttributes.CLASS))
-                    .addFailedAttribute(dynaAddr,
-                            new FailedOperationTransformationConfig.RejectExpressionsConfig(CommonAttributes.DECAY, CommonAttributes.HISTORY))
-                     .addFailedAttribute(simpAddr,
-                            new FailedOperationTransformationConfig.RejectExpressionsConfig(CommonAttributes.FACTOR))
-                     .addFailedAttribute(sslAddr,
-                            new FailedOperationTransformationConfig.RejectExpressionsConfig(
-                                    CommonAttributes.CIPHER_SUITE, CommonAttributes.KEY_ALIAS,
-                                    CommonAttributes.PROTOCOL))
-                    .addFailedAttribute(confAddr,
-                            new FailedOperationTransformationConfig.RejectExpressionsConfig(CommonAttributes.ADVERTISE,
-                                    CommonAttributes.ADVERTISE_SOCKET, CommonAttributes.ADVERTISE_SOCKET,
-                                    CommonAttributes.AUTO_ENABLE_CONTEXTS, CommonAttributes.FLUSH_PACKETS,
-                                    CommonAttributes.PING,
-                                    CommonAttributes.STICKY_SESSION, CommonAttributes.STICKY_SESSION_FORCE, CommonAttributes.STICKY_SESSION_REMOVE
-                                    ))
-                    );
+                        .addFailedAttribute(metrAddr,
+                                new FailedOperationTransformationConfig.RejectExpressionsConfig(CommonAttributes.CAPACITY, CommonAttributes.WEIGHT
+                                ))
+                        .addFailedAttribute(custAddr,
+                                new FailedOperationTransformationConfig.RejectExpressionsConfig(CommonAttributes.CAPACITY, CommonAttributes.WEIGHT,
+                                        CommonAttributes.CLASS))
+                        .addFailedAttribute(dynaAddr,
+                                new FailedOperationTransformationConfig.RejectExpressionsConfig(CommonAttributes.DECAY, CommonAttributes.HISTORY))
+                        .addFailedAttribute(simpAddr,
+                                new FailedOperationTransformationConfig.RejectExpressionsConfig(CommonAttributes.FACTOR))
+                        .addFailedAttribute(sslAddr,
+                                new FailedOperationTransformationConfig.RejectExpressionsConfig(
+                                        CommonAttributes.CIPHER_SUITE, CommonAttributes.KEY_ALIAS,
+                                        CommonAttributes.PROTOCOL))
+                        .addFailedAttribute(confAddr,
+                                new FailedOperationTransformationConfig.RejectExpressionsConfig(CommonAttributes.ADVERTISE,
+                                        CommonAttributes.ADVERTISE_SOCKET, CommonAttributes.ADVERTISE_SOCKET,
+                                        CommonAttributes.AUTO_ENABLE_CONTEXTS, CommonAttributes.FLUSH_PACKETS,
+                                        CommonAttributes.PING,
+                                        CommonAttributes.STICKY_SESSION, CommonAttributes.STICKY_SESSION_FORCE, CommonAttributes.STICKY_SESSION_REMOVE
+                                ))
+        );
     }
 
     @Override
@@ -163,5 +165,19 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
     protected AdditionalInitialization createAdditionalInitialization() {
         return AdditionalInitialization.MANAGEMENT;
     }
+
+    @Override
+    protected void validateModel(ModelNode model) {
+        super.validateModel(model);
+        ModelNode ssl = model.get(SUBSYSTEM, getMainSubsystemName()).get(MOD_CLUSTER_CONFIG, CONFIGURATION).get(SSL, CONFIGURATION);
+        Assert.assertEquals(ssl.get("ca-certificate-file").resolve().asString(), "/home/rhusar/client-keystore.jks");
+        Assert.assertEquals(ssl.get("ca-revocation-url").resolve().asString(), "/home/rhusar/revocations");
+        Assert.assertEquals(ssl.get("certificate-key-file").resolve().asString(), "/home/rhusar/client-keystore.jks");
+        Assert.assertEquals(ssl.get("cipher-suite").resolve().asString(), "SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA,SSL_RSA_WITH_RC4_128_MD5,SSL_RSA_WITH_RC4_128_SHA,SSL_RSA_WITH_3DES_EDE_CBC_SHA");
+        Assert.assertEquals(ssl.get("key-alias").resolve().asString(), "mykeyalias");
+        Assert.assertEquals(ssl.get("password").resolve().asString(), "mypassword");
+        Assert.assertEquals(ssl.get("protocol").resolve().asString(), "TLS");
+    }
+
 
 }

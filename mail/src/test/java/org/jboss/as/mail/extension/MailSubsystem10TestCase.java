@@ -19,6 +19,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.ControllerInitializer;
+import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.junit.Test;
@@ -57,9 +58,10 @@ public class MailSubsystem10TestCase extends AbstractSubsystemBaseTest {
         Assert.assertEquals(MailExtension.SUBSYSTEM_NAME, element.getValue());
     }
 
+
     @Override
-    protected void standardSubsystemTest(String configId, boolean compareXml) throws Exception {
-        super.standardSubsystemTest(configId, false);
+    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
+        return super.standardSubsystemTest(configId, false);
     }
 
     @Override
