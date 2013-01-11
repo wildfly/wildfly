@@ -1292,7 +1292,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource,
                 ManagementResourceRegistration rootRegistration) {
             super.initializeExtraSubystemsAndModel(extensionRegistry, rootResource, rootRegistration);
-            extension.initialize(extensionRegistry.getExtensionContext("additional"));
+            extension.initialize(extensionRegistry.getExtensionContext("additional", false));
         }
 
         String getExtraXml() {

@@ -114,4 +114,14 @@ public interface ExtensionContext {
      * @throws IllegalStateException if the process is not a {@link ProcessType#isServer() server}
      */
     PathManager getPathManager();
+
+    /**
+     * Returns true if subsystems should register transformers. This is true if {@link #getProcessType()} equals {@link ProcessType#HOST_CONTROLLER} and the
+     * process controller is the master domain controller.
+     *
+     * @return {@code true} if transformers should be registered
+     * @deprecated Experimental, the way transformers are registered may change to be the same as we do for parsers
+     */
+    @Deprecated
+    boolean isRegisterTransformers();
 }

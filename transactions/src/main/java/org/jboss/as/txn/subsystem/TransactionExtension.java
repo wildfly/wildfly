@@ -138,8 +138,10 @@ public class TransactionExtension implements Extension {
 
         subsystem.registerXMLElementWriter(TransactionSubsystem12Parser.INSTANCE);
 
-        // Register the model transformers
-        registerTransformers(subsystem);
+        if (context.isRegisterTransformers()) {
+            // Register the model transformers
+            registerTransformers(subsystem);
+        }
     }
 
     /**

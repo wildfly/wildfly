@@ -50,6 +50,7 @@ public class ExtensionAddHandler implements OperationStepHandler {
 
     private final ExtensionRegistry extensionRegistry;
     private final boolean parallelBoot;
+    private final boolean standalone;
     private final boolean slaveHC;
 
     /**
@@ -58,11 +59,12 @@ public class ExtensionAddHandler implements OperationStepHandler {
      * @param parallelBoot {@code true} is parallel initialization of extensions is in progress; {@code false} if not
      * @param slaveHC
      */
-    public ExtensionAddHandler(final ExtensionRegistry extensionRegistry, final boolean parallelBoot, boolean slaveHC) {
+    public ExtensionAddHandler(final ExtensionRegistry extensionRegistry, final boolean parallelBoot, boolean standalone, boolean slaveHC) {
         assert extensionRegistry != null : "extensionRegistry is null";
         this.extensionRegistry = extensionRegistry;
         this.parallelBoot = parallelBoot;
         this.slaveHC = slaveHC;
+        this.standalone = standalone;
     }
 
     @Override
@@ -98,7 +100,7 @@ public class ExtensionAddHandler implements OperationStepHandler {
                         // now that we know the registry was unaware of the module
                         unknownModule = true;
                     }
-                    extension.initialize(extensionRegistry.getExtensionContext(module));
+                    extension.initialize(extensionRegistry.getExtensionContext(module, !standalone && !slaveHC));
                 } finally {
                     SecurityActions.setThreadContextClassLoader(oldTccl);
                 }

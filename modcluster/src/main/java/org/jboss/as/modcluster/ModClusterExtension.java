@@ -45,6 +45,7 @@ import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.KEY_ALIAS;
 import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.PROTOCOL;
 
 import java.util.List;
+
 import javax.xml.stream.XMLStreamConstants;
 
 import org.jboss.as.controller.Extension;
@@ -125,7 +126,9 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
 
         subsystem.registerXMLElementWriter(new ModClusterSubsystemXMLWriter());
 
-        registerTransformers_1_2_0(subsystem);
+        if (context.isRegisterTransformers()) {
+            registerTransformers_1_2_0(subsystem);
+        }
     }
 
     @Override

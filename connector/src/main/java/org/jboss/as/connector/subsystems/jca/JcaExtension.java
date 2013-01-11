@@ -98,7 +98,9 @@ public class JcaExtension implements Extension {
 
         subsystem.registerXMLElementWriter(ConnectorSubsystemParser.INSTANCE);
 
-        JcaSubsystemRootDefinition.registerTransformers(subsystem);
+        if (context.isRegisterTransformers()) {
+            JcaSubsystemRootDefinition.registerTransformers(subsystem);
+        }
     }
 
     @Override

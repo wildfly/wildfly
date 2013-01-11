@@ -109,7 +109,10 @@ public class SecurityExtension implements Extension {
         securityDomain.registerSubModel(JSSEResourceDefinition.INSTANCE);
         registration.registerSubModel(VaultResourceDefinition.INSTANCE);
         subsystem.registerXMLElementWriter(PARSER);
-        registerTransformers(subsystem);
+
+        if (context.isRegisterTransformers()) {
+            registerTransformers(subsystem);
+        }
     }
 
     @Override

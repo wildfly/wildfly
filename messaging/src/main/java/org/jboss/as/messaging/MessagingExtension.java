@@ -37,7 +37,6 @@ import static org.jboss.as.messaging.CommonAttributes.CLUSTER_CONNECTION;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.CORE_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP;
-import static org.jboss.as.messaging.CommonAttributes.DURABLE;
 import static org.jboss.as.messaging.CommonAttributes.HA;
 import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
 import static org.jboss.as.messaging.CommonAttributes.ID_CACHE_SIZE;
@@ -46,7 +45,6 @@ import static org.jboss.as.messaging.CommonAttributes.JGROUPS_STACK;
 import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.REPLICATION_CLUSTERNAME;
 import static org.jboss.as.messaging.CommonAttributes.RUNTIME_QUEUE;
-import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
 import static org.jboss.as.messaging.DiscoveryGroupDefinition.INITIAL_WAIT_TIMEOUT;
 import static org.jboss.as.messaging.DiscoveryGroupDefinition.REFRESH_TIMEOUT;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_0;
@@ -250,7 +248,9 @@ public class MessagingExtension implements Extension {
         // JMS Bridges
         rootRegistration.registerSubModel(new JMSBridgeDefinition());
 
-        registerTransformers_1_1_0(subsystem);
+        if (context.isRegisterTransformers()) {
+            registerTransformers_1_1_0(subsystem);
+        }
     }
 
     public void initializeParsers(ExtensionParsingContext context) {

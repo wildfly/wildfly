@@ -115,6 +115,14 @@ public class LoggingExtension implements Extension {
                 LoggingProfileOperations.ADD_PROFILE,
                 LoggingProfileOperations.REMOVE_PROFILE)), resolvePathHandler, false);
 
+        if (context.isRegisterTransformers()) {
+            registerTransformers(subsystem);
+        }
+
+        subsystem.registerXMLElementWriter(LoggingSubsystemParser.INSTANCE);
+    }
+
+    private void registerTransformers(SubsystemRegistration subsystem) {
         final TransformersSubRegistration reg = subsystem.registerModelTransformers(ModelVersion.create(1, 1, 0), new ResourceTransformer() {
 
             @Override
@@ -127,9 +135,8 @@ public class LoggingExtension implements Extension {
         });
 
         registerTransformersSubModels(reg, reg.registerSubResource(LOGGING_PROFILE_PATH, true));
-
-        subsystem.registerXMLElementWriter(LoggingSubsystemParser.INSTANCE);
     }
+
 
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {

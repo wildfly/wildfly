@@ -213,14 +213,28 @@ public class ExtensionRegistry {
      * a resource representing an {@link Extension}.
      *
      * @param moduleName the name of the extension's module. Cannot be {@code null}
+     * @param isMasterDomainController set to {@code true} if we are the master domain controller, in which case transformers get registered
      *
      * @return  the {@link ExtensionContext}.  Will not return {@code null}
      *
      * @throws IllegalStateException if no {@link #setSubsystemParentResourceRegistrations(ManagementResourceRegistration, ManagementResourceRegistration)} profile resource registration has been set}
      */
-    public ExtensionContext getExtensionContext(final String moduleName) {
-        return new ExtensionContextImpl(moduleName, pathManager);
+    public ExtensionContext getExtensionContext(final String moduleName, boolean isMasterDomainController) {
+        return new ExtensionContextImpl(moduleName, pathManager, isMasterDomainController);
     }
+
+    /**
+     * Calls {@link #getExtensionContext(String, boolean) with {@code true} for the {@code isMasterDomainControllerAttribute}
+     *
+     * @param moduleName the name of the extension's module. Cannot be {@code null}
+     * @return  the {@link ExtensionContext}.  Will not return {@code null}
+     * @deprecated Use {@link #getExtensionContext(String, boolean)}
+     */
+    @Deprecated
+    public ExtensionContext getExtensionContext(final String moduleName) {
+        return getExtensionContext(moduleName, true);
+    }
+
 
     /**
      * Gets the URIs (in string form) of any XML namespaces
@@ -457,11 +471,13 @@ public class ExtensionRegistry {
 
         private final ExtensionInfo extension;
         private final PathManager pathManager;
+        private final boolean registerTransformers;
 
-        private ExtensionContextImpl(String extensionName, PathManager pathManager) {
+        private ExtensionContextImpl(String extensionName, PathManager pathManager, boolean registerTransformers) {
             assert pathManager != null || !processType.isServer() : "pathManager is null";
             this.pathManager = pathManager;
             this.extension = getExtensionInfo(extensionName);
+            this.registerTransformers = registerTransformers;
         }
 
 
@@ -503,6 +519,12 @@ public class ExtensionRegistry {
                 throw ControllerMessages.MESSAGES.pathManagerNotAvailable(processType);
             }
             return pathManager;
+        }
+
+
+        @Override
+        public boolean isRegisterTransformers() {
+            return true;
         }
     }
 

@@ -302,7 +302,7 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
                 PathElement.pathElement(MANAGEMENT_CLIENT_CONTENT, ROLLOUT_PLANS), new RolloutPlanValidator(), DomainResolver.getResolver(ROLLOUT_PLANS), DomainResolver.getResolver(ROLLOUT_PLAN)));
 
         // Extensions
-        resourceRegistration.registerSubModel(new ExtensionResourceDefinition(extensionRegistry, true, !isMaster));
+        resourceRegistration.registerSubModel(new ExtensionResourceDefinition(extensionRegistry, true, false, !isMaster));
 
 
         // Initialize the domain transformers

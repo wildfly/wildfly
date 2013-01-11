@@ -88,7 +88,9 @@ public class ConfigAdminExtension implements Extension {
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
         subsystem.registerSubsystemModel(new ConfigAdminRootResource());
 
-        registerTransformers_1_0_0(subsystem);
+        if (context.isRegisterTransformers()) {
+            registerTransformers_1_0_0(subsystem);
+        }
 
         subsystem.registerXMLElementWriter(ConfigAdminWriter.INSTANCE);
     }

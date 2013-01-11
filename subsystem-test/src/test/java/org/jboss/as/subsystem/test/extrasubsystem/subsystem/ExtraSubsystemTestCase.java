@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.Assert;
+
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.extension.ExtensionRegistry;
@@ -202,7 +203,7 @@ public class ExtraSubsystemTestCase extends AbstractSubsystemTest {
         @Override
         public void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource,
                 ManagementResourceRegistration rootRegistration) {
-            dependency.initialize(extensionRegistry.getExtensionContext(DependencySubsystemExtension.EXTENSION_NAME));
+            dependency.initialize(extensionRegistry.getExtensionContext(DependencySubsystemExtension.EXTENSION_NAME, false));
         }
 
     }

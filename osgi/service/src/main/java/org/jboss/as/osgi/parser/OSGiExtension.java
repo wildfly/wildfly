@@ -72,7 +72,9 @@ public class OSGiExtension implements Extension {
 
         subsystem.registerXMLElementWriter(OSGiSubsystemWriter.INSTANCE);
 
-        registerTransformers1_0_0(subsystem);
+        if (context.isRegisterTransformers()) {
+            registerTransformers1_0_0(subsystem);
+        }
     }
 
     private void registerTransformers1_0_0(SubsystemRegistration subsystem) {

@@ -367,7 +367,7 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
         deployments.registerSubModel(new SimpleResourceDefinition(PathElement.pathElement(SUBDEPLOYMENT), DeploymentAttributes.DEPLOYMENT_RESOLVER));
 
         // Extensions
-        resourceRegistration.registerSubModel(new ExtensionResourceDefinition(extensionRegistry, parallelBoot, false));
+        resourceRegistration.registerSubModel(new ExtensionResourceDefinition(extensionRegistry, parallelBoot, true, false));
         if (extensionRegistry != null) {
             //extension registry may be null during testing
             extensionRegistry.setSubsystemParentResourceRegistrations(resourceRegistration, deployments);

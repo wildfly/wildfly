@@ -166,7 +166,10 @@ public class WebExtension implements Extension {
 
         // Global valve.
         registration.registerSubModel(WebValveDefinition.INSTANCE);
-        registerTransformers_1_1_0(subsystem);
+
+        if (context.isRegisterTransformers()) {
+            registerTransformers_1_1_0(subsystem);
+        }
     }
 
     /**

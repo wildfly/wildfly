@@ -178,7 +178,7 @@ public class ApplyExtensionsHandler implements OperationStepHandler {
                 ClassLoader oldTccl = SecurityActions.setThreadContextClassLoader(extension.getClass());
                 try {
                     extension.initializeParsers(extensionRegistry.getExtensionParsingContext(module, null));
-                    extension.initialize(extensionRegistry.getExtensionContext(module));
+                    extension.initialize(extensionRegistry.getExtensionContext(module, false));
                 } finally {
                     SecurityActions.setThreadContextClassLoader(oldTccl);
                 }
