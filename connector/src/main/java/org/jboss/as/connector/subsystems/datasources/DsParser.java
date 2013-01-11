@@ -767,7 +767,8 @@ public class DsParser extends AbstractParser {
                             break;
                         }
                         case ALLOW_MULTIPLE_USERS: {
-                            ALLOW_MULTIPLE_USERS.parseAndSetParameter("true", operation, reader);
+                            String value = rawElementText(reader);
+                            ALLOW_MULTIPLE_USERS.parseAndSetParameter(value, operation, reader);
                             break;
                         }
                         case UNKNOWN: {
