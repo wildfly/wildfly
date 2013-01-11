@@ -120,6 +120,8 @@ public interface ExtensionContext {
      * process controller is the master domain controller.
      *
      * @return {@code true} if transformers should be registered
+     * @deprecated Experimental, the way transformers are registered may change to be the same as we do for parsers
      */
+    @Deprecated
     boolean isRegisterTransformers();
 }
