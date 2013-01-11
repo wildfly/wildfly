@@ -287,13 +287,13 @@ public class WebExtension implements Extension {
         rejectExpressions(virtualHost, SSL_PATH, WebSSLDefinition.SSL_ATTRIBUTES);
 
         final TransformersSubRegistration rewritePath = rejectExpressions(virtualHost, REWRITE_PATH, WebReWriteDefinition.FLAGS, WebReWriteDefinition.PATTERN, WebReWriteDefinition.SUBSTITUTION);
-        rejectExpressions(rewritePath, REWRITECOND_PATH, WebReWriteConditionDefinition.FLAGS, WebReWriteConditionDefinition.PATTERN);
+        rejectExpressions(rewritePath, REWRITECOND_PATH, WebReWriteConditionDefinition.ATTRIBUTES);
 
 
         // Aliases
         connectors.registerSubResource(SSL_PATH, AliasOperationTransformer.replaceLastElement(SSL_ALIAS));
         TransformersSubRegistration virtualServer = transformers.registerSubResource(HOST_PATH);
-        //todo this is broken atm
+        //todo this is broken atm, chained transformers don't play nice AliasTransformer
         //TransformersSubRegistration sso = rejectExpressions(virtualHost, SSO_PATH, AliasOperationTransformer.replaceLastElement(SSO_ALIAS), WebSSODefinition.SSO_ATTRIBUTES);
         //TransformersSubRegistration accessLog = rejectExpressions(virtualHost, ACCESS_LOG_PATH, AliasOperationTransformer.replaceLastElement(ACCESS_LOG_ALIAS), WebAccessLogDefinition.ACCESS_LOG_ATTRIBUTES);
         TransformersSubRegistration sso = virtualServer.registerSubResource(SSO_PATH, AliasOperationTransformer.replaceLastElement(SSO_ALIAS));
