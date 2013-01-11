@@ -275,7 +275,8 @@ public class DataSourcesExtension implements Extension {
                         MAX_POOL_SIZE.isMarshallable(dataSourceNode) ||
                         POOL_PREFILL.isMarshallable(dataSourceNode) ||
                         POOL_USE_STRICT_MIN.isMarshallable(dataSourceNode) ||
-                        POOL_FLUSH_STRATEGY.isMarshallable(dataSourceNode);
+                        POOL_FLUSH_STRATEGY.isMarshallable(dataSourceNode) ||
+                        ALLOW_MULTIPLE_USERS.isMarshallable(dataSourceNode);
                 if (isXADataSource) {
                     poolRequired = poolRequired
                             || SAME_RM_OVERRIDE.isMarshallable(dataSourceNode) ||
@@ -292,9 +293,7 @@ public class DataSourcesExtension implements Extension {
                     POOL_PREFILL.marshallAsElement(dataSourceNode, writer);
                     POOL_USE_STRICT_MIN.marshallAsElement(dataSourceNode, writer);
                     POOL_FLUSH_STRATEGY.marshallAsElement(dataSourceNode, writer);
-                    if (dataSourceNode.get(ALLOW_MULTIPLE_USERS.getName()).asBoolean(false)) {
-                        writer.writeEmptyElement(ALLOW_MULTIPLE_USERS.getXmlName());
-                    }
+                    ALLOW_MULTIPLE_USERS.marshallAsElement(dataSourceNode, writer);
                     if (isXADataSource) {
                         SAME_RM_OVERRIDE.marshallAsElement(dataSourceNode, writer);
                         INTERLEAVING.marshallAsElement(dataSourceNode, writer);

@@ -26,6 +26,7 @@ import java.io.IOException;
 import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.junit.Test;
 
 /**
  *
@@ -40,26 +41,14 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        //TODO: This is copied from standalone.xml you may want to try more combinations
-        return  "<subsystem xmlns=\"urn:jboss:domain:datasources:1.1\">" +
-                "    <datasources>" +
-                "        <datasource jndi-name=\"java:jboss/datasources/ExampleDS\" enabled=\"true\" use-java-context=\"true\" pool-name=\"H2DS\">" +
-                "            <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>" +
-                "            <driver>h2</driver>" +
-                "            <security>" +
-                "                <user-name>sa</user-name>" +
-                "                <password>sa</password>" +
-                "            </security>" +
-                "        </datasource>" +
-                "        <drivers>" +
-                "            <driver name=\"h2\" module=\"com.h2database.h2\">" +
-                "                <xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>" +
-                "            </driver>" +
-                "        </drivers>" +
-                "    </datasources>" +
-                "</subsystem>";
+        //test configuration put in standalone.xml
+        return readResource("datasources-minimal.xml");
     }
 
+    @Test
+    public void testFullConfig() throws Exception {
+        standardSubsystemTest("datasources-full.xml");
+    }
 
     protected AdditionalInitialization createAdditionalInitialization() {
         return AdditionalInitialization.MANAGEMENT;
