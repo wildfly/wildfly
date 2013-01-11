@@ -136,6 +136,6 @@ public class WindowsFilenameTabCompleter extends FilenameTabCompleter {
 
    @Override
    protected boolean startsWithRoot(String path) {
-       return path.contains(":\\");
+       return path.contains(":\\") || path.startsWith("\\\\");
    }
 }
