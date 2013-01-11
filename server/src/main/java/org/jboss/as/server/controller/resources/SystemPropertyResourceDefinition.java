@@ -65,6 +65,7 @@ public class SystemPropertyResourceDefinition extends SimpleResourceDefinition {
     public static final SimpleAttributeDefinition BOOT_TIME = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.BOOT_TIME, ModelType.BOOLEAN, true)
             .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
             .setDefaultValue(new ModelNode(true))
+            .setAllowExpression(true)
             .build();
 
     static final AttributeDefinition[] ALL_ATTRIBUTES = new AttributeDefinition[] {VALUE, BOOT_TIME};

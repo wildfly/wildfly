@@ -39,7 +39,7 @@ import org.jboss.dmr.ModelNode;
 public class DomainSystemPropertyTestCase extends AbstractSystemPropertyTest {
 
     public DomainSystemPropertyTestCase() {
-        super(false);
+        super(false, true);
     }
 
     protected PathAddress getSystemPropertyAddress(String propName) {

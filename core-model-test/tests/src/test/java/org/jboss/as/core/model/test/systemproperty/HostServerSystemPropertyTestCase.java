@@ -48,7 +48,7 @@ public class HostServerSystemPropertyTestCase extends AbstractSystemPropertyTest
     static final PathAddress SERVER_ONE_ADDRESS = PathAddress.pathAddress(HOST_ELEMENT, SERVER_ONE_ELEMENT);
 
     public HostServerSystemPropertyTestCase() {
-        super(false);
+        super(false, false);
     }
 
 

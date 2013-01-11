@@ -17,7 +17,8 @@
 		        <property name="sys.prop.test.one" value="1"/>
 		        <property name="sys.prop.test.two" value="2" boot-time="true"/>
 		        <property name="sys.prop.test.three" value="3" boot-time="false"/>
-              <property name="sys.prop.test.four"/>
+                <property name="sys.prop.test.four"/>
+                <property name="sys.prop.test.five" value="${sys.prop.test.three:5}" boot-time="${sys.prop.test.boot-time:false}"/>
 		    </system-properties>
         </server>
     </servers>

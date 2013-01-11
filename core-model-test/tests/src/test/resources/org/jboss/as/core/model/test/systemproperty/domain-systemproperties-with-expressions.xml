@@ -4,6 +4,7 @@
     <system-properties>
         <property name="sys.prop.test.one" value="ONE"/>
         <property name="sys.prop.test.two" value="${sys.prop.test.one:UNO}"/>
+        <property name="sys.prop.test.three" value="${sys.prop.test.one:UNO}" boot-time="${sys.prop.test.boot-time:true}"/>
     </system-properties>
-    
-</domain>        
+
+</domain>
