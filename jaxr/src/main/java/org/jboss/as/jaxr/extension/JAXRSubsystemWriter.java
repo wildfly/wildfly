@@ -61,17 +61,18 @@ public class JAXRSubsystemWriter implements XMLStreamConstants, XMLElementWriter
         JAXRSubsystemRootResource.CONNECTION_FACTORY_IMPL_ATTRIBUTE.marshallAsAttribute(node, writer);
         writer.writeEndElement();
 
-        writer.writeStartElement(Element.PROPERTIES.getLocalName());
+
         ModelNode properties = node.get(ModelConstants.PROPERTY);
         if (properties.isDefined()) {
+            writer.writeStartElement(Element.PROPERTIES.getLocalName());
             for (String key : properties.keys()) {
                 writer.writeStartElement(Element.PROPERTY.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), key);
                 JAXRPropertyDefinition.VALUE.marshallAsAttribute(properties.get(key), writer);
                 writer.writeEndElement();
             }
+            writer.writeEndElement();
         }
-        writer.writeEndElement();
         writer.writeEndElement();
     }
 

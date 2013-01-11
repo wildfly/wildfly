@@ -182,7 +182,7 @@ public class JAXRSubsystemParser implements XMLStreamConstants, XMLElementReader
                     break;
                 }
                 case CLASS: {
-                    CONNECTION_FACTORY_IMPL_ATTRIBUTE.parseAndSetParameter(jndiName, addOp, reader);
+                    CONNECTION_FACTORY_IMPL_ATTRIBUTE.parseAndSetParameter(attrValue, addOp, reader);
                     break;
                 }
                 default:
