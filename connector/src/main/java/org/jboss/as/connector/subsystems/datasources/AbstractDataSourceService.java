@@ -38,6 +38,7 @@ import org.jboss.jca.common.api.metadata.ds.TimeOut;
 import org.jboss.jca.common.api.metadata.ds.Validation;
 import org.jboss.jca.common.api.metadata.ds.XaDataSource;
 import org.jboss.jca.common.api.metadata.ra.ConfigProperty;
+import org.jboss.jca.common.api.metadata.ra.XsdString;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.jca.common.metadata.ds.DatasourcesImpl;
 import org.jboss.jca.common.metadata.ds.DriverImpl;
@@ -327,9 +328,18 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
                                     setValue = false;
                             }
 
-                            if (setValue)
-                                injector.inject(o, cpmd.getConfigPropertyName()
-                                        .getValue(), cpmd.getConfigPropertyValue().getValue());
+                            if (setValue) {
+                                if (XsdString.isNull(cpmd.getConfigPropertyType())) {
+                                    injector.inject(o,
+                                            cpmd.getConfigPropertyName().getValue(),
+                                            cpmd.getConfigPropertyValue().getValue());
+                                } else {
+                                    injector.inject(o,
+                                            cpmd.getConfigPropertyName().getValue(),
+                                            cpmd.getConfigPropertyValue().getValue(),
+                                            cpmd.getConfigPropertyType().getValue());
+                                }
+                            }
                         }
                     }
                 }
