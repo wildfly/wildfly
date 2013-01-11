@@ -40,6 +40,7 @@ import org.jboss.as.naming.service.BinderService;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
 import org.jboss.jca.common.api.metadata.ra.ConfigProperty;
 import org.jboss.jca.common.api.metadata.ra.Connector;
+import org.jboss.jca.common.api.metadata.ra.XsdString;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.spi.mdr.AlreadyExistsException;
@@ -427,9 +428,19 @@ public abstract class AbstractResourceAdapterDeploymentService {
                                     setValue = false;
                             }
 
-                            if (setValue)
-                                injector.inject(o, cpmd.getConfigPropertyName()
-                                        .getValue(), cpmd.getConfigPropertyValue().getValue());
+                            if (setValue) {
+                                if (XsdString.isNull(cpmd.getConfigPropertyType())) {
+                                    injector.inject(o,
+                                            cpmd.getConfigPropertyName().getValue(),
+                                            cpmd.getConfigPropertyValue().getValue());
+                                } else {
+                                    injector.inject(o,
+                                            cpmd.getConfigPropertyName().getValue(),
+                                            cpmd.getConfigPropertyValue().getValue(),
+                                            cpmd.getConfigPropertyType().getValue());
+                                }
+                            }
+
                         }
                     }
                 }
