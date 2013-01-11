@@ -41,28 +41,26 @@ public class WebSSODefinition extends SimpleResourceDefinition {
 
     protected static final SimpleAttributeDefinition CACHE_CONTAINER =
             new SimpleAttributeDefinitionBuilder(Constants.CACHE_CONTAINER, ModelType.STRING, true)
-                    .setXmlName(Constants.CACHE_CONTAINER)
                     .setValidator(new StringLengthValidator(1, true))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
     protected static final SimpleAttributeDefinition CACHE_NAME =
             new SimpleAttributeDefinitionBuilder(Constants.CACHE_NAME, ModelType.STRING, true)
-                    .setXmlName(Constants.CACHE_NAME)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new StringLengthValidator(1, true))
                     .build();
 
     protected static final SimpleAttributeDefinition DOMAIN =
             new SimpleAttributeDefinitionBuilder(Constants.DOMAIN, ModelType.STRING, true)
-                    .setXmlName(Constants.DOMAIN)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new StringLengthValidator(1, true))
                     .build();
 
     protected static final SimpleAttributeDefinition REAUTHENTICATE =
             new SimpleAttributeDefinitionBuilder(Constants.REAUTHENTICATE, ModelType.BOOLEAN, true)
-                    .setXmlName(Constants.REAUTHENTICATE)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 

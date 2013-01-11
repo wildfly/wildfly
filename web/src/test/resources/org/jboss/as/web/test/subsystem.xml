@@ -78,12 +78,12 @@
                <access-log resolve-hosts="true">
                  <directory relative-to="jboss.server.base.dir" path="toto" />
                </access-log>
-               <rewrite name="myrewrite" pattern="^/helloworld(.*)" substitution="/helloworld/test.jsp" flags="L" />
-               <rewrite name="with-conditions" pattern="^/hellomonde(.*)" substitution="/hellomonde/test.jsp" flags="L">
-                  <condition name="https" test="%{HTTPS}" pattern="off" flags="NC"/>
+               <rewrite name="myrewrite" pattern="${prop.pattern:^/helloworld(.*)}" substitution="${prop.substitution:/helloworld/test.jsp}" flags="${prop.flags:L}" />
+               <rewrite name="with-conditions" pattern="${prop.pattern:^/helloworld(.*)}" substitution="${prop.substitution:/helloworld/test.jsp}" flags="${prop.flags:L}" >
+                  <condition name="https" pattern="${prop.pattern:off}" test="${prop.test:%{HTTPS}}" flags="${prop.flags:NC}"/>
                   <condition name="user" test="%{USER}" pattern="toto" flags="NC"/>
                </rewrite>
-               <sso domain="mydomain" reauthenticate="true" />
+               <sso reauthenticate="${prop.reauthenticate:true}" domain="${prop.domain:myDomain}" cache-name="myCache" cache-container="cache-container"/>
             </virtual-server>
             <virtual-server name="vs1" />
             <virtual-server name="vs2" />
