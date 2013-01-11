@@ -58,8 +58,8 @@ public class JBossLoggingPropertiesTestCase {
 
 	private static final String FS = System.getProperty("file.separator");
 	private static final File logDir = new File(
-	System.getProperty("jbossas.ts.submodule.dir"), "target" + FS
-	+ "jbossas" + FS + "standalone" + FS + "log");
+			System.getProperty("jbossas.ts.submodule.dir"), "target" + FS
+					+ "jbossas" + FS + "standalone" + FS + "log");
 
 	private static final File logFile = new File(logDir,
 			"jboss-logging-properties-test.log");
@@ -96,7 +96,6 @@ public class JBossLoggingPropertiesTestCase {
 		} catch (FileNotFoundException ex) {
 			Assert.fail("Log file was not found");
 		}
-		;
 		String line;
 		boolean trace = false;
 		boolean fatal = false;

@@ -56,6 +56,7 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.test.integration.logging.util.AbstractLoggingTest;
 import org.jboss.as.test.integration.logging.util.LoggingServlet;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
@@ -74,88 +75,34 @@ import org.junit.runner.RunWith;
  */
 @ServerSetup(LoggingProfilesTestCase.LoggingProfilesTestCaseSetup.class)
 @RunWith(Arquillian.class)
-public class LoggingProfilesTestCase {
+public class LoggingProfilesTestCase extends AbstractLoggingTest {
 	private static Logger log = Logger.getLogger(LoggingProfilesTestCase.class);
 
 	@ContainerResource
 	private ManagementClient managementClient;
-
-	private static final String FS = System.getProperty("file.separator");
-	private static final File logDir = new File(
-	System.getProperty("jbossas.ts.submodule.dir"), "target" + FS
-	+ "jbossas" + FS + "standalone" + FS + "log");
-	private static final File loggingTestLog = new File(logDir,
-			"profiles-test.log");
-
-	private static final File dummyLog1 = new File(logDir, "dummy-profile1.log");
-	private static final File dummyLog2 = new File(logDir, "dummy-profile2.log");
-	private static final File dummyLog1Changed = new File(logDir,
-			"dummy-profile1-changed.log");
+	private static final String LOG_FILE_NAME = "profiles-test.log";
+	private static final String PROFILE1_LOG_NAME = "dummy-profile1.log";
+	private static final String PROFILE2_LOG_NAME = "dummy-profile2.log";
+	private static final String CHANGED_LOG_NAME = "dummy-profile1-changed.log";
+	private static File logFile;
+	private static File dummyLog1;
+	private static File dummyLog2;
+	private static File dummyLog1Changed;
 
 	static class LoggingProfilesTestCaseSetup extends
 			AbstractMgmtServerSetupTask {
 
 		@Override
-		public void tearDown(ManagementClient managementClient,
-				String containerId) throws Exception {
-			final List<ModelNode> updates = new ArrayList<ModelNode>();
-			// clean test log files
-			if (loggingTestLog.exists()) {
-				loggingTestLog.delete();
-			}
-			if (dummyLog1.exists()) {
-				dummyLog1.delete();
-			}
-			if (dummyLog2.exists()) {
-				dummyLog2.delete();
-			}
-			if (dummyLog1Changed.exists()) {
-				dummyLog1Changed.delete();
-			}
-
-			// remove LOGGING_TEST from root-logger
-			ModelNode op = new ModelNode();
-			op.get(OP).set("root-logger-unassign-handler");
-			op.get(OP_ADDR).add(SUBSYSTEM, "logging");
-			op.get(OP_ADDR).add("root-logger", "ROOT");
-			op.get("name").set("LOGGING_TEST");
-			updates.add(op);
-
-			// remove custom file handler
-			op = new ModelNode();
-			op.get(OP).set(REMOVE);
-			op.get(OP_ADDR).add(SUBSYSTEM, "logging");
-			op.get(OP_ADDR).add("periodic-rotating-file-handler",
-					"LOGGING_TEST");
-			updates.add(op);
-
-			// remove dummy-profile1
-			op = new ModelNode();
-			op.get(OP).set(REMOVE);
-			op.get(OP_ADDR).add(SUBSYSTEM, "logging");
-			op.get(OP_ADDR).add("logging-profile", "dummy-profile1");
-			updates.add(op);
-
-			// remove dummy-profile2
-			op = new ModelNode();
-			op.get(OP).set(REMOVE);
-			op.get(OP_ADDR).add(SUBSYSTEM, "logging");
-			op.get(OP_ADDR).add("logging-profile", "dummy-profile2");
-			updates.add(op);
-
-			// we want to perform all operations
-			for (ModelNode modelNode : updates) {
-				try {
-					executeOperation(modelNode);
-				} catch (MgmtOperationException exp) {
-					log.warn(exp.getMessage());
-				}
-			}
-		}
-
-		@Override
 		protected void doSetup(ManagementClient managementClient)
 				throws Exception {
+
+			// prepare log files
+			logFile = prepareLogFile(managementClient,
+					LOG_FILE_NAME);
+			dummyLog1 = prepareLogFile(managementClient, PROFILE1_LOG_NAME);
+			dummyLog2 = prepareLogFile(managementClient, PROFILE2_LOG_NAME);
+			dummyLog1Changed = prepareLogFile(managementClient,
+					CHANGED_LOG_NAME);
 
 			final List<ModelNode> updates = new ArrayList<ModelNode>();
 
@@ -168,7 +115,7 @@ public class LoggingProfilesTestCase {
 			op.get("suffix").set(".yyyy-MM-dd");
 			ModelNode file = new ModelNode();
 			file.get("relative-to").set("jboss.server.log.dir");
-			file.get("path").set("profiles-test.log");
+			file.get("path").set(LOG_FILE_NAME);
 			op.get("file").set(file);
 			op.get("formatter").set("%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n");
 			updates.add(op);
@@ -198,7 +145,7 @@ public class LoggingProfilesTestCase {
 			op.get("suffix").set(".yyyy-MM-dd");
 			file = new ModelNode();
 			file.get("relative-to").set("jboss.server.log.dir");
-			file.get("path").set("dummy-profile1.log");
+			file.get("path").set(PROFILE1_LOG_NAME);
 			op.get("file").set(file);
 			op.get("formatter").set("%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n");
 			updates.add(op);
@@ -233,7 +180,7 @@ public class LoggingProfilesTestCase {
 			op.get("suffix").set(".yyyy-MM-dd");
 			file = new ModelNode();
 			file.get("relative-to").set("jboss.server.log.dir");
-			file.get("path").set("dummy-profile2.log");
+			file.get("path").set(PROFILE2_LOG_NAME);
 			op.get("file").set(file);
 			op.get("formatter").set("%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n");
 			updates.add(op);
@@ -248,6 +195,57 @@ public class LoggingProfilesTestCase {
 			handlers = op.get("handlers");
 			handlers.add("DUMMY2");
 			op.get("handlers").set(handlers);
+			updates.add(op);
+
+			// we want to perform all operations
+			for (ModelNode modelNode : updates) {
+				try {
+					executeOperation(modelNode);
+				} catch (MgmtOperationException exp) {
+					log.warn(exp.getMessage());
+				}
+			}
+		}
+
+		@Override
+		public void tearDown(ManagementClient managementClient,
+				String containerId) throws Exception {
+			final List<ModelNode> updates = new ArrayList<ModelNode>();
+
+			// delete log files
+			logFile.delete();
+			dummyLog1.delete();
+			dummyLog2.delete();
+			dummyLog1Changed.delete();
+
+			// remove LOGGING_TEST from root-logger
+			ModelNode op = new ModelNode();
+			op.get(OP).set("root-logger-unassign-handler");
+			op.get(OP_ADDR).add(SUBSYSTEM, "logging");
+			op.get(OP_ADDR).add("root-logger", "ROOT");
+			op.get("name").set("LOGGING_TEST");
+			updates.add(op);
+
+			// remove custom file handler
+			op = new ModelNode();
+			op.get(OP).set(REMOVE);
+			op.get(OP_ADDR).add(SUBSYSTEM, "logging");
+			op.get(OP_ADDR).add("periodic-rotating-file-handler",
+					"LOGGING_TEST");
+			updates.add(op);
+
+			// remove dummy-profile1
+			op = new ModelNode();
+			op.get(OP).set(REMOVE);
+			op.get(OP_ADDR).add(SUBSYSTEM, "logging");
+			op.get(OP_ADDR).add("logging-profile", "dummy-profile1");
+			updates.add(op);
+
+			// remove dummy-profile2
+			op = new ModelNode();
+			op.get(OP).set(REMOVE);
+			op.get(OP_ADDR).add(SUBSYSTEM, "logging");
+			op.get(OP_ADDR).add("logging-profile", "dummy-profile2");
 			updates.add(op);
 
 			// we want to perform all operations
@@ -304,7 +302,7 @@ public class LoggingProfilesTestCase {
 	@InSequence(1)
 	public void noWarningTest() throws Exception {
 		BufferedReader br = new BufferedReader(new InputStreamReader(
-				new FileInputStream(loggingTestLog), Charset.forName("UTF-8")));
+				new FileInputStream(logFile), Charset.forName("UTF-8")));
 		String line;
 		while ((line = br.readLine()) != null) {
 			// Look for message id in order to support all languages.
@@ -391,7 +389,7 @@ public class LoggingProfilesTestCase {
 	@InSequence(3)
 	public void loggingTestLogTest() throws IOException {
 		BufferedReader br = new BufferedReader(new InputStreamReader(
-				new FileInputStream(loggingTestLog), Charset.forName("UTF-8")));
+				new FileInputStream(logFile), Charset.forName("UTF-8")));
 		String line;
 		while ((line = br.readLine()) != null) {
 			// look for message id in order to support all languages
@@ -419,7 +417,7 @@ public class LoggingProfilesTestCase {
 		op.get(OP_ADDR).add("periodic-rotating-file-handler", "DUMMY1");
 		ModelNode file = new ModelNode();
 		file.get("relative-to").set("jboss.server.log.dir");
-		file.get("path").set("dummy-profile1-changed.log");
+		file.get("path").set(CHANGED_LOG_NAME);
 		op.get("file").set(file);
 		applyUpdate(op, managementClient.getControllerClient());
 
