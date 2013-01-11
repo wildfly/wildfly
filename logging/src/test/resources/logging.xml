@@ -91,6 +91,18 @@
         <append value="false"/>
     </size-rotating-file-handler>
 
+    <syslog-handler name="syslog" enabled="false">
+        <level name="INFO"/>
+        <server-address value="127.0.0.1"/>
+        <hostname value="jboss.org"/>
+        <port value="514"/>
+        <app-name value="my-app"/>
+        <formatter>
+            <syslog-format syslog-type="RFC5424"/>
+        </formatter>
+        <facility value="user-level"/>
+    </syslog-handler>
+
     <logger category="com.example" use-parent-handlers="false">
         <level name="TRACE"/>
         <filter-spec value="levelRange[TRACE,WARN)"/>
@@ -124,6 +136,18 @@
                 </formatter>
             </console-handler>
 
+            <syslog-handler name="syslog">
+                <level name="WARN"/>
+                <server-address value="localhost"/>
+                <hostname value="community.jboss.org"/>
+                <port value="514"/>
+                <app-name value="my-app"/>
+                <formatter>
+                    <syslog-format syslog-type="RFC3164"/>
+                </formatter>
+                <facility value="user-level"/>
+            </syslog-handler>
+
             <logger category="org.jboss.as.logging">
                 <level name="TRACE"/>
                 <filter-spec value="levelRange[TRACE,WARN)"/>
@@ -133,6 +157,7 @@
                 <level name="INFO"/>
                 <handlers>
                     <handler name="CONSOLE"/>
+                    <handler name="syslog"/>
                 </handlers>
             </root-logger>
         </logging-profile>

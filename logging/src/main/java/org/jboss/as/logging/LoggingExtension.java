@@ -165,6 +165,7 @@ public class LoggingExtension implements Extension {
         PeriodicHandlerResourceDefinition.addTransformers(subsystemBuilder, loggingProfileBuilder);
         SizeRotatingHandlerResourceDefinition.addTransformers(subsystemBuilder, loggingProfileBuilder);
         CustomHandlerResourceDefinition.addTransformers(subsystemBuilder, loggingProfileBuilder);
+        SyslogHandlerResourceDefinition.addTransformers(subsystemBuilder, loggingProfileBuilder);
 
         // Register the transformers
         TransformationDescription.Tools.register(subsystemBuilder.build(), subsystem, ModelVersion.create(1, 1, 0));
@@ -187,6 +188,7 @@ public class LoggingExtension implements Extension {
         registration.registerSubModel(new PeriodicHandlerResourceDefinition(resolvePathHandler, includeLegacyAttributes));
         registration.registerSubModel(new SizeRotatingHandlerResourceDefinition(resolvePathHandler, includeLegacyAttributes));
         registration.registerSubModel(new CustomHandlerResourceDefinition(includeLegacyAttributes));
+        registration.registerSubModel(SyslogHandlerResourceDefinition.INSTANCE);
     }
 
     private static class LoggingResourceDescriptionResolver extends StandardResourceDescriptionResolver {
@@ -207,6 +209,7 @@ public class LoggingExtension implements Extension {
             COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.LEVEL.getName(), "logging.common");
             COMMON_ATTRIBUTE_NAMES.put(SizeRotatingHandlerResourceDefinition.MAX_BACKUP_INDEX.getName(), "logging.size-rotating-file-handler");
             COMMON_ATTRIBUTE_NAMES.put(CustomHandlerResourceDefinition.MODULE.getName(), "logging.custom-handler");
+            COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.NAME.getName(), "logging.handler");
             COMMON_ATTRIBUTE_NAMES.put(AsyncHandlerResourceDefinition.OVERFLOW_ACTION.getName(), "logging.async-handler");
             COMMON_ATTRIBUTE_NAMES.put(PathResourceDefinition.PATH.getName(), null);
             COMMON_ATTRIBUTE_NAMES.put(CustomHandlerResourceDefinition.PROPERTIES.getName(), "logging.custom-handler");
