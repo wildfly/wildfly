@@ -23,7 +23,6 @@ package org.jboss.as.jpa.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.jpa.subsystem.JPADefinition.DEFAULT_DATASOURCE;
-import static org.jboss.as.jpa.subsystem.JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE;
 
 import java.io.IOException;
 import java.util.List;
@@ -33,6 +32,7 @@ import junit.framework.Assert;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
@@ -95,15 +95,30 @@ public class JPA11SubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertTrue(mainServices.isSuccessfulBoot());
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
-        List<ModelNode> ops = builder.parseXml(getSubsystemXml());
+        List<ModelNode> ops = builder.parseXmlResource("subsystem-1.1-transformers.xml");
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, oldVersion, ops,
                 new FailedOperationTransformationConfig()
                     .addFailedAttribute(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, JPAExtension.SUBSYSTEM_NAME)),
-                            new FailedOperationTransformationConfig.RejectExpressionsConfig(DEFAULT_DATASOURCE, DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE)));
+                            new FailedOperationTransformationConfig.RejectExpressionsConfig(DEFAULT_DATASOURCE)
+                                .setNotExpectedWriteFailure(JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE)));
 
         ModelNode legacyModel = legacyServices.readWholeModel().require(SUBSYSTEM).require(JPAExtension.SUBSYSTEM_NAME);
         Assert.assertEquals(1, legacyModel.keys().size());
         Assert.assertEquals("test-ds", legacyModel.get(DEFAULT_DATASOURCE.getName()).asString());
+
+        ModelNode op = Util.getWriteAttributeOperation(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, JPAExtension.SUBSYSTEM_NAME)),
+                CommonAttributes.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE,
+                new ModelNode().setExpression("${xxxx:SHALLOW}"));
+        ModelTestUtils.checkFailed(mainServices.executeOperation(oldVersion, mainServices.transformOperation(oldVersion, op)));
+
+        op = Util.getWriteAttributeOperation(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, JPAExtension.SUBSYSTEM_NAME)),
+                CommonAttributes.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE,
+                new ModelNode().setExpression("SHALLOW"));
+        ModelTestUtils.checkFailed(mainServices.executeOperation(oldVersion, mainServices.transformOperation(oldVersion, op)));
+
+        op = Util.getUndefineAttributeOperation(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, JPAExtension.SUBSYSTEM_NAME)), CommonAttributes.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE);
+        ModelTestUtils.checkOutcome(mainServices.executeOperation(oldVersion, mainServices.transformOperation(oldVersion, op)));
+
 
     }
 }

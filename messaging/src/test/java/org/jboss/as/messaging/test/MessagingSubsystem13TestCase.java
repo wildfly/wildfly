@@ -22,6 +22,26 @@
 
 package org.jboss.as.messaging.test;
 
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
+import static org.jboss.as.controller.PathElement.pathElement;
+import static org.jboss.as.messaging.CommonAttributes.CALL_FAILOVER_TIMEOUT;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.COMPRESS_LARGE_MESSAGES;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled.*;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Regular.FACTORY_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.messaging.HornetQServerResourceDefinition.HORNETQ_SERVER_PATH;
+import static org.jboss.as.messaging.MessagingExtension.VERSION_1_1_0;
+import static org.jboss.as.model.test.FailedOperationTransformationConfig.ChainedConfig;
+import static org.jboss.as.model.test.FailedOperationTransformationConfig.NewAttributesConfig;
+import static org.jboss.as.model.test.ModelTestUtils.checkFailedTransformedBootOperations;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.messaging.AddressSettingDefinition;
@@ -38,30 +58,19 @@ import org.jboss.as.messaging.HornetQServerResourceDefinition;
 import org.jboss.as.messaging.InVMTransportDefinition;
 import org.jboss.as.messaging.MessagingExtension;
 import org.jboss.as.messaging.QueueDefinition;
+import org.jboss.as.messaging.jms.ConnectionFactoryAttributes;
 import org.jboss.as.messaging.jms.ConnectionFactoryDefinition;
 import org.jboss.as.messaging.jms.JMSQueueDefinition;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryDefinition;
 import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.FailedOperationTransformationConfig.RejectExpressionsConfig;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
-
-import java.io.IOException;
-import java.util.List;
-
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
-import static org.jboss.as.controller.PathElement.pathElement;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.messaging.HornetQServerResourceDefinition.HORNETQ_SERVER_PATH;
-import static org.jboss.as.messaging.MessagingExtension.VERSION_1_1_0;
-import static org.jboss.as.model.test.FailedOperationTransformationConfig.RejectExpressionsConfig;
-import static org.jboss.as.model.test.ModelTestUtils.checkFailedTransformedBootOperations;
 
 /**
  *  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012 Red Hat inc
@@ -203,10 +212,20 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
                                 new RejectExpressionsConfig(ConnectorServiceParamDefinition.VALUE))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(ConnectionFactoryDefinition.PATH),
-                                new RejectExpressionsConfig(ConnectionFactoryDefinition.REJECTED_EXPRESSION_ATTRIBUTES))
+                                new RejectExpressionsConfig(ConnectionFactoryDefinition.REJECTED_EXPRESSION_ATTRIBUTES)
+                                        .setReadOnly(FACTORY_TYPE))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(PooledConnectionFactoryDefinition.PATH),
-                                new RejectExpressionsConfig(PooledConnectionFactoryDefinition.REJECTED_EXPRESSION_ATTRIBUTES))
+                                new ChainedConfig(new HashMap<String, FailedOperationTransformationConfig.PathAddressConfig>() {{
+                                    for (AttributeDefinition attr : PooledConnectionFactoryDefinition.REJECTED_EXPRESSION_ATTRIBUTES) {
+                                            put(attr.getName(), new RejectExpressionsConfig(attr));
+                                    }
+                                    //put(USE_AUTO_RECOVERY.getName(), new NewAttributesConfig(USE_AUTO_RECOVERY));
+                                    //put(INITIAL_CONNECT_ATTEMPTS.getName(), new NewAttributesConfig(INITIAL_CONNECT_ATTEMPTS));
+                                    //put(INITIAL_MESSAGE_PACKET_SIZE.getName(), new NewAttributesConfig(INITIAL_MESSAGE_PACKET_SIZE));
+                                    //put(COMPRESS_LARGE_MESSAGES.getName(), new NewAttributesConfig(COMPRESS_LARGE_MESSAGES));
+                                    //put(CALL_FAILOVER_TIMEOUT.getName(), new NewAttributesConfig(CALL_FAILOVER_TIMEOUT));
+                                }}).setReadOnly(ConnectionFactoryAttributes.Pooled.TRANSACTION))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(JMSQueueDefinition.PATH),
                                 new RejectExpressionsConfig(JMSQueueDefinition.REJECTED_EXPRESSION_ATTRIBUTES))

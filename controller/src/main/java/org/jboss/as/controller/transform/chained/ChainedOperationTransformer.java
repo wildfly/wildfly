@@ -55,6 +55,9 @@ public class ChainedOperationTransformer implements OperationTransformer {
             TransformedOperation transformed = entry.transformOperation(context, address, currentOperation);
             currentOperation = transformed.getTransformedOperation();
             delegates.add(transformed);
+            if (currentOperation == null) {
+                break;
+            }
         }
         return new ChainedTransformedOperation(currentOperation, delegates.toArray(new TransformedOperation[delegates.size()]));
     }
