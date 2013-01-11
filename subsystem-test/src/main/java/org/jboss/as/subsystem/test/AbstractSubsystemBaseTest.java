@@ -110,7 +110,7 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
      *
      * @throws Exception
      */
-    protected void standardSubsystemTest(final String configId, boolean compareXml) throws Exception {
+    protected KernelServices standardSubsystemTest(final String configId, boolean compareXml) throws Exception {
         final AdditionalInitialization additionalInit = createAdditionalInitialization();
 
         // Parse the subsystem xml and install into the first controller
@@ -154,6 +154,7 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
         compare(modelA, modelC);
 
         assertRemoveSubsystemResources(servicesC, getIgnoredChildResourcesForRemovalTest());
+        return servicesA;
     }
 
     protected void validateModel(ModelNode model) {
