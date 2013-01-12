@@ -36,7 +36,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_CLIENT_CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_SUBSYSTEM_ENDPOINT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -676,11 +675,14 @@ public class DomainXml extends CommonXml {
                 throw unexpectedElement(reader);
             }
 
+            final ModelNode groupAddOp = new ModelNode();
+            groupAddOp.get(OP).set(ADD);
+            groupAddOp.get(OP_ADDR);
+
             String name = null;
-            String profile = null;
-            Boolean managementSubsystemEndpoint = null;
 
             // Handle attributes
+            Set<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.PROFILE);
             final int count = reader.getAttributeCount();
             for (int i = 0; i < count; i++) {
 
@@ -689,11 +691,9 @@ public class DomainXml extends CommonXml {
                     throw ParseUtils.unexpectedAttribute(reader, i);
                 } else {
                     final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                    required.remove(attribute);
                     switch (attribute) {
                         case NAME: {
-                            if (name != null) {
-                                throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
-                            }
                             if (!names.add(value)) {
                                 throw ParseUtils.duplicateNamedElement(reader, value);
                             }
@@ -701,17 +701,11 @@ public class DomainXml extends CommonXml {
                             break;
                         }
                         case PROFILE: {
-                            if (profile != null) {
-                                throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
-                            }
-                            profile = value;
+                            ServerGroupResourceDefinition.PROFILE.parseAndSetParameter(value, groupAddOp, reader);
                             break;
                         }
                         case MANAGEMENT_SUBSYSTEM_ENDPOINT: {
-                            if (managementSubsystemEndpoint != null) {
-                                throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
-                            }
-                            managementSubsystemEndpoint = Boolean.valueOf(value);
+                            ServerGroupResourceDefinition.MANAGEMENT_SUBSYSTEM_ENDPOINT.parseAndSetParameter(value, groupAddOp, reader);
                             break;
                         }
                         default:
@@ -719,24 +713,15 @@ public class DomainXml extends CommonXml {
                     }
                 }
             }
-            if (name == null) {
-                throw missingRequired(reader, Collections.singleton(Attribute.NAME));
-            }
-            if (profile == null) {
-                throw missingRequired(reader, Collections.singleton(Attribute.PROFILE));
+            if (!required.isEmpty()) {
+                throw missingRequired(reader, required);
             }
 
             final ModelNode groupAddress = new ModelNode().set(address);
             groupAddress.add(ModelDescriptionConstants.SERVER_GROUP, name);
+            groupAddOp.get(OP_ADDR).set(groupAddress);
 
-            final ModelNode group = new ModelNode();
-            group.get(OP).set(ADD);
-            group.get(OP_ADDR).set(groupAddress);
-            group.get(PROFILE).set(profile);
-            if (managementSubsystemEndpoint != null) {
-                group.get(MANAGEMENT_SUBSYSTEM_ENDPOINT).set(managementSubsystemEndpoint);
-            }
-            list.add(group);
+            list.add(groupAddOp);
 
             // Handle elements
 
@@ -750,7 +735,7 @@ public class DomainXml extends CommonXml {
                         break;
                     }
                     case SOCKET_BINDING_GROUP: {
-                        parseSocketBindingGroupRef(reader, group, ServerGroupResourceDefinition.SOCKET_BINDING_GROUP,
+                        parseSocketBindingGroupRef(reader, groupAddOp, ServerGroupResourceDefinition.SOCKET_BINDING_GROUP,
                                 ServerGroupResourceDefinition.SOCKET_BINDING_PORT_OFFSET);
                         break;
                     }
@@ -1014,7 +999,9 @@ public class DomainXml extends CommonXml {
     private void writeServerGroup(final XMLExtendedStreamWriter writer, final String groupName, final ModelNode group) throws XMLStreamException {
         writer.writeStartElement(Element.SERVER_GROUP.getLocalName());
         writer.writeAttribute(Attribute.NAME.getLocalName(), groupName);
-        writer.writeAttribute(Attribute.PROFILE.getLocalName(), group.get(PROFILE).asString());
+
+        ServerGroupResourceDefinition.PROFILE.marshallAsAttribute(group, writer);
+        ServerGroupResourceDefinition.MANAGEMENT_SUBSYSTEM_ENDPOINT.marshallAsAttribute(group, writer);
 
         // JVM
         if (group.hasDefined(JVM)) {
@@ -1025,12 +1012,6 @@ public class DomainXml extends CommonXml {
         }
 
         // Socket binding ref
-        String bindingGroupRef = group.hasDefined(SOCKET_BINDING_GROUP) ? group.get(SOCKET_BINDING_GROUP).asString() : null;
-        String portOffset = group.hasDefined(SOCKET_BINDING_PORT_OFFSET) ? group.get(SOCKET_BINDING_PORT_OFFSET).asString() : null;
-        Boolean managementSubsystemEndpoint = group.hasDefined(MANAGEMENT_SUBSYSTEM_ENDPOINT) ? group.get(MANAGEMENT_SUBSYSTEM_ENDPOINT).asBoolean() : null;
-        if (managementSubsystemEndpoint != null) {
-            writeAttribute(writer, Attribute.MANAGEMENT_SUBSYSTEM_ENDPOINT, managementSubsystemEndpoint.toString());
-        }
         if (group.hasDefined(SOCKET_BINDING_GROUP) || group.hasDefined(SOCKET_BINDING_PORT_OFFSET)) {
             writer.writeStartElement(Element.SOCKET_BINDING_GROUP.getLocalName());
             ServerGroupResourceDefinition.SOCKET_BINDING_GROUP.marshallAsAttribute(group, writer);

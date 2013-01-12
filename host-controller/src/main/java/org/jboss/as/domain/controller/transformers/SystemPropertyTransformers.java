@@ -57,7 +57,7 @@ class SystemPropertyTransformers {
             new RejectExpressionValuesChainedTransformer(SystemPropertyResourceDefinition.VALUE, SystemPropertyResourceDefinition.BOOT_TIME);
 
 
-    static TransformersSubRegistration registerTransformers(TransformersSubRegistration parent) {
+    static void registerTransformers120(TransformersSubRegistration parent) {
         TransformersSubRegistration reg = parent.registerSubResource(SystemPropertyResourceDefinition.PATH,
                 new ChainedResourceTransformer(
                         new ChainedResourceTransformerEntry() {
@@ -108,8 +108,6 @@ class SystemPropertyTransformers {
         };
         reg.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, new ChainedOperationTransformer(forceTrue, rejectExpressions));
         reg.registerOperationTransformer(UNDEFINE_ATTRIBUTE_OPERATION, new ChainedOperationTransformer(forceTrue, rejectExpressions));
-
-        return reg;
     }
 
 

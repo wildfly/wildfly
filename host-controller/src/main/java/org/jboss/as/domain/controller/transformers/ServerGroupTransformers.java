@@ -22,20 +22,35 @@
 
 package org.jboss.as.domain.controller.transformers;
 
-import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+
+import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.domain.controller.resources.ServerGroupResourceDefinition;
 
 /**
- * The older versions of the model do not allow expressions for some socket-binding resource attributes.
- * Reject the attributes if they contain an expression.
+ * Transformer registration for the server-group resources.
  *
  * @author Brian Stansberry (c) 2012 Red Hat Inc.
  */
-class SocketBindingGroupTransformers {
+class ServerGroupTransformers {
 
     static void registerTransformers120(TransformersSubRegistration parent) {
-        TransformersSubRegistration reg = parent.registerSubResource(SocketBindingGroupResourceDefinition.PATH, ResourceTransformer.DEFAULT);
-        SocketBindingTransformers.registerTransformers(reg);
+
+        RejectExpressionValuesTransformer rejectTransformer =
+                new RejectExpressionValuesTransformer(ServerGroupResourceDefinition.MANAGEMENT_SUBSYSTEM_ENDPOINT,
+                        ServerGroupResourceDefinition.SOCKET_BINDING_PORT_OFFSET);
+
+        TransformersSubRegistration serverGroup = parent.registerSubResource(ServerGroupResourceDefinition.PATH,
+                (ResourceTransformer) rejectTransformer);
+        serverGroup.registerOperationTransformer(ADD, rejectTransformer);
+        serverGroup.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, rejectTransformer.getWriteAttributeTransformer());
+
+        DeploymentTransformers.registerTransformers120(serverGroup);
+
+        SystemPropertyTransformers.registerTransformers120(serverGroup);
+        JvmTransformers.registerTransformers120(serverGroup);
     }
 }

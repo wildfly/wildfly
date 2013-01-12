@@ -45,7 +45,8 @@ import org.jboss.as.host.controller.model.jvm.JvmResourceDefinition;
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat, inc
  */
 class JvmTransformers {
-    static TransformersSubRegistration registerTransformers(TransformersSubRegistration parent) {
+
+    static void registerTransformers120(TransformersSubRegistration parent) {
         TransformersSubRegistration reg = parent.registerSubResource(JvmResourceDefinition.GLOBAL.getPathElement(), ResourceTransformer.DEFAULT);
 
         RejectExpressionValuesTransformer rejectExpression = new RejectExpressionValuesTransformer(AGENT_PATH, HEAP_SIZE, JAVA_HOME, MAX_HEAP_SIZE,
@@ -54,8 +55,6 @@ class JvmTransformers {
 
         reg.registerOperationTransformer(ADD, rejectExpression);
         reg.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, rejectExpression.getWriteAttributeTransformer());
-
-        return reg;
     }
 
 

@@ -45,6 +45,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.transform.DiscardUndefinedAttributesTransformer;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 
 /**
@@ -340,7 +341,8 @@ public class FailedOperationTransformationConfig {
                     if (hasExpressions(attr, value)) {
                         RejectExpressionsConfig complexChildConfig = complexAttributes.get(attr);
                         if (complexChildConfig == null) {
-                            op.get(attr).set(op.get(attr).resolve());
+                            ModelNode resolved = resolveValue(op.get(attr));
+                            op.get(attr).set(resolved);
                         } else {
                             op.get(attr).set(complexChildConfig.correctOperation(operation.get(attr)));
                         }
@@ -349,6 +351,27 @@ public class FailedOperationTransformationConfig {
                 }
             }
             return operation;
+        }
+
+        private ModelNode resolveValue(ModelNode toResolve) {
+            ModelNode result = toResolve.resolve();
+            if (result.getType() == ModelType.STRING) {
+                String rawVal = result.asString().toLowerCase();
+                if ("true".equals(rawVal) || "false".equals(rawVal)) {
+                    result.set(Boolean.valueOf(rawVal));
+                } else {
+                    try {
+                        result.set(Integer.valueOf(rawVal));
+                    } catch (Exception e) {
+                        try {
+                            result.set(Long.valueOf(rawVal));
+                        } catch (Exception ignored) {
+                            //
+                        }
+                    }
+                }
+            }
+            return result;
         }
 
         @Override

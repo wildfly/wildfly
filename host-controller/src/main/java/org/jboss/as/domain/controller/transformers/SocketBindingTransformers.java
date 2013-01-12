@@ -41,7 +41,7 @@ import org.jboss.as.domain.controller.resources.SocketBindingResourceDefinition;
  *
  * @author Brian Stansberry (c) 2012 Red Hat Inc.
  */
-public class SocketBindingTransformers {
+class SocketBindingTransformers {
 
     static TransformersSubRegistration registerTransformers(TransformersSubRegistration parent) {
 
