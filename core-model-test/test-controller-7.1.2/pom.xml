@@ -29,7 +29,8 @@
     <parent>
       <groupId>org.jboss</groupId>
       <artifactId>jboss-parent</artifactId>
-      <version>9</version>
+      <version>10</version>
+      <relativePath></relativePath>
     </parent>
 
     <groupId>org.jboss.as</groupId>

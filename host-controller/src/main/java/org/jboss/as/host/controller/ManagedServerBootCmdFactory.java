@@ -40,6 +40,7 @@ import java.util.Map.Entry;
 
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.domain.controller.resources.ServerGroupResourceDefinition;
 import org.jboss.as.host.controller.ManagedServer.ManagedServerBootConfiguration;
 import org.jboss.as.host.controller.model.jvm.JvmElement;
 import org.jboss.as.host.controller.model.jvm.JvmOptionsBuilderFactory;
@@ -106,7 +107,7 @@ class ManagedServerBootCmdFactory implements ManagedServerBootConfiguration {
         }
         // Use the subsystem endpoint
         // TODO by default use the subsystem endpoint
-        this.managementSubsystemEndpoint = serverGroup.get(MANAGEMENT_SUBSYSTEM_ENDPOINT).asBoolean(false);
+        this.managementSubsystemEndpoint = serverGroup.get(ServerGroupResourceDefinition.MANAGEMENT_SUBSYSTEM_ENDPOINT.getName()).asBoolean(false);
         // Get the endpoint configuration
         if(managementSubsystemEndpoint) {
             final String profileName = serverGroup.get(PROFILE).asString();

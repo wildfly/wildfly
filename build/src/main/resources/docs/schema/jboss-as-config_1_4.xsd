@@ -1079,9 +1079,9 @@
             <xs:element name="socket-binding-group" type="socket-binding-group-refType" minOccurs="1"/>
 
             <xs:element name="deployments" type="server-groupDeploymentsType" minOccurs="0"/>
+            <xs:element name="deployment-overlays" type="server-group-deployment-overlaysType" minOccurs="0" maxOccurs="1"/>
 
             <xs:element name="system-properties" minOccurs="0" type="properties-with-boottime"/>
-            <xs:element name="deployment-overlays" type="server-group-deployment-overlaysType" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
         <xs:attribute name="name" type="xs:string">
             <xs:annotation>
@@ -2347,7 +2347,7 @@
         </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:token"/>
     </xs:complexType>
-        
+
     <xs:complexType name="server-group-deployment-overlaysType">
         <xs:annotation>
             <xs:documentation>

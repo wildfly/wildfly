@@ -82,12 +82,10 @@ public class DomainTransformers {
             // Ignore the jsf subsystem as well
             registry.registerSubsystemTransformers(JSF_SUBSYSTEM, IGNORED_SUBSYSTEMS, ResourceTransformer.DISCARD);
 
-            //Transform the system properties to use boot-time=true if it is undefined
-            SystemPropertyTransformers.registerTransformers(domain);
-            TransformersSubRegistration serverGroup = domain.registerSubResource(ServerGroupResourceDefinition.PATH);
-            SystemPropertyTransformers.registerTransformers(serverGroup);
-            JvmTransformers.registerTransformers(serverGroup);
-            SocketBindingGroupTransformers.registerTransformers(domain);
+            DeploymentTransformers.registerTransformers120(domain);
+            SystemPropertyTransformers.registerTransformers120(domain);
+            SocketBindingGroupTransformers.registerTransformers120(domain);
+            ServerGroupTransformers.registerTransformers120(domain);
 
             //Add the domain interface and path name. This is from a read attribute handler but in < 1.4.0 it existed in the model
             domain.registerSubResource(PathElement.pathElement(INTERFACE), AddNameFromAddressResourceTransformer.INSTANCE);

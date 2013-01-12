@@ -22,20 +22,20 @@
 
 package org.jboss.as.domain.controller.transformers;
 
-import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
-import org.jboss.as.controller.transform.ResourceTransformer;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.transform.AddNameFromAddressResourceTransformer;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 
 /**
- * The older versions of the model do not allow expressions for some socket-binding resource attributes.
- * Reject the attributes if they contain an expression.
+ * ransformer registration for the deployment resources.
  *
  * @author Brian Stansberry (c) 2012 Red Hat Inc.
  */
-class SocketBindingGroupTransformers {
+class DeploymentTransformers {
 
     static void registerTransformers120(TransformersSubRegistration parent) {
-        TransformersSubRegistration reg = parent.registerSubResource(SocketBindingGroupResourceDefinition.PATH, ResourceTransformer.DEFAULT);
-        SocketBindingTransformers.registerTransformers(reg);
+        parent.registerSubResource(PathElement.pathElement(DEPLOYMENT), AddNameFromAddressResourceTransformer.INSTANCE);
     }
 }

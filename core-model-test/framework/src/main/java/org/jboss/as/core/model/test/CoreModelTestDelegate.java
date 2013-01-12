@@ -22,6 +22,8 @@
 package org.jboss.as.core.model.test;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_SOURCE_PORT;
@@ -63,8 +65,11 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -105,8 +110,19 @@ import org.jboss.staxmapper.XMLMapper;
  */
 public class CoreModelTestDelegate {
 
+    private static final Set<PathAddress> EMPTY_RESOURCE_ADDRESSES = new HashSet<PathAddress>();
+    private static final Set<PathAddress> MISSING_NAME_ADDRESSES = new HashSet<PathAddress>();
 
-    private final Namespace NAMESPACE = Namespace.CURRENT;
+    static {
+        EMPTY_RESOURCE_ADDRESSES.add(PathAddress.pathAddress(PathElement.pathElement(PROFILE)));
+        EMPTY_RESOURCE_ADDRESSES.add(PathAddress.pathAddress(PathElement.pathElement(DEPLOYMENT_OVERLAY), PathElement.pathElement(DEPLOYMENT)));
+        EMPTY_RESOURCE_ADDRESSES.add(PathAddress.pathAddress(PathElement.pathElement(SERVER_GROUP),
+                PathElement.pathElement(DEPLOYMENT_OVERLAY), PathElement.pathElement(DEPLOYMENT)));
+
+        MISSING_NAME_ADDRESSES.add(PathAddress.pathAddress(PathElement.pathElement(PROFILE)));
+        MISSING_NAME_ADDRESSES.add(PathAddress.pathAddress(PathElement.pathElement(DEPLOYMENT)));
+        MISSING_NAME_ADDRESSES.add(PathAddress.pathAddress(PathElement.pathElement(SERVER_GROUP), PathElement.pathElement(DEPLOYMENT)));
+    }
 
     private final Class<?> testClass;
     private final List<KernelServices> kernelServices = new ArrayList<KernelServices>();
@@ -284,21 +300,41 @@ public class CoreModelTestDelegate {
 
     private void adjustUndefinedInTransformedToEmpty(ModelVersion modelVersion, ModelNode legacyModel, ModelNode transformed) {
         boolean is7_1_x = modelVersion.getMajor() == 1 && modelVersion.getMinor() < 4;
-        //Test profiles
-        if (legacyModel.hasDefined(PROFILE) && transformed.hasDefined(PROFILE)) {
-            for (String key : legacyModel.get(PROFILE).keys()) {
-                if (legacyModel.get(PROFILE).hasDefined(key)) {
-                    if (transformed.get(PROFILE).has(key) && ! transformed.get(PROFILE).hasDefined(key)) {
-                        if (is7_1_x) {
-                            //7.2.x
-                            transformed.get(PROFILE, key).setEmptyObject();
-                        } else {
-                            //7.2.x has ReadResourceNameOperationStepHandler reporting the profile name although it is undefined in the transformed model
-                            transformed.get(PROFILE, key).get(NAME).set(legacyModel.get(PROFILE, key).get(NAME));
+
+        for (PathAddress address : EMPTY_RESOURCE_ADDRESSES) {
+            harmonizeModel(modelVersion, legacyModel, transformed, address, ModelHarmonizer.UNDEFINED_TO_EMPTY);
+        }
+
+        if (!is7_1_x) {
+            for (PathAddress address : MISSING_NAME_ADDRESSES) {
+                harmonizeModel(modelVersion, legacyModel, transformed, address, ModelHarmonizer.MISSING_NAME);
+            }
+        }
+    }
+
+    private void harmonizeModel(ModelVersion modelVersion, ModelNode legacyModel, ModelNode transformed,
+                                                  PathAddress address, ModelHarmonizer harmonizer) {
+
+        if (address.size() > 0) {
+            PathElement pathElement = address.getElement(0);
+            if (legacyModel.hasDefined(pathElement.getKey()) && transformed.hasDefined(pathElement.getKey())) {
+                ModelNode legacyType = legacyModel.get(pathElement.getKey());
+                ModelNode transformedType = transformed.get(pathElement.getKey());
+                PathAddress childAddress = address.size() > 1 ? address.subAddress(1) : PathAddress.EMPTY_ADDRESS;
+                if (pathElement.isWildcard()) {
+                    for (String key : legacyType.keys()) {
+                        if (transformedType.has(key)) {
+                            harmonizeModel(modelVersion, legacyType.get(key),
+                                    transformedType.get(key), childAddress, harmonizer);
                         }
                     }
+                } else {
+                    harmonizeModel(modelVersion, legacyType.get(pathElement.getValue()),
+                            transformedType.get(pathElement.getValue()), address, harmonizer);
                 }
             }
+        } else {
+            harmonizer.harmonizeModel(modelVersion, legacyModel, transformed);
         }
     }
 
