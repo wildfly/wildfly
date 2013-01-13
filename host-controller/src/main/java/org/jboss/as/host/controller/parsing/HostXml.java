@@ -839,8 +839,8 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
                         port = parsePossibleExpression(value);
                         if(port.getType() != ModelType.EXPRESSION) {
                             try {
-                                Integer portNo = Integer.valueOf(value);
-                                if (portNo.intValue() < 1) {
+                                int portNo = Integer.parseInt(value);
+                                if (portNo < 1) {
                                     throw MESSAGES.invalidPort(attribute.getLocalName(), value, reader.getLocation());
                                 }
                             }catch(NumberFormatException e) {
@@ -899,8 +899,8 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
                         port = parsePossibleExpression(value);
                         if(port.getType() != ModelType.EXPRESSION) {
                             try {
-                                Integer portNo = Integer.valueOf(value);
-                                if (portNo.intValue() < 1) {
+                                int portNo = Integer.parseInt(value);
+                                if (portNo < 1) {
                                     throw MESSAGES.invalidPort(attribute.getLocalName(), value, reader.getLocation());
                                 }
                             }catch(NumberFormatException e) {
@@ -1180,7 +1180,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
                     if (sawSocketBinding) {
                         throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
                     }
-                    parseServerSocketBindings(reader, serverAddOperation, list);
+                    parseServerSocketBindings(reader, serverAddOperation);
                     sawSocketBinding = true;
                     break;
                 }
@@ -1244,11 +1244,9 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
         return addUpdate;
     }
 
-    private void parseServerSocketBindings(final XMLExtendedStreamReader reader, final ModelNode serverAddOperation,
-            final List<ModelNode> updates) throws XMLStreamException {
+    private void parseServerSocketBindings(final XMLExtendedStreamReader reader, final ModelNode serverAddOperation) throws XMLStreamException {
         // Handle attributes
-        String name = null;
-        Integer offset = null;
+
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);

@@ -31,7 +31,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -163,7 +162,7 @@ public class BlockingQueueOperationListener<T extends TransactionalProtocolClien
 
         @Override
         public AsyncFuture<ModelNode> getFinalResult() {
-            return new CompletedResult(finalResult);
+            return new CompletedResult<ModelNode>(finalResult);
         }
 
         @Override

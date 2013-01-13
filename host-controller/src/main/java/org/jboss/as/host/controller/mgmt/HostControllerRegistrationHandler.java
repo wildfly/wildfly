@@ -536,6 +536,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
 
         abstract void sendMessage(final FlushableDataOutput output) throws IOException;
 
+        @SuppressWarnings("unchecked")
         boolean completeStep(Object result) {
             return setResult((T) result);
         }

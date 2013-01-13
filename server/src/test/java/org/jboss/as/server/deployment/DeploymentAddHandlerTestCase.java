@@ -61,7 +61,7 @@ public class DeploymentAddHandlerTestCase {
         final DeploymentAddHandler handler = DeploymentAddHandler.create(contentRepository, null);
         final OperationContext context = Mockito.mock(OperationContext.class);
         Mockito.when(context.getResult()).thenReturn(new ModelNode());
-        Mockito.when(context.readModelForUpdate(PathAddress.EMPTY_ADDRESS)).thenReturn(new ModelNode());
+        Mockito.when(context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel()).thenReturn(new ModelNode());
         Mockito.when(context.getProcessType()).thenReturn(ProcessType.STANDALONE_SERVER);
         Mockito.when(context.getRunningMode()).thenReturn(RunningMode.NORMAL);
         Mockito.when(context.isNormalServer()).thenReturn(true);

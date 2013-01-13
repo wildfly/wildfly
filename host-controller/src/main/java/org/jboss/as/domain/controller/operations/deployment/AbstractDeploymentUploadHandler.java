@@ -37,7 +37,6 @@ import org.jboss.dmr.ModelNode;
  */
 public abstract class AbstractDeploymentUploadHandler implements OperationStepHandler {
 
-    private static final String[] EMPTY = new String[0];
     private final ContentRepository contentRepository;
     protected final AttributeDefinition attribute;
 

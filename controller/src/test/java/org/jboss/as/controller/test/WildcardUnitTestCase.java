@@ -34,7 +34,6 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.ReadResourceHandler;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -85,11 +84,6 @@ public class WildcardUnitTestCase extends AbstractControllerTestBase {
 
         result = controller.execute(describe, null, null, null).get("result");
 
-    }
-
-    @Override
-    protected DescriptionProvider getRootDescriptionProvider() {
-        return NULL;
     }
 
     @Override

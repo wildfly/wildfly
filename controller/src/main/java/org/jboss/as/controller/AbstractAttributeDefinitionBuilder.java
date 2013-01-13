@@ -36,6 +36,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Tomaz Cerar
  */
+@SuppressWarnings("unchecked")
 public abstract class AbstractAttributeDefinitionBuilder<BUILDER extends AbstractAttributeDefinitionBuilder, ATTRIBUTE extends AttributeDefinition> {
 
     protected final String name;
@@ -133,7 +134,7 @@ public abstract class AbstractAttributeDefinitionBuilder<BUILDER extends Abstrac
      * by the {@link org.jboss.as.controller.AttributeDefinition} and instead let operation handlers validate using more complex logic
      * (e.g. checking for {@link #setAlternatives(String...) alternatives}.
      *
-     * @param validateNull {@code true} if additional validation should be performed; {@false} otherwise
+     * @param validateNull {@code true} if additional validation should be performed; {@code false} otherwise
      */
     public BUILDER setValidateNull(boolean validateNull) {
         this.validateNull = validateNull;

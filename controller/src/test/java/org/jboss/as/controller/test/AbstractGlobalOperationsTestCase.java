@@ -28,7 +28,6 @@ import static junit.framework.Assert.assertTrue;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
@@ -36,6 +35,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
@@ -50,7 +50,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
@@ -66,18 +65,23 @@ import java.util.Locale;
 import java.util.Random;
 import java.util.Set;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.ResourceBuilder;
+import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -90,17 +94,9 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
 
     private final AccessType expectedRwAttributeAccess;
 
-    public static DescriptionProvider rootDescriptionProvider = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            ModelNode node = new ModelNode();
-            node.get(DESCRIPTION).set("The root node of the test management API");
-            node.get(CHILDREN, PROFILE, DESCRIPTION).set("A list of profiles");
-            node.get(CHILDREN, PROFILE, MIN_OCCURS).set(1);
-            node.get(CHILDREN, PROFILE, MODEL_DESCRIPTION);
-            return node;
-        }
-    };
+    private static final OperationDefinition SETUP_OP_DEF = new SimpleOperationDefinitionBuilder("setup", new NonResolvingResourceDescriptionResolver())
+            .setPrivateEntry()
+            .build();
 
     protected AbstractGlobalOperationsTestCase() {
         super();
@@ -112,91 +108,74 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
         this.expectedRwAttributeAccess = expectedRwAttributeAccess;
     }
 
-    public static ModelNode createTestNode() {
-        ModelNode model = new ModelNode();
-
-        return model;
+    private static AttributeDefinition createAttribute(String name, ModelType type) {
+        return SimpleAttributeDefinitionBuilder.create(name, type).build();
     }
 
-    @Override
-    protected DescriptionProvider getRootDescriptionProvider() {
-        return rootDescriptionProvider;
+    private static AttributeDefinition createMetric(String name, ModelType type) {
+        return SimpleAttributeDefinitionBuilder.create(name, type).setStorageRuntime().build();
     }
 
-    @Override
-    protected ModelNode createCoreModel() {
-        return createTestNode();
+    private static OperationDefinition createOperationDefinition(String name, AttributeDefinition... parameters) {
+        return new SimpleOperationDefinitionBuilder(name, new NonResolvingResourceDescriptionResolver())
+                .setParameters(parameters)
+                .build();
     }
 
     @Override
     protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
         GlobalOperationHandlers.registerGlobalOperations(rootRegistration, processType);
-        rootRegistration.registerOperationHandler("setup", new OperationStepHandler() {
-                    @Override
-                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        final ModelNode model = new ModelNode();
-                        //Atttributes
-                        model.get("profile", "profileA", "subsystem", "subsystem1", "attr1").add(1);
-                        model.get("profile", "profileA", "subsystem", "subsystem1", "attr1").add(2);
-                        //Children
-                        model.get("profile", "profileA", "subsystem", "subsystem1", "type1", "thing1", "name").set("Name11");
-                        model.get("profile", "profileA", "subsystem", "subsystem1", "type1", "thing1", "value").set("201");
-                        model.get("profile", "profileA", "subsystem", "subsystem1", "type1", "thing2", "name").set("Name12");
-                        model.get("profile", "profileA", "subsystem", "subsystem1", "type1", "thing2", "value").set("202");
-                        model.get("profile", "profileA", "subsystem", "subsystem1", "type2", "other", "name").set("Name2");
+        rootRegistration.registerOperationHandler(SETUP_OP_DEF, new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                final ModelNode model = new ModelNode();
+                //Atttributes
+                model.get("profile", "profileA", "subsystem", "subsystem1", "attr1").add(1);
+                model.get("profile", "profileA", "subsystem", "subsystem1", "attr1").add(2);
+                //Children
+                model.get("profile", "profileA", "subsystem", "subsystem1", "type1", "thing1", "name").set("Name11");
+                model.get("profile", "profileA", "subsystem", "subsystem1", "type1", "thing1", "value").set("201");
+                model.get("profile", "profileA", "subsystem", "subsystem1", "type1", "thing2", "name").set("Name12");
+                model.get("profile", "profileA", "subsystem", "subsystem1", "type1", "thing2", "value").set("202");
+                model.get("profile", "profileA", "subsystem", "subsystem1", "type2", "other", "name").set("Name2");
 
 
-                        model.get("profile", "profileA", "subsystem", "subsystem2", "bigdecimal").set(new BigDecimal(100));
-                        model.get("profile", "profileA", "subsystem", "subsystem2", "biginteger").set(new BigInteger("101"));
-                        model.get("profile", "profileA", "subsystem", "subsystem2", "boolean").set(true);
-                        model.get("profile", "profileA", "subsystem", "subsystem2", "bytes").set(new byte[]{1, 2, 3});
-                        model.get("profile", "profileA", "subsystem", "subsystem2", "double").set(Double.MAX_VALUE);
-                        model.get("profile", "profileA", "subsystem", "subsystem2", "expression").setExpression("{expr}");
-                        model.get("profile", "profileA", "subsystem", "subsystem2", "int").set(102);
-                        model.get("profile", "profileA", "subsystem", "subsystem2", "list").add("l1A");
-                        model.get("profile", "profileA", "subsystem", "subsystem2", "list").add("l1B");
-                        model.get("profile", "profileA", "subsystem", "subsystem2", "long").set(Long.MAX_VALUE);
-                        model.get("profile", "profileA", "subsystem", "subsystem2", "object", "value").set("objVal");
-                        model.get("profile", "profileA", "subsystem", "subsystem2", "property").set(new Property("prop1", new ModelNode().set("value1")));
-                        model.get("profile", "profileA", "subsystem", "subsystem2", "string1").set("s1");
-                        model.get("profile", "profileA", "subsystem", "subsystem2", "string2").set("s2");
-                        model.get("profile", "profileA", "subsystem", "subsystem2", "type").set(ModelType.TYPE);
+                model.get("profile", "profileA", "subsystem", "subsystem2", "bigdecimal").set(new BigDecimal(100));
+                model.get("profile", "profileA", "subsystem", "subsystem2", "biginteger").set(new BigInteger("101"));
+                model.get("profile", "profileA", "subsystem", "subsystem2", "boolean").set(true);
+                model.get("profile", "profileA", "subsystem", "subsystem2", "bytes").set(new byte[]{1, 2, 3});
+                model.get("profile", "profileA", "subsystem", "subsystem2", "double").set(Double.MAX_VALUE);
+                model.get("profile", "profileA", "subsystem", "subsystem2", "expression").setExpression("{expr}");
+                model.get("profile", "profileA", "subsystem", "subsystem2", "int").set(102);
+                model.get("profile", "profileA", "subsystem", "subsystem2", "list").add("l1A");
+                model.get("profile", "profileA", "subsystem", "subsystem2", "list").add("l1B");
+                model.get("profile", "profileA", "subsystem", "subsystem2", "long").set(Long.MAX_VALUE);
+                model.get("profile", "profileA", "subsystem", "subsystem2", "object", "value").set("objVal");
+                model.get("profile", "profileA", "subsystem", "subsystem2", "property").set(new Property("prop1", new ModelNode().set("value1")));
+                model.get("profile", "profileA", "subsystem", "subsystem2", "string1").set("s1");
+                model.get("profile", "profileA", "subsystem", "subsystem2", "string2").set("s2");
+                model.get("profile", "profileA", "subsystem", "subsystem2", "type").set(ModelType.TYPE);
 
 
-                        model.get("profile", "profileB", "name").set("Profile B");
+                model.get("profile", "profileB", "name").set("Profile B");
 
-                        model.get("profile", "profileC", "subsystem", "subsystem4");
-                        model.get("profile", "profileC", "subsystem", "subsystem5", "name").set("Test");
+                model.get("profile", "profileC", "subsystem", "subsystem4");
+                model.get("profile", "profileC", "subsystem", "subsystem5", "name").set("Test");
 
-                        createModel(context, model);
+                createModel(context, model);
 
-                        context.stepCompleted();
-                    }
-                }, new DescriptionProvider() {
-                    @Override
-                    public ModelNode getModelDescription(Locale locale) {
-                        return new ModelNode();
-                    }
-                }, false, OperationEntry.EntryType.PRIVATE
+                context.stepCompleted();
+            }
+        }
         );
 
+        ResourceDefinition profileDef = ResourceBuilder.Factory.create(PathElement.pathElement("profile", "*"),
+                new NonResolvingResourceDescriptionResolver())
+                .addReadOnlyAttribute(SimpleAttributeDefinitionBuilder.create("name", ModelType.STRING, false).setMinSize(1).build())
+                .build();
 
-        ManagementResourceRegistration profileReg = rootRegistration.registerSubModel(PathElement.pathElement("profile", "*"), new DescriptionProvider() {
 
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                ModelNode node = new ModelNode();
-                node.get(DESCRIPTION).set("A named set of subsystem configs");
-                node.get(ATTRIBUTES, NAME, TYPE).set(ModelType.STRING);
-                node.get(ATTRIBUTES, NAME, DESCRIPTION).set("The name of the profile");
-                node.get(ATTRIBUTES, NAME, REQUIRED).set(true);
-                node.get(ATTRIBUTES, NAME, MIN_LENGTH).set(1);
-                node.get(CHILDREN, SUBSYSTEM, DESCRIPTION).set("The subsystems that make up the profile");
-                node.get(CHILDREN, SUBSYSTEM, MIN_OCCURS).set(1);
-                node.get(CHILDREN, SUBSYSTEM, MODEL_DESCRIPTION);
-                return node;
-            }
-        });
+        ManagementResourceRegistration profileReg = rootRegistration.registerSubModel(profileDef);
 
         ManagementResourceRegistration profileSub1Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem1"), new DescriptionProvider() {
 
@@ -227,45 +206,24 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
             }
         });
 
-        profileSub1Reg.registerReadOnlyAttribute("read-only", null, AttributeAccess.Storage.CONFIGURATION);
-        profileSub1Reg.registerReadWriteAttribute("read-write", null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.INT), AttributeAccess.Storage.CONFIGURATION);
-        profileSub1Reg.registerMetric("metric1", TestMetricHandler.INSTANCE);
-        profileSub1Reg.registerMetric("metric2", TestMetricHandler.INSTANCE);
-        //TODO Validation if we try to set a handler for an attribute that does not exist in model?
+        profileSub1Reg.registerReadOnlyAttribute(createAttribute("read-only", ModelType.INT), null);
+        profileSub1Reg.registerReadWriteAttribute(createAttribute("read-write", ModelType.INT), null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.INT));
+        profileSub1Reg.registerMetric(createMetric("metric1", ModelType.INT), TestMetricHandler.INSTANCE);
+        profileSub1Reg.registerMetric(createMetric("metric2", ModelType.INT), TestMetricHandler.INSTANCE);
 
-        DescriptionProvider thingProvider = new DescriptionProvider() {
+        ResourceDefinition profileSub1RegType1Def = ResourceBuilder.Factory.create(PathElement.pathElement("type1", "*"),
+                new NonResolvingResourceDescriptionResolver())
+                .addReadOnlyAttribute(createAttribute("name", ModelType.STRING))
+                .addReadOnlyAttribute(createAttribute("value", ModelType.INT))
+                .build();
+        profileSub1Reg.registerSubModel(profileSub1RegType1Def);
 
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                ModelNode node = new ModelNode();
-                node.get(DESCRIPTION).set("A type 1");
-                node.get(ATTRIBUTES, "name", TYPE).set(ModelType.STRING);
-                node.get(ATTRIBUTES, "name", DESCRIPTION).set("The name of the thing");
-                node.get(ATTRIBUTES, "name", REQUIRED).set(true);
-                node.get(ATTRIBUTES, "value", TYPE).set(ModelType.INT);
-                node.get(ATTRIBUTES, "value", DESCRIPTION).set("The value of the thing");
-                node.get(ATTRIBUTES, "value", REQUIRED).set(true);
-                return node;
-            }
-        };
-
-        ManagementResourceRegistration profileSub1RegChildType11 = profileSub1Reg.registerSubModel(PathElement.pathElement("type1", "*"), thingProvider);
-        ManagementResourceRegistration profileSub1RegChildType2 = profileSub1Reg.registerSubModel(PathElement.pathElement("type2", "other"), new DescriptionProvider() {
-
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                ModelNode node = new ModelNode();
-                node.get(DESCRIPTION).set("A type 2");
-                node.get(ATTRIBUTES, "name", TYPE).set(ModelType.STRING);
-                node.get(ATTRIBUTES, "name", DESCRIPTION).set("The name of the thing");
-                node.get(ATTRIBUTES, "name", REQUIRED).set(true);
-                node.get(ATTRIBUTES, "default", TYPE).set(ModelType.STRING);
-                node.get(ATTRIBUTES, "default", DESCRIPTION).set("The name of the thing");
-                node.get(ATTRIBUTES, "default", REQUIRED).set(false);
-                node.get(ATTRIBUTES, "default", DEFAULT).set("Default string");
-                return node;
-            }
-        });
+        ResourceDefinition profileSub1RegType2Def = ResourceBuilder.Factory.create(PathElement.pathElement("type2", "other"),
+                new NonResolvingResourceDescriptionResolver())
+                .addReadOnlyAttribute(createAttribute("name", ModelType.STRING))
+                .addReadOnlyAttribute(SimpleAttributeDefinitionBuilder.create("default", ModelType.STRING).setDefaultValue(new ModelNode("Default string")).build())
+                .build();
+        profileSub1Reg.registerSubModel(profileSub1RegType2Def);
 
         ManagementResourceRegistration profileASub2Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem2"), new DescriptionProvider() {
 
@@ -324,7 +282,7 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
             }
         });
 
-        profileASub2Reg.registerReadWriteAttribute("long", null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.LONG, false), AttributeAccess.Storage.CONFIGURATION);
+        profileASub2Reg.registerReadWriteAttribute(createAttribute("long", ModelType.LONG), null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.LONG, false));
 
         ManagementResourceRegistration profileBSub3Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem3"), new DescriptionProvider() {
 
@@ -340,66 +298,30 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
             }
         });
 
-        profileSub1Reg.registerOperationHandler("testA1-1",
+        profileSub1Reg.registerOperationHandler(createOperationDefinition("testA1-1", createAttribute("paramA1", ModelType.INT)),
                 new OperationStepHandler() {
                     @Override
                     public void execute(OperationContext context, ModelNode operation) {
-                        return;
                     }
-                },
-                new DescriptionProvider() {
-
-                    @Override
-                    public ModelNode getModelDescription(Locale locale) {
-                        ModelNode node = new ModelNode();
-                        node.get(OPERATION_NAME).set("testA1");
-                        node.get(REQUEST_PROPERTIES, "paramA1", TYPE).set(ModelType.INT);
-                        return node;
-                    }
-                },
-                false
+                }
         );
-        profileSub1Reg.registerOperationHandler("testA1-2",
-                new OperationStepHandler() {
 
+        profileSub1Reg.registerOperationHandler(createOperationDefinition("testA1-2", createAttribute("paramA2", ModelType.STRING)),
+                new OperationStepHandler() {
                     @Override
                     public void execute(OperationContext context, ModelNode operation) {
-                        return;
                     }
-                },
-                new DescriptionProvider() {
-
-                    @Override
-                    public ModelNode getModelDescription(Locale locale) {
-                        ModelNode node = new ModelNode();
-                        node.get(OPERATION_NAME).set("testA2");
-                        node.get(REQUEST_PROPERTIES, "paramA2", TYPE).set(ModelType.STRING);
-                        return node;
-                    }
-                },
-                false
+                }
         );
 
 
-        profileASub2Reg.registerOperationHandler("testA2",
+        profileASub2Reg.registerOperationHandler(createOperationDefinition("testA2", createAttribute("paramB", ModelType.LONG)),
                 new OperationStepHandler() {
 
                     @Override
                     public void execute(OperationContext context, ModelNode operation) {
-                        return;
                     }
-                },
-                new DescriptionProvider() {
-
-                    @Override
-                    public ModelNode getModelDescription(Locale locale) {
-                        ModelNode node = new ModelNode();
-                        node.get(OPERATION_NAME).set("testB");
-                        node.get(REQUEST_PROPERTIES, "paramB", TYPE).set(ModelType.LONG);
-                        return node;
-                    }
-                },
-                false
+                }
         );
 
         ManagementResourceRegistration profileCSub4Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem4"), new DescriptionProvider() {
@@ -434,25 +356,19 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
                 return node;
             }
         });
-        profileCSub5Reg.registerReadOnlyAttribute("name", new OperationStepHandler() {
+        profileCSub5Reg.registerReadOnlyAttribute(createAttribute("name", ModelType.STRING), new OperationStepHandler() {
 
             @Override
             public void execute(OperationContext context, ModelNode operation) {
                 context.getResult().set("Overridden by special read handler");
                 context.stepCompleted();
             }
-        }, AttributeAccess.Storage.CONFIGURATION);
-
-
-        ManagementResourceRegistration profileCSub5Type1Reg = profileCSub5Reg.registerSubModel(PathElement.pathElement("type1", "thing1"), new DescriptionProvider() {
-
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                ModelNode node = new ModelNode();
-                node.get(DESCRIPTION).set("A subsystem");
-                return node;
-            }
         });
+
+        ResourceDefinition profileCSub5Type1RegDef = ResourceBuilder.Factory.create(PathElement.pathElement("type1", "thing1"),
+                new NonResolvingResourceDescriptionResolver())
+                .build();
+        ManagementResourceRegistration profileCSub5Type1Reg = profileCSub5Reg.registerSubModel(profileCSub5Type1RegDef);
     }
 
     /**
@@ -479,9 +395,8 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
     }
 
     protected void checkRootNodeDescription(ModelNode result, boolean recursive, boolean operations) {
-        assertEquals("The root node of the test management API", result.require(DESCRIPTION).asString());
-        assertEquals("A list of profiles", result.require(CHILDREN).require(PROFILE).require(DESCRIPTION).asString());
-        assertEquals(1, result.require(CHILDREN).require(PROFILE).require(MIN_OCCURS).asInt());
+        assertEquals("description", result.require(DESCRIPTION).asString());
+        assertEquals("profile", result.require(CHILDREN).require(PROFILE).require(DESCRIPTION).asString());
 
         if (operations) {
             assertTrue(result.require(OPERATIONS).isDefined());
@@ -512,13 +427,10 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
     }
 
     protected void checkProfileNodeDescription(ModelNode result, boolean recursive, boolean operations) {
-        assertEquals("A named set of subsystem configs", result.require(DESCRIPTION).asString());
         assertEquals(ModelType.STRING, result.require(ATTRIBUTES).require(NAME).require(TYPE).asType());
-        assertEquals("The name of the profile", result.require(ATTRIBUTES).require(NAME).require(DESCRIPTION).asString());
-        assertEquals(true, result.require(ATTRIBUTES).require(NAME).require(REQUIRED).asBoolean());
+        assertEquals(false, result.require(ATTRIBUTES).require(NAME).require(NILLABLE).asBoolean());
         assertEquals(1, result.require(ATTRIBUTES).require(NAME).require(MIN_LENGTH).asInt());
-        assertEquals("The subsystems that make up the profile", result.require(CHILDREN).require(SUBSYSTEM).require(DESCRIPTION).asString());
-        assertEquals(1, result.require(CHILDREN).require(SUBSYSTEM).require(MIN_OCCURS).asInt());
+        assertEquals("subsystem", result.require(CHILDREN).require(SUBSYSTEM).require(DESCRIPTION).asString());
         if (!recursive) {
             assertFalse(result.require(CHILDREN).require(SUBSYSTEM).require(MODEL_DESCRIPTION).isDefined());
             return;
@@ -531,7 +443,6 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
     protected void checkSubsystem1Description(ModelNode result, boolean recursive, boolean operations) {
         assertNotNull(result);
 
-        assertEquals("A test subsystem 1", result.require(DESCRIPTION).asString());
         assertEquals(ModelType.LIST, result.require(ATTRIBUTES).require("attr1").require(TYPE).asType());
         assertEquals(ModelType.INT, result.require(ATTRIBUTES).require("attr1").require(VALUE_TYPE).asType());
         assertEquals("The values", result.require(ATTRIBUTES).require("attr1").require(DESCRIPTION).asString());
@@ -591,15 +502,14 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
 
     protected void checkType1Description(ModelNode result) {
         assertNotNull(result);
-        assertEquals("A type 1", result.require(DESCRIPTION).asString());
         assertEquals(ModelType.STRING, result.require(ATTRIBUTES).require("name").require(TYPE).asType());
-        assertEquals("The name of the thing", result.require(ATTRIBUTES).require("name").require(DESCRIPTION).asString());
-        assertTrue(result.require(ATTRIBUTES).require("name").require(REQUIRED).asBoolean());
+        assertEquals("name", result.require(ATTRIBUTES).require("name").require(DESCRIPTION).asString());
+        assertFalse(result.require(ATTRIBUTES).require("name").require(NILLABLE).asBoolean());
         assertEquals(ModelType.INT, result.require(ATTRIBUTES).require("value").require(TYPE).asType());
-        assertEquals("The value of the thing", result.require(ATTRIBUTES).require("value").require(DESCRIPTION).asString());
-        assertTrue(result.require(ATTRIBUTES).require("value").require(REQUIRED).asBoolean());
+        assertEquals("value", result.require(ATTRIBUTES).require("value").require(DESCRIPTION).asString());
+        assertFalse(result.require(ATTRIBUTES).require("value").require(NILLABLE).asBoolean());
         //TODO should the inherited ops be picked up?
-        if (result.has(OPERATIONS)) {
+        if (result.hasDefined(OPERATIONS)) {
             assertTrue(result.require(OPERATIONS).isDefined());
             Set<String> ops = result.require(OPERATIONS).keys();
             assertEquals(processType == ProcessType.DOMAIN_SERVER ? 8 : 10, ops.size());
@@ -619,12 +529,11 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
 
     protected void checkType2Description(ModelNode result) {
         assertNotNull(result);
-        assertEquals("A type 2", result.require(DESCRIPTION).asString());
+        assertEquals("description", result.require(DESCRIPTION).asString());
         assertEquals(ModelType.STRING, result.require(ATTRIBUTES).require("name").require(TYPE).asType());
-        assertEquals("The name of the thing", result.require(ATTRIBUTES).require("name").require(DESCRIPTION).asString());
-        assertTrue(result.require(ATTRIBUTES).require("name").require(REQUIRED).asBoolean());
-        //TODO should the inherited ops be picked up?
-        if (result.has(OPERATIONS)) {
+        assertEquals("name", result.require(ATTRIBUTES).require("name").require(DESCRIPTION).asString());
+        assertFalse(result.require(ATTRIBUTES).require("name").require(NILLABLE).asBoolean());
+        if (result.hasDefined(OPERATIONS)) {
             assertTrue(result.require(OPERATIONS).isDefined());
             Set<String> ops = result.require(OPERATIONS).keys();
             assertEquals(processType == ProcessType.DOMAIN_SERVER ? 8 : 10, ops.size());

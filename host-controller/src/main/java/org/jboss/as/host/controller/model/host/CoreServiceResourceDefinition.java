@@ -45,7 +45,4 @@ public class CoreServiceResourceDefinition extends SimpleResourceDefinition {
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         super.registerAttributes(resourceRegistration);
     }
-    /*
-    see ManagementDescription.getManagementDescription
-     */
 }

@@ -29,9 +29,10 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.dmr.ModelNode;
+
 /**
  * Handles deployment into the runtime.
  *
@@ -41,10 +42,6 @@ public class DeploymentDeployHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = DEPLOY;
 
-    static ModelNode getOperation(ModelNode address) {
-        return Util.getEmptyOperation(OPERATION_NAME, address);
-    }
-
     private final AbstractVaultReader vaultReader;
 
     public DeploymentDeployHandler(final AbstractVaultReader vaultReader) {
@@ -52,7 +49,8 @@ public class DeploymentDeployHandler implements OperationStepHandler {
     }
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
+        Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
+        ModelNode model = resource.getModel();
         model.get(ENABLED.getName()).set(true);
 
         final ModelNode opAddr = operation.get(OP_ADDR);

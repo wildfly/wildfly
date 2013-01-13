@@ -59,7 +59,7 @@ public class DeploymentUploadUtil {
 
     private static InputStream getContents(OperationContext context, ModelNode operation) throws OperationFailedException {
         if(! operation.hasDefined(CONTENT)) {
-            createFailureException(MESSAGES.invalidContentDeclaration());
+            throw createFailureException(MESSAGES.invalidContentDeclaration());
         }
         return getInputStream(context, operation.require(CONTENT).get(0));
     }

@@ -30,7 +30,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.host.controller.descriptions.HostEnvironmentResourceDescription;
+import org.jboss.as.host.controller.descriptions.HostEnvironmentResourceDefinition;
 
 /**
  * {@link ResourceDefinition} for JVM configuration resources.
@@ -47,7 +47,7 @@ public class JvmResourceDefinition extends SimpleResourceDefinition {
 
     protected JvmResourceDefinition(boolean server) {
         super(PathElement.pathElement(ModelDescriptionConstants.JVM),
-                new StandardResourceDescriptionResolver("jvm", HostEnvironmentResourceDescription.class.getPackage().getName() + ".LocalDescriptions", HostEnvironmentResourceDescription.class.getClassLoader(), true, false),
+                new StandardResourceDescriptionResolver("jvm", HostEnvironmentResourceDefinition.class.getPackage().getName() + ".LocalDescriptions", HostEnvironmentResourceDefinition.class.getClassLoader(), true, false),
                 new JVMAddHandler(JvmAttributes.getAttributes(server)),
                 JVMRemoveHandler.INSTANCE);
         this.server = server;
@@ -67,11 +67,5 @@ public class JvmResourceDefinition extends SimpleResourceDefinition {
         super.registerOperations(resourceRegistration);
         resourceRegistration.registerOperationHandler(JVMOptionAddHandler.DEFINITION, JVMOptionAddHandler.INSTANCE);
         resourceRegistration.registerOperationHandler(JVMOptionRemoveHandler.DEFINITION, JVMOptionRemoveHandler.INSTANCE);
-
-        //AS7-4437 is scheduled for 7.2.0 so uncomment these once we have decided on the format of the operation names
-        //There are some tests in AbstractJvmModelTest for these which need uncommenting as well
-
-        //resourceRegistration.registerOperationHandler(JVMEnvironmentVariableAddHandler.OPERATION_NAME, JVMEnvironmentVariableAddHandler.INSTANCE, JVMEnvironmentVariableAddHandler.INSTANCE, false);
-        //resourceRegistration.registerOperationHandler(JVMEnvironmentVariableRemoveHandler.OPERATION_NAME, JVMEnvironmentVariableRemoveHandler.INSTANCE, JVMEnvironmentVariableRemoveHandler.INSTANCE, false);
     }
 }

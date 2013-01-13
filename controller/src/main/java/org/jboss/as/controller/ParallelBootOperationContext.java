@@ -44,6 +44,7 @@ import org.jboss.msc.service.ServiceTarget;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
+@SuppressWarnings("deprecation")
 class ParallelBootOperationContext extends AbstractOperationContext {
 
     private final OperationContext primaryContext;

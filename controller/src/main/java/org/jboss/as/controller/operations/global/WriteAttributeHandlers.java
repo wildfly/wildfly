@@ -53,6 +53,7 @@ public class WriteAttributeHandlers {
 
     /** @deprecated use {@link AbstractWriteAttributeHandler} */
     @Deprecated
+    @SuppressWarnings("deprecation")
     public static class WriteAttributeOperationHandler implements OperationStepHandler {
         public static WriteAttributeOperationHandler INSTANCE = new WriteAttributeOperationHandler();
 

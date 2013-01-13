@@ -22,10 +22,6 @@
 package org.jboss.as.controller.services.path;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -43,14 +39,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -802,21 +796,6 @@ public class PathsTestCase extends AbstractControllerTestBase {
         operation.get(RECURSIVE).set(true);
 
         return executeForResult(operation);
-    }
-
-    @Override
-    protected DescriptionProvider getRootDescriptionProvider() {
-        return new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                ModelNode node = new ModelNode();
-                node.get(DESCRIPTION).set("The root node of the test management API");
-                node.get(CHILDREN, PATH, DESCRIPTION).set("A list of paths");
-                node.get(CHILDREN, PATH, MIN_OCCURS).set(0);
-                node.get(CHILDREN, PATH, MODEL_DESCRIPTION);
-                return node;
-            }
-        };
     }
 
     @Override

@@ -22,8 +22,6 @@
 
 package org.jboss.as.server.services.net;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.net.UnknownHostException;
@@ -52,18 +50,6 @@ public class RemoteDestinationOutboundSocketBindingAddHandler extends AbstractAd
 
     static final RemoteDestinationOutboundSocketBindingAddHandler INSTANCE = new RemoteDestinationOutboundSocketBindingAddHandler();
 
-    @Deprecated
-    public static ModelNode getOperation(final ModelNode address, final ModelNode remoteDestinationOutboundSocketBinding) {
-        final ModelNode addOperation = new ModelNode();
-        addOperation.get(OP).set(ADD);
-        addOperation.get(OP_ADDR).set(address);
-        for (SimpleAttributeDefinition ad : RemoteDestinationOutboundSocketBindingResourceDefinition.ATTRIBUTES) {
-            if (remoteDestinationOutboundSocketBinding.get(ad.getName()).isDefined()) {
-                addOperation.get(ad.getName()).set(remoteDestinationOutboundSocketBinding.get(ad.getName()));
-            }
-        }
-        return addOperation;
-    }
 
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {

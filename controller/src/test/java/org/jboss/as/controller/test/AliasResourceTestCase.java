@@ -31,7 +31,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_ALIASES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INHERITED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -61,7 +60,6 @@ import java.util.Map;
 import java.util.ResourceBundle;
 
 import junit.framework.Assert;
-
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -90,7 +88,6 @@ import org.jboss.dmr.ModelType;
 import org.junit.Test;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class AliasResourceTestCase extends AbstractControllerTestBase {
@@ -349,32 +346,32 @@ public class AliasResourceTestCase extends AbstractControllerTestBase {
 
     @Test
     public void testDescribeHandler() throws Exception {
-       addCore(CORE);
-       addChild(CORE);
+        addCore(CORE);
+        addChild(CORE);
 
-       ModelNode op = createOperation(DESCRIBE);
-       ModelNode result = executeForResult(op);
+        ModelNode op = createOperation(DESCRIBE);
+        ModelNode result = executeForResult(op);
 
-       List<ModelNode> ops = result.asList();
-       Assert.assertEquals(3, ops.size());
+        List<ModelNode> ops = result.asList();
+        Assert.assertEquals(3, ops.size());
 
-       op = ops.get(0);
-       Assert.assertEquals(2, op.keys().size());
-       Assert.assertEquals(ADD, op.get(OP).asString());
-       Assert.assertEquals(new ModelNode().setEmptyList(), op.get(OP_ADDR));
+        op = ops.get(0);
+        Assert.assertEquals(2, op.keys().size());
+        Assert.assertEquals(ADD, op.get(OP).asString());
+        Assert.assertEquals(new ModelNode().setEmptyList(), op.get(OP_ADDR));
 
-       op = ops.get(1);
-       Assert.assertEquals(4, op.keys().size());
-       Assert.assertEquals(ADD, op.get(OP).asString());
-       Assert.assertEquals(new ModelNode().add(CORE, MODEL), op.get(OP_ADDR));
-       Assert.assertEquals("R/W", op.get("rw").asString());
-       Assert.assertEquals("R/O", op.get("ro").asString());
+        op = ops.get(1);
+        Assert.assertEquals(4, op.keys().size());
+        Assert.assertEquals(ADD, op.get(OP).asString());
+        Assert.assertEquals(new ModelNode().add(CORE, MODEL), op.get(OP_ADDR));
+        Assert.assertEquals("R/W", op.get("rw").asString());
+        Assert.assertEquals("R/O", op.get("ro").asString());
 
-       op = ops.get(2);
-       Assert.assertEquals(3, op.keys().size());
-       Assert.assertEquals(ADD, op.get(OP).asString());
-       Assert.assertEquals(new ModelNode().add(CORE, MODEL).add(CHILD, KID_MODEL), op.get(OP_ADDR));
-       Assert.assertEquals("R/W 2", op.get("rw").asString());
+        op = ops.get(2);
+        Assert.assertEquals(3, op.keys().size());
+        Assert.assertEquals(ADD, op.get(OP).asString());
+        Assert.assertEquals(new ModelNode().add(CORE, MODEL).add(CHILD, KID_MODEL), op.get(OP_ADDR));
+        Assert.assertEquals("R/W 2", op.get("rw").asString());
     }
 
 
@@ -472,7 +469,7 @@ public class AliasResourceTestCase extends AbstractControllerTestBase {
 
     }
 
-    private void readResource(boolean includeRuntime, boolean includeAlias, String ro, String rw, String rt, String childRw, String...address) throws Exception {
+    private void readResource(boolean includeRuntime, boolean includeAlias, String ro, String rw, String rt, String childRw, String... address) throws Exception {
         ModelNode op = createOperation(READ_RESOURCE_OPERATION, address);
         op.get(RECURSIVE).set(true);
         if (includeRuntime) {
@@ -608,24 +605,24 @@ public class AliasResourceTestCase extends AbstractControllerTestBase {
         Assert.assertEquals("child-test", result.get(OPERATION_NAME).asString());
     }
 
-    private void writeAttribute(String name, String value, String...address) throws Exception {
+    private void writeAttribute(String name, String value, String... address) throws Exception {
         ModelNode op = createOperation(WRITE_ATTRIBUTE_OPERATION, address);
         op.get(NAME).set(name);
         op.get(VALUE).set(value);
         executeForResult(op);
     }
 
-    private String readAttribute(String name, String...address) throws Exception {
+    private String readAttribute(String name, String... address) throws Exception {
         ModelNode op = createOperation(READ_ATTRIBUTE_OPERATION, address);
         op.get(NAME).set(name);
-        ModelNode result =  executeForResult(op);
+        ModelNode result = executeForResult(op);
         if (result.isDefined()) {
             return result.asString();
         }
         return null;
     }
 
-    private void undefineAttribute(String name, String...address) throws Exception {
+    private void undefineAttribute(String name, String... address) throws Exception {
         ModelNode op = createOperation(UNDEFINE_ATTRIBUTE_OPERATION, address);
         op.get(NAME).set(name);
         executeForResult(op);
@@ -637,24 +634,6 @@ public class AliasResourceTestCase extends AbstractControllerTestBase {
         Assert.assertEquals(description, attr.get(DESCRIPTION).asString());
         Assert.assertEquals(accessType, attr.get(ACCESS_TYPE).asString());
         Assert.assertEquals(storage, attr.get(STORAGE).asString());
-    }
-
-    @Override
-    protected DescriptionProvider getRootDescriptionProvider() {
-        return new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                ModelNode node = new ModelNode();
-                node.get(DESCRIPTION).set("The root node of the test management API");
-                node.get(CHILDREN, CORE, DESCRIPTION).set("The core model");
-                node.get(CHILDREN, CORE, MIN_OCCURS).set(0);
-                node.get(CHILDREN, CORE, MODEL_DESCRIPTION);
-                node.get(CHILDREN, ALIASED, DESCRIPTION).set("The aliased model");
-                node.get(CHILDREN, ALIASED, MIN_OCCURS).set(0);
-                node.get(CHILDREN, ALIASED, MODEL_DESCRIPTION);
-                return node;
-            }
-        };
     }
 
     @Override
@@ -872,7 +851,7 @@ public class AliasResourceTestCase extends AbstractControllerTestBase {
 
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            OperationStepHandler step =  operation.get(OP).asString().equals(WRITE_ATTRIBUTE_OPERATION) ? WriteAttributeHandler.INSTANCE : ReadAttributeHandler.INSTANCE;
+            OperationStepHandler step = operation.get(OP).asString().equals(WRITE_ATTRIBUTE_OPERATION) ? WriteAttributeHandler.INSTANCE : ReadAttributeHandler.INSTANCE;
             ModelNode aliasOp = operation.clone();
             aliasOp.get(NAME).set(targetAttribute);
             context.addStep(aliasOp, step, Stage.IMMEDIATE);

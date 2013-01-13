@@ -37,6 +37,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -60,7 +61,7 @@ public class ProfileDescribeHandler implements OperationStepHandler {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
 
         final ModelNode result = new ModelNode();
-        final ModelNode profile = context.readModel(PathAddress.EMPTY_ADDRESS);
+        final ModelNode profile =  Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
         result.setEmptyList();
 
         final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();

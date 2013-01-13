@@ -57,6 +57,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
+@SuppressWarnings("deprecation")
 abstract class AbstractOperationContext implements OperationContext {
 
     static final ThreadLocal<Thread> controllingThread = new ThreadLocal<Thread>();

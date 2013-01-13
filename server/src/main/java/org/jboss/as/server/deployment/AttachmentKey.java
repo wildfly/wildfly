@@ -47,6 +47,7 @@ public abstract class AttachmentKey<T> {
      * @param <T> the attachment type
      * @return the new instance
      */
+    @SuppressWarnings("unchecked")
     public static <T> AttachmentKey<T> create(final Class<? super T> valueClass) {
         return new SimpleAttachmentKey(valueClass);
     }

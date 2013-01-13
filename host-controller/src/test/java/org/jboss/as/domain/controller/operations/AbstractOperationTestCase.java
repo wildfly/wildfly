@@ -21,7 +21,6 @@
 */
 package org.jboss.as.domain.controller.operations;
 
-import static junit.framework.Assert.assertNotNull;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
@@ -39,8 +38,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYS
 import static org.junit.Assert.fail;
 
 import java.io.InputStream;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -71,8 +68,6 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
-import org.jboss.as.network.NetworkInterfaceBinding;
-import org.jboss.as.repository.ContentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -80,7 +75,6 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public abstract class AbstractOperationTestCase {
@@ -130,14 +124,6 @@ public abstract class AbstractOperationTestCase {
         }
 
         public String getRemoteDomainControllerUsername() {
-            return null;
-        }
-
-        public NetworkInterfaceBinding getNetworkInterfaceBinding(String name) throws SocketException, UnknownHostException {
-            return null;
-        }
-
-        public ContentRepository getContentRepository() {
             return null;
         }
 
@@ -459,7 +445,7 @@ public abstract class AbstractOperationTestCase {
         }
 
         @Override
-         public <V> V getAttachment(final AttachmentKey<V> key) {
+        public <V> V getAttachment(final AttachmentKey<V> key) {
             return key.cast(valueAttachments.get(key));
         }
 

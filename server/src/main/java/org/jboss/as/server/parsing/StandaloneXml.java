@@ -171,7 +171,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
                     final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                     switch (attribute) {
                         case NAME: {
-                            serverName = ServerRootResourceDefinition.NAME.parse(value, reader.getLocation());
+                            serverName = ServerRootResourceDefinition.NAME.parse(value, reader);
                             break;
                         }
                         default:
@@ -277,7 +277,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
                     final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                     switch (attribute) {
                         case NAME: {
-                            serverName = ServerRootResourceDefinition.NAME.parse(value, reader.getLocation());
+                            serverName = ServerRootResourceDefinition.NAME.parse(value, reader);
                             break;
                         }
                         default:
@@ -386,7 +386,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
                     final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                     switch (attribute) {
                         case NAME: {
-                            serverName = ServerRootResourceDefinition.NAME.parse(value, reader.getLocation());
+                            serverName = ServerRootResourceDefinition.NAME.parse(value, reader);
                             break;
                         }
                         default:

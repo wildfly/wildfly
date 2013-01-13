@@ -117,6 +117,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
      * @param prepareStep             the prepare step to prepend to operation execution
      * @param expressionResolver      the expression resolver
      */
+    @Deprecated
     protected AbstractControllerService(final ProcessType processType, final RunningModeControl runningModeControl,
                                         final ConfigurationPersister configurationPersister,
                                         final ControlledProcessState processState, final DescriptionProvider rootDescriptionProvider,

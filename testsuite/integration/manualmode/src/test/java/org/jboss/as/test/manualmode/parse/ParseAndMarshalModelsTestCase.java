@@ -39,17 +39,14 @@ import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
 import javax.management.ObjectName;
 import javax.xml.namespace.QName;
 
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
-
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -69,10 +66,12 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.ResourceBuilder;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.common.CoreManagementDefinition;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
@@ -147,10 +146,9 @@ import org.junit.runner.RunWith;
 /**
  * Tests the ability to parse the config files we ship or have shipped in the past, as well as the ability
  * to marshal them back to xml in a manner such that reparsing them produces a consistent in-memory configuration model.
- * <p>
+ * <p/>
  * <b>Note:</b>The standard {@code build/src/main/resources/standalone/configuration} and
  * {@code build/src/main/resources/domain/configuration} files are tested in the smoke integration module ParseAndMarshalModelsTestCase.
- *
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
@@ -159,17 +157,17 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class ParseAndMarshalModelsTestCase {
 
-    @Deployment(name="test", managed=false, testable=true)
+    @Deployment(name = "test", managed = false, testable = true)
     public static Archive<?> getDeployment() {
 
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "bogus.jar");
         archive.addPackage(ParseAndMarshalModelsTestCase.class.getPackage());
         archive.addClass(FileUtils.class);
         archive.add(new Asset() {
-                    public InputStream openStream() {
-                        return new ByteArrayInputStream("Dependencies: org.jboss.staxmapper,org.jboss.as.controller,org.jboss.as.deployment-repository,org.jboss.as.server,org.jboss.as.host-controller,org.jboss.as.domain-management,org.jboss.as.security\n\n".getBytes());
-                    }
-                 }, "META-INF/MANIFEST.MF");
+            public InputStream openStream() {
+                return new ByteArrayInputStream("Dependencies: org.jboss.staxmapper,org.jboss.as.controller,org.jboss.as.deployment-repository,org.jboss.as.server,org.jboss.as.host-controller,org.jboss.as.domain-management,org.jboss.as.security\n\n".getBytes());
+            }
+        }, "META-INF/MANIFEST.MF");
         return archive;
     }
 
@@ -177,7 +175,7 @@ public class ParseAndMarshalModelsTestCase {
 
     @Before
     public void setupServiceContainer() {
-        if (isInContainer()){
+        if (isInContainer()) {
             serviceContainer = ServiceContainer.Factory.create("test");
         }
     }
@@ -192,8 +190,7 @@ public class ParseAndMarshalModelsTestCase {
                     serviceContainer.awaitTermination(5, TimeUnit.SECONDS);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
-                }
-                finally {
+                } finally {
                     serviceContainer = null;
                 }
             }
@@ -533,58 +530,67 @@ public class ParseAndMarshalModelsTestCase {
 //        domainXmlTest(getExampleConfigFile("domain-jts.xml"));
 //    }
 
-    @Test @TargetsContainer("class-jbossas")
+    @Test
+    @TargetsContainer("class-jbossas")
     public void testDomainXml() throws Exception {
         domainXmlTest(getOriginalDomainXml("domain.xml"));
     }
 
-    @Test @TargetsContainer("class-jbossas")
+    @Test
+    @TargetsContainer("class-jbossas")
     public void test700DomainXml() throws Exception {
         domainXmlTest(getLegacyConfigFile("domain", "7-0-0.xml"));
     }
 
-    @Test @TargetsContainer("class-jbossas")
+    @Test
+    @TargetsContainer("class-jbossas")
     public void test701DomainXml() throws Exception {
         domainXmlTest(getLegacyConfigFile("domain", "7-0-1.xml"));
     }
 
-    @Test @TargetsContainer("class-jbossas")
+    @Test
+    @TargetsContainer("class-jbossas")
     public void test702DomainXml() throws Exception {
         domainXmlTest(getLegacyConfigFile("domain", "7-0-2.xml"));
     }
 
-    @Test @TargetsContainer("class-jbossas")
+    @Test
+    @TargetsContainer("class-jbossas")
     public void test700DomainPreviewXml() throws Exception {
         domainXmlTest(getLegacyConfigFile("domain", "7-0-0-preview.xml"));
     }
 
-    @Test @TargetsContainer("class-jbossas")
+    @Test
+    @TargetsContainer("class-jbossas")
     public void test701DomainPreviewXml() throws Exception {
         domainXmlTest(getLegacyConfigFile("domain", "7-0-1-preview.xml"));
     }
 
-    @Test @TargetsContainer("class-jbossas")
+    @Test
+    @TargetsContainer("class-jbossas")
     public void test702DomainPreviewXml() throws Exception {
         domainXmlTest(getLegacyConfigFile("domain", "7-0-2-preview.xml"));
     }
 
-    @Test @TargetsContainer("class-jbossas")
+    @Test
+    @TargetsContainer("class-jbossas")
     public void test710DomainXml() throws Exception {
         ModelNode model = domainXmlTest(getLegacyConfigFile("domain", "7-1-0.xml"));
         validateJsfProfiles(model);
     }
 
-    @Test @TargetsContainer("class-jbossas")
+    @Test
+    @TargetsContainer("class-jbossas")
     public void test711DomainXml() throws Exception {
         domainXmlTest(getLegacyConfigFile("domain", "7-1-1.xml"));
     }
 
-    @Test @TargetsContainer("class-jbossas")
+    @Test
+    @TargetsContainer("class-jbossas")
     public void test712DomainXml() throws Exception {
         ModelNode model = domainXmlTest(getLegacyConfigFile("domain", "7-1-2.xml"));
         validateJsfProfiles(model);
     }
-
 
 
     private ModelNode domainXmlTest(File original) throws Exception {
@@ -722,6 +728,7 @@ public class ParseAndMarshalModelsTestCase {
         persister.store(model, null).commit();
         return model;
     }
+
     //TODO use HostInitializer & TestModelControllerService
     private ModelNode loadHostModel(final File file) throws Exception {
         final QName rootElement = new QName(Namespace.CURRENT.getUriString(), "host");
@@ -751,11 +758,9 @@ public class ParseAndMarshalModelsTestCase {
                 final LocalHostControllerInfoImpl hostControllerInfo = new LocalHostControllerInfoImpl(new ControlledProcessState(false), "master");
 
                 // Add of the host itself
-                ManagementResourceRegistration hostRegistration = root.registerSubModel(PathElement.pathElement(HOST), new DescriptionProvider() {
-                    public ModelNode getModelDescription(Locale locale) {
-                        return new ModelNode();
-                    }
-                });
+                ManagementResourceRegistration hostRegistration = root.registerSubModel(
+                        ResourceBuilder.Factory.create(PathElement.pathElement(HOST),new NonResolvingResourceDescriptionResolver()).build());
+
 
                 // Other root resource operations
                 XmlMarshallingHandler xmh = new XmlMarshallingHandler(persister);
@@ -892,8 +897,6 @@ public class ParseAndMarshalModelsTestCase {
     }
 
 
-
-
     //  Get-config methods
 
     private File getOriginalStandaloneXml(String profile) throws FileNotFoundException {
@@ -959,14 +962,6 @@ public class ParseAndMarshalModelsTestCase {
         );
     }
 
-    DescriptionProvider getRootDescriptionProvider() {
-        return new DescriptionProvider() {
-            public ModelNode getModelDescription(Locale locale) {
-                return new ModelNode();
-            }
-        };
-    }
-
     private boolean isInContainer() {
         return this.getClass().getClassLoader() instanceof ModuleClassLoader;
     }
@@ -982,7 +977,8 @@ public class ParseAndMarshalModelsTestCase {
         private final Setup registration;
 
         ModelControllerService(final ProcessType processType, final Setup registration, final ModelNode model) {
-            super(processType, new RunningModeControl(RunningMode.ADMIN_ONLY), new NullConfigurationPersister(), new ControlledProcessState(true), getRootDescriptionProvider(), null, ExpressionResolver.DEFAULT);
+            super(processType, new RunningModeControl(RunningMode.ADMIN_ONLY), new NullConfigurationPersister(), new ControlledProcessState(true),
+                    ResourceBuilder.Factory.create(PathElement.pathElement("root"), new NonResolvingResourceDescriptionResolver()).build(), null, ExpressionResolver.DEFAULT);
             this.model = model;
             this.registration = registration;
         }
@@ -1002,11 +998,12 @@ public class ParseAndMarshalModelsTestCase {
         protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
             registration.setup(rootResource, rootRegistration);
 
-            rootRegistration.registerOperationHandler("capture-model", new OperationStepHandler() {
-                        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                            model.set(Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS)));
-                        }
-                    }, getRootDescriptionProvider());
+            rootRegistration.registerOperationHandler(new SimpleOperationDefinitionBuilder("capture-model", new NonResolvingResourceDescriptionResolver()).build()
+                    , new OperationStepHandler() {
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                    model.set(Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS)));
+                }
+            });
             // TODO maybe make creating of empty nodes part of the MNR description
             rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.MANAGEMENT), Resource.Factory.create());
             rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.SERVICE_CONTAINER), Resource.Factory.create());
@@ -1137,16 +1134,16 @@ public class ParseAndMarshalModelsTestCase {
 
         @Override
         public void initializeMasterDomainRegistry(ManagementResourceRegistration root,
-                ExtensibleConfigurationPersister configurationPersister, ContentRepository contentRepository,
-                HostFileRepository fileRepository, ExtensionRegistry extensionRegistry, PathManagerService pathManager) {
+                                                   ExtensibleConfigurationPersister configurationPersister, ContentRepository contentRepository,
+                                                   HostFileRepository fileRepository, ExtensionRegistry extensionRegistry, PathManagerService pathManager) {
         }
 
         @Override
         public void initializeSlaveDomainRegistry(ManagementResourceRegistration root,
-                ExtensibleConfigurationPersister configurationPersister, ContentRepository contentRepository,
-                HostFileRepository fileRepository, LocalHostControllerInfo hostControllerInfo,
-                ExtensionRegistry extensionRegistry, IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
-                PathManagerService pathManager) {
+                                                  ExtensibleConfigurationPersister configurationPersister, ContentRepository contentRepository,
+                                                  HostFileRepository fileRepository, LocalHostControllerInfo hostControllerInfo,
+                                                  ExtensionRegistry extensionRegistry, IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
+                                                  PathManagerService pathManager) {
         }
     }
 

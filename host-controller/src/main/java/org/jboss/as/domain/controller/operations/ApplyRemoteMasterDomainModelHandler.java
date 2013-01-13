@@ -518,8 +518,4 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
         }
         return result;
     }
-
-    public ModelNode getModelDescription(Locale locale) {
-        return new ModelNode(); // PRIVATE operation requires no description
-    }
 }
