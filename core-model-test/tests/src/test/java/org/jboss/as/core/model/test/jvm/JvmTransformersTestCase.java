@@ -22,9 +22,12 @@
 package org.jboss.as.core.model.test.jvm;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.host.controller.model.jvm.JvmAttributes.AGENT_LIB;
 import static org.jboss.as.host.controller.model.jvm.JvmAttributes.AGENT_PATH;
 import static org.jboss.as.host.controller.model.jvm.JvmAttributes.ENVIRONMENT_VARIABLES;
+import static org.jboss.as.host.controller.model.jvm.JvmAttributes.ENV_CLASSPATH_IGNORED;
 import static org.jboss.as.host.controller.model.jvm.JvmAttributes.HEAP_SIZE;
+import static org.jboss.as.host.controller.model.jvm.JvmAttributes.JAVA_AGENT;
 import static org.jboss.as.host.controller.model.jvm.JvmAttributes.JAVA_HOME;
 import static org.jboss.as.host.controller.model.jvm.JvmAttributes.MAX_HEAP_SIZE;
 import static org.jboss.as.host.controller.model.jvm.JvmAttributes.MAX_PERMGEN_SIZE;
@@ -121,13 +124,11 @@ public class JvmTransformersTestCase extends AbstractCoreModelTest {
 
     private FailedOperationTransformationConfig getConfig() {
         if (isFailExpressions()) {
-            FailedOperationTransformationConfig config = new FailedOperationTransformationConfig()
+            return new FailedOperationTransformationConfig()
                 .addFailedAttribute(PathAddress.pathAddress(PathElement.pathElement("server-group", "test"), PathElement.pathElement("jvm", "default")),
                         new FailedOperationTransformationConfig.RejectExpressionsConfig(AGENT_PATH, HEAP_SIZE, JAVA_HOME, MAX_HEAP_SIZE,
-                                PERMGEN_SIZE, MAX_PERMGEN_SIZE,
-                                STACK_SIZE, OPTIONS, ENVIRONMENT_VARIABLES));
-
-            return config;
+                                PERMGEN_SIZE, MAX_PERMGEN_SIZE, STACK_SIZE, OPTIONS, ENVIRONMENT_VARIABLES,
+                                ENV_CLASSPATH_IGNORED, AGENT_LIB, JAVA_AGENT));
         }
         return FailedOperationTransformationConfig.NO_FAILURES;
     }
