@@ -31,11 +31,11 @@ import org.junit.Test;
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author <a href="stefano.maestri@redhat.com>Stefano Maestri</a>
  */
 public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     public DatasourcesSubsystemTestCase() {
-        // FIXME DatasourcesSubsystemTestCase constructor
         super(DataSourcesExtension.SUBSYSTEM_NAME, new DataSourcesExtension());
     }
 
@@ -48,6 +48,11 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testFullConfig() throws Exception {
         standardSubsystemTest("datasources-full.xml");
+    }
+
+    @Test
+    public void testExpressionConfig() throws Exception {
+        standardSubsystemTest("datasources-full-expression.xml", "datasources-full.xml");
     }
 
     protected AdditionalInitialization createAdditionalInitialization() {
