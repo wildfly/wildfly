@@ -36,22 +36,18 @@ import java.util.Collections;
 import java.util.List;
 
 import junit.framework.Assert;
-
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
 import org.jboss.as.core.model.test.ModelInitializer;
 import org.jboss.as.core.model.test.TestModelType;
-import org.jboss.as.host.controller.model.jvm.JVMEnvironmentVariableAddHandler;
-import org.jboss.as.host.controller.model.jvm.JVMEnvironmentVariableRemoveHandler;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.junit.Test;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public abstract class AbstractJvmModelTest extends AbstractCoreModelTest {
@@ -287,54 +283,12 @@ public abstract class AbstractJvmModelTest extends AbstractCoreModelTest {
         Assert.assertEquals(new ModelNode().setEmptyList(), getJvmResource(kernelServices).get("jvm-options"));
     }
 
-    //AS7-4437 is scheduled for 7.2.0 so uncomment these once we have decided on the format of the operation names
-    //There are some tests in AbstractJvmModelTest for these which need uncommenting as well
-    /*
-    @Test
-    public void testAddSameEnvironmentVariable() throws Exception {
-        testEmptyAddSubsystem();
-        executeForResult(createAddEnvVarOperation("ONE", "uno"));
-        Assert.assertEquals(new ModelNode().add("ONE", "uno"), readModel(true).get(JVM, "test", "environment-variables"));
-        executeForFailure(createAddEnvVarOperation("ONE", "uno"));
-        Assert.assertEquals(new ModelNode().add("ONE", "uno"), readModel(true).get(JVM, "test", "environment-variables"));
-    }
-
-    @Test
-    public void testRemoveEnvironmentVariable() throws Exception {
-        testEmptyAddSubsystem();
-        executeForResult(createAddEnvVarOperation("ONE", "uno"));
-        executeForResult(createAddEnvVarOperation("TWO", "dos"));
-        executeForResult(createAddEnvVarOperation("THREE", "tres"));
-        Assert.assertEquals(new ModelNode().add("ONE", "uno").add("TWO", "dos").add("THREE", "tres"), readModel(true).get(JVM, "test", "environment-variables"));
-        executeForResult(createRemoveEnvVarOperation("TWO"));
-        Assert.assertEquals(new ModelNode().add("ONE", "uno").add("THREE", "tres"), readModel(true).get(JVM, "test", "environment-variables"));
-        executeForResult(createRemoveEnvVarOperation("ONE"));
-        Assert.assertEquals(new ModelNode().add("THREE", "tres"), readModel(true).get(JVM, "test", "environment-variables"));
-        executeForResult(createRemoveEnvVarOperation("THREE"));
-        Assert.assertEquals(new ModelNode().setEmptyList(), readModel(true).get(JVM, "test", "environment-variables"));
-    }*/
-
-
     protected ModelNode createWriteAttributeOperation(String name, ModelNode value) {
         ModelNode op = createOperation(WRITE_ATTRIBUTE_OPERATION);
         op.get(NAME).set(name);
         op.get(VALUE).set(value);
         return op;
     }
-
-    protected ModelNode createAddEnvVarOperation(String key, String value) {
-        ModelNode op = createOperation(JVMEnvironmentVariableAddHandler.OPERATION_NAME);
-        op.get(NAME).set(key);
-        op.get(VALUE).set(value);
-        return op;
-    }
-
-    protected ModelNode createRemoveEnvVarOperation(String key) {
-        ModelNode op = createOperation(JVMEnvironmentVariableRemoveHandler.OPERATION_NAME);
-        op.get("name").set(key);
-        return op;
-    }
-
 
     protected ModelNode createAddJvmOptionOperation(String option) {
         ModelNode op = createOperation("add-jvm-option");
@@ -401,7 +355,7 @@ public abstract class AbstractJvmModelTest extends AbstractCoreModelTest {
         return createOperation(name, getPathAddress("test"));
     }
 
-    protected abstract ModelNode getPathAddress(String jvmName, String...subaddress);
+    protected abstract ModelNode getPathAddress(String jvmName, String... subaddress);
 
     protected KernelServicesBuilder createKernelServicesBuilder() {
         return createKernelServicesBuilder(type);

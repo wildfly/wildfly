@@ -27,11 +27,8 @@ import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -40,7 +37,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
@@ -71,18 +67,15 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import junit.framework.Assert;
-
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ExpressionResolver;
@@ -95,13 +88,17 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.ResourceBuilder;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
@@ -135,34 +132,11 @@ import org.junit.Test;
  */
 public class ThreadsSubsystemParsingTestCase {
 
-    static final DescriptionProvider NULL_PROVIDER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(final Locale locale) {
-            return new ModelNode();
-        }
-    };
-
     static ModelNode profileAddress = new ModelNode();
+
     static {
         profileAddress.add("profile", "test");
     }
-
-    private static final DescriptionProvider profileDescriptionProvider = new DescriptionProvider() {
-
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                ModelNode node = new ModelNode();
-                node.get(DESCRIPTION).set("A named set of subsystem configs");
-                node.get(ATTRIBUTES, NAME, TYPE).set(ModelType.STRING);
-                node.get(ATTRIBUTES, NAME, DESCRIPTION).set("The name of the profile");
-                node.get(ATTRIBUTES, NAME, REQUIRED).set(true);
-                node.get(ATTRIBUTES, NAME, MIN_LENGTH).set(1);
-                node.get(CHILDREN, SUBSYSTEM, DESCRIPTION).set("The subsystems that make up the profile");
-                node.get(CHILDREN, SUBSYSTEM, MIN_OCCURS).set(1);
-                node.get(CHILDREN, SUBSYSTEM, MODEL_DESCRIPTION);
-                return node;
-            }
-        };
 
     private ModelNode model;
 
@@ -190,8 +164,7 @@ public class ThreadsSubsystemParsingTestCase {
                 container.awaitTermination(5, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 e.printStackTrace();
-            }
-            finally {
+            } finally {
                 container = null;
             }
         }
@@ -415,11 +388,11 @@ public class ThreadsSubsystemParsingTestCase {
     public void testFullUnboundedQueueThreadPool() throws Exception {
         List<ModelNode> updates = createSubSystem(
                 "<thread-factory name=\"test-factory\"/>" +
-                "<unbounded-queue-thread-pool name=\"test-pool\">" +
-                "   <max-threads count=\"100\"/>" +
-                "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
-                "   <thread-factory name=\"test-factory\"/>" +
-                "</unbounded-queue-thread-pool>");
+                        "<unbounded-queue-thread-pool name=\"test-pool\">" +
+                        "   <max-threads count=\"100\"/>" +
+                        "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
+                        "   <thread-factory name=\"test-factory\"/>" +
+                        "</unbounded-queue-thread-pool>");
 
         executeForResult(updates.get(0));
         executeForResult(updates.get(1));
@@ -432,15 +405,15 @@ public class ThreadsSubsystemParsingTestCase {
     public void testFullUnboundedQueueThreadPool1_0() throws Exception {
         List<ModelNode> updates = createSubSystem(
                 "<thread-factory name=\"test-factory\"/>" +
-                "<unbounded-queue-thread-pool name=\"test-pool\">" +
-                "   <max-threads count=\"100\" per-cpu=\"0\"/>" +
-                "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
-                "   <thread-factory name=\"test-factory\"/>" +
-                "   <properties>" +
-                "      <property name=\"propA\" value=\"valueA\"/>" +
-                "      <property name=\"propB\" value=\"valueB\"/>" +
-                "   </properties>" +
-                "</unbounded-queue-thread-pool>", Namespace.THREADS_1_0);
+                        "<unbounded-queue-thread-pool name=\"test-pool\">" +
+                        "   <max-threads count=\"100\" per-cpu=\"0\"/>" +
+                        "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
+                        "   <thread-factory name=\"test-factory\"/>" +
+                        "   <properties>" +
+                        "      <property name=\"propA\" value=\"valueA\"/>" +
+                        "      <property name=\"propB\" value=\"valueB\"/>" +
+                        "   </properties>" +
+                        "</unbounded-queue-thread-pool>", Namespace.THREADS_1_0);
 
         executeForResult(updates.get(0));
         executeForResult(updates.get(1));
@@ -512,6 +485,7 @@ public class ThreadsSubsystemParsingTestCase {
         ModelNode threadPool = subsystem.require("scheduled-thread-pool");
         assertEquals(1, threadPool.keys().size());
     }
+
     @Test
     public void testSimpleScheduledThreadPool1_0() throws Exception {
         List<ModelNode> updates = createSubSystem("<scheduled-thread-pool name=\"test-pool\">"
@@ -534,11 +508,11 @@ public class ThreadsSubsystemParsingTestCase {
     public void testFullScheduledThreadPool() throws Exception {
         List<ModelNode> updates = createSubSystem(
                 "<thread-factory name=\"test-factory\"/>" +
-                "<scheduled-thread-pool name=\"test-pool\">" +
-                "   <max-threads count=\"100\"/>" +
-                "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
-                "   <thread-factory name=\"test-factory\"/>" +
-                "</scheduled-thread-pool>");
+                        "<scheduled-thread-pool name=\"test-pool\">" +
+                        "   <max-threads count=\"100\"/>" +
+                        "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
+                        "   <thread-factory name=\"test-factory\"/>" +
+                        "</scheduled-thread-pool>");
 
         executeForResult(updates.get(0));
         executeForResult(updates.get(1));
@@ -551,15 +525,15 @@ public class ThreadsSubsystemParsingTestCase {
     public void testFullScheduledThreadPool1_0() throws Exception {
         List<ModelNode> updates = createSubSystem(
                 "<thread-factory name=\"test-factory\"/>" +
-                "<scheduled-thread-pool name=\"test-pool\">" +
-                "   <max-threads count=\"100\" per-cpu=\"0\"/>" +
-                "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
-                "   <thread-factory name=\"test-factory\"/>" +
-                "   <properties>" +
-                "      <property name=\"propA\" value=\"valueA\"/>" +
-                "      <property name=\"propB\" value=\"valueB\"/>" +
-                "   </properties>" +
-                "</scheduled-thread-pool>", Namespace.THREADS_1_0);
+                        "<scheduled-thread-pool name=\"test-pool\">" +
+                        "   <max-threads count=\"100\" per-cpu=\"0\"/>" +
+                        "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
+                        "   <thread-factory name=\"test-factory\"/>" +
+                        "   <properties>" +
+                        "      <property name=\"propA\" value=\"valueA\"/>" +
+                        "      <property name=\"propB\" value=\"valueB\"/>" +
+                        "   </properties>" +
+                        "</scheduled-thread-pool>", Namespace.THREADS_1_0);
 
         executeForResult(updates.get(0));
         executeForResult(updates.get(1));
@@ -655,13 +629,13 @@ public class ThreadsSubsystemParsingTestCase {
     public void testFullQueuelessThreadPool() throws Exception {
         List<ModelNode> updates = createSubSystem(
                 "<thread-factory name=\"test-factory\"/>" +
-                "<queueless-thread-pool name=\"other\"><max-threads count=\"1\"/></queueless-thread-pool>" +
-                "<queueless-thread-pool name=\"test-pool\">" +
-                "   <max-threads count=\"100\"/>" +
-                "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
-                "   <thread-factory name=\"test-factory\"/>" +
-                "   <handoff-executor name=\"other\"/>" +
-                "</queueless-thread-pool>");
+                        "<queueless-thread-pool name=\"other\"><max-threads count=\"1\"/></queueless-thread-pool>" +
+                        "<queueless-thread-pool name=\"test-pool\">" +
+                        "   <max-threads count=\"100\"/>" +
+                        "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
+                        "   <thread-factory name=\"test-factory\"/>" +
+                        "   <handoff-executor name=\"other\"/>" +
+                        "</queueless-thread-pool>");
 
         executeForResult(updates.get(0));
         executeForResult(updates.get(1));
@@ -676,17 +650,17 @@ public class ThreadsSubsystemParsingTestCase {
     public void testFullQueuelessThreadPool1_0() throws Exception {
         List<ModelNode> updates = createSubSystem(
                 "<thread-factory name=\"test-factory\"/>" +
-                "<queueless-thread-pool name=\"other\"><max-threads count=\"1\"/></queueless-thread-pool>" +
-                "<queueless-thread-pool name=\"test-pool\">" +
-                "   <max-threads count=\"100\"/>" +
-                "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
-                "   <thread-factory name=\"test-factory\"/>" +
-                "   <handoff-executor name=\"other\"/>" +
-                "   <properties>" +
-                "      <property name=\"propA\" value=\"valueA\"/>" +
-                "      <property name=\"propB\" value=\"valueB\"/>" +
-                "   </properties>" +
-                "</queueless-thread-pool>", Namespace.THREADS_1_0);
+                        "<queueless-thread-pool name=\"other\"><max-threads count=\"1\"/></queueless-thread-pool>" +
+                        "<queueless-thread-pool name=\"test-pool\">" +
+                        "   <max-threads count=\"100\"/>" +
+                        "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
+                        "   <thread-factory name=\"test-factory\"/>" +
+                        "   <handoff-executor name=\"other\"/>" +
+                        "   <properties>" +
+                        "      <property name=\"propA\" value=\"valueA\"/>" +
+                        "      <property name=\"propB\" value=\"valueB\"/>" +
+                        "   </properties>" +
+                        "</queueless-thread-pool>", Namespace.THREADS_1_0);
 
         executeForResult(updates.get(0));
         executeForResult(updates.get(1));
@@ -765,11 +739,11 @@ public class ThreadsSubsystemParsingTestCase {
     public void testFullBlockingQueuelessThreadPool() throws Exception {
         List<ModelNode> updates = createSubSystem(
                 "<thread-factory name=\"test-factory\"/>" +
-                "<blocking-queueless-thread-pool name=\"test-pool\">" +
-                "   <max-threads count=\"100\"/>" +
-                "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
-                "   <thread-factory name=\"test-factory\"/>" +
-                "</blocking-queueless-thread-pool>");
+                        "<blocking-queueless-thread-pool name=\"test-pool\">" +
+                        "   <max-threads count=\"100\"/>" +
+                        "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
+                        "   <thread-factory name=\"test-factory\"/>" +
+                        "</blocking-queueless-thread-pool>");
 
         executeForResult(updates.get(0));
         executeForResult(updates.get(1));
@@ -783,16 +757,16 @@ public class ThreadsSubsystemParsingTestCase {
     public void testFullBlockingQueuelessThreadPool1_0() throws Exception {
         List<ModelNode> updates = createSubSystem(
                 "<thread-factory name=\"test-factory\"/>" +
-                "<queueless-thread-pool name=\"test-pool\" blocking=\"true\">" +
-                "   <max-threads count=\"100\"/>" +
-                "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
-                "   <thread-factory name=\"test-factory\"/>" +
-                "   <handoff-executor name=\"other\"/>" +
-                "   <properties>" +
-                "      <property name=\"propA\" value=\"valueA\"/>" +
-                "      <property name=\"propB\" value=\"valueB\"/>" +
-                "   </properties>" +
-                "</queueless-thread-pool>", Namespace.THREADS_1_0);
+                        "<queueless-thread-pool name=\"test-pool\" blocking=\"true\">" +
+                        "   <max-threads count=\"100\"/>" +
+                        "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
+                        "   <thread-factory name=\"test-factory\"/>" +
+                        "   <handoff-executor name=\"other\"/>" +
+                        "   <properties>" +
+                        "      <property name=\"propA\" value=\"valueA\"/>" +
+                        "      <property name=\"propB\" value=\"valueB\"/>" +
+                        "   </properties>" +
+                        "</queueless-thread-pool>", Namespace.THREADS_1_0);
 
         executeForResult(updates.get(0));
         executeForResult(updates.get(1));
@@ -892,15 +866,15 @@ public class ThreadsSubsystemParsingTestCase {
     public void testFullBoundedQueueThreadPool() throws Exception {
         List<ModelNode> updates = createSubSystem(
                 "<thread-factory name=\"test-factory\"/>" +
-                "<queueless-thread-pool name=\"other\"><max-threads count=\"1\"/></queueless-thread-pool>" +
-                "<bounded-queue-thread-pool name=\"test-pool\" allow-core-timeout=\"true\">" +
-                "   <core-threads count=\"200\"/>" +
-                "   <max-threads count=\"100\"/>" +
-                "   <queue-length count=\"300\"/>" +
-                "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
-                "   <thread-factory name=\"test-factory\"/>" +
-                "   <handoff-executor name=\"other\"/>" +
-                "</bounded-queue-thread-pool>");
+                        "<queueless-thread-pool name=\"other\"><max-threads count=\"1\"/></queueless-thread-pool>" +
+                        "<bounded-queue-thread-pool name=\"test-pool\" allow-core-timeout=\"true\">" +
+                        "   <core-threads count=\"200\"/>" +
+                        "   <max-threads count=\"100\"/>" +
+                        "   <queue-length count=\"300\"/>" +
+                        "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
+                        "   <thread-factory name=\"test-factory\"/>" +
+                        "   <handoff-executor name=\"other\"/>" +
+                        "</bounded-queue-thread-pool>");
 
         executeForResult(updates.get(0));
         executeForResult(updates.get(1));
@@ -914,19 +888,19 @@ public class ThreadsSubsystemParsingTestCase {
     public void testFullBoundedQueueThreadPool1_0() throws Exception {
         List<ModelNode> updates = createSubSystem(
                 "<thread-factory name=\"test-factory\"/>" +
-                "<queueless-thread-pool name=\"other\"><max-threads count=\"1\"/></queueless-thread-pool>" +
-                "<bounded-queue-thread-pool name=\"test-pool\" allow-core-timeout=\"true\">" +
-                "   <core-threads count=\"200\"/>" +
-                "   <max-threads count=\"100\" per-cpu=\"0\"/>" +
-                "   <queue-length count=\"300\"/>" +
-                "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
-                "   <thread-factory name=\"test-factory\"/>" +
-                "   <handoff-executor name=\"other\"/>" +
-                "   <properties>" +
-                "      <property name=\"propA\" value=\"valueA\"/>" +
-                "      <property name=\"propB\" value=\"valueB\"/>" +
-                "   </properties>" +
-                "</bounded-queue-thread-pool>", Namespace.THREADS_1_0);
+                        "<queueless-thread-pool name=\"other\"><max-threads count=\"1\"/></queueless-thread-pool>" +
+                        "<bounded-queue-thread-pool name=\"test-pool\" allow-core-timeout=\"true\">" +
+                        "   <core-threads count=\"200\"/>" +
+                        "   <max-threads count=\"100\" per-cpu=\"0\"/>" +
+                        "   <queue-length count=\"300\"/>" +
+                        "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
+                        "   <thread-factory name=\"test-factory\"/>" +
+                        "   <handoff-executor name=\"other\"/>" +
+                        "   <properties>" +
+                        "      <property name=\"propA\" value=\"valueA\"/>" +
+                        "      <property name=\"propB\" value=\"valueB\"/>" +
+                        "   </properties>" +
+                        "</bounded-queue-thread-pool>", Namespace.THREADS_1_0);
 
         executeForResult(updates.get(0));
         executeForResult(updates.get(1));
@@ -1029,13 +1003,13 @@ public class ThreadsSubsystemParsingTestCase {
     public void testFullBlockingBoundedQueueThreadPool() throws Exception {
         List<ModelNode> updates = createSubSystem(
                 "<thread-factory name=\"test-factory\"/>" +
-                "<blocking-bounded-queue-thread-pool name=\"test-pool\" allow-core-timeout=\"true\">" +
-                "   <core-threads count=\"200\"/>" +
-                "   <max-threads count=\"100\"/>" +
-                "   <queue-length count=\"300\"/>" +
-                "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
-                "   <thread-factory name=\"test-factory\"/>" +
-                "</blocking-bounded-queue-thread-pool>");
+                        "<blocking-bounded-queue-thread-pool name=\"test-pool\" allow-core-timeout=\"true\">" +
+                        "   <core-threads count=\"200\"/>" +
+                        "   <max-threads count=\"100\"/>" +
+                        "   <queue-length count=\"300\"/>" +
+                        "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
+                        "   <thread-factory name=\"test-factory\"/>" +
+                        "</blocking-bounded-queue-thread-pool>");
 
         executeForResult(updates.get(0));
         executeForResult(updates.get(1));
@@ -1048,18 +1022,18 @@ public class ThreadsSubsystemParsingTestCase {
     public void testFullBlockingBoundedQueueThreadPool1_0() throws Exception {
         List<ModelNode> updates = createSubSystem(
                 "<thread-factory name=\"test-factory\"/>" +
-                "<bounded-queue-thread-pool name=\"test-pool\" blocking=\"true\" allow-core-timeout=\"true\">" +
-                "   <core-threads count=\"200\"/>" +
-                "   <max-threads count=\"100\" per-cpu=\"0\"/>" +
-                "   <queue-length count=\"300\"/>" +
-                "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
-                "   <thread-factory name=\"test-factory\"/>" +
-                "   <handoff-executor name=\"other\"/>" +
-                "   <properties>" +
-                "      <property name=\"propA\" value=\"valueA\"/>" +
-                "      <property name=\"propB\" value=\"valueB\"/>" +
-                "   </properties>" +
-                "</bounded-queue-thread-pool>", Namespace.THREADS_1_0);
+                        "<bounded-queue-thread-pool name=\"test-pool\" blocking=\"true\" allow-core-timeout=\"true\">" +
+                        "   <core-threads count=\"200\"/>" +
+                        "   <max-threads count=\"100\" per-cpu=\"0\"/>" +
+                        "   <queue-length count=\"300\"/>" +
+                        "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
+                        "   <thread-factory name=\"test-factory\"/>" +
+                        "   <handoff-executor name=\"other\"/>" +
+                        "   <properties>" +
+                        "      <property name=\"propA\" value=\"valueA\"/>" +
+                        "      <property name=\"propB\" value=\"valueB\"/>" +
+                        "   </properties>" +
+                        "</bounded-queue-thread-pool>", Namespace.THREADS_1_0);
 
         executeForResult(updates.get(0));
         executeForResult(updates.get(1));
@@ -1183,7 +1157,7 @@ public class ThreadsSubsystemParsingTestCase {
                         throw new IllegalArgumentException("descriptionProvider is null");
                     }
                     PathElement pe = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, name);
-                    return registerSubsystemModel(new SimpleResourceDefinition(pe, descriptionProvider));
+                    return registerSubsystemModel(new SimpleResourceDefinition(pe, new NonResolvingResourceDescriptionResolver()));
                 }
 
                 @Override
@@ -1223,6 +1197,7 @@ public class ThreadsSubsystemParsingTestCase {
             return false;
         }
     }
+
     static List<ModelNode> createSubSystem(String subsystemContents) throws XMLStreamException {
         return createSubSystem(subsystemContents, Namespace.CURRENT);
     }
@@ -1259,7 +1234,8 @@ public class ThreadsSubsystemParsingTestCase {
         private final CountDownLatch latch = new CountDownLatch(2);
 
         ModelControllerService() {
-            super(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.NORMAL), new TestConfigurationPersister(), new ControlledProcessState(true), NULL_PROVIDER, null, ExpressionResolver.DEFAULT);
+            super(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.NORMAL), new TestConfigurationPersister(), new ControlledProcessState(true),
+                    ResourceBuilder.Factory.create(PathElement.pathElement("root"), new NonResolvingResourceDescriptionResolver()).build(), null, ExpressionResolver.DEFAULT);
         }
 
         @Override
@@ -1277,20 +1253,20 @@ public class ThreadsSubsystemParsingTestCase {
         protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
             GlobalOperationHandlers.registerGlobalOperations(rootRegistration, processType);
 
-            rootRegistration.registerOperationHandler("setup", new OperationStepHandler() {
+            rootRegistration.registerOperationHandler(new SimpleOperationDefinitionBuilder("setup", new NonResolvingResourceDescriptionResolver())
+                    .setPrivateEntry()
+                    .build(), new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     context.createResource(PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement("profile", "test")));
                     context.stepCompleted();
                 }
-            }, new DescriptionProvider() {
-                @Override
-                public ModelNode getModelDescription(Locale locale) {
-                    return new ModelNode();
-                }
             });
 
-            ManagementResourceRegistration profileRegistration = rootRegistration.registerSubModel(PathElement.pathElement("profile"), profileDescriptionProvider);
+            ManagementResourceRegistration profileRegistration = rootRegistration.registerSubModel(
+                    ResourceBuilder.Factory.create(PathElement.pathElement("profile"), new NonResolvingResourceDescriptionResolver())
+                            .addReadOnlyAttribute(SimpleAttributeDefinitionBuilder.create("name", ModelType.STRING, false).setMinSize(1).build())
+                            .build());
             TestExtensionContext context = new TestExtensionContext(profileRegistration);
             ThreadsExtension extension = new ThreadsExtension();
             extension.initialize(context);
@@ -1299,7 +1275,7 @@ public class ThreadsSubsystemParsingTestCase {
 
     }
 
-    private class TestConfigurationPersister implements ConfigurationPersister{
+    private class TestConfigurationPersister implements ConfigurationPersister {
 
         @Override
         public PersistenceResource store(final ModelNode model, Set<PathAddress> affectedAddresses) throws ConfigurationPersistenceException {
@@ -1347,9 +1323,7 @@ public class ThreadsSubsystemParsingTestCase {
      * Override to get the actual result from the response.
      *
      * @param operation the operation to execute
-     *
      * @return the response's "result" child node
-     *
      * @throws OperationFailedException if the response outcome is "failed"
      */
     public ModelNode executeForResult(ModelNode operation) throws OperationFailedException {

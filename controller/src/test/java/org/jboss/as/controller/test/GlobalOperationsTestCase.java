@@ -611,7 +611,7 @@ public class GlobalOperationsTestCase extends AbstractGlobalOperationsTestCase {
         operation.get(NAME).set("testA1-2");
         ModelNode result = executeForResult(operation);
         assertEquals(ModelType.OBJECT, result.getType());
-        assertEquals("testA2", result.require(OPERATION_NAME).asString());
+        assertEquals("testA1-2", result.require(OPERATION_NAME).asString());
         assertEquals(ModelType.STRING, result.require(REQUEST_PROPERTIES).require("paramA2").require(TYPE).asType());
     }
 

@@ -29,7 +29,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.operations.common.ResolveExpressionHandler;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.domain.controller.descriptions.DomainResolver;
+import org.jboss.as.domain.controller.resources.DomainResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 

@@ -64,7 +64,7 @@ public class ServerStartHandler implements OperationStepHandler {
 
     private final ServerInventory serverInventory;
 
-    static final OperationDefinition getOperationDefinition(String name) {
+    static OperationDefinition getOperationDefinition(String name) {
         return new SimpleOperationDefinitionBuilder(name, HostResolver.getResolver("host.server"))
             .setParameters(SERVER, BLOCKING)
             .setReplyType(ModelType.STRING)

@@ -92,7 +92,7 @@ public class HostControllerConfigurationPersister implements ExtensibleConfigura
             }
             domainPersister = ConfigurationPersisterFactory.createDomainXmlConfigurationPersister(configurationFile, executorService, extensionRegistry);
         }
-        this.slave = Boolean.valueOf(slave);
+        this.slave = slave;
     }
 
     public boolean isSlave() {

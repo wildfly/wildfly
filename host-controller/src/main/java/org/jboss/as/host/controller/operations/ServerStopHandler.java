@@ -43,13 +43,6 @@ public class ServerStopHandler implements OperationStepHandler {
     public static final String OPERATION_NAME = "stop";
     public static final OperationDefinition DEFINITION = ServerStartHandler.getOperationDefinition(OPERATION_NAME);
 
-    public static ModelNode getStopServerOperation(String serverName) {
-        ModelNode op = Util.getEmptyOperation(OPERATION_NAME, new ModelNode());
-        op.get(NAME).set(serverName);
-
-        return op;
-    }
-
     private final ServerInventory serverInventory;
 
     /**

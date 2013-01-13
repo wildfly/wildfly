@@ -45,7 +45,7 @@ import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.controller.descriptions.DomainResolver;
+import org.jboss.as.domain.controller.resources.DomainResolver;
 import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.dmr.ModelNode;

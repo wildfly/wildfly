@@ -54,6 +54,7 @@ public class ProxyMetadataSource implements ReflectionMetadataSource {
             }
 
             @Override
+            @SuppressWarnings("unchecked")
             public Collection<Constructor<?>> getConstructors() {
                 return (Collection) index.getConstructors();
             }

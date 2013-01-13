@@ -30,6 +30,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManager.Event;
 import org.jboss.as.controller.services.path.PathManagerService.PathEventContextImpl;
@@ -46,10 +47,8 @@ public class PathAddHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = ADD;
 
-    public static ModelNode getAddPathOperation(ModelNode address, ModelNode path, ModelNode relativeTo) {
-        ModelNode op = new ModelNode();
-        op.get(OP).set(OPERATION_NAME);
-        op.get(OP_ADDR).set(address);
+    public static ModelNode getAddPathOperation(PathAddress address, ModelNode path, ModelNode relativeTo) {
+        ModelNode op = Util.createAddOperation(address);
         if (path.isDefined()) {
             op.get(PATH_SPECIFIED.getName()).set(path);
         }

@@ -24,8 +24,6 @@ package org.jboss.as.host.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequiredElement;
@@ -44,6 +42,7 @@ import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.parsing.Namespace;
@@ -69,8 +68,7 @@ public class JvmXml {
     public static void parseJvm(final XMLExtendedStreamReader reader, final ModelNode parentAddress, final Namespace expectedNs, final List<ModelNode> updates,
             final Set<String> jvmNames, final boolean server) throws XMLStreamException {
 
-        ModelNode addOp = new ModelNode();
-        addOp.get(OP).set(ADD);
+        ModelNode addOp = Util.createAddOperation();
 
         // Handle attributes
         String name = null;
@@ -139,7 +137,7 @@ public class JvmXml {
             // domain and host levels aren't mixed in. OR make name required in xsd always
             throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
         }
-        if (debugEnabled != null && debugOptions == null && debugEnabled.booleanValue()) {
+        if (debugEnabled != null && debugOptions == null && debugEnabled) {
             throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.DEBUG_OPTIONS));
         }
 
@@ -156,27 +154,27 @@ public class JvmXml {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case HEAP: {
-                    parseHeap(reader, address, addOp);
+                    parseHeap(reader, addOp);
                     break;
                 }
                 case PERMGEN: {
-                    parsePermgen(reader, address, addOp);
+                    parsePermgen(reader, addOp);
                     break;
                 }
                 case STACK: {
-                    parseStack(reader, address, addOp);
+                    parseStack(reader, addOp);
                     break;
                 }
                 case AGENT_LIB: {
-                    parseAgentLib(reader, address, addOp);
+                    parseAgentLib(reader, addOp);
                     break;
                 }
                 case AGENT_PATH: {
-                    parseAgentPath(reader, address, addOp);
+                    parseAgentPath(reader, addOp);
                     break;
                 }
                 case JAVA_AGENT: {
-                    parseJavaagent(reader, address, addOp);
+                    parseJavaagent(reader, addOp);
                     break;
                 }
                 case ENVIRONMENT_VARIABLES: {
@@ -191,7 +189,7 @@ public class JvmXml {
                     if (hasJvmOptions) {
                         throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
                     }
-                    parseJvmOptions(reader, address, expectedNs, addOp);
+                    parseJvmOptions(reader, expectedNs, addOp);
                     hasJvmOptions = true;
                     break;
                 }
@@ -221,7 +219,7 @@ public class JvmXml {
     }
 
 
-    private static void parseHeap(final XMLExtendedStreamReader reader, final ModelNode address, ModelNode addOp)
+    private static void parseHeap(final XMLExtendedStreamReader reader, ModelNode addOp)
             throws XMLStreamException {
         // Handle attributes
         final int count = reader.getAttributeCount();
@@ -254,12 +252,10 @@ public class JvmXml {
         requireNoContent(reader);
     }
 
-    private static void parsePermgen(final XMLExtendedStreamReader reader, final ModelNode address, ModelNode addOp)
+    private static void parsePermgen(final XMLExtendedStreamReader reader, ModelNode addOp)
             throws XMLStreamException {
 
         // Handle attributes
-        boolean sizeSet = false;
-        boolean maxSet = false;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
@@ -290,7 +286,7 @@ public class JvmXml {
         requireNoContent(reader);
     }
 
-    private static void parseStack(final XMLExtendedStreamReader reader, final ModelNode address, ModelNode addOp)
+    private static void parseStack(final XMLExtendedStreamReader reader, ModelNode addOp)
             throws XMLStreamException {
 
         // Handle attributes
@@ -323,7 +319,7 @@ public class JvmXml {
         requireNoContent(reader);
     }
 
-    private static void parseAgentLib(final XMLExtendedStreamReader reader, final ModelNode address, ModelNode addOp)
+    private static void parseAgentLib(final XMLExtendedStreamReader reader, ModelNode addOp)
             throws XMLStreamException {
 
         // Handle attributes
@@ -355,7 +351,7 @@ public class JvmXml {
         requireNoContent(reader);
     }
 
-    private static void parseAgentPath(final XMLExtendedStreamReader reader, final ModelNode address, ModelNode addOp)
+    private static void parseAgentPath(final XMLExtendedStreamReader reader, ModelNode addOp)
             throws XMLStreamException {
 
         // Handle attributes
@@ -387,7 +383,7 @@ public class JvmXml {
         requireNoContent(reader);
     }
 
-    private static void parseJavaagent(final XMLExtendedStreamReader reader, final ModelNode address, ModelNode addOp)
+    private static void parseJavaagent(final XMLExtendedStreamReader reader, ModelNode addOp)
             throws XMLStreamException {
 
         // Handle attributes
@@ -419,7 +415,7 @@ public class JvmXml {
         requireNoContent(reader);
     }
 
-    private static void parseJvmOptions(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final ModelNode addOp)
+    private static void parseJvmOptions(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode addOp)
             throws XMLStreamException {
 
         ModelNode options = new ModelNode();

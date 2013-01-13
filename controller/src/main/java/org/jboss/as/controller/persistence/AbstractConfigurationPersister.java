@@ -41,6 +41,7 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
  *
  * @author Brian Stansberry
  */
+@SuppressWarnings("deprecation")
 public abstract class AbstractConfigurationPersister implements ExtensibleConfigurationPersister {
 
     private final XMLElementWriter<ModelMarshallingContext> rootDeparser;

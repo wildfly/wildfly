@@ -18,7 +18,6 @@
  */
 package org.jboss.as.server.services.net;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
@@ -52,8 +51,8 @@ import org.jboss.msc.service.ServiceTarget;
  */
 public class BindingGroupAddHandler extends AbstractSocketBindingGroupAddHandler {
 
-    public static ModelNode getOperation(ModelNode address, ModelNode model) {
-        ModelNode op = Util.getEmptyOperation(ADD, address);
+    public static ModelNode getOperation(PathAddress address, ModelNode model) {
+        ModelNode op = Util.createAddOperation(address);
         op.get(DEFAULT_INTERFACE).set(model.get(DEFAULT_INTERFACE));
         op.get(PORT_OFFSET).set(model.get(PORT_OFFSET));
         return op;
@@ -96,7 +95,7 @@ public class BindingGroupAddHandler extends AbstractSocketBindingGroupAddHandler
 
                 context.stepCompleted();
             }
-        },OperationContext.Stage.MODEL);
+        }, OperationContext.Stage.MODEL);
 
         SocketBindingGroupResourceDefinition.validateDefaultInterfaceReference(context, model);
     }

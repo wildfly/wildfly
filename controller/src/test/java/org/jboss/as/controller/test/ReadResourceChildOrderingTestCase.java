@@ -70,17 +70,6 @@ public class ReadResourceChildOrderingTestCase extends AbstractControllerTestBas
     }
 
     @Override
-    protected DescriptionProvider getRootDescriptionProvider() {
-        return new DescriptionProvider() {
-
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return new ModelNode();
-            }
-        };
-    }
-
-    @Override
     protected void initModel(Resource rootResource, ManagementResourceRegistration registration) {
         GlobalOperationHandlers.registerGlobalOperations(registration, processType);
         registration.registerOperationHandler("setup", new OperationStepHandler() {

@@ -77,6 +77,7 @@ import org.jboss.msc.value.Value;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
+@SuppressWarnings("deprecation")
 final class OperationContextImpl extends AbstractOperationContext {
 
     private static final Object NULL = new Object();

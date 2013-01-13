@@ -42,7 +42,6 @@ import java.util.Set;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.host.controller.RemoteDomainConnectionService;

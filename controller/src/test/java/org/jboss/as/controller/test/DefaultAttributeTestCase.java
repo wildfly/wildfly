@@ -21,8 +21,6 @@
 */
 package org.jboss.as.controller.test;
 
-import java.util.Locale;
-
 import junit.framework.Assert;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -33,7 +31,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.Util;
@@ -68,17 +65,6 @@ public class DefaultAttributeTestCase extends AbstractControllerTestBase {
         executeForFailure(op);
     }
 
-
-    @Override
-    protected DescriptionProvider getRootDescriptionProvider() {
-        return new DescriptionProvider() {
-
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return new ModelNode();
-            }
-        };
-    }
 
     @Override
     protected void initModel(Resource rootResource, ManagementResourceRegistration registration) {

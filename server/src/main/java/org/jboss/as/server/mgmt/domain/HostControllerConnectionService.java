@@ -65,7 +65,7 @@ public class HostControllerConnectionService implements Service<HostControllerCl
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "client");
 
     private static final String JBOSS_LOCAL_USER = "JBOSS-LOCAL-USER";
-    private static long SERVER_CONNECTION_TIMEOUT = 60000;
+    private static final long SERVER_CONNECTION_TIMEOUT = 60000;
 
     private final InjectedValue<Endpoint> endpointInjector = new InjectedValue<Endpoint>();
     private final InjectedValue<ControlledProcessStateService> processStateServiceInjectedValue = new InjectedValue<ControlledProcessStateService>();
@@ -93,6 +93,7 @@ public class HostControllerConnectionService implements Service<HostControllerCl
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public synchronized void start(final StartContext context) throws StartException {
         final Endpoint endpoint = endpointInjector.getValue();
         try {

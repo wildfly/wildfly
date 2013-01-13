@@ -34,7 +34,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
  */
 public final class OperationEntry {
     public enum EntryType {
-        PUBLIC, PRIVATE;
+        PUBLIC, PRIVATE
     }
 
     /** Flags to indicate special characteristics of an operation */

@@ -32,7 +32,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.management.security.WhoAmIOperation;
-import org.jboss.as.host.controller.descriptions.HostEnvironmentResourceDescription;
+import org.jboss.as.host.controller.descriptions.HostEnvironmentResourceDefinition;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.host.controller.model.host.HostResourceDefinition;
 import org.jboss.as.host.controller.operations.HostModelRegistrationHandler;
@@ -64,7 +64,7 @@ public class HostModelUtil {
         for (String kp : keyPrefix) {
             prefix.append('.').append(kp);
         }
-        return new StandardResourceDescriptionResolver(prefix.toString(), HostEnvironmentResourceDescription.class.getPackage().getName() + ".LocalDescriptions", HostModelUtil.class.getClassLoader(), true, false);
+        return new StandardResourceDescriptionResolver(prefix.toString(), HostEnvironmentResourceDefinition.class.getPackage().getName() + ".LocalDescriptions", HostModelUtil.class.getClassLoader(), true, false);
     }
 
 

@@ -38,19 +38,4 @@ public class VaultWriteAttributeHandler extends ReloadRequiredWriteAttributeHand
         super(attributes);
     }
 
-
-
-    @Override
-    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        super.execute(context, operation);
-    }
-
-
-
-    @Override
-    protected void validateResolvedValue(String name, ModelNode value) throws OperationFailedException {
-        // no-op, as we are not going to apply this value until the server is reloaded, so allow
-        // any system property to be set between now and then
-    }
-
 }

@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.dmr.ModelNode;
@@ -37,10 +38,10 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 
 /**
-* A simple {@code Service<ModelController>} base class for use in unit tests.
-*
-* @author Brian Stansberry (c) 2012 Red Hat Inc.
-*/
+ * A simple {@code Service<ModelController>} base class for use in unit tests.
+ *
+ * @author Brian Stansberry (c) 2012 Red Hat Inc.
+ */
 public abstract class TestModelControllerService extends AbstractControllerService {
 
     private final ControlledProcessState processState;
@@ -52,7 +53,14 @@ public abstract class TestModelControllerService extends AbstractControllerServi
     }
 
     protected TestModelControllerService(final ConfigurationPersister configurationPersister, final ControlledProcessState processState) {
-        this(ProcessType.EMBEDDED_SERVER, configurationPersister, processState, DESC_PROVIDER);
+        this(ProcessType.EMBEDDED_SERVER, configurationPersister, processState,
+                ResourceBuilder.Factory.create(PathElement.pathElement("root"), new NonResolvingResourceDescriptionResolver()).build());
+    }
+
+    protected TestModelControllerService(final ProcessType processType, final ConfigurationPersister configurationPersister, final ControlledProcessState processState,
+                                         final ResourceDefinition rootDescriptionProvider) {
+        super(processType, new RunningModeControl(RunningMode.NORMAL), configurationPersister, processState, rootDescriptionProvider, null, ExpressionResolver.DEFAULT);
+        this.processState = processState;
     }
 
     protected TestModelControllerService(final ProcessType processType, final ConfigurationPersister configurationPersister, final ControlledProcessState processState,
@@ -82,7 +90,7 @@ public abstract class TestModelControllerService extends AbstractControllerServi
     }
 
     @Override
-    protected void bootThreadDone()  {
+    protected void bootThreadDone() {
         super.bootThreadDone();
         latch.countDown();
     }

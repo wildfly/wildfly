@@ -63,7 +63,7 @@ public abstract class AbstractInterfaceCriteria implements InterfaceCriteria {
         Map<NetworkInterface, Set<InetAddress>> result = new HashMap<NetworkInterface, Set<InetAddress>>();
         for (Map.Entry<NetworkInterface, Set<InetAddress>> entry : candidates.entrySet()) {
             NetworkInterface ni = entry.getKey();
-            HashSet addresses = null;
+            HashSet<InetAddress> addresses = null;
             for (InetAddress address : entry.getValue()) {
                 InetAddress accepted = isAcceptable(ni, address);
                 if (accepted != null) {
@@ -86,23 +86,5 @@ public abstract class AbstractInterfaceCriteria implements InterfaceCriteria {
             clone.put(entry.getKey(), new LinkedHashSet<InetAddress>(entry.getValue()));
         }
         return clone;
-    }
-
-    /**
-     * A little toString utility for NetworkInterface since its version seems to add the hardware address and this corrupts
-     * logging output.
-     *
-     * @param iface The interface to convert to string format.
-     * @return toString for NetworkInterface
-     */
-    static String toString(NetworkInterface iface) {
-        StringBuilder sb = new StringBuilder("NetworkInterface(");
-        sb.append("name:");
-        sb.append(iface.getName());
-        sb.append("(");
-        sb.append(iface.getDisplayName());
-        sb.append("), addresses:");
-        sb.append(iface.getInterfaceAddresses());
-        return sb.toString();
     }
 }

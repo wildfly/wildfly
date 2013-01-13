@@ -44,24 +44,6 @@ import org.jboss.dmr.ModelType;
 @Deprecated
 public class CommonDescriptions {
 
-    /**
-     * default describe operation description,
-     * here just for  binary compatibility with external extensions
-     * @param locale
-     * @return
-     */
-    @Deprecated
-    public static ModelNode getSubsystemDescribeOperation(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(ADD);
-        root.get(DESCRIPTION).set(bundle.getString("subsystem.describe"));
-        root.get(REPLY_PROPERTIES, TYPE).set(ModelType.LIST);
-        root.get(REPLY_PROPERTIES, VALUE_TYPE).set(ModelType.OBJECT);
-        return root;
-    }
-
-
     public static ModelNode getDescriptionOnlyOperation(final ResourceBundle bundle, final String operationName, final String descriptionPrefix) {
 
         final ModelNode node = new ModelNode();
@@ -130,10 +112,4 @@ public class CommonDescriptions {
         return result;
     }
 
-    private static ResourceBundle getResourceBundle(Locale locale) {
-        if (locale == null) {
-            locale = Locale.getDefault();
-        }
-        return ResourceBundle.getBundle(ControllerResolver.RESOURCE_NAME, locale);
-    }
 }

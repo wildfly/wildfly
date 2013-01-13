@@ -22,13 +22,7 @@
 
 package org.jboss.as.server.services.net;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_SOURCE_PORT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_REF;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOURCE_INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOURCE_PORT;
 
 import java.net.UnknownHostException;
 import java.util.List;
@@ -57,20 +51,6 @@ public class LocalDestinationOutboundSocketBindingAddHandler extends AbstractAdd
 
     static final LocalDestinationOutboundSocketBindingAddHandler INSTANCE = new LocalDestinationOutboundSocketBindingAddHandler();
 
-    @Deprecated
-    public static ModelNode getOperation(final ModelNode address, final ModelNode localDestinationOutboundSocketBinding) {
-        final ModelNode addOperation = new ModelNode();
-        addOperation.get(OP).set(ADD);
-        addOperation.get(OP_ADDR).set(address);
-        // socket binding reference
-        for (SimpleAttributeDefinition ad : LocalDestinationOutboundSocketBindingResourceDefinition.ATTRIBUTES) {
-            if (localDestinationOutboundSocketBinding.get(ad.getName()).isDefined()) {
-                addOperation.get(ad.getName()).set(localDestinationOutboundSocketBinding.get(ad.getName()));
-            }
-        }
-        return addOperation;
-    }
-
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
         for (SimpleAttributeDefinition ad : LocalDestinationOutboundSocketBindingResourceDefinition.ATTRIBUTES) {
@@ -86,7 +66,7 @@ public class LocalDestinationOutboundSocketBindingAddHandler extends AbstractAdd
         final String outboundSocketName = address.getLastElement().getValue();
         final ServiceController<OutboundSocketBinding> outboundSocketBindingServiceController;
         try {
-            outboundSocketBindingServiceController = this.installOutboundSocketBindingService(context, model, outboundSocketName);
+            outboundSocketBindingServiceController = installOutboundSocketBindingService(context, model, outboundSocketName);
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }

@@ -27,6 +27,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -40,13 +41,6 @@ import org.jboss.modules.ModuleLoadException;
 public class ExtensionAddHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = ADD;
-
-    public static ModelNode getAddExtensionOperation(ModelNode address) {
-        ModelNode op = new ModelNode();
-        op.get(OP).set(OPERATION_NAME);
-        op.get(OP_ADDR).set(address);
-        return op;
-    }
 
     private final ExtensionRegistry extensionRegistry;
     private final boolean parallelBoot;

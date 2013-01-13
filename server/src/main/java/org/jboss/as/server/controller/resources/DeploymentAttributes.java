@@ -174,6 +174,7 @@ public class DeploymentAttributes {
     public static final Map<String, AttributeDefinition> UNMANAGED_CONTENT_ATTRIBUTES = createAttributeMap(CONTENT_PATH, CONTENT_RELATIVE_TO, CONTENT_ARCHIVE);
 
     /** All attributes of the content attribute */
+    @SuppressWarnings("unchecked")
     public static final Map<String, AttributeDefinition> ALL_CONTENT_ATTRIBUTES = createAttributeMap(MANAGED_CONTENT_ATTRIBUTES, UNMANAGED_CONTENT_ATTRIBUTES);
 
     public static OperationDefinition DEPLOY_DEFINITION = new SimpleOperationDefinition(ModelDescriptionConstants.DEPLOY, DEPLOYMENT_RESOLVER);
@@ -232,7 +233,7 @@ public class DeploymentAttributes {
     public static AttributeDefinition INPUT_STREAM_INDEX_NOT_NULL = SimpleAttributeDefinitionBuilder.create(DeploymentAttributes.CONTENT_INPUT_STREAM_INDEX)
             .setAllowNull(false)
             .build();
-    public static Map<String, AttributeDefinition> UPLOAD_INPUT_STREAM_INDEX_ATTRIBUTES = Collections.singletonMap(INPUT_STREAM_INDEX_NOT_NULL.getName(), INPUT_STREAM_INDEX_NOT_NULL);
+    //public static Map<String, AttributeDefinition> UPLOAD_INPUT_STREAM_INDEX_ATTRIBUTES = Collections.singletonMap(INPUT_STREAM_INDEX_NOT_NULL.getName(), INPUT_STREAM_INDEX_NOT_NULL);
     public static OperationDefinition UPLOAD_STREAM_ATTACHMENT_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_STREAM, DEPLOYMENT_RESOLVER)
             .setParameters(INPUT_STREAM_INDEX_NOT_NULL)
             .setReplyParameters(UPLOAD_HASH_REPLY)

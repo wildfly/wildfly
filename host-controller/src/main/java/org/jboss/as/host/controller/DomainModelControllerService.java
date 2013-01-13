@@ -173,7 +173,6 @@ public class DomainModelControllerService extends AbstractControllerService impl
     // TODO look into using the controller executor
     private volatile ExecutorService proxyExecutor;
     private volatile ScheduledExecutorService pingScheduler;
-    private volatile DomainRootDefinition domainRootDefinition;
 
 
     public static ServiceController<ModelController> addService(final ServiceTarget serviceTarget,

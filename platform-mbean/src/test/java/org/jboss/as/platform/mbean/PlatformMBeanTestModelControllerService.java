@@ -28,10 +28,13 @@ import java.util.concurrent.CountDownLatch;
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ExpressionResolver;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.ResourceBuilder;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.ValidateAddressOperationHandler;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
@@ -62,7 +65,8 @@ public class PlatformMBeanTestModelControllerService extends AbstractControllerS
      *
      */
     protected PlatformMBeanTestModelControllerService() {
-        super(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.NORMAL), new NullConfigurationPersister(), new ControlledProcessState(true), DESC_PROVIDER, null, ExpressionResolver.DEFAULT);
+        super(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.NORMAL), new NullConfigurationPersister(), new ControlledProcessState(true),
+        ResourceBuilder.Factory.create(PathElement.pathElement("root"),new NonResolvingResourceDescriptionResolver()).build(), null, ExpressionResolver.DEFAULT);
     }
 
     @Override

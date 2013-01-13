@@ -37,7 +37,7 @@ public class HostResolver {
     }
 
     public static ResourceDescriptionResolver getResolver(final String keyPrefix, final boolean useUnprefixedChildTypes) {
-        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, HostEnvironmentResourceDescription.class.getClassLoader(), true, useUnprefixedChildTypes);
+        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, HostEnvironmentResourceDefinition.class.getClassLoader(), true, useUnprefixedChildTypes);
     }
 
 }

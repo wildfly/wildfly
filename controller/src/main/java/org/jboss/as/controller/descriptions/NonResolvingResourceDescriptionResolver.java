@@ -33,7 +33,11 @@ import java.util.ResourceBundle;
  *
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
-public class NonResolvingResourceDescriptionResolver implements ResourceDescriptionResolver {
+public class NonResolvingResourceDescriptionResolver extends StandardResourceDescriptionResolver {
+    public NonResolvingResourceDescriptionResolver() {
+        super("", "", NonResolvingResourceDescriptionResolver.class.getClassLoader());
+    }
+
     @Override
     public ResourceBundle getResourceBundle(Locale locale) {
         return new ResourceBundle() {
@@ -113,4 +117,5 @@ public class NonResolvingResourceDescriptionResolver implements ResourceDescript
     public String getOperationParameterDeprecatedDescription(String operationName, String paramName, Locale locale, ResourceBundle bundle) {
         return operationName;
     }
+
 }

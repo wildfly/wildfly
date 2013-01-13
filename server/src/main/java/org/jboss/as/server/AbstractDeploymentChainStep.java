@@ -34,7 +34,7 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public abstract class AbstractDeploymentChainStep implements OperationStepHandler {
-
+    @SuppressWarnings("deprecation")
     private static DeploymentProcessorTarget TARGET = new DeploymentProcessorTarget() {
         public void addDeploymentProcessor(final String subsystemName, final Phase phase, final int priority, final DeploymentUnitProcessor processor) {
             DeployerChainAddHandler.addDeploymentProcessor(subsystemName, phase, priority, processor);

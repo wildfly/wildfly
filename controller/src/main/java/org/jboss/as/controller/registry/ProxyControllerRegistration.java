@@ -46,6 +46,7 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
+@SuppressWarnings("deprecation")
 final class ProxyControllerRegistration extends AbstractResourceRegistration implements DescriptionProvider {
 
     private final ProxyController proxyController;

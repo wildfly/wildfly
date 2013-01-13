@@ -36,6 +36,7 @@ import org.jboss.as.server.deployment.DeploymentStatusHandler;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
+@SuppressWarnings("deprecation")
 public abstract class DeploymentResourceDefinition extends SimpleResourceDefinition {
 
     private DeploymentResourceParent parent;

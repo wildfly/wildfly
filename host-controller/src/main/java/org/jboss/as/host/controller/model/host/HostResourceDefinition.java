@@ -64,7 +64,7 @@ import org.jboss.as.host.controller.HostControllerService;
 import org.jboss.as.host.controller.HostModelUtil;
 import org.jboss.as.host.controller.HostRunningModeControl;
 import org.jboss.as.host.controller.ServerInventory;
-import org.jboss.as.host.controller.descriptions.HostEnvironmentResourceDescription;
+import org.jboss.as.host.controller.descriptions.HostEnvironmentResourceDefinition;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.host.controller.model.jvm.JvmResourceDefinition;
 import org.jboss.as.host.controller.operations.HostShutdownHandler;
@@ -317,7 +317,7 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
         //        serviceContainer.registerOperationHandler(DumpServicesHandler.OPERATION_NAME, DumpServicesHandler.INSTANCE, DumpServicesHandler.INSTANCE, false);
 
         //host-environment
-        hostRegistration.registerSubModel(HostEnvironmentResourceDescription.of(environment));
+        hostRegistration.registerSubModel(HostEnvironmentResourceDefinition.of(environment));
 
 
         // Jvms

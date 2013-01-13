@@ -90,7 +90,7 @@ public abstract class DeploymentRemoveHandler implements OperationStepHandler {
 
     protected void checkCanRemove(OperationContext context, ModelNode operation) throws OperationFailedException {
         final String deploymentName = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
-        final Resource root = context.getRootResource();
+        final Resource root = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS);
 
         if(root.hasChild(PathElement.pathElement(SERVER_GROUP))) {
             final List<String> badGroups = new ArrayList<String>();

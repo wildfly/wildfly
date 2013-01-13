@@ -47,6 +47,7 @@ import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.dmr.ModelNode;
 
+@SuppressWarnings("deprecation")
 final class ConcreteResourceRegistration extends AbstractResourceRegistration {
 
     @SuppressWarnings("unused")
