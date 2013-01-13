@@ -3,11 +3,13 @@
 <domain xmlns="urn:jboss:domain:1.4">
     <server-groups>
         <server-group name="test" profile="test">
-            <jvm name="default" java-home="${mytest.java-home:javaHome}" >
+            <jvm name="default" java-home="${mytest.java-home:javaHome}" env-classpath-ignored="${mytest.env-classpath-ignored:true}">
                 <heap size="${mytest.heap.size:heapSize}" max-size="${mytest.max.heap.size:maxHeapSize}"/>
                 <permgen size="${mytest.permgen.size:permgenSize}" max-size="${mytest.max.permgen.size:maxPermGenSize}"/>
                 <stack size="${mytest.stack.size:stackSize}"/>
+                <agent-lib value="${mytest.agent-lib:agentLib}"/>
                 <agent-path value="${mytest.agent-path:agentPath}"/>
+                <java-agent value="${mytest.java-agent:javaAgent}"/>
                 <jvm-options>
                     <option value="${mytest.option:option1}"/>
                 </jvm-options>
