@@ -24,22 +24,31 @@ package org.jboss.as.connector.subsystems.jca;
 import java.io.IOException;
 
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.junit.Test;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author <a href="stefano.maestri@redhat.com>Stefano Maestri</a>
  */
 public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     public JcaSubsystemTestCase() {
-        // FIXME JcaSubsystemTestCase constructor
         super(JcaExtension.SUBSYSTEM_NAME, new JcaExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        //TODO: This is copied from standalone.xml you may want to try more combinations
         return readResource("jca.xml");
+    }
+
+    @Test
+    public void testFullConfig() throws Exception {
+        standardSubsystemTest("jca-full.xml");
+    }
+
+    @Test
+    public void testExpressionConfig() throws Exception {
+        standardSubsystemTest("jca-full-expression.xml", "jca-full.xml");
     }
 
     @Override
