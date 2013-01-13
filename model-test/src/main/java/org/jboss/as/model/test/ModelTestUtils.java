@@ -184,6 +184,18 @@ public class ModelTestUtils {
     }
 
     /**
+     * Resoolve two models and compare them to make sure that they have same
+       content after expression resolution
+     *
+     * @param node1 the first model
+     * @param node2 the second model
+     * @throws AssertionFailedError if the models were not the same
+     */
+    public static void resolveAndCompareModels(ModelNode node1, ModelNode node2) {
+        compare(node1.resolve(), node2.resolve(), false, true, new Stack<String>());
+    }
+
+    /**
      * Compares two models to make sure that they are the same
      *
      * @param node1           the first model
@@ -192,7 +204,7 @@ public class ModelTestUtils {
      * @throws AssertionFailedError if the models were not the same
      */
     public static void compare(ModelNode node1, ModelNode node2, boolean ignoreUndefined) {
-        compare(node1, node2, ignoreUndefined, new Stack<String>());
+        compare(node1, node2, ignoreUndefined, false, new Stack<String>());
     }
 
     /**
@@ -282,8 +294,10 @@ public class ModelTestUtils {
     }
 
 
-    private static void compare(ModelNode node1, ModelNode node2, boolean ignoreUndefined, Stack<String> stack) {
-        Assert.assertEquals(getCompareStackAsString(stack) + " types", node1.getType(), node2.getType());
+    private static void compare(ModelNode node1, ModelNode node2, boolean ignoreUndefined, boolean ignoreType, Stack<String> stack) {
+        if (! ignoreType) {
+            Assert.assertEquals(getCompareStackAsString(stack) + " types", node1.getType(), node2.getType());
+        }
         if (node1.getType() == ModelType.OBJECT) {
             ModelNode model1 = ignoreUndefined ? trimUndefinedChildren(node1) : node1;
             ModelNode model2 = ignoreUndefined ? trimUndefinedChildren(node2) : node2;
@@ -308,7 +322,7 @@ public class ModelTestUtils {
                         Assert.assertTrue("key=" + key + "\n with child1 \n" + child1.toString() + "\n has child2 not defined\n node2 is:\n" + node2.toString(), child2.isDefined());
                     }
                     stack.push(key + "/");
-                    compare(child1, child2, ignoreUndefined, stack);
+                    compare(child1, child2, ignoreUndefined, ignoreType, stack);
                     stack.pop();
                 } else if (!ignoreUndefined) {
                     Assert.assertFalse(child2.asString(), child2.isDefined());
@@ -321,7 +335,7 @@ public class ModelTestUtils {
 
             for (int i = 0; i < list1.size(); i++) {
                 stack.push(i + "/");
-                compare(list1.get(i), list2.get(i), ignoreUndefined, stack);
+                compare(list1.get(i), list2.get(i), ignoreUndefined, ignoreType, stack);
                 stack.pop();
             }
 
@@ -330,7 +344,7 @@ public class ModelTestUtils {
             Property prop2 = node2.asProperty();
             Assert.assertEquals(prop1 + "\n" + prop2, prop1.getName(), prop2.getName());
             stack.push(prop1.getName() + "/");
-            compare(prop1.getValue(), prop2.getValue(), ignoreUndefined, stack);
+            compare(prop1.getValue(), prop2.getValue(), ignoreUndefined, ignoreType, stack);
             stack.pop();
 
         } else {

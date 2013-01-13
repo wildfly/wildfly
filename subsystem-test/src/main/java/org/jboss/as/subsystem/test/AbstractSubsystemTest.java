@@ -27,6 +27,7 @@ import org.junit.Before;
  * The base class for parsing tests which does the work of setting up the environment for parsing
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author <a href="stefano.maestri@redhat.com>Stefano Maestri</a>
  */
 public abstract class AbstractSubsystemTest {
 
@@ -286,6 +287,18 @@ public abstract class AbstractSubsystemTest {
      */
     protected void compare(ModelNode node1, ModelNode node2) {
         ModelTestUtils.compare(node1, node2);
+    }
+
+    /**
+     * Resolve two models and compare them to make sure that they have same
+     * content after expression resolution
+     *
+     * @param node1 the first model
+     * @param node2 the second model
+     * @throws AssertionFailedError if the models were not the same
+     */
+    protected void resolveandCompareModel(ModelNode node1, ModelNode node2) {
+        ModelTestUtils.resolveAndCompareModels(node1, node2);
     }
 
     /**
