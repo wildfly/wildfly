@@ -43,7 +43,7 @@ public abstract class PathResourceDefinition extends SimpleResourceDefinition {
     private static final String SPECIFIED_PATH_RESOURCE_PREFIX = "specified_path";
     private static final String NAMED_PATH_RESOURCE_PREFIX = "named_path";
 
-    static final PathElement PATH_ADDRESS = PathElement.pathElement(ModelDescriptionConstants.PATH);
+    public static final PathElement PATH_ADDRESS = PathElement.pathElement(ModelDescriptionConstants.PATH);
 
     static final SimpleAttributeDefinition NAME =
             SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.NAME, ModelType.STRING, false)

@@ -21,16 +21,25 @@
 */
 package org.jboss.as.core.model.test.paths;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+
 import java.util.List;
 
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
 import org.jboss.as.core.model.test.LegacyKernelServicesInitializer;
 import org.jboss.as.core.model.test.LegacyKernelServicesInitializer.TestControllerVersion;
 import org.jboss.as.core.model.test.TestModelType;
+import org.jboss.as.core.model.test.util.StandardServerGroupInitializers;
 import org.jboss.as.core.model.test.util.TransformersTestParameters;
+import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelTestUtils;
+import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -61,7 +70,7 @@ public class PathsTransformersTestCase extends AbstractCoreModelTest {
         KernelServicesBuilder builder = createKernelServicesBuilder(TestModelType.DOMAIN)
                 .setXmlResource("domain.xml");
 
-        LegacyKernelServicesInitializer legacyInitializer = builder.createLegacyKernelServicesBuilder(modelVersion, testControllerVersion);
+        builder.createLegacyKernelServicesBuilder(modelVersion, testControllerVersion);
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
@@ -70,5 +79,28 @@ public class PathsTransformersTestCase extends AbstractCoreModelTest {
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
         checkCoreModelTransformation(mainServices, modelVersion);
+    }
+
+    @Test
+    public void testRejectTransformers71x() throws Exception {
+
+        if (modelVersion.getMajor() > 1 || modelVersion.getMinor() > 3) {
+            return;
+        }
+
+        KernelServicesBuilder builder = createKernelServicesBuilder(TestModelType.DOMAIN);
+
+        // Add legacy subsystems
+        LegacyKernelServicesInitializer legacyInitializer =
+                StandardServerGroupInitializers.addServerGroupInitializers(builder.createLegacyKernelServicesBuilder(modelVersion, testControllerVersion));
+        // The 7.1.x descriptions are inaccurate so we can't validate the add ops against them
+        legacyInitializer.setDontValidateOperations();
+
+        KernelServices mainServices = builder.build();
+
+        List<ModelNode> ops = builder.parseXmlResource("domain-expressions.xml");
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops, new FailedOperationTransformationConfig()
+                .addFailedAttribute(PathAddress.pathAddress(PathElement.pathElement(PATH)),
+                        new FailedOperationTransformationConfig.RejectExpressionsConfig(PathResourceDefinition.PATH)));
     }
 }

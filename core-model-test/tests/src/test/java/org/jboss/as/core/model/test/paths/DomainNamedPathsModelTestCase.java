@@ -39,12 +39,12 @@ public class DomainNamedPathsModelTestCase extends AbstractCoreModelTest {
     @Test
     public void testDomainPaths() throws Exception {
         KernelServices kernelServices = createKernelServicesBuilder(TestModelType.DOMAIN)
-            .setXmlResource("domain.xml")
+            .setXmlResource("domain-expressions.xml")
             .build();
         Assert.assertTrue(kernelServices.isSuccessfulBoot());
 
         String marshalled = kernelServices.getPersistedSubsystemXml();
-        ModelTestUtils.compareXml(ModelTestUtils.readResource(this.getClass(), "domain.xml"), marshalled);
+        ModelTestUtils.compareXml(ModelTestUtils.readResource(this.getClass(), "domain-expressions.xml"), marshalled);
     }
 
     @Test

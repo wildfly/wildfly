@@ -82,6 +82,7 @@ public class DomainTransformers {
             // Ignore the jsf subsystem as well
             registry.registerSubsystemTransformers(JSF_SUBSYSTEM, IGNORED_SUBSYSTEMS, ResourceTransformer.DISCARD);
 
+            PathsTransformers.registerTransformers120(domain);
             DeploymentTransformers.registerTransformers120(domain);
             SystemPropertyTransformers.registerTransformers120(domain);
             SocketBindingGroupTransformers.registerTransformers120(domain);
