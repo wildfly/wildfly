@@ -45,9 +45,10 @@ public class PlugInAuthenticationResourceDefinition extends AbstractPlugInAuthRe
 
     public static final SimpleAttributeDefinition MECHANISM = new SimpleAttributeDefinitionBuilder(
             ModelDescriptionConstants.MECHANISM, ModelType.STRING, true)
-            .setValidator(new EnumValidator<AuthenticationMechanism>(AuthenticationMechanism.class, true, false,
+            .setValidator(new EnumValidator<AuthenticationMechanism>(AuthenticationMechanism.class, true, true,
                     AuthenticationMechanism.DIGEST, AuthenticationMechanism.PLAIN)) //currently only these are supported
             .setDefaultValue(new ModelNode(AuthenticationMechanism.DIGEST.toString()))
+            .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
     public static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = { NAME, MECHANISM };
