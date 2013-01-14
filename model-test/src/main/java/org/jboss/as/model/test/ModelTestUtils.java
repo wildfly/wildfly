@@ -39,6 +39,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
@@ -67,6 +68,9 @@ import org.w3c.dom.ls.LSSerializer;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class ModelTestUtils {
+
+    private static final Pattern EXPRESSION_PATTERN = Pattern.compile(".*\\$\\{.*\\}.*");
+
     /**
      * Read the classpath resource with the given name and return its contents as a string. Hook to
      * for reading in classpath resources for subsequent parsing. The resource is loaded using similar
@@ -280,6 +284,35 @@ public class ModelTestUtils {
             model = getSubModel(model, pathElement);
         }
         return model;
+    }
+
+    /**
+     * Scans for entries of type STRING containing expression formatted strings. This is to trap where parsers
+     * call ModelNode.set("${A}") when ModelNode.setExpression("${A}) should have been used
+     *
+     * @param model the model to check
+     * @throws AssertionFailedError if any STRING entries contain expression formatted strings.
+     */
+    public static void scanForExpressionFormattedStrings(ModelNode model) {
+        if (model.getType().equals(ModelType.STRING)) {
+            if (EXPRESSION_PATTERN.matcher(model.asString()).matches()) {
+                Assert.fail("ModelNode with type==STRING contains an expression formatted string: " + model.asString());
+            }
+        } else if (model.getType() == ModelType.OBJECT) {
+            for (String key : model.keys()) {
+                final ModelNode child = model.get(key);
+                scanForExpressionFormattedStrings(child);
+            }
+        } else if (model.getType() == ModelType.LIST) {
+            List<ModelNode> list = model.asList();
+            for (ModelNode entry : list) {
+                scanForExpressionFormattedStrings(entry);
+            }
+
+        } else if (model.getType() == ModelType.PROPERTY) {
+            Property prop = model.asProperty();
+            scanForExpressionFormattedStrings(prop.getValue());
+        }
     }
 
     private static String removeNamespace(String xml) {
