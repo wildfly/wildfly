@@ -188,7 +188,7 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
                                 new ChainedConfig(new HashMap<String, FailedOperationTransformationConfig.PathAddressConfig>() {{
                                     configureAttributes(this,
                                             HornetQServerResourceDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0,
-                                            new AttributeDefinition[] { BACKUP_GROUP_NAME, CHECK_FOR_LIVE_SERVER, REPLICATION_CLUSTERNAME });
+                                            HornetQServerResourceDefinition.NEW_ATTRIBUTES_ADDED_AFTER_1_1_0);
                                 }}))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(pathElement(ModelDescriptionConstants.PATH)),
@@ -240,7 +240,7 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
                                 new ChainedConfig(new HashMap<String, FailedOperationTransformationConfig.PathAddressConfig>() {{
                                     configureAttributes(this,
                                             ClusterConnectionDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0,
-                                            new AttributeDefinition[] { CALL_FAILOVER_TIMEOUT });
+                                            ClusterConnectionDefinition.NEW_ATTRIBUTES_ADDED_AFTER_1_1_0);
                                 }}))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(BridgeDefinition.PATH),

@@ -46,8 +46,6 @@ public class ConfigurationAttributesTestCase extends AttributesTestBase {
         UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("securityInvalidationInterval");
         UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("name");
         UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("maskPassword");
-        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("incomingInterceptorClassNames");
-        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("outgoingInterceptorClassNames");
 
         //stuff we arent bothered about
         KNOWN_ATTRIBUTES = new TreeSet<String>();
@@ -58,6 +56,7 @@ public class ConfigurationAttributesTestCase extends AttributesTestBase {
         KNOWN_ATTRIBUTES.add("securityInvalidationInterval");
         KNOWN_ATTRIBUTES.add("liveConnectorRef");
         KNOWN_ATTRIBUTES.add("clustered");
+        KNOWN_ATTRIBUTES.add("remotingInterceptors");
 
         //where we have slightly different names between as7/HornetQ
         DODGY_NAME.put("allowFailback", "allowAutoFailBack");
@@ -72,6 +71,8 @@ public class ConfigurationAttributesTestCase extends AttributesTestBase {
         DODGY_NAME.put("failoverOnShutdown", "failoverOnServerShutdown");
         DODGY_NAME.put("wildCardRoutingEnabled", "wildcardRoutingEnabled");
         DODGY_NAME.put("remotingInterceptors", "interceptorClassNames");
+        DODGY_NAME.put("remotingIncomingInterceptors", "incomingInterceptorClassNames");
+        DODGY_NAME.put("remotingOutgoingInterceptors", "outgoingInterceptorClassNames");
     }
 
     @Test

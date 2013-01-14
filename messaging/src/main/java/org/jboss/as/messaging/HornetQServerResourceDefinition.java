@@ -62,8 +62,10 @@ import static org.jboss.as.messaging.CommonAttributes.PERF_BLAST_PAGES;
 import static org.jboss.as.messaging.CommonAttributes.PERSISTENCE_ENABLED;
 import static org.jboss.as.messaging.CommonAttributes.PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY;
 import static org.jboss.as.messaging.CommonAttributes.PERSIST_ID_CACHE;
+import static org.jboss.as.messaging.CommonAttributes.REMOTING_INCOMING_INTERCEPTORS;
 import static org.jboss.as.messaging.CommonAttributes.REMOTING_INTERCEPTORS;
 import static org.jboss.as.messaging.CommonAttributes.REPLICATION_CLUSTERNAME;
+import static org.jboss.as.messaging.CommonAttributes.REMOTING_OUTGOING_INTERCEPTORS;
 import static org.jboss.as.messaging.CommonAttributes.RUN_SYNC_SPEED_TEST;
 import static org.jboss.as.messaging.CommonAttributes.SECURITY_ENABLED;
 import static org.jboss.as.messaging.CommonAttributes.SECURITY_INVALIDATION_INTERVAL;
@@ -95,7 +97,8 @@ public class HornetQServerResourceDefinition extends SimpleResourceDefinition {
 
     public static final PathElement HORNETQ_SERVER_PATH = PathElement.pathElement(CommonAttributes.HORNETQ_SERVER);
 
-    public static final AttributeDefinition[] NEW_ATTRIBUTES_ADDED_AFTER_1_1_0 = { BACKUP_GROUP_NAME, CHECK_FOR_LIVE_SERVER, REPLICATION_CLUSTERNAME };
+    public static final AttributeDefinition[] NEW_ATTRIBUTES_ADDED_AFTER_1_1_0 = { BACKUP_GROUP_NAME, CHECK_FOR_LIVE_SERVER, REPLICATION_CLUSTERNAME,
+    REMOTING_INCOMING_INTERCEPTORS, REMOTING_OUTGOING_INTERCEPTORS };
 
     public static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0 = { ASYNC_CONNECTION_EXECUTION_ENABLED, PERSISTENCE_ENABLED, SECURITY_ENABLED, SECURITY_INVALIDATION_INTERVAL,
             WILD_CARD_ROUTING_ENABLED, MANAGEMENT_ADDRESS, MANAGEMENT_NOTIFICATION_ADDRESS, JMX_MANAGEMENT_ENABLED, JMX_DOMAIN,

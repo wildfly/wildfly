@@ -306,13 +306,17 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                             handleElementText(reader, element, operation);
                         } else {
                             // These should be handled in specific case blocks above, e.g. case REMOTING_INTERCEPTORS:
-                            throw MESSAGES.unsupportedElement(element.getLocalName());
+                            handleComplexConfigurationAttribute(reader, element, operation);
                         }
                     } else {
                         handleUnknownConfigurationAttribute(reader, element, operation);
                     }
             }
         } while (reader.hasNext() && localName.equals(elementName) == false);
+    }
+
+    protected void handleComplexConfigurationAttribute(XMLExtendedStreamReader reader, Element element, ModelNode operation) throws XMLStreamException {
+        throw MESSAGES.unsupportedElement(element.getLocalName());
     }
 
     protected void handleUnknownConfigurationAttribute(XMLExtendedStreamReader reader, Element element, ModelNode operation)

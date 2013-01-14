@@ -28,17 +28,19 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.messaging.CommonAttributes.DEFAULT;
 import static org.jboss.as.messaging.CommonAttributes.JMS_BRIDGE;
+import static org.jboss.as.messaging.CommonAttributes.REMOTING_INCOMING_INTERCEPTORS;
+import static org.jboss.as.messaging.CommonAttributes.REMOTING_OUTGOING_INTERCEPTORS;
 import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
 import static org.jboss.as.messaging.Element.DISCOVERY_GROUP_REF;
 import static org.jboss.as.messaging.Element.STATIC_CONNECTORS;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -124,6 +126,8 @@ public class Messaging13SubsystemParser extends Messaging12SubsystemParser {
             throws XMLStreamException {
         switch (element) {
             case CALL_FAILOVER_TIMEOUT:
+            case NOTIFICATION_ATTEMPTS:
+            case NOTIFICATION_INTERVAL:
                 handleElementText(reader, element, clusterConnectionAdd);
                 break;
             default: {
@@ -142,6 +146,21 @@ public class Messaging13SubsystemParser extends Messaging12SubsystemParser {
                 break;
             default: {
                 super.handleUnknownConfigurationAttribute(reader, element, operation);
+            }
+        }
+    }
+
+    @Override
+    protected void handleComplexConfigurationAttribute(XMLExtendedStreamReader reader, Element element, ModelNode operation) throws XMLStreamException {
+        switch (element) {
+            case REMOTING_INCOMING_INTERCEPTORS:
+                processRemotingIncomingInterceptors(reader, operation);
+                break;
+            case REMOTING_OUTGOING_INTERCEPTORS:
+                processRemotingOutgoingInterceptors(reader, operation);
+                break;
+            default: {
+                super.handleComplexConfigurationAttribute(reader, element, operation);
             }
         }
     }
@@ -281,6 +300,38 @@ public class Messaging13SubsystemParser extends Messaging12SubsystemParser {
                     break;
                 default:
                     throw ParseUtils.unexpectedElement(reader);
+            }
+        }
+    }
+
+    private void processRemotingIncomingInterceptors(XMLExtendedStreamReader reader, ModelNode operation) throws XMLStreamException {
+        requireNoAttributes(reader);
+        while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case CLASS_NAME: {
+                    final String value = reader.getElementText();
+                    REMOTING_INCOMING_INTERCEPTORS.parseAndAddParameterElement(value, operation, reader);
+                    break;
+                } default: {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private void processRemotingOutgoingInterceptors(XMLExtendedStreamReader reader, ModelNode operation) throws XMLStreamException {
+        requireNoAttributes(reader);
+        while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case CLASS_NAME: {
+                    final String value = reader.getElementText();
+                    REMOTING_OUTGOING_INTERCEPTORS.parseAndAddParameterElement(value, operation, reader);
+                    break;
+                } default: {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
             }
         }
     }

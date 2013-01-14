@@ -559,7 +559,65 @@ public interface CommonAttributes {
             .setRestartAllServices()
             .build();
 
+    @Deprecated
     PrimitiveListAttributeDefinition REMOTING_INTERCEPTORS = new PrimitiveListAttributeDefinition.Builder("remoting-interceptors", ModelType.STRING)
+            .setDeprecated(VERSION_1_2_0)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setMinSize(1)
+            .setMaxSize(Integer.MAX_VALUE)
+            .setRestartAllServices()
+            .setValidator(new StringLengthValidator(1, false, true))
+            .setAttributeMarshaller(new AttributeMarshaller() {
+                @Override
+                public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+                    if (resourceModel.hasDefined(attribute.getName())) {
+                        List<ModelNode> list = resourceModel.get(attribute.getName()).asList();
+                        if (list.size() > 0) {
+                            writer.writeStartElement(attribute.getXmlName());
+
+                            for (ModelNode child : list) {
+                                writer.writeStartElement(Element.CLASS_NAME.getLocalName());
+                                writer.writeCharacters(child.asString());
+                                writer.writeEndElement();
+                            }
+
+                            writer.writeEndElement();
+                        }
+                    }
+                }
+            })
+            .build();
+
+    PrimitiveListAttributeDefinition REMOTING_INCOMING_INTERCEPTORS = new PrimitiveListAttributeDefinition.Builder("remoting-incoming-interceptors", ModelType.STRING)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setMinSize(1)
+            .setMaxSize(Integer.MAX_VALUE)
+            .setRestartAllServices()
+            .setValidator(new StringLengthValidator(1, false, true))
+            .setAttributeMarshaller(new AttributeMarshaller() {
+                @Override
+                public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+                    if (resourceModel.hasDefined(attribute.getName())) {
+                        List<ModelNode> list = resourceModel.get(attribute.getName()).asList();
+                        if (list.size() > 0) {
+                            writer.writeStartElement(attribute.getXmlName());
+
+                            for (ModelNode child : list) {
+                                writer.writeStartElement(Element.CLASS_NAME.getLocalName());
+                                writer.writeCharacters(child.asString());
+                                writer.writeEndElement();
+                            }
+
+                            writer.writeEndElement();
+                        }
+                    }
+                }
+            })
+            .build();
+
+    PrimitiveListAttributeDefinition REMOTING_OUTGOING_INTERCEPTORS = new PrimitiveListAttributeDefinition.Builder("remoting-outgoing-interceptors", ModelType.STRING)
             .setAllowNull(true)
             .setAllowExpression(true)
             .setMinSize(1)
@@ -800,6 +858,8 @@ public interface CommonAttributes {
     String REMOTE_ACCEPTOR = "remote-acceptor";
     String REMOTE_CONNECTOR = "remote-connector";
     String REMOTING_INTERCEPTOR = "remoting-interceptor";
+    String REMOTING_INCOMING_INTERCEPTOR = "remoting-incoming-interceptor";
+    String REMOTING_OUTGOING_INTERCEPTOR = "remoting-outgoing-interceptor";
     String RESOURCE_ADAPTER = "resource-adapter";
     String ROLE = "role";
     String ROLES_ATTR_NAME = "roles";
@@ -824,7 +884,8 @@ public interface CommonAttributes {
             MANAGEMENT_ADDRESS, MANAGEMENT_NOTIFICATION_ADDRESS, CLUSTER_USER, CLUSTER_PASSWORD, JMX_MANAGEMENT_ENABLED,
             JMX_DOMAIN, MESSAGE_COUNTER_ENABLED, MESSAGE_COUNTER_SAMPLE_PERIOD, MESSAGE_COUNTER_MAX_DAY_HISTORY,
             CONNECTION_TTL_OVERRIDE, ASYNC_CONNECTION_EXECUTION_ENABLED, TRANSACTION_TIMEOUT, TRANSACTION_TIMEOUT_SCAN_PERIOD,
-            MESSAGE_EXPIRY_SCAN_PERIOD, MESSAGE_EXPIRY_THREAD_PRIORITY, ID_CACHE_SIZE, PERSIST_ID_CACHE, REMOTING_INTERCEPTORS,
+            MESSAGE_EXPIRY_SCAN_PERIOD, MESSAGE_EXPIRY_THREAD_PRIORITY, ID_CACHE_SIZE, PERSIST_ID_CACHE,
+            REMOTING_INTERCEPTORS, REMOTING_INCOMING_INTERCEPTORS, REMOTING_OUTGOING_INTERCEPTORS,
             BACKUP, ALLOW_FAILBACK, FAILBACK_DELAY, FAILOVER_ON_SHUTDOWN, SHARED_STORE, PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY,
             PAGE_MAX_CONCURRENT_IO, CREATE_BINDINGS_DIR, CREATE_JOURNAL_DIR, JOURNAL_TYPE, JOURNAL_BUFFER_TIMEOUT,
             JOURNAL_BUFFER_SIZE, JOURNAL_SYNC_TRANSACTIONAL, JOURNAL_SYNC_NON_TRANSACTIONAL, LOG_JOURNAL_WRITE_RATE,

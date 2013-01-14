@@ -111,17 +111,19 @@ public class ClusterConnectionAdd extends AbstractAddStepHandler {
         final int minLargeMessageSize = CommonAttributes.MIN_LARGE_MESSAGE_SIZE.resolveModelAttribute(context, model).asInt();
         final long callTimeout = CommonAttributes.CALL_TIMEOUT.resolveModelAttribute(context, model).asLong();
         final long callFailoverTimeout = CommonAttributes.CALL_FAILOVER_TIMEOUT.resolveModelAttribute(context, model).asLong();
+        final long clusterNotificationInterval = ClusterConnectionDefinition.NOTIFICATION_INTERVAL.resolveModelAttribute(context, model).asLong();
+        final int clusterNotificationAttempts = ClusterConnectionDefinition.NOTIFICATION_ATTEMPTS.resolveModelAttribute(context, model).asInt();
 
         if (discoveryGroupName != null) {
             return new ClusterConnectionConfiguration(name, address, connectorName, minLargeMessageSize, clientFailureCheckPeriod, connectionTTL,
                     retryInterval, retryIntervalMultiplier, maxRetryInterval, reconnectAttempts, callTimeout, callFailoverTimeout,
                     duplicateDetection, forwardWhenNoConsumers, maxHops, confirmationWindowSize,
-                    discoveryGroupName);
+                    discoveryGroupName, clusterNotificationInterval, clusterNotificationAttempts);
         } else {
             return new ClusterConnectionConfiguration(name, address, connectorName, minLargeMessageSize, clientFailureCheckPeriod, connectionTTL,
                     retryInterval, retryIntervalMultiplier, maxRetryInterval, reconnectAttempts, callTimeout, callFailoverTimeout,
                     duplicateDetection, forwardWhenNoConsumers, maxHops, confirmationWindowSize,
-                    staticConnectors, allowDirectOnly);
+                    staticConnectors, allowDirectOnly,clusterNotificationInterval, clusterNotificationAttempts);
         }
     }
 

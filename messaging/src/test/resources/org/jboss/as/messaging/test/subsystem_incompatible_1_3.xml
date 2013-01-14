@@ -27,9 +27,17 @@
             <id-cache-size>${id.cache.size:102030}</id-cache-size>
             <persist-id-cache>${persist.id.cache:false}</persist-id-cache>
             <remoting-interceptors>
-                <class-name>foo.bar</class-name>
-                <class-name>${remoting.interceptor.class:bar.foo}</class-name>
+                <class-name>${remoting-interceptor.class1:foo.bar}</class-name>
+                <class-name>${remoting-interceptor.class2:bar.foo}</class-name>
             </remoting-interceptors>
+            <remoting-incoming-interceptors>
+                <class-name>${remoting-incoming-interceptor.class1:foo.bar}</class-name>
+                <class-name>${remoting-incoming-interceptor.class2:bar.foo}</class-name>
+            </remoting-incoming-interceptors>
+            <remoting-outgoing-interceptors>
+                <class-name>${remoting-outgoing-interceptor.class1:foo.bar}</class-name>
+                <class-name>${remoting-outgoing-interceptor.class2:bar.foo}</class-name>
+            </remoting-outgoing-interceptors>
             <backup>${backup:false}</backup>
             <allow-failback>${allow.failback:false}</allow-failback>
             <failback-delay>${failback.delay:9876}</failback-delay>
@@ -204,6 +212,8 @@
                     <forward-when-no-consumers>${forward.when.no.consumers:true}</forward-when-no-consumers>
                     <max-hops>${max.hops:7}</max-hops>
                     <confirmation-window-size>${confirmation.windows.size:459}</confirmation-window-size>
+                    <notification-attempts>${notification.attempts:2}</notification-attempts>
+                    <notification-interval>${notification.interval:1}</notification-interval>
                     <static-connectors>
                         <connector-ref>in-vm</connector-ref>
                         <connector-ref>netty</connector-ref>
