@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.apache.http.Header;
 import org.jboss.arquillian.container.test.api.ContainerController;
+import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
@@ -38,6 +39,8 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -59,6 +62,9 @@ public class GlobalValveTestCase {
     @ArquillianResource
     private static ContainerController container;
     
+    @ArquillianResource
+    private Deployer deployer;
+    
     private static final String modulename = "org.jboss.testvalve";
     private static final String classname = TestValve.class.getName();
     private static final String baseModulePath = "/../modules/" + modulename.replace(".", "/") + "/main";
@@ -68,8 +74,9 @@ public class GlobalValveTestCase {
     private static final String PARAM_NAME = "testparam";
     /** the default value is hardcoded in {@link TestValve} */
     private static final String DEFAULT_PARAM_VALUE = "DEFAULT_VALUE";
+    private static final String DEPLOYMENT = "valve";
 
-    @Deployment(name = "valve")
+    @Deployment(name = DEPLOYMENT, managed = false, testable = false)
     @TargetsContainer(CONTAINER)
     public static WebArchive Hello() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "global-valve-test.war");
@@ -77,36 +84,56 @@ public class GlobalValveTestCase {
         return war;
     }
     
-    @Test
-    @InSequence(0)
-    public void startServer() throws Exception {
+    @Before
+    public void before() throws Exception {
         container.start(CONTAINER);
+        log.debug("Server started");
+        deployer.deploy(DEPLOYMENT);
+        log.debug("Deployed " + DEPLOYMENT);
     }
 
-    
+    @After
+    public void after() throws Exception {
+        try {
+            deployer.undeploy(DEPLOYMENT);
+            log.info("Undeployed " + DEPLOYMENT);
+        } finally {
+            container.stop(CONTAINER);
+            log.info("Server stopped");
+        }
+    }
+
+
     @Test
-    @InSequence(1)
-    public void testValveOne(@ArquillianResource URL url, @ArquillianResource ManagementClient client) throws Exception {
+    @InSequence(0)
+    public void addValveOne(@ArquillianResource ManagementClient client) throws Exception {
         // as first test in sequence creating valve module
         ValveUtil.createValveModule(client, modulename, baseModulePath, jarName);
         // adding valve based on the created module
-        ValveUtil.addValve(client, VALVE_NAME_1, modulename, classname, null);
-        ValveUtil.reload(client);
-        
+        ValveUtil.addValve(client, VALVE_NAME_1, modulename, classname, null);   
+    }
+    
+    
+    @Test
+    @InSequence(1)
+    public void testValveOne(@ArquillianResource URL url) throws Exception {
         log.debug("Testing url " + url + " against one global valve named " + VALVE_NAME_1);
         Header[] valveHeaders = ValveUtil.hitValve(url);
         assertEquals("There was one valve defined - it's missing now", 1, valveHeaders.length);
         assertEquals("One valve with not defined param expecting default param value", DEFAULT_PARAM_VALUE, valveHeaders[0].getValue());
     }
-
+    
     @Test
     @InSequence(2)
-    public void testValveTwo(@ArquillianResource URL url, @ArquillianResource ManagementClient client) throws Exception {
+    public void addValveTwo(@ArquillianResource ManagementClient client) throws Exception {
         Map<String,String> params = new HashMap<String, String>();
         params.put(PARAM_NAME, VALVE_NAME_2); //as param of valve defining its name
         ValveUtil.addValve(client, VALVE_NAME_2, modulename, classname, params);
-        ValveUtil.reload(client);
-        
+    }
+
+    @Test
+    @InSequence(3)
+    public void testValveTwo(@ArquillianResource URL url) throws Exception {        
         log.debug("Testing url " + url + " against two valves named " + VALVE_NAME_1 + " and " + VALVE_NAME_2);
         Header[] valveHeaders = ValveUtil.hitValve(url);
         assertEquals("There were two global valves defined - they're missing now", 2, valveHeaders.length);
@@ -120,25 +147,23 @@ public class GlobalValveTestCase {
             fail("The first header has value neither default nor parametrized. The value is: " + valveHeaders[0].getValue() + " what is not correct.");
         }
     }
+
+    @Test
+    @InSequence(4)
+    public void passivateValve(@ArquillianResource ManagementClient client) throws Exception {
+        ValveUtil.activateValve(client, VALVE_NAME_1, false);
+    }
     
     @Test
-    @InSequence(3)
+    @InSequence(5)
     public void testValveDisabled(@ArquillianResource URL url, @ArquillianResource ManagementClient client) throws Exception {       
-        ValveUtil.activateValve(client, VALVE_NAME_1, false);
-        ValveUtil.reload(client);
-        
         log.debug("Testing url " + url + " against one global valve named " + VALVE_NAME_2 + ". The second one "+ VALVE_NAME_1 +" is disabled");
         Header[] valveHeaders = ValveUtil.hitValve(url);
         assertEquals("There is one active valve defined", 1, valveHeaders.length);
         assertEquals("Just second parametrized valve is active - defined param value is expected to be returned", VALVE_NAME_2, valveHeaders[0].getValue());
-    }
-    
-    
-    @Test
-    @InSequence(99)
-    public void cleanUp(@ArquillianResource ManagementClient client) throws Exception {
+        
+        // at the end removing valve
         ValveUtil.removeValve(client, VALVE_NAME_1);
         ValveUtil.removeValve(client, VALVE_NAME_2);
-        container.stop(CONTAINER);
     }
 }
