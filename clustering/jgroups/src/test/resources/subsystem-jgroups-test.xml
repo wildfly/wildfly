@@ -3,7 +3,7 @@
         <transport type="UDP"/>
     </stack>
     <stack name="maximal">
-        <transport type="TCP" socket-binding="${test.expr:jgroups-tcp}" diagnostics-socket-binding="jgroups-diagnostics" default-executor="jgroups" 
+        <transport type="TCP" socket-binding="some-binding" diagnostics-socket-binding="jgroups-diagnostics" default-executor="jgroups" 
             oob-executor="jgroups-oob" timer-executor="jgroups-timer" shared="false" 
             thread-factory="jgroups-thread-factory" machine="${test.expr:machine1}" rack="${test.expr:rack1}" site="${test.expr:site1}" >
             <property name="enable_bundling">${test.expr:true}</property>
