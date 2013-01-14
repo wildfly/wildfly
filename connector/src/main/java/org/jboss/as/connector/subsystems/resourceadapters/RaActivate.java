@@ -26,6 +26,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
@@ -51,8 +52,9 @@ public class RaActivate implements OperationStepHandler {
                     RaOperationUtil.deactivateIfActive(context, raName);
 
                     final String archiveName = model.get(ARCHIVE.getName()).asString();
-
-                    RaOperationUtil.activate(context, raName, archiveName);
+                    final ServiceVerificationHandler svh = new ServiceVerificationHandler();
+                    RaOperationUtil.activate(context, raName, archiveName, svh);
+                    context.addStep(svh, OperationContext.Stage.VERIFY);
                     context.completeStep(new OperationContext.RollbackHandler() {
                         @Override
                         public void handleRollback(OperationContext context, ModelNode operation) {

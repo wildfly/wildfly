@@ -22,15 +22,6 @@
 
 package org.jboss.as.messaging.jms;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
-import static org.jboss.as.messaging.CommonAttributes.LOCAL;
-import static org.jboss.as.messaging.CommonAttributes.LOCAL_TX;
-import static org.jboss.as.messaging.CommonAttributes.NONE;
-import static org.jboss.as.messaging.CommonAttributes.NO_TX;
-import static org.jboss.as.messaging.CommonAttributes.XA_TX;
-import static org.jboss.as.messaging.jms.ConnectionFactoryAttribute.getDefinitions;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -52,8 +43,18 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
+import static org.jboss.as.messaging.CommonAttributes.LOCAL;
+import static org.jboss.as.messaging.CommonAttributes.LOCAL_TX;
+import static org.jboss.as.messaging.CommonAttributes.NONE;
+import static org.jboss.as.messaging.CommonAttributes.NO_TX;
+import static org.jboss.as.messaging.CommonAttributes.XA_TX;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttribute.getDefinitions;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
@@ -125,7 +126,7 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler implement
                 .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, resourceAdapterService.getTransactionManager())
                 .addDependency(hqServiceName, HornetQServer.class, resourceAdapterService.getHornetQService())
                 .addDependency(JMSServices.getJmsManagerBaseServiceName(hqServiceName))
-                .addListener(verificationHandler);
+                .addListener(ServiceListener.Inheritance.ALL, verificationHandler);
 
         newControllers.add(serviceBuilder.setInitialMode(Mode.ACTIVE).install());
     }

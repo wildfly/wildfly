@@ -22,11 +22,7 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTERS_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import java.util.List;
 
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.OperationContext;
@@ -39,7 +35,11 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
-import java.util.List;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTERS_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
@@ -108,7 +108,7 @@ public class RaRemove implements OperationStepHandler {
                             RaOperationUtil.installRaServices(context, new ServiceVerificationHandler(), archiveOrModuleName, resourceAdapter);
                             try {
                                 if (wasActive)
-                                    RaOperationUtil.activate(context, archiveOrModuleName, archiveOrModuleName);
+                                    RaOperationUtil.activate(context, archiveOrModuleName, archiveOrModuleName, null);
                             } catch (OperationFailedException e) {
 
                             }

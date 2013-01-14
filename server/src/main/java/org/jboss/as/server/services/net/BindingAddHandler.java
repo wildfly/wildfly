@@ -28,18 +28,10 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CLIENT_MAPPINGS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESTINATION_ADDRESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESTINATION_PORT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOURCE_NETWORK;
-
 import org.jboss.as.controller.operations.common.SocketBindingAddHandler;
 import org.jboss.as.controller.operations.validation.MaskedAddressValidator;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.resource.AbstractSocketBindingResourceDefinition;
-import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.network.SocketBinding;
@@ -49,6 +41,12 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceTarget;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CLIENT_MAPPINGS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESTINATION_ADDRESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESTINATION_PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOURCE_NETWORK;
 
 /**
  * Handler for the server socket-binding resource's add operation.
@@ -90,7 +88,7 @@ public class BindingAddHandler extends SocketBindingAddHandler {
         String name = address.getLastElement().getValue();
 
         try {
-            newControllers.add(installBindingService(context, model, name));
+            newControllers.add(installBindingService(context, model, name, verificationHandler));
         } catch (UnknownHostException e) {
             throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
         }
@@ -107,7 +105,7 @@ public class BindingAddHandler extends SocketBindingAddHandler {
         return false;
     }
 
-    public static ServiceController<SocketBinding> installBindingService(OperationContext context, ModelNode config, String name)
+    public static ServiceController<SocketBinding> installBindingService(OperationContext context, ModelNode config, String name, final ServiceVerificationHandler verificationHandler)
             throws UnknownHostException, OperationFailedException {
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
@@ -126,6 +124,9 @@ public class BindingAddHandler extends SocketBindingAddHandler {
         final ServiceBuilder<SocketBinding> builder = serviceTarget.addService(SocketBinding.JBOSS_BINDING_NAME.append(name), service);
         if (intf != null) {
             builder.addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(intf), NetworkInterfaceBinding.class, service.getInterfaceBinding());
+        }
+        if(verificationHandler != null) {
+            builder.addListener(verificationHandler);
         }
         return builder.addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER, SocketBindingManager.class, service.getSocketBindings())
                 .setInitialMode(Mode.ON_DEMAND)

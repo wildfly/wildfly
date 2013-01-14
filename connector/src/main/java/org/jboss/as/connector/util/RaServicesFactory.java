@@ -28,6 +28,7 @@ import org.jboss.as.connector.services.resourceadapters.deployment.ResourceAdapt
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.service.NamingService;
@@ -41,16 +42,17 @@ import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.SubjectFactory;
 
 public class RaServicesFactory {
-    public static void createDeploymentService(ConnectorXmlDescriptor connectorXmlDescriptor, Module module, ServiceTarget serviceTarget, final String deploymentUnitName, ServiceName deploymentUnitServiceName, ResourceAdapter raxml)  {
-        createDeploymentService(null, connectorXmlDescriptor, module, serviceTarget, deploymentUnitName, deploymentUnitServiceName, deploymentUnitName,  raxml, null);
+    public static void createDeploymentService(ConnectorXmlDescriptor connectorXmlDescriptor, Module module, ServiceTarget serviceTarget, final String deploymentUnitName, ServiceName deploymentUnitServiceName, ResourceAdapter raxml, final ServiceVerificationHandler serviceVerificationHandler)  {
+        createDeploymentService(null, connectorXmlDescriptor, module, serviceTarget, deploymentUnitName, deploymentUnitServiceName, deploymentUnitName,  raxml, null, serviceVerificationHandler);
 
     }
-    public static void createDeploymentService(final ManagementResourceRegistration registration, ConnectorXmlDescriptor connectorXmlDescriptor, Module module, ServiceTarget serviceTarget, final String deploymentUnitName, ServiceName deploymentUnitServiceName, String deployment, ResourceAdapter raxml, final Resource deploymentResource) {
+    public static void createDeploymentService(final ManagementResourceRegistration registration, ConnectorXmlDescriptor connectorXmlDescriptor, Module module, ServiceTarget serviceTarget, final String deploymentUnitName, ServiceName deploymentUnitServiceName, String deployment, ResourceAdapter raxml, final Resource deploymentResource, final ServiceVerificationHandler serviceVerificationHandler) {
         // Create the service
         ServiceName serviceName = ConnectorServices.registerDeployment(deploymentUnitName);
 
@@ -77,6 +79,10 @@ public class RaServicesFactory {
                 .addDependency(ConnectorServices.CONNECTION_VALIDATOR_SERVICE)
                 .addDependency(NamingService.SERVICE_NAME)
                 .addDependency(ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(connectorXmlDescriptor.getDeploymentName()));
+
+        if(serviceVerificationHandler != null) {
+            builder.addListener(ServiceListener.Inheritance.ALL, serviceVerificationHandler);
+        }
         if (registration != null && deploymentResource != null) {
             builder.addListener(new AbstractResourceAdapterDeploymentServiceListener(registration, deploymentUnitName, deploymentResource) {
 

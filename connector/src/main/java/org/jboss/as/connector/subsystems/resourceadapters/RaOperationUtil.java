@@ -21,6 +21,15 @@
  */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import java.io.Closeable;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.jboss.as.connector.deployers.ra.processors.IronJacamarDeploymentParsingProcessor;
 import org.jboss.as.connector.deployers.ra.processors.ParsedRaDeploymentProcessor;
 import org.jboss.as.connector.deployers.ra.processors.RaDeploymentParsingProcessor;
@@ -72,15 +81,6 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
-
-import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION;
@@ -279,7 +279,7 @@ public class RaOperationUtil {
 
     }
 
-    public static void activate(OperationContext context, String raName, String rarName) throws OperationFailedException {
+    public static void activate(OperationContext context, String raName, String rarName, final ServiceVerificationHandler serviceVerificationHandler) throws OperationFailedException {
         ServiceRegistry registry = context.getServiceRegistry(true);
         if (rarName.contains(ConnectorServices.RA_SERVICE_NAME_SEPARATOR)) {
             rarName = rarName.substring(0, rarName.indexOf(ConnectorServices.RA_SERVICE_NAME_SEPARATOR));
@@ -292,7 +292,7 @@ public class RaOperationUtil {
         final ServiceController<?> RaxmlController = registry.getService(ServiceName.of(ConnectorServices.RA_SERVICE, raName));
 
         ResourceAdapter raxml = (ResourceAdapter) RaxmlController.getValue();
-        RaServicesFactory.createDeploymentService(inactive.getRegistration(), inactive.getConnectorXmlDescriptor(), inactive.getModule(), inactive.getServiceTarget(), raName, inactive.getDeploymentUnitServiceName(), inactive.getDeployment(), raxml, inactive.getResource());
+        RaServicesFactory.createDeploymentService(inactive.getRegistration(), inactive.getConnectorXmlDescriptor(), inactive.getModule(), inactive.getServiceTarget(), raName, inactive.getDeploymentUnitServiceName(), inactive.getDeployment(), raxml, inactive.getResource(), serviceVerificationHandler);
     }
 
     public static ServiceName installRaServices(OperationContext context, ServiceVerificationHandler verificationHandler, String name, ModifiableResourceAdapter resourceAdapter) {
@@ -375,7 +375,7 @@ public class RaOperationUtil {
                     ConnectorLogger.SUBSYSTEM_RA_LOGGER.forceIJToNull();
                     ironJacamarXmlDescriptor = null;
                 }
-                ServiceBuilder builder = ParsedRaDeploymentProcessor.process(connectorXmlDescriptor, ironJacamarXmlDescriptor, module.getClassLoader(), serviceTarget, annotationIndexes, RAR_MODULE.append(deploymentName));
+                ServiceBuilder builder = ParsedRaDeploymentProcessor.process(connectorXmlDescriptor, ironJacamarXmlDescriptor, module.getClassLoader(), serviceTarget, annotationIndexes, RAR_MODULE.append(deploymentName), verificationHandler);
                 builder.addDependency(raServiceName).setInitialMode(ServiceController.Mode.ACTIVE).install();
                 String rarName = resourceAdapter.getArchive();
                 Integer identifier = null;
@@ -383,7 +383,7 @@ public class RaOperationUtil {
                     rarName = rarName.substring(0, rarName.indexOf(ConnectorServices.RA_SERVICE_NAME_SEPARATOR));
                 }
                 if (deploymentName.equals(rarName)) {
-                    RaServicesFactory.createDeploymentService(connectorXmlDescriptor, module, serviceTarget, deploymentName, RAR_MODULE.append(deploymentName), resourceAdapter);
+                    RaServicesFactory.createDeploymentService(connectorXmlDescriptor, module, serviceTarget, deploymentName, RAR_MODULE.append(deploymentName), resourceAdapter, verificationHandler);
 
 
                 }
