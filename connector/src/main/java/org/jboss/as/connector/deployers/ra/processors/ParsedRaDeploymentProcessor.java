@@ -22,11 +22,7 @@
 
 package org.jboss.as.connector.deployers.ra.processors;
 
-import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER;
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
-
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.jboss.as.connector.annotations.repository.jandex.JandexAnnotationRepositoryImpl;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
@@ -40,6 +36,7 @@ import org.jboss.as.connector.subsystems.resourceadapters.IronJacamarResourceDef
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.service.NamingService;
@@ -67,9 +64,13 @@ import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.SubjectFactory;
+
+import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER;
+import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 
 /**
  * DeploymentUnitProcessor responsible for using IronJacamar metadata and create
@@ -122,7 +123,7 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
         Map<ResourceRoot, Index> annotationIndexes = AnnotationIndexUtils.getAnnotationIndexes(deploymentUnit);
 
 
-        ServiceBuilder builder = process(connectorXmlDescriptor, ironJacamarXmlDescriptor, classLoader, serviceTarget, annotationIndexes, deploymentUnit.getServiceName());
+        ServiceBuilder builder = process(connectorXmlDescriptor, ironJacamarXmlDescriptor, classLoader, serviceTarget, annotationIndexes, deploymentUnit.getServiceName(), null);
         if (builder != null) {
 
             builder.addListener(new AbstractResourceAdapterDeploymentServiceListener(registration, deploymentUnit.getName(), deploymentResource) {
@@ -151,7 +152,7 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
     }
 
 
-    public static ServiceBuilder process(final ConnectorXmlDescriptor connectorXmlDescriptor, final IronJacamarXmlDescriptor ironJacamarXmlDescriptor, final ClassLoader classLoader, final ServiceTarget serviceTarget, final Map<ResourceRoot, Index> annotationIndexes, final ServiceName duServiceName) throws DeploymentUnitProcessingException {
+    public static ServiceBuilder process(final ConnectorXmlDescriptor connectorXmlDescriptor, final IronJacamarXmlDescriptor ironJacamarXmlDescriptor, final ClassLoader classLoader, final ServiceTarget serviceTarget, final Map<ResourceRoot, Index> annotationIndexes, final ServiceName duServiceName, final ServiceVerificationHandler verificationHandler) throws DeploymentUnitProcessingException {
 
         Connector cmd = connectorXmlDescriptor != null ? connectorXmlDescriptor.getConnector() : null;
         final IronJacamar ijmd = ironJacamarXmlDescriptor != null ? ironJacamarXmlDescriptor.getIronJacamar() : null;
@@ -200,6 +201,9 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                     .addDependency(ConnectorServices.IDLE_REMOVER_SERVICE)
                     .addDependency(ConnectorServices.CONNECTION_VALIDATOR_SERVICE)
                     .addDependency(NamingService.SERVICE_NAME);
+            if(verificationHandler != null) {
+                builder.addListener(ServiceListener.Inheritance.ALL, verificationHandler);
+            }
             return builder;
         } catch (Throwable t) {
             throw new DeploymentUnitProcessingException(t);

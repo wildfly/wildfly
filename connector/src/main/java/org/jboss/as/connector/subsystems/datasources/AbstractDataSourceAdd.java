@@ -158,6 +158,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                 .addDependency(NamingService.SERVICE_NAME);
 
         dataSourceServiceBuilder.addListener(new DataSourceStatisticsListener(registration, resource, dsName));
+        dataSourceServiceBuilder.addListener(verificationHandler);
         startConfigAndAddDependency(dataSourceServiceBuilder, dataSourceService, dsName, serviceTarget, operation, verificationHandler);
 
         dataSourceServiceBuilder.addDependency(driverServiceName, Driver.class,

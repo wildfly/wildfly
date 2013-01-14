@@ -89,9 +89,13 @@ public class CacheFactoryAdd extends AbstractAddStepHandler {
         ServiceController<?> controller = builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
         if (passivationStore != null) {
             InjectedValue<String> clusterName = new InjectedValue<String>();
-            ServiceController<?> clusterNameController = target.addService(ClusteredBackingCacheEntryStoreSourceService.getCacheFactoryClusterNameServiceName(name), new ValueService<String>(clusterName))
+            final ServiceBuilder<String> passivationBuilder = target.addService(ClusteredBackingCacheEntryStoreSourceService.getCacheFactoryClusterNameServiceName(name), new ValueService<String>(clusterName))
                     .addDependency(ClusteredBackingCacheEntryStoreSourceService.getPassivationStoreClusterNameServiceName(passivationStore), String.class, clusterName)
-                    .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                    .setInitialMode(ServiceController.Mode.ON_DEMAND);
+            if(verificationHandler != null) {
+                passivationBuilder.addListener(verificationHandler);
+            }
+            ServiceController<?> clusterNameController = passivationBuilder
                     .install();
             return Arrays.asList(controller, clusterNameController);
         }

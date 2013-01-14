@@ -22,18 +22,6 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_DATASOURCE_CLASS_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJOR_VERSION;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MINOR_VERSION;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE_SLOT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import java.lang.reflect.Constructor;
 import java.sql.Driver;
 import java.util.List;
@@ -54,9 +42,22 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+
+import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
+import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_DATASOURCE_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJOR_VERSION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MINOR_VERSION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE_SLOT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * Operation handler responsible for adding a jdbc driver.
@@ -114,7 +115,7 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
             final ServiceLoader<Driver> serviceLoader = module.loadService(Driver.class);
             if (serviceLoader != null) {
                 for (Driver driver : serviceLoader) {
-                    startDriverServices(target, moduleId, driver, driverName, majorVersion, minorVersion, dataSourceClassName, xaDataSourceClassName);
+                    startDriverServices(target, moduleId, driver, driverName, majorVersion, minorVersion, dataSourceClassName, xaDataSourceClassName, verificationHandler);
                 }
             }
         } else {
@@ -123,7 +124,7 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
                         .asSubclass(Driver.class);
                 final Constructor<? extends Driver> constructor = driverClass.getConstructor();
                 final Driver driver = constructor.newInstance();
-                startDriverServices(target, moduleId, driver, driverName, majorVersion, minorVersion, dataSourceClassName, xaDataSourceClassName);
+                startDriverServices(target, moduleId, driver, driverName, majorVersion, minorVersion, dataSourceClassName, xaDataSourceClassName, verificationHandler);
             } catch (Exception e) {
                 SUBSYSTEM_DATASOURCES_LOGGER.cannotInstantiateDriverClass(driverClassName, e);
                 throw new OperationFailedException(new ModelNode().set(MESSAGES.cannotInstantiateDriverClass(driverClassName)));
@@ -131,7 +132,7 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
         }
     }
 
-    public static void startDriverServices(final ServiceTarget target, final ModuleIdentifier moduleId, Driver driver, final String driverName, final Integer majorVersion, final Integer minorVersion, final String dataSourceClassName, final String xaDataSourceClassName)
+    public static void startDriverServices(final ServiceTarget target, final ModuleIdentifier moduleId, Driver driver, final String driverName, final Integer majorVersion, final Integer minorVersion, final String dataSourceClassName, final String xaDataSourceClassName, final ServiceVerificationHandler serviceVerificationHandler)
             throws IllegalStateException {
         final int majorVer = driver.getMajorVersion();
         final int minorVer = driver.getMinorVersion();
@@ -149,10 +150,14 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
         InstalledDriver driverMetadata = new InstalledDriver(driverName, moduleId, driver.getClass().getName(),
                 dataSourceClassName, xaDataSourceClassName, majorVer, minorVer, compliant);
         DriverService driverService = new DriverService(driverMetadata, driver);
-        target.addService(ServiceName.JBOSS.append("jdbc-driver", driverName.replaceAll("\\.", "_")), driverService)
+        final ServiceBuilder<Driver> builder = target.addService(ServiceName.JBOSS.append("jdbc-driver", driverName.replaceAll("\\.", "_")), driverService)
                 .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class,
                         driverService.getDriverRegistryServiceInjector())
-                .setInitialMode(ServiceController.Mode.ACTIVE).install();
+                .setInitialMode(ServiceController.Mode.ACTIVE);
+        if(serviceVerificationHandler != null) {
+            builder.addListener(serviceVerificationHandler);
+        }
+        builder.install();
     }
 
 
