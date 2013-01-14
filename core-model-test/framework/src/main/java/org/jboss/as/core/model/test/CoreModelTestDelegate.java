@@ -66,7 +66,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -85,7 +84,6 @@ import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.extension.ExtensionRegistry;
-import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.core.model.bridge.impl.LegacyControllerKernelServicesProxy;
 import org.jboss.as.core.model.bridge.local.ScopedKernelServicesBootstrap;
 import org.jboss.as.core.model.test.LegacyKernelServicesInitializer.TestControllerVersion;
@@ -473,7 +471,7 @@ public class CoreModelTestDelegate {
 
 
             ModelTestUtils.validateModelDescriptions(PathAddress.EMPTY_ADDRESS, kernelServices.getRootRegistration());
-
+            ModelTestUtils.scanForExpressionFormattedStrings(kernelServices.readWholeModel());
 
             for (Map.Entry<ModelVersion, LegacyKernelServicesInitializerImpl> entry : legacyControllerInitializers.entrySet()) {
                 LegacyKernelServicesInitializerImpl legacyInitializer = entry.getValue();
