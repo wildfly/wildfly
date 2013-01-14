@@ -413,7 +413,11 @@ class HornetQServerAdd implements OperationStepHandler {
 
         processAddressSettings(context, configuration, model);
         processSecuritySettings(context, configuration, model);
+        //process deprecated interceptors
         processRemotingInterceptors(context, configuration, model);
+        //process new interceptors
+        processRemotingIncomingInterceptors(context, configuration, model);
+        processRemotingOutgoingInterceptors(context, configuration, model);
 
         // Add in items from child resources
         GroupingHandlerAdd.addGroupingHandlerConfig(context,configuration, model);
@@ -452,10 +456,10 @@ class HornetQServerAdd implements OperationStepHandler {
         }
     }
 
-    /**
-     * Process the HornetQ server-side interceptors.
+       /**
+     * Process the HornetQ server-side old style interceptors.
      */
-    static void processRemotingInterceptors(final OperationContext context, final Configuration configuration, final ModelNode params) {
+     static void processRemotingInterceptors(final OperationContext context, final Configuration configuration, final ModelNode params) {
         // TODO preemptively check that the interceptor classes can be loaded
         ModelNode interceptors = params.get(CommonAttributes.REMOTING_INTERCEPTORS.getName());
         if (interceptors.isDefined()) {
@@ -463,7 +467,37 @@ class HornetQServerAdd implements OperationStepHandler {
             for (ModelNode child : interceptors.asList()) {
                 interceptorClassNames.add(child.asString());
             }
-            configuration.setInterceptorClassNames(interceptorClassNames);
+            configuration.setIncomingInterceptorClassNames(interceptorClassNames);
+        }
+    }
+
+    /**
+     * Process the HornetQ server-side incoming interceptors.
+     */
+    static void processRemotingIncomingInterceptors(final OperationContext context, final Configuration configuration, final ModelNode params) {
+        // TODO preemptively check that the interceptor classes can be loaded
+        ModelNode interceptors = params.get(CommonAttributes.REMOTING_INCOMING_INTERCEPTORS.getName());
+        if (interceptors.isDefined()) {
+            final List<String> interceptorClassNames = new ArrayList<String>();
+            for (ModelNode child : interceptors.asList()) {
+                interceptorClassNames.add(child.asString());
+            }
+            configuration.setIncomingInterceptorClassNames(interceptorClassNames);
+        }
+    }
+
+    /**
+     * Process the HornetQ server-side outgoing interceptors.
+     */
+    static void processRemotingOutgoingInterceptors(final OperationContext context, final Configuration configuration, final ModelNode params) {
+        // TODO preemptively check that the interceptor classes can be loaded
+        ModelNode interceptors = params.get(CommonAttributes.REMOTING_OUTGOING_INTERCEPTORS.getName());
+        if (interceptors.isDefined()) {
+            final List<String> interceptorClassNames = new ArrayList<String>();
+            for (ModelNode child : interceptors.asList()) {
+                interceptorClassNames.add(child.asString());
+            }
+            configuration.setOutgoingInterceptorClassNames(interceptorClassNames);
         }
     }
 

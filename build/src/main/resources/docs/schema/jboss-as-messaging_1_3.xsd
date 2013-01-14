@@ -104,6 +104,8 @@
           <xs:element maxOccurs="1" minOccurs="0" name="id-cache-size" type="xs:int" />
           <xs:element maxOccurs="1" minOccurs="0" name="persist-id-cache" type="xs:boolean" />
           <xs:element maxOccurs="1" minOccurs="0" name="remoting-interceptors" type="remoting-interceptorsType" />
+          <xs:element maxOccurs="1" minOccurs="0" name="remoting-incoming-interceptors" type="remoting-interceptorsType" />
+          <xs:element maxOccurs="1" minOccurs="0" name="remoting-outgoing-interceptors" type="remoting-interceptorsType" />
           <xs:element maxOccurs="1" minOccurs="0" name="backup" type="xs:boolean" />
           <xs:element maxOccurs="1" minOccurs="0" name="allow-failback" type="xs:boolean" />
           <xs:element maxOccurs="1" minOccurs="0" name="failback-delay" type="xs:long" />
@@ -348,7 +350,33 @@
        <xs:annotation>
           <xs:documentation>
             <![CDATA[
-              Remoting interceptors must be placed into a JBoss module and added as a dependency to org.jboss.as.messaging:main module.
+              Deprecated. Use remoting-incoming-interceptors instead.
+            ]]>
+            </xs:documentation>
+       </xs:annotation>
+       <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="1" name="class-name" type="xs:string" />
+       </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="remoting-incoming-interceptorsType">
+       <xs:annotation>
+          <xs:documentation>
+            <![CDATA[
+              Remoting incoming interceptors must be placed into a JBoss module and added as a dependency to org.jboss.as.messaging:main module.
+            ]]>
+            </xs:documentation>
+       </xs:annotation>
+       <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="1" name="class-name" type="xs:string" />
+       </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="remoting-outgoing-interceptorsType">
+       <xs:annotation>
+          <xs:documentation>
+            <![CDATA[
+              Remoting outgoing interceptors must be placed into a JBoss module and added as a dependency to org.jboss.as.messaging:main module.
             ]]>
             </xs:documentation>
        </xs:annotation>
@@ -534,6 +562,8 @@
           <xs:element maxOccurs="1" minOccurs="0" name="forward-when-no-consumers" type="xs:boolean" />
           <xs:element maxOccurs="1" minOccurs="0" name="max-hops" type="xs:int" />
           <xs:element maxOccurs="1" minOccurs="0" name="confirmation-window-size" type="xs:int" />
+          <xs:element maxOccurs="1" minOccurs="0" name="notification-interval" type="xs:long" />
+          <xs:element maxOccurs="1" minOccurs="0" name="notification-attempts" type="xs:int" />
           <xs:choice>
              <xs:element maxOccurs="1" minOccurs="0" name="static-connectors">
                 <xs:complexType>

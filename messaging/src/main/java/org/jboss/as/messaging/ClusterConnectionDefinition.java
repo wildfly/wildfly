@@ -29,7 +29,6 @@ import static org.hornetq.api.config.HornetQDefaultConfiguration.DEFAULT_CLUSTER
 import static org.hornetq.api.config.HornetQDefaultConfiguration.DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER;
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
-import static org.jboss.as.controller.registry.AttributeAccess.Flag.STORAGE_RUNTIME;
 import static org.jboss.as.messaging.CommonAttributes.CALL_FAILOVER_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR_REF_STRING;
 import static org.jboss.as.messaging.CommonAttributes.STATIC_CONNECTORS;
@@ -149,6 +148,22 @@ public class ClusterConnectionDefinition extends SimpleResourceDefinition {
             .setRestartAllServices()
             .build();
 
+    public static final SimpleAttributeDefinition NOTIFICATION_ATTEMPTS = create("notification-attempts",INT)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_CLUSTER_NOTIFICATION_ATTEMPTS))
+            .setMeasurementUnit(MILLISECONDS)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
+    public static final SimpleAttributeDefinition NOTIFICATION_INTERVAL = create("notification-interval",LONG)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_CLUSTER_NOTIFICATION_INTERVAL))
+            .setMeasurementUnit(MILLISECONDS)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
     public static final SimpleAttributeDefinition RETRY_INTERVAL = create("retry-interval", LONG)
             .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_CLUSTER_RETRY_INTERVAL))
             .setMeasurementUnit(MILLISECONDS)
@@ -189,13 +204,17 @@ public class ClusterConnectionDefinition extends SimpleResourceDefinition {
             RECONNECT_ATTEMPTS, USE_DUPLICATE_DETECTION,
             FORWARD_WHEN_NO_CONSUMERS, MAX_HOPS,
             CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE,
+            NOTIFICATION_ATTEMPTS,
+            NOTIFICATION_INTERVAL,
             CONNECTOR_REFS,
             ALLOW_DIRECT_CONNECTIONS_ONLY,
             DISCOVERY_GROUP_NAME,
     };
 
     public static final AttributeDefinition[] NEW_ATTRIBUTES_ADDED_AFTER_1_1_0 = {
-            CALL_FAILOVER_TIMEOUT
+            CALL_FAILOVER_TIMEOUT,
+            NOTIFICATION_ATTEMPTS,
+            NOTIFICATION_INTERVAL
     };
 
     public static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0 = {
@@ -208,11 +227,11 @@ public class ClusterConnectionDefinition extends SimpleResourceDefinition {
     };
 
     public static final SimpleAttributeDefinition NODE_ID = create("node-id", STRING)
-            .setFlags(STORAGE_RUNTIME)
+            .setStorageRuntime()
             .build();
 
     public static final SimpleAttributeDefinition TOPOLOGY = create("topology", STRING)
-            .setFlags(STORAGE_RUNTIME)
+            .setStorageRuntime()
             .build();
 
     public static final AttributeDefinition[] READONLY_ATTRIBUTES = {
