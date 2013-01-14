@@ -71,6 +71,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATA_SOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJOR_VERSION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MINOR_VERSION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
@@ -212,6 +213,7 @@ public class DataSourcesExtension implements Extension {
                     writeAttributeIfHas(writer, driverProperty.getValue(), Driver.Attribute.MINOR_VERSION, DRIVER_MINOR_VERSION.getName());
                     writeElementIfHas(writer, driverProperty.getValue(), Driver.Tag.DRIVER_CLASS.getLocalName(), DRIVER_CLASS_NAME.getName());
                     writeElementIfHas(writer, driverProperty.getValue(), Driver.Tag.XA_DATASOURCE_CLASS.getLocalName(), DRIVER_XA_DATASOURCE_CLASS_NAME.getName());
+                    writeElementIfHas(writer, driverProperty.getValue(), Driver.Tag.DATASOURCE_CLASS.getLocalName(), DRIVER_DATASOURCE_CLASS_NAME.getName());
 
                     writer.writeEndElement();
                 }
@@ -275,7 +277,8 @@ public class DataSourcesExtension implements Extension {
                         MAX_POOL_SIZE.isMarshallable(dataSourceNode) ||
                         POOL_PREFILL.isMarshallable(dataSourceNode) ||
                         POOL_USE_STRICT_MIN.isMarshallable(dataSourceNode) ||
-                        POOL_FLUSH_STRATEGY.isMarshallable(dataSourceNode);
+                        POOL_FLUSH_STRATEGY.isMarshallable(dataSourceNode) ||
+                        ALLOW_MULTIPLE_USERS.isMarshallable(dataSourceNode);
                 if (isXADataSource) {
                     poolRequired = poolRequired
                             || SAME_RM_OVERRIDE.isMarshallable(dataSourceNode) ||
@@ -292,9 +295,7 @@ public class DataSourcesExtension implements Extension {
                     POOL_PREFILL.marshallAsElement(dataSourceNode, writer);
                     POOL_USE_STRICT_MIN.marshallAsElement(dataSourceNode, writer);
                     POOL_FLUSH_STRATEGY.marshallAsElement(dataSourceNode, writer);
-                    if (dataSourceNode.get(ALLOW_MULTIPLE_USERS.getName()).asBoolean(false)) {
-                        writer.writeEmptyElement(ALLOW_MULTIPLE_USERS.getXmlName());
-                    }
+                    ALLOW_MULTIPLE_USERS.marshallAsElement(dataSourceNode, writer);
                     if (isXADataSource) {
                         SAME_RM_OVERRIDE.marshallAsElement(dataSourceNode, writer);
                         INTERLEAVING.marshallAsElement(dataSourceNode, writer);

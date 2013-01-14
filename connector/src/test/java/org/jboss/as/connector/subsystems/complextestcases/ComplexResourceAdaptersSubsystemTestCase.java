@@ -19,12 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.connector.subsystems.jca;
-
-import static org.jboss.as.connector.subsystems.jca.ParseUtils.checkModelParams;
-import static org.jboss.as.connector.subsystems.jca.ParseUtils.raAdminProperties;
-import static org.jboss.as.connector.subsystems.jca.ParseUtils.raCommonProperties;
-import static org.jboss.as.connector.subsystems.jca.ParseUtils.raConnectionProperties;
+package org.jboss.as.connector.subsystems.complextestcases;
 
 import java.util.Properties;
 import junit.framework.Assert;
@@ -49,22 +44,22 @@ public class ComplexResourceAdaptersSubsystemTestCase extends AbstractComplexSub
         if (model == null)
             return;
         // Check model..
-        Properties params = raCommonProperties();
+        Properties params = ParseUtils.raCommonProperties();
         ModelNode raCommonModel = model.get("subsystem", "resource-adapters", "resource-adapter", "some.rar");
-        checkModelParams(raCommonModel, params);
+        ParseUtils.checkModelParams(raCommonModel, params);
         Assert.assertEquals(raCommonModel.asString(), "A", raCommonModel.get("config-properties", "Property", "value")
                 .asString());
         Assert.assertEquals(raCommonModel.get("beanvalidationgroups").asString(), raCommonModel.get("beanvalidationgroups")
                 .asString(), "[\"Class0\",\"Class00\"]");
 
-        params = raAdminProperties();
+        params = ParseUtils.raAdminProperties();
         ModelNode raAdminModel = raCommonModel.get("admin-objects", "Pool2");
-        checkModelParams(raAdminModel, params);
+        ParseUtils.checkModelParams(raAdminModel, params);
         Assert.assertEquals(raAdminModel.asString(), "D", raAdminModel.get("config-properties", "Property", "value").asString());
 
-        params = raConnectionProperties();
+        params = ParseUtils.raConnectionProperties();
         ModelNode raConnModel = raCommonModel.get("connection-definitions", "Pool1");
-        checkModelParams(raConnModel, params);
+        ParseUtils.checkModelParams(raConnModel, params);
         Assert.assertEquals(raConnModel.asString(), "B", raConnModel.get("config-properties", "Property", "value").asString());
         Assert.assertEquals(raConnModel.asString(), "C", raConnModel.get("recovery-plugin-properties", "Property").asString());
     }

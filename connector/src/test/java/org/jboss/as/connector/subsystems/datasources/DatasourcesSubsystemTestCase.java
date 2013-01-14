@@ -19,32 +19,41 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.connector.subsystems.jca;
+package org.jboss.as.connector.subsystems.datasources;
 
 import java.io.IOException;
 
-import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension;
+import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
+import org.junit.Test;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author <a href="stefano.maestri@redhat.com>Stefano Maestri</a>
  */
-public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest {
+public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
 
-    public ResourceAdaptersSubsystemTestCase() {
-        // FIXME ResourceAdaptersSubsystemTestCase constructor
-        super(ResourceAdaptersExtension.SUBSYSTEM_NAME, new ResourceAdaptersExtension());
+    public DatasourcesSubsystemTestCase() {
+        super(DataSourcesExtension.SUBSYSTEM_NAME, new DataSourcesExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        //TODO: This is copied from standalone.xml you may want to try more combinations
-        return "<subsystem xmlns=\"urn:jboss:domain:resource-adapters:1.0\" />";
+        //test configuration put in standalone.xml
+        return readResource("datasources-minimal.xml");
     }
 
+    @Test
+    public void testFullConfig() throws Exception {
+        standardSubsystemTest("datasources-full.xml");
+    }
+
+    @Test
+    public void testExpressionConfig() throws Exception {
+        standardSubsystemTest("datasources-full-expression.xml", "datasources-full.xml");
+    }
 
     protected AdditionalInitialization createAdditionalInitialization() {
         return AdditionalInitialization.MANAGEMENT;

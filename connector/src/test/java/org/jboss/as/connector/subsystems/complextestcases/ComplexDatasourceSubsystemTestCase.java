@@ -19,16 +19,13 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.connector.subsystems.jca;
+package org.jboss.as.connector.subsystems.complextestcases;
 
 import junit.framework.Assert;
 import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 import java.util.Properties;
-import static org.jboss.as.connector.subsystems.jca.ParseUtils.checkModelParams;
-import static org.jboss.as.connector.subsystems.jca.ParseUtils.nonXaDsProperties;
-import static org.jboss.as.connector.subsystems.jca.ParseUtils.xaDsProperties;
 
 /**
  *
@@ -47,20 +44,20 @@ public class ComplexDatasourceSubsystemTestCase extends AbstractComplexSubsystem
        //Check model..
         final String complexDs = "complexDs";
         final String complexDsJndi = "java:jboss/datasources/" + complexDs;
-        Properties params=nonXaDsProperties(complexDsJndi);
+        Properties params= ParseUtils.nonXaDsProperties(complexDsJndi);
         ModelNode modelDs=model.get("subsystem", "datasources","data-source",complexDs+"_Pool");
-        checkModelParams(modelDs,params);
+        ParseUtils.checkModelParams(modelDs, params);
         Assert.assertEquals(modelDs.asString(),"UTF-8",modelDs.get("connection-properties","char.encoding","value").asString());
         Assert.assertEquals(modelDs.asString(),"Property2",modelDs.get("valid-connection-checker-properties","name").asString());
         Assert.assertEquals(modelDs.asString(),"Property4",modelDs.get("exception-sorter-properties","name").asString());
         Assert.assertEquals(modelDs.asString(),"Property3",modelDs.get("stale-connection-checker-properties","name").asString());
         Assert.assertEquals(modelDs.asString(),"Property1",modelDs.get("reauth-plugin-properties","name").asString());
-        
+
         final String complexXaDs = "complexXaDs";
         final String complexXaDsJndi = "java:jboss/xa-datasources/" + complexXaDs;
-        params=xaDsProperties(complexXaDsJndi);
+        params= ParseUtils.xaDsProperties(complexXaDsJndi);
         ModelNode modelXaDs=model.get("subsystem", "datasources","xa-data-source",complexXaDs+"_Pool");
-        checkModelParams(modelXaDs,params);
+        ParseUtils.checkModelParams(modelXaDs, params);
         Assert.assertEquals(modelXaDs.asString(),"jdbc:h2:mem:test",modelXaDs.get("xa-datasource-properties","URL","value").asString());
         Assert.assertEquals(modelXaDs.asString(),"Property2",modelXaDs.get("valid-connection-checker-properties","name").asString());
         Assert.assertEquals(modelXaDs.asString(),"Property4",modelXaDs.get("exception-sorter-properties","name").asString());

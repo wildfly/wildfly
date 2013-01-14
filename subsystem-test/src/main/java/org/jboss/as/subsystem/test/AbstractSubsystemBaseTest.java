@@ -40,6 +40,7 @@ import org.junit.Test;
  * A test routine every subsystem should go through.
  *
  * @author Emanuel Muckenhuber
+ * @author <a href="stefano.maestri@redhat.com>Stefano Maestri</a>
  */
 public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
 
@@ -95,14 +96,28 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
         standardSubsystemTest(configId, true);
     }
 
+    protected KernelServices standardSubsystemTest(final String configId, boolean compareXml) throws Exception {
+        return standardSubsystemTest(configId, null, compareXml);
+    }
+
+    protected void standardSubsystemTest(final String configId, final String configIdResolvedModel) throws Exception {
+        standardSubsystemTest(configId, configIdResolvedModel, true);
+    }
+
+
     /**
      * Tests the ability to create a model from an xml configuration, marshal the model back to xml,
      * re-read that marshalled model into a new model that matches the first one, execute a "describe"
      * operation for the model, create yet another model from executing the results of that describe
      * operation, and compare that model to first model.
+     * if configIdResolvedModel is not null compare the model from configId and one from configIdResolvedModel
+     * after all expression have been reolved.
      *
      * @param configId  id to pass to {@link #getSubsystemXml(String)} to get the configuration; if {@code null}
      *                  {@link #getSubsystemXml()} will be called
+     * @param configIdResolvedModel  id to pass to {@link #getSubsystemXml(String)} to get the configuration;
+     *                               it is the expected result of resolve() on configId if {@code null}
+     ]                               this step is skipped
      *
      * @param compareXml if {@code true} a comparison of xml output to original input is performed. This can be
      *                   set to {@code false} if the original input is from an earlier xsd and the current
@@ -110,8 +125,9 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
      *
      * @throws Exception
      */
-    protected KernelServices standardSubsystemTest(final String configId, boolean compareXml) throws Exception {
+    protected KernelServices standardSubsystemTest(final String configId, final String configIdResolvedModel, boolean compareXml) throws Exception {
         final AdditionalInitialization additionalInit = createAdditionalInitialization();
+
 
         // Parse the subsystem xml and install into the first controller
         final String subsystemXml = configId == null ? getSubsystemXml() : getSubsystemXml(configId);
@@ -154,7 +170,17 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
         compare(modelA, modelC);
 
         assertRemoveSubsystemResources(servicesC, getIgnoredChildResourcesForRemovalTest());
+
+        if (configIdResolvedModel != null) {
+            final String subsystemResolvedXml = getSubsystemXml(configIdResolvedModel);
+            final KernelServices servicesD = super.createKernelServicesBuilder(additionalInit).setSubsystemXml(subsystemResolvedXml).build();
+            Assert.assertTrue("Subsystem w/ reolved xml boot failed!", servicesD.isSuccessfulBoot());
+            final ModelNode modelD = servicesD.readWholeModel();
+            validateModel(modelD);
+            resolveandCompareModel(modelA, modelD);
+        }
         return servicesA;
+
     }
 
     protected void validateModel(ModelNode model) {
