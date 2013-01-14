@@ -29,7 +29,6 @@ import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
 
 import javax.management.MBeanServer;
 
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
@@ -45,11 +44,9 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
+import org.jboss.as.controller.transform.DiscardAttributesTransformer;
 import org.jboss.as.controller.transform.DiscardUndefinedAttributesTransformer;
-import org.jboss.as.controller.transform.OperationResultTransformer;
-import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
-import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.controller.transform.chained.ChainedOperationTransformer;
 import org.jboss.as.controller.transform.chained.ChainedResourceTransformationContext;
@@ -57,7 +54,6 @@ import org.jboss.as.controller.transform.chained.ChainedResourceTransformer;
 import org.jboss.as.controller.transform.chained.ChainedResourceTransformerEntry;
 import org.jboss.as.txn.TransactionMessages;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -216,31 +212,12 @@ public class TransactionExtension implements Extension {
         registration.registerOperationTransformer(UNDEFINE_ATTRIBUTE_OPERATION, discardJdbcStoreTransformer.getUndefineAttributeTransformer());
     }
 
-    static class UnneededJDBCStoreTransformer implements OperationTransformer, ChainedResourceTransformerEntry {
+    static class UnneededJDBCStoreTransformer extends DiscardAttributesTransformer {
         private static final UnneededJDBCStoreTransformer INSTANCE = new UnneededJDBCStoreTransformer();
 
-        @Override
-        public void transformResource(ChainedResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
-            clearUnneededAttributes(resource.getModel());
-        }
-
-        @Override
-        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
-            clearUnneededAttributes(operation);
-            return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
-        }
-
-        private void clearUnneededAttributes(ModelNode modelNode) {
-            ModelNode useJDBC;
-            if (!modelNode.hasDefined(TransactionSubsystemRootResourceDefinition.USE_JDBC_STORE.getName())
-                    || ((useJDBC = modelNode.get(TransactionSubsystemRootResourceDefinition.USE_JDBC_STORE.getName())).getType() != ModelType.EXPRESSION
-                    && !useJDBC.asBoolean())) {
-                // We can get rid of the JDBC attributes
-                for (AttributeDefinition ad : TransactionSubsystemRootResourceDefinition.attributes_1_2) {
-                    modelNode.remove(ad.getName());
-                }
-            }
+        private UnneededJDBCStoreTransformer() {
+            super(new AttributeValueDiscardApprover(TransactionSubsystemRootResourceDefinition.USE_JDBC_STORE.getName(), new ModelNode(false), true),
+                    TransactionSubsystemRootResourceDefinition.attributes_1_2);
         }
     }
-
 }
