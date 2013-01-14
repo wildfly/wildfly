@@ -3,7 +3,7 @@
 
     <paths>
        <path name="absolute" path="${test.exp:/}"/>
-       <path name="relative" path="test" relative-to="${test.exp:path}"/>
+       <path name="relative" path="${test.exp:test}" relative-to="path"/>
     </paths>
 
     <!--  The native interface is always required by the parser -->
@@ -20,7 +20,7 @@
         <server name="server-one" group="main-server-group">
             <paths>
 		         <path name="absolute" path="${test.exp:/}"/>
-		         <path name="relative" path="test" relative-to="${test.exp:path}"/>
+		         <path name="relative" path="${test.exp:test}" relative-to="path"/>
             </paths>
         </server>
     </servers>

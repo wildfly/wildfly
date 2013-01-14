@@ -2,6 +2,6 @@
 <server xmlns="urn:jboss:domain:1.4">
     <paths>
          <path name="absolute" path="${test.exp:/}"/>
-         <path name="relative" path="test" relative-to="${test.exp:path}"/>
+         <path name="relative" path="${test.exp:test}" relative-to="path"/>
     </paths>
 </server>
