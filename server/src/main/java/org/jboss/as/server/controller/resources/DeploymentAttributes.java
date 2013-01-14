@@ -30,7 +30,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationDefinition;
@@ -77,7 +81,26 @@ public class DeploymentAttributes {
             .build();
 
     public static final SimpleAttributeDefinition ENABLED = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.ENABLED, ModelType.BOOLEAN, true)
-         .setDefaultValue(new ModelNode(false))
+        .setDefaultValue(new ModelNode(false))
+        .setAllowExpression(false) // allowing expressions here complicates domain mode and deployment scanners
+        .setAttributeMarshaller(new AttributeMarshaller() {
+
+            @Override
+            public boolean isMarshallable(AttributeDefinition attribute, ModelNode resourceModel) {
+                // Unfortunately, the xsd says default is true while the mgmt API default is false.
+                // So, only marshal if the value != 'true'
+                return !resourceModel.has(attribute.getName())
+                        || resourceModel.get(attribute.getName()).getType() != ModelType.BOOLEAN
+                        || !resourceModel.get(attribute.getName()).asBoolean();
+            }
+            @Override
+            public void marshallAsAttribute(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+                ModelNode value = resourceModel.hasDefined(attribute.getName()) ? resourceModel.get(attribute.getName()) : new ModelNode(false);
+                if (value.getType() != ModelType.BOOLEAN || !value.asBoolean()) {
+                    writer.writeAttribute(attribute.getXmlName(), value.asString());
+                }
+            }
+        })
         .build();
     public static final AttributeDefinition PERSISTENT = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.PERSISTENT, ModelType.BOOLEAN, false)
         .build();

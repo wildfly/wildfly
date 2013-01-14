@@ -91,6 +91,7 @@ import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.domain.controller.resources.DomainRootDefinition;
 import org.jboss.as.domain.controller.resources.ServerGroupResourceDefinition;
+import org.jboss.as.server.controller.resources.DeploymentAttributes;
 import org.jboss.as.server.parsing.CommonXml;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -961,10 +962,9 @@ public class DomainXml extends CommonXml {
             writer.writeStartElement(Element.DEPLOYMENTS.getLocalName());
             for (String uniqueName : deploymentNames) {
                 final ModelNode deployment = modelNode.get(uniqueName);
-                final String runtimeName = deployment.get(RUNTIME_NAME).asString();
                 writer.writeStartElement(Element.DEPLOYMENT.getLocalName());
                 writeAttribute(writer, Attribute.NAME, uniqueName);
-                writeAttribute(writer, Attribute.RUNTIME_NAME, runtimeName);
+                DeploymentAttributes.RUNTIME_NAME.marshallAsAttribute(deployment, writer);
                 final List<ModelNode> contentItems = deployment.require(CONTENT).asList();
                 for (ModelNode contentItem : contentItems) {
                     writeContentItem(writer, contentItem);
@@ -982,14 +982,10 @@ public class DomainXml extends CommonXml {
             writer.writeStartElement(Element.DEPLOYMENTS.getLocalName());
             for (String uniqueName : deploymentNames) {
                 final ModelNode deployment = modelNode.get(uniqueName);
-                final String runtimeName = deployment.get(RUNTIME_NAME).asString();
-                final boolean enabled = !deployment.hasDefined(ENABLED) || deployment.get(ENABLED).asBoolean();
                 writer.writeStartElement(Element.DEPLOYMENT.getLocalName());
                 writeAttribute(writer, Attribute.NAME, uniqueName);
-                writeAttribute(writer, Attribute.RUNTIME_NAME, runtimeName);
-                if (!enabled) {
-                    writeAttribute(writer, Attribute.ENABLED, Boolean.FALSE.toString());
-                }
+                DeploymentAttributes.RUNTIME_NAME.marshallAsAttribute(deployment, writer);
+                DeploymentAttributes.ENABLED.marshallAsAttribute(deployment, writer);
                 writer.writeEndElement();
             }
             writer.writeEndElement();
