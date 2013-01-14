@@ -59,7 +59,6 @@ public class WebDescriptorValveTestCase {
     @ArquillianResource
     private Deployer deployer;
     
-    private static final String DEPLOYMENT_NAME = "valve";
     private static final String modulename = "org.jboss.testvalve";
     private static final String classname = TestValve.class.getName();
     private static final String baseModulePath = "/../modules/" + modulename.replace(".", "/") + "/main";
@@ -68,8 +67,9 @@ public class WebDescriptorValveTestCase {
     private static final String PARAM_NAME = "testparam";
     private static final String WEB_PARAM_VALUE = "webdescriptor";
     private static final String GLOBAL_PARAM_VALUE = "global";
+    private static final String DEPLOYMENT = "valve";
 
-    @Deployment(name = DEPLOYMENT_NAME, managed = false)
+    @Deployment(name = DEPLOYMENT, managed = false, testable = false)
     public static WebArchive Hello() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "web-descriptor-valve-test.war");
         war.addClasses(HelloServlet.class);
@@ -90,13 +90,13 @@ public class WebDescriptorValveTestCase {
         // as first test in sequence creating valve module
         ValveUtil.createValveModule(client, modulename, baseModulePath, jarName);
         // valve is ready - let's deploy
-        deployer.deploy(DEPLOYMENT_NAME);
+        deployer.deploy(DEPLOYMENT);
     }
     
         
     @Test
     @InSequence(1)
-    public void testWebDescriptor(@ArquillianResource URL url, @ArquillianResource ManagementClient client) throws Exception {        
+    public void testWebDescriptor(@ArquillianResource URL url) throws Exception {        
         log.debug("Testing url " + url + " against one valve defined in jboss-web.xml descriptor");
         Header[] valveHeaders = ValveUtil.hitValve(url);
         assertEquals("There was one valve defined - it's missing now", 1, valveHeaders.length);
@@ -104,13 +104,23 @@ public class WebDescriptorValveTestCase {
     }
 
     @Test
-    @InSequence(2)
-    public void testValveOne(@ArquillianResource URL url, @ArquillianResource ManagementClient client) throws Exception {
+    @InSequence(3)
+    public void addValve(@ArquillianResource ManagementClient client) throws Exception {
         Map<String,String> params = new HashMap<String, String>();
         params.put(PARAM_NAME, GLOBAL_PARAM_VALUE);
         ValveUtil.addValve(client, VALVE_NAME, modulename, classname, params);
-        ValveUtil.reload(client);
-        
+        container.stop(GlobalValveTestCase.CONTAINER);
+        container.start(GlobalValveTestCase.CONTAINER);
+        int i = 0;
+        while(!client.isServerInRunningState() && ++i<10) {
+            Thread.sleep(1000);
+        }
+        log.info("Server " + (client.isServerInRunningState() ? "is":"is not") + " running!");
+    }
+    
+    @Test
+    @InSequence(4)
+    public void testValveOne(@ArquillianResource URL url) throws Exception {
         log.debug("Testing url " + url + " against two valves - one defined in web descriptor other is defined globally in server configuration");
         Header[] valveHeaders = ValveUtil.hitValve(url);
         assertEquals("There were two valves defined", 2, valveHeaders.length);
@@ -123,7 +133,7 @@ public class WebDescriptorValveTestCase {
     @InSequence(99)
     public void cleanUp(@ArquillianResource ManagementClient client) throws Exception {
         ValveUtil.removeValve(client, VALVE_NAME);
-        deployer.undeploy(DEPLOYMENT_NAME);
+        deployer.undeploy(DEPLOYMENT);
         container.stop(GlobalValveTestCase.CONTAINER);
     }    
 }
