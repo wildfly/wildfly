@@ -33,6 +33,7 @@
             <fileset dir="src/main/resources">
                 <include name="JBossEULA.txt"/>
                 <include name="LICENSE.txt"/>
+                <include name="version.txt"/>
                 <include name="appclient/**"/>
                 <include name="bin/**"/>
                 <include name="docs/**"/>

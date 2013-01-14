@@ -1,0 +1,2 @@
+JBoss Enterprise Application Platform - Version 6.0.1.Alpha1
+
