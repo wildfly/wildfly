@@ -26,25 +26,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.ResourceBundle;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.MapAttributeDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
-import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -396,8 +386,10 @@ class JacORBSubsystemDefinitions {
             .build();
 
     public static final PropertiesAttributeDefinition PROPERTIES =
-            new PropertiesAttributeDefinition(JacORBSubsystemConstants.PROPERTIES,
-                    JacORBSubsystemConstants.PROPERTIES, true);
+            new PropertiesAttributeDefinition.Builder(JacORBSubsystemConstants.PROPERTIES, true)
+            .setAllowExpression(true)
+            .build();
+
 
 
     // list that contains the orb attribute definitions.

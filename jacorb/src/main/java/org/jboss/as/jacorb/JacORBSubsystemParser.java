@@ -625,7 +625,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
      */
     private void parseGenericProperty(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
         String name = null;
-        String val = null;
+        ModelNode val = null;
         EnumSet<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.PROP_VALUE);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -639,7 +639,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
                     break;
                 }
                 case PROP_VALUE: {
-                    val = value;
+                    val = JacORBSubsystemDefinitions.PROPERTIES.parse(value, reader.getLocation());
                     break;
                 }
                 default:
