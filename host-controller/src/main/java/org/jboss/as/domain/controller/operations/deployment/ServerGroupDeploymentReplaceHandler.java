@@ -39,6 +39,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.server.controller.resources.DeploymentAttributes;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Handles replacement in the runtime of one deployment by another.
@@ -101,11 +102,12 @@ public class ServerGroupDeploymentReplaceHandler implements OperationStepHandler
             final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS.append(deploymentPath));
             final ModelNode deployNode = resource.getModel();
             deployNode.set(deployment); // Get the information from the domain deployment
-            deployNode.remove("content"); // Prune the content information
+            deployNode.remove(CONTENT); // Prune the content information
             deployNode.get(ENABLED).set(true); // Enable
         } else {
             deploymentResource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS.append(deploymentPath));
-            if(deploymentResource.getModel().get(ENABLED).asBoolean()) {
+            ModelNode enabled = deploymentResource.getModel().hasDefined(ENABLED) ? deploymentResource.getModel().get(ENABLED) : new ModelNode(false);
+            if (enabled.getType() == ModelType.BOOLEAN && enabled.asBoolean()) {
                 throw operationFailed(MESSAGES.deploymentAlreadyStarted(toReplace));
             }
             deploymentResource.getModel().get(ENABLED).set(true);

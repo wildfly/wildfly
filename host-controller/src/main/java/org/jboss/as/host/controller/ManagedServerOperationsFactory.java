@@ -544,7 +544,11 @@ public final class ManagedServerOperationsFactory {
                 ModelNode addOp = Util.getEmptyOperation(ADD, addr.toModelNode());
                 addOp.get(RUNTIME_NAME).set(details.get(RUNTIME_NAME));
                 addOp.get(CONTENT).set(deploymentContent);
-                addOp.get(ENABLED).set(!details.hasDefined(ENABLED) || details.get(ENABLED).asBoolean());
+                if (!details.hasDefined(ENABLED)) {
+                    addOp.get(ENABLED).set(true);  // TODO this seems wrong
+                } else {
+                    addOp.get(ENABLED).set(details.get(ENABLED));
+                }
 
                 updates.add(addOp);
             }

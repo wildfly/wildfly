@@ -1148,17 +1148,10 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
                     deploymentWritten = true;
                 }
 
-
                 writer.writeStartElement(Element.DEPLOYMENT.getLocalName());
                 writeAttribute(writer, Attribute.NAME, uniqueName);
-              //final String runtimeName = deployment.get(RUNTIME_NAME).asString();
-                //writeAttribute(writer, Attribute.RUNTIME_NAME, runtimeName);
                 DeploymentAttributes.RUNTIME_NAME.marshallAsAttribute(deployment, writer);
-              //boolean enabled = deployment.get(ENABLED).asBoolean();
-//                if (!enabled) {
-//                    writeAttribute(writer, Attribute.ENABLED, "false");
-//                }
-                DeploymentAttributes.ENABLED.marshallAsAttribute(deployment, false, writer);
+                DeploymentAttributes.ENABLED.marshallAsAttribute(deployment, writer);
                 final List<ModelNode> contentItems = deployment.require(CONTENT).asList();
                 for (ModelNode contentItem : contentItems) {
                     writeContentItem(writer, contentItem);

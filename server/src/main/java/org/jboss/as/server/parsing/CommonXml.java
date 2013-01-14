@@ -94,6 +94,7 @@ import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.resource.AbstractSocketBindingResourceDefinition;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
+import org.jboss.as.server.controller.resources.DeploymentAttributes;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
 import org.jboss.as.server.operations.SystemPropertyAddHandler;
 import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingResourceDefinition;
@@ -972,11 +973,11 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             if (Element.DEPLOYMENT != deployment) {
                 throw unexpectedElement(reader);
             }
+            final ModelNode deploymentAdd = Util.getEmptyOperation(ADD, null);
 
             // Handle attributes
             String uniqueName = null;
-            String runtimeName = null;
-            String startInput = null;
+            Set<Attribute> requiredAttributes = EnumSet.of(Attribute.NAME, Attribute.RUNTIME_NAME);
             final int count = reader.getAttributeCount();
             for (int i = 0; i < count; i++) {
                 final String value = reader.getAttributeValue(i);
@@ -987,6 +988,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     if (!allowedAttributes.contains(attribute)) {
                         throw unexpectedAttribute(reader, i);
                     }
+                    requiredAttributes.remove(attribute);
                     switch (attribute) {
                         case NAME: {
                             if (!names.add(value)) {
@@ -996,11 +998,11 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                             break;
                         }
                         case RUNTIME_NAME: {
-                            runtimeName = value;
+                            DeploymentAttributes.RUNTIME_NAME.parseAndSetParameter(value, deploymentAdd, reader);
                             break;
                         }
                         case ENABLED: {
-                            startInput = value;
+                            DeploymentAttributes.ENABLED.parseAndSetParameter(value, deploymentAdd, reader);
                             break;
                         }
                         default:
@@ -1008,16 +1010,17 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     }
                 }
             }
-            if (uniqueName == null) {
-                throw missingRequired(reader, Collections.singleton(Attribute.NAME));
+            if (requiredAttributes.size() > 0) {
+                throw missingRequired(reader, requiredAttributes);
             }
-            if (runtimeName == null) {
-                throw missingRequired(reader, Collections.singleton(Attribute.RUNTIME_NAME));
-            }
-            final boolean enabled = startInput == null ? true : Boolean.parseBoolean(startInput);
 
             final ModelNode deploymentAddress = address.clone().add(DEPLOYMENT, uniqueName);
-            final ModelNode deploymentAdd = Util.getEmptyOperation(ADD, deploymentAddress);
+            deploymentAdd.get(OP_ADDR).set(deploymentAddress);
+
+            // Deal with the mismatch between the xsd default value for 'enabled' and the mgmt API value
+            if (allowedAttributes.contains(Attribute.ENABLED) && !deploymentAdd.hasDefined(DeploymentAttributes.ENABLED.getName())) {
+                deploymentAdd.get(DeploymentAttributes.ENABLED.getName()).set(true);
+            }
 
             // Handle elements
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -1041,10 +1044,6 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 }
             }
 
-            deploymentAdd.get(RUNTIME_NAME).set(runtimeName);
-            if (allowedAttributes.contains(Attribute.ENABLED)) {
-                deploymentAdd.get(ENABLED).set(enabled);
-            }
             list.add(deploymentAdd);
         }
     }

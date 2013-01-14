@@ -86,8 +86,6 @@ public class ContentAdd extends AbstractAddStepHandler {
     public ContentAdd(final ContentRepository contentRepository, final DeploymentFileRepository remoteRepository) {
         this.contentRepository = contentRepository;
         this.remoteRepository = remoteRepository;
-        this.validator.registerValidator(RUNTIME_NAME, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
-        this.validator.registerValidator(ENABLED, new ModelTypeValidator(ModelType.BOOLEAN, true));
         final ParametersValidator contentValidator = new ParametersValidator();
         // existing managed content
         contentValidator.registerValidator(HASH, new ModelTypeValidator(ModelType.BYTES, true));
