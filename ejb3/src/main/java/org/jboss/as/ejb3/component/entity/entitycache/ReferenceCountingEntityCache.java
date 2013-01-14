@@ -35,6 +35,7 @@ import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 
 /**
  * @author John Bailey
+ * @author <a href="wfink@redhat.com">Wolf-Dieter Fink</a>
  */
 public class ReferenceCountingEntityCache implements ReadyEntityCache {
     private final ConcurrentMap<Object, CacheEntry> cache = new ConcurrentHashMap<Object, CacheEntry>();
@@ -63,8 +64,12 @@ public class ReferenceCountingEntityCache implements ReadyEntityCache {
         return cacheEntry;
     }
 
-    public boolean isCached(final Object key) {
-        return cache.containsKey(key);
+    public synchronized boolean isCached(final Object key) {
+        if(cache.containsKey(key)) {
+            final CacheEntry cacheEntry = cache.get(key);
+            return !cacheEntry.instance.isRemoved();
+        }
+        return false;
     }
 
     public synchronized EntityBeanComponentInstance get(final Object key) throws NoSuchEntityException {

@@ -22,6 +22,8 @@
 
 package org.jboss.as.cmp.component.interceptors;
 
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
+
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -69,8 +71,11 @@ public class CmpEntityBeanHomeFinderInterceptorFactory extends EntityBeanHomeFin
 
         // as per the spec 9.6.4, entities must be synchronized with the datastore when an ejbFind<METHOD> is called.
         if (finderMethod.getName().equals("findByPrimaryKey")) {
+            if(finderMethod.getParameterTypes() == null) {
+                throw MESSAGES.nullArgumentForFindByPrimaryKey();
+            }
             if(finderMethod.getParameterTypes().length != 1) {
-                throw new IllegalArgumentException("findByPrimaryKey called with an illegal number of arguments [" + finderMethod.getParameterTypes().length +"]");
+                throw MESSAGES.illegalNumberOfArgumentsForFindByPrimaryKey(finderMethod.getParameterTypes().length);
             }
             final ReadyEntityCache cache = cmpComponent.getCache();
             if(cache.isCached(context.getParameters()[0])) {
