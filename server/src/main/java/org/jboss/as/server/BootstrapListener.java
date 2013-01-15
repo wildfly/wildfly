@@ -21,147 +21,85 @@
  */
 package org.jboss.as.server;
 
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.server.mgmt.HttpManagementService;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StabilityMonitor;
+import org.jboss.msc.service.StabilityStatistics;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class BootstrapListener extends AbstractServiceListener<Object> {
 
-    private final AtomicInteger started = new AtomicInteger();
-    private final AtomicInteger failed = new AtomicInteger();
-    private final AtomicInteger outstanding = new AtomicInteger(1);
-    private final AtomicBoolean done = new AtomicBoolean();
-    private final AtomicInteger missingDeps = new AtomicInteger();
-    private final EnumMap<ServiceController.Mode, AtomicInteger> map;
+    private final StabilityMonitor monitor = new StabilityMonitor();
     private final ServiceContainer serviceContainer;
-    private final Set<ServiceName> missingDepsSet = Collections.synchronizedSet(new TreeSet<ServiceName>());
     private final ServiceTarget serviceTarget;
     private final long startTime;
-    private volatile boolean cancelLikely;
-
-    private final FutureServiceContainer futureContainer;
     private final String prettyVersion;
+    private final FutureServiceContainer futureContainer;
 
     public BootstrapListener(final ServiceContainer serviceContainer, final long startTime, final ServiceTarget serviceTarget, final FutureServiceContainer futureContainer, final String prettyVersion) {
         this.serviceContainer = serviceContainer;
         this.startTime = startTime;
         this.serviceTarget = serviceTarget;
-        this.futureContainer = futureContainer;
         this.prettyVersion = prettyVersion;
-        final EnumMap<ServiceController.Mode, AtomicInteger> map = new EnumMap<ServiceController.Mode, AtomicInteger>(ServiceController.Mode.class);
-        for (ServiceController.Mode mode : ServiceController.Mode.values()) {
-            map.put(mode, new AtomicInteger());
-        }
-        this.map = map;
+        this.futureContainer = futureContainer;
     }
 
     @Override
     public void listenerAdded(final ServiceController<?> controller) {
-        final ServiceController.Mode mode = controller.getMode();
-        if (mode == ServiceController.Mode.ACTIVE) {
-            outstanding.incrementAndGet();
+        monitor.addController(controller);
+        controller.removeListener(this);
+    }
+
+    public void printBootStatistics() {
+        final StabilityStatistics statistics = new StabilityStatistics();
+        try {
+            monitor.awaitStability(statistics);
+        } catch (final InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return;
+        } finally {
+            serviceTarget.removeListener(BootstrapListener.this);
+            final long bootstrapTime = System.currentTimeMillis() - startTime;
+            done(bootstrapTime, statistics);
+            monitor.clear();
+        }
+    }
+
+    protected void done(final long bootstrapTime, final StabilityStatistics statistics) {
+        futureContainer.done(serviceContainer);
+        if (statistics.getRemovedCount() > 0) {
+            // Don't print boot statistics if there are removed services.
+            // Most likely server received shutdown signal during the boot process.
+            return;
+        }
+
+        logAdminConsole();
+
+        final int active = statistics.getActiveCount();
+        final int failed = statistics.getFailedCount();
+        final int lazy = statistics.getLazyCount();
+        final int never = statistics.getNeverCount();
+        final int onDemand = statistics.getOnDemandCount();
+        final int passive = statistics.getPassiveCount();
+        final int problem = statistics.getProblemsCount();
+        final int started = statistics.getStartedCount();
+        if (failed == 0 && problem == 0) {
+            ServerLogger.AS_ROOT_LOGGER.startedClean(prettyVersion, bootstrapTime, started, active + passive + onDemand + never + lazy, onDemand + passive + lazy);
         } else {
-            controller.removeListener(this);
-        }
-        map.get(mode).incrementAndGet();
-    }
-
-    @Override
-    public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
-        switch (transition) {
-            case STARTING_to_UP: {
-                started.incrementAndGet();
-                controller.removeListener(this);
-                tick();
-                break;
-            }
-            case STARTING_to_START_FAILED: {
-                failed.incrementAndGet();
-                controller.removeListener(this);
-                tick();
-                break;
-            }
-            case START_REQUESTED_to_PROBLEM: {
-                missingDeps.incrementAndGet();
-                check();
-                break;
-            }
-            case PROBLEM_to_START_REQUESTED: {
-                missingDeps.decrementAndGet();
-                check();
-                break;
-            }
-            case REMOVING_to_REMOVED: {
-                cancelLikely = true;
-                tick();
-                break;
-            }
+            ServerLogger.AS_ROOT_LOGGER.startedWitErrors(prettyVersion, bootstrapTime, started, active + passive + onDemand + never + lazy, failed + problem, onDemand + passive + lazy);
         }
     }
 
-    private void check() {
-        int outstanding = this.outstanding.get();
-        if (outstanding == missingDeps.get()) {
-            finish(serviceContainer, outstanding);
-        }
-    }
-
-    public void tick() {
-        int outstanding = this.outstanding.decrementAndGet();
-        if (outstanding != missingDeps.get()) {
-            return;
-        }
-        finish(serviceContainer, outstanding);
-    }
-
-    private void finish(final ServiceContainer container, final int outstanding) {
-        if (done.getAndSet(true)) {
-            return;
-        }
-        serviceTarget.removeListener(this);
-        if (cancelLikely) {
-            return;
-        }
-
-        final int failed = this.failed.get() + outstanding;
-        final long elapsedTime = Math.max(System.currentTimeMillis() - startTime, 0L);
-        final int started = this.started.get();
-        done(container, elapsedTime, started, failed, map, missingDepsSet);
-    }
-
-    protected void done(ServiceContainer container, long elapsedTime, int started, int failed, EnumMap<ServiceController.Mode, AtomicInteger> map, Set<ServiceName> missingDepsSet) {
-        futureContainer.done(container);
-
-        logAdminConsole(container);
-
-        final int active = map.get(ServiceController.Mode.ACTIVE).get();
-        final int passive = map.get(ServiceController.Mode.PASSIVE).get();
-        final int onDemand = map.get(ServiceController.Mode.ON_DEMAND).get();
-        final int never = map.get(ServiceController.Mode.NEVER).get();
-        if (failed == 0) {
-            ServerLogger.AS_ROOT_LOGGER.startedClean(prettyVersion, elapsedTime, started, active + passive + onDemand + never, onDemand + passive);
-        } else {
-            ServerLogger.AS_ROOT_LOGGER.startedWitErrors(prettyVersion, elapsedTime, started, active + passive + onDemand + never, failed, onDemand + passive);
-        }
-    }
-
-    private void logAdminConsole(ServiceContainer container) {
-        ServiceController<?> controller = container.getService(HttpManagementService.SERVICE_NAME);
+    private void logAdminConsole() {
+        ServiceController<?> controller = serviceContainer.getService(HttpManagementService.SERVICE_NAME);
         if (controller != null) {
             HttpManagement mgmt = (HttpManagement)controller.getValue();
 

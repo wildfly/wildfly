@@ -120,7 +120,7 @@ public class HostControllerService implements Service<AsyncFuture<ServiceContain
         }
 
         final BootstrapListener bootstrapListener = new BootstrapListener(serviceContainer, startTime, serviceTarget, futureContainer,  prettyVersion + " (Host Controller)");
-        serviceTarget.addListener(ServiceListener.Inheritance.ALL, bootstrapListener);
+        serviceTarget.addListener(bootstrapListener);
         myController.addListener(bootstrapListener);
 
         // The first default services are registered before the bootstrap operations are executed.
