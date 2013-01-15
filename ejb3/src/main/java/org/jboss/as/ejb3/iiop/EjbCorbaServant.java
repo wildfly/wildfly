@@ -259,33 +259,40 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
                     }
                     try {
                         SimplePrincipal principal = null;
-                        char[] password = null;
+                        Object credential = null;
+
                         if (sasCurrent != null) {
-                            final byte[] username = sasCurrent.get_incoming_username();
-                            final byte[] credential = sasCurrent.get_incoming_password();
-                            String name = new String(username, "UTF-8");
-                            int domainIndex = name.indexOf('@');
-                            if (domainIndex > 0)
-                                name = name.substring(0, domainIndex);
-                            if (name.length() == 0) {
-                                final byte[] incomingName = sasCurrent.get_incoming_principal_name();
+                            final byte[] incomingName = sasCurrent.get_incoming_principal_name();
+
+                            if ( incomingName != null && incomingName.length > 0) {
+                                //we have an identity token, which is a trust based mechanism
                                 if (incomingName.length > 0) {
-                                    name = new String(incomingName, "UTF-8");
-                                    domainIndex = name.indexOf('@');
+                                    String name = new String(incomingName, "UTF-8");
+                                    int domainIndex = name.indexOf('@');
                                     if (domainIndex > 0)
                                         name = name.substring(0, domainIndex);
                                     principal = new SimplePrincipal(name);
-                                    // username==password is a hack until
-                                    // we have a real way to establish trust
-                                    password = name.toCharArray();
+                                    //we don't have any real way to establish trust here
+                                    //we just use the SASCurrent as a credential, and a custom login
+                                    //module can make a decision for us.
+                                    credential = sasCurrent;
                                 }
                             } else {
+                                //the client has just sent a username and password
+                                final byte[] username = sasCurrent.get_incoming_username();
+                                final byte[] incomingPassword = sasCurrent.get_incoming_password();
+                                String name = new String(username, "UTF-8");
+                                int domainIndex = name.indexOf('@');
+                                if (domainIndex > 0) {
+                                    name = name.substring(0, domainIndex);
+                                }
                                 principal = new SimplePrincipal(name);
-                                password = new String(credential, "UTF-8").toCharArray();
+                                credential = new String(incomingPassword, "UTF-8").toCharArray();
                             }
-                            if(securityDomain != null) {
+
+                            if (securityDomain != null) {
                                 sc = SecurityContextFactory.createSecurityContext(securityDomain);
-                                sc.getUtil().createSubjectInfo(principal, password, null);
+                                sc.getUtil().createSubjectInfo(principal, credential, null);
                             }
                         }
                         final Object[] params = op.readParams((org.omg.CORBA_2_3.portable.InputStream) in);
@@ -444,6 +451,7 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
             }
         });
     }
+
     private static void clearSecurityContextOnAssociation() {
         AccessController.doPrivileged(new PrivilegedAction<Void>() {
 

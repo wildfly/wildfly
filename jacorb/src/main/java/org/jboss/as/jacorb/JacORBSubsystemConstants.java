@@ -40,6 +40,8 @@ public final class JacORBSubsystemConstants {
     }
 
     // subsystem configuration constants (elements and attributes).
+
+    public static final String CLIENT = "client";
     public static final String ORB = "orb";
     public static final String NAME = "name";
     public static final String ORB_PRINT_VERSION = "print-version";
@@ -73,6 +75,7 @@ public final class JacORBSubsystemConstants {
     public static final String NAMING = "naming";
     public static final String NAMING_EXPORT_CORBALOC = "export-corbaloc";
     public static final String NAMING_ROOT_CONTEXT = "root-context";
+    public static final String IDENTITY = "identity";
     public static final String INTEROP = "interop";
     public static final String INTEROP_SUN = "sun";
     public static final String INTEROP_COMET = "comet";
