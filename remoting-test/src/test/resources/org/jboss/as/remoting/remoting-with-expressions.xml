@@ -28,12 +28,12 @@
        </sasl>
    </connector>
    <outbound-connections>
-      <outbound-connection name="generic-conn1" uri="myuri">
+      <outbound-connection name="generic-conn1" uri="${remoting.uri:myuri}">
          <properties>
             <property name="org.xnio.Options.SSL_ENABLED" value="${generic.outbound.connection.prop:false}"/>
          </properties>
       </outbound-connection>
-      <remote-outbound-connection name="remote-conn1" outbound-socket-binding-ref="dummy-outbound-socket" username="${remoting.user:myuser}">
+      <remote-outbound-connection name="remote-conn1" outbound-socket-binding-ref="dummy-outbound-socket" username="${remoting.user:myuser}" security-realm="test-realm">
          <properties>
             <property name="org.xnio.Options.SSL_ENABLED" value="${remote.outbound.connection.prop:false}"/>
          </properties>
