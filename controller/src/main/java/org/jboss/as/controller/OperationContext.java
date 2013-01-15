@@ -678,7 +678,11 @@ public interface OperationContext extends ExpressionResolver {
     enum Stage {
         /**
          * A pseudo-stage which will execute immediately after the current running step.
+         * @deprecated Stage.IMMEDIATE is just a shorthand for the 'stage' and 'addFirst' params exposed by the various OperationContext.addStep methods, equivalent to 'the current stage' and 'true'.
+         * It produces more understandable code to use, e.g. Stage.MODEL and 'true' than to use a fictitious Stage like IMMEDIATE, so IMMEDIATE should be deprecated as API bloat.
+         * One problem with IMMEDIATE is its name leads people to think the step is executed immediately, i.e. as part of the addStep call. This is incorrect but is a reasonable mistake to make.
          */
+        @Deprecated
         IMMEDIATE,
         /**
          * The step applies to the model (read or write).
