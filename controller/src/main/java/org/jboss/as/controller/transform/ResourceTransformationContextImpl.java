@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.jboss.as.controller.ExpressionResolver;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -40,14 +41,15 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
 /**
-* @author Emanuel Muckenhuber
-*/
+ * @author Emanuel Muckenhuber
+ */
 class ResourceTransformationContextImpl implements ResourceTransformationContext {
 
     private final Resource root;
     private final PathAddress current;
     private final PathAddress read;
     private final OriginalModel originalModel;
+    private final TransformersLogger logger;
 
     static ResourceTransformationContext create(final OperationContext context, final TransformationTarget target) {
         return create(context, target, PathAddress.EMPTY_ADDRESS, PathAddress.EMPTY_ADDRESS);
@@ -64,7 +66,7 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
 
     static ResourceTransformationContext create(TransformationTarget target, Resource model, ImmutableManagementResourceRegistration registration, ExpressionResolver resolver, RunningMode runningMode, ProcessType type) {
         final Resource root = Resource.Factory.create();
-        final OriginalModel originalModel = new OriginalModel(model,  runningMode, type, target, registration,resolver);
+        final OriginalModel originalModel = new OriginalModel(model, runningMode, type, target, registration, resolver);
         return new ResourceTransformationContextImpl(root, PathAddress.EMPTY_ADDRESS, originalModel);
     }
 
@@ -77,6 +79,7 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
         this.current = address;
         this.read = read;
         this.originalModel = originalModel;
+        this.logger = new TransformersLogger(originalModel.target);
     }
 
     public Resource createResource(final PathAddress element) {
@@ -111,7 +114,7 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
     public ResourceTransformationContext addTransformedResourceFromRoot(PathAddress absoluteAddress, PathAddress read, Resource toAdd) {
         // Only keep the mode, drop all children
         final Resource copy = Resource.Factory.create();
-        if(toAdd != null) {
+        if (toAdd != null) {
             copy.writeModel(toAdd.getModel());
         }
         return addTransformedRecursiveResourceFromRoot(absoluteAddress, read, copy);
@@ -133,8 +136,8 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
                 if (element.isMultiTarget()) {
                     throw MESSAGES.cannotWriteTo("*");
                 }
-                if (! i.hasNext()) {
-                    if(model.hasChild(element)) {
+                if (!i.hasNext()) {
+                    if (model.hasChild(element)) {
                         throw MESSAGES.duplicateResourceAddress(absoluteAddress);
                     } else {
                         model.registerChild(element, toAdd);
@@ -169,7 +172,7 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
 
     public TransformerEntry resolveTransformerEntry(PathAddress address) {
         final TransformerEntry entry = originalModel.target.getTransformerEntry(address);
-        if(entry == null) {
+        if (entry == null) {
             return TransformerEntry.ALL_DEFAULTS;
         }
         return entry;
@@ -178,12 +181,12 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
     @Override
     public ResourceTransformer resolveTransformer(PathAddress address) {
         final ResourceTransformer transformer = originalModel.target.resolveTransformer(address);
-        if(transformer == null) {
+        if (transformer == null) {
             final ImmutableManagementResourceRegistration childReg = originalModel.getRegistration(address);
-            if(childReg == null) {
+            if (childReg == null) {
                 return ResourceTransformer.DISCARD;
             }
-            if(childReg.isRemote() || childReg.isRuntimeOnly()) {
+            if (childReg.isRemote() || childReg.isRuntimeOnly()) {
                 return ResourceTransformer.DISCARD;
             }
             return ResourceTransformer.DEFAULT;
@@ -193,12 +196,12 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
 
     protected ResourceTransformer resolveTransformer(TransformerEntry entry, PathAddress address) {
         final ResourceTransformer transformer = entry.getResourceTransformer();
-        if(transformer == null) {
+        if (transformer == null) {
             final ImmutableManagementResourceRegistration childReg = originalModel.getRegistration(address);
-            if(childReg == null) {
+            if (childReg == null) {
                 return ResourceTransformer.DISCARD;
             }
-            if(childReg.isRemote() || childReg.isRuntimeOnly()) {
+            if (childReg.isRemote() || childReg.isRuntimeOnly()) {
                 return ResourceTransformer.DISCARD;
             }
             return ResourceTransformer.DEFAULT;
@@ -209,8 +212,8 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
     @Override
     public void processChildren(final Resource resource) throws OperationFailedException {
         final Set<String> types = resource.getChildTypes();
-        for(final String type : types) {
-            for(final Resource.ResourceEntry child : resource.getChildren(type)) {
+        for (final String type : types) {
+            for (final Resource.ResourceEntry child : resource.getChildren(type)) {
                 processChild(child.getPathElement(), child);
             }
         }
@@ -296,7 +299,7 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
 
     @Deprecated
     static ResourceTransformationContext createAliasContext(final PathAddress address, final ResourceTransformationContext context) {
-        if(context instanceof ResourceTransformationContextImpl) {
+        if (context instanceof ResourceTransformationContextImpl) {
             final ResourceTransformationContextImpl impl = (ResourceTransformationContextImpl) context;
             return new ResourceTransformationContextImpl(impl.root, address, impl.read, impl.originalModel);
         } else {
@@ -314,6 +317,22 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
         }
     }
 
+    @Override
+    public TransformersLogger getLogger() {
+        return logger;
+    }
+
+    /**
+     * For 7.1.x, we have no idea if the slave has ignored the resource or not. On 7.2.x the slave registers the ignored resources as
+     * part of the registration process so we have a better idea and can throw errors if the slave was ignored
+     *
+     * @param target for what target are we interested
+     * @return true if target support ignored resoruces
+     */
+    public boolean doesTargetSupportIgnoredResources(TransformationTarget target) {
+        final ModelVersion coreVersion = target.getVersion();
+        return coreVersion.getMajor() >= 1 && coreVersion.getMinor() >= 4;
+    }
 
     static class OriginalModel {
 

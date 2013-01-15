@@ -25,12 +25,10 @@ package org.jboss.as.controller.test;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
 import junit.framework.Assert;
-
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
@@ -40,8 +38,8 @@ import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.registry.GlobalTransformerRegistry;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -58,6 +56,7 @@ import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.TransformationTargetImpl;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.controller.transform.Transformers;
+import org.jboss.as.controller.transform.TransformersLogger;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.controller.transform.chained.ChainedResourceTransformationContext;
 import org.jboss.as.controller.transform.chained.ChainedResourceTransformer;
@@ -111,7 +110,7 @@ public class OperationTransformationTestCase {
     }
 
     @Test
-    public void testDiscardOperation() throws OperationFailedException  {
+    public void testDiscardOperation() throws OperationFailedException {
         final ModelNode operation = new ModelNode();
         operation.get(ModelDescriptionConstants.OP).set("discard");
         operation.get(ModelDescriptionConstants.OP_ADDR).set(TEST_DISCARD.toModelNode());
@@ -119,7 +118,7 @@ public class OperationTransformationTestCase {
     }
 
     @Test
-    public void testBasicTransformation() throws OperationFailedException  {
+    public void testBasicTransformation() throws OperationFailedException {
         final ModelNode operation = new ModelNode();
         operation.get(ModelDescriptionConstants.OP).set("normal");
         operation.get(ModelDescriptionConstants.OP_ADDR).set(TEST_NORMAL.toModelNode());
@@ -249,7 +248,7 @@ public class OperationTransformationTestCase {
                     }
                     for (String key : keys) {
                         StringBuffer sb = new StringBuffer(key);
-                        for (int i = 0 ; i < sb.length() ; i++) {
+                        for (int i = 0; i < sb.length(); i++) {
                             char c = sb.charAt(0);
                             c++;
                             sb.setCharAt(i, c);
@@ -336,7 +335,7 @@ public class OperationTransformationTestCase {
         final String operationName = operation.require(ModelDescriptionConstants.OP).asString();
         final OperationTransformerRegistry transformerRegistry = registry.create(ModelVersion.create(major, minor), Collections.<PathAddress, ModelVersion>emptyMap());
         final OperationTransformerRegistry.OperationTransformerEntry entry = transformerRegistry.resolveOperationTransformer(address, operationName);
-        if(entry.getPolicy() == OperationTransformerRegistry.TransformationPolicy.DISCARD) {
+        if (entry.getPolicy() == OperationTransformerRegistry.TransformationPolicy.DISCARD) {
             return null;
         } else {
             final OperationTransformer transformer = entry.getTransformer();
@@ -397,17 +396,19 @@ public class OperationTransformationTestCase {
         public ModelNode resolveExpressions(ModelNode node) throws OperationFailedException {
             return node;
         }
-    };
 
-    // As usual
-    private static final DescriptionProvider NOOP_PROVIDER = new DescriptionProvider() {
         @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return new ModelNode();
+        public boolean doesTargetSupportIgnoredResources(TransformationTarget target) {
+            return true;
+        }
+
+        @Override
+        public TransformersLogger getLogger() {
+            return new TransformersLogger(getTarget());
         }
     };
 
-    private static final ResourceDefinition ROOT = new SimpleResourceDefinition(PathElement.pathElement("test"), NOOP_PROVIDER);
+    private static final ResourceDefinition ROOT = new SimpleResourceDefinition(PathElement.pathElement("test"), new NonResolvingResourceDescriptionResolver());
 
     private static final ExpressionResolver resolver = new ExpressionResolver() {
         @Override

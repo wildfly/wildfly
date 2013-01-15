@@ -34,14 +34,12 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 
 /**
  * @author Emanuel Muckenhuber
  * @author Tomaz Cerar
  */
 public class TransformersImpl implements Transformers {
-    private static final Logger log = Logger.getLogger(TransformersImpl.class);
     private final TransformationTarget target;
 
     TransformersImpl(TransformationTarget target) {
@@ -74,7 +72,9 @@ public class TransformersImpl implements Transformers {
         final PathAddressTransformer.BuilderImpl builder = new PathAddressTransformer.BuilderImpl(transformations, address);
         final PathAddress transformed = builder.start();
         ResourceTransformationContext opCtx = ResourceTransformationContextImpl.wrapForOperation(context, operation);
-        return transformer.transformOperation(opCtx, transformed, operation);
+        OperationTransformer.TransformedOperation res = transformer.transformOperation(opCtx, transformed, operation);
+        context.getLogger().flushLogQueue();
+        return res;
     }
 
     @Override
@@ -122,11 +122,12 @@ public class TransformersImpl implements Transformers {
 //        }
 
         final ResourceTransformer transformer = target.resolveTransformer(PathAddress.EMPTY_ADDRESS);
-        if(transformer == null) {
+        if (transformer == null) {
             ControllerLogger.ROOT_LOGGER.tracef("resource %s does not need transformation", resource);
             return resource;
         }
         transformer.transformResource(context, PathAddress.EMPTY_ADDRESS, resource);
+        context.getLogger().flushLogQueue();
         return context.getTransformedRoot();
     }
 
@@ -143,5 +144,4 @@ public class TransformersImpl implements Transformers {
         final PathAddressTransformer.BuilderImpl builder = new PathAddressTransformer.BuilderImpl(transformations, original);
         return builder.start();
     }
-
 }

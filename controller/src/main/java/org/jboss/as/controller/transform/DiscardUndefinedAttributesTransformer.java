@@ -27,7 +27,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -61,7 +60,7 @@ public class DiscardUndefinedAttributesTransformer implements ChainedResourceTra
 
     private static Set<String> namesFromDefinitions(AttributeDefinition... attributes) {
         final Set<String> names = new HashSet<String>();
-        for(final AttributeDefinition def : attributes) {
+        for (final AttributeDefinition def : attributes) {
             names.add(def.getName());
         }
         return names;
@@ -85,12 +84,12 @@ public class DiscardUndefinedAttributesTransformer implements ChainedResourceTra
 
     @Override
     public void transformResource(ChainedResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
-        transformResource(context.getTarget(), address, resource);
+        transformResourceInt(context, address, resource);
     }
 
     @Override
     public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
-        transformResource(context.getTarget(), address, resource);
+        transformResourceInt(context, address, resource);
 
         final ResourceTransformationContext childContext = context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
         childContext.processChildren(resource);
@@ -113,13 +112,7 @@ public class DiscardUndefinedAttributesTransformer implements ChainedResourceTra
 
                 @Override
                 public String getFailureDescription() {
-                    // TODO OFE.getMessage
-                    try {
-                        return logWarning(context.getTarget(), address, problems, operation);
-                    } catch (OperationFailedException e) {
-                        //This will not happen
-                        return null;
-                    }
+                    return context.getLogger().getWarning(address, operation, problems);
                 }
             };
         } else {
@@ -129,12 +122,12 @@ public class DiscardUndefinedAttributesTransformer implements ChainedResourceTra
         return new TransformedOperation(operation, rejectPolicy, OperationResultTransformer.ORIGINAL_RESULT);
     }
 
-    private void transformResource(TransformationTarget target, PathAddress address,
-                                   Resource resource) throws OperationFailedException {
+    private void transformResourceInt(TransformationContext context, PathAddress address,
+                                      Resource resource) throws OperationFailedException {
 
         Set<String> problems = checkModelNode(resource.getModel());
         if (problems != null) {
-            logWarning(target, address, problems, null);
+            context.getLogger().logWarning(address, problems);
         }
     }
 
@@ -174,12 +167,7 @@ public class DiscardUndefinedAttributesTransformer implements ChainedResourceTra
 
                     @Override
                     public String getFailureDescription() {
-                        try {
-                            return logWarning(context.getTarget(), address, Collections.singleton(attribute), operation);
-                        } catch (OperationFailedException e) {
-                            //This will not happen
-                            return null;
-                        }
+                        return context.getLogger().getWarning(address, operation, attribute);
                     }
                 };
                 return new TransformedOperation(operation, rejectPolicy, OperationResultTransformer.ORIGINAL_RESULT);
@@ -206,52 +194,5 @@ public class DiscardUndefinedAttributesTransformer implements ChainedResourceTra
             // Not relevant to us
             return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
         }
-    }
-
-    private String logWarning(TransformationTarget tgt, PathAddress pathAddress, Set<String> attributes, ModelNode op) throws OperationFailedException {
-
-        //TODO the determining of whether the version is 1.4.0, i.e. knows about ignored resources or not could be moved to a utility method
-
-        final String hostName = tgt.getHostName();
-        final ModelVersion coreVersion = tgt.getVersion();
-        final String subsystemName = findSubsystemVersion(pathAddress);
-        final ModelVersion usedVersion = subsystemName == null ? coreVersion : tgt.getSubsystemVersion(subsystemName);
-
-        //For 7.1.x, we have no idea if the slave has ignored the resource or not. On 7.2.x the slave registers the ignored resources as
-        //part of the registration process so we have a better idea and can throw errors if the slave was ignored
-        if (op == null) {
-            if (coreVersion.getMajor() >= 1 && coreVersion.getMinor() >= 4) {
-                //We are 7.2.x so we should throw an error
-                if (subsystemName != null) {
-                    throw ControllerMessages.MESSAGES.newAttributesSubsystemModelResourceTransformerFoundDefinedAttributes(pathAddress, hostName, subsystemName, usedVersion, attributes);
-                }
-                throw ControllerMessages.MESSAGES.newAttributesCoreModelResourceTransformerFoundDefinedAttributes(pathAddress, hostName, usedVersion, attributes);
-            }
-        }
-
-        if (op == null) {
-            if (subsystemName != null) {
-                ControllerLogger.TRANSFORMER_LOGGER.newAttributesSubsystemModelResourceTransformerFoundDefinedAttributes(pathAddress, hostName, subsystemName, usedVersion, attributes);
-            } else {
-                ControllerLogger.TRANSFORMER_LOGGER.newAttributesCoreModelResourceTransformerFoundDefinedAttributes(pathAddress, hostName, usedVersion, attributes);
-            }
-            return null;
-        } else {
-            if (subsystemName != null) {
-                return ControllerMessages.MESSAGES.newAttributesSubsystemModelOperationTransformerFoundDefinedAttributes(op, pathAddress, hostName, subsystemName, usedVersion, attributes).getMessage();
-            } else {
-                return ControllerMessages.MESSAGES.newAttributesCoreModelOperationTransformerFoundDefinedAttributes(op, pathAddress, hostName, usedVersion, attributes).getMessage();
-            }
-        }
-    }
-
-
-    private String findSubsystemVersion(PathAddress pathAddress) {
-        for (PathElement element : pathAddress) {
-            if (element.getKey().equals(SUBSYSTEM)) {
-                return element.getValue();
-            }
-        }
-        return null;
     }
 }

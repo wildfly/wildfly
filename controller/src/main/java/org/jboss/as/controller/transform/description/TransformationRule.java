@@ -36,6 +36,7 @@ import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformationTarget;
+import org.jboss.as.controller.transform.TransformersLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -148,6 +149,16 @@ abstract class TransformationRule {
         @Deprecated
         public ModelNode resolveExpressions(ModelNode node) throws OperationFailedException {
             return delegate.resolveExpressions(node);
+        }
+
+        @Override
+        public TransformersLogger getLogger() {
+            return delegate.getLogger();
+        }
+
+        @Override
+        public boolean doesTargetSupportIgnoredResources(TransformationTarget target) {
+            return delegate.doesTargetSupportIgnoredResources(target);
         }
     }
 

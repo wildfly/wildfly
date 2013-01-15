@@ -31,6 +31,7 @@ import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformationTarget;
+import org.jboss.as.controller.transform.TransformersLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -99,5 +100,15 @@ public class ChainedResourceTransformationContext implements TransformationConte
      */
     public Resource getTransformedRoot() {
         return delegate.getTransformedRoot();
+    }
+
+    @Override
+    public TransformersLogger getLogger() {
+        return delegate.getLogger();
+    }
+
+    @Override
+    public boolean doesTargetSupportIgnoredResources(TransformationTarget target) {
+        return delegate.doesTargetSupportIgnoredResources(target);
     }
 }

@@ -63,6 +63,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.TransformerRegistry;
+import org.jboss.as.controller.transform.TransformersLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceContainer;
 
@@ -380,5 +381,15 @@ public abstract class ModelTestKernelServicesImpl<T extends ModelTestKernelServi
         public ModelNode resolveExpressions(ModelNode node) throws OperationFailedException {
             return node.resolve();
         }
-    };
+
+        @Override
+        public TransformersLogger getLogger() {
+            return new TransformersLogger(getTarget());
+        }
+
+        @Override
+        public boolean doesTargetSupportIgnoredResources(TransformationTarget target) {
+            return true;
+        }
+    }
 }
