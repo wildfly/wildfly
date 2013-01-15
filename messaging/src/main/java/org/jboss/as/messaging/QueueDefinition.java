@@ -78,7 +78,7 @@ public class QueueDefinition extends SimpleResourceDefinition {
     static final AttributeDefinition[] METRICS = { CommonAttributes.MESSAGE_COUNT, CommonAttributes.DELIVERING_COUNT, CommonAttributes.MESSAGES_ADDED,
             CommonAttributes.SCHEDULED_COUNT, CommonAttributes.CONSUMER_COUNT
             };
-    public static final AttributeDefinition[] REJECTED_EXPRESSION_ATTRIBUTES = { ADDRESS, CommonAttributes.FILTER, CommonAttributes.DURABLE };
+    public static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0 = { ADDRESS, CommonAttributes.FILTER, CommonAttributes.DURABLE };
 
     public static QueueDefinition newRuntimeQueueDefinition(final boolean registerRuntimeOnly) {
         return new QueueDefinition(registerRuntimeOnly, true, RUNTIME_QUEUE, null, null);

@@ -23,6 +23,7 @@
 package org.jboss.as.messaging.jms;
 
 import static java.lang.System.arraycopy;
+import static org.jboss.as.messaging.CommonAttributes.CALL_FAILOVER_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.CALL_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.CLIENT_ID;
 import static org.jboss.as.messaging.CommonAttributes.HA;
@@ -85,7 +86,9 @@ public class ConnectionFactoryDefinition extends SimpleResourceDefinition {
 
     public static final AttributeDefinition[] ATTRIBUTES = concat(Regular.ATTRIBUTES, getDefinitions(Common.ATTRIBUTES));
 
-    public static final AttributeDefinition[] REJECTED_EXPRESSION_ATTRIBUTES = { FACTORY_TYPE,
+    public static final AttributeDefinition[] NEW_ATTRIBUTES_ADDED_AFTER_1_1_0 = { CALL_FAILOVER_TIMEOUT };
+
+    public static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0 = { FACTORY_TYPE,
             HA, CALL_TIMEOUT,
             AUTO_GROUP, BLOCK_ON_ACKNOWLEDGE, BLOCK_ON_DURABLE_SEND, BLOCK_ON_NON_DURABLE_SEND, CACHE_LARGE_MESSAGE_CLIENT, CLIENT_FAILURE_CHECK_PERIOD, CLIENT_ID,
             COMPRESS_LARGE_MESSAGES, CONFIRMATION_WINDOW_SIZE, CONNECTION_LOAD_BALANCING_CLASS_NAME, CONNECTION_TTL, CONSUMER_MAX_RATE,

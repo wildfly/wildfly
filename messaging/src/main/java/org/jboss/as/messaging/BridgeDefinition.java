@@ -121,7 +121,7 @@ public class BridgeDefinition extends SimpleResourceDefinition {
             USER, PASSWORD,
             CONNECTOR_REFS, DISCOVERY_GROUP_NAME
     };
-    public static final AttributeDefinition[] REJECTED_EXPRESSION_ATTRIBUTES = { QUEUE_NAME, USE_DUPLICATE_DETECTION,
+    public static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0 = { QUEUE_NAME, USE_DUPLICATE_DETECTION,
             RECONNECT_ATTEMPTS, FORWARDING_ADDRESS,
             CommonAttributes.FILTER, CommonAttributes.TRANSFORMER_CLASS_NAME, HA, CommonAttributes.MIN_LARGE_MESSAGE_SIZE,
             CommonAttributes.CHECK_PERIOD, CommonAttributes.CONNECTION_TTL,

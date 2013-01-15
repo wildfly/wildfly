@@ -25,9 +25,10 @@ package org.jboss.as.messaging.test;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 import static org.jboss.as.controller.PathElement.pathElement;
+import static org.jboss.as.messaging.CommonAttributes.BACKUP_GROUP_NAME;
 import static org.jboss.as.messaging.CommonAttributes.CALL_FAILOVER_TIMEOUT;
-import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.COMPRESS_LARGE_MESSAGES;
-import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled.*;
+import static org.jboss.as.messaging.CommonAttributes.CHECK_FOR_LIVE_SERVER;
+import static org.jboss.as.messaging.CommonAttributes.REPLICATION_CLUSTERNAME;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Regular.FACTORY_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
@@ -40,6 +41,7 @@ import static org.jboss.as.model.test.ModelTestUtils.checkFailedTransformedBootO
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
@@ -91,7 +93,7 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformers_1_1_0() throws Exception {
+    public void testTransformersAS712() throws Exception {
         //Boot up empty controllers with the resources needed for the ops coming from the xml to work
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXmlResource("subsystem_1_3.xml");
@@ -105,15 +107,23 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
         assertTrue(mainServices.getLegacyServices(VERSION_1_1_0).isSuccessfulBoot());
     }
 
-    /**
-     * Tests rejection of expressions in 1.1.0 model.
-     *
-     * @throws Exception
-     */
     @Test
-    public void testRejectExpressions_1_1_0() throws Exception {
-        // create builder for current subsystem version.
-        //
+    public void testTransformersAS713() throws Exception {
+        //Boot up empty controllers with the resources needed for the ops coming from the xml to work
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXmlResource("subsystem_1_3.xml");
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), VERSION_1_1_0)
+                .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.1.3.Final")
+                .addMavenResourceURL("org.hornetq:hornetq-core:2.2.21.Final")
+                .addMavenResourceURL("org.hornetq:hornetq-jms:2.2.21.Final")
+                .addMavenResourceURL("org.hornetq:hornetq-ra:2.2.21.Final");
+        KernelServices mainServices = builder.build();
+        assertTrue(mainServices.isSuccessfulBoot());
+        assertTrue(mainServices.getLegacyServices(VERSION_1_1_0).isSuccessfulBoot());
+    }
+
+    @Test
+    public void testRejectExpressionsAS712() throws Exception {
         // AS7 7.1.2.Final does not allow to add an empty messaging subsystem [AS7-5767]
         // To work around that, we add an empty "stuff" hornetq-server to boot the conf with AS7 7.1.2.Final
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
@@ -128,6 +138,34 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
                 .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.2.Final")
                 .addParentFirstClassPattern("org.jboss.as.controller.*");
 
+        doTestRejectExpressions_1_1_0(builder);
+    }
+
+    @Test
+    public void testRejectExpressionsAS713() throws Exception {
+        // AS7 7.1.3.Final does not allow to add an empty messaging subsystem [AS7-5767]
+        // To work around that, we add an empty "stuff" hornetq-server to boot the conf with AS7 7.1.2.Final
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXmlResource("empty_subsystem_1_3.xml");
+
+        // create builder for legacy subsystem version
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), VERSION_1_1_0)
+                .addMavenResourceURL("org.hornetq:hornetq-core:2.2.21.Final")
+                .addMavenResourceURL("org.hornetq:hornetq-jms:2.2.21.Final")
+                .addMavenResourceURL("org.hornetq:hornetq-ra:2.2.21.Final")
+                .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.1.3.Final")
+                .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.3.Final")
+                .addParentFirstClassPattern("org.jboss.as.controller.*");
+
+        doTestRejectExpressions_1_1_0(builder);
+    }
+
+    /**
+     * Tests rejection of expressions in 1.1.0 model.
+     *
+     * @throws Exception
+     */
+    private void doTestRejectExpressions_1_1_0(KernelServicesBuilder builder) throws Exception {
         KernelServices mainServices = builder.build();
         assertTrue(mainServices.isSuccessfulBoot());
         KernelServices legacyServices = mainServices.getLegacyServices(VERSION_1_1_0);
@@ -146,7 +184,11 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
                 new FailedOperationTransformationConfig()
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH),
-                                new RejectExpressionsConfig(HornetQServerResourceDefinition.REJECTED_EXPRESSION_ATTRIBUTES))
+                                new ChainedConfig(new HashMap<String, FailedOperationTransformationConfig.PathAddressConfig>() {{
+                                    configureAttributes(this,
+                                            HornetQServerResourceDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0,
+                                            new AttributeDefinition[] { BACKUP_GROUP_NAME, CHECK_FOR_LIVE_SERVER, REPLICATION_CLUSTERNAME });
+                                }}))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(pathElement(ModelDescriptionConstants.PATH)),
                                 new RejectExpressionsConfig(ModelDescriptionConstants.PATH))
@@ -188,19 +230,23 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
                                 })
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(DivertDefinition.PATH),
-                                new RejectExpressionsConfig(DivertDefinition.REJECTED_EXPRESSION_ATTRIBUTES))
+                                new RejectExpressionsConfig(DivertDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(QueueDefinition.PATH),
-                                new RejectExpressionsConfig(QueueDefinition.REJECTED_EXPRESSION_ATTRIBUTES))
+                                new RejectExpressionsConfig(QueueDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(ClusterConnectionDefinition.PATH),
-                                new RejectExpressionsConfig(ClusterConnectionDefinition.REJECTED_EXPRESSION_ATTRIBUTES))
+                                new ChainedConfig(new HashMap<String, FailedOperationTransformationConfig.PathAddressConfig>() {{
+                                    configureAttributes(this,
+                                            ClusterConnectionDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0,
+                                            new AttributeDefinition[] { CALL_FAILOVER_TIMEOUT });
+                                }}))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(BridgeDefinition.PATH),
-                                new RejectExpressionsConfig(BridgeDefinition.REJECTED_EXPRESSION_ATTRIBUTES))
+                                new RejectExpressionsConfig(BridgeDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(GroupingHandlerDefinition.PATH),
-                                new RejectExpressionsConfig(GroupingHandlerDefinition.REJECTED_EXPRESSION_ATTRIBUTES))
+                                new RejectExpressionsConfig(GroupingHandlerDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(AddressSettingDefinition.PATH),
                                 new RejectExpressionsConfig(AddressSettingDefinition.REJECTED_EXPRESSION_ATTRIBUTES))
@@ -212,23 +258,21 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
                                 new RejectExpressionsConfig(ConnectorServiceParamDefinition.VALUE))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(ConnectionFactoryDefinition.PATH),
-                                new RejectExpressionsConfig(ConnectionFactoryDefinition.REJECTED_EXPRESSION_ATTRIBUTES)
-                                        .setReadOnly(FACTORY_TYPE))
+                                new ChainedConfig(new HashMap<String, FailedOperationTransformationConfig.PathAddressConfig>() {{
+                                    configureAttributes(this,
+                                            ConnectionFactoryDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0,
+                                            new AttributeDefinition[] { CALL_FAILOVER_TIMEOUT });
+                                }}).setReadOnly(FACTORY_TYPE))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(PooledConnectionFactoryDefinition.PATH),
                                 new ChainedConfig(new HashMap<String, FailedOperationTransformationConfig.PathAddressConfig>() {{
-                                    for (AttributeDefinition attr : PooledConnectionFactoryDefinition.REJECTED_EXPRESSION_ATTRIBUTES) {
-                                            put(attr.getName(), new RejectExpressionsConfig(attr));
-                                    }
-                                    //put(USE_AUTO_RECOVERY.getName(), new NewAttributesConfig(USE_AUTO_RECOVERY));
-                                    //put(INITIAL_CONNECT_ATTEMPTS.getName(), new NewAttributesConfig(INITIAL_CONNECT_ATTEMPTS));
-                                    //put(INITIAL_MESSAGE_PACKET_SIZE.getName(), new NewAttributesConfig(INITIAL_MESSAGE_PACKET_SIZE));
-                                    //put(COMPRESS_LARGE_MESSAGES.getName(), new NewAttributesConfig(COMPRESS_LARGE_MESSAGES));
-                                    //put(CALL_FAILOVER_TIMEOUT.getName(), new NewAttributesConfig(CALL_FAILOVER_TIMEOUT));
+                                    configureAttributes(this,
+                                            PooledConnectionFactoryDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0,
+                                            PooledConnectionFactoryDefinition.NEW_ATTRIBUTES_ADDED_AFTER_1_1_0);
                                 }}).setReadOnly(ConnectionFactoryAttributes.Pooled.TRANSACTION))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(JMSQueueDefinition.PATH),
-                                new RejectExpressionsConfig(JMSQueueDefinition.REJECTED_EXPRESSION_ATTRIBUTES))
+                                new RejectExpressionsConfig(JMSQueueDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0))
                         .addFailedAttribute(
                                 subsystemAddress.append(JMSBridgeDefinition.PATH),
                                 new RejectExpressionsConfig(new String[0]) {
@@ -239,5 +283,17 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
                                     }
                                 })
         );
+    }
+
+    private static void configureAttributes(Map<String, FailedOperationTransformationConfig.PathAddressConfig> map, AttributeDefinition[] rejectedExpression, AttributeDefinition[] newAttributes) {
+        RejectExpressionsConfig rejectExpressionsConfig = new RejectExpressionsConfig(rejectedExpression);
+        for (AttributeDefinition attr : rejectedExpression) {
+            map.put(attr.getName(), rejectExpressionsConfig);
+        }
+        NewAttributesConfig newAttributesConfig = new NewAttributesConfig(newAttributes);
+        for (AttributeDefinition attr: newAttributes) {
+            map.put(attr.getName(), newAttributesConfig);
+        }
+
     }
 }

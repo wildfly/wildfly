@@ -56,9 +56,6 @@
             <server-dump-interval>8642</server-dump-interval>
             <memory-warning-threshold>1024</memory-warning-threshold>
             <memory-measure-interval>2048</memory-measure-interval>
-            <check-for-live-server>false</check-for-live-server>
-            <backup-group-name>ngname</backup-group-name>
-            <replication-clustername>repclustername</replication-clustername>
             <paging-directory path="test" relative-to="test" />
             <bindings-directory path="test" relative-to="test" />
             <journal-directory path="test" relative-to="test" />
@@ -183,7 +180,6 @@
                     <connection-ttl>1234</connection-ttl>
                     <min-large-message-size>10245</min-large-message-size>
                     <call-timeout>3456</call-timeout>
-                    <call-failover-timeout>7890</call-failover-timeout>
                     <retry-interval>987</retry-interval>
                     <retry-interval-multiplier>3.0</retry-interval-multiplier>
                     <max-retry-interval>3600</max-retry-interval>
@@ -300,13 +296,11 @@
                  <client-failure-check-period>12345</client-failure-check-period>
                  <connection-ttl>56789</connection-ttl>
                  <call-timeout>123</call-timeout>
-                 <call-failover-timeout>7890</call-failover-timeout>
                  <consumer-window-size>456</consumer-window-size>
                  <consumer-max-rate>789</consumer-max-rate>
                  <confirmation-window-size>-1</confirmation-window-size>
 			     <producer-window-size>-1</producer-window-size>
 			     <producer-max-rate>1024</producer-max-rate>
-                 <compress-large-messages>true</compress-large-messages>
 			     <cache-large-message-client>false</cache-large-message-client>
 			     <min-large-message-size>2048</min-large-message-size>
 			     <client-id>myClientID</client-id>
@@ -335,8 +329,6 @@
                  <password>alicepassword</password>
                  <min-pool-size>42</min-pool-size>
                  <max-pool-size>242</max-pool-size>
-				 <initial-message-packet-size>9876</initial-message-packet-size>
-				 <initial-connect-attempts>5432</initial-connect-attempts>
 				 <connectors>
                     <connector-ref connector-name="in-vm"/>
                  </connectors>
@@ -347,13 +339,11 @@
                  <client-failure-check-period>12345</client-failure-check-period>
                  <connection-ttl>56789</connection-ttl>
                  <call-timeout>123</call-timeout>
-                 <call-failover-timeout>123</call-failover-timeout>
                  <consumer-window-size>456</consumer-window-size>
                  <consumer-max-rate>789</consumer-max-rate>
                  <confirmation-window-size>-1</confirmation-window-size>
 			     <producer-window-size>-1</producer-window-size>
 			     <producer-max-rate>1024</producer-max-rate>
-			     <compress-large-messages>false</compress-large-messages>
                  <cache-large-message-client>false</cache-large-message-client>
 			     <min-large-message-size>2048</min-large-message-size>
 			     <client-id>myClientID</client-id>
@@ -380,7 +370,6 @@
                  <transaction mode="local"/>
                  <user>alice</user>
                  <password>alicepassword</password>
-                 <use-auto-recovery>true</use-auto-recovery>
                  <connectors>
                     <connector-ref connector-name="in-vm"/>
                  </connectors>

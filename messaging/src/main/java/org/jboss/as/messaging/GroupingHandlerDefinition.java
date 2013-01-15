@@ -70,7 +70,7 @@ public class GroupingHandlerDefinition extends SimpleResourceDefinition {
 
     public static final AttributeDefinition[] ATTRIBUTES = { TYPE, GROUPING_HANDLER_ADDRESS, TIMEOUT };
 
-    public static final AttributeDefinition[] REJECTED_EXPRESSION_ATTRIBUTES = { TYPE, GROUPING_HANDLER_ADDRESS, TIMEOUT };
+    public static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0 = { TYPE, GROUPING_HANDLER_ADDRESS, TIMEOUT };
 
     private final boolean registerRuntimeOnly;
 
