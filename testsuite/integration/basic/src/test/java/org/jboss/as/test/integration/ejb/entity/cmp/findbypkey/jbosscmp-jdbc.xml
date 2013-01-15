@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE jbosscmp-jdbc PUBLIC "-//JBoss//DTD JBOSSCMP-JDBC 3.2//EN" "http://www.jboss.org/j2ee/dtd/jbosscmp-jdbc_3_2.dtd">
+
+<jbosscmp-jdbc>
+   <enterprise-beans>
+      <entity>
+         <ejb-name>SimpleEntity</ejb-name>
+         <create-table>true</create-table>
+         <remove-table>true</remove-table>
+      </entity>
+   </enterprise-beans>
+</jbosscmp-jdbc>
+
