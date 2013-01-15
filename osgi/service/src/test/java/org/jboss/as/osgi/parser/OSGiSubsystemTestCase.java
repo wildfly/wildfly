@@ -32,10 +32,13 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.jboss.as.subsystem.test.LegacyKernelServicesInitializer;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 
@@ -59,6 +62,22 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
         "  </properties>" +
         "  <capabilities>" +
         "    <capability name='org.acme.module2' startlevel='1'/>" +
+        "    <capability name='org.acme.module1'/>" +
+        "  </capabilities>" +
+        "</subsystem>";
+
+    private static final String SUBSYSTEM_XML_1_2_EXPRESSIONS =
+        "<subsystem xmlns='urn:jboss:domain:osgi:1.2' activation='${test.exp:lazy}'>" +
+        "  <!-- Some Comment -->" +
+        "  <properties>" +
+        "    <property name='prop1'>${test.exp:val1}</property>" +
+        "    <property name='prop2'>" +
+        "       ${test.exp:val2a}," +
+        "       ${test.exp:val2b}," +
+        "    </property>" +
+        "  </properties>" +
+        "  <capabilities>" +
+        "    <capability name='org.acme.module2' startlevel='${test.exp:1}'/>" +
         "    <capability name='org.acme.module1'/>" +
         "  </capabilities>" +
         "</subsystem>";
@@ -113,7 +132,7 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return SUBSYSTEM_XML_1_2;
+        return SUBSYSTEM_XML_1_2_EXPRESSIONS;
     }
 
     @Test
@@ -236,15 +255,25 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         compare(modelA, modelB);
     }
+    @Test
+    public void testTransformerAS712() throws Exception {
+        testTransformers1_0_0("org.jboss.as:jboss-as-osgi-service:7.1.2.Final");
+    }
 
     @Test
-    public void testTransformers1_0_0() throws Exception {
+    public void testTransformerAS713() throws Exception {
+        testTransformers1_0_0("org.jboss.as:jboss-as-osgi-service:7.1.3.Final", "org.jboss.osgi.framework:jbosgi-framework-core:1.3.1.CR1");
+    }
+
+    private void testTransformers1_0_0(String... mavenGAVs) throws Exception {
         ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXml(SUBSYSTEM_XML_1_2);
 
-        builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, modelVersion)
-        .addMavenResourceURL("org.jboss.as:jboss-as-osgi-service:7.1.2.Final");
+        LegacyKernelServicesInitializer legacyInitializer = builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, modelVersion);
+        for (String mavenGAV : mavenGAVs) {
+            legacyInitializer.addMavenResourceURL(mavenGAV);
+        }
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
@@ -267,6 +296,46 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
         ModelNode transformedModule1 = mainServices.readTransformedModel(modelVersion).get(SUBSYSTEM, getMainSubsystemName(), ModelConstants.CAPABILITY, "org.acme.module1");
         Assert.assertTrue(transformedModule1.isDefined());
         Assert.assertFalse(legacyModule1.has(ModelConstants.STARTLEVEL));
+    }
+
+    @Test
+    public void testRejectExpressionsAS712() throws Exception {
+        testRejectExpressions1_0_0("org.jboss.as:jboss-as-osgi-service:7.1.2.Final");
+    }
+
+    @Test
+    public void testRejectExpressionsAS713() throws Exception {
+        testRejectExpressions1_0_0("org.jboss.as:jboss-as-osgi-service:7.1.3.Final");
+    }
+
+    private void testRejectExpressions1_0_0(String mavenGAV) throws Exception {
+        // create builder for current subsystem version
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
+
+        // create builder for legacy subsystem version
+        ModelVersion version_1_0_0 = ModelVersion.create(1, 0, 0);
+        builder.createLegacyKernelServicesBuilder(null, version_1_0_0)
+                .addMavenResourceURL(mavenGAV);
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(version_1_0_0);
+
+        org.junit.Assert.assertNotNull(legacyServices);
+        org.junit.Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
+        org.junit.Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+        List<ModelNode> xmlOps = builder.parseXml(SUBSYSTEM_XML_1_2_EXPRESSIONS);
+
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_0_0, xmlOps,
+                new FailedOperationTransformationConfig()
+                        .addFailedAttribute(PathAddress.pathAddress(OSGiRootResource.SUBSYSTEM_PATH),
+                                new FailedOperationTransformationConfig.RejectExpressionsConfig(OSGiRootResource.ACTIVATION))
+                        .addFailedAttribute(PathAddress.pathAddress(OSGiRootResource.SUBSYSTEM_PATH, FrameworkPropertyResource.PROPERTY_PATH),
+                                new FailedOperationTransformationConfig.RejectExpressionsConfig(FrameworkPropertyResource.VALUE))
+                        .addFailedAttribute(PathAddress.pathAddress(OSGiRootResource.SUBSYSTEM_PATH, FrameworkCapabilityResource.CAPABILITY_PATH),
+                                new FailedOperationTransformationConfig.RejectExpressionsConfig(FrameworkCapabilityResource.STARTLEVEL)
+                                        .setReadOnly(FrameworkCapabilityResource.STARTLEVEL))
+        );
     }
 
     private void assertOSGiSubsystemAddress(ModelNode address) {

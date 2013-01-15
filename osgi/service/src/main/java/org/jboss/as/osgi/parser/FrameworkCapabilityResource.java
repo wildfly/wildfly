@@ -35,12 +35,15 @@ import org.jboss.dmr.ModelType;
  */
 public class FrameworkCapabilityResource extends SimpleResourceDefinition {
 
+    static final PathElement CAPABILITY_PATH = PathElement.pathElement(ModelConstants.CAPABILITY);
+
     static final SimpleAttributeDefinition STARTLEVEL = new SimpleAttributeDefinitionBuilder(ModelConstants.STARTLEVEL, ModelType.INT, true)
             .addFlag(Flag.RESTART_NONE)
+            .setAllowExpression(true)
             .build();
 
     FrameworkCapabilityResource() {
-        super(PathElement.pathElement(ModelConstants.CAPABILITY), OSGiResolvers.getResolver(ModelConstants.CAPABILITY),
+        super(CAPABILITY_PATH, OSGiResolvers.getResolver(ModelConstants.CAPABILITY),
                 OSGiCapabilityAdd.INSTANCE, OSGiCapabilityRemove.INSTANCE);
     }
 

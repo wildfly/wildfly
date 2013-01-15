@@ -49,10 +49,13 @@ import org.jboss.dmr.ModelType;
  */
 public class OSGiRootResource extends SimpleResourceDefinition {
 
+    static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, OSGiExtension.SUBSYSTEM_NAME);
+
     private static final ResourceDescriptionResolver RESOLVER = OSGiResolvers.getResolver(OSGiExtension.SUBSYSTEM_NAME);
     public static final SimpleAttributeDefinition ACTIVATION = new SimpleAttributeDefinitionBuilder(ModelConstants.ACTIVATION, ModelType.STRING, false)
             .setDefaultValue(new ModelNode(SubsystemState.DEFAULT_ACTIVATION.toString()))
             .setValidator(new EnumValidator<Activation>(Activation.class, false, false))
+            .setAllowExpression(true)
             .addFlag(Flag.RESTART_JVM)
             .build();
     public static final SimpleAttributeDefinition STARTLEVEL = new SimpleAttributeDefinitionBuilder(ModelConstants.STARTLEVEL, ModelType.INT, true)
@@ -65,7 +68,7 @@ public class OSGiRootResource extends SimpleResourceDefinition {
     final boolean registerRuntimeOnly;
 
     OSGiRootResource(final boolean registerRuntimeOnly) {
-        super(PathElement.pathElement(SUBSYSTEM, OSGiExtension.SUBSYSTEM_NAME), RESOLVER,
+        super(SUBSYSTEM_PATH, RESOLVER,
                 OSGiSubsystemAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
         this.registerRuntimeOnly = registerRuntimeOnly;
     }
