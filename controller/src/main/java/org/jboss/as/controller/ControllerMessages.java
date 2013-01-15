@@ -2579,50 +2579,44 @@ public interface ControllerMessages {
     @Message(id = 14884, value = "No operation named '%s' exists at address %s")
     String noHandlerForOperation(String operationName, PathAddress address);
 
-    @Message(id = 14885, value = "Transforming resource %s for host controller '%s' to core model version '%s' -- attributes %s do not support expressions in that model version and this resource will need to be ignored on that host.")
-    OperationFailedException rejectExpressionCoreModelResourceTransformerFoundExpressions(PathAddress pathAddress, String legacyHostName, ModelVersion modelVersion, Set<String> attributeNames);
+    @Message(id = 14885, value = "do not support expressions in that model version and this resource will need to be ignored on that host.")
+    String attributesDontSupportExpressions();
 
-    @Message(id = 14886, value = "Transforming operation %s at resource %s for host controller '%s' to core model version '%s' -- attributes %s do not support expressions in that model version and this resource will need to be ignored on that host.")
-    OperationFailedException rejectExpressionCoreModelOperationTransformerFoundExpressions(ModelNode op, PathAddress pathAddress, String legacyHostName, ModelVersion modelVersion, Set<String> attributeNames);
+    @Message(id = 14886, value = "are not understood in that model version and this resource will need to be ignored on that host.")
+    String attributesAreNotUnderstoodAndWillBeIgnored();
 
-    @Message(id = 14887, value = "Transforming resource %s for host controller '%s' to subsystem '%s' model version '%s' -- attributes %s do not support expressions in that model version and this resource will need to be ignored on that host.")
-    OperationFailedException rejectExpressionSubsystemModelResourceTransformerFoundExpressions(PathAddress pathAddress, String legacyHostName, String subsystem, ModelVersion modelVersion, Set<String> attributeNames);
+    @Message(id = 14887, value = "Transforming resource %s for host controller '%s' to core model version '%s' -- attributes %s %s")
+    String newAttributesCoreModelResourceTransformerFoundDefinedAttributes(PathAddress pathAddress, String legacyHostName, ModelVersion modelVersion, Set<String> attributeNames, String message);
 
-    @Message(id = 14888, value = "Transforming operation %s at resource %s for host controller '%s' to subsystem '%s' model version '%s' -- attributes %s do not support expressions in that model version and this resource will need to be ignored on that host.")
-    OperationFailedException rejectExpressionSubsystemModelOperationTransformerFoundExpressions(ModelNode op, PathAddress pathAddress, String legacyHostName, String subsystem, ModelVersion modelVersion, Set<String> attributeNames);
+    @Message(id = 14888, value = "Transforming operation %s at resource %s for host controller '%s' to core model version '%s' -- attributes %s %s")
+    String newAttributesCoreModelOperationTransformerFoundDefinedAttributes(ModelNode op, PathAddress pathAddress, String legacyHostName, ModelVersion modelVersion, Set<String> attributeNames, String message);
 
-    @Message(id = 14889, value = "Transforming resource %s for host controller '%s' to core model version '%s' -- attributes %s are not understood in that model version and this resource will need to be ignored on that host.")
-    OperationFailedException newAttributesCoreModelResourceTransformerFoundDefinedAttributes(PathAddress pathAddress, String legacyHostName, ModelVersion modelVersion, Set<String> attributeNames);
+    @Message(id = 14889, value = "Transforming resource %s for host controller '%s' to subsystem '%s' model version '%s' -- attributes %s %s")
+    String newAttributesSubsystemModelResourceTransformerFoundDefinedAttributes(PathAddress pathAddress, String legacyHostName, String subsystem, ModelVersion modelVersion, Set<String> attributeNames, String message);
 
-    @Message(id = 14890, value = "Transforming operation %s at resource %s for host controller '%s' to core model version '%s' -- attributes %s are not understood in that model version and this resource will need to be ignored on that host.")
-    OperationFailedException newAttributesCoreModelOperationTransformerFoundDefinedAttributes(ModelNode op, PathAddress pathAddress, String legacyHostName, ModelVersion modelVersion, Set<String> attributeNames);
+    @Message(id = 14890, value = "Transforming operation %s at resource %s for host controller '%s' to subsystem '%s' model version '%s' -- attributes %s %s")
+    String newAttributesSubsystemModelOperationTransformerFoundDefinedAttributes(ModelNode op, PathAddress pathAddress, String legacyHostName, String subsystem, ModelVersion modelVersion, Set<String> attributeNames, String message);
 
-    @Message(id = 14891, value = "Transforming resource %s for host controller '%s' to subsystem '%s' model version '%s' -- attributes %s are not understood in that model version and this resource will need to be ignored on that host.")
-    OperationFailedException newAttributesSubsystemModelResourceTransformerFoundDefinedAttributes(PathAddress pathAddress, String legacyHostName, String subsystem, ModelVersion modelVersion, Set<String> attributeNames);
-
-    @Message(id = 14892, value = "Transforming operation %s at resource %s for host controller '%s' to subsystem '%s' model version '%s' -- attributes %s are not understood in that model version and this resource will need to be ignored on that host.")
-    OperationFailedException newAttributesSubsystemModelOperationTransformerFoundDefinedAttributes(ModelNode op, PathAddress pathAddress, String legacyHostName, String subsystem, ModelVersion modelVersion, Set<String> attributeNames);
-
-    @Message(id = 14893, value="Node contains an unresolved expression %s -- a resolved model is required")
+    @Message(id = 14891, value="Node contains an unresolved expression %s -- a resolved model is required")
     OperationFailedException illegalUnresolvedModel(String expression);
 
     //The 'details' attribute needs to list the rejected attributes and what was wrong with them, an example is message id 14898
-    @Message(id = 14894, value = "Transforming resource %s for host controller '%s' to core model version '%s' -- there were problems with some of the attributes and this resource will need to be ignored on that host. Details of the problems: %s")
+    @Message(id = 14892, value = "Transforming resource %s for host controller '%s' to core model version '%s' -- there were problems with some of the attributes and this resource will need to be ignored on that host. Details of the problems: %s")
     OperationFailedException rejectAttributesCoreModelResourceTransformer(PathAddress pathAddress, String legacyHostName, ModelVersion modelVersion, List<String> details);
 
     //The 'details' attribute needs to list the rejected attributes and what was wrong with them, an example is message id 14898
-    @Message(id = 14895, value = "Transforming operation %s at resource %s for host controller '%s' to core model version '%s' -- there were problems with some of the attributes and this resource will need to be ignored on that host. Details of the problems: %s")
+    @Message(id = 14893, value = "Transforming operation %s at resource %s for host controller '%s' to core model version '%s' -- there were problems with some of the attributes and this resource will need to be ignored on that host. Details of the problems: %s")
     String rejectAttributesCoreModelOperationTransformer(ModelNode op, PathAddress pathAddress, String legacyHostName, ModelVersion modelVersion, List<String> details);
 
     //The 'details' attribute needs to list the rejected attributes and what was wrong with them, an example is message id 14898
-    @Message(id = 14896, value = "Transforming resource %s for host controller '%s' to subsystem '%s' model version '%s' --there were problems with some of the attributes and this resource will need to be ignored on that host. Details of problems: %s")
+    @Message(id = 14894, value = "Transforming resource %s for host controller '%s' to subsystem '%s' model version '%s' --there were problems with some of the attributes and this resource will need to be ignored on that host. Details of problems: %s")
     OperationFailedException rejectAttributesSubsystemModelResourceTransformer(PathAddress pathAddress, String legacyHostName, String subsystem, ModelVersion modelVersion, List<String> details);
 
     //The 'details' attribute needs to list the rejected attributes and what was wrong with them, an example is message id 14898
-    @Message(id = 14897, value = "Transforming operation %s at resource %s for host controller '%s' to subsystem '%s' model version '%s' -- there were problems with some of the attributes and this resource will need to be ignored on that host. Details of problems: %s")
+    @Message(id = 14895, value = "Transforming operation %s at resource %s for host controller '%s' to subsystem '%s' model version '%s' -- there were problems with some of the attributes and this resource will need to be ignored on that host. Details of problems: %s")
     String rejectAttributesSubsystemModelOperationTransformer(ModelNode op, PathAddress pathAddress, String legacyHostName, String subsystem, ModelVersion modelVersion, List<String> attributeNames);
 
     //Detail message for MESSAGES 14894-14897, and TRANSFORMER_LOGGER 13405 and 13406
-    @Message(id = 14898, value = "The following attributes do not support expressions: %s")
+    @Message(id = 14896, value = "The following attributes do not support expressions: %s")
     String attributesDoNotSupportExpressions(Set<String> attributeNames);
 }

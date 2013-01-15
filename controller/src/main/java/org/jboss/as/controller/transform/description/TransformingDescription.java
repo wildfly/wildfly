@@ -176,6 +176,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
             description.rejectAttributes(rejectedAttributes, attributeValue);
             final OperationRejectionPolicy policy;
             if(rejectedAttributes.hasRejections()) {
+
                 rejectedAttributes.errorOrWarn();
                 policy = new OperationRejectionPolicy() {
                     @Override

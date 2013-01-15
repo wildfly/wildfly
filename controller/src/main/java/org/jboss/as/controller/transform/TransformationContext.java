@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.transform;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessType;
@@ -102,5 +103,9 @@ public interface TransformationContext {
      */
     @Deprecated
     ModelNode resolveExpressions(ModelNode node) throws OperationFailedException;
+
+    TransformersLogger getLogger();
+
+    boolean doesTargetSupportIgnoredResources(TransformationTarget target);
 
 }

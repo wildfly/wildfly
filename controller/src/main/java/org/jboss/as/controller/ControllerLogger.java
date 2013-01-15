@@ -29,7 +29,6 @@ import java.io.Closeable;
 import java.net.InetAddress;
 import java.util.List;
 import java.util.Set;
-
 import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.dmr.ModelNode;
@@ -227,7 +226,6 @@ public interface ControllerLogger extends BasicLogger {
      *
      * @param stepOpName the step operation name.
      * @param address    the address
-     *
      * @deprecated use {@link #noSuchResourceType(PathAddress)} or {@link #noHandlerForOperation(String, PathAddress)}
      */
     @Deprecated
@@ -332,9 +330,9 @@ public interface ControllerLogger extends BasicLogger {
      * Logs a warning message indicating graceful shutdown of management request handling of slave HC to master HC
      * communication failed.
      *
-     * @param cause the the cause of the failure
+     * @param cause        the the cause of the failure
      * @param propertyName the name of the system property
-     * @param propValue the value provided
+     * @param propValue    the value provided
      */
     @LogMessage(level = Logger.Level.WARN)
     @Message(id = 14620, value = "Invalid value '%s' for system property '%s' -- value must be convertible into an int")
@@ -344,10 +342,10 @@ public interface ControllerLogger extends BasicLogger {
      * Logs a warning message indicating multiple addresses or nics matched the selection criteria provided for
      * an interface
      *
-     * @param interfaceName the name of the interface configuration
-     * @param addresses the matching addresses
-     * @param nis the matching nics
-     * @param inetAddress the selected address
+     * @param interfaceName    the name of the interface configuration
+     * @param addresses        the matching addresses
+     * @param nis              the matching nics
+     * @param inetAddress      the selected address
      * @param networkInterface the selected nic
      */
     @LogMessage(level = Logger.Level.WARN)
@@ -358,9 +356,9 @@ public interface ControllerLogger extends BasicLogger {
      * Logs a warning message indicating multiple addresses or nics matched the selection criteria provided for
      * an interface
      *
-     * @param toMatch the name of the interface configuration
+     * @param toMatch   the name of the interface configuration
      * @param addresses the matching addresses
-     * @param nis the matching nics
+     * @param nis       the matching nics
      */
     @LogMessage(level = Logger.Level.WARN)
     @Message(id = 14622, value = "Value '%s' for interface selection criteria 'inet-address' is ambiguous, as more than one address or network interface available on the machine matches it. Because of this ambiguity, no address will be selected as a match. Matching addresses: %s.  Matching network interfaces: %s.")
@@ -419,7 +417,7 @@ public interface ControllerLogger extends BasicLogger {
      * Logs an error message indicating the given {@code address} does not match any known
      * resource registration.
      *
-     * @param address    the address.
+     * @param address the address.
      */
     @LogMessage(level = ERROR)
     @Message(id = 14629, value = "No resource definition is registered for address %s")
@@ -432,27 +430,15 @@ public interface ControllerLogger extends BasicLogger {
      * parameter, at {@code address}.
      *
      * @param operationName the operation name.
-     * @param address    the address.
+     * @param address       the address.
      */
     @LogMessage(level = ERROR)
     @Message(id = 13400, value = "No operation named '%s' exists at address %s")
     void noHandlerForOperation(String operationName, PathAddress address);
 
+    @Message(id = 13403, value = "There ware some problems during transformation process for target host: '%s' \n Problems found: %s")
     @LogMessage(level = WARN)
-    @Message(id = 13401, value = "Transforming resource %s for host controller '%s' to core model version '%s' -- attributes %s do not support expressions in that model version and this resource will need to be ignored on that host.")
-    void rejectExpressionCoreModelResourceTransformerFoundExpressions(PathAddress pathAddress, String legacyHostName, ModelVersion modelVersion, Set<String> attributeNames);
-
-    @LogMessage(level = WARN)
-    @Message(id = 13402, value = "Transforming resource %s for host controller '%s' to subsystem '%s' model version '%s' -- attributes %s do not support expressions in that model version and this resource will need to be ignored on that host.")
-    void rejectExpressionSubsystemModelResourceTransformerFoundExpressions(PathAddress pathAddress, String legacyHostName, String subsystem, ModelVersion modelVersion, Set<String> attributeNames);
-
-    @LogMessage(level = WARN)
-    @Message(id = 13403, value = "Transforming resource %s for host controller '%s' to core model version '%s' -- attributes %s are not understood in that model version and this resource will need to be ignored on that host.")
-    void newAttributesCoreModelResourceTransformerFoundDefinedAttributes(PathAddress pathAddress, String legacyHostName, ModelVersion modelVersion, Set<String> attributeNames);
-
-    @LogMessage(level = WARN)
-    @Message(id = 13404, value = "Transforming resource %s for host controller '%s' to subsystem '%s' model version '%s' -- attributes %s are not understood in that model version and this resource will need to be ignored on that host.")
-    void newAttributesSubsystemModelResourceTransformerFoundDefinedAttributes(PathAddress pathAddress, String legacyHostName, String subsystem, ModelVersion modelVersion, Set<String> attributeNames);
+    void tranformationWarnings(String hostName, Set<String> problems);
 
     //The 'details' attribute needs to list the rejected attributes and what was wrong with them, an example is message id 14898
     @LogMessage(level = WARN)
@@ -460,8 +446,9 @@ public interface ControllerLogger extends BasicLogger {
     void rejectAttributesSubsystemModelResourceTransformer(PathAddress address, String legacyHostName, String subsystemName, ModelVersion usedVersion, List<String> details);
 
     //The 'details' attribute needs to list the rejected attributes and what was wrong with them, an example is message id 14898
-    @LogMessage(level = WARN)
     @Message(id = 13406, value = "Transforming resource %s for host controller '%s' to core model version '%s' -- there were problems with some of the attributes and this resource will need to be ignored on that host. Details of the problems: %s")
+    @LogMessage(level = WARN)
     void rejectAttributesCoreModelResourceTransformer(PathAddress address, String legacyHostName, ModelVersion usedVersion, List<String> details);
+
 
 }
