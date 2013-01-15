@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.component.entity.entitycache;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -34,6 +36,7 @@ import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 
 /**
  * @author John Bailey
+ * @author <a href="wfink@redhat.com">Wolf-Dieter Fink</a>
  */
 public class ReferenceCountingEntityCache implements ReadyEntityCache {
     private final ConcurrentMap<Object, CacheEntry> cache = new ConcurrentHashMap<Object, CacheEntry>();
@@ -60,6 +63,14 @@ public class ReferenceCountingEntityCache implements ReadyEntityCache {
             }
         }
         return cacheEntry;
+    }
+
+    public synchronized boolean isCached(final Object key) {
+        if(cache.containsKey(key)) {
+            final CacheEntry cacheEntry = cache.get(key);
+            return !cacheEntry.instance.isRemoved();
+        }
+        return false;
     }
 
     public synchronized EntityBeanComponentInstance get(final Object key) throws NoSuchEntityException {

@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.component.entity.entitycache;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,10 +42,9 @@ import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
  * Cache of entity bean component instances by transaction key
  *
  * @author Stuart Douglas
+ * @author <a href="wfink@redhat.com">Wolf-Dieter Fink</a>
  */
 public class TransactionLocalEntityCache implements ReadyEntityCache {
-
-
     private final TransactionSynchronizationRegistry transactionSynchronizationRegistry;
     private final ConcurrentMap<Object, Map<Object, CacheEntry>> cache = new ConcurrentHashMap<Object, Map<Object, CacheEntry>>(Runtime.getRuntime().availableProcessors());
     private final EntityBeanComponent component;
@@ -51,6 +52,15 @@ public class TransactionLocalEntityCache implements ReadyEntityCache {
     public TransactionLocalEntityCache(final EntityBeanComponent component) {
         this.component = component;
         this.transactionSynchronizationRegistry = component.getTransactionSynchronizationRegistry();
+    }
+
+    @Override
+    public synchronized boolean isCached(final Object key) {
+        if (!isTransactionActive() || !cache.containsKey(key)) {
+            return false;
+        }
+        final Map<Object, CacheEntry> cache = prepareCache();
+        return cache.containsKey(key);
     }
 
     @Override

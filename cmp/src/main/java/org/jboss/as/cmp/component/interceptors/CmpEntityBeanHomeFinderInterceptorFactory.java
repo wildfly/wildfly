@@ -22,11 +22,15 @@
 
 package org.jboss.as.cmp.component.interceptors;
 
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
+
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
+
 import javax.ejb.ObjectNotFoundException;
+
 import org.jboss.as.cmp.component.CmpEntityBeanComponent;
 import org.jboss.as.cmp.component.CmpEntityBeanComponentInstance;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
@@ -34,6 +38,7 @@ import org.jboss.as.cmp.jdbc.JDBCEntityPersistenceStore;
 import org.jboss.as.cmp.jdbc.JDBCQueryCommand;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
+import org.jboss.as.ejb3.component.entity.entitycache.ReadyEntityCache;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanHomeFinderInterceptorFactory;
 import org.jboss.invocation.InterceptorContext;
 
@@ -65,7 +70,18 @@ public class CmpEntityBeanHomeFinderInterceptorFactory extends EntityBeanHomeFin
         final CmpEntityBeanContext entityContext = cmpInstance.getEjbContext();
 
         // as per the spec 9.6.4, entities must be synchronized with the datastore when an ejbFind<METHOD> is called.
-        if (!store.getCmpConfig().isSyncOnCommitOnly()) {
+        if (finderMethod.getName().equals("findByPrimaryKey")) {
+            if(finderMethod.getParameterTypes() == null) {
+                throw MESSAGES.nullArgumentForFindByPrimaryKey();
+            }
+            if(finderMethod.getParameterTypes().length != 1) {
+                throw MESSAGES.illegalNumberOfArgumentsForFindByPrimaryKey(finderMethod.getParameterTypes().length);
+            }
+            final ReadyEntityCache cache = cmpComponent.getCache();
+            if(cache.isCached(context.getParameters()[0])) {
+                return this.localHome ? cmpComponent.getEJBLocalObject(context.getParameters()[0]) : cmpComponent.getEJBObject(context.getParameters()[0]);
+            }
+        }else if(!store.getCmpConfig().isSyncOnCommitOnly()) {
             cmpComponent.synchronizeEntitiesWithinTransaction(entityContext.getTransaction());
         }
 

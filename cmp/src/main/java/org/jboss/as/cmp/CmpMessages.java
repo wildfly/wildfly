@@ -30,6 +30,7 @@ import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+
 import javax.ejb.CreateException;
 import javax.ejb.DuplicateKeyException;
 import javax.ejb.EJBException;
@@ -1227,6 +1228,9 @@ public interface CmpMessages {
 
     @Message(id = 18895, value = "Instance was already removed: id=%s")
     NoSuchObjectLocalException instanceAlreadyRemovedLocal(Object pk);
+
+    @Message(id = 18896, value = "findByPrimaryKey called with an illegal number (%d) of arguments!")
+    IllegalArgumentException illegalNumberOfArgumentsForFindByPrimaryKey(int noOfArguments);
 
     /*
     * Note id's 18910 and higher are availble for use. 18900-18910 are used for id's that were duplicates for id's in
