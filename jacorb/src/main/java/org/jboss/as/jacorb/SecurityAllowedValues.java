@@ -29,13 +29,17 @@ package org.jboss.as.jacorb;
  *
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
-enum AllowedValues {
+enum SecurityAllowedValues {
 
-    ON("on"), OFF("off"), SPEC("spec");
+    IDENTITY("identity"),
+    //legacy alias for 'identity'
+    ON("on"),
+    OFF("off"),
+    CLIENT("client");
 
     private String name;
 
-    AllowedValues(String name) {
+    SecurityAllowedValues(String name) {
         this.name = name;
     }
     @Override

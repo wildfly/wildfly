@@ -39,8 +39,9 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
-import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.controller.transform.chained.ChainedOperationTransformer;
+import org.jboss.as.controller.transform.chained.ChainedResourceTransformer;
 
 /**
  * <p>
@@ -84,6 +85,7 @@ public class JacORBExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, JacORBSubsystemParser.Namespace.JacORB_1_0.getUriString(), PARSER);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, JacORBSubsystemParser.Namespace.JacORB_1_1.getUriString(), PARSER);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, JacORBSubsystemParser.Namespace.JacORB_1_2.getUriString(), PARSER);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, JacORBSubsystemParser.Namespace.JacORB_1_3.getUriString(), PARSER);
     }
 
     /**
@@ -93,17 +95,17 @@ public class JacORBExtension implements Extension {
      */
     protected static void registerTransformers(final SubsystemRegistration subsystem) {
         final ModelVersion version110 = ModelVersion.create(1, 1, 0);
-        final ResourceTransformer resourceTransformer = ResourceTransformer.DEFAULT;
         final Set<String> expressionKeys = new HashSet<String>();
         for(final AttributeDefinition def : JacORBSubsystemDefinitions.ATTRIBUTES_BY_NAME.values()) {
             if(def.isAllowExpression()) {
                 expressionKeys.add(def.getName());
             }
         }
-        final RejectExpressionValuesTransformer operationTransformer = new RejectExpressionValuesTransformer(expressionKeys);
-        final TransformersSubRegistration registration = subsystem.registerModelTransformers(version110, resourceTransformer);
-        registration.registerOperationTransformer(ADD, operationTransformer);
-        registration.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, operationTransformer.getWriteAttributeTransformer());
+        final RejectExpressionValuesTransformer rejectTransformer = new RejectExpressionValuesTransformer(expressionKeys);
+
+        final TransformersSubRegistration registration = subsystem.registerModelTransformers(version110, new ChainedResourceTransformer(rejectTransformer.getChainedTransformer(), SecurityInterceptorTransformer.INSTANCE));
+        registration.registerOperationTransformer(ADD, new ChainedOperationTransformer(rejectTransformer, SecurityInterceptorTransformer.INSTANCE));
+        registration.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, new ChainedOperationTransformer(rejectTransformer.getWriteAttributeTransformer(), SecurityInterceptorTransformer.INSTANCE));
     }
 
 }

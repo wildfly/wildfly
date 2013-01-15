@@ -34,6 +34,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.jboss.as.jacorb.JacORBSubsystemConstants.SECURITY;
 
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -88,7 +89,8 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
                 break;
             }
             case JacORB_1_1:
-            case JacORB_1_2: {
+            case JacORB_1_2:
+            case JacORB_1_3: {
                 this.readElement(readerNS, reader, subsystem);
                 break;
             }
@@ -275,7 +277,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
                 Attribute.ORB_GIOP_MINOR_VERSION, Attribute.ORB_USE_BOM, Attribute.ORB_USE_IMR,
                 Attribute.ORB_CACHE_POA_NAMES, Attribute.ORB_CACHE_TYPECODES);
         // version 1.2 of the schema allows for the configuration of the ORB socket bindings.
-        if (namespace == Namespace.JacORB_1_2) {
+        if (namespace.ordinal() >= Namespace.JacORB_1_2.ordinal()) {
             expectedAttributes.add(Attribute.ORB_SOCKET_BINDING);
             expectedAttributes.add(Attribute.ORB_SSL_SOCKET_BINDING);
         }
@@ -375,6 +377,11 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
         this.parseAttributes(reader, node, attributes, null);
         // the initializers element doesn't have child elements.
         requireNoContent(reader);
+
+        //if security="on" change it to security="identity"
+        if(node.has(SECURITY) && node.get(SECURITY).asString().equals(SecurityAllowedValues.ON.toString())) {
+            node.get(SECURITY).set(SecurityAllowedValues.IDENTITY.toString());
+        }
     }
 
     /**
@@ -847,7 +854,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
     private void writeSecurityConfig(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
         boolean writeSecurity = this.isWritable(node, JacORBSubsystemDefinitions.SECURITY_ATTRIBUTES);
         if (writeSecurity) {
-            writer.writeEmptyElement(JacORBSubsystemConstants.SECURITY);
+            writer.writeEmptyElement(SECURITY);
             this.writeAttributes(writer, node, JacORBSubsystemDefinitions.SECURITY_ATTRIBUTES);
         }
     }
@@ -923,9 +930,10 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
         UNKNOWN(null),
         JacORB_1_0("urn:jboss:domain:jacorb:1.0"),
         JacORB_1_1("urn:jboss:domain:jacorb:1.1"),
-        JacORB_1_2("urn:jboss:domain:jacorb:1.2");
+        JacORB_1_2("urn:jboss:domain:jacorb:1.2"),
+        JacORB_1_3("urn:jboss:domain:jacorb:1.3");
 
-        static final Namespace CURRENT = JacORB_1_2;
+        static final Namespace CURRENT = JacORB_1_3;
 
         private final String namespaceURI;
 

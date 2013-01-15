@@ -55,8 +55,8 @@ class JacORBSubsystemDefinitions {
     private static final ParameterValidator SSL_CONFIG_VALIDATOR =
             new EnumValidator<SSLConfigValue>(SSLConfigValue.class, true, false);
 
-    private static final ParameterValidator ON_OFF_VALIDATOR = new EnumValidator<AllowedValues>(
-            AllowedValues.class, true, false, AllowedValues.ON, AllowedValues.OFF);
+    private static final ParameterValidator ON_OFF_VALIDATOR = new EnumValidator<TransactionsAllowedValues>(
+            TransactionsAllowedValues.class, true, false, TransactionsAllowedValues.ON, TransactionsAllowedValues.OFF);
 
     // orb attribute definitions.
     public static final SimpleAttributeDefinition ORB_NAME = new SimpleAttributeDefinitionBuilder(
@@ -195,7 +195,7 @@ class JacORBSubsystemDefinitions {
     public static final SimpleAttributeDefinition ORB_INIT_SECURITY = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.ORB_INIT_SECURITY, ModelType.STRING, true)
             .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
-            .setValidator(ON_OFF_VALIDATOR)
+            .setValidator(new EnumValidator<SecurityAllowedValues>(SecurityAllowedValues.class, true, false))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .build();
@@ -203,7 +203,7 @@ class JacORBSubsystemDefinitions {
     public static final SimpleAttributeDefinition ORB_INIT_TX = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.ORB_INIT_TRANSACTIONS, ModelType.STRING, true)
             .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
-            .setValidator(new EnumValidator<AllowedValues>(AllowedValues.class, true, false))
+            .setValidator(new EnumValidator<TransactionsAllowedValues>(TransactionsAllowedValues.class, true, false))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .build();
