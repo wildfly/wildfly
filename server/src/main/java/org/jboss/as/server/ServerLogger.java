@@ -200,11 +200,11 @@ public interface ServerLogger extends BasicLogger {
     void cannotAddURLStreamHandlerFactory(@Cause Exception cause, String moduleID);
 
     @LogMessage(level = INFO)
-    @Message(id = 15874, value = "%s started in %dms - Started %d of %d services (%d services are passive or on-demand)")
+    @Message(id = 15874, value = "%s started in %dms - Started %d of %d services (%d services are lazy, passive or on-demand)")
     void startedClean(String prettyVersionString, long time, int startedServices, int allServices, int passiveOnDemandServices);
 
     @LogMessage(level = ERROR)
-    @Message(id = 15875, value = "%s started (with errors) in %dms - Started %d of %d services (%d services failed or missing dependencies, %d services are passive or on-demand)")
+    @Message(id = 15875, value = "%s started (with errors) in %dms - Started %d of %d services (%d services failed or missing dependencies, %d services are lazy, passive or on-demand)")
     void startedWitErrors(String prettyVersionString, long time, int startedServices, int allServices, int problemServices, int passiveOnDemandServices);
 
     @LogMessage(level = INFO)
