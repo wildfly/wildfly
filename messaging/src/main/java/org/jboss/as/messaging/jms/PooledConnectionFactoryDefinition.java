@@ -23,6 +23,7 @@
 package org.jboss.as.messaging.jms;
 
 import static java.lang.System.arraycopy;
+import static org.jboss.as.messaging.CommonAttributes.CALL_FAILOVER_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.CALL_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.CLIENT_ID;
 import static org.jboss.as.messaging.CommonAttributes.HA;
@@ -92,6 +93,7 @@ public class PooledConnectionFactoryDefinition extends SimpleResourceDefinition 
 
     public static final PathElement PATH = PathElement.pathElement(CommonAttributes.POOLED_CONNECTION_FACTORY);
 
+
     // the generation of the Pooled CF attributes is a bit ugly but it is with purpose:
     // * factorize the attributes which are common between the regular CF and the pooled CF
     // * keep in a single place the subtle differences (e.g. different default values for reconnect-attempts between
@@ -114,7 +116,15 @@ public class PooledConnectionFactoryDefinition extends SimpleResourceDefinition 
 
     public static final ConnectionFactoryAttribute[] ATTRIBUTES = define(Pooled.ATTRIBUTES, Common.ATTRIBUTES);
 
-    public static final AttributeDefinition[] REJECTED_EXPRESSION_ATTRIBUTES = { CALL_TIMEOUT,
+    // attributes added to the pooled cf resources *after* 1.1.0
+    public static final AttributeDefinition[] NEW_ATTRIBUTES_ADDED_AFTER_1_1_0 = new AttributeDefinition[]{INITIAL_CONNECT_ATTEMPTS,
+            INITIAL_MESSAGE_PACKET_SIZE,
+            COMPRESS_LARGE_MESSAGES,
+            USE_AUTO_RECOVERY,
+            CALL_FAILOVER_TIMEOUT};
+
+    // attributes with expression supported added *after* 1.1.0
+    public static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0 = { CALL_TIMEOUT,
             AUTO_GROUP, BLOCK_ON_ACKNOWLEDGE, BLOCK_ON_DURABLE_SEND, BLOCK_ON_NON_DURABLE_SEND, CACHE_LARGE_MESSAGE_CLIENT, CLIENT_FAILURE_CHECK_PERIOD, CLIENT_ID,
             CONFIRMATION_WINDOW_SIZE, CONNECTION_LOAD_BALANCING_CLASS_NAME, CONNECTION_TTL, CONSUMER_MAX_RATE,
             CONSUMER_WINDOW_SIZE, DUPS_OK_BATCH_SIZE, FAILOVER_ON_INITIAL_CONNECTION, GROUP_ID, HA, MAX_RETRY_INTERVAL, MIN_LARGE_MESSAGE_SIZE, PRE_ACKNOWLEDGE,

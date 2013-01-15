@@ -195,6 +195,7 @@
                     <connection-ttl>${connection.ttl:1234}</connection-ttl>
                     <min-large-message-size>${min.large.message.size:10245}</min-large-message-size>
                     <call-timeout>${call.timeout:3456}</call-timeout>
+                    <call-failover-timeout>${call.failover.timeout:7890}</call-failover-timeout>
                     <retry-interval>${retry.interval:987}</retry-interval>
                     <retry-interval-multiplier>${retry.interval.multiplier:3.0}</retry-interval-multiplier>
                     <max-retry-interval>${max.retry.interval:3600}</max-retry-interval>
@@ -308,6 +309,7 @@
                  <confirmation-window-size>${confirmation.window.size:-1}</confirmation-window-size>
 			     <producer-window-size>${producer.window.size:-1}</producer-window-size>
 			     <producer-max-rate>${producer.max.rate:1024}</producer-max-rate>
+			     <compress-large-messages>${compress.large.messages:true}</compress-large-messages>
 			     <cache-large-message-client>${cache.large.message.client:false}</cache-large-message-client>
 			     <min-large-message-size>${min.large.message.size:2048}</min-large-message-size>
 			     <client-id>${client.id:myClientID}</client-id>
@@ -335,6 +337,8 @@
                  <password>${password:alicepassword}</password>
                  <min-pool-size>${min.pool.size:42}</min-pool-size>
                  <max-pool-size>${max.pool.size:242}</max-pool-size>
+                 <initial-message-packet-size>${initial.message.packet.size:9876}</initial-message-packet-size>
+                 <initial-connect-attempts>${initial.connect.attempts:5432}</initial-connect-attempts>
                  <connectors>
                     <connector-ref connector-name="in-vm"/>
                  </connectors>
@@ -351,6 +355,7 @@
                  <confirmation-window-size>${confirmation.window.size:-1}</confirmation-window-size>
 			     <producer-window-size>${producer.window.size:-1}</producer-window-size>
 			     <producer-max-rate>${producer.max.rate:1024}</producer-max-rate>
+			     <compress-large-messages>${compress.large.messages:true}</compress-large-messages>
 			     <cache-large-message-client>${cache.large.message.client:false}</cache-large-message-client>
 			     <min-large-message-size>${min.large.message.size:2048}</min-large-message-size>
 			     <client-id>${client.id:myClientID}</client-id>
@@ -376,7 +381,7 @@
                  <transaction mode="local"/>
                  <user>alice</user>
                  <password>alicepassword</password>
-                 <use-auto-recovery>true</use-auto-recovery>
+                 <use-auto-recovery>${use.auto.recovery:true}</use-auto-recovery>
                  <connectors>
                     <connector-ref connector-name="in-vm"/>
                  </connectors>

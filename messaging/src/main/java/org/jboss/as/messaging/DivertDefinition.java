@@ -72,7 +72,7 @@ public class DivertDefinition extends SimpleResourceDefinition {
     public static final AttributeDefinition[] ATTRIBUTES = { ROUTING_NAME, ADDRESS, FORWARDING_ADDRESS, CommonAttributes.FILTER,
         CommonAttributes.TRANSFORMER_CLASS_NAME, EXCLUSIVE };
 
-    public static final AttributeDefinition[] REJECTED_EXPRESSION_ATTRIBUTES = { ROUTING_NAME, ADDRESS, FORWARDING_ADDRESS, CommonAttributes.FILTER,
+    public static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0 = { ROUTING_NAME, ADDRESS, FORWARDING_ADDRESS, CommonAttributes.FILTER,
             CommonAttributes.TRANSFORMER_CLASS_NAME, EXCLUSIVE };
 
     private final boolean registerRuntimeOnly;

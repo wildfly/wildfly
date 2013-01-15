@@ -50,7 +50,7 @@ public class JMSQueueDefinition extends SimpleResourceDefinition {
 
     public static final AttributeDefinition[] ATTRIBUTES = { CommonAttributes.DESTINATION_ENTRIES, CommonAttributes.SELECTOR, CommonAttributes.DURABLE };
 
-    public static final AttributeDefinition[] REJECTED_EXPRESSION_ATTRIBUTES = { CommonAttributes.SELECTOR, CommonAttributes.DURABLE};
+    public static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0 = { CommonAttributes.SELECTOR, CommonAttributes.DURABLE};
 
     /**
      * Attributes for deployed JMS queue are stored in runtime

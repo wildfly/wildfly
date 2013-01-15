@@ -30,6 +30,7 @@ import static org.hornetq.api.config.HornetQDefaultConfiguration.DEFAULT_CLUSTER
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.STORAGE_RUNTIME;
+import static org.jboss.as.messaging.CommonAttributes.CALL_FAILOVER_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR_REF_STRING;
 import static org.jboss.as.messaging.CommonAttributes.STATIC_CONNECTORS;
 import static org.jboss.dmr.ModelType.BIG_DECIMAL;
@@ -193,12 +194,16 @@ public class ClusterConnectionDefinition extends SimpleResourceDefinition {
             DISCOVERY_GROUP_NAME,
     };
 
-    public static final AttributeDefinition[] REJECTED_EXPRESSION_ATTRIBUTES = {
+    public static final AttributeDefinition[] NEW_ATTRIBUTES_ADDED_AFTER_1_1_0 = {
+            CALL_FAILOVER_TIMEOUT
+    };
+
+    public static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0 = {
             ADDRESS,
             ALLOW_DIRECT_CONNECTIONS_ONLY, CHECK_PERIOD, CONNECTION_TTL, FORWARD_WHEN_NO_CONSUMERS, MAX_HOPS,
             MAX_RETRY_INTERVAL,
             CommonAttributes.MIN_LARGE_MESSAGE_SIZE, RETRY_INTERVAL, RETRY_INTERVAL_MULTIPLIER,
-            USE_DUPLICATE_DETECTION, CommonAttributes.CALL_TIMEOUT, CommonAttributes.CALL_FAILOVER_TIMEOUT,
+            USE_DUPLICATE_DETECTION, CommonAttributes.CALL_TIMEOUT,
             RECONNECT_ATTEMPTS, CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE
     };
 

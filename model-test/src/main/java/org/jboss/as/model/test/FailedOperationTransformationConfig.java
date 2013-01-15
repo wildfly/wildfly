@@ -377,7 +377,8 @@ public class FailedOperationTransformationConfig {
         @Override
         public ModelNode correctWriteAttributeOperation(ModelNode operation) {
             ModelNode op = operation.clone();
-            if (hasExpressions(op.get(NAME).asString(), op.get(VALUE))) {
+            String name = operation.get(NAME).asString();
+            if (attributes.contains(name) && hasExpressions(name, op.get(VALUE))) {
                 op.get(VALUE).set(op.get(VALUE).resolve());
                 return op;
             }
@@ -542,7 +543,8 @@ public class FailedOperationTransformationConfig {
 
         @Override
         public boolean expectFailedWriteAttributeOperation(ModelNode operation) {
-            return operation.hasDefined(VALUE);
+            String name = operation.require(NAME).asString();
+            return attributes.contains(name) && operation.hasDefined(VALUE);
         }
 
     }
