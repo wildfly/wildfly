@@ -35,12 +35,14 @@ import org.jboss.dmr.ModelType;
  */
 public class FrameworkPropertyResource extends SimpleResourceDefinition {
 
+    static final PathElement PROPERTY_PATH = PathElement.pathElement(ModelConstants.PROPERTY);
     static final SimpleAttributeDefinition VALUE = new SimpleAttributeDefinitionBuilder(ModelConstants.VALUE, ModelType.STRING)
             .addFlag(Flag.RESTART_NONE)
+            .setAllowExpression(true)
             .build();
 
     FrameworkPropertyResource() {
-        super(PathElement.pathElement(ModelConstants.PROPERTY), OSGiResolvers.getResolver("framework.property"),
+        super(PROPERTY_PATH, OSGiResolvers.getResolver("framework.property"),
                 OSGiFrameworkPropertyAdd.INSTANCE, OSGiFrameworkPropertyRemove.INSTANCE);
     }
 

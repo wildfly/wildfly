@@ -26,17 +26,20 @@ import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
-import org.jboss.as.controller.transform.ResourceTransformationContext;
+import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.controller.transform.chained.ChainedOperationTransformer;
+import org.jboss.as.controller.transform.chained.ChainedResourceTransformationContext;
+import org.jboss.as.controller.transform.chained.ChainedResourceTransformer;
+import org.jboss.as.controller.transform.chained.ChainedResourceTransformerEntry;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -51,7 +54,7 @@ public class OSGiExtension implements Extension {
     public static final String SUBSYSTEM_NAME = "osgi";
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 1;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     @Override
@@ -78,35 +81,51 @@ public class OSGiExtension implements Extension {
     }
 
     private void registerTransformers1_0_0(SubsystemRegistration subsystem) {
-        //There is no difference in the model between 1.1.0 and 1.0.0 but 1.0.0 does not like "start-level"=>undefined, so we remove this here.
-        ModelVersion version = ModelVersion.create(1, 0, 0);
-        TransformersSubRegistration subsystemTransformer = subsystem.registerModelTransformers(version, ResourceTransformer.DEFAULT);
-        TransformersSubRegistration capability = subsystemTransformer.registerSubResource(PathElement.pathElement(ModelConstants.CAPABILITY), new ResourceTransformer() {
-            @Override
-            public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource)
-                    throws OperationFailedException {
-                ModelNode model = resource.getModel();
-                removeUndefinedStartLevel(model);
-                ResourceTransformationContext childContext = context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
-                childContext.processChildren(resource);
 
-            }
-        });
-        capability.registerOperationTransformer(ModelDescriptionConstants.ADD, new OperationTransformer() {
+        // Root resource
+        RejectExpressionValuesTransformer rootReject = new RejectExpressionValuesTransformer(OSGiRootResource.ACTIVATION);
+        TransformersSubRegistration subsystemTransformer = subsystem.registerModelTransformers(ModelVersion.create(1, 0, 0), rootReject);
+        subsystemTransformer.registerOperationTransformer(ModelDescriptionConstants.ADD, rootReject);
+        subsystemTransformer.registerOperationTransformer(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, rootReject.getWriteAttributeTransformer());
 
-            @Override
-            public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation)
-                    throws OperationFailedException {
-                ModelNode op = operation.clone();
-                removeUndefinedStartLevel(op);
-                return new TransformedOperation(op, OperationResultTransformer.ORIGINAL_RESULT);
-            }
-        });
+        // Capabilities
+        RemoveUndefinedTransformer undefinedTransformer = new RemoveUndefinedTransformer();
+        RejectExpressionValuesTransformer capabilityReject = new RejectExpressionValuesTransformer(FrameworkCapabilityResource.STARTLEVEL);
+        TransformersSubRegistration capability = subsystemTransformer.registerSubResource(FrameworkCapabilityResource.CAPABILITY_PATH,
+                new ChainedResourceTransformer(undefinedTransformer, capabilityReject.getChainedTransformer()));
+        capability.registerOperationTransformer(ModelDescriptionConstants.ADD,
+                new ChainedOperationTransformer(undefinedTransformer, capabilityReject));
+        // Attribute is read-only so we don't want to apply reject-expression transformation to write-attribute
+        //capability.registerOperationTransformer(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, capabilityReject.getWriteAttributeTransformer());
+
+        // Properties
+        RejectExpressionValuesTransformer valueReject = new RejectExpressionValuesTransformer(FrameworkPropertyResource.VALUE);
+        TransformersSubRegistration property = subsystemTransformer.registerSubResource(FrameworkPropertyResource.PROPERTY_PATH,
+                (ResourceTransformer) valueReject);
+        property.registerOperationTransformer(ModelDescriptionConstants.ADD, valueReject);
+        property.registerOperationTransformer(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, valueReject.getWriteAttributeTransformer());
     }
 
-    private void removeUndefinedStartLevel(ModelNode model) {
-        if (model.has(ModelConstants.STARTLEVEL) && !model.hasDefined(ModelConstants.STARTLEVEL)) {
-            model.remove(ModelConstants.STARTLEVEL);
+    /** 1.0.0 does not like "start-level"=>undefined, so we remove this here */
+    private static class RemoveUndefinedTransformer implements ChainedResourceTransformerEntry, OperationTransformer {
+
+        @Override
+        public void transformResource(ChainedResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
+            ModelNode model = resource.getModel();
+            removeUndefinedStartLevel(model);
+        }
+
+        @Override
+        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
+            ModelNode op = operation.clone();
+            removeUndefinedStartLevel(op);
+            return new TransformedOperation(op, OperationResultTransformer.ORIGINAL_RESULT);
+        }
+
+        private static void removeUndefinedStartLevel(ModelNode model) {
+            if (model.has(ModelConstants.STARTLEVEL) && !model.hasDefined(ModelConstants.STARTLEVEL)) {
+                model.remove(ModelConstants.STARTLEVEL);
+            }
         }
     }
 }
