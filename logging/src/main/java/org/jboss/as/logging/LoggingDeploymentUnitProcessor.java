@@ -150,6 +150,11 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
     private boolean processDeploymentLogging(final DeploymentUnit deploymentUnit, final ResourceRoot root) throws DeploymentUnitProcessingException {
         boolean result = false;
         if (Boolean.valueOf(SecurityActions.getSystemProperty(PER_DEPLOYMENT_LOGGING, Boolean.toString(true)))) {
+            // check if we already setup LogContext
+            if (deploymentUnit.hasAttachment(LOG_CONTEXT_KEY)) {
+                return true;
+            }
+
             LoggingLogger.ROOT_LOGGER.trace("Scanning for logging configuration files.");
             final List<DeploymentUnit> subDeployments = getSubDeployments(deploymentUnit);
             // Check for a config file
