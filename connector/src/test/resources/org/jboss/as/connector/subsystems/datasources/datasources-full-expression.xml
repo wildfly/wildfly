@@ -238,7 +238,7 @@
             </statement>
         </xa-datasource>
         <drivers>
-            <driver major-version="3" minor-version="3" module="com.h2database.h2" name="h2">
+            <driver major-version="${test.expr:3}" minor-version="${test.expr:3}" module="com.h2database.h2" name="h2">
                 <driver-class>token</driver-class>
                 <xa-datasource-class>
                     org.h2.jdbcx.JdbcDataSource

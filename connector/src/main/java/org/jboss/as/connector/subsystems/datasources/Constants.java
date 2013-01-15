@@ -459,12 +459,14 @@ class Constants {
 
     static final SimpleAttributeDefinition DRIVER_MAJOR_VERSION = new SimpleAttributeDefinitionBuilder(DRIVER_MAJOR_VERSION_NAME, ModelType.INT)
             .setAllowNull(true)
+            .setAllowExpression(true)
             .setXmlName(Driver.Attribute.MAJOR_VERSION.getLocalName())
             .build();
 
 
     static final SimpleAttributeDefinition DRIVER_MINOR_VERSION = new SimpleAttributeDefinitionBuilder(DRIVER_MINOR_VERSION_NAME, ModelType.INT)
             .setAllowNull(true)
+            .setAllowExpression(true)
             .setXmlName(Driver.Attribute.MINOR_VERSION.getLocalName())
             .build();
     static final SimpleAttributeDefinition DRIVER_CLASS_NAME = new SimpleAttributeDefinitionBuilder(DRIVER_CLASS_NAME_NAME, ModelType.STRING)
