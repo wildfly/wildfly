@@ -278,6 +278,9 @@
 
         <!-- Checkstyle configuration -->
         <linkXRef>false</linkXRef>
+
+        <!-- tools.jar location, this needs to be overriden on OSX -->
+        <com.sun.tools.path>${java.home}/../lib/tools.jar</com.sun.tools.path>
     </properties>
 
     <modules>
@@ -1302,6 +1305,14 @@
                         <artifactId>jsr305</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.sun</groupId>
+                <artifactId>tools</artifactId>
+                <scope>system</scope>
+                <version>1.6</version>
+                <systemPath>${com.sun.tools.path}</systemPath>
             </dependency>
 
             <dependency>
@@ -6383,6 +6394,16 @@
                 <module>testsuite/shared</module>
                 <module>testsuite</module>
             </modules>
+        </profile>
+
+        <profile>
+            <id>os-x</id>
+            <activation>
+                <file><exists>${java.home}/bundle/Classes/classes.jar</exists></file>
+            </activation>
+            <properties>
+                <com.sun.tools.path>${java.home}/bundle/Classes/classes.jar</com.sun.tools.path>
+            </properties>
         </profile>
     </profiles>
 </project>

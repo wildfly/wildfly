@@ -37,10 +37,6 @@
 
     <name>JBoss Application Server: Clustering Subsystem</name>
 
-    <properties>
-        <com.sun.tools.path>${java.home}/../lib/tools.jar</com.sun.tools.path>
-    </properties>
-
     <modules>
         <module>api</module>
         <module>common</module>
@@ -95,16 +91,4 @@
         </dependency>
     </dependencies>
 
-    <profiles>
-        <profile>
-            <!-- I'm not 100% sure this is the tools.jar replacement on OS X but at least the tests seem to work -->
-            <id>os-x</id>
-            <activation>
-                <file><exists>${java.home}/bundle/Classes/classes.jar</exists></file>
-            </activation>
-            <properties>
-                <com.sun.tools.path>${java.home}/bundle/Classes/classes.jar</com.sun.tools.path>
-            </properties>
-        </profile>
-    </profiles>
 </project>
