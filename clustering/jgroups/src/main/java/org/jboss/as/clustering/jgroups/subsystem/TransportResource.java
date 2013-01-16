@@ -61,7 +61,7 @@ public class TransportResource extends SimpleResourceDefinition {
     static SimpleAttributeDefinition SHARED =
             new SimpleAttributeDefinitionBuilder(ModelKeys.SHARED, ModelType.BOOLEAN, true)
                     .setXmlName(Attribute.SHARED.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setDefaultValue(new ModelNode().set(true))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
