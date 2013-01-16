@@ -1,6 +1,6 @@
 <subsystem xmlns="urn:jboss:domain:resource-adapters:1.0">
             <resource-adapters>
-                <resource-adapter>
+                <resource-adapter id="myRA">
                     <archive>some.rar</archive>
 		    <bootstrap-context>someContext</bootstrap-context>
 

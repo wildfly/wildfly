@@ -1,6 +1,6 @@
 <subsystem xmlns="urn:jboss:domain:resource-adapters:1.0">
  <resource-adapters>
-  <resource-adapter>
+  <resource-adapter id="myRA">
    <archive>multiple.rar</archive>
       <transaction-support>NoTransaction</transaction-support>
         <connection-definitions>

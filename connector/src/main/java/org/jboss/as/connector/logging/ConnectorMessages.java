@@ -511,4 +511,23 @@ public interface ConnectorMessages {
     @Message(id = 10476, value = "Unknown property resolution for property %s")
     IllegalArgumentException noPropertyResolution(String name);
 
+    /**
+     * A message indicating that at least one of archive or module attributes
+     * gave to be defined
+     *
+     * @return the message.
+     */
+    @Message(id = 10477, value = "At least one of ARCHIVE or MODULE is required")
+    OperationFailedException archiveOrModuleRequired();
+
+    /**
+     * A message indicating a failure to load the module for a RA deployed as module.
+     * The cause of this failure ius the use of unsupported compressed form for the rar
+     *
+     * @param moduleName the module name.
+     * @return the message.
+     */
+    @Message(id = 10478, value = "Rar are supported only in uncompressed form. Failed to load module for RA [%s]")
+    String compressedRarNotSupportedInModuleRA(String moduleName);
+
 }

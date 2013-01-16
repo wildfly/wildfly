@@ -135,6 +135,15 @@
         </xs:annotation>
       </xs:element>
     </xs:sequence>
+    <xs:attribute name="id" type="xs:token" use="optional">
+      <xs:annotation>
+        <xs:documentation>
+          <![CDATA[[
+            An unique identifier for the resource adapter
+                        ]]>
+          </xs:documentation>
+        </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <xs:simpleType name="transaction-supportType">

@@ -70,7 +70,8 @@ public class ResourceAdaptersExtension implements Extension {
 
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CURRENT.getUriString(), ResourceAdapterSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_1_0.getUriString(), ResourceAdapterSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_1_1.getUriString(), ResourceAdapterSubsystemParser.INSTANCE);
     }
 
 }

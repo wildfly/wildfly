@@ -45,7 +45,7 @@ public class ComplexResourceAdaptersSubsystemTestCase extends AbstractComplexSub
             return;
         // Check model..
         Properties params = ParseUtils.raCommonProperties();
-        ModelNode raCommonModel = model.get("subsystem", "resource-adapters", "resource-adapter", "some.rar");
+        ModelNode raCommonModel = model.get("subsystem", "resource-adapters", "resource-adapter", "myRA");
         ParseUtils.checkModelParams(raCommonModel, params);
         Assert.assertEquals(raCommonModel.asString(), "A", raCommonModel.get("config-properties", "Property", "value")
                 .asString());

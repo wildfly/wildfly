@@ -28,11 +28,16 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHI
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BEANVALIDATIONGROUP;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BEANVALIDATION_GROUPS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BOOTSTRAP_CONTEXT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CLASS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFIG_PROPERTIES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTIONDEFINITIONS_NAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDINAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTION_SUPPORT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_CCM;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -48,6 +53,7 @@ import org.jboss.as.connector.util.ParserException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.CommonBundle;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
+import org.jboss.jca.common.api.metadata.common.v10.CommonConnDef;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
 import org.jboss.jca.common.api.metadata.resourceadapter.v10.ResourceAdapter;
 import org.jboss.jca.common.api.validator.ValidateException;
@@ -154,80 +160,111 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
         boolean archiveOrModuleMatched = false;
         boolean txSupportMatched = false;
         boolean isXa = false;
+        boolean isModule = false;
+        String id = null;
+
+        int attributeSize = reader.getAttributeCount();
+
+                for (int i = 0; i < attributeSize; i++) {
+                    Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                    String value = reader.getAttributeValue(i);
+                    switch (attribute) {
+                        case ID: {
+                            id = value;
+                            break;
+                        }
+                        default:
+                            break;
+                    }
+                }
+
+
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
                 case END_ELEMENT: {
                     if (ResourceAdapters.Tag.forName(reader.getLocalName()) == ResourceAdapters.Tag.RESOURCE_ADAPTER) {
-                        if (archiveOrModuleName != null) {
+                        if (!archiveOrModuleMatched) {
+                            throw new ParserException(bundle.requiredElementMissing(ARCHIVE.getName(), RESOURCEADAPTER_NAME));
 
+                        }
+
+                        if (id != null) {
+                            raAddress.add(RESOURCEADAPTER_NAME, id);
+                        } else {
                             Integer identifier = ConnectorServices.getResourceIdentifier(archiveOrModuleName);
                             if (identifier != null && identifier != 0) {
                                 archiveOrModuleName = archiveOrModuleName + ConnectorServices.RA_SERVICE_NAME_SEPARATOR + identifier;
                             }
 
                             raAddress.add(RESOURCEADAPTER_NAME, archiveOrModuleName);
-
-                            raAddress.protect();
-
-                            operation.get(OP_ADDR).set(raAddress);
-                            list.add(operation);
-
-                            for (Map.Entry<String, ModelNode> entry : configPropertiesOperations.entrySet()) {
-                                final ModelNode env = raAddress.clone();
-                                env.add(CONFIG_PROPERTIES.getName(), entry.getKey());
-                                env.protect();
-
-                                entry.getValue().get(OP_ADDR).set(env);
-                                list.add(entry.getValue());
-                            }
-
-                            for (Map.Entry<String, ModelNode> entry : connectionDefinitionsOperations.entrySet()) {
-                                final ModelNode env = raAddress.clone();
-                                env.add(CONNECTIONDEFINITIONS_NAME, entry.getKey());
-                                env.protect();
-
-                                entry.getValue().get(OP_ADDR).set(env);
-                                list.add(entry.getValue());
-
-                                final HashMap<String, ModelNode> properties = cfConfigPropertiesOperations.get(entry.getKey());
-                                if (properties != null) {
-                                    for (Map.Entry<String, ModelNode> configEntry : properties.entrySet()) {
-                                        final ModelNode configEnv = env.clone();
-                                        configEnv.add(CONFIG_PROPERTIES.getName(), configEntry.getKey());
-                                        configEnv.protect();
-
-                                        configEntry.getValue().get(OP_ADDR).set(configEnv);
-                                        list.add(configEntry.getValue());
-                                    }
-                                }
-                            }
-
-                            for (Map.Entry<String, ModelNode> entry : adminObjectsOperations.entrySet()) {
-                                final ModelNode env = raAddress.clone();
-                                env.add(ADMIN_OBJECTS_NAME, entry.getKey());
-                                env.protect();
-
-                                entry.getValue().get(OP_ADDR).set(env);
-                                list.add(entry.getValue());
-
-                                final HashMap<String, ModelNode> aoProperties = aoConfigPropertiesOperations.get(entry.getKey());
-                                if (aoProperties != null) {
-                                    for (Map.Entry<String, ModelNode> configEntry : aoProperties.entrySet()) {
-                                        final ModelNode configEnv = env.clone();
-                                        configEnv.add(CONFIG_PROPERTIES.getName(), configEntry.getKey());
-                                        configEnv.protect();
-
-                                        configEntry.getValue().get(OP_ADDR).set(configEnv);
-                                        list.add(configEntry.getValue());
-                                    }
-                                }
-                            }
-
-                            return;
-                        } else {
-                            throw new ParserException(bundle.requiredElementMissing(ARCHIVE.getName(), RESOURCEADAPTER_NAME));
-
                         }
+
+                        raAddress.protect();
+
+                        operation.get(OP_ADDR).set(raAddress);
+                        list.add(operation);
+
+                        for (Map.Entry<String, ModelNode> entry : configPropertiesOperations.entrySet()) {
+                            final ModelNode env = raAddress.clone();
+                            env.add(CONFIG_PROPERTIES.getName(), entry.getKey());
+                            env.protect();
+
+                            entry.getValue().get(OP_ADDR).set(env);
+                            list.add(entry.getValue());
+                        }
+
+                        for (Map.Entry<String, ModelNode> entry : connectionDefinitionsOperations.entrySet()) {
+                            final ModelNode env = raAddress.clone();
+                            env.add(CONNECTIONDEFINITIONS_NAME, entry.getKey());
+                            env.protect();
+
+                            entry.getValue().get(OP_ADDR).set(env);
+                            list.add(entry.getValue());
+
+                            final HashMap<String, ModelNode> properties = cfConfigPropertiesOperations.get(entry.getKey());
+                            if (properties != null) {
+                                for (Map.Entry<String, ModelNode> configEntry : properties.entrySet()) {
+                                    final ModelNode configEnv = env.clone();
+                                    configEnv.add(CONFIG_PROPERTIES.getName(), configEntry.getKey());
+                                    configEnv.protect();
+
+                                    configEntry.getValue().get(OP_ADDR).set(configEnv);
+                                    list.add(configEntry.getValue());
+                                }
+                            }
+                        }
+
+                        for (Map.Entry<String, ModelNode> entry : adminObjectsOperations.entrySet()) {
+                            final ModelNode env = raAddress.clone();
+                            env.add(ADMIN_OBJECTS_NAME, entry.getKey());
+                            env.protect();
+
+                            entry.getValue().get(OP_ADDR).set(env);
+                            list.add(entry.getValue());
+
+                            final HashMap<String, ModelNode> aoProperties = aoConfigPropertiesOperations.get(entry.getKey());
+                            if (aoProperties != null) {
+                                for (Map.Entry<String, ModelNode> configEntry : aoProperties.entrySet()) {
+                                    final ModelNode configEnv = env.clone();
+                                    configEnv.add(CONFIG_PROPERTIES.getName(), configEntry.getKey());
+                                    configEnv.protect();
+
+                                    configEntry.getValue().get(OP_ADDR).set(configEnv);
+                                    list.add(configEntry.getValue());
+                                }
+                            }
+                        }
+
+
+                        if (isModule) {
+                            final ModelNode activateOp = new ModelNode();
+                            activateOp.get(OP).set(Constants.ACTIVATE);
+                            activateOp.get(OP_ADDR).set(raAddress);
+                            list.add(activateOp);
+                        }
+
+                        return;
+
                     } else {
                         if (AS7ResourceAdapterTags.forName(reader.getLocalName()) == AS7ResourceAdapterTags.UNKNOWN) {
                             throw new ParserException(bundle.unexpectedEndTag(reader.getLocalName()));
@@ -287,14 +324,15 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                             break;
                         }
                         case MODULE: {
+                            if (archiveOrModuleMatched) {
+                                throw new ParserException(bundle.unexpectedElement(MODULE.getXmlName()));
+                            }
 
                             String moduleId = rawAttributeText(reader, "id");
                             String moduleSlot = rawAttributeText(reader, "slot", "main");
                             archiveOrModuleName = moduleId + ":" + moduleSlot;
                             MODULE.parseAndSetParameter(archiveOrModuleName, operation, reader);
-                            if (archiveOrModuleMatched) {
-                                throw new ParserException(bundle.unexpectedElement(MODULE.getXmlName()));
-                            }
+                            isModule = true;
 
                             archiveOrModuleMatched = true;
                             break;
@@ -367,6 +405,85 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
         public static Tag forName(String localName) {
             final Tag element = MAP.get(localName);
             return element == null ? UNKNOWN : element;
+        }
+
+    }
+
+    /**
+     * A Attribute.
+     *
+     * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
+     */
+    public enum Attribute {
+
+        /**
+         * always first
+         */
+        UNKNOWN(null),
+        /**
+         * id attribute
+         */
+        ID("id"),;
+
+        private String name;
+
+        /**
+         * Create a new Tag.
+         *
+         * @param name a name
+         */
+        Attribute(final String name) {
+            this.name = name;
+        }
+
+        /**
+         * Get the local name of this element.
+         *
+         * @return the local name
+         */
+        public String getLocalName() {
+            return name;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public String toString() {
+            return name;
+        }
+
+        private static final Map<String, Attribute> MAP;
+
+        static {
+            final Map<String, Attribute> map = new HashMap<String, Attribute>();
+            for (Attribute element : values()) {
+                final String name = element.getLocalName();
+                if (name != null)
+                    map.put(name, element);
+            }
+            MAP = map;
+        }
+
+        /**
+         * Set the value
+         *
+         * @param v The name
+         * @return The value
+         */
+        Attribute value(String v) {
+            name = v;
+            return this;
+        }
+
+        /**
+         * Static method to get enum instance given localName XsdString
+         *
+         * @param localName a XsdString used as localname (typically tag name as defined in xsd)
+         * @return the enum instance
+         */
+        public static Attribute forName(String localName) {
+            final Attribute element = MAP.get(localName);
+            return element == null ? UNKNOWN.value(localName) : element;
         }
 
     }

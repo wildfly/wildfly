@@ -22,6 +22,7 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import org.jboss.as.connector.logging.ConnectorMessages;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -60,26 +61,15 @@ public class RaAdd extends AbstractAddStepHandler {
         final ModelNode address = operation.require(OP_ADDR);
         final String name = PathAddress.pathAddress(address).getLastElement().getValue();
         String archiveOrModuleName;
+        if (!model.hasDefined(ARCHIVE.getName()) && ! model.hasDefined(MODULE.getName())) {
+            throw ConnectorMessages.MESSAGES.archiveOrModuleRequired();
+        }
         if (model.get(ARCHIVE.getName()).isDefined()) {
             archiveOrModuleName = model.get(ARCHIVE.getName()).asString();
         } else {
             archiveOrModuleName = model.get(MODULE.getName()).asString();
         }
 
-        if (name.startsWith(archiveOrModuleName) && (name.substring(archiveOrModuleName.length()).contains(ConnectorServices.RA_SERVICE_NAME_SEPARATOR) || name.equals(archiveOrModuleName))) {
-            archiveOrModuleName = name;
-        } else {
-           Integer identifier = ConnectorServices.getResourceIdentifier(archiveOrModuleName);
-            if (identifier != null && identifier != 0) {
-                archiveOrModuleName = archiveOrModuleName + ConnectorServices.RA_SERVICE_NAME_SEPARATOR + identifier;
-            }
-        }
-
-        if (model.get(ARCHIVE.getName()).isDefined()) {
-            model.get(ARCHIVE.getName()).set(archiveOrModuleName);
-        } else {
-            model.get(MODULE.getName()).set(archiveOrModuleName);
-        }
 
         ModifiableResourceAdapter resourceAdapter = RaOperationUtil.buildResourceAdaptersObject(context, operation, archiveOrModuleName);
 
