@@ -156,9 +156,32 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
         return new ResourceTransformationContextImpl(root, absoluteAddress, read, originalModel);
     }
 
+    public TransformerEntry resolveTransformerEntry(PathAddress address) {
+        final TransformerEntry entry = originalModel.target.getTransformerEntry(address);
+        if(entry == null) {
+            return TransformerEntry.ALL_DEFAULTS;
+        }
+        return entry;
+    }
+
     @Override
     public ResourceTransformer resolveTransformer(PathAddress address) {
         final ResourceTransformer transformer = originalModel.target.resolveTransformer(address);
+        if(transformer == null) {
+            final ImmutableManagementResourceRegistration childReg = originalModel.getRegistration(address);
+            if(childReg == null) {
+                return ResourceTransformer.DISCARD;
+            }
+            if(childReg.isRemote() || childReg.isRuntimeOnly()) {
+                return ResourceTransformer.DISCARD;
+            }
+            return ResourceTransformer.DEFAULT;
+        }
+        return transformer;
+    }
+
+    protected ResourceTransformer resolveTransformer(TransformerEntry entry, PathAddress address) {
+        final ResourceTransformer transformer = entry.getResourceTransformer();
         if(transformer == null) {
             final ImmutableManagementResourceRegistration childReg = originalModel.getRegistration(address);
             if(childReg == null) {
@@ -185,8 +208,30 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
     @Override
     public void processChild(final PathElement element, Resource child) throws OperationFailedException {
         final PathAddress childAddress = read.append(element); // read
-        final PathAddress currentAddress = current.append(element); // write
-        final ResourceTransformer transformer = resolveTransformer(childAddress);
+        final TransformerEntry entry = resolveTransformerEntry(childAddress);
+        final PathTransformation path = entry.getPathTransformation();
+        final PathAddress currentAddress = path.transform(element, new PathTransformation.Builder() { // write
+            @Override
+            public PathAddress getOriginal() {
+                return childAddress;
+            }
+
+            @Override
+            public PathAddress getCurrent() {
+                return current;
+            }
+
+            @Override
+            public PathAddress getRemaining() {
+                return PathAddress.EMPTY_ADDRESS.append(element);
+            }
+
+            @Override
+            public PathAddress next(PathElement... elements) {
+                return current.append(elements);
+            }
+        });
+        final ResourceTransformer transformer = resolveTransformer(entry, childAddress);
         final ResourceTransformationContext childContext = new ResourceTransformationContextImpl(root, currentAddress, childAddress, originalModel);
         transformer.transformResource(childContext, childAddress, child);
     }
@@ -238,6 +283,7 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
         return root;
     }
 
+    @Deprecated
     static ResourceTransformationContext createAliasContext(final PathAddress address, final ResourceTransformationContext context) {
         if(context instanceof ResourceTransformationContextImpl) {
             final ResourceTransformationContextImpl impl = (ResourceTransformationContextImpl) context;

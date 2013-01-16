@@ -24,21 +24,9 @@ package org.jboss.as.controller.transform.description;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ModelVersionRange;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.OperationResultTransformer;
-import org.jboss.as.controller.transform.OperationTransformer;
-import org.jboss.as.controller.transform.ResourceTransformationContext;
-import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.PathTransformation;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
-import org.jboss.dmr.ModelNode;
-
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * The final tranformation description.

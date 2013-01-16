@@ -32,6 +32,8 @@ import org.jboss.as.controller.transform.AttributeTransformationRequirementCheck
 import org.jboss.as.controller.transform.OperationRejectionPolicy;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.PathTransformation;
+import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.dmr.ModelNode;
 
@@ -46,15 +48,16 @@ import java.util.Map;
  */
 class ResourceTransformationDescriptionBuilderImpl extends ResourceTransformationDescriptionBuilder {
 
-    private final PathElement pathElement;
     private final List<ModelTransformer> steps = new ArrayList<ModelTransformer>();
     private final List<TransformationDescriptionBuilder> children = new ArrayList<TransformationDescriptionBuilder>();
     private final Map<String, AttributeTransformationRequirementChecker> attributeRestrictions = new HashMap<String, AttributeTransformationRequirementChecker>();
 
     private PathTransformation pathTransformation;
+    private ModelTransformer customTransformationStep;
+    private ResourceTransformer resourceTransformer;
 
-    ResourceTransformationDescriptionBuilderImpl(PathElement pathElement) {
-        this.pathElement = pathElement;
+    protected ResourceTransformationDescriptionBuilderImpl(PathElement pathElement) {
+        super(pathElement);
     }
 
     @Override
@@ -122,7 +125,15 @@ class ResourceTransformationDescriptionBuilderImpl extends ResourceTransformatio
     }
 
     @Override
-    public ResourceTransformationDescriptionBuilder redirectTo(final PathElement element) {
+    public ResourceTransformationDescriptionBuilder setResourceTransformer(final ResourceTransformer resourceTransformer) {
+        if(resourceTransformer == null) {
+            throw new IllegalArgumentException();
+        }
+        this.resourceTransformer = resourceTransformer;
+        return this;
+    }
+
+    protected ResourceTransformationDescriptionBuilder redirectTo(final PathElement element) {
         this.pathTransformation = new PathTransformation.BasicPathTransformation(element);
         return this;
     }
@@ -182,7 +193,7 @@ class ResourceTransformationDescriptionBuilderImpl extends ResourceTransformatio
             children.add(builder.build());
         }
         // Create the description
-        return new TransformingDescription(pathElement, pathTransformation, rules, attributes, children);
+        return new TransformingDescription(pathElement, pathTransformation, resourceTransformer, rules, attributes, children);
     }
 
 }

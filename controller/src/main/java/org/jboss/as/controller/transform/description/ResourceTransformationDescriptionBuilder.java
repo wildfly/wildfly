@@ -25,6 +25,7 @@ package org.jboss.as.controller.transform.description;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.transform.ResourceTransformer;
 
 import java.util.Collection;
 
@@ -32,6 +33,10 @@ import java.util.Collection;
  * @author Emanuel Muckenhuber
  */
 public abstract class ResourceTransformationDescriptionBuilder extends TransformationDescriptionBuilder {
+
+    protected ResourceTransformationDescriptionBuilder(PathElement pathElement) {
+        super(pathElement);
+    }
 
     /**
      * Reject expressions as attribute values.
@@ -56,6 +61,16 @@ public abstract class ResourceTransformationDescriptionBuilder extends Transform
      * @return the builder for the current resource
      */
     public abstract ResourceTransformationDescriptionBuilder rejectExpressions(AttributeDefinition... defintions);
+
+    /**
+     * Set a custom resource transformer. This transformer is going to be called after all attribute transformations happened
+     * and needs to take care of adding the currently transformed resource properly. If not specified, the resource will be
+     * added according to other rules defined by this builder.
+     *
+     * @param resourceTransformer the resource transformer
+     * @return the builder for the current resource
+     */
+    public abstract ResourceTransformationDescriptionBuilder setResourceTransformer(ResourceTransformer resourceTransformer);
 
     /**
      * Add a custom transformation step. This will be called for model as well as operation transformation.
