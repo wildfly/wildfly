@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,37 +19,43 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.controller.transform.description;
 
-import java.util.List;
-import java.util.Map;
-
+import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.dmr.ModelNode;
 
 /**
- * @author Emanuel Muckenhuber
+ *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public interface AttributeTransformationDescriptionBuilder<T> {
+public interface DiscardAttributeChecker {
+
+    boolean isAllowExpressions();
+
+    boolean isDiscardUndefined();
+
+    boolean isValueDiscardable(String attributeName, ModelNode attributeValue, TransformationContext context);
 
     /**
-     * Make this attribute reject expressions
-     *
-     * @return this builder
+     * A standard checker which will discard the attribute always.
      */
-    AttributeTransformationDescriptionBuilder<T> rejectExpressions(T...attributes);
+    public static DefaultAttributeChecker ALWAYS = new DefaultAttributeChecker(true, true) {
 
-    AttributeTransformationDescriptionBuilder<T> reject(List<RejectAttributeChecker> rejectCheckers, T...rejectedAttributes);
-
-    AttributeTransformationDescriptionBuilder<T> discard(DiscardAttributeChecker discardChecker, T...discardedAttributes);
-
-    AttributeTransformationDescriptionBuilder<T> rename(Map<T, String> newNameMappings);
-
+        @Override
+        public boolean isValueDiscardable(String attributeName, ModelNode attributeValue, TransformationContext context) {
+            return true;
+        }
+    };
 
     /**
-     * Finish with this attribute builder and return control to the parent resource transformation builder
-     *
-     * @return the parent builder
+     * A standard checker which will discard the attribute if it is undefined.
      */
-    ResourceTransformationDescriptionBuilder end();
+    public static DefaultAttributeChecker UNDEFINED = new DefaultAttributeChecker(false, true) {
+
+        @Override
+        public boolean isValueDiscardable(String attributeName, ModelNode attributeValue, TransformationContext context) {
+            return false;
+        }
+    };
+
 }

@@ -22,6 +22,10 @@
 
 package org.jboss.as.controller.transform.description;
 
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ModelVersionRange;
 import org.jboss.as.controller.OperationFailedException;
@@ -39,10 +43,6 @@ import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.dmr.ModelNode;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author Emanuel Muckenhuber
@@ -160,14 +160,14 @@ class TransformingDescription extends AbstractDescription implements Transformat
                 return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
             }
             // Process
-            final TransformationType type = description.processAttribute(attributeName, operation.get(ModelDescriptionConstants.VALUE), new TransformationRule.AbstractTransformationContext(context) {
+            final boolean reject = !description.checkAttributeValueIsValid(operation.get(ModelDescriptionConstants.VALUE), new TransformationRule.AbstractTransformationContext(context) {
                 @Override
                 protected TransformationContext getContext() {
                     return super.getContext();
                 }
             });
             final OperationRejectionPolicy policy;
-            if(type == TransformationType.REJECT) {
+            if(reject) {
                 policy = new OperationRejectionPolicy() {
                     @Override
                     public boolean rejectOperation(ModelNode preparedResult) {

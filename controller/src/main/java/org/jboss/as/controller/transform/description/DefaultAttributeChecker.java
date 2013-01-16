@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,37 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.controller.transform.description;
 
-import java.util.List;
-import java.util.Map;
-
-
 /**
- * @author Emanuel Muckenhuber
+ * Checks whether an attribute can be discarded or not
+ *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public interface AttributeTransformationDescriptionBuilder<T> {
+public abstract class DefaultAttributeChecker implements DiscardAttributeChecker {
 
-    /**
-     * Make this attribute reject expressions
-     *
-     * @return this builder
-     */
-    AttributeTransformationDescriptionBuilder<T> rejectExpressions(T...attributes);
+    protected final boolean allowExpressions;
+    protected final boolean allowUndefined;
 
-    AttributeTransformationDescriptionBuilder<T> reject(List<RejectAttributeChecker> rejectCheckers, T...rejectedAttributes);
+    public DefaultAttributeChecker(final boolean allowExpressions, final boolean allowUndefined) {
+        this.allowExpressions = allowExpressions;
+        this.allowUndefined = allowUndefined;
+    }
 
-    AttributeTransformationDescriptionBuilder<T> discard(DiscardAttributeChecker discardChecker, T...discardedAttributes);
+    @Override
+    public boolean isAllowExpressions() {
+        return allowExpressions;
+    }
 
-    AttributeTransformationDescriptionBuilder<T> rename(Map<T, String> newNameMappings);
+    @Override
+    public boolean isDiscardUndefined() {
+        return allowUndefined;
+    }
 
 
-    /**
-     * Finish with this attribute builder and return control to the parent resource transformation builder
-     *
-     * @return the parent builder
-     */
-    ResourceTransformationDescriptionBuilder end();
+    //TODO handle lists and object types
 }
