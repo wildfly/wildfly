@@ -49,6 +49,7 @@ public class MappingModuleDefinition extends SimpleResourceDefinition {
 
     protected static final SimpleAttributeDefinition TYPE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.TYPE, ModelType.STRING)
             .setAllowNull(false)
+            .setAllowExpression(true)
             .build();
 
     protected static final PropertiesAttributeDefinition MODULE_OPTIONS = new PropertiesAttributeDefinition.Builder(Constants.MODULE_OPTIONS, true)
