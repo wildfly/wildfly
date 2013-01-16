@@ -21,10 +21,6 @@
  */
 package org.jboss.as.naming.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.BINDING_TYPE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.OBJECT_FACTORY;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.OBJECT_FACTORY_ENV;
@@ -35,9 +31,11 @@ import java.net.URL;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.CombinedTransformer;
 import org.jboss.as.controller.transform.OperationRejectionPolicy;
 import org.jboss.as.controller.transform.OperationResultTransformer;
-import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.naming.NamingMessages;
 import org.jboss.dmr.ModelNode;
@@ -46,9 +44,13 @@ import org.jboss.dmr.ModelNode;
  * A transform used to reject new unsupported operations, on legacy models.
  *
  * @author Eduardo Martins
- *
  */
-public class NameBindingAdd110OperationTransformer implements OperationTransformer {
+public class Naming11Transformer implements CombinedTransformer {
+    @Override
+    public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
+        //todo add warn msg
+        resource.getModel().remove(OBJECT_FACTORY_ENV);
+    }
 
     @Override
     public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation)
@@ -65,8 +67,11 @@ public class NameBindingAdd110OperationTransformer implements OperationTransform
                 }
             } else if (type.equals(OBJECT_FACTORY) && resolvedModel.hasDefined(OBJECT_FACTORY_ENV)) {
                 // object factory bind with environment, not supported on 1.1.0
-                return new TransformedOperation(operation, rejectOperation(NamingMessages.MESSAGES
-                        .failedToTransformObjectFactoryWithEnvironmentNameBindingAddOperation("1.1.0")), OperationResultTransformer.ORIGINAL_RESULT);
+                operation.remove(OBJECT_FACTORY_ENV);
+                return new TransformedOperation(
+                        operation,
+                        rejectOperation(NamingMessages.MESSAGES.failedToTransformObjectFactoryWithEnvironmentNameBindingAddOperation("1.1.0")),
+                        OperationResultTransformer.ORIGINAL_RESULT);
             }
         }
         // all good, return untransformed
@@ -76,8 +81,6 @@ public class NameBindingAdd110OperationTransformer implements OperationTransform
     /**
      * Reject an operation if applied successfully.
      *
-     * @param failureMessage
-     * @return
      */
     private OperationRejectionPolicy rejectOperation(final String failureMessage) {
         return new OperationRejectionPolicy() {
@@ -91,6 +94,6 @@ public class NameBindingAdd110OperationTransformer implements OperationTransform
                 return failureMessage;
             }
         };
-    };
+    }
 
 }

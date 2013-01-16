@@ -22,23 +22,21 @@
 
 package org.jboss.as.naming.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.naming.management.JndiViewOperation;
-import org.jboss.dmr.ModelNode;
 
 /**
  * Domain extension used to initialize the naming subsystem element handlers.
@@ -49,16 +47,17 @@ import org.jboss.dmr.ModelNode;
 public class NamingExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "naming";
-    public static final String NAMESPACE_1_0 = "urn:jboss:domain:naming:1.0";
-    public static final String NAMESPACE_1_1 = "urn:jboss:domain:naming:1.1";
-    public static final String NAMESPACE_1_2 = "urn:jboss:domain:naming:1.2";
-    public static final String NAMESPACE_1_3 = "urn:jboss:domain:naming:1.3";
+    private static final String NAMESPACE_1_0 = "urn:jboss:domain:naming:1.0";
+    private static final String NAMESPACE_1_1 = "urn:jboss:domain:naming:1.1";
+    private static final String NAMESPACE_1_2 = "urn:jboss:domain:naming:1.2";
+    static final String NAMESPACE_1_3 = "urn:jboss:domain:naming:1.3";
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 2;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+    static final int MANAGEMENT_API_MAJOR_VERSION = 1;
+    static final int MANAGEMENT_API_MINOR_VERSION = 2;
+    static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
-    public static final String RESOURCE_NAME = NamingExtension.class.getPackage().getName() + ".LocalDescriptions";
+    static final String RESOURCE_NAME = NamingExtension.class.getPackage().getName() + ".LocalDescriptions";
+    static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, NamingExtension.SUBSYSTEM_NAME);
 
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
         return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, NamingExtension.class.getClassLoader(), true, true);
@@ -87,8 +86,8 @@ public class NamingExtension implements Extension {
 
         if (context.isRegisterTransformers()) {
             // register 1.1.0 transformer
-            final TransformersSubRegistration transformersSubRegistration110 = subsystem.registerModelTransformers(ModelVersion.create(1, 1, 0), new Naming110SubsystemTransformer());
-            transformersSubRegistration110.registerSubResource(NamingSubsystemModel.BINDING_PATH,new NameBindingAdd110OperationTransformer());
+            final TransformersSubRegistration transformersSubRegistration110 = subsystem.registerModelTransformers(ModelVersion.create(1, 1, 0), ResourceTransformer.DEFAULT);
+            transformersSubRegistration110.registerSubResource(NamingSubsystemModel.BINDING_PATH,new Naming11Transformer());
         }
     }
 
@@ -103,10 +102,5 @@ public class NamingExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_3, NamingSubsystem13Parser.INSTANCE);
     }
 
-    static ModelNode createAddOperation() {
-        final ModelNode subsystem = new ModelNode();
-        subsystem.get(OP).set(ADD);
-        subsystem.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
-        return subsystem;
-    }
+
 }

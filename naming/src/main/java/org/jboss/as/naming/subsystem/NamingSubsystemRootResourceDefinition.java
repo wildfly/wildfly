@@ -49,8 +49,7 @@ public class NamingSubsystemRootResourceDefinition extends SimpleResourceDefinit
     private NamingSubsystemRootResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, NamingExtension.SUBSYSTEM_NAME),
                 NamingExtension.getResourceDescriptionResolver(NamingExtension.SUBSYSTEM_NAME),
-                NamingSubsystemAdd.INSTANCE, NamingSubsystemRemove.INSTANCE,
-                OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
+                NamingSubsystemAdd.INSTANCE, NamingSubsystemRemove.INSTANCE);
     }
 
 

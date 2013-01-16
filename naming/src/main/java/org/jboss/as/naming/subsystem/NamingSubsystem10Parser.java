@@ -21,53 +21,38 @@
  */
 package org.jboss.as.naming.subsystem;
 
-import java.util.List;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.controller.parsing.ParseUtils;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import java.util.List;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+
 /**
-* @author Stuart Douglas
-*/
-class NamingSubsystem10Parser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
+ * @author Stuart Douglas
+ */
+class NamingSubsystem10Parser implements XMLStreamConstants, XMLElementReader<List<ModelNode>> {
 
     public static final NamingSubsystem10Parser INSTANCE = new NamingSubsystem10Parser();
 
-    /** {@inheritDoc} */
-    @Override
-    public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-        //TODO seems to be a problem with empty elements cleaning up the queue in FormattingXMLStreamWriter.runAttrQueue
-        //context.startSubsystemElement(NewNamingExtension.NAMESPACE, true);
-        context.startSubsystemElement(NamingExtension.NAMESPACE_1_0, false);
-        writer.writeEndElement();
-    }
-
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
         ParseUtils.requireNoAttributes(reader);
         ParseUtils.requireNoContent(reader);
 
-        list.add(NamingExtension.createAddOperation());
-
-        final ModelNode remoteNamingAdd = new ModelNode();
-        remoteNamingAdd.get(OP).set(ADD);
-        remoteNamingAdd.get(OP_ADDR).add(SUBSYSTEM, NamingExtension.SUBSYSTEM_NAME);
-        remoteNamingAdd.get(OP_ADDR).add(NamingSubsystemModel.SERVICE, NamingSubsystemModel.REMOTE_NAMING);
-
-        list.add(remoteNamingAdd);
+        list.add(Util.createAddOperation(PathAddress.pathAddress(NamingExtension.SUBSYSTEM_PATH)));
+        list.add(Util.createAddOperation(PathAddress.pathAddress(NamingExtension.SUBSYSTEM_PATH).append(NamingSubsystemModel.SERVICE, NamingSubsystemModel.REMOTE_NAMING)));
     }
 }
