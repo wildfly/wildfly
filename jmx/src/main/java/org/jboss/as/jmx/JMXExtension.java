@@ -57,6 +57,8 @@ import org.jboss.as.controller.transform.AbstractOperationTransformer;
 import org.jboss.as.controller.transform.AbstractSubsystemTransformer;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
+import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.dmr.ModelNode;
@@ -189,6 +191,12 @@ public class JMXExtension implements Extension {
                 });
             }
         });
+
+        RejectExpressionValuesTransformer rejectTransformer = new RejectExpressionValuesTransformer(RemotingConnectorResource.USE_MANAGEMENT_ENDPOINT);
+        TransformersSubRegistration remoting = transformers.registerSubResource(RemotingConnectorResource.REMOTE_CONNECTOR_CONFIG_PATH,
+                (ResourceTransformer) rejectTransformer);
+        remoting.registerOperationTransformer(ADD, rejectTransformer);
+        remoting.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, rejectTransformer.getWriteAttributeTransformer());
     }
 
     private static class JMXSubsystemParser_1_0 implements XMLStreamConstants, XMLElementReader<List<ModelNode>> {
