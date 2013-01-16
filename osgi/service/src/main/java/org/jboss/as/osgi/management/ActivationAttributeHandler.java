@@ -22,7 +22,6 @@
 package org.jboss.as.osgi.management;
 
 import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers.AttributeDefinitionValidatingHandler;
 import org.jboss.as.osgi.parser.OSGiRootResource;
 
 /**
