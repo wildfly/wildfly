@@ -87,6 +87,7 @@ JBOSS_VAULT_CLASSPATH="$JBOSS_MODULEPATH/org/picketbox/main/*"
 JBOSS_VAULT_CLASSPATH="$JBOSS_VAULT_CLASSPATH:$JBOSS_MODULEPATH/org/jboss/logging/main/*"
 JBOSS_VAULT_CLASSPATH="$JBOSS_VAULT_CLASSPATH:$JBOSS_MODULEPATH/org/jboss/common-core/main/*"
 JBOSS_VAULT_CLASSPATH="$JBOSS_VAULT_CLASSPATH:$JBOSS_MODULEPATH/org/jboss/as/security/main/*"
+JBOSS_VAULT_CLASSPATH="$JBOSS_VAULT_CLASSPATH:$JBOSS_MODULEPATH/org/apache/commons/cli/main/*"
 
 export JBOSS_VAULT_CLASSPATH
 
@@ -114,4 +115,4 @@ echo "========================================================================="
 echo ""
 
 "$JAVA" -classpath "$JBOSS_VAULT_CLASSPATH" \
-   org.jboss.as.security.vault.VaultTool
+   org.jboss.as.security.vault.VaultTool $*

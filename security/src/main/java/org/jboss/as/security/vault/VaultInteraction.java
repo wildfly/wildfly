@@ -25,7 +25,6 @@ import java.io.Console;
 import java.util.Scanner;
 
 import org.jboss.security.vault.SecurityVault;
-import org.jboss.security.vault.SecurityVaultException;
 
 /**
  * Interaction with initialized {@link SecurityVault} via the {@link VaultTool}
@@ -34,12 +33,10 @@ import org.jboss.security.vault.SecurityVaultException;
  */
 public class VaultInteraction {
 
-    private SecurityVault vault;
-    private byte[] handshakeKey;
+    private VaultSession vaultNISession;
 
-    public VaultInteraction(SecurityVault vault, byte[] handshakeKey) {
-        this.vault = vault;
-        this.handshakeKey = handshakeKey;
+    public VaultInteraction(VaultSession vaultSession) {
+        this.vaultNISession = vaultSession;
     }
 
     public void start() {
@@ -52,15 +49,15 @@ public class VaultInteraction {
 
         Scanner in = new Scanner(System.in);
         while (true) {
-            String commandStr = "Please enter a Digit::   0: Store a password " + " 1: Check whether password exists "
+            String commandStr = "Please enter a Digit::   0: Store a secured attribute " + " 1: Check whether a secured attribute exists "
                     + " 2: Exit";
 
             System.out.println(commandStr);
             int choice = in.nextInt();
             switch (choice) {
                 case 0:
-                    System.out.println("Task:  Store a password");
-                    char[] attributeValue = VaultInteractiveSession.getSensitiveValue("Please enter attribute value");
+                    System.out.println("Task: Store a secured attribute");
+                    char[] attributeValue = VaultInteractiveSession.getSensitiveValue("Please enter secured attribute value (such as password)");
                     String vaultBlock = null;
 
                     while (vaultBlock == null || vaultBlock.length() == 0) {
@@ -73,27 +70,13 @@ public class VaultInteraction {
                         attributeName = console.readLine("Enter Attribute Name:");
                     }
                     try {
-                        vault.store(vaultBlock, attributeName, attributeValue, handshakeKey);
-
-                        String keyAsString = new String(handshakeKey);
-                        System.out.println("Attribute Value for (" + vaultBlock + ", " + attributeName + ") saved");
-
-                        System.out.println("                ");
-                        System.out.println("Please make note of the following:");
-                        System.out.println("********************************************");
-                        System.out.println("Vault Block:" + vaultBlock);
-                        System.out.println("Attribute Name:" + attributeName);
-                        System.out.println("Shared Key:" + keyAsString);
-                        System.out.println("Configuration should be done as follows:");
-                        System.out.println("VAULT::" + vaultBlock + "::" + attributeName + "::" + keyAsString);
-                        System.out.println("********************************************");
-                        System.out.println("                ");
-                    } catch (SecurityVaultException e) {
+                        vaultNISession.addSecuredAttributeWithDisplay(vaultBlock, attributeName, attributeValue);
+                    } catch (Exception e) {
                         System.out.println("Exception occurred:" + e.getLocalizedMessage());
                     }
                     break;
                 case 1:
-                    System.out.println("Task: Verify whether a password exists");
+                    System.out.println("Task: Verify whether a secured attribute exists");
                     try {
                         vaultBlock = null;
 
@@ -106,11 +89,11 @@ public class VaultInteraction {
                         while (attributeName == null || attributeName.length() == 0) {
                             attributeName = console.readLine("Enter Attribute Name:");
                         }
-                        if (vault.exists(vaultBlock, attributeName) == false)
+                        if (!vaultNISession.checkSecuredAttribute(vaultBlock, attributeName))
                             System.out.println("No value has been store for (" + vaultBlock + ", " + attributeName + ")");
                         else
                             System.out.println("A value exists for (" + vaultBlock + ", " + attributeName + ")");
-                    } catch (SecurityVaultException e) {
+                    } catch (Exception e) {
                         System.out.println("Exception occurred:" + e.getLocalizedMessage());
                     }
                     break;
