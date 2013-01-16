@@ -115,6 +115,11 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
+    public void testJdbcStoreExpressions() throws Exception {
+        standardSubsystemTest("jdbc-store-expressions.xml");
+    }
+
+    @Test
     public void testParser_1_2() throws Exception {
         standardSubsystemTest("full-1.2.xml");
     }

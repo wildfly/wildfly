@@ -23,6 +23,7 @@
 package org.jboss.as.txn.subsystem;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.ResourceDefinition;
@@ -168,7 +169,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setDefaultValue(new ModelNode(false))
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setXmlName(Attribute.DROP_TABLE.getLocalName())
-            .setAllowExpression(false)
+            .setAllowExpression(true)
             .setRequires(CommonAttributes.USE_JDBC_STORE).build();
     public static final SimpleAttributeDefinition JDBC_COMMUNICATION_STORE_TABLE_PREFIX = new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_COMMUNICATION_STORE_TABLE_PREFIX, ModelType.STRING, true)
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
@@ -179,7 +180,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setDefaultValue(new ModelNode(false))
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setXmlName(Attribute.DROP_TABLE.getLocalName())
-            .setAllowExpression(false)
+            .setAllowExpression(true)
             .setRequires(CommonAttributes.USE_JDBC_STORE).build();
     public static final SimpleAttributeDefinition JDBC_STATE_STORE_TABLE_PREFIX = new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_STATE_STORE_TABLE_PREFIX, ModelType.STRING, true)
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
@@ -190,7 +191,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setDefaultValue(new ModelNode(false))
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setXmlName(Attribute.DROP_TABLE.getLocalName())
-            .setAllowExpression(false)
+            .setAllowExpression(true)
             .setRequires(CommonAttributes.USE_JDBC_STORE).build();
 
 
@@ -220,12 +221,14 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         // Register all attributes
+        OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(attributes);
         for(final AttributeDefinition def : attributes) {
-            resourceRegistration.registerReadWriteAttribute(def, null, new ReloadRequiredWriteAttributeHandler(def));
+            resourceRegistration.registerReadWriteAttribute(def, null, writeHandler);
         }
+        writeHandler = new ReloadRequiredWriteAttributeHandler(attributes_1_2);
         for(final AttributeDefinition def : attributes_1_2) {
-                    resourceRegistration.registerReadWriteAttribute(def, null, new ReloadRequiredWriteAttributeHandler(def));
-                }
+            resourceRegistration.registerReadWriteAttribute(def, null, writeHandler);
+        }
 
         if (registerRuntimeOnly) {
             TxStatsHandler.INSTANCE.registerMetrics(resourceRegistration);

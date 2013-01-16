@@ -265,7 +265,7 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
         for (Property descProp : attributeDescriptions.asPropertyList()) {
             String attrName = descProp.getName();
             ModelNode attrDesc = descProp.getValue();
-            if (isAttributeExcluded(address, attrName, attrDesc)) {
+            if (isAttributeExcluded(address, attrName, attrDesc, resourceNoDefaults)) {
                 continue;
             }
             ModelNode noDefaultValue = resourceNoDefaults.get(attrName);
@@ -357,7 +357,7 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
         }
     }
 
-    private boolean isAttributeExcluded(PathAddress address, String attrName, ModelNode attrDesc) {
+    private boolean isAttributeExcluded(PathAddress address, String attrName, ModelNode attrDesc, ModelNode resourceNoDefaults) {
         if (!attrDesc.get(ACCESS_TYPE).isDefined()
                 || !attrDesc.get(ACCESS_TYPE).asString().equalsIgnoreCase("read-write")) {
             return true;
@@ -412,6 +412,10 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
                     return true;
                 }
             }
+        } else if (address.size() > 0 && "transactions".equals(address.getLastElement().getValue())
+                &&  "subsystem".equals(address.getLastElement().getKey()) && attrName.contains("jdbc")) {
+            // Ignore jdbc store attributes unless the store is enabled
+            return !resourceNoDefaults.hasDefined("use-jdbc-store") || !resourceNoDefaults.get("use-jdbc-store").asBoolean();
         }
 
         return false;
