@@ -54,6 +54,7 @@ import org.jboss.as.controller.transform.chained.ChainedOperationTransformer;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes;
 import org.jboss.as.messaging.jms.ConnectionFactoryDefinition;
 import org.jboss.as.messaging.jms.JMSQueueDefinition;
+import org.jboss.as.messaging.jms.JMSTopicDefinition;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -241,6 +242,8 @@ public class MessagingTransformers {
         rejectExpressions(server, GroupingHandlerDefinition.PATH, GroupingHandlerDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0);
 
         rejectExpressions(server, JMSQueueDefinition.PATH, JMSQueueDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0);
+
+        rejectExpressions(server, JMSTopicDefinition.PATH, JMSTopicDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0);
     }
 
     private static TransformersSubRegistration rejectExpressions(TransformersSubRegistration parent, PathElement path, AttributeDefinition... attributes) {

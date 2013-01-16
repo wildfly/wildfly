@@ -63,6 +63,7 @@ import org.jboss.as.messaging.QueueDefinition;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes;
 import org.jboss.as.messaging.jms.ConnectionFactoryDefinition;
 import org.jboss.as.messaging.jms.JMSQueueDefinition;
+import org.jboss.as.messaging.jms.JMSTopicDefinition;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryDefinition;
 import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
@@ -273,6 +274,9 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(JMSQueueDefinition.PATH),
                                 new RejectExpressionsConfig(JMSQueueDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(JMSTopicDefinition.PATH),
+                                new RejectExpressionsConfig(JMSTopicDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0))
                         .addFailedAttribute(
                                 subsystemAddress.append(JMSBridgeDefinition.PATH),
                                 new RejectExpressionsConfig(new String[0]) {
