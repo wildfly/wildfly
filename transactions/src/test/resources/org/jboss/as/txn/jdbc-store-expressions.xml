@@ -1,0 +1,13 @@
+<subsystem xmlns="urn:jboss:domain:transactions:1.3">
+    <core-environment>
+        <process-id>
+            <uuid/>
+        </process-id>
+    </core-environment>
+    <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
+    <jdbc-store datasource-jndi-name="${test.exp:java:jboss/ExampleDS}">
+        <action table-prefix="${test.exp:action}" drop-table="${test.exp:true}"/>
+        <communication table-prefix="${test.exp:communication}" drop-table="${test.exp:false}"/>
+        <state table-prefix="${test.exp:state}" drop-table="${test.exp:true}"/>
+    </jdbc-store>
+</subsystem>
