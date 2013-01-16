@@ -42,6 +42,7 @@ import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.byteman.contrib.bmunit.BMRule;
 import org.jboss.byteman.contrib.bmunit.BMUnitRunner;
 import org.jboss.dmr.ModelNode;
+import org.jgroups.protocols.SHARED_LOOPBACK;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -60,6 +61,16 @@ public class JGroupsSubsystemTransformerTestCase extends OperationTestCaseBase {
         return "jgroups-transformer_1_1.xml";
     }
 
+    @Test
+    public void testTransformerAS712() throws Exception {
+        testTransformer_1_1_0("7.1.2.Final");
+    }
+
+    @Test
+    public void testTransformerAS713() throws Exception {
+        testTransformer_1_1_0("7.1.3.Final");
+    }
+
     /**
      * Tests transformation of model from 1.1.1 version into 1.1.0 version.
      *
@@ -71,14 +82,13 @@ public class JGroupsSubsystemTransformerTestCase extends OperationTestCaseBase {
      *
      * @throws Exception
      */
-    @Test
-    public void testTransformer_1_1_0() throws Exception {
+    private void testTransformer_1_1_0(String mavenVersion) throws Exception {
         ModelVersion version = ModelVersion.create(1, 1, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXmlResource(getSubsystemXml());
         builder.createLegacyKernelServicesBuilder(null, version)
-                .addMavenResourceURL("org.jboss.as:jboss-as-clustering-jgroups:7.1.2.Final")
-                .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.2.Final")
+                .addMavenResourceURL("org.jboss.as:jboss-as-clustering-jgroups:" + mavenVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-controller:" + mavenVersion)
                 .addParentFirstClassPattern("org.jboss.as.controller.*");
 
         KernelServices mainServices = builder.build();
@@ -123,20 +133,29 @@ public class JGroupsSubsystemTransformerTestCase extends OperationTestCaseBase {
         assertEquals(mainResult.toJSONString(true), SUCCESS, mainResult.get(OUTCOME).asString());
     }
 
+    @Test
+    public void testRejectExpressionsAS712() throws Exception {
+        testRejectExpressions_1_1_0("org.jboss.as:jboss-as-clustering-jgroups:7.1.2.Final");
+    }
+
+    @Test
+    public void testRejectExpressionsAS713() throws Exception {
+        testRejectExpressions_1_1_0("org.jboss.as:jboss-as-clustering-jgroups:7.1.3.Final");
+    }
+
     /**
      * Tests rejection of expressions in 1.1.0 model.
      *
      * @throws Exception
      */
-    @Test
-    public void testRejectExpressions_1_1_0() throws Exception {
+    private void testRejectExpressions_1_1_0(String mavenGAV) throws Exception {
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
         // create builder for legacy subsystem version
         ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
         builder.createLegacyKernelServicesBuilder(null, version_1_1_0)
-            .addMavenResourceURL("org.jboss.as:jboss-as-clustering-jgroups:7.1.2.Final");
+            .addMavenResourceURL(mavenGAV);
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
@@ -151,6 +170,10 @@ public class JGroupsSubsystemTransformerTestCase extends OperationTestCaseBase {
                 version_1_1_0,
                 builder.parseXmlResource("/subsystem-jgroups-test.xml"),
                 new FailedOperationTransformationConfig()
+                    .addFailedAttribute(
+                            subsystemAddress.append(PathElement.pathElement("stack"))
+                                    .append(PathElement.pathElement("transport")),
+                            new FailedOperationTransformationConfig.RejectExpressionsConfig(ModelKeys.SHARED))
                     .addFailedAttribute(
                             subsystemAddress.append(PathElement.pathElement("stack"))
                                 .append(PathElement.pathElement("transport"))

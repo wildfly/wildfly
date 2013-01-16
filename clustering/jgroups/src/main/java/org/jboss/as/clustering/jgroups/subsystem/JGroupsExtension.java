@@ -139,7 +139,7 @@ public class JGroupsExtension implements Extension {
 
         final ModelVersion version110 = ModelVersion.create(1, 1, 0);
         final RejectExpressionValuesTransformer TRANSFORMER = new RejectExpressionValuesTransformer(PropertyResource.VALUE,
-                TransportResource.PROPERTIES, ProtocolResource.PROPERTIES);
+                TransportResource.PROPERTIES, ProtocolResource.PROPERTIES, TransportResource.SHARED);
 
         final TransformersSubRegistration registration = subsystem.registerModelTransformers(version110, ResourceTransformer.DEFAULT);
         final TransformersSubRegistration stack = registration.registerSubResource(StackResource.STACK_PATH);
@@ -147,6 +147,7 @@ public class JGroupsExtension implements Extension {
         // reject expressions for transport properties, for the add and write-attribute op
         final TransformersSubRegistration transport = stack.registerSubResource(TransportResource.TRANSPORT_PATH, (ResourceTransformer)TRANSFORMER) ;
         transport.registerOperationTransformer(ADD, TRANSFORMER);
+        transport.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, TRANSFORMER.getWriteAttributeTransformer());
         final TransformersSubRegistration transport_property = transport.registerSubResource(PropertyResource.PROPERTY_PATH) ;
         transport_property.registerOperationTransformer(ADD, TRANSFORMER);
         transport_property.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, TRANSFORMER.getWriteAttributeTransformer());
