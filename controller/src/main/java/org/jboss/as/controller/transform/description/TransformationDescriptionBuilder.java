@@ -23,6 +23,7 @@
 package org.jboss.as.controller.transform.description;
 
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.transform.PathTransformation;
 
 /**
  * A transformation description builder.
@@ -31,14 +32,10 @@ import org.jboss.as.controller.PathElement;
  */
 public abstract class TransformationDescriptionBuilder {
 
-    /**
-     * Register an alias, inheriting all transformation rules from this resource.
-     *
-     * @param element the path element
-     * @return the transformation
-     */
-    // TODO allow some sort of parent? probably only scoped to a given context like subsystem (or host, server, domain)
-    public abstract TransformationDescriptionBuilder redirectTo(PathElement element);
+    protected final PathElement pathElement;
+    protected TransformationDescriptionBuilder(final PathElement pathElement) {
+        this.pathElement = pathElement;
+    }
 
     /**
      * Build the transformation description.
@@ -76,18 +73,8 @@ public abstract class TransformationDescriptionBuilder {
          * @deprecated experimental
          */
         @Deprecated
-        public static TransformationDescriptionBuilder createDiscardInstance(final PathElement pathElement) {
-            return new TransformationDescriptionBuilder() {
-                @Override
-                public TransformationDescriptionBuilder redirectTo(PathElement element) {
-                    return this;
-                }
-
-                @Override
-                public TransformationDescription build() {
-                    return new DiscardDefinition(pathElement);
-                }
-            };
+        public static TransformationDescriptionBuilder createDiscardInstance(PathElement pathElement) {
+            return new DiscardTransformationDescriptionBuilder(pathElement);
         }
 
     }

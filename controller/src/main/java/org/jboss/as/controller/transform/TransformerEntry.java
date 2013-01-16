@@ -20,38 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller.transform.description;
-
-import org.jboss.as.controller.PathElement;
+package org.jboss.as.controller.transform;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public final class DiscardTransformationDescriptionBuilder extends TransformationDescriptionBuilder {
+public interface TransformerEntry {
 
-    private TransformationDescriptionBuilder redirectBuilder;
-    protected DiscardTransformationDescriptionBuilder(PathElement pathElement) {
-        super(pathElement);
-    }
+    PathTransformation getPathTransformation();
+    ResourceTransformer getResourceTransformer();
+    OperationTransformer getOperationTransformer();
 
-    /**
-     * Discard operations to the current address, but redirect to a different address.
-     *
-     * @param element the path element
-     * @return the transformation
-     */
-    public ResourceTransformationDescriptionBuilder redirectTo(PathElement redirect) {
-        ResourceTransformationDescriptionBuilderImpl builder = new ResourceTransformationDescriptionBuilderImpl(pathElement);
-        this.redirectBuilder = builder;
-        return builder.redirectTo(redirect);
-    }
-
-    @Override
-    public TransformationDescription build() {
-        if(redirectBuilder != null) {
-            return redirectBuilder.build();
+    TransformerEntry ALL_DEFAULTS = new TransformerEntry() {
+        @Override
+        public PathTransformation getPathTransformation() {
+            return PathTransformation.DEFAULT;
         }
-        return new DiscardDefinition(pathElement);
-    }
+
+        @Override
+        public ResourceTransformer getResourceTransformer() {
+            return ResourceTransformer.DEFAULT;
+        }
+
+        @Override
+        public OperationTransformer getOperationTransformer() {
+            return OperationTransformer.DEFAULT;
+        }
+    };
 
 }

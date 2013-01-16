@@ -22,9 +22,55 @@
 
 package org.jboss.as.controller.transform.description;
 
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.PathTransformation;
+import org.jboss.as.controller.transform.ResourceTransformer;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
+
+import java.util.Collections;
+import java.util.Map;
+
 /**
  * @author Emanuel Muckenhuber
  */
-public abstract class ExplicitTransformationDescriptionBuilder extends TransformationDescriptionBuilder {
+public class ExplicitTransformationDescriptionBuilder extends TransformationDescriptionBuilder {
+
+    private ResourceTransformer resourceTransformer = ResourceTransformer.DEFAULT;
+    private OperationTransformer operationTransformer = OperationTransformer.DEFAULT;
+    private PathTransformation pathTransformation = PathTransformation.DEFAULT;
+
+    private final Map<String, OperationTransformer> operationTransformers = Collections.emptyMap(); // TODO
+
+    public ExplicitTransformationDescriptionBuilder(PathElement pathElement) {
+        super(pathElement);
+    }
+
+    public ExplicitTransformationDescriptionBuilder setResourceTransformer(ResourceTransformer resourceTransformer) {
+        this.resourceTransformer = resourceTransformer;
+        return this;
+    }
+
+    public ExplicitTransformationDescriptionBuilder setOperationTransformer(OperationTransformer operationTransformer) {
+        this.operationTransformer = operationTransformer;
+        return this;
+    }
+
+    public ExplicitTransformationDescriptionBuilder redirectTo(PathElement element) {
+        pathTransformation = new PathTransformation.BasicPathTransformation(element);
+        return this;
+    }
+
+    @Override
+    public TransformationDescription build() {
+        return new AbstractDescription(pathElement, pathTransformation) {
+
+            @Override
+            public void register(TransformersSubRegistration parent) {
+                parent.registerSubResource(pathElement, resourceTransformer, operationTransformer);
+            }
+
+        };
+    }
 
 }

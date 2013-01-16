@@ -37,6 +37,8 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
+import java.util.List;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -72,7 +74,10 @@ public class TransformersImpl implements Transformers {
             ControllerLogger.ROOT_LOGGER.tracef("operation %s does not need transformation", operation);
             return new OperationTransformer.TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
         }
-        return transformer.transformOperation(context, address, operation);
+        final List<PathTransformation> addresses = target.getPathTransformation(address);
+        final PathTransformation.Builder builder = new PathTransformation.BuilderImpl(addresses.iterator(), address);
+        final PathAddress transformed = builder.next();
+        return transformer.transformOperation(context, transformed, operation);
     }
 
     @Override

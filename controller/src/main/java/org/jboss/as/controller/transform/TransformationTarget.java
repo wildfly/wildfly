@@ -26,6 +26,9 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 
+import java.util.Iterator;
+import java.util.List;
+
 /**
  * A potentially remote target requiring transformation.
  *
@@ -47,6 +50,22 @@ public interface TransformationTarget {
      * @return the version of the specified subsystem, {@code null} if it does not exist
      */
     ModelVersion getSubsystemVersion(String subsystemName);
+
+    /**
+     * Get the transformer entry.
+     *
+     * @param address the path address
+     * @return the transformer entry
+     */
+    TransformerEntry getTransformerEntry(PathAddress address);
+
+    /**
+     * Get path transformations.
+     *
+     * @param address the path address
+     * @return a list of registered path transformers
+     */
+    List<PathTransformation> getPathTransformation(PathAddress address);
 
     /**
      * Resolve a resource transformer for agiven address.

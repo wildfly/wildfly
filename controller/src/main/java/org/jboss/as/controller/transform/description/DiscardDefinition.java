@@ -30,6 +30,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.PathTransformation;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
@@ -40,13 +41,6 @@ import org.jboss.dmr.ModelNode;
  * @author Emanuel Muckenhuber
  */
 class DiscardDefinition extends AbstractDescription implements TransformationDescription, OperationTransformer, ResourceTransformer {
-
-    private static final PathTransformation DISCARD = new PathTransformation() {
-        @Override
-        PathAddress transform(PathAddress current, PathElement element) {
-            return current; // TODO recursion
-        }
-    };
 
     public DiscardDefinition(PathElement pathElement) {
         super(pathElement, PathTransformation.DEFAULT);

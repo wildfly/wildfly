@@ -24,6 +24,7 @@ package org.jboss.as.controller.transform;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.controller.ModelVersion;
@@ -42,7 +43,7 @@ public class TransformationTargetImpl implements TransformationTarget {
     private final ExtensionRegistry extensionRegistry;
     private final TransformerRegistry transformerRegistry;
     private final Map<String, ModelVersion> subsystemVersions = Collections.synchronizedMap(new HashMap<String, ModelVersion>());
-    private final OperationTransformerRegistry operationTransformers;
+    private final OperationTransformerRegistry registry;
     private final TransformationTargetType type;
     private final IgnoredTransformationRegistry transformationExclusion;
 
@@ -56,7 +57,7 @@ public class TransformationTargetImpl implements TransformationTarget {
             final String name = p.getKey().getLastElement().getValue();
             this.subsystemVersions.put(name, p.getValue());
         }
-        this.operationTransformers = transformers;
+        this.registry = transformers;
         this.type = type;
         this.transformationExclusion = transformationExclusion == null ? null : transformationExclusion;
     }
@@ -94,11 +95,21 @@ public class TransformationTargetImpl implements TransformationTarget {
         if (transformationExclusion != null && transformationExclusion.isResourceTransformationIgnored(address)) {
             return ResourceTransformer.DEFAULT;
         }
-        OperationTransformerRegistry.ResourceTransformerEntry entry = operationTransformers.resolveResourceTransformer(address);
+        OperationTransformerRegistry.ResourceTransformerEntry entry = registry.resolveResourceTransformer(address);
         if(entry == null) {
             return ResourceTransformer.DEFAULT;
         }
         return entry.getTransformer();
+    }
+
+    @Override
+    public TransformerEntry getTransformerEntry(final PathAddress address) {
+        return registry.getTransformerEntry(address);
+    }
+
+    @Override
+    public List<PathTransformation> getPathTransformation(final PathAddress address) {
+        return registry.getPathTransformations(address);
     }
 
     @Override
@@ -107,12 +118,12 @@ public class TransformationTargetImpl implements TransformationTarget {
             return OperationTransformer.DEFAULT;
         }
         if(address.size() == 0) {
-            // TODO use operationTransformers registry to register this operations.
+            // TODO use registry registry to register this operations.
             if(ModelDescriptionConstants.COMPOSITE.equals(operationName)) {
                 return new CompositeOperationTransformer();
             }
         }
-        final OperationTransformerRegistry.OperationTransformerEntry entry = operationTransformers.resolveOperationTransformer(address, operationName);
+        final OperationTransformerRegistry.OperationTransformerEntry entry = registry.resolveOperationTransformer(address, operationName);
         return entry.getTransformer();
     }
 
@@ -124,7 +135,7 @@ public class TransformationTargetImpl implements TransformationTarget {
     @Override
     public void addSubsystemVersion(final String subsystemName, final ModelVersion version) {
         this.subsystemVersions.put(subsystemName, version);
-        transformerRegistry.addSubsystem(operationTransformers, subsystemName, version);
+        transformerRegistry.addSubsystem(registry, subsystemName, version);
     }
 
     @Override
