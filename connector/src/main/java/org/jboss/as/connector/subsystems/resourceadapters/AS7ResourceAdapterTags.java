@@ -37,6 +37,11 @@ public enum AS7ResourceAdapterTags {
     UNKNOWN(null),
 
     /**
+     * id tag
+     */
+    ID("id"),
+
+    /**
      * config-property tag
      */
     CONFIG_PROPERTY("config-property"),

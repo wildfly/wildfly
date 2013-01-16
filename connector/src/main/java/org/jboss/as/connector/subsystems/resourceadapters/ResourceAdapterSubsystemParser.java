@@ -84,6 +84,7 @@ import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
 import org.jboss.jca.common.api.metadata.common.v10.CommonConnDef;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
 import org.jboss.jca.common.api.metadata.resourceadapter.v10.ResourceAdapter;
+import org.jboss.jca.common.metadata.ra.RaParser;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -109,8 +110,8 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
             writer.writeStartElement(Element.RESOURCE_ADAPTERS.getLocalName());
             for (Property property : node.get(RESOURCEADAPTER_NAME).asPropertyList()) {
                 final ModelNode ra = property.getValue();
-
-                writeRaElement(writer, ra);
+                final String  name = property.getName();
+                writeRaElement(writer, ra, name);
             }
             writer.writeEndElement();
             // Close the subsystem element
@@ -118,9 +119,9 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
         }
     }
 
-    private void writeRaElement(XMLExtendedStreamWriter streamWriter, ModelNode ra) throws XMLStreamException {
+    private void writeRaElement(XMLExtendedStreamWriter streamWriter, ModelNode ra, final String name) throws XMLStreamException {
         streamWriter.writeStartElement(ResourceAdapters.Tag.RESOURCE_ADAPTER.getLocalName());
-
+        streamWriter.writeAttribute(ResourceAdapterParser.Attribute.ID.getLocalName(), name);
         ARCHIVE.marshallAsElement(ra, streamWriter);
         MODULE.marshallAsElement(ra, streamWriter);
 
@@ -329,7 +330,7 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
         list.add(subsystem);
 
         try {
-            String localName = null;
+            String localName;
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case RESOURCEADAPTERS_1_0: {
                     localName = reader.getLocalName();
@@ -343,6 +344,21 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
                             break;
                         }
                     }
+                    break;
+                }
+                case RESOURCEADAPTERS_1_1: {
+                    localName = reader.getLocalName();
+                    final Element element = Element.forName(reader.getLocalName());
+                    SUBSYSTEM_RA_LOGGER.tracef("%s -> %s", localName, element);
+                    switch (element) {
+                        case SUBSYSTEM: {
+                            ResourceAdapterParser parser = new ResourceAdapterParser();
+                            parser.parse(reader, list, address);
+                            ParseUtils.requireNoContent(reader);
+                            break;
+                        }
+                    }
+                    break;
                 }
             }
         } catch (Exception e) {

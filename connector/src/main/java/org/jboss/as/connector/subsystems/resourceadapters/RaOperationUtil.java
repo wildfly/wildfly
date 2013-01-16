@@ -247,8 +247,6 @@ public class RaOperationUtil {
         }
         ConnectorServices.unregisterResourceIdentifier(raName, identifier);
 
-        ServiceName deploymentServiceName = ConnectorServices.getDeploymentServiceName(raName);
-
         return wasActive;
 
     }
@@ -258,7 +256,7 @@ public class RaOperationUtil {
         if (rarName.contains(ConnectorServices.RA_SERVICE_NAME_SEPARATOR)) {
             rarName = rarName.substring(0, rarName.indexOf(ConnectorServices.RA_SERVICE_NAME_SEPARATOR));
         }
-        final ServiceController<?> inactiveRaController = registry.getService(ConnectorServices.INACTIVE_RESOURCE_ADAPTER_SERVICE.append(rarName));
+        final ServiceController<?> inactiveRaController = registry.getService(ConnectorServices.INACTIVE_RESOURCE_ADAPTER_SERVICE.append(raName));
         if (inactiveRaController == null) {
             throw new OperationFailedException("rar not yet deployed");
         }
@@ -284,28 +282,31 @@ public class RaOperationUtil {
         if (resourceAdapter.getBootstrapContext() != null && ! resourceAdapter.getBootstrapContext().equals("undefined")) {
             bootStrapCtxName = resourceAdapter.getBootstrapContext();
         }
-        ResourceAdapterService raService = new ResourceAdapterService(resourceAdapter);
-        serviceTarget.addService(raServiceName, raService).setInitialMode(ServiceController.Mode.ACTIVE)
-                .addDependency(ConnectorServices.RESOURCEADAPTERS_SERVICE, ResourceAdaptersService.ModifiableResourceAdaptors.class, raService.getResourceAdaptersInjector())
-                .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(bootStrapCtxName))
-                .addListener(verificationHandler).install();
+        final ServiceController<?> service = context.getServiceRegistry(true).getService(raServiceName);
+        if (service == null) {
+            ResourceAdapterService raService = new ResourceAdapterService(resourceAdapter);
+            serviceTarget.addService(raServiceName, raService).setInitialMode(ServiceController.Mode.ACTIVE)
+                    .addDependency(ConnectorServices.RESOURCEADAPTERS_SERVICE, ResourceAdaptersService.ModifiableResourceAdaptors.class, raService.getResourceAdaptersInjector())
+                    .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(bootStrapCtxName))
+                    .addListener(verificationHandler).install();
+        }
         return raServiceName;
     }
 
-    public static void installRaServicesAndDeployFromModule(OperationContext context, ServiceVerificationHandler verificationHandler, String name, ModifiableResourceAdapter resourceAdapter, String moduleName) throws OperationFailedException{
+    public static void installRaServicesAndDeployFromModule(OperationContext context, ServiceVerificationHandler verificationHandler, String name, ModifiableResourceAdapter resourceAdapter, String fullModuleName) throws OperationFailedException{
         ServiceName raServiceName =  installRaServices(context, verificationHandler, name, resourceAdapter);
         final boolean resolveProperties = true;
         final ServiceTarget serviceTarget = context.getServiceTarget();
-        String deploymentName = moduleName;//.substring(0, deploymentRoot.getName().indexOf(".rar"));
+        final String moduleName;
 
-        if (moduleName.contains("->")) {
-            moduleName = moduleName.substring(0, moduleName.indexOf("->"));
-        }
+
         //load module
         String slot = "main";
-        if (moduleName.contains(":")) {
-            slot = moduleName.substring(moduleName.indexOf(":") + 1);
-            moduleName = moduleName.substring(0, moduleName.indexOf(":"));
+        if (fullModuleName.contains(":")) {
+            slot = fullModuleName.substring(fullModuleName.indexOf(":") + 1);
+            moduleName = fullModuleName.substring(0, fullModuleName.indexOf(":"));
+        } else {
+            moduleName = fullModuleName;
         }
 
         Module module;
@@ -320,9 +321,7 @@ public class RaOperationUtil {
             try {
                 VirtualFile child;
                 if (path.getPath().contains("!")) {
-                    child = VFS.getChild(path.getPath().split("!")[0].split("file:")[1]);
-
-                    closable = VFS.mountZip(new File(path.getPath().split("!")[0].split("file:")[1]), child, TempFileProviderService.provider());
+                    throw new OperationFailedException(MESSAGES.compressedRarNotSupportedInModuleRA(moduleName));
                 } else {
                     child = VFS.getChild(path.getPath().split("META-INF")[0]);
 
@@ -336,7 +335,7 @@ public class RaOperationUtil {
                 final VirtualFile deploymentRoot = resourceRoot.getRoot();
                 if (deploymentRoot == null || !deploymentRoot.exists())
                     return;
-                ConnectorXmlDescriptor connectorXmlDescriptor = RaDeploymentParsingProcessor.process(resolveProperties, deploymentRoot, null, deploymentName);
+                ConnectorXmlDescriptor connectorXmlDescriptor = RaDeploymentParsingProcessor.process(resolveProperties, deploymentRoot, null, name);
                 IronJacamarXmlDescriptor ironJacamarXmlDescriptor = IronJacamarDeploymentParsingProcessor.process(deploymentRoot, resolveProperties);
                 RaNativeProcessor.process(deploymentRoot);
                 Map<ResourceRoot, Index> annotationIndexes = new HashMap<ResourceRoot, Index>();
@@ -349,16 +348,22 @@ public class RaOperationUtil {
                     ConnectorLogger.SUBSYSTEM_RA_LOGGER.forceIJToNull();
                     ironJacamarXmlDescriptor = null;
                 }
-                ServiceBuilder builder = ParsedRaDeploymentProcessor.process(connectorXmlDescriptor, ironJacamarXmlDescriptor, module.getClassLoader(), serviceTarget, annotationIndexes, RAR_MODULE.append(deploymentName), verificationHandler);
-                builder.addDependency(raServiceName).setInitialMode(ServiceController.Mode.ACTIVE).install();
-                String rarName = resourceAdapter.getArchive();
-                Integer identifier = null;
-                if (rarName.contains(ConnectorServices.RA_SERVICE_NAME_SEPARATOR)) {
-                    rarName = rarName.substring(0, rarName.indexOf(ConnectorServices.RA_SERVICE_NAME_SEPARATOR));
+                final ServiceName deployerServiceName = ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(connectorXmlDescriptor.getDeploymentName());
+                final ServiceController<?> deployerService = context.getServiceRegistry(true).getService(deployerServiceName);
+                if (deployerService == null) {
+                    ServiceBuilder builder = ParsedRaDeploymentProcessor.process(connectorXmlDescriptor, ironJacamarXmlDescriptor, module.getClassLoader(), serviceTarget, annotationIndexes, RAR_MODULE.append(name), verificationHandler);
+                    builder.addDependency(raServiceName).setInitialMode(ServiceController.Mode.ACTIVE).install();
                 }
-                if (deploymentName.equals(rarName)) {
-                    RaServicesFactory.createDeploymentService(connectorXmlDescriptor, module, serviceTarget, deploymentName, RAR_MODULE.append(deploymentName), resourceAdapter, verificationHandler);
+                String rarName = resourceAdapter.getArchive();
 
+                if (fullModuleName.equals(rarName)) {
+
+                    ServiceName serviceName = ConnectorServices.INACTIVE_RESOURCE_ADAPTER_SERVICE.append(name);
+
+                    InactiveResourceAdapterDeploymentService service = new InactiveResourceAdapterDeploymentService(connectorXmlDescriptor, module, name, name, RAR_MODULE.append(name), null, serviceTarget, null);
+                    ServiceBuilder builder = serviceTarget
+                            .addService(serviceName, service);
+                    builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
 
                 }
 

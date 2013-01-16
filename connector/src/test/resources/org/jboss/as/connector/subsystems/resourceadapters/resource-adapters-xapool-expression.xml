@@ -2,7 +2,7 @@
   <!--Optional:-->
   <resource-adapters>
     <!--1 or more repetitions:-->
-    <resource-adapter>
+    <resource-adapter id="myRA">
       <!--Optional:-->
         <archive>archive</archive>
       <!--Optional:-->

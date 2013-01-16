@@ -2,7 +2,7 @@
   <!--Optional:-->
   <resource-adapters>
     <!--1 or more repetitions:-->
-    <resource-adapter>
+    <resource-adapter id="myRA">
       <!--Optional:-->
       <module id="moduleID" slot="main"/>
       <!--Optional:-->

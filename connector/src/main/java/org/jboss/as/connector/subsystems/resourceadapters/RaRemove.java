@@ -76,8 +76,8 @@ public class RaRemove implements OperationStepHandler {
         context.addStep(new OperationStepHandler() {
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-                final boolean wasActive = RaOperationUtil.deactivateIfActive(context, archiveOrModuleName);
-                ServiceName raServiceName = ServiceName.of(ConnectorServices.RA_SERVICE, archiveOrModuleName);
+                final boolean wasActive = RaOperationUtil.deactivateIfActive(context, name);
+                ServiceName raServiceName = ServiceName.of(ConnectorServices.RA_SERVICE, name);
                 ServiceController<?> serviceController =  context.getServiceRegistry(false).getService(raServiceName);
                 final ModifiableResourceAdapter resourceAdapter;
                 if (serviceController != null) {
@@ -96,8 +96,10 @@ public class RaRemove implements OperationStepHandler {
                 if (model.get(MODULE.getName()).isDefined()) {
                     //ServiceName deploymentServiceName = ConnectorServices.getDeploymentServiceName(model.get(MODULE.getName()).asString());
                     //context.removeService(deploymentServiceName);
-                    ServiceName deployerServiceName = ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(model.get(MODULE.getName()).asString());
+                    ServiceName deployerServiceName = ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(name);
                     context.removeService(deployerServiceName);
+                    ServiceName inactiveServiceName = ConnectorServices.INACTIVE_RESOURCE_ADAPTER_SERVICE.append(name);
+                    context.removeService(inactiveServiceName);
                 }
 
                 context.removeService(raServiceName);
@@ -105,7 +107,15 @@ public class RaRemove implements OperationStepHandler {
                     @Override
                     public void handleRollback(OperationContext context, ModelNode operation) {
                         if (resourceAdapter != null) {
-                            RaOperationUtil.installRaServices(context, new ServiceVerificationHandler(), archiveOrModuleName, resourceAdapter);
+                            if (model.get(ARCHIVE.getName()).isDefined()) {
+                                RaOperationUtil.installRaServices(context, new ServiceVerificationHandler(), name, resourceAdapter);
+                            } else {
+                                try {
+                                    RaOperationUtil.installRaServicesAndDeployFromModule(context, new ServiceVerificationHandler(), name, resourceAdapter, archiveOrModuleName);
+                                } catch (OperationFailedException e) {
+
+                                }
+                            }
                             try {
                                 if (wasActive)
                                     RaOperationUtil.activate(context, archiveOrModuleName, archiveOrModuleName, null);
