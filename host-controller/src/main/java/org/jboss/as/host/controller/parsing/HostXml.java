@@ -1032,7 +1032,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
                 switch (attribute) {
                     case DIRECTORY_GROUPING: {
                         final ModelNode address = parentAddress.clone();
-                        list.add(Util.getWriteAttributeOperation(address, DIRECTORY_GROUPING, value));
+                        list.add(Util.getWriteAttributeOperation(address, DIRECTORY_GROUPING, HostResourceDefinition.DIRECTORY_GROUPING.parse(value,reader)));
                         break;
                     }
                     default:

@@ -23,11 +23,9 @@
 package org.jboss.as.naming.subsystem;
 
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
  * A {@link org.jboss.as.controller.ResourceDefinition} for JNDI bindings
- *
  */
 public class RemoteNamingResourceDefinition extends SimpleResourceDefinition {
 
@@ -39,7 +37,4 @@ public class RemoteNamingResourceDefinition extends SimpleResourceDefinition {
                 RemoteNamingAdd.INSTANCE, RemoteNamingRemove.INSTANCE);
     }
 
-    @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-    }
 }

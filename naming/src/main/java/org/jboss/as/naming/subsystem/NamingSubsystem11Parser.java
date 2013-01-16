@@ -22,20 +22,6 @@
 
 package org.jboss.as.naming.subsystem;
 
-import java.util.EnumSet;
-import java.util.List;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -56,10 +42,21 @@ import static org.jboss.as.naming.subsystem.NamingSubsystemModel.SIMPLE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.TYPE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.VALUE;
 
+import java.util.EnumSet;
+import java.util.List;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+
 /**
  * @author Stuart Douglas
  */
-public class NamingSubsystem11Parser implements XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
+public class NamingSubsystem11Parser implements XMLElementReader<List<ModelNode>> {
 
     public static final NamingSubsystem11Parser INSTANCE = new NamingSubsystem11Parser();
 
@@ -70,88 +67,11 @@ public class NamingSubsystem11Parser implements XMLElementReader<List<ModelNode>
      * {@inheritDoc}
      */
     @Override
-    public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
-
-        context.startSubsystemElement(NamingExtension.NAMESPACE_1_1, false);
-
-        ModelNode model = context.getModelNode();
-
-        // bindings
-        if (model.hasDefined(BINDING)) {
-            writer.writeStartElement(NamingSubsystemXMLElement.BINDINGS.getLocalName());
-            final ModelNode bindingModel = model.get(BINDING);
-            this.writeBindings(writer, bindingModel);
-            // </timer-service>
-            writer.writeEndElement();
-        }
-
-        // write the subsystem end element
-        writer.writeEndElement();
-    }
-
-    private void writeBindings(final XMLExtendedStreamWriter writer, final ModelNode bindingModel) throws XMLStreamException {
-        for (Property binding : bindingModel.asPropertyList()) {
-            final String type = binding.getValue().get(BINDING_TYPE).asString();
-            if (type.equals(SIMPLE)) {
-                writeSimpleBinding(binding, writer);
-            } else if (type.equals(OBJECT_FACTORY)) {
-                writeObjectFactoryBinding(binding, writer);
-            } else if (type.equals(LOOKUP)) {
-                writeLookupBinding(binding, writer);
-            } else {
-                throw new XMLStreamException("Unknown binding type " + type);
-            }
-
-        }
-    }
-
-    private void writeSimpleBinding(final Property binding, final XMLExtendedStreamWriter writer) throws XMLStreamException {
-        writer.writeStartElement(NamingSubsystemXMLElement.SIMPLE.getLocalName());
-        writer.writeAttribute(NamingSubsystemXMLAttribute.NAME.getLocalName(), binding.getName());
-
-        writer.writeAttribute(NamingSubsystemXMLAttribute.VALUE.getLocalName(), binding.getValue().get(VALUE).asString());
-        if (binding.getValue().has(TYPE)) {
-            writer.writeAttribute(NamingSubsystemXMLAttribute.TYPE.getLocalName(), binding.getValue().get(TYPE).asString());
-        }
-        writer.writeEndElement();
-    }
-
-    private void writeObjectFactoryBinding(final Property binding, final XMLExtendedStreamWriter writer) throws XMLStreamException {
-
-        writer.writeStartElement(NamingSubsystemXMLElement.OBJECT_FACTORY.getLocalName());
-        writer.writeAttribute(NamingSubsystemXMLAttribute.NAME.getLocalName(), binding.getName());
-        writer.writeAttribute(NamingSubsystemXMLAttribute.MODULE.getLocalName(), binding.getValue().get(MODULE).asString());
-        writer.writeAttribute(NamingSubsystemXMLAttribute.CLASS.getLocalName(), binding.getValue().get(CLASS).asString());
-        writer.writeEndElement();
-    }
-
-    private void writeLookupBinding(final Property binding, final XMLExtendedStreamWriter writer) throws XMLStreamException {
-
-        writer.writeStartElement(NamingSubsystemXMLElement.LOOKUP.getLocalName());
-        writer.writeAttribute(NamingSubsystemXMLAttribute.NAME.getLocalName(), binding.getName());
-        writer.writeAttribute(NamingSubsystemXMLAttribute.LOOKUP.getLocalName(), binding.getValue().get(LOOKUP).asString());
-        writer.writeEndElement();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> operations) throws XMLStreamException {
 
 
-        final ModelNode namingSubsystemAdd = new ModelNode();
-        namingSubsystemAdd.get(OP).set(ADD);
-        namingSubsystemAdd.get(OP_ADDR).add(SUBSYSTEM, NamingExtension.SUBSYSTEM_NAME);
-
-        operations.add(namingSubsystemAdd);
-
-        final ModelNode remoteNamingAdd = new ModelNode();
-        remoteNamingAdd.get(OP).set(ADD);
-        remoteNamingAdd.get(OP_ADDR).add(SUBSYSTEM, NamingExtension.SUBSYSTEM_NAME);
-        remoteNamingAdd.get(OP_ADDR).add(NamingSubsystemModel.SERVICE, NamingSubsystemModel.REMOTE_NAMING);
-
-        operations.add(remoteNamingAdd);
+        operations.add(Util.createAddOperation(PathAddress.pathAddress(NamingExtension.SUBSYSTEM_PATH)));
+        operations.add(Util.createAddOperation(PathAddress.pathAddress(NamingExtension.SUBSYSTEM_PATH).append(NamingSubsystemModel.SERVICE, NamingSubsystemModel.REMOTE_NAMING)));
 
         // elements
         final EnumSet<NamingSubsystemXMLElement> encountered = EnumSet.noneOf(NamingSubsystemXMLElement.class);

@@ -37,11 +37,9 @@ import static org.jboss.as.naming.subsystem.NamingSubsystemModel.TYPE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.VALUE;
 
 import java.net.URL;
-
 import javax.ejb.EJB;
 
 import junit.framework.Assert;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -59,7 +57,6 @@ import org.junit.runner.RunWith;
  * Test case for binding of {@link URL} (see AS7-5140). Uses AS controller to do the bind, lookup is through an EJB.
  *
  * @author Eduardo Martins
- *
  */
 @RunWith(Arquillian.class)
 public class URLBindingTestCase {
@@ -95,7 +92,7 @@ public class URLBindingTestCase {
         try {
             final ModelNode addResult = managementClient.getControllerClient().execute(bindingAdd);
             Assert.assertFalse(addResult.get(FAILURE_DESCRIPTION).toString(), addResult.get(FAILURE_DESCRIPTION).isDefined());
-            Assert.assertEquals("http://localhost", ((URL) bean.lookupBind(name)).toString());
+            Assert.assertEquals("http://localhost", bean.lookupBind(name).toString());
         } finally {
             // unbind it
             final ModelNode bindingRemove = new ModelNode();

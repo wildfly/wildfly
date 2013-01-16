@@ -26,19 +26,11 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 /**
- *
  * @author Eduardo Martins
- *
  */
 @Stateless
 public class URLBindingTestCaseBean {
 
-    /**
-     *
-     * @param name
-     * @return
-     * @throws NamingException
-     */
     public Object lookupBind(String name) throws NamingException {
         return new InitialContext().lookup(name);
     }

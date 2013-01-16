@@ -44,8 +44,7 @@ import org.jboss.dmr.ModelType;
 public class WebContainerDefinition extends SimpleResourceDefinition {
     public static final WebContainerDefinition INSTANCE = new WebContainerDefinition();
 
-    protected static final SimpleListAttributeDefinition WELCOME_FILES =
-            new SimpleListAttributeDefinition.Builder(Constants.WELCOME_FILE,
+    protected static final SimpleListAttributeDefinition WELCOME_FILES =new SimpleListAttributeDefinition.Builder(Constants.WELCOME_FILE,
                     new SimpleAttributeDefinitionBuilder(Constants.WELCOME_FILE, ModelType.STRING, true)
                             .setXmlName(Constants.WELCOME_FILE)
                             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
@@ -53,7 +52,9 @@ public class WebContainerDefinition extends SimpleResourceDefinition {
                             .build())
                     .setAllowNull(true)
                     .build();
-    protected static final PropertiesAttributeDefinition MIME_MAPPINGS = new PropertiesAttributeDefinition.Builder(Constants.MIME_MAPPING, true).build();
+    protected static final PropertiesAttributeDefinition MIME_MAPPINGS = new PropertiesAttributeDefinition.Builder(Constants.MIME_MAPPING, true)
+            .setAllowExpression(true)
+            .build();
 
     private static final SimpleAttributeDefinition MIME_NAME = new SimpleAttributeDefinitionBuilder(Constants.NAME, ModelType.STRING, true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)

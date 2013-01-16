@@ -19,7 +19,7 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.naming;
+package org.jboss.as.naming.subsystem;
 
 import org.jboss.as.naming.subsystem.NamingExtension;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
@@ -41,7 +41,4 @@ public class NamingSubsystemTestCase extends AbstractSubsystemBaseTest {
     protected String getSubsystemXml() throws IOException {
         return readResource("subsystem.xml");
     }
-
-
-
 }
