@@ -27,10 +27,9 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.transform.ResourceTransformer;
 
-import java.util.Collection;
-
 /**
  * @author Emanuel Muckenhuber
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public abstract class ResourceTransformationDescriptionBuilder extends TransformationDescriptionBuilder {
 
@@ -38,29 +37,10 @@ public abstract class ResourceTransformationDescriptionBuilder extends Transform
         super(pathElement);
     }
 
-    /**
-     * Reject expressions as attribute values.
-     *
-     * @param attributeNames the attributes names
-     * @return the builder for the current resource
-     */
-    public abstract ResourceTransformationDescriptionBuilder rejectExpressions(Collection<String> attributeNames);
+    public abstract AttributeTransformationDescriptionBuilder<String> getStringAttributeBuilder();
 
-    /**
-     * Reject expressions as attribute values.
-     *
-     * @param attributeNames the attribute names
-     * @return the builder for the current resource
-     */
-    public abstract ResourceTransformationDescriptionBuilder rejectExpressions(String... attributeNames);
+    public abstract AttributeTransformationDescriptionBuilder<AttributeDefinition> getDefAttributeBuilder();
 
-    /**
-     * Reject expressions as attributes values.
-     *
-     * @param defintions the attribute definitions
-     * @return the builder for the current resource
-     */
-    public abstract ResourceTransformationDescriptionBuilder rejectExpressions(AttributeDefinition... defintions);
 
     /**
      * Set a custom resource transformer. This transformer is going to be called after all attribute transformations happened

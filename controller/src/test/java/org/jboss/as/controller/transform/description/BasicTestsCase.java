@@ -22,7 +22,11 @@
 
 package org.jboss.as.controller.transform.description;
 
+import java.util.Collections;
+import java.util.Locale;
+
 import junit.framework.Assert;
+
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
@@ -34,12 +38,10 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.GlobalTransformerRegistry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
-import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.TransformationTargetImpl;
@@ -49,9 +51,6 @@ import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.dmr.ModelNode;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.Collections;
-import java.util.Locale;
 
 /**
  * @author Emanuel Muckenhuber
@@ -77,8 +76,7 @@ public class BasicTestsCase {
         // Build
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
 
-        // Basic transformations
-        builder.rejectExpressions("test")
+        builder.getStringAttributeBuilder().rejectExpressions("test").end()
                 .addCustomTransformation(new ModelTransformer() {
                     @Override
                     public boolean transform(ModelNode node, PathAddress address, TransformationContext context) throws OperationFailedException {

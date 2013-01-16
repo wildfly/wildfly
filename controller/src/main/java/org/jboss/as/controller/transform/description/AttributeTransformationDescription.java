@@ -22,33 +22,70 @@
 
 package org.jboss.as.controller.transform.description;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * A transformer for a single attribute
  *
  * @author Emanuel Muckenhuber
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-interface AttributeTransformationDescription {
+class AttributeTransformationDescription {
+
+    final String name;
+    final List<RejectAttributeChecker> checks;
+    final String newName;
+    final DiscardAttributeChecker discardChecker;
+
+
+    AttributeTransformationDescription(String name, List<RejectAttributeChecker> checks, String newName, DiscardAttributeChecker discardChecker) {
+        this.name = name;
+        this.checks = checks != null ? checks : Collections.<RejectAttributeChecker>emptyList();
+        this.newName = newName;
+        this.discardChecker = discardChecker;
+    }
+
+    boolean shouldDiscard(ModelNode attributeValue, TransformationRule.AbstractTransformationContext context) {
+        if (discardChecker == null) {
+            return false;
+        }
+
+        if (discardChecker.isDiscardUndefined() && !attributeValue.isDefined()) {
+            return true;
+        }
+
+        if (!discardChecker.isAllowExpressions() && attributeValue.getType() == ModelType.EXPRESSION) {
+            return false;
+        }
+
+        if (discardChecker.isValueDiscardable(name, attributeValue, context.getContext())) {
+            return true;
+        }
+        return false;
+    }
+
+    String getNewName() {
+        return newName;
+    }
 
     /**
-     * Process the attribute.
+     * Checks that an attribute can be transformed
      *
      * @param name the attribute name
      * @param attributeValue the attribtue value
      * @param context the context
-     * @return a result
+     * @return {@code true} if it can be transformed, {@code false} otherwise
      */
-    TransformationType processAttribute(String name, ModelNode attributeValue, TransformationRule.AbstractTransformationContext context);
-
-    AttributeTransformationDescription DISCARD = new AttributeTransformationDescription() {
-
-        @Override
-        public TransformationType processAttribute(final String name, final ModelNode attributeValue, final TransformationRule.AbstractTransformationContext contet) {
-            attributeValue.clear();
-            return TransformationType.DISCARD;
+    boolean checkAttributeValueIsValid(ModelNode attributeValue, TransformationRule.AbstractTransformationContext context) {
+        for (RejectAttributeChecker checker : checks) {
+            if (checker.rejectAttribute(name, attributeValue, context.getContext())) {
+                return false;
+            }
         }
-
-    };
-
+        return true;
+    }
 }

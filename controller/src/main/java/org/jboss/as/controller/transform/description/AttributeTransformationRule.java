@@ -22,6 +22,11 @@
 
 package org.jboss.as.controller.transform.description;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
@@ -29,10 +34,6 @@ import org.jboss.as.controller.transform.OperationRejectionPolicy;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.dmr.ModelNode;
-
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Emanuel Muckenhuber
@@ -48,19 +49,8 @@ class AttributeTransformationRule extends TransformationRule {
     void transformOperation(final ModelNode operation, PathAddress address, OperationContext context) throws OperationFailedException {
         final ModelNode transformed = operation.clone();
         final Set<String> reject = new HashSet<String>();
-        for(final Map.Entry<String, AttributeTransformationDescription> entry : descriptions.entrySet()) {
-            final String attributeName = entry.getKey();
-            final ModelNode value = transformed.get(attributeName);
-            final TransformationType type = entry.getValue().processAttribute(attributeName, value, context);
-            // Reject
-            if(type == TransformationType.REJECT) {
-                reject.add(entry.getKey());
-            // Discard
-            } else if(type == TransformationType.DISCARD) {
-                // warn
-                transformed.remove(entry.getKey());
-            }
-        }
+        doTransform(transformed, context, reject);
+
         final OperationRejectionPolicy policy = createPolicy(! reject.isEmpty(), reject);
         context.invokeNext(new OperationTransformer.TransformedOperation(transformed, policy, OperationResultTransformer.ORIGINAL_RESULT));
     }
@@ -85,19 +75,49 @@ class AttributeTransformationRule extends TransformationRule {
     @Override
     void tranformResource(final Resource resource, final PathAddress address, final ResourceContext context) throws OperationFailedException {
         final ModelNode model = resource.getModel();
-        for(final Map.Entry<String, AttributeTransformationDescription> entry : descriptions.entrySet()) {
-            final String attributeName = entry.getKey();
-            final ModelNode value = model.get(attributeName);
-            final TransformationType type = entry.getValue().processAttribute(attributeName, value, context);
-            // Reject
-            if(type == TransformationType.REJECT) {
-                // warn
-            } else if(type == TransformationType.DISCARD) {
-                // warn
-                model.remove(entry.getKey());
-            }
-        }
+        final Set<String> reject = new HashSet<String>();
+        doTransform(model, context, reject);
+        //TODO do something with the reject
         context.invokeNext(resource);
     }
 
+    private void doTransform(ModelNode modelOrOp, AbstractTransformationContext context, Set<String> reject) {
+        Map<String, String> renames = new HashMap<String, String>();
+        for(final Map.Entry<String, AttributeTransformationDescription> entry : descriptions.entrySet()) {
+            final String attributeName = entry.getKey();
+            final ModelNode attributeValue = modelOrOp.get(attributeName);
+
+            AttributeTransformationDescription description = entry.getValue();
+
+            //discard what can be discarded
+            if (description.shouldDiscard(attributeValue, context)) {
+                modelOrOp.remove(attributeName);
+            }
+
+            //Check the rest of the model can be transformed
+            if (!description.checkAttributeValueIsValid(attributeValue, context)) {
+                reject.add(attributeName);
+            }
+
+            //Now transform the value
+            //TODO
+
+            //Store the rename until we are done
+            String newName = description.getNewName();
+            if (newName != null) {
+                renames.put(attributeName, newName);
+            }
+        }
+
+        if (renames.size() > 0) {
+            for (Map.Entry<String, String> entry : renames.entrySet()) {
+                if (modelOrOp.has(entry.getKey())) {
+                    ModelNode model = modelOrOp.remove(entry.getKey());
+                    if (model.isDefined()) {
+                        model.get(entry.getValue()).set(model);
+                    }
+                }
+            }
+        }
+    }
 }
