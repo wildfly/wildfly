@@ -54,6 +54,8 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
+import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.remoting.EndpointService;
 import org.jboss.as.remoting.RemotingServices;
@@ -464,7 +466,16 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
     }
 
     @Test
-    public void testTransformation_1_0_0() throws Exception {
+    public void testTransformationAS712() throws Exception {
+        testTransformation_1_0_0("org.jboss.as:jboss-as-jmx:7.1.2.Final");
+    }
+
+    @Test
+    public void testTransformationAS713() throws Exception {
+        testTransformation_1_0_0("org.jboss.as:jboss-as-jmx:7.1.3.Final");
+    }
+
+    private void testTransformation_1_0_0(String mavenGAV) throws Exception {
         String subsystemXml =
                 "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
                 "   <expose-resolved-model domain-name=\"jboss.RESOLVED\"/>" +
@@ -477,7 +488,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
                 .setSubsystemXml(subsystemXml);
         builder.createLegacyKernelServicesBuilder(null, oldVersion)
                 .setExtensionClassName(JMXExtension.class.getName())
-                .addMavenResourceURL("org.jboss.as:jboss-as-jmx:7.1.2.Final");
+                .addMavenResourceURL(mavenGAV);
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(oldVersion);
         Assert.assertNotNull(legacyServices);
@@ -534,6 +545,54 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         checkOutcome(mainServices.executeOperation(oldVersion, transformedOp));
         legacyModel = checkSubsystemModelTransformation(mainServices, oldVersion);
         check_1_0_0_Model(legacyModel.get(SUBSYSTEM, getMainSubsystemName()), true, true);
+
+    }
+
+    @Test
+    public void testRejectExpressionsAS712() throws Exception {
+        testRejectExpressions_1_0_0("org.jboss.as:jboss-as-jmx:7.1.2.Final");
+    }
+
+    @Test
+    public void testRejectExpressionsAS713() throws Exception {
+        testRejectExpressions_1_0_0("org.jboss.as:jboss-as-jmx:7.1.3.Final");
+    }
+
+    /**
+     * Tests rejection of expressions in 1.1.0 model.
+     *
+     * @throws Exception
+     */
+    private void testRejectExpressions_1_0_0(String mavenGAV) throws Exception {
+        String subsystemXml =
+            "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
+                    "   <remoting-connector use-management-endpoint=\"${test.exp:false}\"/>" +
+                    "</subsystem>";
+
+        // create builder for current subsystem version
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+
+        // create builder for legacy subsystem version
+        ModelVersion version_1_0_0 = ModelVersion.create(1, 0, 0);
+        builder.createLegacyKernelServicesBuilder(null, version_1_0_0)
+                .addMavenResourceURL(mavenGAV);
+
+        KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        KernelServices legacyServices = mainServices.getLegacyServices(version_1_0_0);
+        Assert.assertNotNull(legacyServices);
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+        PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, JMXExtension.SUBSYSTEM_NAME));
+        ModelTestUtils.checkFailedTransformedBootOperations(
+                mainServices,
+                version_1_0_0,
+                builder.parseXml(subsystemXml),
+                new FailedOperationTransformationConfig()
+                        .addFailedAttribute(
+                                subsystemAddress.append(RemotingConnectorResource.REMOTE_CONNECTOR_CONFIG_PATH),
+                                new FailedOperationTransformationConfig.RejectExpressionsConfig(RemotingConnectorResource.USE_MANAGEMENT_ENDPOINT))
+                        );
 
     }
 
