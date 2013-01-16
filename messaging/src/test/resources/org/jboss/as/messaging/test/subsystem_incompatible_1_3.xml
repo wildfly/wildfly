@@ -281,7 +281,7 @@
                     <connector-ref connector-name="in-vm"/>
                  </connectors>
                  <entries>
-                    <entry name="java:/ConnectionFactory"/>
+                    <entry name="${connection-factory.entries.entry:java:/ConnectionFactory}"/>
                  </entries>
               </connection-factory>
               <connection-factory name="RemoteConnectionFactory">
@@ -343,7 +343,7 @@
                     <connector-ref connector-name="in-vm"/>
                  </connectors>
                  <entries>
-                    <entry name="java:/JmsXA"/>
+                    <entry name="${pooled-connection-factory.entries.entry:java:/JmsXA}"/>
                  </entries>
                  <ha>${ha:true}</ha>
                  <client-failure-check-period>${client.failure.check.period:12345}</client-failure-check-period>
@@ -404,12 +404,12 @@
 
            <jms-destinations>
               <jms-queue name="testQueue">
-                 <entry name="queue/test"/>
+                 <entry name="${jms-queue.entry:queue/test}"/>
                  <selector string="${selector:color='red'}"/>
                  <durable>${durable:true}</durable>
               </jms-queue>
               <jms-topic name="testTopic">
-                 <entry name="topic/test"/>
+                 <entry name="${jms-topic.entry:topic/test}"/>
               </jms-topic>
            </jms-destinations>
         </hornetq-server>

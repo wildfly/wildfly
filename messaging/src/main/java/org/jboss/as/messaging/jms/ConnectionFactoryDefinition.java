@@ -41,6 +41,7 @@ import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.CONN
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.CONSUMER_MAX_RATE;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.CONSUMER_WINDOW_SIZE;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.DUPS_OK_BATCH_SIZE;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.ENTRIES;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.FAILOVER_ON_INITIAL_CONNECTION;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.GROUP_ID;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.MAX_RETRY_INTERVAL;
@@ -88,7 +89,7 @@ public class ConnectionFactoryDefinition extends SimpleResourceDefinition {
 
     public static final AttributeDefinition[] NEW_ATTRIBUTES_ADDED_AFTER_1_1_0 = { CALL_FAILOVER_TIMEOUT };
 
-    public static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0 = { FACTORY_TYPE,
+    public static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0 = { ENTRIES, FACTORY_TYPE,
             HA, CALL_TIMEOUT,
             AUTO_GROUP, BLOCK_ON_ACKNOWLEDGE, BLOCK_ON_DURABLE_SEND, BLOCK_ON_NON_DURABLE_SEND, CACHE_LARGE_MESSAGE_CLIENT, CLIENT_FAILURE_CHECK_PERIOD, CLIENT_ID,
             COMPRESS_LARGE_MESSAGES, CONFIRMATION_WINDOW_SIZE, CONNECTION_LOAD_BALANCING_CLASS_NAME, CONNECTION_TTL, CONSUMER_MAX_RATE,

@@ -165,8 +165,9 @@ public interface ConnectionFactoryAttributes {
 
         ListAttributeDefinition ENTRIES = PrimitiveListAttributeDefinition.Builder.of(CommonAttributes.ENTRIES, ModelType.STRING)
                 .setAllowNull(false)
+                .setAllowExpression(true)
                 .setRestartAllServices()
-                .setValidator(new StringLengthValidator(1))
+                .setValidator(new StringLengthValidator(1, false, true))
                 .setAttributeMarshaller(new AttributeMarshallers.JndiEntriesAttributeMarshaller(false))
                 .build();
 

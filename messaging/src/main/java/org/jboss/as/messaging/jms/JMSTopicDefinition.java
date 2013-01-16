@@ -53,7 +53,11 @@ import org.jboss.dmr.ModelType;
  */
 public class JMSTopicDefinition extends SimpleResourceDefinition {
 
+    public static final PathElement PATH = PathElement.pathElement(CommonAttributes.JMS_TOPIC);
+
     public static final AttributeDefinition[] ATTRIBUTES = { CommonAttributes.DESTINATION_ENTRIES };
+
+    public static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0 = { CommonAttributes.DESTINATION_ENTRIES };
 
     /**
      * Attributes for deployed JMS topic are stored in runtime
@@ -133,7 +137,7 @@ public class JMSTopicDefinition extends SimpleResourceDefinition {
     }
 
     private JMSTopicDefinition(final boolean registerRuntimeOnly, final boolean deployed, final OperationStepHandler addHandler, final OperationStepHandler removeHandler) {
-        super(PathElement.pathElement(CommonAttributes.JMS_TOPIC),
+        super(PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.JMS_TOPIC),
                 addHandler,
                 removeHandler);

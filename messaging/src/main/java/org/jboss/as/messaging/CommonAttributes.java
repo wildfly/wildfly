@@ -196,7 +196,8 @@ public interface CommonAttributes {
 
     PrimitiveListAttributeDefinition DESTINATION_ENTRIES = PrimitiveListAttributeDefinition.Builder.of(ENTRIES, ModelType.STRING)
             .setAllowNull(false)
-            .setValidator(new StringLengthValidator(1))
+            .setValidator(new StringLengthValidator(1, false, true))
+            .setAllowExpression(true)
             .setAttributeMarshaller(new AttributeMarshallers.JndiEntriesAttributeMarshaller(true))
             .setRestartAllServices()
             .build();
