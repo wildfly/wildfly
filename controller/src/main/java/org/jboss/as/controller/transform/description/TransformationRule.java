@@ -51,8 +51,14 @@ abstract class TransformationRule {
     abstract static class AbstractTransformationContext {
 
         private final TransformationContext context;
-        protected AbstractTransformationContext(TransformationContext context) {
+        private final ModelNode originalModel;
+        protected AbstractTransformationContext(final TransformationContext context, final ModelNode originalModel) {
             this.context = new TransformationContextWrapper(context);
+            this.originalModel = originalModel;
+        }
+
+        protected ModelNode getOriginalModel() {
+            return originalModel;
         }
 
         protected TransformationContext getContext() {
@@ -65,8 +71,8 @@ abstract class TransformationRule {
 
         private final List<OperationTransformer.TransformedOperation> transformed = new ArrayList<OperationTransformer.TransformedOperation>();
         private ModelNode lastOperation;
-        protected OperationContext(TransformationContext context) {
-            super(context);
+        protected OperationContext(TransformationContext context, ModelNode originalModel) {
+            super(context, originalModel);
         }
 
         protected void recordTransformedOperation(OperationTransformer.TransformedOperation operation) {
@@ -91,8 +97,8 @@ abstract class TransformationRule {
 
     abstract static class ResourceContext extends AbstractTransformationContext {
 
-        protected ResourceContext(ResourceTransformationContext context) {
-            super(context);
+        protected ResourceContext(ResourceTransformationContext context, ModelNode originalModel) {
+            super(context, originalModel);
         }
 
         protected ResourceTransformationContext getContext() {
