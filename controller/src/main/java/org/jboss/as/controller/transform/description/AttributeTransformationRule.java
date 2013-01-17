@@ -100,12 +100,18 @@ class AttributeTransformationRule extends TransformationRule {
             }
 
             //Now transform the value
-            //TODO
+            description.convertValue(attributeValue, context);
 
             //Store the rename until we are done
             String newName = description.getNewName();
             if (newName != null) {
                 renames.put(attributeName, newName);
+            }
+
+            //Add attribute
+            ModelNode added = description.addAttribute(context);
+            if (added != null) {
+                modelOrOp.get(attributeName).set(added);
             }
         }
 
@@ -114,7 +120,7 @@ class AttributeTransformationRule extends TransformationRule {
                 if (modelOrOp.has(entry.getKey())) {
                     ModelNode model = modelOrOp.remove(entry.getKey());
                     if (model.isDefined()) {
-                        model.get(entry.getValue()).set(model);
+                        modelOrOp.get(entry.getValue()).set(model);
                     }
                 }
             }

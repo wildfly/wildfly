@@ -40,13 +40,17 @@ class AttributeTransformationDescription {
     final List<RejectAttributeChecker> checks;
     final String newName;
     final DiscardAttributeChecker discardChecker;
+    final AttributeConverter converter;
+    final AttributeConverter addConverter;
 
 
-    AttributeTransformationDescription(String name, List<RejectAttributeChecker> checks, String newName, DiscardAttributeChecker discardChecker) {
+    AttributeTransformationDescription(String name, List<RejectAttributeChecker> checks, String newName, DiscardAttributeChecker discardChecker, AttributeConverter converter, AttributeConverter addConverter) {
         this.name = name;
         this.checks = checks != null ? checks : Collections.<RejectAttributeChecker>emptyList();
         this.newName = newName;
         this.discardChecker = discardChecker;
+        this.converter = converter;
+        this.addConverter = addConverter;
     }
 
     boolean shouldDiscard(ModelNode attributeValue, TransformationRule.AbstractTransformationContext context) {
@@ -88,4 +92,21 @@ class AttributeTransformationDescription {
         }
         return true;
     }
+
+    void convertValue(ModelNode attributeValue, TransformationRule.AbstractTransformationContext context) {
+        if (converter != null) {
+            converter.convertAttribute(name, attributeValue, context.getContext());
+        }
+    }
+
+
+    ModelNode addAttribute(TransformationRule.AbstractTransformationContext context) {
+        if (addConverter != null) {
+            ModelNode attributeValue = new ModelNode();
+            addConverter.convertAttribute(name, attributeValue, context.getContext());
+            return attributeValue;
+        }
+        return null;
+    }
+
 }

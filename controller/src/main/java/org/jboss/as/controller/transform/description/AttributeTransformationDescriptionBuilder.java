@@ -28,7 +28,7 @@ import java.util.Map;
 
 /**
  * @author Emanuel Muckenhuber
- * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author kabir
  */
 public interface AttributeTransformationDescriptionBuilder<T> {
 
@@ -45,6 +45,9 @@ public interface AttributeTransformationDescriptionBuilder<T> {
 
     AttributeTransformationDescriptionBuilder<T> rename(Map<T, String> newNameMappings);
 
+    AttributeTransformationDescriptionBuilder<T> convertValue(AttributeConverter attributeConverter, T...convertedAttributes);
+
+    AttributeTransformationDescriptionBuilder<T> addAttribute(T attribute, AttributeConverter attributeConverter);
 
     /**
      * Finish with this attribute builder and return control to the parent resource transformation builder
