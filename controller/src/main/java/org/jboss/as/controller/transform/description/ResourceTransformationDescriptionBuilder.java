@@ -28,19 +28,23 @@ import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.transform.ResourceTransformer;
 
 /**
+ * Common transformation description builder.
+ *
  * @author Emanuel Muckenhuber
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public abstract class ResourceTransformationDescriptionBuilder extends TransformationDescriptionBuilder {
+public interface ResourceTransformationDescriptionBuilder extends TransformationDescriptionBuilder {
 
-    protected ResourceTransformationDescriptionBuilder(PathElement pathElement) {
-        super(pathElement);
-    }
+    AttributeTransformationDescriptionBuilder<String> getStringAttributeBuilder();
 
-    public abstract AttributeTransformationDescriptionBuilder<String> getStringAttributeBuilder();
+    AttributeTransformationDescriptionBuilder<AttributeDefinition> getDefAttributeBuilder();
 
-    public abstract AttributeTransformationDescriptionBuilder<AttributeDefinition> getDefAttributeBuilder();
-
+    /**
+     * Add a custom transformation step. This will be called for model as well as operation transformation.
+     *
+     * @param transformer the model transformer
+     */
+    ResourceTransformationDescriptionBuilder addCustomTransformation(ModelTransformer transformer);
 
     /**
      * Set a custom resource transformer. This transformer is going to be called after all attribute transformations happened
@@ -50,14 +54,7 @@ public abstract class ResourceTransformationDescriptionBuilder extends Transform
      * @param resourceTransformer the resource transformer
      * @return the builder for the current resource
      */
-    public abstract ResourceTransformationDescriptionBuilder setResourceTransformer(ResourceTransformer resourceTransformer);
-
-    /**
-     * Add a custom transformation step. This will be called for model as well as operation transformation.
-     *
-     * @param transformer the model transformer
-     */
-    public abstract ResourceTransformationDescriptionBuilder addCustomTransformation(ModelTransformer transformer);
+    ResourceTransformationDescriptionBuilder setResourceTransformer(ResourceTransformer resourceTransformer);
 
     /**
      * Add a child resource.
@@ -65,7 +62,16 @@ public abstract class ResourceTransformationDescriptionBuilder extends Transform
      * @param pathElement the path element
      * @return the builder for the child resource
      */
-    public abstract ResourceTransformationDescriptionBuilder addChildResource(PathElement pathElement);
+    ResourceTransformationDescriptionBuilder addChildResource(PathElement pathElement);
+
+    /**
+     * Add a child resource, where all operations will get redirected to the new element address.
+     *
+     * @param oldAddress the old path element
+     * @param newAddress the new path element
+     * @return the builder for the child resource
+     */
+    ResourceTransformationDescriptionBuilder addChildRedirection(PathElement oldAddress, PathElement newAddress);
 
     /**
      * Add a child resource.
@@ -73,7 +79,7 @@ public abstract class ResourceTransformationDescriptionBuilder extends Transform
      * @param definition the resource definition
      * @return the builder for the child resource
      */
-    public abstract ResourceTransformationDescriptionBuilder addChildResource(ResourceDefinition definition);
+    ResourceTransformationDescriptionBuilder addChildResource(ResourceDefinition definition);
 
     /**
      * Recursively discards all child resources and its operations.
@@ -81,6 +87,6 @@ public abstract class ResourceTransformationDescriptionBuilder extends Transform
      * @param pathElement the path element
      * @return the builder for the child resource
      */
-    public abstract DiscardTransformationDescriptionBuilder discardChildResource(PathElement pathElement);
+    DiscardTransformationDescriptionBuilder discardChildResource(PathElement pathElement);
 
 }

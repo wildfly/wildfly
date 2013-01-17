@@ -24,12 +24,16 @@ package org.jboss.as.controller.transform.description;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.OperationRejectionPolicy;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.dmr.ModelNode;
 
 import java.util.ArrayList;
@@ -48,7 +52,7 @@ abstract class TransformationRule {
 
         private final TransformationContext context;
         protected AbstractTransformationContext(TransformationContext context) {
-            this.context = context;
+            this.context = new TransformationContextWrapper(context);
         }
 
         protected TransformationContext getContext() {
@@ -97,6 +101,55 @@ abstract class TransformationRule {
 
         abstract void invokeNext(Resource resource) throws OperationFailedException;
 
+    }
+
+    private static class TransformationContextWrapper implements TransformationContext {
+
+        private final TransformationContext delegate;
+        private TransformationContextWrapper(TransformationContext delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public TransformationTarget getTarget() {
+            return delegate.getTarget();
+        }
+
+        @Override
+        public ProcessType getProcessType() {
+            return delegate.getProcessType();
+        }
+
+        @Override
+        public RunningMode getRunningMode() {
+            return delegate.getRunningMode();
+        }
+
+        @Override
+        public ImmutableManagementResourceRegistration getResourceRegistration(PathAddress address) {
+            return delegate.getResourceRegistration(address);
+        }
+
+        @Override
+        public ImmutableManagementResourceRegistration getResourceRegistrationFromRoot(PathAddress address) {
+            return delegate.getResourceRegistrationFromRoot(address);
+        }
+
+        @Override
+        public Resource readResource(PathAddress address) {
+            return delegate.readResource(address);
+        }
+
+        @Override
+        public Resource readResourceFromRoot(PathAddress address) {
+            return delegate.readResourceFromRoot(address);
+        }
+
+        @Override
+        @Deprecated
+        public ModelNode resolveExpressions(ModelNode node) throws OperationFailedException {
+            return delegate.resolveExpressions(node);
+        }
     }
 
     private static class ChainedTransformedOperation extends OperationTransformer.TransformedOperation {

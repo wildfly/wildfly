@@ -23,6 +23,7 @@
 package org.jboss.as.controller.transform.description;
 
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.transform.CombinedTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.PathTransformation;
 import org.jboss.as.controller.transform.ResourceTransformer;
@@ -32,18 +33,20 @@ import java.util.Collections;
 import java.util.Map;
 
 /**
+ * Explicit transformation description builder using the specified resource and operation transformer directly.
+ *
  * @author Emanuel Muckenhuber
  */
-public class ExplicitTransformationDescriptionBuilder extends TransformationDescriptionBuilder {
-
-    private ResourceTransformer resourceTransformer = ResourceTransformer.DEFAULT;
-    private OperationTransformer operationTransformer = OperationTransformer.DEFAULT;
-    private PathTransformation pathTransformation = PathTransformation.DEFAULT;
-
-    private final Map<String, OperationTransformer> operationTransformers = Collections.emptyMap(); // TODO
+public class ExplicitTransformationDescriptionBuilder extends AbstractTransformationDescriptionBuilder implements TransformationDescriptionBuilder {
 
     public ExplicitTransformationDescriptionBuilder(PathElement pathElement) {
-        super(pathElement);
+        super(pathElement, PathTransformation.DEFAULT, ResourceTransformer.DEFAULT, OperationTransformer.DEFAULT);
+    }
+
+    public ExplicitTransformationDescriptionBuilder setTransformer(final CombinedTransformer transformer) {
+        this.resourceTransformer = transformer;
+        this.operationTransformer = transformer;
+        return this;
     }
 
     public ExplicitTransformationDescriptionBuilder setResourceTransformer(ResourceTransformer resourceTransformer) {
@@ -53,11 +56,6 @@ public class ExplicitTransformationDescriptionBuilder extends TransformationDesc
 
     public ExplicitTransformationDescriptionBuilder setOperationTransformer(OperationTransformer operationTransformer) {
         this.operationTransformer = operationTransformer;
-        return this;
-    }
-
-    public ExplicitTransformationDescriptionBuilder redirectTo(PathElement element) {
-        pathTransformation = new PathTransformation.BasicPathTransformation(element);
         return this;
     }
 
