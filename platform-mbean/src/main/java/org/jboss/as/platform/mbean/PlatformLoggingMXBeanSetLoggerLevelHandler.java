@@ -46,7 +46,8 @@ public class PlatformLoggingMXBeanSetLoggerLevelHandler implements OperationStep
 
     public static final PlatformLoggingMXBeanSetLoggerLevelHandler INSTANCE = new PlatformLoggingMXBeanSetLoggerLevelHandler();
 
-    private static final String[] SIGNATURE = { String.class.getName(), String.class.getName() };
+    private static final String[] GET_LOGGER_LEVEL_SIGNATURE = { String.class.getName() };
+    private static final String[] SET_LOGGER_LEVEL_SIGNATURE = { String.class.getName(), String.class.getName() };
 
     private final ParametersValidator parametersValidator = new ParametersValidator();
 
@@ -69,9 +70,13 @@ public class PlatformLoggingMXBeanSetLoggerLevelHandler implements OperationStep
         final String loggerName = operation.require(PlatformMBeanConstants.LOGGER_NAME).asString();
         final String levelName = operation.hasDefined(PlatformMBeanConstants.LEVEL_NAME)
                 ? operation.require(PlatformMBeanConstants.LEVEL_NAME).asString() : null;
+        final String priorLevel;
         try {
+            priorLevel = (String) ManagementFactory.getPlatformMBeanServer().invoke(PlatformMBeanConstants.PLATFORM_LOGGING_OBJECT_NAME,
+                    "getLoggerLevel", new String[]{loggerName}, GET_LOGGER_LEVEL_SIGNATURE);
+
             ManagementFactory.getPlatformMBeanServer().invoke(PlatformMBeanConstants.PLATFORM_LOGGING_OBJECT_NAME,
-                    "setLoggerLevel", new String[]{loggerName, levelName}, SIGNATURE);
+                    "setLoggerLevel", new String[]{loggerName, levelName}, SET_LOGGER_LEVEL_SIGNATURE);
             context.getResult();  // sets it as undefined for this void op
         } catch (JMRuntimeException e) {
             throw e;
@@ -79,8 +84,19 @@ public class PlatformLoggingMXBeanSetLoggerLevelHandler implements OperationStep
             throw new RuntimeException(e);
         }
 
-        // TODO AS7-5667 handle rollback
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.completeStep(new OperationContext.RollbackHandler() {
+                        @Override
+                        public void handleRollback(OperationContext context, ModelNode operation) {
+                            try {
+                                ManagementFactory.getPlatformMBeanServer().invoke(PlatformMBeanConstants.PLATFORM_LOGGING_OBJECT_NAME,
+                                        "setLoggerLevel", new String[]{loggerName, priorLevel}, SET_LOGGER_LEVEL_SIGNATURE);
+                            } catch (JMRuntimeException e) {
+                                throw e;
+                            } catch (JMException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                    });
     }
 
     @Override
