@@ -111,8 +111,6 @@
         <version.org.jboss.spec.javax.websockets>1.0.0.Alpha1</version.org.jboss.spec.javax.websockets>
         <version.jaxen>1.1.3</version.jaxen>
         <version.jboss.jaxbintros>1.0.2.GA</version.jboss.jaxbintros>
-        <version.aesh>0.33.3</version.aesh>
-        <version.jansi>1.9</version.jansi>
         <version.joda-time>1.6.2</version.joda-time>
         <version.junit>4.11</version.junit>
         <version.jsoup>1.6.1</version.jsoup>
@@ -143,7 +141,8 @@
         <version.org.codehaus.plexus.plexus-utils>3.0.9</version.org.codehaus.plexus.plexus-utils>
         <version.org.codehaus.woodstox.stax2-api>3.1.1</version.org.codehaus.woodstox.stax2-api>
         <version.org.codehaus.woodstox.woodstox-core-asl>4.2.0</version.org.codehaus.woodstox.woodstox-core-asl>
-        <version.org.eclipse.jdt.core.compiler.ecj>3.7.2</version.org.eclipse.jdt.core.compiler.ecj>
+        <version.org.eclipse.jdt.core.compiler>3.7.2</version.org.eclipse.jdt.core.compiler>
+        <version.org.fusesource.jansi>1.9</version.org.fusesource.jansi>
         <version.org.hibernate>4.2.0.Final</version.org.hibernate>
         <version.org.hibernate.commons.annotations>4.0.1.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.1.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
@@ -155,6 +154,7 @@
         <version.org.jacorb>2.3.2.jbossorg-4</version.org.jacorb>
         <version.org.javassist>3.17.1-GA</version.org.javassist>
         <version.org.jdom>1.1.2</version.org.jdom>
+        <version.org.jboss.aesh>0.33.3</version.org.jboss.aesh>
         <version.org.jboss.arquillian.core>1.0.3.Final</version.org.jboss.arquillian.core>
         <version.org.jboss.arquillian.osgi>2.0.0.CR1</version.org.jboss.arquillian.osgi>
         <version.org.jboss.as.console>1.5.2.Final</version.org.jboss.as.console>
@@ -1751,7 +1751,7 @@
             <dependency>
                 <groupId>org.jboss.aesh</groupId>
                 <artifactId>aesh</artifactId>
-                <version>${version.aesh}</version>
+                <version>${version.org.jboss.aesh}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>junit</groupId>
@@ -1763,7 +1763,7 @@
             <dependency>
                 <groupId>org.fusesource.jansi</groupId>
                 <artifactId>jansi</artifactId>
-                <version>${version.jansi}</version>
+                <version>${version.org.fusesource.jansi}</version>
             </dependency>
 
             <dependency>
@@ -5203,7 +5203,7 @@
             <dependency>
                 <groupId>org.eclipse.jdt.core.compiler</groupId>
                 <artifactId>ecj</artifactId>
-                <version>${version.org.eclipse.jdt.core.compiler.ecj}</version>
+                <version>${version.org.eclipse.jdt.core.compiler}</version>
             </dependency>
 
             <dependency>
