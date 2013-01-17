@@ -85,6 +85,17 @@ public interface TransformersSubRegistration {
      * Register a sub resource.
      *
      * @param element the path element
+     * @param pathTransformation the path transformation
+     * @param resourceTransformer the resource transformer
+     * @param operationTransformert the default operation transformer
+     * @return the transformers sub registration
+     */
+    TransformersSubRegistration registerSubResource(PathElement element, PathTransformation pathTransformation, ResourceTransformer resourceTransformer, OperationTransformer operationTransformer);
+
+    /**
+     * Register a sub resource.
+     *
+     * @param element the path element
      * @param transformer the resource and operation transformer
      * @return the transformers sub registration
      */

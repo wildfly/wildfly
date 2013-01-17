@@ -52,7 +52,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
     private final List<TransformationRule> rules;
     private final List<TransformationDescription> children;
     private final Map<String, AttributeTransformationDescription> attributeTransformations;
-    private final ResourceTransformer resourceTransfomer = ResourceTransformer.DEFAULT;
+    private final ResourceTransformer resourceTransfomer;
 
     public TransformingDescription(final PathElement pathElement, final PathTransformation pathTransformation,
                                    final ResourceTransformer resourceTransformer,
@@ -62,6 +62,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
         super(pathElement, pathTransformation);
         this.rules = rules;
         this.children = children;
+        this.resourceTransfomer = resourceTransformer;
         this.attributeTransformations = attributeTransformations;
     }
 
@@ -96,7 +97,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
      */
     public void register(final TransformersSubRegistration parent) {
         // Register this description at a transformers sub registration
-        final TransformersSubRegistration registration = parent.registerSubResource(pathElement, this, this);
+        final TransformersSubRegistration registration = parent.registerSubResource(pathElement, getPathTransformation(), this, this);
 
         // TODO override more global operations?
         registration.registerOperationTransformer(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, new WriteAttributeTransformer());

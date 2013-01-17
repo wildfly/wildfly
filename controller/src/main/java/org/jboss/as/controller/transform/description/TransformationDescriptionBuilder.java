@@ -73,7 +73,7 @@ public abstract class TransformationDescriptionBuilder {
          * @deprecated experimental
          */
         @Deprecated
-        public static TransformationDescriptionBuilder createDiscardInstance(PathElement pathElement) {
+        public static DiscardTransformationDescriptionBuilder createDiscardInstance(PathElement pathElement) {
             return new DiscardTransformationDescriptionBuilder(pathElement);
         }
 
