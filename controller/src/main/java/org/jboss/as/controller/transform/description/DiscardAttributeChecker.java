@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -39,7 +39,7 @@ public interface DiscardAttributeChecker {
     /**
      * A standard checker which will discard the attribute always.
      */
-    public static DefaultAttributeChecker ALWAYS = new DefaultAttributeChecker(true, true) {
+    DefaultAttributeChecker ALWAYS = new DefaultAttributeChecker(true, true) {
 
         @Override
         public boolean isValueDiscardable(String attributeName, ModelNode attributeValue, TransformationContext context) {
@@ -50,7 +50,7 @@ public interface DiscardAttributeChecker {
     /**
      * A standard checker which will discard the attribute if it is undefined.
      */
-    public static DefaultAttributeChecker UNDEFINED = new DefaultAttributeChecker(false, true) {
+    DefaultAttributeChecker UNDEFINED = new DefaultAttributeChecker(false, true) {
 
         @Override
         public boolean isValueDiscardable(String attributeName, ModelNode attributeValue, TransformationContext context) {
