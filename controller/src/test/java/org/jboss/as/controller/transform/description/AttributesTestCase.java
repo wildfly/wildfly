@@ -23,12 +23,16 @@
 package org.jboss.as.controller.transform.description;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import junit.framework.Assert;
 
@@ -186,11 +190,7 @@ public class AttributesTestCase {
         Assert.assertTrue(transformedAdd.getTransformedOperation().hasDefined("keep"));
         Assert.assertFalse(transformedAdd.getTransformedOperation().has("discard"));
 
-        ModelNode write = Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "discard", new ModelNode("nothing"));
-        OperationTransformer.TransformedOperation transformedWrite = transformOperation(write);
-        Assert.assertFalse(transformedWrite.rejectOperation(success()));
-        //TODO this should be null, i.e. the write-attribute operation should not be pushed to the slave
-        //Assert.assertNull(transformedWrite.getTransformedOperation());
+        checkWriteOpDiscarded(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "discard", new ModelNode("nothing")));
     }
 
 
@@ -220,16 +220,10 @@ public class AttributesTestCase {
         Assert.assertTrue(transformedAdd.getTransformedOperation().hasDefined("keep"));
         Assert.assertFalse(transformedAdd.getTransformedOperation().has("discard"));
 
-        ModelNode write = Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "discard", new ModelNode());
-        OperationTransformer.TransformedOperation transformedWrite = transformOperation(write);
-        Assert.assertFalse(transformedWrite.rejectOperation(success()));
-        //TODO this should be null, i.e. the write-attribute operation should not be pushed to the slave
-        //Assert.assertNull(transformedWrite.getTransformedOperation());
+        checkWriteOpDiscarded(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "discard", new ModelNode()));
 
-        ModelNode write2 = Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "discard", new ModelNode("nothing"));
-        OperationTransformer.TransformedOperation transformedWrite2 = transformOperation(write2);
-        Assert.assertFalse(transformedWrite2.rejectOperation(success()));
-        Assert.assertEquals(write2, transformedWrite2.getTransformedOperation());
+        checkWriteOp(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "discard", new ModelNode("nothing")),
+                "discard", new ModelNode("nothing"));
     }
 
     @Test
@@ -259,11 +253,8 @@ public class AttributesTestCase {
         Assert.assertFalse(transformedAdd.rejectOperation(success()));
         Assert.assertEquals(add, transformedAdd.getTransformedOperation());
 
-
-        ModelNode write = Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "discard", new ModelNode().setExpression("${xxx}"));
-        OperationTransformer.TransformedOperation transformedWrite = transformOperation(write);
-        Assert.assertFalse(transformedWrite.rejectOperation(success()));
-        Assert.assertEquals(write, transformedWrite.getTransformedOperation());
+        checkWriteOp(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "discard", new ModelNode().setExpression("${xxx}")),
+                "discard", new ModelNode().setExpression("${xxx}"));
     }
 
     @Test
@@ -302,16 +293,9 @@ public class AttributesTestCase {
         Assert.assertTrue(transformedAdd.getTransformedOperation().hasDefined("keep"));
         Assert.assertFalse(transformedAdd.getTransformedOperation().has("discard"));
 
-        ModelNode write = Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "discard", new ModelNode("default"));
-        OperationTransformer.TransformedOperation transformedWrite = transformOperation(write);
-        Assert.assertFalse(transformedWrite.rejectOperation(success()));
-        //TODO this should be null, i.e. the write-attribute operation should not be pushed to the slave
-        //Assert.assertNull(transformedWrite.getTransformedOperation());
-
-        ModelNode write2 = Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "discard", new ModelNode("something"));
-        OperationTransformer.TransformedOperation transformedWrite2 = transformOperation(write2);
-        Assert.assertFalse(transformedWrite2.rejectOperation(success()));
-        Assert.assertEquals(write2, transformedWrite2.getTransformedOperation());
+        checkWriteOpDiscarded(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "discard", new ModelNode("default")));
+        checkWriteOp(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "discard", new ModelNode("something")),
+                "discard", new ModelNode("something"));
     }
 
     @Test
@@ -338,11 +322,8 @@ public class AttributesTestCase {
         Assert.assertEquals("value", transformedAdd.getTransformedOperation().get("new").asString());
 
 
-        ModelNode write = Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "old", new ModelNode("value"));
-        OperationTransformer.TransformedOperation transformedWrite = transformOperation(write);
-        Assert.assertFalse(transformedWrite.rejectOperation(success()));
-        Assert.assertEquals("new", transformedWrite.getTransformedOperation().get(NAME));
-        Assert.assertEquals("value", transformedWrite.getTransformedOperation().get(VALUE));
+        checkWriteOp(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "old", new ModelNode("value")),
+                "new", new ModelNode("value"));
     }
 
     @Test
@@ -380,16 +361,10 @@ public class AttributesTestCase {
         Assert.assertEquals(ModelType.INT, transformedAdd.getTransformedOperation().get("value2").getType());
         Assert.assertEquals(1, transformedAdd.getTransformedOperation().get("value2").asInt());
 
-        ModelNode write = Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "value1", new ModelNode("value"));
-        OperationTransformer.TransformedOperation transformedWrite = transformOperation(write);
-        Assert.assertFalse(transformedWrite.rejectOperation(success()));
-        Assert.assertEquals(write, transformedWrite.getTransformedOperation());
-
-        ModelNode write2 = Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "value2", new ModelNode("two"));
-        OperationTransformer.TransformedOperation transformedWrite2 = transformOperation(write2);
-        Assert.assertFalse(transformedWrite2.rejectOperation(success()));
-        Assert.assertEquals(ModelType.INT, transformedWrite2.getTransformedOperation().get("value").getType());
-        Assert.assertEquals(1, transformedWrite2.getTransformedOperation().get("value").asInt());
+        checkWriteOp(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "value1", new ModelNode("value")),
+                "value1", new ModelNode("value"));
+        checkWriteOp(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "value2", new ModelNode("two")),
+                "value2", new ModelNode(1));
     }
 
     @Test
@@ -423,6 +398,149 @@ public class AttributesTestCase {
 
         //Can't write to this added attribute
     }
+
+    @Test
+    public void testComplexRejectAndModify() throws Exception {
+        resourceModel.get("one").set("a");
+        resourceModel.get("two").set("b");
+        resourceModel.get("three").set("TRES");
+        resourceModel.get("four");
+        resourceModel.get("five");
+        resourceModel.get("six");
+
+        Map<String,String> renames = new HashMap<String, String>();
+        renames.put("one", "uno");
+        renames.put("two", "dos");
+        renames.put("three", "TRES");
+
+        CustomRejectExpressionsChecker rejectAttributeChecker = new CustomRejectExpressionsChecker();
+        final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
+        builder.getStringAttributeBuilder()
+                .reject(Collections.<RejectAttributeChecker>singletonList(rejectAttributeChecker), "one", "two")
+                .addAttribute("one", new AttributeConverter() {
+                    @Override
+                    public void convertAttribute(String name, ModelNode attributeValue, TransformationContext context) {
+                        attributeValue.set("ONE");
+                    }
+                })
+                .discard(DiscardAttributeChecker.UNDEFINED, "four", "five")
+                .discard(DiscardAttributeChecker.UNDEFINED, "six")
+                .convertValue(new AttributeConverter() {
+                    @Override
+                    public void convertAttribute(String name, ModelNode attributeValue, TransformationContext context) {
+                        if (name.equals("one")) {
+                            attributeValue.set("UNO");
+                        } else if (name.equals("two")) {
+                            attributeValue.set("DOS");
+                        }
+                    }
+                }, "one", "two")
+                .rename(renames)
+                .rename(Collections.singletonMap("three", "tres"))
+                //.rename(Collections.singletonMap("four", "cuatro"))
+                .end()
+            .build().register(transformersSubRegistration);
+
+        //Try first with no expressions
+        rejectAttributeChecker.rejected = false;
+        final Resource resource = transformResource();
+        Assert.assertNotNull(resource);
+        final Resource toto = resource.getChild(PATH);
+        Assert.assertNotNull(toto);
+        final ModelNode model = toto.getModel();
+        Assert.assertEquals(4, model.keys().size());
+        Assert.assertEquals("ONE", model.get("one").asString());
+        Assert.assertEquals("UNO", model.get("uno").asString());
+        Assert.assertEquals("DOS", model.get("dos").asString());
+        Assert.assertEquals("TRES", model.get("tres").asString());
+        Assert.assertFalse(rejectAttributeChecker.rejected);
+
+        final ModelNode add = Util.createAddOperation(PathAddress.pathAddress(PATH));
+        add.get("one").set("a");
+        add.get("two").set("b");
+        add.get("three").set("TRES");
+        add.get("four");
+        add.get("five");
+        add.get("six");
+        final OperationTransformer.TransformedOperation transformedAdd = transformOperation(add);
+        Assert.assertFalse(transformedAdd.rejectOperation(success()));
+        final ModelNode transAdd = transformedAdd.getTransformedOperation();
+        transAdd.remove(OP);
+        transAdd.remove(OP_ADDR);
+        Assert.assertEquals(4, transAdd.keys().size());
+        Assert.assertEquals("ONE", transAdd.get("one").asString());
+        Assert.assertEquals("UNO", transAdd.get("uno").asString());
+        Assert.assertEquals("DOS", transAdd.get("dos").asString());
+        Assert.assertEquals("TRES", transAdd.get("tres").asString());
+        Assert.assertFalse(rejectAttributeChecker.rejected);
+
+
+        checkWriteOp(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "one", new ModelNode("a")),
+                 "uno", new ModelNode("UNO"));
+        checkWriteOp(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "two", new ModelNode("b")),
+                "dos", new ModelNode("DOS"));
+        checkWriteOp(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "three", new ModelNode("THREE")),
+                "tres", new ModelNode("THREE"));
+        checkWriteOpDiscarded(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "four", new ModelNode()));
+        checkWriteOpDiscarded(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "five", new ModelNode()));
+        checkWriteOpDiscarded(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "six", new ModelNode()));
+        Assert.assertFalse(rejectAttributeChecker.rejected);
+
+        //Check that expressions get rejected
+        resourceModel.clear();
+        resourceModel.get("one").setExpression("${test}");
+        resourceModel.get("two").set("b");
+        resourceModel.get("three").set("TRES");
+        resourceModel.get("four");
+        resourceModel.get("five");
+        resourceModel.get("six");
+
+        rejectAttributeChecker.rejected = false;
+        final Resource resource2 = transformResource();
+        Assert.assertNotNull(resource2);
+        final Resource toto2 = resource2.getChild(PATH);
+        Assert.assertNotNull(toto2);
+        final ModelNode model2 = toto2.getModel();
+        Assert.assertEquals(4, model2.keys().size());
+        Assert.assertEquals("ONE", model2.get("one").asString());
+        Assert.assertEquals("UNO", model2.get("uno").asString());
+        Assert.assertEquals("DOS", model2.get("dos").asString());
+        Assert.assertEquals("TRES", model2.get("tres").asString());
+        Assert.assertTrue(rejectAttributeChecker.rejected);
+
+        rejectAttributeChecker.rejected = false;
+        final ModelNode add2 = Util.createAddOperation(PathAddress.pathAddress(PATH));
+        add2.get("one").setExpression("${test}");
+        add2.get("two").set("b");
+        add2.get("three").set("TRES");
+        add2.get("four");
+        add2.get("five");
+        add2.get("six");
+        final OperationTransformer.TransformedOperation transformedAdd2 = transformOperation(add2);
+        Assert.assertTrue(transformedAdd2.rejectOperation(success()));
+        Assert.assertTrue(rejectAttributeChecker.rejected);
+
+        rejectAttributeChecker.rejected = false;
+        OperationTransformer.TransformedOperation write = transformOperation(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "one", new ModelNode().setExpression("${test}")));
+        Assert.assertTrue(write.rejectOperation(success()));
+        Assert.assertTrue(rejectAttributeChecker.rejected);
+    }
+
+    private void checkWriteOp(ModelNode write, String name, ModelNode value) throws OperationFailedException{
+        OperationTransformer.TransformedOperation transformedWrite = transformOperation(write);
+        Assert.assertFalse(transformedWrite.rejectOperation(success()));
+        ModelNode transWrite = transformedWrite.getTransformedOperation();
+        Assert.assertEquals(name, transWrite.get(NAME).asString());
+        Assert.assertEquals(value, transWrite.get(VALUE));
+        Assert.assertEquals(value.getType(), transWrite.get(VALUE).getType());
+    }
+
+    private void checkWriteOpDiscarded(ModelNode write) throws OperationFailedException {
+        OperationTransformer.TransformedOperation transformedWrite = transformOperation(write);
+        Assert.assertFalse(transformedWrite.rejectOperation(success()));
+        Assert.assertNull(transformedWrite.getTransformedOperation());
+    }
+
 
     private Resource transformResource() throws OperationFailedException {
         final TransformationTarget target = create(registry, ModelVersion.create(1));
@@ -487,6 +605,7 @@ public class AttributesTestCase {
 
     private static class CustomRejectExpressionsChecker implements RejectAttributeChecker {
         boolean rejected;
+
         @Override
         public boolean rejectAttribute(String attributeName, ModelNode attributeValue, TransformationContext context) {
             rejected = SIMPLE_EXPRESSIONS.rejectAttribute(attributeName, attributeValue, context);

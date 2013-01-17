@@ -83,6 +83,7 @@ class AttributeTransformationRule extends TransformationRule {
 
     private void doTransform(ModelNode modelOrOp, AbstractTransformationContext context, Set<String> reject) {
         Map<String, String> renames = new HashMap<String, String>();
+        Map<String, ModelNode> adds = new HashMap<String, ModelNode>();
         for(final Map.Entry<String, AttributeTransformationDescription> entry : descriptions.entrySet()) {
             final String attributeName = entry.getKey();
             final ModelNode attributeValue = modelOrOp.get(attributeName);
@@ -111,7 +112,7 @@ class AttributeTransformationRule extends TransformationRule {
             //Add attribute
             ModelNode added = description.addAttribute(context);
             if (added != null) {
-                modelOrOp.get(attributeName).set(added);
+                adds.put(attributeName, added);
             }
         }
 
@@ -123,6 +124,11 @@ class AttributeTransformationRule extends TransformationRule {
                         modelOrOp.get(entry.getValue()).set(model);
                     }
                 }
+            }
+        }
+        if (adds.size() > 0) {
+            for (Map.Entry<String, ModelNode> entry : adds.entrySet()) {
+                modelOrOp.get(entry.getKey()).set(entry.getValue());
             }
         }
     }
