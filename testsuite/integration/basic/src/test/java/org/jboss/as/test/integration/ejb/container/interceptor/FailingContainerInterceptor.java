@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,21 +19,27 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.test.integration.ejb.container.interceptor;
 
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.InvocationContext;
 
+import org.jboss.logging.Logger;
+
 /**
- * Simple interceptor, which only adds its classname in front of the result of {@link InvocationContext#proceed()}
+ * Simple interceptor, which throws an {@link IllegalArgumentException}.
  * 
- * @author Jaikiran Pai
+ * @author Josef Cacek
  */
-public class ClassLevelContainerInterceptor {
-    @SuppressWarnings("unused")
+public class FailingContainerInterceptor {
+
+    private static Logger LOGGER = Logger.getLogger(FailingContainerInterceptor.class);
+
+    // Private methods -------------------------------------------------------
+
     @AroundInvoke
-    private Object iAmAround(final InvocationContext invocationContext) throws Exception {
-        return this.getClass().getName() + " " + invocationContext.proceed();
+    Object throwException(final InvocationContext invocationContext) throws Exception {
+        LOGGER.info("Throwing exception");
+        throw new IllegalArgumentException("Blocking access to the bean.");
     }
 }
