@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.transform.description;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -163,15 +165,26 @@ class TransformingDescription extends AbstractDescription implements Transformat
             if(description == null) {
                 return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
             }
+
+            ModelNode attributeValue = operation.get(ModelDescriptionConstants.VALUE);
+
+
             // Process
             final ModelNode originalModel = operation.clone();
-            originalModel.protect();
-            final boolean reject = !description.checkAttributeValueIsValid(operation.get(ModelDescriptionConstants.VALUE), new TransformationRule.AbstractTransformationContext(context, originalModel) {
+            TransformationRule.AbstractTransformationContext ctx =new TransformationRule.AbstractTransformationContext(context, originalModel) {
                 @Override
                 protected TransformationContext getContext() {
                     return super.getContext();
                 }
-            });
+            };
+            originalModel.protect();
+            //discard what can be discarded
+            if (description.shouldDiscard(attributeValue, ctx)) {
+                return OperationTransformer.DISCARD.transformOperation(context, address, operation);
+            }
+
+            //Check the rest of the model can be transformed
+            final boolean reject = !description.checkAttributeValueIsValid(attributeValue, ctx);
             final OperationRejectionPolicy policy;
             if(reject) {
                 policy = new OperationRejectionPolicy() {
@@ -188,7 +201,16 @@ class TransformingDescription extends AbstractDescription implements Transformat
             } else {
                 policy = DEFAULT_REJECTION_POLICY;
             }
-            //
+
+            //Now transform the value
+            description.convertValue(attributeValue, ctx);
+
+            //Store the rename until we are done
+            String newName = description.getNewName();
+            if (newName != null) {
+                operation.get(NAME).set(newName);
+            }
+
             return new TransformedOperation(operation, policy, OperationResultTransformer.ORIGINAL_RESULT);
         }
     }
