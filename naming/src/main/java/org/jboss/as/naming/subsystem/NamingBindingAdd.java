@@ -94,15 +94,16 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         if (!allowed) {
             throw NamingMessages.MESSAGES.invalidNamespaceForBinding(name, Arrays.toString(GLOBAL_NAMESPACES));
         }
-        final String type = model.require(BINDING_TYPE).asString();
-        if (type.equals(SIMPLE)) {
+
+        final BindingType type = BindingType.forName(NamingBindingResourceDefinition.BINDING_TYPE.resolveModelAttribute(context,model).asString());
+        if (type == BindingType.SIMPLE) {
             installSimpleBinding(context, name, model, verificationHandler, newControllers);
-        } else if (type.equals(OBJECT_FACTORY)) {
+        } else if (type == BindingType.OBJECT_FACTORY) {
             installObjectFactory(context, name, model, verificationHandler, newControllers);
-        } else if (type.equals(LOOKUP)) {
+        } else if (type == BindingType.LOOKUP) {
             installLookup(context, name, model, verificationHandler, newControllers);
         } else {
-            throw NamingMessages.MESSAGES.unknownBindingType(type);
+            throw NamingMessages.MESSAGES.unknownBindingType(type.toString());
         }
     }
 
@@ -312,20 +313,19 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        final String type = operation.require(BINDING_TYPE).asString();
+        final BindingType type = BindingType.forName(operation.require(BINDING_TYPE).asString());
         NamingBindingResourceDefinition.BINDING_TYPE.validateAndSet(operation, model);
-        if (type.equals(SIMPLE)) {
+        if (type == BindingType.SIMPLE) {
             NamingBindingResourceDefinition.VALUE.validateAndSet(operation, model);
             NamingBindingResourceDefinition.TYPE.validateAndSet(operation, model);
-        } else if (type.equals(OBJECT_FACTORY)) {
+        } else if (type == BindingType.OBJECT_FACTORY) {
             NamingBindingResourceDefinition.MODULE.validateAndSet(operation, model);
             NamingBindingResourceDefinition.CLASS.validateAndSet(operation, model);
             NamingBindingResourceDefinition.OBJECT_FACTORY_ENV.validateAndSet(operation, model);
-        } else if (type.equals(LOOKUP)) {
-            model.get(LOOKUP).set(operation.require(LOOKUP).asString());
+        } else if (type == BindingType.LOOKUP) {
             NamingBindingResourceDefinition.LOOKUP.validateAndSet(operation, model);
         } else {
-            throw NamingMessages.MESSAGES.unknownBindingType(type);
+            throw NamingMessages.MESSAGES.unknownBindingType(type.toString());
         }
     }
 }

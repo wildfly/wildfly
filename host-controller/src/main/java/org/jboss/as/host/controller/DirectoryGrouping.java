@@ -25,7 +25,10 @@ package org.jboss.as.host.controller;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.controller.ExpressionResolver;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.host.controller.model.host.HostResourceDefinition;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -96,8 +99,12 @@ public enum DirectoryGrouping {
      *                                  was not found in the model.
      */
     public static DirectoryGrouping fromModel(final ModelNode model) {
-        if (model.hasDefined(ModelDescriptionConstants.DIRECTORY_GROUPING)) {
-            return DirectoryGrouping.forName(model.get(ModelDescriptionConstants.DIRECTORY_GROUPING).asString());
+        try {
+            if (model.hasDefined(ModelDescriptionConstants.DIRECTORY_GROUPING)) {
+                return DirectoryGrouping.forName(HostResourceDefinition.DIRECTORY_GROUPING.resolveModelAttribute(ExpressionResolver.DEFAULT, model).asString());
+            }
+        } catch (OperationFailedException e) {
+            throw new IllegalStateException(e);
         }
         return defaultValue();
     }

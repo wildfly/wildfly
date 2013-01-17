@@ -142,7 +142,8 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
     public static final SimpleAttributeDefinition DIRECTORY_GROUPING = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.DIRECTORY_GROUPING, ModelType.STRING, true).
             addFlag(AttributeAccess.Flag.RESTART_ALL_SERVICES).
             setDefaultValue(DirectoryGrouping.defaultValue().toModelNode()).
-            setValidator(EnumValidator.create(DirectoryGrouping.class, true, false)).
+            setValidator(EnumValidator.create(DirectoryGrouping.class, true, true)).
+            setAllowExpression(true).
             build();
     public static final SimpleAttributeDefinition MASTER = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.MASTER, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode(false))
