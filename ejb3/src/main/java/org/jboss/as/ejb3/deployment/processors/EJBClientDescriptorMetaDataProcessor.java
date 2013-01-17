@@ -88,7 +88,7 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
         // create the client configuration from the metadata
         final EJBClientConfiguration ejbClientConfiguration = this.createClientConfiguration(phaseContext.getServiceRegistry(), module.getClassLoader(), ejbClientDescriptorMetaData);
         // create the service
-        final DescriptorBasedEJBClientContextService service = new DescriptorBasedEJBClientContextService(ejbClientConfiguration);
+        final DescriptorBasedEJBClientContextService service = new DescriptorBasedEJBClientContextService(ejbClientConfiguration, module.getClassLoader());
         // add the service
         final ServiceBuilder serviceBuilder = serviceTarget.addService(ejbClientContextServiceName, service);
         // add the remoting connection reference dependencies

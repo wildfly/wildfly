@@ -75,6 +75,7 @@ public class DescriptorBasedEJBClientContextService implements Service<EJBClient
     private final InjectedValue<LocalEjbReceiver> localEjbReceiverInjectedValue = new InjectedValue<LocalEjbReceiver>();
 
     private final EJBClientConfiguration ejbClientConfiguration;
+    private final ClassLoader clientContextClassloader;
 
     private final Map<String, OptionMap> channelCreationOpts = Collections.synchronizedMap(new HashMap<String, OptionMap>());
     private final Map<String, Long> connectionTimeouts = Collections.synchronizedMap(new HashMap<String, Long>());
@@ -84,14 +85,31 @@ public class DescriptorBasedEJBClientContextService implements Service<EJBClient
      */
     private volatile EJBClientContext ejbClientContext;
 
+    /**
+     *
+     * @param ejbClientConfiguration
+     * @deprecated Use {@link #DescriptorBasedEJBClientContextService(org.jboss.ejb.client.EJBClientConfiguration, ClassLoader)} instead
+     */
+    @Deprecated
     public DescriptorBasedEJBClientContextService(final EJBClientConfiguration ejbClientConfiguration) {
         this.ejbClientConfiguration = ejbClientConfiguration;
+        this.clientContextClassloader = null;
+    }
+
+    public DescriptorBasedEJBClientContextService(final EJBClientConfiguration ejbClientConfiguration, final ClassLoader clientContextClassloader) {
+        this.ejbClientConfiguration = ejbClientConfiguration;
+        this.clientContextClassloader = clientContextClassloader;
     }
 
     @Override
     public synchronized void start(StartContext startContext) throws StartException {
         // setup the context with the receivers
-        final EJBClientContext context = EJBClientContext.create(this.ejbClientConfiguration);
+        final EJBClientContext context;
+        if (this.clientContextClassloader != null) {
+            context = EJBClientContext.create(this.ejbClientConfiguration, this.clientContextClassloader);
+        } else {
+            context = EJBClientContext.create(this.ejbClientConfiguration);
+        }
         // add the (optional) local EJB receiver
         final LocalEjbReceiver localEjbReceiver = this.localEjbReceiverInjectedValue.getOptionalValue();
         if (localEjbReceiver != null) {
