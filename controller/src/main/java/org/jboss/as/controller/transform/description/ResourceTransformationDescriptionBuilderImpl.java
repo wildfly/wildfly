@@ -171,6 +171,8 @@ class ResourceTransformationDescriptionBuilderImpl extends AbstractTransformatio
         private final Map<String, List<RejectAttributeChecker>> attributeRestrictions = new HashMap<String, List<RejectAttributeChecker>>();
         private final Map<String, DiscardAttributeChecker> discardedAttributes = new HashMap<String, DiscardAttributeChecker>();
         private final Map<String, String> renamedAttributes = new HashMap<String, String>();
+        private final Map<String, AttributeConverter> convertedAttributes = new HashMap<String, AttributeConverter>();
+        private final Map<String, AttributeConverter> addedAttributes = new HashMap<String, AttributeConverter>();
 
 
         void addToAllAttributes(String attributeName) {
@@ -200,13 +202,23 @@ class ResourceTransformationDescriptionBuilderImpl extends AbstractTransformatio
             renamedAttributes.put(attributeName, newName);
         }
 
+        void addAttributeConverter(String attributeName, AttributeConverter attributeConverter) {
+            addToAllAttributes(attributeName);
+            convertedAttributes.put(attributeName, attributeConverter);
+        }
+
+        void addAddedAttribute(String attributeName, AttributeConverter attributeConverter) {
+            addToAllAttributes(attributeName);
+            addedAttributes.put(attributeName, attributeConverter);
+        }
+
         Map<String, AttributeTransformationDescription> buildAttributes(){
             Map<String, AttributeTransformationDescription> attributes = new HashMap<String, AttributeTransformationDescription>();
             for (String name : allAttributes) {
                 List<RejectAttributeChecker> checkers = attributeRestrictions.get(name);
                 String newName = renamedAttributes.get(name);
                 DiscardAttributeChecker discardChecker = discardedAttributes.get(name);
-                attributes.put(name, new AttributeTransformationDescription(name, checkers, newName, discardChecker));
+                attributes.put(name, new AttributeTransformationDescription(name, checkers, newName, discardChecker, convertedAttributes.get(name), addedAttributes.get(name)));
             }
             return attributes;
         }
@@ -263,6 +275,22 @@ class ResourceTransformationDescriptionBuilderImpl extends AbstractTransformatio
             }
             return this;
         }
+
+        @Override
+        public AttributeTransformationDescriptionBuilder<T> convertValue(AttributeConverter attributeConverter, T...convertedAttributes) {
+            for (T attribute : convertedAttributes) {
+                String attrName = getAttributeName(attribute);
+                registry.addAttributeConverter(attrName, attributeConverter);
+            }
+            return this;
+        }
+
+        @Override
+        public AttributeTransformationDescriptionBuilder<T> addAttribute(T attribute, AttributeConverter attributeConverter) {
+            registry.addAddedAttribute(getAttributeName(attribute), attributeConverter);
+            return this;
+        }
+
 
         abstract String getAttributeName(T attr);
     }

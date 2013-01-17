@@ -55,7 +55,7 @@ import org.junit.Test;
 /**
  * @author Emanuel Muckenhuber
  */
-public class BasicTestsCase {
+public class BasicTestCase {
 
     private static PathElement PATH = PathElement.pathElement("toto", "testSubsystem");
     private static PathElement DISCARD = PathElement.pathElement("discard");
