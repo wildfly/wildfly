@@ -110,7 +110,9 @@ class TransformingDescription extends AbstractDescription implements Transformat
     @Override
     public OperationTransformer.TransformedOperation transformOperation(final TransformationContext ctx, final PathAddress address, final ModelNode operation) throws OperationFailedException {
         final Iterator<TransformationRule> iterator = rules.iterator();
-        final TransformationRule.OperationContext context = new TransformationRule.OperationContext(ctx) {
+        final ModelNode originalModel = operation.clone();
+        originalModel.protect();
+        final TransformationRule.OperationContext context = new TransformationRule.OperationContext(ctx, originalModel) {
 
             @Override
             void invokeNext(OperationTransformer.TransformedOperation transformedOperation) throws OperationFailedException {
@@ -132,7 +134,9 @@ class TransformingDescription extends AbstractDescription implements Transformat
     @Override
     public void transformResource(final ResourceTransformationContext ctx, final PathAddress address, final Resource original) throws OperationFailedException {
         final Iterator<TransformationRule> iterator = rules.iterator();
-        final TransformationRule.ResourceContext context = new TransformationRule.ResourceContext(ctx) {
+        final ModelNode originalModel = original.getModel().clone();
+        originalModel.protect();
+        final TransformationRule.ResourceContext context = new TransformationRule.ResourceContext(ctx, originalModel) {
             @Override
             void invokeNext(final Resource resource) throws OperationFailedException {
                 if(iterator.hasNext()) {
@@ -160,7 +164,9 @@ class TransformingDescription extends AbstractDescription implements Transformat
                 return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
             }
             // Process
-            final boolean reject = !description.checkAttributeValueIsValid(operation.get(ModelDescriptionConstants.VALUE), new TransformationRule.AbstractTransformationContext(context) {
+            final ModelNode originalModel = operation.clone();
+            originalModel.protect();
+            final boolean reject = !description.checkAttributeValueIsValid(operation.get(ModelDescriptionConstants.VALUE), new TransformationRule.AbstractTransformationContext(context, originalModel) {
                 @Override
                 protected TransformationContext getContext() {
                     return super.getContext();
