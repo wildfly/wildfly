@@ -42,6 +42,19 @@ public interface TransformationContext {
      */
     TransformationTarget getTarget();
 
+
+//    /**
+//     * Get the original (untransformed) model passed into the transformers.
+//     *
+//     * The return value depends on the type of transformation {@link #isOperationTransformation()}.
+//     *
+//     * In case of operation transfomrations this will return the operation model. In case this is part of resource
+//     * transformation this is a shortcut to {@link #readResource(org.jboss.as.controller.PathAddress)}.
+//     *
+//     * @return the untransformed original model
+//     */
+//    ModelNode getOriginal();
+
     /**
      * Get the type of process in which this operation is executing.
      *
