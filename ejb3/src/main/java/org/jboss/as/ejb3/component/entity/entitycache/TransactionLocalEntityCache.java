@@ -54,12 +54,13 @@ public class TransactionLocalEntityCache implements ReadyEntityCache {
     }
 
     @Override
-    public synchronized boolean isCached(final Object key) {
+    public synchronized boolean containsNotRemoved(final Object key) {
         if (!isTransactionActive() || !cache.containsKey(key)) {
             return false;
         }
         final Map<Object, CacheEntry> cache = prepareCache();
-        return cache.containsKey(key);
+
+        return cache.containsKey(key) && !cache.get(key).instance.isRemoved();
     }
 
     @Override

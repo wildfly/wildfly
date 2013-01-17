@@ -82,24 +82,24 @@ public class CheckSameTxUnitTestCase extends AbstractCmpTest {
     public void testDbSync() throws Exception {
         SimpleEntityLocalHome simpleHome = getHome();
 
-        log.info("create Enity #10001");
+        log.debug("create Enity #10001");
         SimpleEntityLocal e1 = simpleHome.create(10001l, "Entity 10001");
         Assert.assertTrue("ejbStore not called after create!", 1==e1.getEjbStoreCounter());
-        log.info("create Enity #10002");
+        log.debug("create Enity #10002");
         SimpleEntityLocal e2 = simpleHome.create(10002l, "Entity 10002");
 
-        log.info("change Enity #10001");
+        log.debug("change Enity #10001");
         e1.setName("Entity 10001 changed");
         Assert.assertTrue("ejbStore called unexpected after change!", 1==e1.getEjbStoreCounter());
 
-        log.info("findByPKey Enity #10002");
+        log.debug("findByPKey Enity #10002");
         e2 = simpleHome.findByPrimaryKey(10002l);
         Assert.assertTrue("Entity #1 was unexpected flushed to the DB",1== e1.getEjbStoreCounter());
 
-        log.info("findById Enity #10002");
+        log.debug("findById Enity #10002");
         e2 = simpleHome.findById(10002l);
         Assert.assertTrue("Entity #1 was not flushed to the DB", 2==e1.getEjbStoreCounter());
-        log.info("leaving test");
+        log.debug("leaving test");
     }
 
 
