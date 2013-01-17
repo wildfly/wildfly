@@ -52,9 +52,9 @@ class ResourceTransformationDescriptionBuilderImpl extends ResourceTransformatio
     private final List<TransformationDescriptionBuilder> children = new ArrayList<TransformationDescriptionBuilder>();
     private final Map<String, AttributeTransformationRequirementChecker> attributeRestrictions = new HashMap<String, AttributeTransformationRequirementChecker>();
 
-    private PathTransformation pathTransformation;
     private ModelTransformer customTransformationStep;
-    private ResourceTransformer resourceTransformer;
+    private PathTransformation pathTransformation = PathTransformation.DEFAULT;
+    private ResourceTransformer resourceTransformer = ResourceTransformer.DEFAULT;
 
     protected ResourceTransformationDescriptionBuilderImpl(PathElement pathElement) {
         super(pathElement);
@@ -118,8 +118,8 @@ class ResourceTransformationDescriptionBuilderImpl extends ResourceTransformatio
     }
 
     @Override
-    public TransformationDescriptionBuilder discardChildResource(final PathElement pathElement) {
-        final TransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createDiscardInstance(pathElement);
+    public DiscardTransformationDescriptionBuilder discardChildResource(final PathElement pathElement) {
+        final DiscardTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createDiscardInstance(pathElement);
         children.add(builder);
         return builder;
     }
@@ -155,7 +155,7 @@ class ResourceTransformationDescriptionBuilderImpl extends ResourceTransformatio
                 @Override
                 void transformOperation(ModelNode operation, PathAddress address, OperationContext context) throws OperationFailedException {
                     final TransformationContext ctx = context.getContext();
-                    final boolean reject = t.transform(operation, address, ctx);
+                    final boolean reject = ! t.transform(operation, address, ctx);
                     final OperationRejectionPolicy policy ;
                     if(reject) {
                         policy = new OperationRejectionPolicy() {

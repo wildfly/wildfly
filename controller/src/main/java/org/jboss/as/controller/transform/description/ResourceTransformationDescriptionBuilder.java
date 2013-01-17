@@ -101,6 +101,6 @@ public abstract class ResourceTransformationDescriptionBuilder extends Transform
      * @param pathElement the path element
      * @return the builder for the child resource
      */
-    public abstract TransformationDescriptionBuilder discardChildResource(PathElement pathElement);
+    public abstract DiscardTransformationDescriptionBuilder discardChildResource(PathElement pathElement);
 
 }

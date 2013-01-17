@@ -67,7 +67,7 @@ public class ExplicitTransformationDescriptionBuilder extends TransformationDesc
 
             @Override
             public void register(TransformersSubRegistration parent) {
-                parent.registerSubResource(pathElement, resourceTransformer, operationTransformer);
+                parent.registerSubResource(pathElement, pathTransformation, resourceTransformer, operationTransformer);
             }
 
         };

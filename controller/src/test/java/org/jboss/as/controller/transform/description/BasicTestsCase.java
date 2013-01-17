@@ -59,6 +59,13 @@ import java.util.Locale;
 public class BasicTestsCase {
 
     private static PathElement PATH = PathElement.pathElement("toto", "testSubsystem");
+    private static PathElement DISCARD = PathElement.pathElement("discard");
+
+    private static PathElement CONFIGURATION_TEST = PathElement.pathElement("configuration", "test");
+    private static PathElement TEST_CONFIGURATION = PathElement.pathElement("test", "configuration");
+
+    private static PathElement SETTING_DIRECTORY = PathElement.pathElement("setting", "directory");
+    private static PathElement DIRECTORY_SETTING = PathElement.pathElement("directory", "setting");
 
     private Resource resourceRoot = Resource.Factory.create();
     private TransformerRegistry registry = TransformerRegistry.Factory.create(null);
@@ -70,18 +77,24 @@ public class BasicTestsCase {
         // Build
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
 
+        // Basic transformations
         builder.rejectExpressions("test")
                 .addCustomTransformation(new ModelTransformer() {
                     @Override
                     public boolean transform(ModelNode node, PathAddress address, TransformationContext context) throws OperationFailedException {
                         node.get("othertest").set(true);
-                        return false;
+                        return true;
                     }
                 });
 
-        //.redirectTo(PathElement.pathElement("other"));
+        // Discard all
+        builder.discardChildResource(DISCARD);
 
-        builder.discardChildResource(PathElement.pathElement("discard"));
+        // configuration=test/setting=directory > test=configuration/directory=setting
+        builder.discardChildResource(CONFIGURATION_TEST)
+                .redirectTo(TEST_CONFIGURATION)
+                .discardChildResource(SETTING_DIRECTORY)
+                .redirectTo(DIRECTORY_SETTING);
 
         // Register at the server root
         description = builder.build();
@@ -96,13 +109,20 @@ public class BasicTestsCase {
         // test
         final Resource toto = Resource.Factory.create();
         toto.getModel().get("test").set("onetwothree");
+
         // discard
         final Resource discard = Resource.Factory.create();
         discard.getModel().get("attribute").set("two");
-        // register
         toto.registerChild(PathElement.pathElement("discard", "one"), discard);
-        resourceRoot.registerChild(PATH, toto);
 
+        // configuration
+        final Resource configuration = Resource.Factory.create();
+        final Resource setting = Resource.Factory.create();
+        configuration.registerChild(SETTING_DIRECTORY, setting);
+        toto.registerChild(CONFIGURATION_TEST, configuration);
+
+        //
+        resourceRoot.registerChild(PATH, toto);
 
         // Register the description
         final TransformersSubRegistration reg = registry.getServerRegistration(ModelVersion.create(1));
@@ -124,13 +144,15 @@ public class BasicTestsCase {
         Assert.assertNotNull(op);
 
         final Resource resource = transformResource();
+        System.out.println(Resource.Tools.readModel(resource));
+
         Assert.assertNotNull(resource);
         final Resource toto = resource.getChild(PATH);
         final ModelNode model = toto.getModel();
         Assert.assertTrue(model.hasDefined("othertest"));
         Assert.assertNotNull(toto);
         Assert.assertFalse(toto.hasChild(PathElement.pathElement("discard", "one")));
-
+        Assert.assertFalse(toto.hasChild(CONFIGURATION_TEST));
     }
 
     @Test
