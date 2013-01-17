@@ -30,28 +30,14 @@ import org.jboss.as.controller.transform.PathTransformation;
  *
  * @author Emanuel Muckenhuber
  */
-public abstract class TransformationDescriptionBuilder {
-
-    protected final PathElement pathElement;
-    protected TransformationDescriptionBuilder(final PathElement pathElement) {
-        this.pathElement = pathElement;
-    }
+public interface TransformationDescriptionBuilder {
 
     /**
      * Build the transformation description.
      *
      * @return the transformation description
      */
-    public abstract TransformationDescription build();
-
-    /**
-     * Path transformation for this current level.
-     *
-     * @return the path transformer
-     */
-    protected PathTransformation getPathTransformation() {
-        return PathTransformation.DEFAULT;
-    }
+    TransformationDescription build();
 
     public static class Factory {
 

@@ -23,34 +23,23 @@
 package org.jboss.as.controller.transform.description;
 
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.PathTransformation;
+import org.jboss.as.controller.transform.ResourceTransformer;
 
 /**
+ * Transformation builder discarding all operations to this resource.
+ *
  * @author Emanuel Muckenhuber
  */
-public final class DiscardTransformationDescriptionBuilder extends TransformationDescriptionBuilder {
+public final class DiscardTransformationDescriptionBuilder extends AbstractTransformationDescriptionBuilder implements TransformationDescriptionBuilder {
 
-    private TransformationDescriptionBuilder redirectBuilder;
     protected DiscardTransformationDescriptionBuilder(PathElement pathElement) {
-        super(pathElement);
-    }
-
-    /**
-     * Discard operations to the current address, but redirect to a different address.
-     *
-     * @param element the path element
-     * @return the transformation
-     */
-    public ResourceTransformationDescriptionBuilder redirectTo(PathElement redirect) {
-        ResourceTransformationDescriptionBuilderImpl builder = new ResourceTransformationDescriptionBuilderImpl(pathElement);
-        this.redirectBuilder = builder;
-        return builder.redirectTo(redirect);
+        super(pathElement, PathTransformation.DEFAULT, ResourceTransformer.DISCARD, OperationTransformer.DISCARD);
     }
 
     @Override
     public TransformationDescription build() {
-        if(redirectBuilder != null) {
-            return redirectBuilder.build();
-        }
         return new DiscardDefinition(pathElement);
     }
 

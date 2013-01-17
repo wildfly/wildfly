@@ -47,22 +47,17 @@ import org.jboss.dmr.ModelNode;
  * @author Emanuel Muckenhuber
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-class ResourceTransformationDescriptionBuilderImpl extends ResourceTransformationDescriptionBuilder {
+class ResourceTransformationDescriptionBuilderImpl extends AbstractTransformationDescriptionBuilder implements ResourceTransformationDescriptionBuilder {
 
     private final List<ModelTransformer> steps = new ArrayList<ModelTransformer>();
-    private final List<TransformationDescriptionBuilder> children = new ArrayList<TransformationDescriptionBuilder>();
     private final AttributeTransformationDescriptionBuilderRegistry registry = new AttributeTransformationDescriptionBuilderRegistry();
 
-    //TODO perhaps some central registry for everything to do with attributes?
-    //private final List<AttributeTransformationDescriptionBuilderImpl<?>> attributeBuilders = new ArrayList<ResourceTransformationDescriptionBuilderImpl.AttributeTransformationDescriptionBuilderImpl<?>>();
-    //private final Map<String, AttributeTransformationRequirementChecker> attributeRestrictions = new HashMap<String, AttributeTransformationRequirementChecker>();
+    protected ResourceTransformationDescriptionBuilderImpl(final PathElement pathElement) {
+        this(pathElement, PathTransformation.DEFAULT);
+    }
 
-    private ModelTransformer customTransformationStep;
-    private PathTransformation pathTransformation = PathTransformation.DEFAULT;
-    private ResourceTransformer resourceTransformer = ResourceTransformer.DEFAULT;
-
-    protected ResourceTransformationDescriptionBuilderImpl(PathElement pathElement) {
-        super(pathElement);
+    protected ResourceTransformationDescriptionBuilderImpl(final PathElement pathElement, final PathTransformation pathTransformation) {
+        super(pathElement, pathTransformation, ResourceTransformer.DEFAULT, OperationTransformer.DEFAULT);
     }
 
     @Override
@@ -93,16 +88,16 @@ class ResourceTransformationDescriptionBuilderImpl extends ResourceTransformatio
     }
 
     @Override
-    public ResourceTransformationDescriptionBuilder setResourceTransformer(final ResourceTransformer resourceTransformer) {
-        if(resourceTransformer == null) {
-            throw new IllegalArgumentException();
-        }
-        this.resourceTransformer = resourceTransformer;
-        return this;
+    public ResourceTransformationDescriptionBuilder addChildRedirection(PathElement oldAddress, PathElement newAddress) {
+        final PathTransformation transformation = new PathTransformation.BasicPathTransformation(newAddress);
+        final ResourceTransformationDescriptionBuilderImpl builder = new ResourceTransformationDescriptionBuilderImpl(oldAddress, transformation);
+        children.add(builder);
+        return builder;
     }
 
-    protected ResourceTransformationDescriptionBuilder redirectTo(final PathElement element) {
-        this.pathTransformation = new PathTransformation.BasicPathTransformation(element);
+    @Override
+    public ResourceTransformationDescriptionBuilder setResourceTransformer(final ResourceTransformer resourceTransformer) {
+        super.setResourceTransformer(resourceTransformer);
         return this;
     }
 

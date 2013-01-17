@@ -89,10 +89,8 @@ public class BasicTestsCase {
         builder.discardChildResource(DISCARD);
 
         // configuration=test/setting=directory > test=configuration/directory=setting
-        builder.discardChildResource(CONFIGURATION_TEST)
-                .redirectTo(TEST_CONFIGURATION)
-                .discardChildResource(SETTING_DIRECTORY)
-                .redirectTo(DIRECTORY_SETTING);
+        builder.addChildRedirection(CONFIGURATION_TEST, TEST_CONFIGURATION)
+                .addChildRedirection(SETTING_DIRECTORY, DIRECTORY_SETTING);
 
         // Register at the server root
         description = builder.build();
