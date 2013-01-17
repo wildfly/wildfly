@@ -101,8 +101,8 @@ abstract class TransformationRule {
             super(context, originalModel);
         }
 
-        protected ResourceTransformationContext getContext() {
-            return (ResourceTransformationContext ) super.getContext();
+        protected TransformationContext getContext() {
+            return super.getContext();
         }
 
         abstract void invokeNext(Resource resource) throws OperationFailedException;
