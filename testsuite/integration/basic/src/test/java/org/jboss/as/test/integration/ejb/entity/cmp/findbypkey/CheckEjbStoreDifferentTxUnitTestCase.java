@@ -91,23 +91,23 @@ public class CheckEjbStoreDifferentTxUnitTestCase extends AbstractCmpTest {
     public void testDbSyncDifferentTx() throws FinderException {
         SimpleEntityLocalHome simpleHome = getHome();
 
-        log.info("read Enity #1");
+        log.debug("read Enity #1");
         SimpleEntityLocal e1 = simpleHome.findByPrimaryKey(1l);
         Assert.assertEquals("ejbStore not called after create!", 0, e1.getEjbStoreCounter());
-        log.info("read Enity #2");
+        log.debug("read Enity #2");
         SimpleEntityLocal e2 = simpleHome.findByPrimaryKey(2l);
 
-        log.info("change Enity #1");
+        log.debug("change Enity #1");
         e1.setName("Entity #1 changed");
         Assert.assertEquals("ejbStore called unexpected after change!", 0, e1.getEjbStoreCounter());
 
-        log.info("findByPKey Enity #2");
+        log.debug("findByPKey Enity #2");
         e2 = simpleHome.findByPrimaryKey(2l);
         Assert.assertEquals("Entity #1 was unexpected flushed to the DB",0, e1.getEjbStoreCounter());
 
-        log.info("findById Enity #2");
+        log.debug("findById Enity #2");
         e2 = simpleHome.findById(2l);
         Assert.assertEquals("Entity #1 was not flushed to the DB", 1,e1.getEjbStoreCounter());
-        log.info("leaving test");
+        log.debug("leaving test");
     }
 }

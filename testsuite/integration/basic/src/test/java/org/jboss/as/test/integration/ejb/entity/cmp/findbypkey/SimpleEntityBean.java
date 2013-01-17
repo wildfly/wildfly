@@ -56,19 +56,19 @@ public abstract class SimpleEntityBean implements EntityBean {
     }
 
     public void ejbLoad() {
-        LOG.info("LOAD pkey="+getId());
+        LOG.debug("LOAD pkey="+getId());
     }
 
     public void ejbPassivate() {
     }
 
     public void ejbRemove() throws RemoveException {
-        LOG.info("REMOVE pkey="+getId());
+        LOG.debug("REMOVE pkey="+getId());
     }
 
     public void ejbStore() {
         ejbStoreCall++;
-        LOG.info("STORE pkey="+getId()+" calls="+ejbStoreCall);
+        LOG.debug("STORE pkey="+getId()+" calls="+ejbStoreCall);
     }
 
     public void setEntityContext(EntityContext arg0) {

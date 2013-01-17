@@ -78,7 +78,7 @@ public class CmpEntityBeanHomeFinderInterceptorFactory extends EntityBeanHomeFin
                 throw MESSAGES.illegalNumberOfArgumentsForFindByPrimaryKey(finderMethod.getParameterTypes().length);
             }
             final ReadyEntityCache cache = cmpComponent.getCache();
-            if(cache.isCached(context.getParameters()[0])) {
+            if(cache.containsNotRemoved(context.getParameters()[0])) {
                 return this.localHome ? cmpComponent.getEJBLocalObject(context.getParameters()[0]) : cmpComponent.getEJBObject(context.getParameters()[0]);
             }
         }else if(!store.getCmpConfig().isSyncOnCommitOnly()) {
