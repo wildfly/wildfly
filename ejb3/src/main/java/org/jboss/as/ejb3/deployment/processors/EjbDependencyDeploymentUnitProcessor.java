@@ -79,7 +79,7 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
         //we always give them the EJB client
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB_CLIENT, false, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB_CLIENT, false, false, true, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB_IIOP_CLIENT, false, false, false, false));
 
         //we always have to add this, as even non-ejb deployments may still lookup IIOP ejb's
