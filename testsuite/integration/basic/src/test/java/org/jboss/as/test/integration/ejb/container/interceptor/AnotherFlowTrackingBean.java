@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.ejb.container.interceptor;
 
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
-import javax.interceptor.Interceptors;
 
 /**
  * @author Jaikiran Pai
@@ -41,4 +40,7 @@ public class AnotherFlowTrackingBean extends FlowTrackingBean {
         return msg;
     }
 
+    public String failingEcho(final String msg) {
+        return msg;
+    }
 }

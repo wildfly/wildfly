@@ -44,6 +44,14 @@
                     <method-name>echoWithMethodSpecificContainerInterceptor</method-name>
                 </method>
             </jee:interceptor-binding>
+            <!-- Failing container-interceptor -->
+            <jee:interceptor-binding>
+                <ejb-name>AnotherFlowTrackingBean</ejb-name>
+                <interceptor-class>org.jboss.as.test.integration.ejb.container.interceptor.FailingContainerInterceptor</interceptor-class>
+                <method>
+                    <method-name>failingEcho</method-name>
+                </method>
+            </jee:interceptor-binding>
             <!-- container interceptors in a specific order -->
             <jee:interceptor-binding>
                 <ejb-name>AnotherFlowTrackingBean</ejb-name>

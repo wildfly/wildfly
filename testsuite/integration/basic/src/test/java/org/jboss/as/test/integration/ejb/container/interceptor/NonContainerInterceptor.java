@@ -22,12 +22,16 @@
 
 package org.jboss.as.test.integration.ejb.container.interceptor;
 
-import org.jboss.logging.Logger;
-
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.InvocationContext;
 
+import org.jboss.logging.Logger;
+
 /**
+ * Simple interceptor, which adds its classname in front of the result of {@link InvocationContext#proceed()}. Result of the
+ * proceed() stays untouched in case the {@link InvocationContext#getContextData()} contains classname of this interceptor under
+ * the {@link FlowTrackingBean#CONTEXT_DATA_KEY} key.
+ * 
  * @author Jaikiran Pai
  */
 public class NonContainerInterceptor {
