@@ -3,7 +3,7 @@
 <host name="master" xmlns="urn:jboss:domain:1.4">
 
     <vault code="${vault.code:somevault}">
-        <vault-option name="abc" value="def"/>
+        <vault-option name="abc" value="${vault-option:def}"/>
     </vault>
 
     <management>
