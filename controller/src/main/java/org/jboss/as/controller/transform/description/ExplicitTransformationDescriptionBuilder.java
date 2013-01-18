@@ -30,6 +30,7 @@ import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -38,6 +39,8 @@ import java.util.Map;
  * @author Emanuel Muckenhuber
  */
 public class ExplicitTransformationDescriptionBuilder extends AbstractTransformationDescriptionBuilder implements TransformationDescriptionBuilder {
+
+    // TODO operation and children
 
     public ExplicitTransformationDescriptionBuilder(PathElement pathElement) {
         super(pathElement, PathTransformation.DEFAULT, ResourceTransformer.DEFAULT, OperationTransformer.DEFAULT);
@@ -64,10 +67,24 @@ public class ExplicitTransformationDescriptionBuilder extends AbstractTransforma
         return new AbstractDescription(pathElement, pathTransformation) {
 
             @Override
-            public void register(TransformersSubRegistration parent) {
-                parent.registerSubResource(pathElement, pathTransformation, resourceTransformer, operationTransformer);
+            public OperationTransformer getOperationTransformer() {
+                return operationTransformer;
             }
 
+            @Override
+            public ResourceTransformer getResourceTransformer() {
+                return resourceTransformer;
+            }
+
+            @Override
+            public Map<String, OperationTransformer> getOperationTransformers() {
+                return Collections.emptyMap();
+            }
+
+            @Override
+            public List<TransformationDescription> getChildren() {
+                return Collections.emptyList();
+            }
         };
     }
 

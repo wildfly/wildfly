@@ -26,8 +26,13 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ModelVersionRange;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.PathTransformation;
+import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * The final tranformation description.
@@ -36,6 +41,11 @@ import org.jboss.as.controller.transform.TransformersSubRegistration;
  */
 public interface TransformationDescription {
 
+    /**
+     * Get the path for this transformtion description.
+     *
+     * @return the path element
+     */
     PathElement getPath();
 
     /**
@@ -46,33 +56,54 @@ public interface TransformationDescription {
     PathTransformation getPathTransformation();
 
     /**
-     * Register this transformation description to the subsystem registration.
+     * Get the default operation transformer.
      *
-     * @param subsytem the subsystem
-     * @param versions the versions
+     * @return the operation transformer
      */
+    OperationTransformer getOperationTransformer();
+
+    /**
+     * Get the resource transformer.
+     *
+     * @return the resource transformer
+     */
+    ResourceTransformer getResourceTransformer();
+
+    /**
+     * Get the operation transformers for specific operations.
+     *
+     * @return the operation transformer overrides
+     */
+    Map<String, OperationTransformer> getOperationTransformers();
+
+    /**
+     * Get the children descriptions.
+     *
+     * @return the children
+     */
+    List<TransformationDescription> getChildren();
+
+    @Deprecated
     void register(SubsystemRegistration subsytem, ModelVersion... versions);
-
-    /**
-     * Register this transformation description to the subsystem registration.
-     *
-     * @param subsytem the subsystem
-     * @param range the version range
-     */
+    @Deprecated
     void register(SubsystemRegistration subsytem, ModelVersionRange range);
-
-    /**
-     * Register this transformation description.
-     *
-     * @param registration the transformation description
-     */
+    @Deprecated
     void register(TransformersSubRegistration parent);
 
-
-    public static class Tools {
+    public static final class Tools {
 
         private Tools() {
             //
+        }
+
+        public static void register(final TransformationDescription description, TransformersSubRegistration parent) {
+            final TransformersSubRegistration registration = parent.registerSubResource(description.getPath(), description.getPathTransformation(), description.getResourceTransformer(), description.getOperationTransformer());
+            for (final Map.Entry<String, OperationTransformer> entry : description.getOperationTransformers().entrySet()) {
+                registration.registerOperationTransformer(entry.getKey(), entry.getValue());
+            }
+            for (final TransformationDescription child : description.getChildren()) {
+                register(child, registration);
+            }
         }
 
         public static void register(TransformationDescription description, SubsystemRegistration registration, ModelVersion... versions) {
@@ -80,7 +111,7 @@ public interface TransformationDescription {
         }
 
         public static void register(TransformationDescription description, SubsystemRegistration registration, ModelVersionRange range) {
-            // registration.registerModelTransformers(range, )
+            throw new IllegalStateException("implement operation transformer registration for subsystems");
         }
 
     }
