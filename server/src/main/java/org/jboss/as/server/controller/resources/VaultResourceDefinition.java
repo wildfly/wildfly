@@ -58,7 +58,8 @@ public class VaultResourceDefinition extends SimpleResourceDefinition {
             .addFlag(Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .setCorrector(MapAttributeDefinition.LIST_TO_MAP_CORRECTOR)
-            .setValidator(new StringLengthValidator(1))
+            .setValidator(new StringLengthValidator(1, true, true))
+            .setAllowExpression(true)
             .build();
 
     public static AttributeDefinition[] ALL_ATTRIBUTES = new AttributeDefinition[]{CODE, VAULT_OPTIONS};
