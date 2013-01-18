@@ -191,13 +191,15 @@ class ResourceTransformationDescriptionBuilderImpl extends AbstractTransformatio
             checkers.add(checker);
         }
 
-        void addDiscardedAttribute(DiscardAttributeChecker discardChecker, String attributeName) {
+        void setDiscardedAttribute(DiscardAttributeChecker discardChecker, String attributeName) {
             assert discardChecker != null : "Null discard checker";
+            assert !discardedAttributes.containsKey(attributeName) : "Discard already set";
             addToAllAttributes(attributeName);
             discardedAttributes.put(attributeName, discardChecker);
         }
 
         void addRenamedAttribute(String attributeName, String newName) {
+            assert !renamedAttributes.containsKey(attributeName) : "Rename already set";
             addToAllAttributes(attributeName);
             renamedAttributes.put(attributeName, newName);
         }
@@ -234,22 +236,23 @@ class ResourceTransformationDescriptionBuilderImpl extends AbstractTransformatio
         }
 
         @Override
-        public AttributeTransformationDescriptionBuilder<T> discard(DiscardAttributeChecker discardChecker, T...discardedAttributes) {
+        public AttributeTransformationDescriptionBuilder<T> setDiscard(DiscardAttributeChecker discardChecker, T...discardedAttributes) {
             T[] useDefs = discardedAttributes;
             for (T attribute : useDefs) {
                 String attrName = getAttributeName(attribute);
-                registry.addDiscardedAttribute(discardChecker, attrName);
+                registry.setDiscardedAttribute(discardChecker, attrName);
             }
 
             return this;
         }
 
         @Override
-        public AttributeTransformationDescriptionBuilder<T> rejectExpressions(final T...rejectedAttributes) {
-            return addAttributeCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, rejectedAttributes);
+        public AttributeTransformationDescriptionBuilder<T> setRejectExpressions(final T...rejectedAttributes) {
+            return addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, rejectedAttributes);
         }
 
-        public AttributeTransformationDescriptionBuilderImpl<T> addAttributeCheck(final RejectAttributeChecker checker, final T...rejectedAttributes){
+        @Override
+        public AttributeTransformationDescriptionBuilderImpl<T> addRejectCheck(final RejectAttributeChecker checker, final T...rejectedAttributes){
             for (T attribute : rejectedAttributes) {
                 String attrName = getAttributeName(attribute);
                 registry.addAttributeCheck(attrName, checker);
@@ -258,26 +261,29 @@ class ResourceTransformationDescriptionBuilderImpl extends AbstractTransformatio
         }
 
         @Override
-        public AttributeTransformationDescriptionBuilder<T> rename(Map<T, String> newNameMappings) {
-            for (Map.Entry<T, String> rename : newNameMappings.entrySet()) {
+        public AttributeTransformationDescriptionBuilder<T> addRejectChecks(List<RejectAttributeChecker> rejectCheckers, T...rejectedAttributes) {
+            for (RejectAttributeChecker rejectChecker : rejectCheckers) {
+                addRejectCheck(rejectChecker, rejectedAttributes);
+            }
+            return this;
+        }
+
+        @Override
+        public AttributeTransformationDescriptionBuilder<T> addRename(T attributeName, String newName) {
+            registry.addRenamedAttribute(getAttributeName(attributeName), newName);
+            return this;
+        }
+
+        public AttributeTransformationDescriptionBuilder<T> addRenames(Map<T, String> renames) {
+            for (Map.Entry<T, String> rename : renames.entrySet()) {
                 registry.addRenamedAttribute(getAttributeName(rename.getKey()), rename.getValue());
             }
             return this;
         }
 
-        @Override
-        public AttributeTransformationDescriptionBuilder<T> reject(List<RejectAttributeChecker> rejectCheckers, T... rejectedAttributes) {
-            for (T attribute : rejectedAttributes) {
-                String attrName = getAttributeName(attribute);
-                for (RejectAttributeChecker checker : rejectCheckers) {
-                    registry.addAttributeCheck(attrName, checker);
-                }
-            }
-            return this;
-        }
 
         @Override
-        public AttributeTransformationDescriptionBuilder<T> convertValue(AttributeConverter attributeConverter, T...convertedAttributes) {
+        public AttributeTransformationDescriptionBuilder<T> setValueConverter(AttributeConverter attributeConverter, T...convertedAttributes) {
             for (T attribute : convertedAttributes) {
                 String attrName = getAttributeName(attribute);
                 registry.addAttributeConverter(attrName, attributeConverter);

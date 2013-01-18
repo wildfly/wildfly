@@ -99,7 +99,7 @@ public class AttributesTestCase {
         resourceModel.get("reject").setExpression("${expr}");
 
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
-            builder.getStringAttributeBuilder().rejectExpressions("reject").end()
+            builder.getStringAttributeBuilder().setRejectExpressions("reject").end()
             .build().register(transformersSubRegistration);
 
         final Resource resource = transformResource();
@@ -130,7 +130,10 @@ public class AttributesTestCase {
         rejectCheckers.add(dontRejectChecker);
         rejectCheckers.add(rejectAttributeChecker);
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
-            builder.getStringAttributeBuilder().reject(rejectCheckers, "reject").end()
+            builder.getStringAttributeBuilder()
+                .addRejectCheck(dontRejectChecker, "reject")
+                .addRejectCheck(rejectAttributeChecker, "reject")
+                .end()
             .build().register(transformersSubRegistration);
 
         dontRejectChecker.called = false;
@@ -171,7 +174,7 @@ public class AttributesTestCase {
         resourceModel.get("keep").set("here");
 
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
-            builder.getStringAttributeBuilder().discard(DiscardAttributeChecker.ALWAYS, "discard").end()
+            builder.getStringAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, "discard").end()
             .build().register(transformersSubRegistration);
 
         final Resource resource = transformResource();
@@ -201,7 +204,7 @@ public class AttributesTestCase {
         resourceModel.get("keep").set("here");
 
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
-            builder.getStringAttributeBuilder().discard(DiscardAttributeChecker.UNDEFINED, "discard", "keep").end()
+            builder.getStringAttributeBuilder().setDiscard(DiscardAttributeChecker.UNDEFINED, "discard", "keep").end()
             .build().register(transformersSubRegistration);
 
         final Resource resource = transformResource();
@@ -232,7 +235,7 @@ public class AttributesTestCase {
         resourceModel.get("discard").setExpression("${xxx}");
 
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
-            builder.getStringAttributeBuilder().discard(new DefaultAttributeChecker(false, false) {
+            builder.getStringAttributeBuilder().setDiscard(new DefaultAttributeChecker(false, false) {
                 @Override
                 public boolean isValueDiscardable(String attributeName, ModelNode attributeValue, TransformationContext context) {
                     return true;
@@ -264,7 +267,7 @@ public class AttributesTestCase {
         resourceModel.get("keep").set("non-default");
 
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
-            builder.getStringAttributeBuilder().discard(new DefaultAttributeChecker(false, true) {
+            builder.getStringAttributeBuilder().setDiscard(new DefaultAttributeChecker(false, true) {
                 @Override
                 public boolean isValueDiscardable(String attributeName, ModelNode attributeValue, TransformationContext context) {
                     if (attributeName.equals("discard") || attributeName.equals("keep")) {
@@ -303,7 +306,7 @@ public class AttributesTestCase {
         resourceModel.get("old").set("value");
 
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
-            builder.getStringAttributeBuilder().rename(Collections.singletonMap("old", "new")).end()
+            builder.getStringAttributeBuilder().addRename("old", "new").end()
             .build().register(transformersSubRegistration);
 
         final Resource resource = transformResource();
@@ -332,7 +335,7 @@ public class AttributesTestCase {
         resourceModel.get("value2").set("two");
 
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
-        builder.getStringAttributeBuilder().convertValue(new AttributeConverter() {
+        builder.getStringAttributeBuilder().setValueConverter(new AttributeConverter() {
             @Override
             public void convertAttribute(String name, ModelNode attributeValue, TransformationContext context) {
                 if (name.equals("value2") && attributeValue.asString().equals("two")) {
@@ -416,16 +419,16 @@ public class AttributesTestCase {
         CustomRejectExpressionsChecker rejectAttributeChecker = new CustomRejectExpressionsChecker();
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
         builder.getStringAttributeBuilder()
-                .reject(Collections.<RejectAttributeChecker>singletonList(rejectAttributeChecker), "one", "two")
+                .addRejectCheck(rejectAttributeChecker, "one", "two")
                 .addAttribute("one", new AttributeConverter() {
                     @Override
                     public void convertAttribute(String name, ModelNode attributeValue, TransformationContext context) {
                         attributeValue.set("ONE");
                     }
                 })
-                .discard(DiscardAttributeChecker.UNDEFINED, "four", "five")
-                .discard(DiscardAttributeChecker.UNDEFINED, "six")
-                .convertValue(new AttributeConverter() {
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, "four", "five")
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, "six")
+                .setValueConverter(new AttributeConverter() {
                     @Override
                     public void convertAttribute(String name, ModelNode attributeValue, TransformationContext context) {
                         if (name.equals("one")) {
@@ -435,8 +438,8 @@ public class AttributesTestCase {
                         }
                     }
                 }, "one", "two")
-                .rename(renames)
-                .rename(Collections.singletonMap("three", "tres"))
+                .addRenames(renames)
+                .addRename("three", "tres")
                 //.rename(Collections.singletonMap("four", "cuatro"))
                 .end()
             .build().register(transformersSubRegistration);

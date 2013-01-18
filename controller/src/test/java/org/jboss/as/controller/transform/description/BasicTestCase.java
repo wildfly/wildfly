@@ -76,7 +76,7 @@ public class BasicTestCase {
         // Build
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
 
-        builder.getStringAttributeBuilder().rejectExpressions("test").end()
+        builder.getStringAttributeBuilder().setRejectExpressions("test").end()
                 .addCustomTransformation(new ModelTransformer() {
                     @Override
                     public boolean transform(ModelNode node, PathAddress address, TransformationContext context) throws OperationFailedException {
