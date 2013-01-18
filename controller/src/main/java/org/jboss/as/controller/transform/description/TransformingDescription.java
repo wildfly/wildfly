@@ -126,6 +126,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
                 }
             }
         };
+        operation.get(ModelDescriptionConstants.OP_ADDR).set(address.toModelNode());
         // Kick off the chain
         final TransformationRule first = new AttributeTransformationRule(attributeTransformations);
         first.transformOperation(operation, address, context);

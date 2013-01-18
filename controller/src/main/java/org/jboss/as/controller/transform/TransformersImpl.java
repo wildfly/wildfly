@@ -37,6 +37,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
+import java.util.Iterator;
 import java.util.List;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -75,8 +76,10 @@ public class TransformersImpl implements Transformers {
             return new OperationTransformer.TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
         }
         final List<PathTransformation> addresses = target.getPathTransformation(address);
-        final PathTransformation.Builder builder = new PathTransformation.BuilderImpl(addresses.iterator(), address);
-        final PathAddress transformed = builder.next();
+        final Iterator<PathTransformation> transformations = addresses.iterator();
+        // transformations.next();
+        final PathTransformation.BuilderImpl builder = new PathTransformation.BuilderImpl(transformations, address);
+        final PathAddress transformed = builder.start();
         return transformer.transformOperation(context, transformed, operation);
     }
 

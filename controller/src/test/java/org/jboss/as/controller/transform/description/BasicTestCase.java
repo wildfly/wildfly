@@ -90,6 +90,7 @@ public class BasicTestCase {
 
         // configuration=test/setting=directory > test=configuration/directory=setting
         builder.addChildRedirection(CONFIGURATION_TEST, TEST_CONFIGURATION)
+                .getStringAttributeBuilder().rejectExpressions("test-config").end()
                 .addChildRedirection(SETTING_DIRECTORY, DIRECTORY_SETTING);
 
         // Register at the server root
@@ -188,6 +189,28 @@ public class BasicTestCase {
         node.get("value").set("test");
         op = transformOperation(node);
         Assert.assertFalse(op.rejectOperation(success()));
+    }
+
+    @Test
+    public void testAlias() throws Exception {
+
+        final ModelNode address = new ModelNode();
+        address.add("toto", "testSubsystem");
+        address.add("configuration", "test");
+
+        final ModelNode node = new ModelNode();
+        node.get(ModelDescriptionConstants.OP).set("add");
+        node.get(ModelDescriptionConstants.OP_ADDR).set(address);
+        node.get("test-config").set("${one:two}");
+
+        OperationTransformer.TransformedOperation op = transformOperation(node);
+        System.out.println(op.getTransformedOperation());
+        Assert.assertTrue(op.rejectOperation(success()));
+
+        node.get("test-config").set("concrete");
+        op = transformOperation(node);
+        Assert.assertFalse(op.rejectOperation(success()));
+
     }
 
 
