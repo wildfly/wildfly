@@ -21,6 +21,8 @@
  */
 package org.jboss.as.controller.transform.description;
 
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.dmr.ModelNode;
 
@@ -30,16 +32,24 @@ import org.jboss.dmr.ModelNode;
  */
 public interface AttributeConverter {
 
-    void convertAttribute(String name, ModelNode attributeValue, TransformationContext context);
+    void convertAttribute(PathAddress address, String name, ModelNode attributeValue, TransformationContext context);
 
     public class Factory {
         public static AttributeConverter createHardCoded(final ModelNode hardCodedValue) {
             return new AttributeConverter() {
                 @Override
-                public void convertAttribute(String name, ModelNode attributeValue, TransformationContext context) {
+                public void convertAttribute(PathAddress address, String name, ModelNode attributeValue, TransformationContext context) {
                     attributeValue.set(hardCodedValue);
                 }
             };
         }
     }
+
+    public static final AttributeConverter NAME_FROM_ADDRESS = new AttributeConverter() {
+        @Override
+        public void convertAttribute(PathAddress address, String name, ModelNode attributeValue, TransformationContext context) {
+            PathElement element = address.getLastElement();
+            attributeValue.set(element.getValue());
+        }
+    };
 }
