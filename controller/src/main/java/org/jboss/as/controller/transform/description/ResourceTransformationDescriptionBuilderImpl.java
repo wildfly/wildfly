@@ -129,17 +129,4 @@ class ResourceTransformationDescriptionBuilderImpl extends AbstractTransformatio
     public AttributeTransformationDescriptionBuilder getAttributeBuilder() {
         return new AttributeTransformationDescriptionBuilderImpl(this, registry);
     }
-
-    @Override
-    public AttributeTransformationDescriptionBuilder getStringAttributeBuilder() {
-        AttributeTransformationDescriptionBuilderImpl builder = new AttributeTransformationDescriptionBuilderImpl(this, registry);
-        return builder;
-    }
-
-    @Override
-    public AttributeTransformationDescriptionBuilder getDefAttributeBuilder() {
-        AttributeTransformationDescriptionBuilderImpl builder = new AttributeTransformationDescriptionBuilderImpl(this, registry);
-        return builder;
-    }
-
 }

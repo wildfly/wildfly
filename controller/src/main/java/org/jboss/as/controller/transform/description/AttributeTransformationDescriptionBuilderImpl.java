@@ -22,14 +22,14 @@
 
 package org.jboss.as.controller.transform.description;
 
-import org.jboss.as.controller.AttributeDefinition;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.jboss.as.controller.AttributeDefinition;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -66,16 +66,6 @@ class AttributeTransformationDescriptionBuilderImpl implements AttributeTransfor
             registry.setDiscardedAttribute(discardChecker, attrName);
         }
         return this;
-    }
-
-    @Override
-    public AttributeTransformationDescriptionBuilder setRejectExpressions(final AttributeDefinition...rejectedAttributes) {
-        return addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, rejectedAttributes);
-    }
-
-    @Override
-    public AttributeTransformationDescriptionBuilder setRejectExpressions(String... rejectedAttributes) {
-        return addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, rejectedAttributes);
     }
 
     @Override

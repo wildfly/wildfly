@@ -40,7 +40,6 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.TransformationContext;
@@ -77,8 +76,8 @@ public class BasicTestCase {
         // Build
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
 
-        builder.getStringAttributeBuilder()
-            .setRejectExpressions("test")
+        builder.getAttributeBuilder()
+            .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, "test")
             .addAttribute("othertest", AttributeConverter.Factory.createHardCoded(new ModelNode(true)))
             .end();
 
@@ -92,7 +91,7 @@ public class BasicTestCase {
 
         // configuration=test/setting=directory > test=configuration/directory=setting
         builder.addChildRedirection(CONFIGURATION_TEST, TEST_CONFIGURATION)
-                .getStringAttributeBuilder().setRejectExpressions("test-config").end()
+                .getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, "test-config").end()
                 .addChildRedirection(SETTING_DIRECTORY, DIRECTORY_SETTING);
 
         // Register at the server root

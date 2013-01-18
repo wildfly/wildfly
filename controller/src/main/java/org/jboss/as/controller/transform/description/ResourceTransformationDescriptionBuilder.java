@@ -22,7 +22,6 @@
 
 package org.jboss.as.controller.transform.description;
 
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.transform.OperationTransformer;
@@ -43,10 +42,6 @@ public interface ResourceTransformationDescriptionBuilder extends Transformation
      */
     AttributeTransformationDescriptionBuilder getAttributeBuilder();
 
-    @Deprecated
-    AttributeTransformationDescriptionBuilder getStringAttributeBuilder();
-    @Deprecated
-    AttributeTransformationDescriptionBuilder getDefAttributeBuilder();
 
     /**
      * Add an operation transformation entry for a specific operation.

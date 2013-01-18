@@ -27,10 +27,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -99,7 +97,7 @@ public class AttributesTestCase {
         resourceModel.get("reject").setExpression("${expr}");
 
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
-            builder.getStringAttributeBuilder().setRejectExpressions("reject").end()
+            builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, "reject").end()
             .build().register(transformersSubRegistration);
 
         final Resource resource = transformResource();
@@ -126,11 +124,8 @@ public class AttributesTestCase {
         resourceModel.get("reject").setExpression("${expr}");
         DontRejectChecker dontRejectChecker = new DontRejectChecker();
         CustomRejectExpressionsChecker rejectAttributeChecker = new CustomRejectExpressionsChecker();
-        List<RejectAttributeChecker> rejectCheckers = new ArrayList<RejectAttributeChecker>();
-        rejectCheckers.add(dontRejectChecker);
-        rejectCheckers.add(rejectAttributeChecker);
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
-            builder.getStringAttributeBuilder()
+            builder.getAttributeBuilder()
                 .addRejectCheck(dontRejectChecker, "reject")
                 .addRejectCheck(rejectAttributeChecker, "reject")
                 .end()
@@ -168,13 +163,106 @@ public class AttributesTestCase {
     }
 
     @Test
+    public void testListReject() throws Exception {
+        final ModelNode list = new ModelNode().add("one").add("two").add("three");
+        resourceModel.get("reject").set(list.clone());
+
+        final RejectTwoChecker checker = new RejectTwoChecker();
+        final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
+        builder.getAttributeBuilder()
+            .addRejectCheck(new RejectAttributeChecker.ListRejectAttributeChecker(checker), "reject")
+            .end()
+        .build().register(transformersSubRegistration);
+
+        final Resource resource = transformResource();
+        Assert.assertNotNull(resource);
+        final Resource toto = resource.getChild(PATH);
+        Assert.assertNotNull(toto);
+        final ModelNode model = toto.getModel();
+        //The rejection does not trigger for resource transformation
+        //TODO this could be done if 'slave' is >= 7.2.0
+        Assert.assertTrue(model.hasDefined("reject"));
+        Assert.assertEquals(2, checker.count);
+        Assert.assertTrue(checker.rejected);
+
+        checker.count = 0;
+        checker.rejected = false;
+        ModelNode add = Util.createAddOperation(PathAddress.pathAddress(PATH));
+        add.get("reject").set(list.clone());
+        OperationTransformer.TransformedOperation transformedAdd = transformOperation(add);
+        Assert.assertTrue(transformedAdd.rejectOperation(success()));
+        Assert.assertEquals(2, checker.count);
+        Assert.assertTrue(checker.rejected);
+
+        checker.count = 0;
+        checker.rejected = false;
+        ModelNode write = Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "reject", list.clone());
+        OperationTransformer.TransformedOperation transformedWrite = transformOperation(write);
+        Assert.assertTrue(transformedWrite.rejectOperation(success()));
+        Assert.assertEquals(2, checker.count);
+        Assert.assertTrue(checker.rejected);
+    }
+
+    @Test
+    public void testObjectReject() throws Exception {
+        final ModelNode object = new ModelNode();
+        object.get("0").set("zero");
+        object.get("1").set("one");
+        object.get("2").set("two");
+        object.get("3").set("two");
+        resourceModel.get("reject").set(object.clone());
+
+        final RejectTwoChecker checker = new RejectTwoChecker();
+        Map<String, RejectAttributeChecker> mapChecker = new HashMap<String, RejectAttributeChecker>();
+        mapChecker.put("1", checker);
+        mapChecker.put("2", checker);
+
+        final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
+        builder.getAttributeBuilder()
+            .addRejectCheck(new RejectAttributeChecker.ObjectFieldsRejectAttributeChecker(mapChecker), "reject")
+            .end()
+        .build().register(transformersSubRegistration);
+
+        final Resource resource = transformResource();
+        Assert.assertNotNull(resource);
+        final Resource toto = resource.getChild(PATH);
+        Assert.assertNotNull(toto);
+        final ModelNode model = toto.getModel();
+        //The rejection does not trigger for resource transformation
+        //TODO this could be done if 'slave' is >= 7.2.0
+        Assert.assertTrue(model.hasDefined("reject"));
+        //The order is unpredicatble since a plain hashmap is used
+        //Assert.assertEquals(2, checker.count);
+        Assert.assertTrue(checker.rejected);
+
+        checker.count = 0;
+        checker.rejected = false;
+        ModelNode add = Util.createAddOperation(PathAddress.pathAddress(PATH));
+        add.get("reject").set(object.clone());
+        OperationTransformer.TransformedOperation transformedAdd = transformOperation(add);
+        Assert.assertTrue(transformedAdd.rejectOperation(success()));
+        //The order is unpredicatble since a plain hashmap is used
+        //Assert.assertEquals(2, checker.count);
+        Assert.assertTrue(checker.rejected);
+
+        checker.count = 0;
+        checker.rejected = false;
+        ModelNode write = Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "reject", object.clone());
+        OperationTransformer.TransformedOperation transformedWrite = transformOperation(write);
+        Assert.assertTrue(transformedWrite.rejectOperation(success()));
+        //The order is unpredicatble since a plain hashmap is used
+        //Assert.assertEquals(2, checker.count);
+        Assert.assertTrue(checker.rejected);
+    }
+
+    @Test
     public void testDiscardAlways() throws Exception {
         //Set up the model
         resourceModel.get("discard").set("nothing");
         resourceModel.get("keep").set("here");
 
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
-            builder.getStringAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, "discard").end()
+            builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, "discard").end()
             .build().register(transformersSubRegistration);
 
         final Resource resource = transformResource();
@@ -205,7 +293,7 @@ public class AttributesTestCase {
         resourceModel.get("keep").set("here");
 
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
-            builder.getStringAttributeBuilder().setDiscard(DiscardAttributeChecker.UNDEFINED, "discard", "keep").end()
+            builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.UNDEFINED, "discard", "keep").end()
             .build().register(transformersSubRegistration);
 
         final Resource resource = transformResource();
@@ -236,7 +324,7 @@ public class AttributesTestCase {
         resourceModel.get("discard").setExpression("${xxx}");
 
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
-            builder.getStringAttributeBuilder().setDiscard(new DefaultAttributeChecker(false, false) {
+            builder.getAttributeBuilder().setDiscard(new DefaultAttributeChecker(false, false) {
                 @Override
                 public boolean isValueDiscardable(String attributeName, ModelNode attributeValue, TransformationContext context) {
                     return true;
@@ -268,7 +356,7 @@ public class AttributesTestCase {
         resourceModel.get("keep").set("non-default");
 
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
-            builder.getStringAttributeBuilder().setDiscard(new DefaultAttributeChecker(false, true) {
+            builder.getAttributeBuilder().setDiscard(new DefaultAttributeChecker(false, true) {
                 @Override
                 public boolean isValueDiscardable(String attributeName, ModelNode attributeValue, TransformationContext context) {
                     if (attributeName.equals("discard") || attributeName.equals("keep")) {
@@ -307,7 +395,7 @@ public class AttributesTestCase {
         resourceModel.get("old").set("value");
 
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
-            builder.getStringAttributeBuilder().addRename("old", "new").end()
+            builder.getAttributeBuilder().addRename("old", "new").end()
             .build().register(transformersSubRegistration);
 
         final Resource resource = transformResource();
@@ -336,7 +424,7 @@ public class AttributesTestCase {
         resourceModel.get("value2").set("two");
 
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
-        builder.getStringAttributeBuilder().setValueConverter(new AttributeConverter() {
+        builder.getAttributeBuilder().setValueConverter(new AttributeConverter() {
             @Override
             public void convertAttribute(String name, ModelNode attributeValue, TransformationContext context) {
                 if (name.equals("value2") && attributeValue.asString().equals("two")) {
@@ -376,7 +464,7 @@ public class AttributesTestCase {
         resourceModel.get("old").set("existing");
 
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
-        builder.getStringAttributeBuilder().addAttribute("added", (new AttributeConverter() {
+        builder.getAttributeBuilder().addAttribute("added", (new AttributeConverter() {
             @Override
             public void convertAttribute(String name, ModelNode attributeValue, TransformationContext context) {
                 attributeValue.set("extra");
@@ -419,7 +507,7 @@ public class AttributesTestCase {
 
         CustomRejectExpressionsChecker rejectAttributeChecker = new CustomRejectExpressionsChecker();
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
-        builder.getStringAttributeBuilder()
+        builder.getAttributeBuilder()
                 .addRejectCheck(rejectAttributeChecker, "one", "two")
                 .addAttribute("one", new AttributeConverter() {
                     @Override
@@ -615,7 +703,18 @@ public class AttributesTestCase {
             rejected = SIMPLE_EXPRESSIONS.rejectAttribute(attributeName, attributeValue, context);
             return rejected;
         }
+    }
 
+    private static class RejectTwoChecker implements RejectAttributeChecker {
+        int count;
+        boolean rejected;
+
+        @Override
+        public boolean rejectAttribute(String attributeName, ModelNode attributeValue, TransformationContext context) {
+            count++;
+            rejected = attributeValue.asString().equals("two");
+            return rejected;
+        }
     }
 
 }
