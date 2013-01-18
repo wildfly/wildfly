@@ -11,7 +11,7 @@
     <fileSets>
         <fileSet>
             <directory>..</directory>
-            <outputDirectory>jboss-as-${project.version}-src</outputDirectory>
+            <outputDirectory>jboss-eap-6.1-src</outputDirectory>
             <includes>
                 <include>**/*.xml</include>
                 <include>**/src/**</include>

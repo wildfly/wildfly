@@ -10,40 +10,37 @@
 
     <fileSets>
         <fileSet>
-            <directory>../build/target</directory>
-            <outputDirectory/>
-            <includes>
-                <include>jboss-*/**</include>
-            </includes>
+            <directory>../build/target/jboss-as-${project.version}</directory>
+            <outputDirectory>jboss-eap-6.1</outputDirectory>
             <excludes>
                 <exclude>**/*.sh</exclude>
-                <exclude>jboss-*/domain/tmp/auth</exclude>
-                <exclude>jboss-*/domain/tmp/auth</exclude>
+                <exclude>domain/tmp/auth</exclude>
+                <exclude>domain/tmp/auth</exclude>
                 <exclude>**/*-users.properties</exclude>
             </excludes>
         </fileSet>
         <fileSet>
-            <directory>../build/target</directory>
-            <outputDirectory/>
+            <directory>../build/target/jboss-as-${project.version}</directory>
+            <outputDirectory>jboss-eap-6.1</outputDirectory>
             <includes>
-                <include>jboss-*/**/*.sh</include>
+                <include>**/*.sh</include>
             </includes>
             <fileMode>0755</fileMode>
         </fileSet>
          <fileSet>
-            <directory>../build/target</directory>
-            <outputDirectory/>
+            <directory>../build/target/jboss-as-${project.version}</directory>
+            <outputDirectory>jboss-eap-6.1</outputDirectory>
             <includes>
                 <include>**/*-users.properties</include>
             </includes>
             <fileMode>0600</fileMode>
         </fileSet>
         <fileSet>
-            <directory>../build/target</directory>
-            <outputDirectory/>
+            <directory>../build/target/jboss-as-${project.version}</directory>
+            <outputDirectory>jboss-eap-6.1</outputDirectory>
             <includes>
-                <include>jboss-*/domain/tmp/auth</include>
-                <include>jboss-*/standalone//tmp/auth</include>
+                <include>domain/tmp/auth</include>
+                <include>standalone//tmp/auth</include>
             </includes>
             <directoryMode>0700</directoryMode>
         </fileSet>

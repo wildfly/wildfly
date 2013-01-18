@@ -74,7 +74,7 @@
                                     <descriptors>
                                         <descriptor>assembly.xml</descriptor>
                                     </descriptors>
-                                    <finalName>jboss-as-${project.version}</finalName>
+                                    <finalName>jboss-eap-6.1</finalName>
                                     <appendAssemblyId>false</appendAssemblyId>
                                     <outputDirectory>target/</outputDirectory>
                                     <workDirectory>target/assembly/work</workDirectory>
@@ -91,7 +91,7 @@
                                     <descriptors>
                                         <descriptor>assembly-src.xml</descriptor>
                                     </descriptors>
-                                    <finalName>jboss-as-${project.version}</finalName>
+                                    <finalName>jboss-eap-6.1</finalName>
                                     <appendAssemblyId>true</appendAssemblyId>
                                     <outputDirectory>target/</outputDirectory>
                                     <workDirectory>target/assembly-src/work</workDirectory>
