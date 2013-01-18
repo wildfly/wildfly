@@ -426,7 +426,7 @@ public class AttributesTestCase {
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
         builder.getAttributeBuilder().setValueConverter(new AttributeConverter() {
             @Override
-            public void convertAttribute(String name, ModelNode attributeValue, TransformationContext context) {
+            public void convertAttribute(PathAddress address, String name, ModelNode attributeValue, TransformationContext context) {
                 if (name.equals("value2") && attributeValue.asString().equals("two")) {
                     attributeValue.set(1);
                 }
@@ -466,7 +466,7 @@ public class AttributesTestCase {
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
         builder.getAttributeBuilder().addAttribute("added", (new AttributeConverter() {
             @Override
-            public void convertAttribute(String name, ModelNode attributeValue, TransformationContext context) {
+            public void convertAttribute(PathAddress address, String name, ModelNode attributeValue, TransformationContext context) {
                 attributeValue.set("extra");
             }
         })).end()
@@ -511,7 +511,7 @@ public class AttributesTestCase {
                 .addRejectCheck(rejectAttributeChecker, "one", "two")
                 .addAttribute("one", new AttributeConverter() {
                     @Override
-                    public void convertAttribute(String name, ModelNode attributeValue, TransformationContext context) {
+                    public void convertAttribute(PathAddress address, String name, ModelNode attributeValue, TransformationContext context) {
                         attributeValue.set("ONE");
                     }
                 })
@@ -519,7 +519,7 @@ public class AttributesTestCase {
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, "six")
                 .setValueConverter(new AttributeConverter() {
                     @Override
-                    public void convertAttribute(String name, ModelNode attributeValue, TransformationContext context) {
+                    public void convertAttribute(PathAddress address, String name, ModelNode attributeValue, TransformationContext context) {
                         if (name.equals("one")) {
                             attributeValue.set("UNO");
                         } else if (name.equals("two")) {
@@ -616,6 +616,33 @@ public class AttributesTestCase {
         OperationTransformer.TransformedOperation write = transformOperation(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "one", new ModelNode().setExpression("${test}")));
         Assert.assertTrue(write.rejectOperation(success()));
         Assert.assertTrue(rejectAttributeChecker.rejected);
+    }
+
+    @Test
+    public void testNameFromAddressConverter() throws Exception {
+        //Set up the model
+        resourceModel.get("value").set("test");
+
+        final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
+            builder.getAttributeBuilder().addAttribute("name", AttributeConverter.NAME_FROM_ADDRESS).end()
+            .build().register(transformersSubRegistration);
+
+        final Resource resource = transformResource();
+        Assert.assertNotNull(resource);
+        final Resource toto = resource.getChild(PATH);
+        Assert.assertNotNull(toto);
+        final ModelNode model = toto.getModel();
+        Assert.assertEquals(2, model.keys().size());
+        Assert.assertEquals("test", model.get("value").asString());
+        Assert.assertEquals(PATH.getValue(), model.get("name").asString());
+
+        ModelNode add = Util.createAddOperation(PathAddress.pathAddress(PATH));
+        add.get("value").set("test");
+        OperationTransformer.TransformedOperation transformedAdd = transformOperation(add);
+        Assert.assertEquals("test", transformedAdd.getTransformedOperation().get("value").asString());
+        Assert.assertEquals(PATH.getValue(), transformedAdd.getTransformedOperation().get("name").asString());
+
+        //No point in testing write-attribute for a new attribute
     }
 
     private void checkWriteOp(ModelNode write, String name, ModelNode value) throws OperationFailedException{

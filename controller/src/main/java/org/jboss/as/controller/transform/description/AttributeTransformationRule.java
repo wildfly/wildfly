@@ -49,7 +49,7 @@ class AttributeTransformationRule extends TransformationRule {
     void transformOperation(final ModelNode operation, PathAddress address, OperationContext context) throws OperationFailedException {
         final ModelNode transformed = operation.clone();
         final Set<String> reject = new HashSet<String>();
-        doTransform(transformed, context, reject);
+        doTransform(address, transformed, context, reject);
 
         final OperationRejectionPolicy policy = createPolicy(! reject.isEmpty(), reject);
         context.invokeNext(new OperationTransformer.TransformedOperation(transformed, policy, OperationResultTransformer.ORIGINAL_RESULT));
@@ -76,12 +76,12 @@ class AttributeTransformationRule extends TransformationRule {
     void tranformResource(final Resource resource, final PathAddress address, final ResourceContext context) throws OperationFailedException {
         final ModelNode model = resource.getModel();
         final Set<String> reject = new HashSet<String>();
-        doTransform(model, context, reject);
+        doTransform(address, model, context, reject);
         //TODO do something with the reject
         context.invokeNext(resource);
     }
 
-    private void doTransform(ModelNode modelOrOp, AbstractTransformationContext context, Set<String> reject) {
+    private void doTransform(PathAddress address, ModelNode modelOrOp, AbstractTransformationContext context, Set<String> reject) {
         Map<String, String> renames = new HashMap<String, String>();
         Map<String, ModelNode> adds = new HashMap<String, ModelNode>();
         for(final Map.Entry<String, AttributeTransformationDescription> entry : descriptions.entrySet()) {
@@ -101,7 +101,7 @@ class AttributeTransformationRule extends TransformationRule {
             }
 
             //Now transform the value
-            description.convertValue(attributeValue, context);
+            description.convertValue(address, attributeValue, context);
 
             //Store the rename until we are done
             String newName = description.getNewName();
@@ -110,7 +110,7 @@ class AttributeTransformationRule extends TransformationRule {
             }
 
             //Add attribute
-            ModelNode added = description.addAttribute(context);
+            ModelNode added = description.addAttribute(address, context);
             if (added != null) {
                 adds.put(attributeName, added);
             }

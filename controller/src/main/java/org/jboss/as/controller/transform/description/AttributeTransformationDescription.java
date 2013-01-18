@@ -25,6 +25,7 @@ package org.jboss.as.controller.transform.description;
 import java.util.Collections;
 import java.util.List;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -93,17 +94,17 @@ class AttributeTransformationDescription {
         return true;
     }
 
-    void convertValue(ModelNode attributeValue, TransformationRule.AbstractTransformationContext context) {
+    void convertValue(PathAddress address, ModelNode attributeValue, TransformationRule.AbstractTransformationContext context) {
         if (converter != null) {
-            converter.convertAttribute(name, attributeValue, context.getContext());
+            converter.convertAttribute(address, name, attributeValue, context.getContext());
         }
     }
 
 
-    ModelNode addAttribute(TransformationRule.AbstractTransformationContext context) {
+    ModelNode addAttribute(PathAddress address, TransformationRule.AbstractTransformationContext context) {
         if (addConverter != null) {
             ModelNode attributeValue = new ModelNode();
-            addConverter.convertAttribute(name, attributeValue, context.getContext());
+            addConverter.convertAttribute(address, name, attributeValue, context.getContext());
             return attributeValue;
         }
         return null;
