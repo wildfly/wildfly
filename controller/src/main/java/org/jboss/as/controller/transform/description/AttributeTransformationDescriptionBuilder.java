@@ -22,10 +22,10 @@
 
 package org.jboss.as.controller.transform.description;
 
-import org.jboss.as.controller.AttributeDefinition;
-
 import java.util.List;
 import java.util.Map;
+
+import org.jboss.as.controller.AttributeDefinition;
 
 
 
@@ -34,14 +34,6 @@ import java.util.Map;
  * @author kabir
  */
 public interface AttributeTransformationDescriptionBuilder {
-
-    /**
-     * Make this attribute reject expressions
-     *
-     * @return this builder
-     */
-    AttributeTransformationDescriptionBuilder setRejectExpressions(String...attributes);
-    AttributeTransformationDescriptionBuilder setRejectExpressions(AttributeDefinition...attributes);
 
     AttributeTransformationDescriptionBuilder addRejectCheck(RejectAttributeChecker rejectChecker, String...rejectedAttributes);
     AttributeTransformationDescriptionBuilder addRejectCheck(RejectAttributeChecker rejectChecker, AttributeDefinition...rejectedAttributes);

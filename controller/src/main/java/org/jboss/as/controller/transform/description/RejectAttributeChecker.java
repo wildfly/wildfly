@@ -21,9 +21,13 @@
  */
 package org.jboss.as.controller.transform.description;
 
-import org.jboss.as.controller.transform.AttributeTransformationRequirementChecker;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
 
 /**
  * Checks whether an attribute should be rejected or not
@@ -44,24 +48,98 @@ public interface RejectAttributeChecker {
      */
     boolean rejectAttribute(String attributeName, ModelNode attributeValue, TransformationContext context);
 
+    /**
+     * Checks a simple attribute for expressions
+     */
     RejectAttributeChecker SIMPLE_EXPRESSIONS = new RejectAttributeChecker() {
 
         @Override
 
         public boolean rejectAttribute(String attributeName, ModelNode attributeValue, TransformationContext context) {
-            return AttributeTransformationRequirementChecker.SIMPLE_EXPRESSIONS.isAttributeTransformationRequired(attributeName, attributeValue, context);
+            return checkForExpression(attributeValue);
+        }
+
+        /**
+         * Check an attribute for expressions.
+         *
+         * @param node the attribute value
+         * @return whether an expression was found or not
+         */
+        private boolean checkForExpression(final ModelNode node) {
+            if (!node.isDefined()) {
+                return false;
+            }
+
+            final ModelNode resolved = node.clone();
+            if (node.getType() == ModelType.EXPRESSION || node.getType() == ModelType.STRING) {
+                return checkForExpression(resolved.asString());
+            } else if (node.getType() == ModelType.OBJECT) {
+                for (Property prop : resolved.asPropertyList()) {
+                    if(checkForExpression(prop.getValue())) {
+                        return true;
+                    }
+                }
+            } else if (node.getType() == ModelType.LIST) {
+                for (ModelNode current : resolved.asList()) {
+                    if(checkForExpression(current)) {
+                        return true;
+                    }
+                }
+            } else if (node.getType() == ModelType.PROPERTY) {
+                return checkForExpression(resolved.asProperty().getValue());
+            }
+            return false;
+        }
+
+        private boolean checkForExpression(final String value) {
+            return ExpressionPattern.EXPRESSION_PATTERN.matcher(value).matches();
         }
     };
 
 
-    RejectAttributeChecker SIMPLE_LIST_EXPRESSIONS = new RejectAttributeChecker() {
+    public class ListRejectAttributeChecker implements RejectAttributeChecker {
+
+        private final RejectAttributeChecker elementChecker;
+
+        public ListRejectAttributeChecker(RejectAttributeChecker elementChecker) {
+            this.elementChecker = elementChecker;
+        }
 
         @Override
         public boolean rejectAttribute(String attributeName, ModelNode attributeValue, TransformationContext context) {
-            return AttributeTransformationRequirementChecker.SIMPLE_LIST_EXPRESSIONS.isAttributeTransformationRequired(attributeName, attributeValue, context);
+            if (attributeValue.isDefined()) {
+                for (ModelNode element : attributeValue.asList()) {
+                    if (elementChecker.rejectAttribute(attributeName, element, context)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
-    };
+    }
 
+    RejectAttributeChecker SIMPLE_LIST_EXPRESSIONS = new ListRejectAttributeChecker(SIMPLE_EXPRESSIONS);
+
+    class ObjectFieldsRejectAttributeChecker implements RejectAttributeChecker {
+
+        private final Map<String, RejectAttributeChecker> fields = new HashMap<String, RejectAttributeChecker>();
+
+        public ObjectFieldsRejectAttributeChecker(Map<String, RejectAttributeChecker> fields) {
+            this.fields.putAll(fields);
+        }
+
+        @Override
+        public boolean rejectAttribute(String attributeName, ModelNode attributeValue, TransformationContext context) {
+
+            for (Map.Entry<String, RejectAttributeChecker> entry : fields.entrySet()) {
+                ModelNode fieldValue = attributeValue.hasDefined(entry.getKey()) ? attributeValue.get(entry.getKey()) : new ModelNode();
+                if (entry.getValue().rejectAttribute(attributeName, fieldValue, context)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
 
 
 
