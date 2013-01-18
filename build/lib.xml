@@ -23,9 +23,9 @@
 <project name="module-repository-lib" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
 
     <property name="src.dir" value="src"/>
-    <property name="module.repo.src.dir" value="${src.dir}/main/resources/modules"/>
+    <property name="module.repo.src.dir" value="${src.dir}/main/resources/modules/system/layers/base"/>
     <property name="output.dir" value="target/jboss-as-${jboss.as.release.version}"/>
-    <property name="module.repo.output.dir" value="${output.dir}/modules"/>
+    <property name="module.repo.output.dir" value="${output.dir}/modules/system/layers/base"/>
     <property name="module.xml" value="module.xml"/>
 
     <property name="bundle.repo.output.dir" value="${output.dir}/bundles"/>
@@ -99,7 +99,7 @@
             </copy>
         </sequential>
     </macrodef>
-    
+
     <scriptdef name="define-module-dir" language="javascript">
         <attribute name="name"/>
         <attribute name="slot"/>
@@ -119,7 +119,7 @@
             project.setProperty("current.bundle.path", name + "/" + attributes.get("slot"));
         ]]>
     </scriptdef>
-    
+
     <macrodef name="maven-resource" >
         <attribute name="group"/>
         <attribute name="artifact"/>
