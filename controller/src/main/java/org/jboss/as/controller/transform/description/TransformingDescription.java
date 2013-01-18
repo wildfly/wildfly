@@ -53,11 +53,13 @@ import org.jboss.dmr.ModelNode;
 class TransformingDescription extends AbstractDescription implements TransformationDescription, ResourceTransformer, OperationTransformer {
 
     private final List<TransformationRule> rules;
+    private final DiscardPolicy discardPolicy;
     private final List<TransformationDescription> children;
     private final Map<String, AttributeTransformationDescription> attributeTransformations;
     private final ResourceTransformer resourceTransfomer;
 
     public TransformingDescription(final PathElement pathElement, final PathTransformation pathTransformation,
+                                   final DiscardPolicy discardPolicy,
                                    final ResourceTransformer resourceTransformer,
                                    final List<ModelTransformer> steps,
                                    final Map<String, AttributeTransformationDescription> attributeTransformations,
@@ -65,6 +67,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
         super(pathElement, pathTransformation);
         this.rules = createRules(steps);
         this.children = children;
+        this.discardPolicy = discardPolicy;
         this.resourceTransfomer = resourceTransformer;
         this.attributeTransformations = attributeTransformations;
     }
@@ -155,6 +158,9 @@ class TransformingDescription extends AbstractDescription implements Transformat
 
     @Override
     public OperationTransformer.TransformedOperation transformOperation(final TransformationContext ctx, final PathAddress address, final ModelNode operation) throws OperationFailedException {
+        if(discardPolicy.discard(operation, address, ctx)) {
+            return OperationTransformer.DISCARD.transformOperation(ctx, address, operation);
+        }
         final Iterator<TransformationRule> iterator = rules.iterator();
         final ModelNode originalModel = operation.clone();
         originalModel.protect();
@@ -180,9 +186,12 @@ class TransformingDescription extends AbstractDescription implements Transformat
 
     @Override
     public void transformResource(final ResourceTransformationContext ctx, final PathAddress address, final Resource original) throws OperationFailedException {
-        final Iterator<TransformationRule> iterator = rules.iterator();
         final ModelNode originalModel = original.getModel().clone();
         originalModel.protect();
+        if(discardPolicy.discard(originalModel, address, ctx)) {
+            return; // discard
+        }
+        final Iterator<TransformationRule> iterator = rules.iterator();
         final TransformationRule.ResourceContext context = new TransformationRule.ResourceContext(ctx, originalModel) {
             @Override
             void invokeNext(final Resource resource) throws OperationFailedException {

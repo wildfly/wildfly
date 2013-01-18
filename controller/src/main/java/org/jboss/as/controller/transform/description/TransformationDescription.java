@@ -24,6 +24,7 @@ package org.jboss.as.controller.transform.description;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ModelVersionRange;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.transform.PathTransformation;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
@@ -34,6 +35,8 @@ import org.jboss.as.controller.transform.TransformersSubRegistration;
  * @author Emanuel Muckenhuber
  */
 public interface TransformationDescription {
+
+    PathElement getPath();
 
     /**
      * Get the path transformation for this level.
@@ -66,5 +69,19 @@ public interface TransformationDescription {
     void register(TransformersSubRegistration parent);
 
 
-    // TODO registerAsSubsystem...
+    public static class Tools {
+
+        private Tools() {
+            //
+        }
+
+        public static void register(TransformationDescription description, SubsystemRegistration registration, ModelVersion... versions) {
+            register(description, registration, ModelVersionRange.Versions.range(versions));
+        }
+
+        public static void register(TransformationDescription description, SubsystemRegistration registration, ModelVersionRange range) {
+            // registration.registerModelTransformers(range, )
+        }
+
+    }
 }
