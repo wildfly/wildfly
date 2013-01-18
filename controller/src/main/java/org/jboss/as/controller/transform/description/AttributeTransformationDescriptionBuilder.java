@@ -30,30 +30,133 @@ import org.jboss.as.controller.AttributeDefinition;
 
 
 /**
+ * Builder for the attribute transformer.
+ *
  * @author Emanuel Muckenhuber
  * @author kabir
  */
 public interface AttributeTransformationDescriptionBuilder {
 
+    /**
+     * Adds a RejectAttributeChecker. The RejectAttributeCheckers are processed in the order they are added to the passed in attributes.
+     * Rejection is done after the attribute has been checked for discarding.
+     *
+     * @param rejectChecker the checker
+     * @param rejectedAttributes the attributes to check
+     * @return this builder
+     */
     AttributeTransformationDescriptionBuilder addRejectCheck(RejectAttributeChecker rejectChecker, String...rejectedAttributes);
+
+    /**
+     * Adds a RejectAttributeChecker. The RejectAttributeCheckers are processed in the order they are added to the passed in attributes.
+     * Rejection is done after the attribute has been checked for discarding.
+     *
+     * @param rejectChecker the checker
+     * @param rejectedAttributes the attributes to check
+     * @return this builder
+     */
     AttributeTransformationDescriptionBuilder addRejectCheck(RejectAttributeChecker rejectChecker, AttributeDefinition...rejectedAttributes);
 
+    /**
+     * Adds a list of RejectAttributeCheckers. The RejectAttributeCheckers are processed in the order they are added to the passed in attributes.
+     * Rejection is done after the attribute has been checked for discarding.
+     *
+     * @param rejectChecker the checkers
+     * @param rejectedAttributes the attributes to check
+     * @return this builder
+     */
     AttributeTransformationDescriptionBuilder addRejectChecks(List<RejectAttributeChecker> rejectCheckers, String...rejectedAttributes);
+
+    /**
+     * Adds a list of RejectAttributeCheckers. The RejectAttributeCheckers are processed in the order they are added to the passed in attributes.
+     * Rejection is done after the attribute has been checked for discarding.
+     *
+     * @param rejectChecker the checkers
+     * @param rejectedAttributes the attributes to check
+     * @return this builder
+     */
     AttributeTransformationDescriptionBuilder addRejectChecks(List<RejectAttributeChecker> rejectCheckers, AttributeDefinition...rejectedAttributes);
 
+    /**
+     * Sets the DiscardChecker.
+     *
+     * @param rejectChecker the checkers
+     * @param rejectedAttributes the attributes to check
+     * @return this builder
+     */
     AttributeTransformationDescriptionBuilder setDiscard(DiscardAttributeChecker discardChecker, String...discardedAttributes);
+
+    /**
+     * Sets the DiscardChecker.
+     *
+     * @param rejectChecker the checkers
+     * @param rejectedAttributes the attributes to check
+     * @return this builder
+     */
     AttributeTransformationDescriptionBuilder setDiscard(DiscardAttributeChecker discardChecker, AttributeDefinition...discardedAttributes);
 
+    /**
+     * Use to rename an attribute. This is done after all attributes have been discarded, checked for rejection and converted.
+     *
+     * @param attributeName the attribute's original name
+     * @param newName the new name for the attribute
+     * @return this builder
+     */
     AttributeTransformationDescriptionBuilder addRename(String attributeName, String newName);
+
+    /**
+     * Use to rename an attribute. This is done after all attributes have been discarded, checked for rejection and converted.
+     *
+     * @param attributeName the attribute's original name
+     * @param newName the new name for the attribute
+     * @return this builder
+     */
     AttributeTransformationDescriptionBuilder addRename(AttributeDefinition attributeName, String newName);
 
+    /**
+     * Use to rename attribute. This is done after all attributes have been discarded, checked for rejection and converted.
+     *
+     * @param map a Map where the keys are the original attribute names, and the values are the new attribute names
+     * @param newName the new name for the attribute
+     * @return this builder
+     */
     AttributeTransformationDescriptionBuilder addRenames(Map<String, String> renames);
     // AttributeTransformationDescriptionBuilder<T> addRenames(Map<AttributeDefinition, String> renames);
 
+    /**
+     * Use to convert an attribute's value. This is done after the attribute has been checked for discarding and checked for rejection.
+     *
+     * @param attributeConverter the attribute converter used to convert the value of an attribute
+     * @param convertedAttributes the attributes the attribute converter should be used on
+     * @return this builder
+     */
     AttributeTransformationDescriptionBuilder setValueConverter(AttributeConverter attributeConverter, String...convertedAttributes);
+
+    /**
+     * Use to convert an attribute's value. This is done after the attribute has been checked for discarding and checked for rejection.
+     *
+     * @param attributeConverter the attribute converter used to convert the value of an attribute
+     * @param convertedAttributes the attributes the attribute converter should be used on
+     * @return this builder
+     */
     AttributeTransformationDescriptionBuilder setValueConverter(AttributeConverter attributeConverter, AttributeDefinition...convertedAttributes);
 
+    /**
+     * Use to add an attribute. This is done after the attribute has been checked for discarding and checked for rejection.
+     *
+     * @param attribute the name of the attribute to add
+     * @param attributeConverter the attribute converter used to set the value of the new attribute
+     * @return this builder
+     */
     AttributeTransformationDescriptionBuilder addAttribute(String attribute, AttributeConverter attributeConverter);
+
+    /**
+     * Use to add an attribute. This is done after the attribute has been checked for discarding and checked for rejection.
+     *
+     * @param attribute the name of the attribute to add
+     * @param attributeConverter the attribute converter used to set the value of the new attribute
+     * @return this builder
+     */
     AttributeTransformationDescriptionBuilder addAttribute(AttributeDefinition attribute, AttributeConverter attributeConverter);
 
     /**

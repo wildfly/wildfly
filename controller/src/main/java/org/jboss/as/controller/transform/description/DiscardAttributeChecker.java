@@ -25,17 +25,77 @@ import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.dmr.ModelNode;
 
 /**
+ * Checks whether an attribute should be discarded or not
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public interface DiscardAttributeChecker {
 
-    boolean isAllowExpressions();
+    /**
+     * Returns {@code true} if the attribute should be discarded if expressions are used
+     *
+     * @return whether to discard if exressions are used
+     */
+    boolean isDiscardExpressions();
 
+    /**
+     * Returns {@code true} if the attribute should be discarded if it is undefined
+     *
+     * @return whether to discard if the attribute is undefined
+     */
     boolean isDiscardUndefined();
 
+    /**
+     * Returns {@code true} if the attribute should be discarded.
+     *
+     * @param attributeName the name of the attribute
+     * @param attributeValue the value of the attribute
+     * @param context the TransformationContext
+     * @return whether to discard if exressions are used
+     */
     boolean isValueDiscardable(String attributeName, ModelNode attributeValue, TransformationContext context);
 
+    /**
+     * Abstract base class for attribute checker implementations
+     */
+    public abstract class DefaultAttributeChecker implements DiscardAttributeChecker {
+
+        protected final boolean discardExpressions;
+        protected final boolean discardUndefined;
+
+        /**
+         * Constructor
+         *
+         * @param discardExpressions {@code true} if the attribute should be discarded if expressions are used
+         * @param discardUndefined {@code true} if the attribute should be discarded if expressions are used
+         */
+        public DefaultAttributeChecker(final boolean discardExpressions, final boolean discardUndefined) {
+            this.discardExpressions = discardExpressions;
+            this.discardUndefined = discardUndefined;
+        }
+
+        /**
+         * Constructor.
+         * Sets it up with {@code discardExpressions==true} and {@code discardUndefined==true}
+         *
+         */
+        public DefaultAttributeChecker() {
+            this(false, true);
+        }
+
+        @Override
+        public boolean isDiscardExpressions() {
+            return discardExpressions;
+        }
+
+        @Override
+        public boolean isDiscardUndefined() {
+            return discardUndefined;
+        }
+
+
+        //TODO handle lists and object types
+    }
     /**
      * A standard checker which will discard the attribute always.
      */
@@ -48,7 +108,7 @@ public interface DiscardAttributeChecker {
     };
 
     /**
-     * A standard checker which will discard the attribute if it is undefined.
+     * A standard checker which will discard the attribute if it is undefined, as long as it is not an expressions
      */
     DefaultAttributeChecker UNDEFINED = new DefaultAttributeChecker(false, true) {
 
