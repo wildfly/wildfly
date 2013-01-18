@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 
+
 /**
  * @author Emanuel Muckenhuber
  * @author kabir
@@ -37,15 +38,19 @@ public interface AttributeTransformationDescriptionBuilder<T> {
      *
      * @return this builder
      */
-    AttributeTransformationDescriptionBuilder<T> rejectExpressions(T...attributes);
+    AttributeTransformationDescriptionBuilder<T> setRejectExpressions(T...attributes);
 
-    AttributeTransformationDescriptionBuilder<T> reject(List<RejectAttributeChecker> rejectCheckers, T...rejectedAttributes);
+    AttributeTransformationDescriptionBuilder<T> addRejectCheck(RejectAttributeChecker rejectChecker, T...rejectedAttributes);
 
-    AttributeTransformationDescriptionBuilder<T> discard(DiscardAttributeChecker discardChecker, T...discardedAttributes);
+    AttributeTransformationDescriptionBuilder<T> addRejectChecks(List<RejectAttributeChecker> rejectCheckers, T...rejectedAttributes);
 
-    AttributeTransformationDescriptionBuilder<T> rename(Map<T, String> newNameMappings);
+    AttributeTransformationDescriptionBuilder<T> setDiscard(DiscardAttributeChecker discardChecker, T...discardedAttributes);
 
-    AttributeTransformationDescriptionBuilder<T> convertValue(AttributeConverter attributeConverter, T...convertedAttributes);
+    AttributeTransformationDescriptionBuilder<T> addRename(T attributeName, String newName);
+
+    AttributeTransformationDescriptionBuilder<T> addRenames(Map<T, String> renames);
+
+    AttributeTransformationDescriptionBuilder<T> setValueConverter(AttributeConverter attributeConverter, T...convertedAttributes);
 
     AttributeTransformationDescriptionBuilder<T> addAttribute(T attribute, AttributeConverter attributeConverter);
 
