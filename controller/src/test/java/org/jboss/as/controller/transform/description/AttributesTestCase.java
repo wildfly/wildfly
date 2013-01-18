@@ -193,7 +193,8 @@ public class AttributesTestCase {
         Assert.assertTrue(transformedAdd.getTransformedOperation().hasDefined("keep"));
         Assert.assertFalse(transformedAdd.getTransformedOperation().has("discard"));
 
-        checkWriteOpDiscarded(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "discard", new ModelNode("nothing")));
+        checkOpDiscarded(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "discard", new ModelNode("nothing")));
+        checkOpDiscarded(Util.getUndefineAttributeOperation(PathAddress.pathAddress(PATH), "discard"));
     }
 
 
@@ -223,7 +224,7 @@ public class AttributesTestCase {
         Assert.assertTrue(transformedAdd.getTransformedOperation().hasDefined("keep"));
         Assert.assertFalse(transformedAdd.getTransformedOperation().has("discard"));
 
-        checkWriteOpDiscarded(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "discard", new ModelNode()));
+        checkOpDiscarded(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "discard", new ModelNode()));
 
         checkWriteOp(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "discard", new ModelNode("nothing")),
                 "discard", new ModelNode("nothing"));
@@ -296,7 +297,7 @@ public class AttributesTestCase {
         Assert.assertTrue(transformedAdd.getTransformedOperation().hasDefined("keep"));
         Assert.assertFalse(transformedAdd.getTransformedOperation().has("discard"));
 
-        checkWriteOpDiscarded(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "discard", new ModelNode("default")));
+        checkOpDiscarded(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "discard", new ModelNode("default")));
         checkWriteOp(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "discard", new ModelNode("something")),
                 "discard", new ModelNode("something"));
     }
@@ -484,9 +485,9 @@ public class AttributesTestCase {
                 "dos", new ModelNode("DOS"));
         checkWriteOp(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "three", new ModelNode("THREE")),
                 "tres", new ModelNode("THREE"));
-        checkWriteOpDiscarded(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "four", new ModelNode()));
-        checkWriteOpDiscarded(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "five", new ModelNode()));
-        checkWriteOpDiscarded(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "six", new ModelNode()));
+        checkOpDiscarded(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "four", new ModelNode()));
+        checkOpDiscarded(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "five", new ModelNode()));
+        checkOpDiscarded(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "six", new ModelNode()));
         Assert.assertFalse(rejectAttributeChecker.rejected);
 
         //Check that expressions get rejected
@@ -538,7 +539,7 @@ public class AttributesTestCase {
         Assert.assertEquals(value.getType(), transWrite.get(VALUE).getType());
     }
 
-    private void checkWriteOpDiscarded(ModelNode write) throws OperationFailedException {
+    private void checkOpDiscarded(ModelNode write) throws OperationFailedException {
         OperationTransformer.TransformedOperation transformedWrite = transformOperation(write);
         Assert.assertFalse(transformedWrite.rejectOperation(success()));
         Assert.assertNull(transformedWrite.getTransformedOperation());
