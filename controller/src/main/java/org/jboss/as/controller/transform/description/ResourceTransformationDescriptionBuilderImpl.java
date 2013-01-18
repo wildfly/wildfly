@@ -30,18 +30,11 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.OperationRejectionPolicy;
-import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.PathTransformation;
 import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.dmr.ModelNode;
 
 /**
  * @author Emanuel Muckenhuber
@@ -107,51 +100,17 @@ class ResourceTransformationDescriptionBuilderImpl extends AbstractTransformatio
         // Build attribute rules
         final Map<String, AttributeTransformationDescription> attributes = registry.buildAttributes();
 
-        // Add custom transformation rules
-        for(final ModelTransformer t : steps) {
-            rules.add(new TransformationRule() {
-                @Override
-                void transformOperation(ModelNode operation, PathAddress address, OperationContext context) throws OperationFailedException {
-                    final TransformationContext ctx = context.getContext();
-                    final boolean reject = ! t.transform(operation, address, ctx);
-                    final OperationRejectionPolicy policy ;
-                    if(reject) {
-                        policy = new OperationRejectionPolicy() {
-                            @Override
-                            public boolean rejectOperation(ModelNode preparedResult) {
-                                return true;
-                            }
-
-                            @Override
-                            public String getFailureDescription() {
-                                return "";
-                            }
-                        };
-                        context.invokeNext(new OperationTransformer.TransformedOperation(operation, policy, OperationResultTransformer.ORIGINAL_RESULT));
-                    } else {
-                        context.invokeNext(operation);
-                    }
-                }
-
-                @Override
-                void tranformResource(Resource resource, PathAddress address, ResourceContext context) throws OperationFailedException {
-                    final ModelNode model = resource.getModel();
-                    final TransformationContext ctx = context.getContext();
-                    boolean reject = t.transform(model, address, ctx);
-                    if(reject) {
-                        // warn
-                    }
-                    context.invokeNext(resource);
-                }
-            });
-        }
+//        // Add custom transformation rules
+//        for(final ModelTransformer t : steps) {
+//            rules.add();
+//        }
         // Process children
         final List<TransformationDescription> children = new ArrayList<TransformationDescription>();
         for(final TransformationDescriptionBuilder builder : this.children) {
             children.add(builder.build());
         }
         // Create the description
-        return new TransformingDescription(pathElement, pathTransformation, resourceTransformer, rules, attributes, children);
+        return new TransformingDescription(pathElement, pathTransformation, resourceTransformer, steps, attributes, children);
     }
 
     @Override
