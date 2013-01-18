@@ -178,6 +178,16 @@ public interface PathTransformation {
             }
         }
 
+        protected PathAddress start() {
+            if(transformers.hasNext()) {
+                final PathTransformation transformer = transformers.next();
+                final PathElement next = original.getElement(idx++);
+                return transformer.transform(next, this);
+            } else {
+                return original;
+            }
+        };
+
     }
 
 }
