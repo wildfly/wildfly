@@ -76,14 +76,10 @@ public class BasicTestCase {
         // Build
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
 
-        builder.getStringAttributeBuilder().setRejectExpressions("test").end()
-                .addCustomTransformation(new ModelTransformer() {
-                    @Override
-                    public boolean transform(ModelNode node, PathAddress address, TransformationContext context) throws OperationFailedException {
-                        node.get("othertest").set(true);
-                        return true;
-                    }
-                });
+        builder.getStringAttributeBuilder()
+            .setRejectExpressions("test")
+            .addAttribute("othertest", AttributeConverter.Factory.createHardCoded(new ModelNode(true)))
+            .end();
 
         // Discard all
         builder.discardChildResource(DISCARD);

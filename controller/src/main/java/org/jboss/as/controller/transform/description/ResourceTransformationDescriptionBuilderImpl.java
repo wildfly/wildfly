@@ -43,7 +43,6 @@ import org.jboss.as.controller.transform.ResourceTransformer;
 class ResourceTransformationDescriptionBuilderImpl extends AbstractTransformationDescriptionBuilder implements ResourceTransformationDescriptionBuilder {
 
     private DiscardPolicy discardPolicy = DiscardPolicy.NEVER;
-    private final List<ModelTransformer> steps = new ArrayList<ModelTransformer>();
     private final AttributeTransformationDescriptionBuilderRegistry registry = new AttributeTransformationDescriptionBuilderRegistry();
 
     protected ResourceTransformationDescriptionBuilderImpl(final PathElement pathElement) {
@@ -52,12 +51,6 @@ class ResourceTransformationDescriptionBuilderImpl extends AbstractTransformatio
 
     protected ResourceTransformationDescriptionBuilderImpl(final PathElement pathElement, final PathTransformation pathTransformation) {
         super(pathElement, pathTransformation, ResourceTransformer.DEFAULT, OperationTransformer.DEFAULT);
-    }
-
-    @Override
-    public ResourceTransformationDescriptionBuilder addCustomTransformation(final ModelTransformer transformer) {
-        steps.add(transformer);
-        return this;
     }
 
     @Override
@@ -112,7 +105,7 @@ class ResourceTransformationDescriptionBuilderImpl extends AbstractTransformatio
             children.add(builder.build());
         }
         // Create the description
-        return new TransformingDescription(pathElement, pathTransformation, discardPolicy, resourceTransformer, steps, attributes, children);
+        return new TransformingDescription(pathElement, pathTransformation, discardPolicy, resourceTransformer, attributes, children);
     }
 
     @Override
