@@ -42,6 +42,11 @@ abstract class AbstractDescription implements TransformationDescription {
     }
 
     @Override
+    public PathElement getPath() {
+        return pathElement;
+    }
+
+    @Override
     public PathTransformation getPathTransformation() {
         return pathTransformation;
     }

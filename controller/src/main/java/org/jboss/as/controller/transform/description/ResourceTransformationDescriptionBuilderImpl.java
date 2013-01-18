@@ -42,6 +42,7 @@ import org.jboss.as.controller.transform.ResourceTransformer;
  */
 class ResourceTransformationDescriptionBuilderImpl extends AbstractTransformationDescriptionBuilder implements ResourceTransformationDescriptionBuilder {
 
+    private DiscardPolicy discardPolicy = DiscardPolicy.NEVER;
     private final List<ModelTransformer> steps = new ArrayList<ModelTransformer>();
     private final AttributeTransformationDescriptionBuilderRegistry registry = new AttributeTransformationDescriptionBuilderRegistry();
 
@@ -96,21 +97,22 @@ class ResourceTransformationDescriptionBuilderImpl extends AbstractTransformatio
 
     @Override
     public TransformationDescription build() {
+        // Just skip the rest, because we can
+        if(discardPolicy == DiscardPolicy.ALWAYS) {
+            return new DiscardDefinition(pathElement);
+        }
+
         final List<TransformationRule> rules = new ArrayList<TransformationRule>();
         // Build attribute rules
         final Map<String, AttributeTransformationDescription> attributes = registry.buildAttributes();
 
-//        // Add custom transformation rules
-//        for(final ModelTransformer t : steps) {
-//            rules.add();
-//        }
         // Process children
         final List<TransformationDescription> children = new ArrayList<TransformationDescription>();
         for(final TransformationDescriptionBuilder builder : this.children) {
             children.add(builder.build());
         }
         // Create the description
-        return new TransformingDescription(pathElement, pathTransformation, resourceTransformer, steps, attributes, children);
+        return new TransformingDescription(pathElement, pathTransformation, discardPolicy, resourceTransformer, steps, attributes, children);
     }
 
     @Override
