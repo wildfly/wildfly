@@ -146,6 +146,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
 
         // TODO override more global operations?
         registration.registerOperationTransformer(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, new WriteAttributeTransformer());
+        registration.registerOperationTransformer(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION, new WriteAttributeTransformer());
 
         for(final TransformationDescription description : children) {
             description.register(registration);
@@ -215,7 +216,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
 
             // Process
             final ModelNode originalModel = operation.clone();
-            TransformationRule.AbstractTransformationContext ctx =new TransformationRule.AbstractTransformationContext(context, originalModel) {
+            TransformationRule.AbstractTransformationContext ctx = new TransformationRule.AbstractTransformationContext(context, originalModel) {
                 @Override
                 protected TransformationContext getContext() {
                     return super.getContext();
@@ -259,5 +260,33 @@ class TransformingDescription extends AbstractDescription implements Transformat
         }
     }
 
+    static final ModelNode UNDEFINED = new ModelNode();
 
+    private class UndefineAttributeTransformer implements OperationTransformer {
+        @Override
+        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
+
+            final String attributeName = operation.require(ModelDescriptionConstants.NAME).asString();
+            final AttributeTransformationDescription description = attributeTransformations.get(attributeName);
+            if(description == null) {
+                return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
+            }
+
+            // Process
+            final ModelNode originalModel = operation.clone();
+            TransformationRule.AbstractTransformationContext ctx = new TransformationRule.AbstractTransformationContext(context, originalModel) {
+                @Override
+                protected TransformationContext getContext() {
+                    return super.getContext();
+                }
+            };
+            originalModel.protect();
+            //discard what can be discarded
+            if (description.shouldDiscard(UNDEFINED, ctx)) {
+                return OperationTransformer.DISCARD.transformOperation(context, address, operation);
+            }
+
+            return new TransformedOperation(operation, DEFAULT_REJECTION_POLICY, OperationResultTransformer.ORIGINAL_RESULT);
+        }
+    }
 }

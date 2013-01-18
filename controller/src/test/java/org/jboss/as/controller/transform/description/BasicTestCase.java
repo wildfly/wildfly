@@ -90,7 +90,7 @@ public class BasicTestCase {
 
         // configuration=test/setting=directory > test=configuration/directory=setting
         builder.addChildRedirection(CONFIGURATION_TEST, TEST_CONFIGURATION)
-                .getStringAttributeBuilder().rejectExpressions("test-config").end()
+                .getStringAttributeBuilder().setRejectExpressions("test-config").end()
                 .addChildRedirection(SETTING_DIRECTORY, DIRECTORY_SETTING);
 
         // Register at the server root
