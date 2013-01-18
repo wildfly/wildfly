@@ -25,6 +25,7 @@ package org.jboss.as.controller.transform.description;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.ResourceTransformer;
 
 /**
@@ -35,9 +36,34 @@ import org.jboss.as.controller.transform.ResourceTransformer;
  */
 public interface ResourceTransformationDescriptionBuilder extends TransformationDescriptionBuilder {
 
-    AttributeTransformationDescriptionBuilder<String> getStringAttributeBuilder();
+    /**
+     * Get a builder to define custom attribute transformation rules.
+     *
+     * @return the attribute transformation builder
+     */
+    AttributeTransformationDescriptionBuilder getAttributeBuilder();
 
-    AttributeTransformationDescriptionBuilder<AttributeDefinition> getDefAttributeBuilder();
+    @Deprecated
+    AttributeTransformationDescriptionBuilder getStringAttributeBuilder();
+    @Deprecated
+    AttributeTransformationDescriptionBuilder getDefAttributeBuilder();
+
+    /**
+     * Add an operation transformation entry for a specific operation.
+     *
+     * @param operationName the operation name
+     * @return the operation transformation builder
+     */
+    OperationTransformationOverrideBuilder addOperationTransformationOverride(String operationName);
+
+    /**
+     * Register a raw operation transformer which is going to be used as is.
+     *
+     * @param operationName the operation name
+     * @param operationTransformer the operation transformer
+     * @return the builder for the current instance
+     */
+    ResourceTransformationDescriptionBuilder addRawOperationTransformationOverride(String operationName, OperationTransformer operationTransformer);
 
     /**
      * Set a custom resource transformer. This transformer is going to be called after all attribute transformations happened

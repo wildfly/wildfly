@@ -38,7 +38,7 @@ import java.util.Map;
  *
  * @author Emanuel Muckenhuber
  */
-public class ExplicitTransformationDescriptionBuilder extends AbstractTransformationDescriptionBuilder implements TransformationDescriptionBuilder {
+public final class ExplicitTransformationDescriptionBuilder extends AbstractTransformationDescriptionBuilder implements TransformationDescriptionBuilder {
 
     // TODO operation and children
 

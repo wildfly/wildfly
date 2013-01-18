@@ -58,13 +58,14 @@ class TransformingDescription extends AbstractDescription implements Transformat
     private final List<TransformationDescription> children;
     private final Map<String, AttributeTransformationDescription> attributeTransformations;
     private final List<TransformationRule> rules = Collections.emptyList();
-    private final Map<String, OperationTransformer> operationTransformers = new HashMap<String, OperationTransformer>();
+    private final Map<String, OperationTransformer> operationTransformers;
     private final ResourceTransformer resourceTransfomer;
 
     public TransformingDescription(final PathElement pathElement, final PathTransformation pathTransformation,
                                    final DiscardPolicy discardPolicy,
                                    final ResourceTransformer resourceTransformer,
                                    final Map<String, AttributeTransformationDescription> attributeTransformations,
+                                   final Map<String, OperationTransformer> operations,
                                    final List<TransformationDescription> children) {
         super(pathElement, pathTransformation);
         this.children = children;
@@ -72,7 +73,9 @@ class TransformingDescription extends AbstractDescription implements Transformat
         this.resourceTransfomer = resourceTransformer;
         this.attributeTransformations = attributeTransformations;
 
+        this.operationTransformers = operations;
         // TODO override more global operations?
+        // TODO Allow overriding of the default implementations!?
         operationTransformers.put(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, new WriteAttributeTransformer());
         operationTransformers.put(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION, new UndefineAttributeTransformer());
     }

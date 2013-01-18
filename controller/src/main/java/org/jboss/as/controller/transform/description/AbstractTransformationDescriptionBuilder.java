@@ -43,7 +43,7 @@ abstract class AbstractTransformationDescriptionBuilder implements Transformatio
     protected ResourceTransformer resourceTransformer;
     protected OperationTransformer operationTransformer;
 
-    protected final Map<String, OperationTransformer> operationTransformers = new HashMap<String, OperationTransformer>();
+    protected final Map<String, OperationTransformationOverrideBuilderImpl> operationTransformers = new HashMap<String, OperationTransformationOverrideBuilderImpl>();
     protected final List<AbstractTransformationDescriptionBuilder> children = new ArrayList<AbstractTransformationDescriptionBuilder>();
 
     protected AbstractTransformationDescriptionBuilder(PathElement pathElement, PathTransformation pathTransformation,
@@ -69,9 +69,13 @@ abstract class AbstractTransformationDescriptionBuilder implements Transformatio
         return this;
     }
 
-    public TransformationDescriptionBuilder addOperationTransformer(final String operationName, final OperationTransformer operationTransformer) {
-        operationTransformers.put(operationName, operationTransformer);
-        return this;
+    void addOperationTransformerEntry(String operationName, OperationTransformationOverrideBuilderImpl transformer) {
+        operationTransformers.put(operationName, transformer);
+    }
+
+    void addOperationTransformerEntry(String operationName, OperationTransformationOverrideBuilderImpl transformer, OperationTransformer operationTransformer) {
+        transformer.setOperationTransformer(operationTransformer);
+        operationTransformers.put(operationName, transformer);
     }
 
 }
