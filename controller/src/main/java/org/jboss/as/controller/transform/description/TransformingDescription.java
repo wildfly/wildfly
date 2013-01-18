@@ -24,6 +24,7 @@ package org.jboss.as.controller.transform.description;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -58,14 +59,56 @@ class TransformingDescription extends AbstractDescription implements Transformat
 
     public TransformingDescription(final PathElement pathElement, final PathTransformation pathTransformation,
                                    final ResourceTransformer resourceTransformer,
-                                   final List<TransformationRule> rules,
+                                   final List<ModelTransformer> steps,
                                    final Map<String, AttributeTransformationDescription> attributeTransformations,
                                    final List<TransformationDescription> children) {
         super(pathElement, pathTransformation);
-        this.rules = rules;
+        this.rules = createRules(steps);
         this.children = children;
         this.resourceTransfomer = resourceTransformer;
         this.attributeTransformations = attributeTransformations;
+    }
+
+    private List<TransformationRule> createRules(List<ModelTransformer> steps){
+        List<TransformationRule> rules = new ArrayList<TransformationRule>(steps.size());
+        for (final ModelTransformer step : steps) {
+            rules.add(new TransformationRule() {
+                @Override
+                void transformOperation(ModelNode operation, PathAddress address, OperationContext context) throws OperationFailedException {
+                    final TransformationContext ctx = context.getContext();
+                    final boolean reject = ! step.transform(operation, address, ctx);
+                    final OperationRejectionPolicy policy ;
+                    if(reject) {
+                        policy = new OperationRejectionPolicy() {
+                            @Override
+                            public boolean rejectOperation(ModelNode preparedResult) {
+                                return true;
+                            }
+
+                            @Override
+                            public String getFailureDescription() {
+                                return "";
+                            }
+                        };
+                        context.invokeNext(new OperationTransformer.TransformedOperation(operation, policy, OperationResultTransformer.ORIGINAL_RESULT));
+                    } else {
+                        context.invokeNext(operation);
+                    }
+                }
+
+                @Override
+                void tranformResource(Resource resource, PathAddress address, ResourceContext context) throws OperationFailedException {
+                    final ModelNode model = resource.getModel();
+                    final TransformationContext ctx = context.getContext();
+                    boolean reject = step.transform(model, address, ctx);
+                    if(reject) {
+                        // warn
+                    }
+                    context.invokeNext(resource);
+                }
+            });
+        }
+        return rules;
     }
 
     /**
