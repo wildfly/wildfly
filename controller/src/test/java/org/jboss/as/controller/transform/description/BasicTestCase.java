@@ -40,6 +40,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.TransformationContext;
@@ -80,6 +81,11 @@ public class BasicTestCase {
             .setRejectExpressions("test")
             .addAttribute("othertest", AttributeConverter.Factory.createHardCoded(new ModelNode(true)))
             .end();
+
+        builder.addOperationTransformationOverride("test-operation")
+                .inherit()
+                .addAttribute("operation-test", AttributeConverter.Factory.createHardCoded(new ModelNode(true)))
+                .end();
 
         // Discard all
         builder.discardChildResource(DISCARD);
@@ -137,7 +143,6 @@ public class BasicTestCase {
         Assert.assertNotNull(op);
 
         final Resource resource = transformResource();
-        System.out.println(Resource.Tools.readModel(resource));
 
         Assert.assertNotNull(resource);
         final Resource toto = resource.getChild(PATH);
@@ -200,12 +205,30 @@ public class BasicTestCase {
         node.get("test-config").set("${one:two}");
 
         OperationTransformer.TransformedOperation op = transformOperation(node);
-        System.out.println(op.getTransformedOperation());
         Assert.assertTrue(op.rejectOperation(success()));
 
         node.get("test-config").set("concrete");
         op = transformOperation(node);
         Assert.assertFalse(op.rejectOperation(success()));
+
+    }
+
+    @Test
+    public void testOperationTransformer() throws Exception {
+
+        final ModelNode address = new ModelNode();
+        address.add("toto", "testSubsystem");
+
+        final ModelNode operation = new ModelNode();
+        operation.get(ModelDescriptionConstants.OP).set("test-operation");
+        operation.get(ModelDescriptionConstants.OP_ADDR).set(address);
+        operation.get("test").set("${one:two}");
+
+        OperationTransformer.TransformedOperation op = transformOperation(operation);
+        final ModelNode transformed = op.getTransformedOperation();
+        Assert.assertTrue(transformed.get("operation-test").asBoolean()); // explicit
+        Assert.assertTrue(transformed.get("othertest").asBoolean()); // inherited
+        Assert.assertTrue(op.rejectOperation(success())); // inherited
 
     }
 

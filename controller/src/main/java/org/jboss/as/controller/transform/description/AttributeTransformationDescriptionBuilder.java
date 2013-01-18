@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.transform.description;
 
+import org.jboss.as.controller.AttributeDefinition;
+
 import java.util.List;
 import java.util.Map;
 
@@ -31,28 +33,36 @@ import java.util.Map;
  * @author Emanuel Muckenhuber
  * @author kabir
  */
-public interface AttributeTransformationDescriptionBuilder<T> {
+public interface AttributeTransformationDescriptionBuilder {
 
     /**
      * Make this attribute reject expressions
      *
      * @return this builder
      */
-    AttributeTransformationDescriptionBuilder<T> setRejectExpressions(T...attributes);
+    AttributeTransformationDescriptionBuilder setRejectExpressions(String...attributes);
+    AttributeTransformationDescriptionBuilder setRejectExpressions(AttributeDefinition...attributes);
 
-    AttributeTransformationDescriptionBuilder<T> addRejectCheck(RejectAttributeChecker rejectChecker, T...rejectedAttributes);
+    AttributeTransformationDescriptionBuilder addRejectCheck(RejectAttributeChecker rejectChecker, String...rejectedAttributes);
+    AttributeTransformationDescriptionBuilder addRejectCheck(RejectAttributeChecker rejectChecker, AttributeDefinition...rejectedAttributes);
 
-    AttributeTransformationDescriptionBuilder<T> addRejectChecks(List<RejectAttributeChecker> rejectCheckers, T...rejectedAttributes);
+    AttributeTransformationDescriptionBuilder addRejectChecks(List<RejectAttributeChecker> rejectCheckers, String...rejectedAttributes);
+    AttributeTransformationDescriptionBuilder addRejectChecks(List<RejectAttributeChecker> rejectCheckers, AttributeDefinition...rejectedAttributes);
 
-    AttributeTransformationDescriptionBuilder<T> setDiscard(DiscardAttributeChecker discardChecker, T...discardedAttributes);
+    AttributeTransformationDescriptionBuilder setDiscard(DiscardAttributeChecker discardChecker, String...discardedAttributes);
+    AttributeTransformationDescriptionBuilder setDiscard(DiscardAttributeChecker discardChecker, AttributeDefinition...discardedAttributes);
 
-    AttributeTransformationDescriptionBuilder<T> addRename(T attributeName, String newName);
+    AttributeTransformationDescriptionBuilder addRename(String attributeName, String newName);
+    AttributeTransformationDescriptionBuilder addRename(AttributeDefinition attributeName, String newName);
 
-    AttributeTransformationDescriptionBuilder<T> addRenames(Map<T, String> renames);
+    AttributeTransformationDescriptionBuilder addRenames(Map<String, String> renames);
+    // AttributeTransformationDescriptionBuilder<T> addRenames(Map<AttributeDefinition, String> renames);
 
-    AttributeTransformationDescriptionBuilder<T> setValueConverter(AttributeConverter attributeConverter, T...convertedAttributes);
+    AttributeTransformationDescriptionBuilder setValueConverter(AttributeConverter attributeConverter, String...convertedAttributes);
+    AttributeTransformationDescriptionBuilder setValueConverter(AttributeConverter attributeConverter, AttributeDefinition...convertedAttributes);
 
-    AttributeTransformationDescriptionBuilder<T> addAttribute(T attribute, AttributeConverter attributeConverter);
+    AttributeTransformationDescriptionBuilder addAttribute(String attribute, AttributeConverter attributeConverter);
+    AttributeTransformationDescriptionBuilder addAttribute(AttributeDefinition attribute, AttributeConverter attributeConverter);
 
     /**
      * Finish with this attribute builder and return control to the parent resource transformation builder
