@@ -37,6 +37,10 @@ import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.dmr.ModelNode;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 /**
  * @author Emanuel Muckenhuber
  */
@@ -57,18 +61,23 @@ class DiscardDefinition extends AbstractDescription implements TransformationDes
     }
 
     @Override
-    public void register(SubsystemRegistration subsytem, ModelVersion... versions) {
-        register(subsytem, ModelVersionRange.Versions.range(versions));
+    public OperationTransformer getOperationTransformer() {
+        return this;
     }
 
     @Override
-    public void register(SubsystemRegistration subsytem, ModelVersionRange range) {
-        subsytem.registerModelTransformers(range, this);
+    public ResourceTransformer getResourceTransformer() {
+        return this;
     }
 
     @Override
-    public void register(TransformersSubRegistration parent) {
-        parent.registerSubResource(pathElement, this, this);
+    public Map<String, OperationTransformer> getOperationTransformers() {
+        return Collections.emptyMap();
+    }
+
+    @Override
+    public List<TransformationDescription> getChildren() {
+        return Collections.emptyList();
     }
 
 }

@@ -24,6 +24,10 @@ package org.jboss.as.controller.transform.description;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -53,6 +57,8 @@ class TransformingDescription extends AbstractDescription implements Transformat
     private final DiscardPolicy discardPolicy;
     private final List<TransformationDescription> children;
     private final Map<String, AttributeTransformationDescription> attributeTransformations;
+    private final List<TransformationRule> rules = Collections.emptyList();
+    private final Map<String, OperationTransformer> operationTransformers = new HashMap<String, OperationTransformer>();
     private final ResourceTransformer resourceTransfomer;
 
     public TransformingDescription(final PathElement pathElement, final PathTransformation pathTransformation,
@@ -65,48 +71,29 @@ class TransformingDescription extends AbstractDescription implements Transformat
         this.discardPolicy = discardPolicy;
         this.resourceTransfomer = resourceTransformer;
         this.attributeTransformations = attributeTransformations;
-    }
-
-    /**
-     * Register this transformation description to the subsystem registration.
-     *
-     * @param subsytem the subsystem
-     * @param versions the versions
-     */
-    public void register(final SubsystemRegistration subsytem, ModelVersion... versions) {
-        register(subsytem, ModelVersionRange.Versions.range(versions));
-    }
-
-    /**
-     * Register this transformation description to the subsystem registration.
-     *
-     * @param subsytem the subsystem
-     * @param range the version range
-     */
-    public void register(final SubsystemRegistration subsytem, ModelVersionRange range) {
-        final TransformersSubRegistration registration = subsytem.registerModelTransformers(range, this);
-        // TODO intercept subsystem operations !!
-        for(final TransformationDescription description : children) {
-            description.register(registration);
-        }
-    }
-
-    /**
-     * Register this transformation description.
-     *
-     * @param registration the transformation description
-     */
-    public void register(final TransformersSubRegistration parent) {
-        // Register this description at a transformers sub registration
-        final TransformersSubRegistration registration = parent.registerSubResource(pathElement, getPathTransformation(), this, this);
 
         // TODO override more global operations?
-        registration.registerOperationTransformer(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, new WriteAttributeTransformer());
-        registration.registerOperationTransformer(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION, new UndefineAttributeTransformer());
+        operationTransformers.put(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, new WriteAttributeTransformer());
+        operationTransformers.put(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION, new UndefineAttributeTransformer());
+    }
+    @Override
+    public OperationTransformer getOperationTransformer() {
+        return this;
+    }
 
-        for(final TransformationDescription description : children) {
-            description.register(registration);
-        }
+    @Override
+    public ResourceTransformer getResourceTransformer() {
+        return this;
+    }
+
+    @Override
+    public Map<String, OperationTransformer> getOperationTransformers() {
+        return Collections.unmodifiableMap(operationTransformers);
+    }
+
+    @Override
+    public List<TransformationDescription> getChildren() {
+        return Collections.unmodifiableList(children);
     }
 
     @Override
@@ -114,7 +101,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
         if(discardPolicy.discard(operation, address, ctx)) {
             return OperationTransformer.DISCARD.transformOperation(ctx, address, operation);
         }
-        //final Iterator<TransformationRule> iterator = rules.iterator();
+        final Iterator<TransformationRule> iterator = rules.iterator();
         final ModelNode originalModel = operation.clone();
         originalModel.protect();
         final TransformationRule.OperationContext context = new TransformationRule.OperationContext(ctx, originalModel) {
@@ -122,6 +109,11 @@ class TransformingDescription extends AbstractDescription implements Transformat
             @Override
             void invokeNext(OperationTransformer.TransformedOperation transformedOperation) throws OperationFailedException {
                 recordTransformedOperation(transformedOperation);
+                if(iterator.hasNext()) {
+                    final TransformationRule next = iterator.next();
+                    // TODO hmm, do we need to change the address?
+                    next.transformOperation(transformedOperation.getTransformedOperation(), address, this);
+                }
             }
         };
         operation.get(ModelDescriptionConstants.OP_ADDR).set(address.toModelNode());
@@ -139,10 +131,16 @@ class TransformingDescription extends AbstractDescription implements Transformat
         if(discardPolicy.discard(originalModel, address, ctx)) {
             return; // discard
         }
+        final Iterator<TransformationRule> iterator = rules.iterator();
         final TransformationRule.ResourceContext context = new TransformationRule.ResourceContext(ctx, originalModel) {
             @Override
             void invokeNext(final Resource resource) throws OperationFailedException {
-                resourceTransfomer.transformResource(ctx, address, resource);
+                if(iterator.hasNext()) {
+                    final TransformationRule next = iterator.next();
+                    next.tranformResource(resource, address, this);
+                } else {
+                    resourceTransfomer.transformResource(ctx, address, resource);
+                }
             }
         };
         // Kick off the chain

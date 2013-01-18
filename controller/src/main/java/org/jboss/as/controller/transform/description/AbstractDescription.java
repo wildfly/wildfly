@@ -27,6 +27,7 @@ import org.jboss.as.controller.ModelVersionRange;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.transform.PathTransformation;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
 
 /**
  * @author Emanuel Muckenhuber
@@ -53,12 +54,17 @@ abstract class AbstractDescription implements TransformationDescription {
 
     @Override
     public void register(final SubsystemRegistration subsytem, ModelVersion... versions) {
-        register(subsytem, ModelVersionRange.Versions.range(versions));
+        TransformationDescription.Tools.register(this, subsytem, versions);
     }
 
     @Override
     public void register(SubsystemRegistration subsytem, ModelVersionRange range) {
-        throw new IllegalStateException("NYI"); // this does not seem to make any sense here anyway
+        TransformationDescription.Tools.register(this, subsytem, range);
+    }
+
+    @Override
+    public void register(TransformersSubRegistration parent) {
+        TransformationDescription.Tools.register(this, parent);
     }
 
 }
