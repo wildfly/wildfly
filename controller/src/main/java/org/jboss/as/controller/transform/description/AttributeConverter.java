@@ -31,4 +31,15 @@ import org.jboss.dmr.ModelNode;
 public interface AttributeConverter {
 
     void convertAttribute(String name, ModelNode attributeValue, TransformationContext context);
+
+    public class Factory {
+        public static AttributeConverter createHardCoded(final ModelNode hardCodedValue) {
+            return new AttributeConverter() {
+                @Override
+                public void convertAttribute(String name, ModelNode attributeValue, TransformationContext context) {
+                    attributeValue.set(hardCodedValue);
+                }
+            };
+        }
+    }
 }

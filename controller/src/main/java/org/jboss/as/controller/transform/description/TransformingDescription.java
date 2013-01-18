@@ -24,8 +24,6 @@ package org.jboss.as.controller.transform.description;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -52,7 +50,6 @@ import org.jboss.dmr.ModelNode;
  */
 class TransformingDescription extends AbstractDescription implements TransformationDescription, ResourceTransformer, OperationTransformer {
 
-    private final List<TransformationRule> rules;
     private final DiscardPolicy discardPolicy;
     private final List<TransformationDescription> children;
     private final Map<String, AttributeTransformationDescription> attributeTransformations;
@@ -61,57 +58,13 @@ class TransformingDescription extends AbstractDescription implements Transformat
     public TransformingDescription(final PathElement pathElement, final PathTransformation pathTransformation,
                                    final DiscardPolicy discardPolicy,
                                    final ResourceTransformer resourceTransformer,
-                                   final List<ModelTransformer> steps,
                                    final Map<String, AttributeTransformationDescription> attributeTransformations,
                                    final List<TransformationDescription> children) {
         super(pathElement, pathTransformation);
-        this.rules = createRules(steps);
         this.children = children;
         this.discardPolicy = discardPolicy;
         this.resourceTransfomer = resourceTransformer;
         this.attributeTransformations = attributeTransformations;
-    }
-
-    private List<TransformationRule> createRules(List<ModelTransformer> steps){
-        List<TransformationRule> rules = new ArrayList<TransformationRule>(steps.size());
-        for (final ModelTransformer step : steps) {
-            rules.add(new TransformationRule() {
-                @Override
-                void transformOperation(ModelNode operation, PathAddress address, OperationContext context) throws OperationFailedException {
-                    final TransformationContext ctx = context.getContext();
-                    final boolean reject = ! step.transform(operation, address, ctx);
-                    final OperationRejectionPolicy policy ;
-                    if(reject) {
-                        policy = new OperationRejectionPolicy() {
-                            @Override
-                            public boolean rejectOperation(ModelNode preparedResult) {
-                                return true;
-                            }
-
-                            @Override
-                            public String getFailureDescription() {
-                                return "";
-                            }
-                        };
-                        context.invokeNext(new OperationTransformer.TransformedOperation(operation, policy, OperationResultTransformer.ORIGINAL_RESULT));
-                    } else {
-                        context.invokeNext(operation);
-                    }
-                }
-
-                @Override
-                void tranformResource(Resource resource, PathAddress address, ResourceContext context) throws OperationFailedException {
-                    final ModelNode model = resource.getModel();
-                    final TransformationContext ctx = context.getContext();
-                    boolean reject = step.transform(model, address, ctx);
-                    if(reject) {
-                        // warn
-                    }
-                    context.invokeNext(resource);
-                }
-            });
-        }
-        return rules;
     }
 
     /**
@@ -149,7 +102,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
 
         // TODO override more global operations?
         registration.registerOperationTransformer(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, new WriteAttributeTransformer());
-        registration.registerOperationTransformer(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION, new WriteAttributeTransformer());
+        registration.registerOperationTransformer(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION, new UndefineAttributeTransformer());
 
         for(final TransformationDescription description : children) {
             description.register(registration);
@@ -161,7 +114,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
         if(discardPolicy.discard(operation, address, ctx)) {
             return OperationTransformer.DISCARD.transformOperation(ctx, address, operation);
         }
-        final Iterator<TransformationRule> iterator = rules.iterator();
+        //final Iterator<TransformationRule> iterator = rules.iterator();
         final ModelNode originalModel = operation.clone();
         originalModel.protect();
         final TransformationRule.OperationContext context = new TransformationRule.OperationContext(ctx, originalModel) {
@@ -169,11 +122,6 @@ class TransformingDescription extends AbstractDescription implements Transformat
             @Override
             void invokeNext(OperationTransformer.TransformedOperation transformedOperation) throws OperationFailedException {
                 recordTransformedOperation(transformedOperation);
-                if(iterator.hasNext()) {
-                    final TransformationRule next = iterator.next();
-                    // TODO hmm, do we need to change the address?
-                    next.transformOperation(transformedOperation.getTransformedOperation(), address, this);
-                }
             }
         };
         operation.get(ModelDescriptionConstants.OP_ADDR).set(address.toModelNode());
@@ -191,17 +139,10 @@ class TransformingDescription extends AbstractDescription implements Transformat
         if(discardPolicy.discard(originalModel, address, ctx)) {
             return; // discard
         }
-        final Iterator<TransformationRule> iterator = rules.iterator();
         final TransformationRule.ResourceContext context = new TransformationRule.ResourceContext(ctx, originalModel) {
             @Override
             void invokeNext(final Resource resource) throws OperationFailedException {
-                if(iterator.hasNext()) {
-                    final TransformationRule next = iterator.next();
-                    next.tranformResource(resource, address, this);
-                } else {
-                    // Execute the resource transfomer last
-                    resourceTransfomer.transformResource(ctx, address, resource);
-                }
+                resourceTransfomer.transformResource(ctx, address, resource);
             }
         };
         // Kick off the chain

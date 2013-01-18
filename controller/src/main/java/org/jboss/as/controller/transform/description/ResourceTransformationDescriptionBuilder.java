@@ -40,13 +40,6 @@ public interface ResourceTransformationDescriptionBuilder extends Transformation
     AttributeTransformationDescriptionBuilder<AttributeDefinition> getDefAttributeBuilder();
 
     /**
-     * Add a custom transformation step. This will be called for model as well as operation transformation.
-     *
-     * @param transformer the model transformer
-     */
-    ResourceTransformationDescriptionBuilder addCustomTransformation(ModelTransformer transformer);
-
-    /**
      * Set a custom resource transformer. This transformer is going to be called after all attribute transformations happened
      * and needs to take care of adding the currently transformed resource properly. If not specified, the resource will be
      * added according to other rules defined by this builder.
