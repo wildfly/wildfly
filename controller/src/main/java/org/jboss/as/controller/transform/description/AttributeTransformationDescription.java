@@ -63,7 +63,7 @@ class AttributeTransformationDescription {
             return true;
         }
 
-        if (!discardChecker.isAllowExpressions() && attributeValue.getType() == ModelType.EXPRESSION) {
+        if (!discardChecker.isDiscardExpressions() && attributeValue.getType() == ModelType.EXPRESSION) {
             return false;
         }
 
