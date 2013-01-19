@@ -42,9 +42,9 @@ import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.connector.util.RaServicesFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleMapAttributeDefinition;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.annotation.ResourceRootIndexer;
 import org.jboss.as.server.deployment.module.MountHandle;
@@ -239,19 +239,13 @@ public class RaOperationUtil {
         return adminObject;
     }
 
-    private static Extension extractExtension(final OperationContext operationContext, final ModelNode node, final SimpleAttributeDefinition className, final SimpleMapAttributeDefinition propertyName)
+    private static Extension extractExtension(final OperationContext operationContext, final ModelNode node,
+                                              final SimpleAttributeDefinition className, final PropertiesAttributeDefinition propertyName)
             throws ValidateException, OperationFailedException {
         if (node.hasDefined(className.getName())) {
             String exceptionSorterClassName = className.resolveModelAttribute(operationContext, node).asString();
-
-            Map<String, String> exceptionSorterProperty = null;
-            if (node.hasDefined(propertyName.getName())) {
-                exceptionSorterProperty = new HashMap<String, String>(node.get(propertyName.getName()).asList().size());
-                for (ModelNode property : node.get(propertyName.getName()).asList()) {
-                    exceptionSorterProperty.put(property.asProperty().getName(), property.asProperty().getValue().asString());
-                }
-            }
-
+            Map<String, String> unwrapped = propertyName.unwrap(operationContext, node);
+            Map<String, String> exceptionSorterProperty = unwrapped.size() > 0 ? unwrapped : null;
             return new Extension(exceptionSorterClassName, exceptionSorterProperty);
         } else {
             return null;
