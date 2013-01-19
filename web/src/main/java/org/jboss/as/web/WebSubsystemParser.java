@@ -256,11 +256,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 writer.writeStartElement(Element.CONTAINER_CONFIG.getLocalName());
                 containerConfigStartWritten = true;
             }
-            for (final Property entry : container.get(MIME_MAPPING).asPropertyList()) {
-                writer.writeEmptyElement(Element.MIME_MAPPING.getLocalName());
-                writer.writeAttribute(Attribute.NAME.getLocalName(), entry.getName());
-                writer.writeAttribute(Attribute.VALUE.getLocalName(), entry.getValue().asString());
-            }
+            WebContainerDefinition.MIME_MAPPINGS.marshallAsElement(container, writer);
         }
         if (container.hasDefined(WELCOME_FILE)) {
             if (!containerConfigStartWritten) {
@@ -561,18 +557,16 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     break;
                 }
                 case MIME_MAPPING: {
-                    // todo maybe create via add-mime
                     final String[] array = requireAttributes(reader, Attribute.NAME.getLocalName(),
                             Attribute.VALUE.getLocalName());
-                    config.get(MIME_MAPPING).get(array[0]).set(array[1]);
+                    WebContainerDefinition.MIME_MAPPINGS.parseAndAddParameterElement(array[0], array[1], config, reader);
 
-                    // config.get(MIME_MAPPING).add(mimeMapping);
                     requireNoContent(reader);
                     break;
                 }
                 case WELCOME_FILE: {
                     final String welcomeFile = reader.getElementText().trim();
-                    config.get(WELCOME_FILE).add(welcomeFile);
+                    WebContainerDefinition.WELCOME_FILES.parseAndAddParameterElement(welcomeFile, config, reader);
                     break;
                 }
                 default:

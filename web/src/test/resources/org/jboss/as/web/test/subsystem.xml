@@ -35,7 +35,7 @@
                <mime-mapping name="ogx" value="application/ogg" />
                <mime-mapping name="ogg" value="audio/ogg" />
                <welcome-file>toto</welcome-file>
-               <welcome-file>titi</welcome-file>
+               <welcome-file>${prop.welcome.file:titi}</welcome-file>
             </configuration>
             <connector name="http" scheme="${prop.scheme:http}"
                        protocol="${prop.protocol:HTTP/1.1}"

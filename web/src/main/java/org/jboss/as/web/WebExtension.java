@@ -194,6 +194,7 @@ public class WebExtension implements Extension {
         // configuration
         rejectExpressions(transformers, JSP_CONFIGURATION_PATH, WebJSPDefinition.JSP_ATTRIBUTES);
         rejectExpressions(transformers, STATIC_RESOURCES_PATH, WebStaticResources.STATIC_ATTRIBUTES);
+        rejectExpressions(transformers, CONTAINER_PATH, WebContainerDefinition.CONTAINER_ATTRIBUTES);
 
         // Connector
         final RejectExpressionValuesChainedTransformer reject = new RejectExpressionValuesChainedTransformer(WebConnectorDefinition.CONNECTOR_ATTRIBUTES);
