@@ -32,17 +32,25 @@ import org.jboss.as.controller.transform.OperationTransformer;
 public interface OperationTransformationOverrideBuilder extends AttributeTransformationDescriptionBuilder {
 
     /**
+     * Give the operation a new name
+     *
+     * @param the new name
+     * @return this operation transformer builder
+     */
+    OperationTransformationOverrideBuilder rename(String newName);
+
+    /**
      * Set a specific operation transformer, which is called after all attribute rules where executed.
      *
      * @param operationTransformer the operation transformer
-     * @return the operation transformer builder
+     * @return this operation transformer builder
      */
     OperationTransformationOverrideBuilder setOperationTransformer(OperationTransformer operationTransformer);
 
     /**
      * Inherit all existing attribute rules from the resource.
      *
-     * @return the current operation transformation builder
+     * @return this operation transformer builder
      */
     OperationTransformationOverrideBuilder inherit();
 

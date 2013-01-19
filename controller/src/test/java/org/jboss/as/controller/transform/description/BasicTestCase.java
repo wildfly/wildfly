@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.transform.description;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+
 import java.util.Collections;
 import java.util.Locale;
 
@@ -82,9 +84,14 @@ public class BasicTestCase {
             .end();
 
         builder.addOperationTransformationOverride("test-operation")
-                .inherit()
-                .addAttribute("operation-test", AttributeConverter.Factory.createHardCoded(new ModelNode(true)))
-                .end();
+        .inherit()
+        .addAttribute("operation-test", AttributeConverter.Factory.createHardCoded(new ModelNode(true)))
+        .end();
+
+        builder.addOperationTransformationOverride("rename-operation")
+        .rename("new-name-op")
+        .addAttribute("operation-test", AttributeConverter.Factory.createHardCoded(new ModelNode(true)))
+        .end();
 
         // Discard all
         builder.discardChildResource(DISCARD);
@@ -228,6 +235,28 @@ public class BasicTestCase {
         Assert.assertTrue(transformed.get("operation-test").asBoolean()); // explicit
         Assert.assertTrue(transformed.get("othertest").asBoolean()); // inherited
         Assert.assertTrue(op.rejectOperation(success())); // inherited
+
+    }
+
+
+    @Test
+    public void testRenameOperation() throws Exception {
+
+        final ModelNode address = new ModelNode();
+        address.add("toto", "testSubsystem");
+
+        final ModelNode operation = new ModelNode();
+        operation.get(ModelDescriptionConstants.OP).set("rename-operation");
+        operation.get(ModelDescriptionConstants.OP_ADDR).set(address);
+        operation.get("param").set("test");
+
+        OperationTransformer.TransformedOperation op = transformOperation(operation);
+        final ModelNode transformed = op.getTransformedOperation();
+        Assert.assertEquals("new-name-op", transformed.get(OP).asString());
+        Assert.assertEquals("test", transformed.get("param").asString());
+        Assert.assertTrue(transformed.get("operation-test").asBoolean()); // explicit
+        Assert.assertFalse(transformed.hasDefined("othertest")); // not inherited
+        Assert.assertFalse(op.rejectOperation(success())); // inherited
 
     }
 
