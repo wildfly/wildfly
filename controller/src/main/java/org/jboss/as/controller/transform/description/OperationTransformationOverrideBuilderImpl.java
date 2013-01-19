@@ -22,16 +22,17 @@
 
 package org.jboss.as.controller.transform.description;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+
+import java.util.Collections;
+import java.util.Iterator;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.dmr.ModelNode;
-
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Map;
 
 /**
  * @author Emanuel Muckenhuber
@@ -41,6 +42,7 @@ class OperationTransformationOverrideBuilderImpl extends AttributeTransformation
     private boolean inherit = false;
     private DiscardPolicy discardPolicy = DiscardPolicy.NEVER;
     private OperationTransformer transformer = OperationTransformer.DEFAULT;
+    private String newName;
 
     protected OperationTransformationOverrideBuilderImpl(ResourceTransformationDescriptionBuilder builder) {
         super(builder, new AttributeTransformationDescriptionBuilderImpl.AttributeTransformationDescriptionBuilderRegistry());
@@ -54,6 +56,12 @@ class OperationTransformationOverrideBuilderImpl extends AttributeTransformation
 
     public OperationTransformationOverrideBuilder setOperationTransformer(OperationTransformer transformer) {
         this.transformer = transformer;
+        return this;
+    }
+
+    @Override
+    public OperationTransformationOverrideBuilder rename(String newName) {
+        this.newName = newName;
         return this;
     }
 
@@ -79,6 +87,9 @@ class OperationTransformationOverrideBuilderImpl extends AttributeTransformation
                             // TODO hmm, do we need to change the address?
                             next.transformOperation(transformedOperation.getTransformedOperation(), address, this);
                         } else {
+                            if (newName != null) {
+                                transformedOperation.getTransformedOperation().get(OP).set(newName);
+                            }
                             final TransformationContext ctx = getContext();
                             transformer.transformOperation(ctx, address, transformedOperation.getTransformedOperation());
                         }
@@ -100,5 +111,4 @@ class OperationTransformationOverrideBuilderImpl extends AttributeTransformation
         }
         return local;
     }
-
 }

@@ -45,7 +45,7 @@ public interface AttributeConverter {
         }
     }
 
-    public static final AttributeConverter NAME_FROM_ADDRESS = new AttributeConverter() {
+    AttributeConverter NAME_FROM_ADDRESS = new AttributeConverter() {
         @Override
         public void convertAttribute(PathAddress address, String name, ModelNode attributeValue, TransformationContext context) {
             PathElement element = address.getLastElement();
