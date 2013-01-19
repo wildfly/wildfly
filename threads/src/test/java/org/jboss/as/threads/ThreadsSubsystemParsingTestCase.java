@@ -1235,7 +1235,7 @@ public class ThreadsSubsystemParsingTestCase {
 
         ModelControllerService() {
             super(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.NORMAL), new TestConfigurationPersister(), new ControlledProcessState(true),
-                    ResourceBuilder.Factory.create(PathElement.pathElement("root"), new NonResolvingResourceDescriptionResolver()).build(), null, ExpressionResolver.DEFAULT);
+                    ResourceBuilder.Factory.create(PathElement.pathElement("root"), new NonResolvingResourceDescriptionResolver()).build(), null, ExpressionResolver.TEST_RESOLVER);
         }
 
         @Override

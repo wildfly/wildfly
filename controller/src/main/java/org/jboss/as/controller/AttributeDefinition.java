@@ -234,7 +234,7 @@ public abstract class AttributeDefinition {
      */
     @Deprecated
     public ModelNode validateResolvedOperation(final ModelNode operationObject) throws OperationFailedException {
-        return resolveModelAttribute(NO_OPERATION_CONTEXT_FOR_RESOLVING_MODEL_PARAMETERS, operationObject);
+        return resolveModelAttribute(ExpressionResolver.REJECTING, operationObject);
     }
 
     /**
@@ -623,11 +623,4 @@ public abstract class AttributeDefinition {
     public DeprecationData getDeprecationData() {
         return deprecationData;
     }
-
-    private static final ExpressionResolver NO_OPERATION_CONTEXT_FOR_RESOLVING_MODEL_PARAMETERS = new ExpressionResolver() {
-        @Override
-        public ModelNode resolveExpressions(ModelNode node) throws OperationFailedException {
-            return ExpressionResolver.DEFAULT.resolveExpressions(node);
-        }
-    };
 }

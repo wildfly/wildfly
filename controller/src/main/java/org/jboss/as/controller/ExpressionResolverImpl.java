@@ -47,7 +47,7 @@ public class ExpressionResolverImpl implements ExpressionResolver {
         }
     }
 
-    private ModelNode resolveExpressionsRecursively(final ModelNode node) {
+    private ModelNode resolveExpressionsRecursively(final ModelNode node) throws OperationFailedException {
         if (!node.isDefined()) {
             return node;
         }
@@ -78,7 +78,7 @@ public class ExpressionResolverImpl implements ExpressionResolver {
         return resolved;
     }
 
-    protected void resolvePluggableExpression(ModelNode node) {
+    protected void resolvePluggableExpression(ModelNode node) throws OperationFailedException {
     }
 
 }

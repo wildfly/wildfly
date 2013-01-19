@@ -66,7 +66,7 @@ public class PlatformMBeanTestModelControllerService extends AbstractControllerS
      */
     protected PlatformMBeanTestModelControllerService() {
         super(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.NORMAL), new NullConfigurationPersister(), new ControlledProcessState(true),
-        ResourceBuilder.Factory.create(PathElement.pathElement("root"),new NonResolvingResourceDescriptionResolver()).build(), null, ExpressionResolver.DEFAULT);
+        ResourceBuilder.Factory.create(PathElement.pathElement("root"),new NonResolvingResourceDescriptionResolver()).build(), null, ExpressionResolver.TEST_RESOLVER);
     }
 
     @Override

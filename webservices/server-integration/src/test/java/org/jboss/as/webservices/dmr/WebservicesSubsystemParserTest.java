@@ -121,10 +121,10 @@ public class WebservicesSubsystemParserTest extends AbstractSubsystemBaseTest {
     }
 
     private void checkSubsystemBasics(ModelNode model) throws Exception {
-        assertEquals(9090, Attributes.WSDL_PORT.resolveModelAttribute(ExpressionResolver.DEFAULT, model).asInt());
-        assertEquals(9443, Attributes.WSDL_SECURE_PORT.resolveModelAttribute(ExpressionResolver.DEFAULT, model).asInt());
-        assertEquals("localhost", Attributes.WSDL_HOST.resolveModelAttribute(ExpressionResolver.DEFAULT, model).asString());
-        assertTrue(Attributes.MODIFY_WSDL_ADDRESS.resolveModelAttribute(ExpressionResolver.DEFAULT, model).asBoolean());
+        assertEquals(9090, Attributes.WSDL_PORT.resolveModelAttribute(ExpressionResolver.TEST_RESOLVER, model).asInt());
+        assertEquals(9443, Attributes.WSDL_SECURE_PORT.resolveModelAttribute(ExpressionResolver.TEST_RESOLVER, model).asInt());
+        assertEquals("localhost", Attributes.WSDL_HOST.resolveModelAttribute(ExpressionResolver.TEST_RESOLVER, model).asString());
+        assertTrue(Attributes.MODIFY_WSDL_ADDRESS.resolveModelAttribute(ExpressionResolver.TEST_RESOLVER, model).asBoolean());
     }
 
 
@@ -133,11 +133,11 @@ public class WebservicesSubsystemParserTest extends AbstractSubsystemBaseTest {
         assertEquals("Standard-Endpoint-Config", endpoints.get(0).getName());
         assertEquals("Recording-Endpoint-Config", endpoints.get(1).getName());
         ModelNode recordingEndpoint = endpoints.get(1).getValue();
-        assertEquals("bar", Attributes.VALUE.resolveModelAttribute(ExpressionResolver.DEFAULT, recordingEndpoint.get(Constants.PROPERTY).get("foo")).asString());
+        assertEquals("bar", Attributes.VALUE.resolveModelAttribute(ExpressionResolver.TEST_RESOLVER, recordingEndpoint.get(Constants.PROPERTY).get("foo")).asString());
         List<Property> chain = recordingEndpoint.get(Constants.PRE_HANDLER_CHAIN).asPropertyList();
         assertEquals("recording-handlers", chain.get(0).getName());
         ModelNode recordingHandler = chain.get(0).getValue();
-        assertEquals("##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM", Attributes.PROTOCOL_BINDINGS.resolveModelAttribute(ExpressionResolver.DEFAULT, recordingHandler).asString());
+        assertEquals("##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM", Attributes.PROTOCOL_BINDINGS.resolveModelAttribute(ExpressionResolver.TEST_RESOLVER, recordingHandler).asString());
         assertEquals("org.jboss.ws.common.invocation.RecordingServerHandler", recordingHandler.get(Constants.HANDLER, "RecordingHandler", Constants.CLASS).asString());
     }
 

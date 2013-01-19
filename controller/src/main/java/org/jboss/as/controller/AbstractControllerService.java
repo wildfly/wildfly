@@ -123,6 +123,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
                                         final ControlledProcessState processState, final DescriptionProvider rootDescriptionProvider,
                                         final OperationStepHandler prepareStep, final ExpressionResolver expressionResolver) {
         assert rootDescriptionProvider != null : "Null root description provider";
+        assert expressionResolver != null : "Null expressionResolver";
         this.processType = processType;
         this.runningModeControl = runningModeControl;
         this.configurationPersister = configurationPersister;
@@ -130,7 +131,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
         this.rootResourceDefinition = null;
         this.processState = processState;
         this.prepareStep = prepareStep;
-        this.expressionResolver = expressionResolver != null ? expressionResolver : ExpressionResolver.DEFAULT;
+        this.expressionResolver = expressionResolver;
     }
 
     /**
@@ -149,6 +150,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
                                         final ControlledProcessState processState, final ResourceDefinition rootResourceDefinition,
                                         final OperationStepHandler prepareStep, final ExpressionResolver expressionResolver) {
         assert rootResourceDefinition != null : "Null root resource definition";
+        assert expressionResolver != null : "Null expressionResolver";
         this.processType = processType;
         this.runningModeControl = runningModeControl;
         this.configurationPersister = configurationPersister;
@@ -156,7 +158,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
         this.rootResourceDefinition = rootResourceDefinition;
         this.processState = processState;
         this.prepareStep = prepareStep;
-        this.expressionResolver = expressionResolver != null ? expressionResolver : ExpressionResolver.DEFAULT;
+        this.expressionResolver = expressionResolver;
 
     }
 

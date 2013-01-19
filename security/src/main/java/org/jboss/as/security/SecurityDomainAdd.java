@@ -73,7 +73,6 @@ import javax.transaction.TransactionManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -223,7 +222,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         for (Property moduleProperty : node.asPropertyList()) {
             ModelNode module = moduleProperty.getValue();
             MappingInfo mappingInfo = new MappingInfo(securityDomain);
-            String codeName = extractCode(module, ModulesMap.MAPPING_MAP);
+            String codeName = extractCode(context, module, ModulesMap.MAPPING_MAP);
 
             String mappingType;
             if (module.hasDefined(TYPE)) {
@@ -327,7 +326,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         AuthorizationInfo authzInfo = new AuthorizationInfo(securityDomain);
         for (Property moduleProperty : node.asPropertyList()) {
             ModelNode module = moduleProperty.getValue();
-            String codeName = extractCode(module, ModulesMap.AUTHORIZATION_MAP);
+            String codeName = extractCode(context, module, ModulesMap.AUTHORIZATION_MAP);
             String flag = LoginModuleResourceDefinition.FLAG.resolveModelAttribute(context, module).asString();
             ControlFlag controlFlag = ControlFlag.valueOf(flag);
             Map<String, Object> options = extractOptions(context, module);
@@ -370,7 +369,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         }
         for (Property moduleProperty : node.get(AUTH_MODULE).asPropertyList()) {
             ModelNode authModule = moduleProperty.getValue();
-            String code = extractCode(authModule, ModulesMap.AUTHENTICATION_MAP);
+            String code = extractCode(context, authModule, ModulesMap.AUTHENTICATION_MAP);
             String loginStackRef = null;
             if (authModule.hasDefined(LOGIN_MODULE_STACK_REF)) {
                 loginStackRef = JASPIMappingModuleDefinition.LOGIN_MODULE_STACK_REF.resolveModelAttribute(context, authModule).asString();
@@ -398,8 +397,8 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         return true;
     }
 
-    private static String extractCode(ModelNode node, Map<String, String> substitutions) throws OperationFailedException {
-        String code = LoginModuleResourceDefinition.CODE.resolveModelAttribute(ExpressionResolver.DEFAULT, node).asString();
+    private static String extractCode(OperationContext context, ModelNode node, Map<String, String> substitutions) throws OperationFailedException {
+        String code = LoginModuleResourceDefinition.CODE.resolveModelAttribute(context, node).asString();
         if (substitutions.containsKey(code)) { code = substitutions.get(code); }
         return code;
     }
@@ -439,7 +438,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             throws OperationFailedException {
         for (Property moduleProperty : node.asPropertyList()) {
             ModelNode module = moduleProperty.getValue();
-            String codeName = extractCode(module, ModulesMap.AUTHENTICATION_MAP);
+            String codeName = extractCode(context, module, ModulesMap.AUTHENTICATION_MAP);
             String flag = LoginModuleResourceDefinition.FLAG.resolveModelAttribute(context, module).asString();
             LoginModuleControlFlag controlFlag = getControlFlag(flag);
             Map<String, Object> options = extractOptions(context, module);

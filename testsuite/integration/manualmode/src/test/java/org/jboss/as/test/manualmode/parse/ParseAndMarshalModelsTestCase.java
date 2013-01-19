@@ -978,7 +978,7 @@ public class ParseAndMarshalModelsTestCase {
 
         ModelControllerService(final ProcessType processType, final Setup registration, final ModelNode model) {
             super(processType, new RunningModeControl(RunningMode.ADMIN_ONLY), new NullConfigurationPersister(), new ControlledProcessState(true),
-                    ResourceBuilder.Factory.create(PathElement.pathElement("root"), new NonResolvingResourceDescriptionResolver()).build(), null, ExpressionResolver.DEFAULT);
+                    ResourceBuilder.Factory.create(PathElement.pathElement("root"), new NonResolvingResourceDescriptionResolver()).build(), null, ExpressionResolver.TEST_RESOLVER);
             this.model = model;
             this.registration = registration;
         }

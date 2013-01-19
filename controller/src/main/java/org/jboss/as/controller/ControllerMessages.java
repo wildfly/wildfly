@@ -2603,4 +2603,6 @@ public interface ControllerMessages {
     @Message(id = 14892, value = "Transforming operation %s at resource %s for host controller '%s' to subsystem '%s' model version '%s' -- attributes %s are not understood in that model version and this resource will need to be ignored on that host.")
     OperationFailedException newAttributesSubsystemModelOperationTransformerFoundDefinedAttributes(ModelNode op, PathAddress pathAddress, String legacyHostName, String subsystem, ModelVersion modelVersion, Set<String> attributeNames);
 
+    @Message(id = 14893, value="Node contains an unresolved expression %s -- a resolved model is required")
+    OperationFailedException illegalUnresolvedModel(String expression);
 }

@@ -77,6 +77,7 @@ public abstract class ModelTestModelControllerService extends AbstractController
 
     protected ModelTestModelControllerService(final ProcessType processType, final RunningModeControl runningModeControl, final TransformerRegistry transformerRegistry,
                            final StringConfigurationPersister persister, boolean validateOps, final DescriptionProvider rootDescriptionProvider, ControlledProcessState processState) {
+        // Fails in core-model-test transformation testing if ExpressionResolver.TEST_RESOLVER is used because not present in 7.1.x
         super(processType, runningModeControl, persister,
                 processState == null ? new ControlledProcessState(true) : processState, rootDescriptionProvider, null, ExpressionResolver.DEFAULT);
         this.persister = persister;
@@ -89,7 +90,7 @@ public abstract class ModelTestModelControllerService extends AbstractController
             final StringConfigurationPersister persister, final boolean validateOps, final DelegatingResourceDefinition rootResourceDefinition, ControlledProcessState processState) {
         super(processType, runningModeControl, persister,
                 processState == null ? new ControlledProcessState(true) : processState, rootResourceDefinition, null,
-                ExpressionResolver.DEFAULT);
+                ExpressionResolver.TEST_RESOLVER);
         this.persister = persister;
         this.transformerRegistry = transformerRegistry;
         this.validateOps = validateOps;
