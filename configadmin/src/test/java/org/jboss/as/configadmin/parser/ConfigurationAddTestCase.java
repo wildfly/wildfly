@@ -27,6 +27,7 @@ import java.lang.reflect.Field;
 import java.util.Hashtable;
 import java.util.Map;
 
+import junit.framework.Assert;
 import org.jboss.as.configadmin.ConfigAdmin;
 import org.jboss.as.configadmin.service.ConfigAdminServiceImpl;
 import org.jboss.as.controller.OperationContext;
@@ -64,6 +65,17 @@ public class ConfigurationAddTestCase {
     @Test
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void testConfigAdminPresent() throws Exception {
+
+        // Create the operation model node
+        Hashtable<String, String> dict = new Hashtable<String, String>();
+        dict.put("x.y", "a b");
+        ModelNode operation = getOperationModelNode("some.config", dict);
+        ModelNode model = new ModelNode();
+        ConfigurationAdd.INSTANCE.populateModel(operation, model);
+
+        ModelNode propValue = model.get(ConfigurationResource.ENTRIES.getName(), "x.y");
+        Assert.assertEquals(dict.get("x.y"), propValue.asString());
+
         // Set up some mock objects
         ConfigAdminServiceImpl mockCAS = Mockito.mock(ConfigAdminServiceImpl.class);
 
@@ -74,15 +86,11 @@ public class ConfigurationAddTestCase {
         Mockito.when(mockServiceRegistry.getService(ConfigAdmin.SERVICE_NAME)).thenReturn(mockCASServiceController);
 
         OperationContext mockOperationContext = Mockito.mock(OperationContext.class);
+        Mockito.when(mockOperationContext.resolveExpressions(propValue)).thenReturn(propValue);
         Mockito.when(mockOperationContext.getServiceRegistry(true)).thenReturn(mockServiceRegistry);
 
-        // Create the operation model node
-        Hashtable<String, String> dict = new Hashtable<String, String>();
-        dict.put("x.y", "a b");
-        ModelNode operation = getOperationModelNode("some.config", dict);
-
         // Invoke the Add operation
-        ConfigurationAdd.INSTANCE.performRuntime(mockOperationContext, operation, null, null, null);
+        ConfigurationAdd.INSTANCE.performRuntime(mockOperationContext, operation, model, null, null);
 
         // Verify the results
         Mockito.verify(mockCAS).putConfigurationInternal("some.config", dict);
@@ -92,6 +100,20 @@ public class ConfigurationAddTestCase {
     @Test
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void testConfigAdminArrivesLater() throws Exception {
+
+        // Create the operation model node
+        Hashtable<String, String> values = new Hashtable<String, String>();
+        values.put("a", "aa");
+        values.put("b", "bb");
+        ModelNode operation = getOperationModelNode("a.b.c", values);
+        ModelNode model = new ModelNode();
+        ConfigurationAdd.INSTANCE.populateModel(operation, model);
+
+        ModelNode aValue = model.get(ConfigurationResource.ENTRIES.getName(), "a");
+        Assert.assertEquals(values.get("a"), aValue.asString());
+        ModelNode bValue = model.get(ConfigurationResource.ENTRIES.getName(), "b");
+        Assert.assertEquals(values.get("b"), bValue.asString());
+
         // Set up some mock objects
         ServiceRegistry mockServiceRegistry = Mockito.mock(ServiceRegistry.class);
 
@@ -104,17 +126,13 @@ public class ConfigurationAddTestCase {
             thenReturn(mockBuilder);
 
         OperationContext mockOperationContext = Mockito.mock(OperationContext.class);
+        Mockito.when(mockOperationContext.resolveExpressions(aValue)).thenReturn(aValue);
+        Mockito.when(mockOperationContext.resolveExpressions(bValue)).thenReturn(bValue);
         Mockito.when(mockOperationContext.getServiceRegistry(true)).thenReturn(mockServiceRegistry);
         Mockito.when(mockOperationContext.getServiceTarget()).thenReturn(mockServiceTarget);
 
-        // Create the operation model node
-        Hashtable<String, String> values = new Hashtable<String, String>();
-        values.put("a", "aa");
-        values.put("b", "bb");
-        ModelNode operation = getOperationModelNode("a.b.c", values);
-
         // Invoke the Add operation
-        ConfigurationAdd.INSTANCE.performRuntime(mockOperationContext, operation, null, null, null);
+        ConfigurationAdd.INSTANCE.performRuntime(mockOperationContext, operation, model, null, null);
 
         // Check that the service that depends on the Config Admin Service has been created
         Mockito.verify(mockBuilder).addDependency(
@@ -135,7 +153,15 @@ public class ConfigurationAddTestCase {
         Hashtable<String, String> values2 = new Hashtable<String, String>();
         values2.put("x", "x");
         ModelNode op2 = getOperationModelNode("xx", values2);
-        ConfigurationAdd.INSTANCE.performRuntime(mockOperationContext, op2, null, null, null);
+        ModelNode mod2 = new ModelNode();
+        ConfigurationAdd.INSTANCE.populateModel(op2, mod2);
+
+        ModelNode xValue = mod2.get(ConfigurationResource.ENTRIES.getName(), "x");
+        Assert.assertEquals(values2.get("x"), xValue.asString());
+
+        Mockito.when(mockOperationContext.resolveExpressions(xValue)).thenReturn(xValue);
+
+        ConfigurationAdd.INSTANCE.performRuntime(mockOperationContext, op2, mod2, null, null);
 
         initSvc.start(null);
 
