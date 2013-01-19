@@ -108,6 +108,7 @@ public class MailExtension implements Extension {
                 .registerSubResource(MAIL_SESSION_PATH);
         TransformersSubRegistration serverTransformers = sessionTransformers
                 .registerSubResource(SMTP_SERVER_PATH, new ResourceTransformer() {
+                    // FIXME produces inconsistent domain if profile is not ignored
                     @Override
                     public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
                         ModelNode serverModel = resource.getModel();
@@ -117,6 +118,7 @@ public class MailExtension implements Extension {
                     }
                 });
         serverTransformers.registerOperationTransformer(ADD, new AbstractOperationTransformer() {
+            // FIXME produces inconsistent domain if profile is not ignored
             @Override
             protected ModelNode transform(TransformationContext context, PathAddress address, ModelNode operation) {
                 if (operation.has(TLS)) {

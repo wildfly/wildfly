@@ -1,0 +1,18 @@
+<subsystem xmlns="urn:jboss:domain:mail:1.1">
+    <mail-session debug="${exp.debug:true}" jndi-name="${exp.jndi.name:java:/Mail}" from="${exp.from:user dot name at domain dot tld}">
+        <smtp-server outbound-socket-binding-ref="mail-smtp" tls="${exp.tls:true}">
+            <login name="${exp.name:nobody}" password="${exp.password:pass}"/>
+        </smtp-server>
+        <pop3-server outbound-socket-binding-ref="mail-pop3" >
+            <login name="${exp.name:nobody}" password="${exp.password:pass}"/>
+        </pop3-server>
+        <imap-server outbound-socket-binding-ref="mail-imap">
+            <login name="${exp.name:nobody}" password="${exp.password:pass}"/>
+        </imap-server>
+    </mail-session>
+    <mail-session debug="true" jndi-name="java:jboss/mail/Custom">
+        <custom-server name="smtp">
+            <property name="host" value="${exp.custom.prop:mail.example.com}"/>
+        </custom-server>
+    </mail-session>
+</subsystem>

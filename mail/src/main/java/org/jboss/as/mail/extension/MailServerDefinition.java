@@ -79,6 +79,7 @@ class MailServerDefinition extends SimpleResourceDefinition {
     protected static final PropertiesAttributeDefinition PROPERTIES = new PropertiesAttributeDefinition.Builder(ModelDescriptionConstants.PROPERTIES, true)
             .setXmlName("property")
             .setWrapXmlElement(false)
+            .setAllowExpression(true)
             .build();
 
 

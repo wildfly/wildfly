@@ -33,15 +33,29 @@ public class MailSubsystem11Test extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformers() throws Exception {
+    public void testExpressions() throws Exception {
+        standardSubsystemTest("subsystem_1_1_expressions.xml");
+    }
+
+    @Test
+    public void testTransformersAS712() throws Exception {
+        testTransformers110("7.1.2.Final");
+    }
+
+    @Test
+    public void testTransformersAS713() throws Exception {
+        testTransformers110("7.1.3.Final");
+    }
+
+    private void testTransformers110(String mavenVersion) throws Exception {
         ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(null)
                 .setSubsystemXml(getSubsystemXml());
 
         //which is why we need to include the jboss-as-controller artifact.
         builder.createLegacyKernelServicesBuilder(null, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-mail:7.1.2.Final")
-                .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.2.Final")
+                .addMavenResourceURL("org.jboss.as:jboss-as-mail:" + mavenVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-controller:" + mavenVersion)
                 .addParentFirstClassPattern("org.jboss.as.controller.*");
 
         KernelServices mainServices = builder.build();
