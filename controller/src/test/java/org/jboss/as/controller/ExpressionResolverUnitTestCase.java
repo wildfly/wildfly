@@ -36,7 +36,7 @@ public class ExpressionResolverUnitTestCase {
     @Test(expected = OperationFailedException.class)
     public void testDefaultExpressionResolverWithNoResolutions() throws OperationFailedException {
         ModelNode unresolved = createModelNode();
-        ExpressionResolver.DEFAULT.resolveExpressions(unresolved);
+        ExpressionResolver.TEST_RESOLVER.resolveExpressions(unresolved);
         fail("Did not fail with ISE: " + unresolved);
     }
 
@@ -49,7 +49,7 @@ public class ExpressionResolverUnitTestCase {
         System.setProperty("test.prop.three", "THREE");
         System.setProperty("test.prop.prop", "PROP");
         try {
-            ModelNode node = ExpressionResolver.DEFAULT.resolveExpressions(createModelNode());
+            ModelNode node = ExpressionResolver.TEST_RESOLVER.resolveExpressions(createModelNode());
             checkResolved(node);
         } finally {
             System.clearProperty("test.prop.expr");

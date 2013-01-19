@@ -371,20 +371,16 @@ class DataSourceModelNodeUtil {
         }
     }
 
-    private static Extension extractExtension(final OperationContext operationContext, final ModelNode dataSourceNode, final SimpleAttributeDefinition className, final PropertiesAttributeDefinition propertyName)
+    private static Extension extractExtension(final OperationContext operationContext, final ModelNode dataSourceNode,
+                                              final SimpleAttributeDefinition className, final PropertiesAttributeDefinition propertyName)
             throws ValidateException, OperationFailedException {
         if (dataSourceNode.hasDefined(className.getName())) {
             String exceptionSorterClassName = dataSourceNode.get(className.getName()).asString();
             // FIXME the return value of this call is discarded
             getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, className, null);
 
-            Map<String, String> exceptionSorterProperty = null;
-            if (dataSourceNode.hasDefined(propertyName.getName())) {
-                exceptionSorterProperty = new HashMap<String, String>(dataSourceNode.get(propertyName.getName()).asList().size());
-                for (Property property : dataSourceNode.get(propertyName.getName()).asPropertyList()) {
-                    exceptionSorterProperty.put(property.getName(), property.getValue().asString());
-                }
-            }
+            Map<String, String> unwrapped = propertyName.unwrap(operationContext, dataSourceNode);
+            Map<String, String> exceptionSorterProperty = unwrapped.size() > 0 ? unwrapped : null;
 
             return new Extension(exceptionSorterClassName, exceptionSorterProperty);
         } else {

@@ -21,6 +21,8 @@
 */
 package org.jboss.as.controller;
 
+import java.util.regex.Pattern;
+
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -46,6 +48,36 @@ public interface ExpressionResolver {
      */
     ModelNode resolveExpressions(ModelNode node) throws OperationFailedException;
 
-    /** Default {@code ExpressionResolver} that simply calls {@link ModelNode#resolve()}. */
-    ExpressionResolver DEFAULT = new ExpressionResolverImpl();
+    /**
+     * An {@code ExpressionResolver} suitable for test cases that simply calls {@link ModelNode#resolve()}.
+     * Should not be used for production code as it does not support resolution from a security vault.
+     */
+    ExpressionResolver TEST_RESOLVER = new ExpressionResolverImpl();
+
+    /**
+     * Default {@code ExpressionResolver} that simply calls {@link ModelNode#resolve()}.
+     * Should not be used for production code as it does not support resolution from a security vault.
+     *
+     * @deprecated use {@link #TEST_RESOLVER} for test cases
+     */
+    @Deprecated
+    ExpressionResolver DEFAULT = TEST_RESOLVER;
+
+    /**
+     * An expression resolver that throws an {@code OperationFailedException} if any expressions are found.
+     * Intended for use with APIs where an {@code ExpressionResolver} is required but the caller requires
+     * that all expression have already been resolved.
+     */
+    ExpressionResolver REJECTING = new ExpressionResolverImpl() {
+        private final Pattern EXPRESSION_PATTERN = Pattern.compile(".*\\$\\{.*\\}.*");
+        @Override
+        protected void resolvePluggableExpression(ModelNode node) throws OperationFailedException {
+            String expression = node.asString();
+            if (EXPRESSION_PATTERN.matcher(expression).matches()) {
+                throw ControllerMessages.MESSAGES.illegalUnresolvedModel(expression);
+            }
+            // It wasn't an expression any way; convert the node to type STRING
+            node.set(expression);
+        }
+    };
 }

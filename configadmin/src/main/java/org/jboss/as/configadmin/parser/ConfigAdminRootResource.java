@@ -35,8 +35,10 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  */
 public class ConfigAdminRootResource extends SimpleResourceDefinition {
 
+    static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, ConfigAdminExtension.SUBSYSTEM_NAME);
+
     public ConfigAdminRootResource() {
-        super(PathElement.pathElement(SUBSYSTEM, ConfigAdminExtension.SUBSYSTEM_NAME), ConfigAdminExtension.getResourceDescriptionResolver(SUBSYSTEM), ConfigAdminAdd.INSTANCE, new ReloadRequiredRemoveStepHandler());
+        super(SUBSYSTEM_PATH, ConfigAdminExtension.getResourceDescriptionResolver(SUBSYSTEM), ConfigAdminAdd.INSTANCE, new ReloadRequiredRemoveStepHandler());
     }
 
     @Override

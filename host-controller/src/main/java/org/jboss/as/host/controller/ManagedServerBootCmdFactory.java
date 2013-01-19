@@ -23,7 +23,6 @@ package org.jboss.as.host.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_SUBSYSTEM_ENDPOINT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
@@ -40,8 +39,10 @@ import java.util.Map.Entry;
 
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.domain.controller.resources.ServerGroupResourceDefinition;
 import org.jboss.as.host.controller.ManagedServer.ManagedServerBootConfiguration;
+import org.jboss.as.host.controller.model.host.HostResourceDefinition;
 import org.jboss.as.host.controller.model.jvm.JvmElement;
 import org.jboss.as.host.controller.model.jvm.JvmOptionsBuilderFactory;
 import org.jboss.as.process.DefaultJvmUtils;
@@ -75,6 +76,7 @@ class ManagedServerBootCmdFactory implements ManagedServerBootConfiguration {
     private final boolean managementSubsystemEndpoint;
     private final ModelNode endpointConfig = new ModelNode();
     private final ExpressionResolver expressionResolver;
+    private final DirectoryGrouping directoryGrouping;
 
     ManagedServerBootCmdFactory(final String serverName, final ModelNode domainModel, final ModelNode hostModel, final HostControllerEnvironment environment, final ExpressionResolver expressionResolver) {
         this.serverName = serverName;
@@ -83,7 +85,7 @@ class ManagedServerBootCmdFactory implements ManagedServerBootConfiguration {
         this.environment = environment;
         this.expressionResolver = expressionResolver;
         this.serverModel = resolveExpressions(hostModel.require(SERVER_CONFIG).require(serverName));
-
+        this.directoryGrouping = resolveDirectoryGrouping(hostModel, expressionResolver);
         final String serverGroupName = serverModel.require(GROUP).asString();
         this.serverGroup = resolveExpressions(domainModel.require(SERVER_GROUP).require(serverGroupName));
 
@@ -142,6 +144,25 @@ class ManagedServerBootCmdFactory implements ManagedServerBootConfiguration {
     }
 
     /**
+     * Returns the value of found in the model.
+     *
+     * @param model the model that contains the key and value.
+     * @param expressionResolver the expression resolver to use to resolve expressions
+     *
+     * @return the directory grouping found in the model.
+     *
+     * @throws IllegalArgumentException if the {@link ModelDescriptionConstants#DIRECTORY_GROUPING directory grouping}
+     *                                  was not found in the model.
+     */
+    private static DirectoryGrouping resolveDirectoryGrouping(final ModelNode model, final ExpressionResolver expressionResolver) {
+        try {
+            return DirectoryGrouping.forName(HostResourceDefinition.DIRECTORY_GROUPING.resolveModelAttribute(expressionResolver, model).asString());
+        } catch (OperationFailedException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    /**
      * Create and verify the configuration before trying to start the process.
      *
      * @return the process boot configuration
@@ -184,8 +205,7 @@ class ManagedServerBootCmdFactory implements ManagedServerBootConfiguration {
                 command.add(sb.toString());
             }
         }
-        // Determine the directory grouping type and use it to set props controlling the server data/log/tmp dirs
-        final DirectoryGrouping directoryGrouping = DirectoryGrouping.fromModel(hostModel);
+        // Use the directory grouping type to set props controlling the server data/log/tmp dirs
         String serverDirProp = bootTimeProperties.get(ServerEnvironment.SERVER_BASE_DIR);
         File serverDir = serverDirProp == null ? new File(environment.getDomainServersDir(), serverName) : new File(serverDirProp);
         final String logDir = addPathProperty(command, "log", ServerEnvironment.SERVER_LOG_DIR, bootTimeProperties,

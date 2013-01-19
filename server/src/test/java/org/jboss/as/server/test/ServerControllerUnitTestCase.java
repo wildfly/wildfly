@@ -278,7 +278,7 @@ public class ServerControllerUnitTestCase {
 
 
         ModelControllerService(final ControlledProcessState processState, final StringConfigurationPersister persister, final DelegatingResourceDefinition rootResourceDefinition) {
-            super(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.ADMIN_ONLY), persister, processState, rootResourceDefinition, null, ExpressionResolver.DEFAULT);
+            super(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.ADMIN_ONLY), persister, processState, rootResourceDefinition, null, ExpressionResolver.TEST_RESOLVER);
             this.persister = persister;
             this.processState = processState;
             this.rootResourceDefinition = rootResourceDefinition;

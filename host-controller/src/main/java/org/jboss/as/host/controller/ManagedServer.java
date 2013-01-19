@@ -607,7 +607,8 @@ class ManagedServer {
         boolean isManagementSubsystemEndpoint();
 
         /**
-         * Get the subsystem endpoint configuration, in case we use the subsystem.
+         * Get the subsystem endpoint configuration, in case we use the subsystem. This will be a
+         * resolved model node with no unresolved expressions. The model will not, however, store defaults.
          *
          * @return the subsystem endpoint config
          */

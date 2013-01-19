@@ -27,6 +27,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
+import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -38,7 +39,12 @@ import org.jboss.dmr.ModelType;
  */
 public class ConfigurationResource extends SimpleResourceDefinition {
 
-    private static final AttributeDefinition ENTRIES = PrimitiveListAttributeDefinition.Builder.of(ModelConstants.ENTRIES, ModelType.PROPERTY)
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(ModelConstants.CONFIGURATION);
+
+    static final PropertiesAttributeDefinition ENTRIES = new PropertiesAttributeDefinition.Builder(ModelConstants.ENTRIES, false)
+            .setAllowExpression(true)
+            .setXmlName(Namespace10.Element.PROPERTY.getLocalName())
+            .setWrapXmlElement(false)
             .build();
 
     private static final OperationDefinition UPDATE_DEFINITION = new SimpleOperationDefinitionBuilder(UPDATE, ConfigAdminExtension.getResourceDescriptionResolver(ModelConstants.CONFIGURATION))
@@ -46,7 +52,7 @@ public class ConfigurationResource extends SimpleResourceDefinition {
         .build();
 
     public ConfigurationResource() {
-        super(PathElement.pathElement(ModelConstants.CONFIGURATION), ConfigAdminExtension.getResourceDescriptionResolver(ModelConstants.CONFIGURATION), ConfigurationAdd.INSTANCE, ConfigurationRemove.INSTANCE);
+        super(PATH_ELEMENT, ConfigAdminExtension.getResourceDescriptionResolver(ModelConstants.CONFIGURATION), ConfigurationAdd.INSTANCE, ConfigurationRemove.INSTANCE);
     }
 
     @Override

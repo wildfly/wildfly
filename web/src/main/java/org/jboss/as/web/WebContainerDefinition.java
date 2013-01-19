@@ -48,12 +48,15 @@ public class WebContainerDefinition extends SimpleResourceDefinition {
                     new SimpleAttributeDefinitionBuilder(Constants.WELCOME_FILE, ModelType.STRING, true)
                             .setXmlName(Constants.WELCOME_FILE)
                             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                            .setValidator(new StringLengthValidator(1, true))
+                            .setValidator(new StringLengthValidator(1, true, true))
+                            .setAllowExpression(true)
                             .build())
                     .setAllowNull(true)
+                    .setAllowExpression(true)
                     .build();
     protected static final PropertiesAttributeDefinition MIME_MAPPINGS = new PropertiesAttributeDefinition.Builder(Constants.MIME_MAPPING, true)
             .setAllowExpression(true)
+            .setWrapXmlElement(false)
             .build();
 
     private static final SimpleAttributeDefinition MIME_NAME = new SimpleAttributeDefinitionBuilder(Constants.NAME, ModelType.STRING, true)

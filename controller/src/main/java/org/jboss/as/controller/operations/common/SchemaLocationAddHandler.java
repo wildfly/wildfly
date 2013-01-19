@@ -79,8 +79,8 @@ public class SchemaLocationAddHandler extends AbstractModelUpdateHandler {
     }
 
     protected void updateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        ModelNode uri = URI.resolveModelAttribute(ExpressionResolver.DEFAULT, operation);
-        ModelNode location = SCHEMA_LOCATION.resolveModelAttribute(ExpressionResolver.DEFAULT, operation);
+        ModelNode uri = URI.resolveModelAttribute(ExpressionResolver.REJECTING, operation);
+        ModelNode location = SCHEMA_LOCATION.resolveModelAttribute(ExpressionResolver.REJECTING, operation);
         ModelNode locations = model.get(SCHEMA_LOCATIONS);
         validate(uri, locations);
         locations.add(uri.asString(), location.asString());

@@ -77,8 +77,8 @@ public class NamespaceAddHandler extends AbstractModelUpdateHandler {
     }
 
     protected void updateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        ModelNode ns = NAMESPACE.resolveModelAttribute(ExpressionResolver.DEFAULT, operation);
-        ModelNode uri = URI.resolveModelAttribute(ExpressionResolver.DEFAULT, operation);
+        ModelNode ns = NAMESPACE.resolveModelAttribute(ExpressionResolver.REJECTING, operation);
+        ModelNode uri = URI.resolveModelAttribute(ExpressionResolver.REJECTING, operation);
         ModelNode namespaces = model.get(NAMESPACES);
         validate(ns, namespaces);
         namespaces.add(ns.asString(), uri.asString());

@@ -87,25 +87,4 @@ public enum DirectoryGrouping {
     public static DirectoryGrouping defaultValue() {
         return BY_SERVER;
     }
-
-    /**
-     * Returns the value of found in the model.
-     *
-     * @param model the model that contains the key and value.
-     *
-     * @return the directory grouping found in the model.
-     *
-     * @throws IllegalArgumentException if the {@link ModelDescriptionConstants#DIRECTORY_GROUPING directory grouping}
-     *                                  was not found in the model.
-     */
-    public static DirectoryGrouping fromModel(final ModelNode model) {
-        try {
-            if (model.hasDefined(ModelDescriptionConstants.DIRECTORY_GROUPING)) {
-                return DirectoryGrouping.forName(HostResourceDefinition.DIRECTORY_GROUPING.resolveModelAttribute(ExpressionResolver.DEFAULT, model).asString());
-            }
-        } catch (OperationFailedException e) {
-            throw new IllegalStateException(e);
-        }
-        return defaultValue();
-    }
 }

@@ -302,7 +302,7 @@ class Constants {
 
     static PropertiesAttributeDefinition EXCEPTION_SORTER_PROPERTIES = new PropertiesAttributeDefinition.Builder(EXCEPTIONSORTER_PROPERTIES_NAME, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
-            .setAllowExpression(false)
+            .setAllowExpression(true)
             .build();
 
 
@@ -311,7 +311,7 @@ class Constants {
     static PropertiesAttributeDefinition STALE_CONNECTION_CHECKER_PROPERTIES = new PropertiesAttributeDefinition.Builder(STALECONNECTIONCHECKER_PROPERTIES_NAME, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
             .setAllowNull(true)
-            .setAllowExpression(false)
+            .setAllowExpression(true)
             .build();
 
     static SimpleAttributeDefinition VALID_CONNECTION_CHECKER_CLASSNAME = new SimpleAttributeDefinition(VALID_CONNECTION_CHECKER_CLASSNAME_NAME, org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(), new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
@@ -319,7 +319,7 @@ class Constants {
     static PropertiesAttributeDefinition VALID_CONNECTION_CHECKER_PROPERTIES = new PropertiesAttributeDefinition.Builder(VALIDCONNECTIONCHECKER_PROPERTIES_NAME, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
             .setAllowNull(true)
-            .setAllowExpression(false)
+            .setAllowExpression(true)
             .build();
 
     static SimpleAttributeDefinition VALIDATE_ON_MATCH = new SimpleAttributeDefinition(VALIDATEONMATCH_NAME, Validation.Tag.VALIDATE_ON_MATCH.getLocalName(), new ModelNode().set(Defaults.VALIDATE_ON_MATCH), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
@@ -347,7 +347,7 @@ class Constants {
     static PropertiesAttributeDefinition REAUTHPLUGIN_PROPERTIES = new PropertiesAttributeDefinition.Builder(REAUTHPLUGIN_PROPERTIES_NAME, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
             .setAllowNull(true)
-            .setAllowExpression(false)
+            .setAllowExpression(true)
             .build();
 
 
@@ -400,7 +400,7 @@ class Constants {
     static PropertiesAttributeDefinition RECOVER_PLUGIN_PROPERTIES = new PropertiesAttributeDefinition.Builder(RECOVER_PLUGIN_PROPERTIES_NAME, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
             .setAllowNull(true)
-            .setAllowExpression(false)
+            .setAllowExpression(true)
             .build();
 
     static SimpleAttributeDefinition NO_RECOVERY = new SimpleAttributeDefinition(NO_RECOVERY_NAME, Recovery.Attribute.NO_RECOVERY.getLocalName(), new ModelNode(), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);

@@ -25,6 +25,7 @@ import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
+import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
@@ -282,7 +283,7 @@ public class Constants {
 
     static SimpleAttributeDefinition RECOVERLUGIN_CLASSNAME = new SimpleAttributeDefinition(RECOVERLUGIN_CLASSNAME_NAME, org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static SimpleMapAttributeDefinition RECOVERLUGIN_PROPERTIES = new SimpleMapAttributeDefinition.Builder(RECOVERLUGIN_PROPERTIES_NAME, true)
+    static PropertiesAttributeDefinition RECOVERLUGIN_PROPERTIES = new PropertiesAttributeDefinition.Builder(RECOVERLUGIN_PROPERTIES_NAME, true)
         .setAllowExpression(true)
         .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
         .build();

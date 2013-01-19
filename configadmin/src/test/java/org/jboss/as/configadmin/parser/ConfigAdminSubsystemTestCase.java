@@ -32,6 +32,8 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
+import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -45,7 +47,7 @@ import org.junit.Test;
  * @author Thomas.Diesler@jboss.com
  * @since 10-Jan-2012
  */
-public class ConfigAdminParserTestCase extends AbstractSubsystemBaseTest {
+public class ConfigAdminSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     private static final String SUBSYSTEM_XML_1_0_1 =
         "<subsystem xmlns='urn:jboss:domain:configadmin:1.0'>" +
@@ -58,7 +60,16 @@ public class ConfigAdminParserTestCase extends AbstractSubsystemBaseTest {
         "  </configuration>" +
         "</subsystem>";
 
-    public ConfigAdminParserTestCase() {
+    private static final String SUBSYSTEM_XML_1_0_EXPRESSION =
+            "<subsystem xmlns='urn:jboss:domain:configadmin:1.0'>" +
+                    "  <!-- Some Comment -->" +
+                    "  <configuration pid='Pid1'>" +
+                    "    <property name='org.acme.key1' value='${test.exp:val 1}'/>" +
+                    "    <property name='propname' value='${test.exp:propval}'/>" +
+                    "  </configuration>" +
+                    "</subsystem>";
+
+    public ConfigAdminSubsystemTestCase() {
         super(ConfigAdminExtension.SUBSYSTEM_NAME, new ConfigAdminExtension());
     }
 
@@ -67,9 +78,23 @@ public class ConfigAdminParserTestCase extends AbstractSubsystemBaseTest {
         return SUBSYSTEM_XML_1_0_1;
     }
 
+    @Override
+    protected String getSubsystemXml(String configID) throws IOException {
+        if ("expressions".equals(configID)) {
+            return  SUBSYSTEM_XML_1_0_EXPRESSION;
+        }
+        throw new IllegalArgumentException(configID);
+    }
+
     @Test
     public void testParseEmptySubsystem() throws Exception {
         standardSubsystemTest(null);
+
+    }
+
+    @Test
+    public void testExpressions() throws Exception {
+        standardSubsystemTest("expressions");
 
     }
 
@@ -105,15 +130,23 @@ public class ConfigAdminParserTestCase extends AbstractSubsystemBaseTest {
         compare(modelA, modelB);
     }
 
+    @Test
+    public void testTransformersAS712() throws Exception {
+        testTransformers1_0_0("7.1.2.Final");
+    }
 
     @Test
-    public void testTransformers1_0_0() throws Exception {
+    public void testTransformersAS713() throws Exception {
+        testTransformers1_0_0("7.1.3.Final");
+    }
+
+    private void testTransformers1_0_0(String mavenVersion) throws Exception {
         ModelVersion oldVersion = ModelVersion.create(1, 0, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(null)
                 .setSubsystemXml(SUBSYSTEM_XML_1_0_1);
         builder.createLegacyKernelServicesBuilder(null, oldVersion)
                 .setExtensionClassName(ConfigAdminExtension.class.getName())
-                .addMavenResourceURL("org.jboss.as:jboss-as-configadmin:7.1.2.Final");
+                .addMavenResourceURL("org.jboss.as:jboss-as-configadmin:" + mavenVersion);
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(oldVersion);
         Assert.assertNotNull(legacyServices);
@@ -137,6 +170,43 @@ public class ConfigAdminParserTestCase extends AbstractSubsystemBaseTest {
         Assert.assertEquals(2, entries.keys().size());
         Assert.assertEquals("testing123", entries.get("test123").asString());
         Assert.assertEquals("testingabc", entries.get("test456").asString());
+    }
+
+    @Test
+    public void testRejectExpressionsAS712() throws Exception {
+        testRejectExpressions1_0_0("org.jboss.as:jboss-as-configadmin:7.1.2.Final");
+    }
+
+    @Test
+    public void testRejectExpressionsAS713() throws Exception {
+        testRejectExpressions1_0_0("org.jboss.as:jboss-as-configadmin:7.1.3.Final");
+    }
+
+    private void testRejectExpressions1_0_0(String mavenGAV) throws Exception {
+        // create builder for current subsystem version
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
+
+        // create builder for legacy subsystem version
+        ModelVersion version_1_0_0 = ModelVersion.create(1, 0, 0);
+        builder.createLegacyKernelServicesBuilder(null, version_1_0_0)
+                .addMavenResourceURL(mavenGAV)
+                .setExtensionClassName("org.jboss.as.configadmin.parser.ConfigAdminExtension");
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(version_1_0_0);
+
+        org.junit.Assert.assertNotNull(legacyServices);
+        org.junit.Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
+        org.junit.Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+        List<ModelNode> xmlOps = builder.parseXml(SUBSYSTEM_XML_1_0_EXPRESSION);
+
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_0_0, xmlOps,
+                new FailedOperationTransformationConfig()
+                        .addFailedAttribute(PathAddress.pathAddress(ConfigAdminRootResource.SUBSYSTEM_PATH, ConfigurationResource.PATH_ELEMENT),
+                                new FailedOperationTransformationConfig.RejectExpressionsConfig(ConfigurationResource.ENTRIES)
+                                        .setReadOnly(ConfigurationResource.ENTRIES))
+        );
     }
 
 

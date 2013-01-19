@@ -25,6 +25,7 @@ import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.as.configadmin.ConfigAdmin;
@@ -59,21 +60,15 @@ public class ConfigurationAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        model.get(ModelConstants.ENTRIES).set(operation.get(ModelConstants.ENTRIES));
+        ConfigurationResource.ENTRIES.validateAndSet(operation, model);
     }
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler,
             List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-        ModelNode entries = operation.get(ModelConstants.ENTRIES);
         String pid = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(ModelConstants.CONFIGURATION).asString();
-        Dictionary<String, String> dictionary = new Hashtable<String, String>();
-        if (entries.isDefined()) {
-            for (String key : entries.keys()) {
-                dictionary.put(key, entries.get(key).asString());
-            }
-        }
+        Dictionary<String, String> dictionary = new Hashtable<String, String>(ConfigurationResource.ENTRIES.unwrap(context, model));
 
         ConfigAdminInternal configAdmin = ConfigAdminExtension.getConfigAdminService(context);
         if (configAdmin != null) {
