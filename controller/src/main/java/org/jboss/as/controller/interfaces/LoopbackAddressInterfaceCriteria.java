@@ -38,7 +38,7 @@ public class LoopbackAddressInterfaceCriteria extends AbstractInterfaceCriteria 
 
     private static final long serialVersionUID = 1L;
 
-    private ModelNode address;
+    private String address;
     private InetAddress resolved;
     private boolean unknownHostLogged;
 
@@ -54,7 +54,22 @@ public class LoopbackAddressInterfaceCriteria extends AbstractInterfaceCriteria 
         if (address == null)
             throw MESSAGES.nullVar("address");
         this.resolved = address;
-        this.address = new ModelNode(resolved.getHostAddress());
+        this.address = resolved.getHostAddress();
+    }
+
+    /**
+     * Creates a new LoopbackAddressInterfaceCriteria
+     *
+     * @param address a valid value to pass to {@link InetAddress#getByName(String)}
+     *                Cannot be {@code null}
+     *
+     * @throws IllegalArgumentException if <code>network</code> is <code>null</code>
+     *
+     * @deprecated use the variant that takes a string
+     */
+    @Deprecated
+    public LoopbackAddressInterfaceCriteria(final ModelNode address) {
+        this(address.asString());
     }
 
     /**
@@ -65,7 +80,7 @@ public class LoopbackAddressInterfaceCriteria extends AbstractInterfaceCriteria 
      *
      * @throws IllegalArgumentException if <code>network</code> is <code>null</code>
      */
-    public LoopbackAddressInterfaceCriteria(final ModelNode address) {
+    public LoopbackAddressInterfaceCriteria(final String address) {
         if (address == null)
             throw MESSAGES.nullVar("address");
         this.address = address;
@@ -73,7 +88,7 @@ public class LoopbackAddressInterfaceCriteria extends AbstractInterfaceCriteria 
 
     public synchronized InetAddress getAddress() throws UnknownHostException {
         if (resolved == null) {
-            resolved = InetAddress.getByName(address.resolve().asString());
+            resolved = InetAddress.getByName(address);
         }
         return this.resolved;
     }

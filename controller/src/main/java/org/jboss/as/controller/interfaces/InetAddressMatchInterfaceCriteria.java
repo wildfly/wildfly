@@ -55,8 +55,7 @@ public class InetAddressMatchInterfaceCriteria extends AbstractInterfaceCriteria
 
     private static final long serialVersionUID = 149404752878332750L;
 
-    private ModelNode address;
-    private String addressString;
+    private String address;
     private InetAddress resolved;
     private boolean unknownHostLogged;
     private boolean anyLocalLogged;
@@ -65,7 +64,7 @@ public class InetAddressMatchInterfaceCriteria extends AbstractInterfaceCriteria
         if (address == null)
             throw MESSAGES.nullVar("address");
         this.resolved = address;
-        this.address = new ModelNode(resolved.getHostAddress());
+        this.address = resolved.getHostAddress();
     }
 
     /**
@@ -75,11 +74,12 @@ public class InetAddressMatchInterfaceCriteria extends AbstractInterfaceCriteria
      *                Cannot be {@code null}
      *
      * @throws IllegalArgumentException if <code>network</code> is <code>null</code>
+     *
+     * @deprecated use the variant that takes a string
      */
+    @Deprecated
     public InetAddressMatchInterfaceCriteria(final ModelNode address) {
-        if (address == null)
-            throw MESSAGES.nullVar("address");
-        this.address = address;
+        this(address.asString());
     }
 
     /**
@@ -94,16 +94,12 @@ public class InetAddressMatchInterfaceCriteria extends AbstractInterfaceCriteria
         if (address == null || address.isEmpty() || address.trim().isEmpty()) {
             throw MESSAGES.nullVar("address");
         }
-        this.addressString = address;
+        this.address = address;
     }
 
     public synchronized InetAddress getAddress() throws UnknownHostException {
         if (resolved == null) {
-            if (address != null) {
-                resolved = InetAddress.getByName(address.resolve().asString());
-            } else {
-                resolved = InetAddress.getByName(addressString);
-            }
+            resolved = InetAddress.getByName(address);
         }
         return this.resolved;
     }
@@ -173,11 +169,7 @@ public class InetAddressMatchInterfaceCriteria extends AbstractInterfaceCriteria
 
     @Override
     public int hashCode() {
-        if (address != null) {
-            return address.hashCode();
-        } else {
-            return addressString.hashCode();
-        }
+        return address.hashCode();
     }
 
     @Override
@@ -185,8 +177,6 @@ public class InetAddressMatchInterfaceCriteria extends AbstractInterfaceCriteria
         if (o instanceof InetAddressMatchInterfaceCriteria) {
             if (address != null) {
                 return address.equals(((InetAddressMatchInterfaceCriteria)o).address);
-            } else if (addressString != null) {
-                return addressString.equals(((InetAddressMatchInterfaceCriteria)o).addressString);
             }
         }
         return false;
@@ -199,7 +189,7 @@ public class InetAddressMatchInterfaceCriteria extends AbstractInterfaceCriteria
             nis.add(entry.getKey().getName());
             addresses.addAll(entry.getValue());
         }
-        String toMatch = resolved != null ? resolved.getHostAddress() : addressString;
+        String toMatch = resolved != null ? resolved.getHostAddress() : address;
 
 
         ControllerLogger.ROOT_LOGGER.multipleMatchingAddresses(toMatch, addresses, nis);
