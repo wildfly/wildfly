@@ -94,9 +94,9 @@ public class IPv6ScopeIdMatchUnitTestCase {
             return;
         }
 
-        InetAddressMatchInterfaceCriteria criteria = new InetAddressMatchInterfaceCriteria(new ModelNode("::1"));
+        InetAddressMatchInterfaceCriteria criteria = new InetAddressMatchInterfaceCriteria("::1");
         assertEquals(loopbackAddress, criteria.isAcceptable(loopbackInterface, loopbackAddress));
-        criteria = new InetAddressMatchInterfaceCriteria(new ModelNode("::1%" + loopbackInterface.getName()));
+        criteria = new InetAddressMatchInterfaceCriteria("::1%" + loopbackInterface.getName());
         if (loopbackAddress.getScopeId() > 0) {
             assertEquals(loopbackAddress, criteria.isAcceptable(loopbackInterface, loopbackAddress));
         } else {
@@ -106,9 +106,9 @@ public class IPv6ScopeIdMatchUnitTestCase {
                 assertNull(match + " is invalid", criteria.isAcceptable(loopbackInterface, loopbackAddress));
             }
         }
-        criteria = new InetAddressMatchInterfaceCriteria(new ModelNode("::1%" + loopbackAddress.getScopeId()));
+        criteria = new InetAddressMatchInterfaceCriteria("::1%" + loopbackAddress.getScopeId());
         assertEquals(loopbackAddress, criteria.isAcceptable(loopbackInterface, loopbackAddress));
-        criteria = new InetAddressMatchInterfaceCriteria(new ModelNode("::1%" + (loopbackAddress.getScopeId() + 1)));
+        criteria = new InetAddressMatchInterfaceCriteria("::1%" + (loopbackAddress.getScopeId() + 1));
         assertNull(criteria.isAcceptable(loopbackInterface, loopbackAddress));
     }
 
@@ -123,15 +123,15 @@ public class IPv6ScopeIdMatchUnitTestCase {
                 if (pos > -1) {
                     hostAddress = hostAddress.substring(0, pos);
                 }
-                InetAddressMatchInterfaceCriteria criteria = new InetAddressMatchInterfaceCriteria(new ModelNode(hostAddress));
+                InetAddressMatchInterfaceCriteria criteria = new InetAddressMatchInterfaceCriteria(hostAddress);
                 assertEquals(address, criteria.isAcceptable(nif, address));
-                criteria = new InetAddressMatchInterfaceCriteria(new ModelNode(hostAddress + "%" + nif.getName()));
+                criteria = new InetAddressMatchInterfaceCriteria(hostAddress + "%" + nif.getName());
                 assertEquals(address, criteria.isAcceptable(nif, address));
-                criteria = new InetAddressMatchInterfaceCriteria(new ModelNode(hostAddress + "%" + address.getScopeId()));
+                criteria = new InetAddressMatchInterfaceCriteria(hostAddress + "%" + address.getScopeId());
                 assertEquals(address, criteria.isAcceptable(nif, address));
-                criteria = new InetAddressMatchInterfaceCriteria(new ModelNode(hostAddress + "%" + (address.getScopeId() + 1)));
+                criteria = new InetAddressMatchInterfaceCriteria(hostAddress + "%" + (address.getScopeId() + 1));
                 assertNull(criteria.isAcceptable(nif, address));
-                criteria = new InetAddressMatchInterfaceCriteria(new ModelNode(hostAddress + "%bogus"));
+                criteria = new InetAddressMatchInterfaceCriteria(hostAddress + "%bogus");
                 assertNull(criteria.isAcceptable(nif, address));
             }
         }

@@ -93,7 +93,7 @@ public interface ControllerLogger extends BasicLogger {
      */
     @LogMessage(level = WARN)
     @Message(id = 14600, value = "Cannot resolve address %s, so cannot match it to any InetAddress")
-    void cannotResolveAddress(ModelNode address);
+    void cannotResolveAddress(String address);
 
     /**
      * Logs an error message indicating there was an error booting the container.
@@ -218,7 +218,7 @@ public interface ControllerLogger extends BasicLogger {
     @Message(id = 14610, value = "Address %1$s is a wildcard address, which will not match against any specific address. Do not use " +
             "the '%2$s' configuration element to specify that an interface should use a wildcard address; " +
             "use '%3$s', '%4$s', or '%5$s'")
-    void invalidWildcardAddress(ModelNode address, String inetAddress, String anyAddress, String anyIpv4Address, String anyIpv6Address);
+    void invalidWildcardAddress(String address, String inetAddress, String anyAddress, String anyIpv4Address, String anyIpv6Address);
 
     /**
      * Logs an error message indicating no handler for the step operation, represented by the {@code stepOpName}

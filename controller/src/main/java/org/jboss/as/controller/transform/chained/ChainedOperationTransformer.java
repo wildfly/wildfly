@@ -38,7 +38,7 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 @Deprecated
-public class ChainedOperationTransformer implements OperationTransformer {
+public class LChainedOperationTransformer implements OperationTransformer {
 
     private final OperationTransformer[] entries;
 
