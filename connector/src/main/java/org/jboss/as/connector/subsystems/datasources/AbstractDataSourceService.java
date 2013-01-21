@@ -512,7 +512,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
 
             final Validation validation = dataSourceConfig.getValidation();
             if (validation != null) {
-                if (validation.isValidateOnMatch()) {
+                if (validation.isValidateOnMatch() != null) {
                     managedConnectionFactory.setValidateOnMatch(validation.isValidateOnMatch());
                 }
                 if (validation.getCheckValidConnectionSql() != null) {
