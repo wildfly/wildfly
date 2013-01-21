@@ -32,11 +32,27 @@ import org.jboss.dmr.ModelNode;
  */
 public interface AttributeConverter {
 
-    void convertAttribute(PathAddress address, String name, ModelNode attributeValue, TransformationContext context);
+    void convertOperationParameter(PathAddress address, String name, ModelNode attributeValue, ModelNode operation, TransformationContext context);
 
-    public class Factory {
+    void convertResourceAttribute(PathAddress address, String name, ModelNode attributeValue, TransformationContext context);
+
+    public abstract class DefaultAttributeConverter implements AttributeConverter {
+        @Override
+        public void convertOperationParameter(PathAddress address, String name, ModelNode attributeValue, ModelNode operation, TransformationContext context) {
+            convertAttribute(address, name, attributeValue, context);
+        }
+
+        @Override
+        public void convertResourceAttribute(PathAddress address, String name, ModelNode attributeValue, TransformationContext context) {
+            convertAttribute(address, name, attributeValue, context);
+        }
+
+        protected abstract void convertAttribute(PathAddress address, String name, ModelNode attributeValue, TransformationContext context);
+    }
+
+    public static class Factory {
         public static AttributeConverter createHardCoded(final ModelNode hardCodedValue) {
-            return new AttributeConverter() {
+            return new DefaultAttributeConverter() {
                 @Override
                 public void convertAttribute(PathAddress address, String name, ModelNode attributeValue, TransformationContext context) {
                     attributeValue.set(hardCodedValue);
@@ -45,7 +61,7 @@ public interface AttributeConverter {
         }
     }
 
-    AttributeConverter NAME_FROM_ADDRESS = new AttributeConverter() {
+    AttributeConverter NAME_FROM_ADDRESS = new DefaultAttributeConverter() {
         @Override
         public void convertAttribute(PathAddress address, String name, ModelNode attributeValue, TransformationContext context) {
             PathElement element = address.getLastElement();

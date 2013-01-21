@@ -22,22 +22,21 @@
 
 package org.jboss.as.controller.transform.description;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.OperationRejectionPolicy;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.dmr.ModelNode;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
@@ -51,14 +50,8 @@ abstract class TransformationRule {
     abstract static class AbstractTransformationContext {
 
         private final TransformationContext context;
-        private final ModelNode originalModel;
-        protected AbstractTransformationContext(final TransformationContext context, final ModelNode originalModel) {
+        protected AbstractTransformationContext(final TransformationContext context) {
             this.context = new TransformationContextWrapper(context);
-            this.originalModel = originalModel;
-        }
-
-        protected ModelNode getOriginalModel() {
-            return originalModel;
         }
 
         protected TransformationContext getContext() {
@@ -71,8 +64,8 @@ abstract class TransformationRule {
 
         private final List<OperationTransformer.TransformedOperation> transformed = new ArrayList<OperationTransformer.TransformedOperation>();
         private ModelNode lastOperation;
-        protected OperationContext(TransformationContext context, ModelNode originalModel) {
-            super(context, originalModel);
+        protected OperationContext(TransformationContext context) {
+            super(context);
         }
 
         protected void recordTransformedOperation(OperationTransformer.TransformedOperation operation) {
@@ -97,8 +90,8 @@ abstract class TransformationRule {
 
     abstract static class ResourceContext extends AbstractTransformationContext {
 
-        protected ResourceContext(ResourceTransformationContext context, ModelNode originalModel) {
-            super(context, originalModel);
+        protected ResourceContext(ResourceTransformationContext context) {
+            super(context);
         }
 
         protected TransformationContext getContext() {

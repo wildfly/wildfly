@@ -49,7 +49,7 @@ class AttributeTransformationRule extends TransformationRule {
     void transformOperation(final ModelNode operation, PathAddress address, OperationContext context) throws OperationFailedException {
         final ModelNode transformed = operation.clone();
         final Set<String> reject = new HashSet<String>();
-        doTransform(address, transformed, context, reject);
+        doTransform(address, transformed, transformed.clone(), context, reject);
 
         final OperationRejectionPolicy policy = createPolicy(! reject.isEmpty(), reject);
         context.invokeNext(new OperationTransformer.TransformedOperation(transformed, policy, OperationResultTransformer.ORIGINAL_RESULT));
@@ -76,12 +76,12 @@ class AttributeTransformationRule extends TransformationRule {
     void tranformResource(final Resource resource, final PathAddress address, final ResourceContext context) throws OperationFailedException {
         final ModelNode model = resource.getModel();
         final Set<String> reject = new HashSet<String>();
-        doTransform(address, model, context, reject);
+        doTransform(address, model, null, context, reject);
         //TODO do something with the reject
         context.invokeNext(resource);
     }
 
-    private void doTransform(PathAddress address, ModelNode modelOrOp, AbstractTransformationContext context, Set<String> reject) {
+    private void doTransform(PathAddress address, ModelNode modelOrOp, ModelNode operation, AbstractTransformationContext context, Set<String> reject) {
         Map<String, String> renames = new HashMap<String, String>();
         Map<String, ModelNode> adds = new HashMap<String, ModelNode>();
         for(final Map.Entry<String, AttributeTransformationDescription> entry : descriptions.entrySet()) {
@@ -91,17 +91,17 @@ class AttributeTransformationRule extends TransformationRule {
             AttributeTransformationDescription description = entry.getValue();
 
             //discard what can be discarded
-            if (description.shouldDiscard(attributeValue, context)) {
+            if (description.shouldDiscard(attributeValue, operation, context)) {
                 modelOrOp.remove(attributeName);
             }
 
             //Check the rest of the model can be transformed
-            if (!description.checkAttributeValueIsValid(attributeValue, context)) {
+            if (!description.checkAttributeValueIsValid(attributeValue, operation, context)) {
                 reject.add(attributeName);
             }
 
             //Now transform the value
-            description.convertValue(address, attributeValue, context);
+            description.convertValue(address, attributeValue, operation, context);
 
             //Store the rename until we are done
             String newName = description.getNewName();
@@ -110,7 +110,7 @@ class AttributeTransformationRule extends TransformationRule {
             }
 
             //Add attribute
-            ModelNode added = description.addAttribute(address, context);
+            ModelNode added = description.addAttribute(address, operation, context);
             if (added != null) {
                 adds.put(attributeName, added);
             }

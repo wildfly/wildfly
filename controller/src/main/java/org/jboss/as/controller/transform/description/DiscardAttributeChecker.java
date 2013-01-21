@@ -45,21 +45,11 @@ public interface DiscardAttributeChecker {
      */
     boolean isDiscardUndefined();
 
-    /**
-     * Returns {@code true} if the attribute should be discarded.
-     *
-     * @param attributeName the name of the attribute
-     * @param attributeValue the value of the attribute
-     * @param context the TransformationContext
-     * @return whether to discard if exressions are used
-     */
-    boolean isValueDiscardable(String attributeName, ModelNode attributeValue, TransformationContext context);
+    boolean isOperationParameterDiscardable(String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context);
 
-    /**
-     * Abstract base class for attribute checker implementations
-     */
-    public abstract class DefaultAttributeChecker implements DiscardAttributeChecker {
+    boolean isResourceAttributeDiscardable(String attributeName, ModelNode attributeValue, TransformationContext context);
 
+    abstract class DefaultDiscardAttributeChecker implements DiscardAttributeChecker {
         protected final boolean discardExpressions;
         protected final boolean discardUndefined;
 
@@ -69,7 +59,7 @@ public interface DiscardAttributeChecker {
          * @param discardExpressions {@code true} if the attribute should be discarded if expressions are used
          * @param discardUndefined {@code true} if the attribute should be discarded if expressions are used
          */
-        public DefaultAttributeChecker(final boolean discardExpressions, final boolean discardUndefined) {
+        public DefaultDiscardAttributeChecker(final boolean discardExpressions, final boolean discardUndefined) {
             this.discardExpressions = discardExpressions;
             this.discardUndefined = discardUndefined;
         }
@@ -79,27 +69,53 @@ public interface DiscardAttributeChecker {
          * Sets it up with {@code discardExpressions==true} and {@code discardUndefined==true}
          *
          */
-        public DefaultAttributeChecker() {
+        public DefaultDiscardAttributeChecker() {
             this(false, true);
         }
 
-        @Override
+        /**
+         * Returns {@code true} if the attribute should be discarded if expressions are used
+         *
+         * @return whether to discard if exressions are used
+         */
         public boolean isDiscardExpressions() {
             return discardExpressions;
         }
 
-        @Override
+        /**
+         * Returns {@code true} if the attribute should be discarded if it is undefined
+         *
+         * @return whether to discard if the attribute is undefined
+         */
         public boolean isDiscardUndefined() {
             return discardUndefined;
         }
 
+        @Override
+        public boolean isOperationParameterDiscardable(String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context) {
+            return isValueDiscardable(attributeName, attributeValue, context);
+        }
 
-        //TODO handle lists and object types
+        @Override
+        public boolean isResourceAttributeDiscardable(String attributeName, ModelNode attributeValue, TransformationContext context) {
+            return isValueDiscardable(attributeName, attributeValue, context);
+        }
+
+        /**
+         * Returns {@code true} if the attribute should be discarded.
+         *
+         * @param attributeName the name of the attribute
+         * @param attributeValue the value of the attribute
+         * @param context the TransformationContext
+         * @return whether to discard if exressions are used
+         */
+        protected abstract boolean isValueDiscardable(String attributeName, ModelNode attributeValue, TransformationContext context);
     }
+
     /**
      * A standard checker which will discard the attribute always.
      */
-    DefaultAttributeChecker ALWAYS = new DefaultAttributeChecker(true, true) {
+    DiscardAttributeChecker ALWAYS = new DefaultDiscardAttributeChecker(true, true) {
 
         @Override
         public boolean isValueDiscardable(String attributeName, ModelNode attributeValue, TransformationContext context) {
@@ -110,7 +126,7 @@ public interface DiscardAttributeChecker {
     /**
      * A standard checker which will discard the attribute if it is undefined, as long as it is not an expressions
      */
-    DefaultAttributeChecker UNDEFINED = new DefaultAttributeChecker(false, true) {
+    DiscardAttributeChecker UNDEFINED = new DefaultDiscardAttributeChecker(false, true) {
 
         @Override
         public boolean isValueDiscardable(String attributeName, ModelNode attributeValue, TransformationContext context) {
