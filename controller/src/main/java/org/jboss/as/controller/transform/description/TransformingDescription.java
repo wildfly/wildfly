@@ -37,7 +37,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.OperationRejectionPolicy;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
-import org.jboss.as.controller.transform.PathTransformation;
+import org.jboss.as.controller.transform.PathAddressTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
@@ -55,13 +55,13 @@ class TransformingDescription extends AbstractDescription implements Transformat
     private final Map<String, OperationTransformer> operationTransformers;
     private final ResourceTransformer resourceTransfomer;
 
-    public TransformingDescription(final PathElement pathElement, final PathTransformation pathTransformation,
+    public TransformingDescription(final PathElement pathElement, final PathAddressTransformer pathAddressTransformer,
                                    final DiscardPolicy discardPolicy,
                                    final ResourceTransformer resourceTransformer,
                                    final Map<String, AttributeTransformationDescription> attributeTransformations,
                                    final Map<String, OperationTransformer> operations,
                                    final List<TransformationDescription> children) {
-        super(pathElement, pathTransformation);
+        super(pathElement, pathAddressTransformer);
         this.children = children;
         this.discardPolicy = discardPolicy;
         this.resourceTransfomer = resourceTransformer;

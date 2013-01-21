@@ -26,7 +26,7 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ModelVersionRange;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.transform.PathTransformation;
+import org.jboss.as.controller.transform.PathAddressTransformer;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 
 /**
@@ -34,12 +34,12 @@ import org.jboss.as.controller.transform.TransformersSubRegistration;
  */
 abstract class AbstractDescription implements TransformationDescription {
 
-    private final PathTransformation pathTransformation;
+    private final PathAddressTransformer pathAddressTransformer;
     protected final PathElement pathElement;
 
-    AbstractDescription(final PathElement pathElement, final PathTransformation transformation) {
+    AbstractDescription(final PathElement pathElement, final PathAddressTransformer transformation) {
         this.pathElement = pathElement;
-        this.pathTransformation = transformation;
+        this.pathAddressTransformer = transformation;
     }
 
     @Override
@@ -48,8 +48,8 @@ abstract class AbstractDescription implements TransformationDescription {
     }
 
     @Override
-    public PathTransformation getPathTransformation() {
-        return pathTransformation;
+    public PathAddressTransformer getPathAddressTransformer() {
+        return pathAddressTransformer;
     }
 
     @Override

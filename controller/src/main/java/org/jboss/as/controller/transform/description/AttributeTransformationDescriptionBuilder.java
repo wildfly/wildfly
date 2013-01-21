@@ -61,7 +61,7 @@ public interface AttributeTransformationDescriptionBuilder {
      * Adds a list of RejectAttributeCheckers. The RejectAttributeCheckers are processed in the order they are added to the passed in attributes.
      * Rejection is done after the attribute has been checked for discarding.
      *
-     * @param rejectChecker the checkers
+     * @param rejectCheckers the checkers
      * @param rejectedAttributes the attributes to check
      * @return this builder
      */
@@ -71,7 +71,7 @@ public interface AttributeTransformationDescriptionBuilder {
      * Adds a list of RejectAttributeCheckers. The RejectAttributeCheckers are processed in the order they are added to the passed in attributes.
      * Rejection is done after the attribute has been checked for discarding.
      *
-     * @param rejectChecker the checkers
+     * @param rejectCheckers the checkers
      * @param rejectedAttributes the attributes to check
      * @return this builder
      */
@@ -80,8 +80,8 @@ public interface AttributeTransformationDescriptionBuilder {
     /**
      * Sets the DiscardChecker.
      *
-     * @param rejectChecker the checkers
-     * @param rejectedAttributes the attributes to check
+     * @param discardChecker the checkers
+     * @param discardedAttributes the attributes to check
      * @return this builder
      */
     AttributeTransformationDescriptionBuilder setDiscard(DiscardAttributeChecker discardChecker, String...discardedAttributes);
@@ -89,8 +89,8 @@ public interface AttributeTransformationDescriptionBuilder {
     /**
      * Sets the DiscardChecker.
      *
-     * @param rejectChecker the checkers
-     * @param rejectedAttributes the attributes to check
+     * @param discardChecker the checkers
+     * @param discardedAttributes the attributes to check
      * @return this builder
      */
     AttributeTransformationDescriptionBuilder setDiscard(DiscardAttributeChecker discardChecker, AttributeDefinition...discardedAttributes);
@@ -116,8 +116,7 @@ public interface AttributeTransformationDescriptionBuilder {
     /**
      * Use to rename attribute. This is done after all attributes have been discarded, checked for rejection and converted.
      *
-     * @param map a Map where the keys are the original attribute names, and the values are the new attribute names
-     * @param newName the new name for the attribute
+     * @param renames a Map where the keys are the original attribute names, and the values are the new attribute names
      * @return this builder
      */
     AttributeTransformationDescriptionBuilder addRenames(Map<String, String> renames);

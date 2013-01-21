@@ -108,7 +108,7 @@ public class TransformationTargetImpl implements TransformationTarget {
     }
 
     @Override
-    public List<PathTransformation> getPathTransformation(final PathAddress address) {
+    public List<PathAddressTransformer> getPathTransformation(final PathAddress address) {
         return registry.getPathTransformations(address);
     }
 

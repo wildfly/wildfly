@@ -27,7 +27,7 @@ import org.jboss.as.controller.ModelVersionRange;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.transform.OperationTransformer;
-import org.jboss.as.controller.transform.PathTransformation;
+import org.jboss.as.controller.transform.PathAddressTransformer;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 
@@ -53,7 +53,7 @@ public interface TransformationDescription {
      *
      * @return the path transformation
      */
-    PathTransformation getPathTransformation();
+    PathAddressTransformer getPathAddressTransformer();
 
     /**
      * Get the default operation transformer.
@@ -97,7 +97,7 @@ public interface TransformationDescription {
         }
 
         public static void register(final TransformationDescription description, TransformersSubRegistration parent) {
-            final TransformersSubRegistration registration = parent.registerSubResource(description.getPath(), description.getPathTransformation(), description.getResourceTransformer(), description.getOperationTransformer());
+            final TransformersSubRegistration registration = parent.registerSubResource(description.getPath(), description.getPathAddressTransformer(), description.getResourceTransformer(), description.getOperationTransformer());
             for (final Map.Entry<String, OperationTransformer> entry : description.getOperationTransformers().entrySet()) {
                 registration.registerOperationTransformer(entry.getKey(), entry.getValue());
             }

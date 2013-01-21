@@ -24,7 +24,7 @@ package org.jboss.as.controller.transform.description;
 
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.transform.OperationTransformer;
-import org.jboss.as.controller.transform.PathTransformation;
+import org.jboss.as.controller.transform.PathAddressTransformer;
 import org.jboss.as.controller.transform.ResourceTransformer;
 
 import java.util.ArrayList;
@@ -39,23 +39,23 @@ abstract class AbstractTransformationDescriptionBuilder implements Transformatio
 
     protected final PathElement pathElement;
 
-    protected PathTransformation pathTransformation;
+    protected PathAddressTransformer pathAddressTransformer;
     protected ResourceTransformer resourceTransformer;
     protected OperationTransformer operationTransformer;
 
     protected final Map<String, OperationTransformationOverrideBuilderImpl> operationTransformers = new HashMap<String, OperationTransformationOverrideBuilderImpl>();
     protected final List<AbstractTransformationDescriptionBuilder> children = new ArrayList<AbstractTransformationDescriptionBuilder>();
 
-    protected AbstractTransformationDescriptionBuilder(PathElement pathElement, PathTransformation pathTransformation,
+    protected AbstractTransformationDescriptionBuilder(PathElement pathElement, PathAddressTransformer pathAddressTransformer,
                                              ResourceTransformer resourceTransformer, OperationTransformer operationTransformer) {
         this.pathElement = pathElement;
-        this.pathTransformation = pathTransformation;
+        this.pathAddressTransformer = pathAddressTransformer;
         this.resourceTransformer = resourceTransformer;
         this.operationTransformer = operationTransformer;
     }
 
-    public TransformationDescriptionBuilder setPathTransformation(PathTransformation pathTransformation) {
-        this.pathTransformation = pathTransformation;
+    public TransformationDescriptionBuilder setPathTransformation(PathAddressTransformer pathAddressTransformer) {
+        this.pathAddressTransformer = pathAddressTransformer;
         return this;
     }
 
@@ -74,7 +74,7 @@ abstract class AbstractTransformationDescriptionBuilder implements Transformatio
     }
 
     void addOperationTransformerEntry(String operationName, OperationTransformationOverrideBuilderImpl transformer, OperationTransformer operationTransformer) {
-        transformer.setOperationTransformer(operationTransformer);
+        transformer.setCustomOperationTransformer(operationTransformer);
         operationTransformers.put(operationName, transformer);
     }
 

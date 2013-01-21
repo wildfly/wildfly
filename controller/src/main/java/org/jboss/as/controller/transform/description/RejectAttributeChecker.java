@@ -36,7 +36,6 @@ import org.jboss.dmr.Property;
  */
 public interface RejectAttributeChecker {
 
-
     /**
      * Gets whether the given operation parameter value is not understandable by the target process and needs
      * to be rejected.
@@ -50,14 +49,12 @@ public interface RejectAttributeChecker {
      */
     boolean rejectOperationParameter(String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context);
 
-
     /**
      * Gets whether the given operation parameter value is not understandable by the target process and needs
      * to be rejected.
      *
      * @param attributeName the name of the attribute
      * @param attributeValue the value of the attribute
-     * @param resource the resource being transformed. This is unmodifiable
      * @param context the context of the transformation
      *
      * @return {@code true} if the attribute or parameter value is not understandable by the target process and so needs to be rejected, {@code false} otherwise.

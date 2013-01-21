@@ -28,12 +28,15 @@ import org.jboss.as.controller.PathElement;
 import java.util.Iterator;
 
 /**
- * This transformer is specific to address transformation. It will get called prior to any operation or resource
- * transformation and is mostly only response for transformation the current path element.
+ * A path address transformation step. This specific type of transformer get registered alongside a resource transformer
+ * entry and can be used to transform the {@linkplain PathAddress} for operation and resource transformations.
+ *
+ * In general this transformer is only responsible for changing the current {@linkplain PathElement} and the delegate
+ * to other address transformers in the chain using {@linkplain Builder#next(org.jboss.as.controller.PathElement...)}.
  *
  * @author Emanuel Muckenhuber
  */
-public interface PathTransformation {
+public interface PathAddressTransformer {
 
     /**
      * Transform a address.
@@ -44,7 +47,7 @@ public interface PathTransformation {
      */
     PathAddress transform(PathElement current, Builder builder);
 
-    PathTransformation DEFAULT = new PathTransformation() {
+    PathAddressTransformer DEFAULT = new PathAddressTransformer() {
 
         @Override
         public PathAddress transform(PathElement current, Builder builder) {
@@ -53,10 +56,10 @@ public interface PathTransformation {
 
     };
 
-    public class BasicPathTransformation implements PathTransformation {
+    public class BasicPathAddressTransformer implements PathAddressTransformer {
 
         private final PathElement swap;
-        public BasicPathTransformation(PathElement swap) {
+        public BasicPathAddressTransformer(PathElement swap) {
             this.swap = swap;
         }
 
@@ -67,7 +70,7 @@ public interface PathTransformation {
 
     }
 
-    public class ReplaceElementKey implements PathTransformation {
+    public class ReplaceElementKey implements PathAddressTransformer {
 
         private final String newKey;
         public ReplaceElementKey(String newKey) {
@@ -85,28 +88,28 @@ public interface PathTransformation {
     public interface Builder {
 
         /**
-         * Get the original address.
+         * Get the unmodified (original) address.
          *
-         * @return the origial address
+         * @return the original address
          */
         PathAddress getOriginal();
 
         /**
-         * Get the current address.
+         * Get the current address, from the builder.
          *
          * @return the current address
          */
         PathAddress getCurrent();
 
         /**
-         * Get the remaining elments for this address.
+         * Get the remaining elements left for transformation.
          *
-         * @return the remmaining elements for this address
+         * @return the remaining elements for this address
          */
         PathAddress getRemaining();
 
         /**
-         * Append a element to the current address and continue.
+         * Append a element to the current address and continue to the next transformer in the chain.
          *
          * @param elements the elements to append
          * @return the transformed address
@@ -115,52 +118,35 @@ public interface PathTransformation {
 
     }
 
-    public class BuilderImpl implements Builder {
+    class BuilderImpl implements Builder {
 
-        private final Iterator<PathTransformation> transformers;
+        private final Iterator<PathAddressTransformer> transformers;
         private final PathAddress original;
 
         private PathAddress current = PathAddress.EMPTY_ADDRESS;
         private int idx = 0;
 
-        protected BuilderImpl(Iterator<PathTransformation> transformers, PathAddress original) {
+        protected BuilderImpl(Iterator<PathAddressTransformer> transformers, PathAddress original) {
             this.transformers = transformers;
             this.original = original;
         }
 
-        /**
-         * Get the original address.
-         *
-         * @return the origial address
-         */
+        @Override
         public PathAddress getOriginal() {
             return original;
         }
 
-        /**
-         * Get the current address.
-         *
-         * @return the current address
-         */
+        @Override
         public PathAddress getCurrent() {
             return current;
         }
 
-        /**
-         * Get the remaining elments for this address.
-         *
-         * @return the remmaining elements for this address
-         */
+        @Override
         public PathAddress getRemaining() {
             return original.subAddress(idx);
         }
 
-        /**
-         * Append a element to the current address and continue.
-         *
-         * @param elements the elements to append
-         * @return the transformed address
-         */
+        @Override
         public PathAddress next(final PathElement... elements) {
             current = current.append(elements);
             final int remaining = original.size() - idx;
@@ -168,7 +154,7 @@ public interface PathTransformation {
                 return current;
             }
             if(transformers.hasNext()) {
-                final PathTransformation transformer = transformers.next();
+                final PathAddressTransformer transformer = transformers.next();
                 final PathElement next = original.getElement(idx++);
                 return transformer.transform(next, this);
             } else {
@@ -183,7 +169,7 @@ public interface PathTransformation {
                 return PathAddress.EMPTY_ADDRESS;
             }
             if(transformers.hasNext()) {
-                final PathTransformation transformer = transformers.next();
+                final PathAddressTransformer transformer = transformers.next();
                 final PathElement next = original.getElement(idx++);
                 return transformer.transform(next, this);
             } else {

@@ -27,14 +27,14 @@ package org.jboss.as.controller.transform;
  */
 public interface TransformerEntry {
 
-    PathTransformation getPathTransformation();
+    PathAddressTransformer getPathTransformation();
     ResourceTransformer getResourceTransformer();
     OperationTransformer getOperationTransformer();
 
     TransformerEntry ALL_DEFAULTS = new TransformerEntry() {
         @Override
-        public PathTransformation getPathTransformation() {
-            return PathTransformation.DEFAULT;
+        public PathAddressTransformer getPathTransformation() {
+            return PathAddressTransformer.DEFAULT;
         }
 
         @Override

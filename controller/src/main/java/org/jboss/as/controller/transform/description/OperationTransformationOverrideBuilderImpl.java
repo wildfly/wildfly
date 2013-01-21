@@ -49,12 +49,12 @@ class OperationTransformationOverrideBuilderImpl extends AttributeTransformation
     }
 
     @Override
-    public OperationTransformationOverrideBuilder inherit() {
+    public OperationTransformationOverrideBuilder inheritResourceAttributeDefinitions() {
         this.inherit = true;
         return this;
     }
 
-    public OperationTransformationOverrideBuilder setOperationTransformer(OperationTransformer transformer) {
+    public OperationTransformationOverrideBuilder setCustomOperationTransformer(OperationTransformer transformer) {
         this.transformer = transformer;
         return this;
     }

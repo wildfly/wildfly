@@ -25,11 +25,13 @@ package org.jboss.as.controller.transform.description;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.transform.OperationTransformer;
-import org.jboss.as.controller.transform.PathTransformation;
+import org.jboss.as.controller.transform.PathAddressTransformer;
 import org.jboss.as.controller.transform.ResourceTransformer;
 
 /**
- * Common transformation description builder.
+ * Resource specific transformation description builder. This is a convenience API over the
+ * {@linkplain org.jboss.as.controller.transform.TransformersSubRegistration} and can be used to add common policies
+ * when registering resource or operation transformers.
  *
  * @author Emanuel Muckenhuber
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -44,7 +46,8 @@ public interface ResourceTransformationDescriptionBuilder extends Transformation
     AttributeTransformationDescriptionBuilder getAttributeBuilder();
 
     /**
-     * Add an operation transformation entry for a specific operation.
+     * Add an operation transformation entry for a given operation. By default all operations inherit the attribute
+     * transformation rules from this transformation description. This behavior can be override for a given operation.
      *
      * @param operationName the operation name
      * @return the operation transformation builder
@@ -52,7 +55,8 @@ public interface ResourceTransformationDescriptionBuilder extends Transformation
     OperationTransformationOverrideBuilder addOperationTransformationOverride(String operationName);
 
     /**
-     * Register a raw operation transformer which is going to be used as is.
+     * Add an operation transformer. Unlike the the {@linkplain #addOperationTransformationOverride(String)} this will
+     * use the {@linkplain OperationTransformer} without adding any additional capabilities.
      *
      * @param operationName the operation name
      * @param operationTransformer the operation transformer
@@ -71,12 +75,32 @@ public interface ResourceTransformationDescriptionBuilder extends Transformation
     ResourceTransformationDescriptionBuilder setCustomResourceTransformer(ResourceTransformer resourceTransformer);
 
     /**
-     * Add a child resource.
+     * Add a child resource to this builder. This is going to register the child automatically at the
+     * {@linkplain org.jboss.as.controller.transform.TransformersSubRegistration} when registering the transformation
+     * description created by this builder.
      *
      * @param pathElement the path element
      * @return the builder for the child resource
      */
     ResourceTransformationDescriptionBuilder addChildResource(PathElement pathElement);
+
+    /**
+     * Add a child resource to this builder. This is going to register the child automatically at the
+     * {@linkplain org.jboss.as.controller.transform.TransformersSubRegistration} when registering the transformation
+     * description created by this builder.
+     *
+     * @param definition the resource definition
+     * @return the builder for the child resource
+     */
+    ResourceTransformationDescriptionBuilder addChildResource(ResourceDefinition definition);
+
+    /**
+     * Recursively discards all child resources and its operations.
+     *
+     * @param pathElement the path element
+     * @return the builder for the child resource
+     */
+    DiscardTransformationDescriptionBuilder discardChildResource(PathElement pathElement);
 
     /**
      * Add a child resource, where all operations will get redirected to the legacy address.
@@ -92,25 +116,9 @@ public interface ResourceTransformationDescriptionBuilder extends Transformation
      * the path transformation.
      *
      * @param pathElement the path element of the child
-     * @param pathTransformation the path transformation
+     * @param pathAddressTransformer the path transformation
      * @return the builder for the child resource
      */
-    ResourceTransformationDescriptionBuilder addChildRedirection(PathElement pathElement, PathTransformation pathTransformation);
-
-    /**
-     * Add a child resource.
-     *
-     * @param definition the resource definition
-     * @return the builder for the child resource
-     */
-    ResourceTransformationDescriptionBuilder addChildResource(ResourceDefinition definition);
-
-    /**
-     * Recursively discards all child resources and its operations.
-     *
-     * @param pathElement the path element
-     * @return the builder for the child resource
-     */
-    DiscardTransformationDescriptionBuilder discardChildResource(PathElement pathElement);
+    ResourceTransformationDescriptionBuilder addChildRedirection(PathElement pathElement, PathAddressTransformer pathAddressTransformer);
 
 }

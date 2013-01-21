@@ -23,7 +23,6 @@
 package org.jboss.as.controller.transform.description;
 
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.transform.PathTransformation;
 
 /**
  * A transformation description builder.
@@ -42,12 +41,11 @@ public interface TransformationDescriptionBuilder {
     public static class Factory {
 
         /**
-         * Create a builder instance.
+         * Create a resource builder instance.
          *
          * @return the transformation builder
          * @deprecated experimental
          */
-        @Deprecated
         public static ResourceTransformationDescriptionBuilder createInstance(final PathElement pathElement) {
             return new ResourceTransformationDescriptionBuilderImpl(pathElement);
         }
@@ -58,7 +56,6 @@ public interface TransformationDescriptionBuilder {
          * @return the transformation builder
          * @deprecated experimental
          */
-        @Deprecated
         public static DiscardTransformationDescriptionBuilder createDiscardInstance(PathElement pathElement) {
             return new DiscardTransformationDescriptionBuilder(pathElement);
         }

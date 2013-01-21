@@ -34,7 +34,7 @@ public interface DiscardAttributeChecker {
     /**
      * Returns {@code true} if the attribute should be discarded if expressions are used
      *
-     * @return whether to discard if exressions are used
+     * @return whether to discard if expressions are used
      */
     boolean isDiscardExpressions();
 
@@ -59,14 +59,14 @@ public interface DiscardAttributeChecker {
          * @param discardExpressions {@code true} if the attribute should be discarded if expressions are used
          * @param discardUndefined {@code true} if the attribute should be discarded if expressions are used
          */
-        public DefaultDiscardAttributeChecker(final boolean discardExpressions, final boolean discardUndefined) {
+        protected DefaultDiscardAttributeChecker(final boolean discardExpressions, final boolean discardUndefined) {
             this.discardExpressions = discardExpressions;
             this.discardUndefined = discardUndefined;
         }
 
         /**
          * Constructor.
-         * Sets it up with {@code discardExpressions==true} and {@code discardUndefined==true}
+         * Sets it up with {@code discardExpressions==false} and {@code discardUndefined==true}
          *
          */
         public DefaultDiscardAttributeChecker() {

@@ -43,7 +43,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.OperationTransformer;
-import org.jboss.as.controller.transform.PathTransformation;
+import org.jboss.as.controller.transform.PathAddressTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
@@ -105,7 +105,7 @@ public class BasicResourceTestCase {
                     }
                 });
 
-        attrResourceBuilder.addChildRedirection(PathElement.pathElement("resource-attribute"), new PathTransformation() {
+        attrResourceBuilder.addChildRedirection(PathElement.pathElement("resource-attribute"), new PathAddressTransformer() {
                         @Override
                         public PathAddress transform(PathElement current, Builder builder) {
                             return builder.next(); // skip the current element
@@ -127,7 +127,7 @@ public class BasicResourceTestCase {
 
 
         builder.addOperationTransformationOverride("test-operation")
-        .inherit()
+        .inheritResourceAttributeDefinitions()
         .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode(true)), "operation-test")
         .end();
 
