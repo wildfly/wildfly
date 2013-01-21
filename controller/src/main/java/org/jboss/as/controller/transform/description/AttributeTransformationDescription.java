@@ -54,7 +54,7 @@ class AttributeTransformationDescription {
         this.addConverter = addConverter;
     }
 
-    boolean shouldDiscard(ModelNode attributeValue, TransformationRule.AbstractTransformationContext context) {
+    boolean shouldDiscard(ModelNode attributeValue, ModelNode operation, TransformationRule.AbstractTransformationContext context) {
         if (discardChecker == null) {
             return false;
         }
@@ -67,8 +67,14 @@ class AttributeTransformationDescription {
             return false;
         }
 
-        if (discardChecker.isValueDiscardable(name, attributeValue, context.getContext())) {
-            return true;
+        if (operation != null) {
+            if (discardChecker.isOperationParameterDiscardable(name, attributeValue, operation, context.getContext())) {
+                return true;
+            }
+        } else {
+            if (discardChecker.isResourceAttributeDiscardable(name, attributeValue, context.getContext())) {
+                return true;
+            }
         }
         return false;
     }
@@ -85,26 +91,40 @@ class AttributeTransformationDescription {
      * @param context the context
      * @return {@code true} if it can be transformed, {@code false} otherwise
      */
-    boolean checkAttributeValueIsValid(ModelNode attributeValue, TransformationRule.AbstractTransformationContext context) {
+    boolean checkAttributeValueIsValid(ModelNode attributeValue, ModelNode operation, TransformationRule.AbstractTransformationContext context) {
         for (RejectAttributeChecker checker : checks) {
-            if (checker.rejectAttribute(name, attributeValue, context.getContext())) {
+            boolean rejected = false;
+            if (operation != null) {
+                rejected = checker.rejectOperationParameter(name, attributeValue, operation, context.getContext());
+            } else {
+                rejected = checker.rejectResourceAttribute(name, attributeValue, context.getContext());
+            }
+            if (rejected) {
                 return false;
             }
         }
         return true;
     }
 
-    void convertValue(PathAddress address, ModelNode attributeValue, TransformationRule.AbstractTransformationContext context) {
+    void convertValue(PathAddress address, ModelNode attributeValue, ModelNode operation, TransformationRule.AbstractTransformationContext context) {
         if (converter != null) {
-            converter.convertAttribute(address, name, attributeValue, context.getContext());
+            if (operation != null) {
+                converter.convertOperationParameter(address, name, attributeValue, operation, context.getContext());
+            } else {
+                converter.convertResourceAttribute(address, name, attributeValue, context.getContext());
+            }
         }
     }
 
 
-    ModelNode addAttribute(PathAddress address, TransformationRule.AbstractTransformationContext context) {
+    ModelNode addAttribute(PathAddress address, ModelNode operation, TransformationRule.AbstractTransformationContext context) {
         if (addConverter != null) {
             ModelNode attributeValue = new ModelNode();
-            addConverter.convertAttribute(address, name, attributeValue, context.getContext());
+            if (operation != null) {
+                addConverter.convertOperationParameter(address, name, attributeValue, operation, context.getContext());
+            } else {
+                addConverter.convertResourceAttribute(address, name, attributeValue, context.getContext());
+            }
             return attributeValue;
         }
         return null;

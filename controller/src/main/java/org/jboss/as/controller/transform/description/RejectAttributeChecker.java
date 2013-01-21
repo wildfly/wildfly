@@ -36,26 +36,52 @@ import org.jboss.dmr.Property;
  */
 public interface RejectAttributeChecker {
 
+
     /**
-     * Gets whether the given attribute or parameter value is not understandable by the target process and needs
+     * Gets whether the given operation parameter value is not understandable by the target process and needs
      * to be rejected.
      *
      * @param attributeName the name of the attribute
      * @param attributeValue the value of the attribute
+     * @param operation the operation executed. This is unmodifiable.
      * @param context the context of the transformation
      *
      * @return {@code true} if the attribute or parameter value is not understandable by the target process and so needs to be rejected, {@code false} otherwise.
      */
-    boolean rejectAttribute(String attributeName, ModelNode attributeValue, TransformationContext context);
+    boolean rejectOperationParameter(String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context);
 
+
+    /**
+     * Gets whether the given operation parameter value is not understandable by the target process and needs
+     * to be rejected.
+     *
+     * @param attributeName the name of the attribute
+     * @param attributeValue the value of the attribute
+     * @param resource the resource being transformed. This is unmodifiable
+     * @param context the context of the transformation
+     *
+     * @return {@code true} if the attribute or parameter value is not understandable by the target process and so needs to be rejected, {@code false} otherwise.
+     */
+    boolean rejectResourceAttribute(String attributeName, ModelNode attributeValue, TransformationContext context);
+
+    public abstract class DefaultRejectAttributeChecker implements RejectAttributeChecker {
+        public  boolean rejectOperationParameter(String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context) {
+            return rejectAttribute(attributeName, attributeValue, context);
+        }
+
+        public boolean rejectResourceAttribute(String attributeName, ModelNode attributeValue, TransformationContext context) {
+            return rejectAttribute(attributeName, attributeValue, context);
+        }
+
+        protected abstract boolean rejectAttribute(String attributeName, ModelNode attributeValue, TransformationContext context);
+    }
     /**
      * Checks a simple attribute for expressions
      */
-    RejectAttributeChecker SIMPLE_EXPRESSIONS = new RejectAttributeChecker() {
+    RejectAttributeChecker SIMPLE_EXPRESSIONS = new DefaultRejectAttributeChecker() {
 
         @Override
-
-        public boolean rejectAttribute(String attributeName, ModelNode attributeValue, TransformationContext context) {
+        protected boolean rejectAttribute(String attributeName, ModelNode attributeValue, TransformationContext context) {
             return checkForExpression(attributeValue);
         }
 
@@ -106,21 +132,33 @@ public interface RejectAttributeChecker {
         }
 
         @Override
-        public boolean rejectAttribute(String attributeName, ModelNode attributeValue, TransformationContext context) {
+        public boolean rejectOperationParameter(String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context) {
             if (attributeValue.isDefined()) {
                 for (ModelNode element : attributeValue.asList()) {
-                    if (elementChecker.rejectAttribute(attributeName, element, context)) {
+                    if (elementChecker.rejectOperationParameter(attributeName, element, operation, context)) {
                         return true;
                     }
                 }
             }
             return false;
         }
-    }
+
+        @Override
+        public boolean rejectResourceAttribute(String attributeName, ModelNode attributeValue, TransformationContext context) {
+            if (attributeValue.isDefined()) {
+                for (ModelNode element : attributeValue.asList()) {
+                    if (elementChecker.rejectResourceAttribute(attributeName, element, context)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+}
 
     RejectAttributeChecker SIMPLE_LIST_EXPRESSIONS = new ListRejectAttributeChecker(SIMPLE_EXPRESSIONS);
 
-    class ObjectFieldsRejectAttributeChecker implements RejectAttributeChecker {
+    public class ObjectFieldsRejectAttributeChecker implements RejectAttributeChecker {
 
         private final Map<String, RejectAttributeChecker> fields = new HashMap<String, RejectAttributeChecker>();
 
@@ -129,11 +167,23 @@ public interface RejectAttributeChecker {
         }
 
         @Override
-        public boolean rejectAttribute(String attributeName, ModelNode attributeValue, TransformationContext context) {
+        public boolean rejectOperationParameter(String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context) {
 
             for (Map.Entry<String, RejectAttributeChecker> entry : fields.entrySet()) {
                 ModelNode fieldValue = attributeValue.hasDefined(entry.getKey()) ? attributeValue.get(entry.getKey()) : new ModelNode();
-                if (entry.getValue().rejectAttribute(attributeName, fieldValue, context)) {
+                if (entry.getValue().rejectOperationParameter(attributeName, fieldValue, operation, context)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public boolean rejectResourceAttribute(String attributeName, ModelNode attributeValue, TransformationContext context) {
+
+            for (Map.Entry<String, RejectAttributeChecker> entry : fields.entrySet()) {
+                ModelNode fieldValue = attributeValue.hasDefined(entry.getKey()) ? attributeValue.get(entry.getKey()) : new ModelNode();
+                if (entry.getValue().rejectResourceAttribute(attributeName, fieldValue, context)) {
                     return true;
                 }
             }

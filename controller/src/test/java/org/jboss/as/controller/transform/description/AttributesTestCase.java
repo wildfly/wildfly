@@ -21,11 +21,12 @@
  */
 
 package org.jboss.as.controller.transform.description;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -56,7 +57,9 @@ import org.jboss.as.controller.transform.TransformationTargetImpl;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.controller.transform.Transformers;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker.DefaultAttributeChecker;
+import org.jboss.as.controller.transform.description.AttributeConverter.DefaultAttributeConverter;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker.DefaultDiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker.DefaultRejectAttributeChecker;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.junit.Before;
@@ -325,7 +328,7 @@ public class AttributesTestCase {
         resourceModel.get("discard").setExpression("${xxx}");
 
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
-            builder.getAttributeBuilder().setDiscard(new DefaultAttributeChecker(false, false) {
+            builder.getAttributeBuilder().setDiscard(new DefaultDiscardAttributeChecker(false, false) {
                 @Override
                 public boolean isValueDiscardable(String attributeName, ModelNode attributeValue, TransformationContext context) {
                     return true;
@@ -357,7 +360,7 @@ public class AttributesTestCase {
         resourceModel.get("keep").set("non-default");
 
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
-            builder.getAttributeBuilder().setDiscard(new DefaultAttributeChecker(false, true) {
+            builder.getAttributeBuilder().setDiscard(new DefaultDiscardAttributeChecker(false, true) {
                 @Override
                 public boolean isValueDiscardable(String attributeName, ModelNode attributeValue, TransformationContext context) {
                     if (attributeName.equals("discard") || attributeName.equals("keep")) {
@@ -425,7 +428,7 @@ public class AttributesTestCase {
         resourceModel.get("value2").set("two");
 
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
-        builder.getAttributeBuilder().setValueConverter(new AttributeConverter() {
+        builder.getAttributeBuilder().setValueConverter(new DefaultAttributeConverter() {
             @Override
             public void convertAttribute(PathAddress address, String name, ModelNode attributeValue, TransformationContext context) {
                 if (name.equals("value2") && attributeValue.asString().equals("two")) {
@@ -465,7 +468,7 @@ public class AttributesTestCase {
         resourceModel.get("old").set("existing");
 
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
-        builder.getAttributeBuilder().addAttribute("added", (new AttributeConverter() {
+        builder.getAttributeBuilder().addAttribute("added", (new DefaultAttributeConverter() {
             @Override
             public void convertAttribute(PathAddress address, String name, ModelNode attributeValue, TransformationContext context) {
                 attributeValue.set("extra");
@@ -510,7 +513,7 @@ public class AttributesTestCase {
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
         builder.getAttributeBuilder()
                 .addRejectCheck(rejectAttributeChecker, "one", "two")
-                .addAttribute("one", new AttributeConverter() {
+                .addAttribute("one", new DefaultAttributeConverter() {
                     @Override
                     public void convertAttribute(PathAddress address, String name, ModelNode attributeValue, TransformationContext context) {
                         attributeValue.set("ONE");
@@ -518,7 +521,7 @@ public class AttributesTestCase {
                 })
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, "four", "five")
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, "six")
-                .setValueConverter(new AttributeConverter() {
+                .setValueConverter(new DefaultAttributeConverter() {
                     @Override
                     public void convertAttribute(PathAddress address, String name, ModelNode attributeValue, TransformationContext context) {
                         if (name.equals("one")) {
@@ -646,6 +649,47 @@ public class AttributesTestCase {
         //No point in testing write-attribute for a new attribute
     }
 
+    @Test
+    public void testAccessOtherValue() throws Exception {
+        //Set up the model
+        resourceModel.get("checked").set("test");
+        resourceModel.get("other").set("value");
+
+        VisibilityCheckerAndConverter checker = new VisibilityCheckerAndConverter();
+
+        final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
+            builder.getAttributeBuilder()
+                .addRejectCheck(checker, "checked")
+                .setDiscard(checker, "checked")
+                .setValueConverter(checker, "checked")
+                .end()
+
+            .build().register(transformersSubRegistration);
+
+        final Resource resource = transformResource();
+        Assert.assertNotNull(resource);
+        final Resource toto = resource.getChild(PATH);
+        Assert.assertNotNull(toto);
+        final ModelNode model = toto.getModel();
+        //The rejection does not trigger for resource transformation
+        Assert.assertTrue(model.hasDefined("checked"));
+        checker.checkValues("value");
+
+        checker.reset();
+        ModelNode add = Util.createAddOperation(PathAddress.pathAddress(PATH));
+        add.get("checked").set("test");
+        add.get("other").set("value");
+        OperationTransformer.TransformedOperation transformedAdd = transformOperation(add);
+        Assert.assertFalse(transformedAdd.rejectOperation(success()));
+        checker.checkValues("value");
+
+        checker.reset();
+        ModelNode write = Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "checked", new ModelNode("test"));
+        OperationTransformer.TransformedOperation transformedWrite = transformOperation(write);
+        Assert.assertFalse(transformedWrite.rejectOperation(success()));
+        checker.checkValues("value");
+    }
+
     private void checkWriteOp(ModelNode write, String name, ModelNode value) throws OperationFailedException{
         OperationTransformer.TransformedOperation transformedWrite = transformOperation(write);
         Assert.assertFalse(transformedWrite.rejectOperation(success()));
@@ -714,7 +758,7 @@ public class AttributesTestCase {
         return result;
     }
 
-    private static class DontRejectChecker implements RejectAttributeChecker {
+    private static class DontRejectChecker extends DefaultRejectAttributeChecker {
         boolean called;
         @Override
         public boolean rejectAttribute(String attributeName, ModelNode attributeValue, TransformationContext context) {
@@ -727,13 +771,20 @@ public class AttributesTestCase {
         boolean rejected;
 
         @Override
-        public boolean rejectAttribute(String attributeName, ModelNode attributeValue, TransformationContext context) {
-            rejected = SIMPLE_EXPRESSIONS.rejectAttribute(attributeName, attributeValue, context);
+        public boolean rejectOperationParameter(String attributeName, ModelNode attributeValue, ModelNode operation,
+                TransformationContext context) {
+            rejected = SIMPLE_EXPRESSIONS.rejectOperationParameter(attributeName, attributeValue, operation, context);
+            return rejected;
+        }
+
+        @Override
+        public boolean rejectResourceAttribute(String attributeName, ModelNode attributeValue, TransformationContext context) {
+            rejected = SIMPLE_EXPRESSIONS.rejectResourceAttribute(attributeName, attributeValue, context);
             return rejected;
         }
     }
 
-    private static class RejectTwoChecker implements RejectAttributeChecker {
+    private static class RejectTwoChecker extends DefaultRejectAttributeChecker {
         int count;
         boolean rejected;
 
@@ -744,5 +795,87 @@ public class AttributesTestCase {
             return rejected;
         }
     }
+
+    private static class VisibilityCheckerAndConverter implements RejectAttributeChecker, AttributeConverter, DiscardAttributeChecker {
+
+        String convertValue;
+        String discardValue;
+        String rejectValue;
+
+        void checkValues(String expected) {
+            Assert.assertEquals(expected, discardValue);
+            Assert.assertEquals(expected, rejectValue);
+            Assert.assertEquals(expected, convertValue);
+        }
+
+        void reset() {
+            convertValue = null;
+            discardValue = null;
+            rejectValue = null;
+        }
+
+
+        @Override
+        public boolean isDiscardExpressions() {
+            return false;
+        }
+
+        @Override
+        public boolean isDiscardUndefined() {
+            return false;
+        }
+
+        @Override
+        public boolean isOperationParameterDiscardable(String attributeName, ModelNode attributeValue, ModelNode operation,
+                TransformationContext context) {
+            if (operation.get(OP).asString().equals(WRITE_ATTRIBUTE_OPERATION) || operation.get(OP).asString().equals(UNDEFINE_ATTRIBUTE_OPERATION)) {
+                discardValue = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().get("other").asString();
+            } else {
+                discardValue = operation.get("other").asString();
+            }
+            return false;
+        }
+
+        @Override
+        public boolean isResourceAttributeDiscardable(String attributeName, ModelNode attributeValue,
+                TransformationContext context) {
+            discardValue = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().get("other").asString();
+            return false;
+        }
+
+        @Override
+        public void convertOperationParameter(PathAddress address, String name, ModelNode attributeValue, ModelNode operation,
+                TransformationContext context) {
+            if (operation.get(OP).asString().equals(WRITE_ATTRIBUTE_OPERATION) || operation.get(OP).asString().equals(UNDEFINE_ATTRIBUTE_OPERATION)) {
+                convertValue = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().get("other").asString();
+            } else {
+                convertValue = operation.get("other").asString();
+            }
+        }
+
+        @Override
+        public void convertResourceAttribute(PathAddress address, String name, ModelNode attributeValue,
+                TransformationContext context) {
+            convertValue = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().get("other").asString();
+        }
+
+        @Override
+        public boolean rejectOperationParameter(String attributeName, ModelNode attributeValue, ModelNode operation,
+                TransformationContext context) {
+            if (operation.get(OP).asString().equals(WRITE_ATTRIBUTE_OPERATION) || operation.get(OP).asString().equals(UNDEFINE_ATTRIBUTE_OPERATION)) {
+                rejectValue = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().get("other").asString();
+            } else {
+                rejectValue = operation.get("other").asString();
+            }
+            return false;
+        }
+
+        @Override
+        public boolean rejectResourceAttribute(String attributeName, ModelNode attributeValue, TransformationContext context) {
+            rejectValue = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().get("other").asString();
+            return false;
+        }
+    }
+
 
 }

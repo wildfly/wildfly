@@ -101,7 +101,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
         final Iterator<TransformationRule> iterator = rules.iterator();
         final ModelNode originalModel = operation.clone();
         originalModel.protect();
-        final TransformationRule.OperationContext context = new TransformationRule.OperationContext(ctx, originalModel) {
+        final TransformationRule.OperationContext context = new TransformationRule.OperationContext(ctx) {
 
             @Override
             void invokeNext(OperationTransformer.TransformedOperation transformedOperation) throws OperationFailedException {
@@ -129,7 +129,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
             return; // discard
         }
         final Iterator<TransformationRule> iterator = rules.iterator();
-        final TransformationRule.ResourceContext context = new TransformationRule.ResourceContext(ctx, originalModel) {
+        final TransformationRule.ResourceContext context = new TransformationRule.ResourceContext(ctx) {
             @Override
             void invokeNext(final Resource resource) throws OperationFailedException {
                 if(iterator.hasNext()) {
@@ -161,7 +161,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
 
             // Process
             final ModelNode originalModel = operation.clone();
-            TransformationRule.AbstractTransformationContext ctx = new TransformationRule.AbstractTransformationContext(context, originalModel) {
+            TransformationRule.AbstractTransformationContext ctx = new TransformationRule.AbstractTransformationContext(context) {
                 @Override
                 protected TransformationContext getContext() {
                     return super.getContext();
@@ -169,12 +169,12 @@ class TransformingDescription extends AbstractDescription implements Transformat
             };
             originalModel.protect();
             //discard what can be discarded
-            if (description.shouldDiscard(attributeValue, ctx)) {
+            if (description.shouldDiscard(attributeValue, operation, ctx)) {
                 return OperationTransformer.DISCARD.transformOperation(context, address, operation);
             }
 
             //Check the rest of the model can be transformed
-            final boolean reject = !description.checkAttributeValueIsValid(attributeValue, ctx);
+            final boolean reject = !description.checkAttributeValueIsValid(attributeValue, originalModel, ctx);
             final OperationRejectionPolicy policy;
             if(reject) {
                 policy = new OperationRejectionPolicy() {
@@ -193,7 +193,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
             }
 
             //Now transform the value
-            description.convertValue(address, attributeValue, ctx);
+            description.convertValue(address, attributeValue, originalModel, ctx);
 
             //Store the rename until we are done
             String newName = description.getNewName();
@@ -219,7 +219,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
 
             // Process
             final ModelNode originalModel = operation.clone();
-            TransformationRule.AbstractTransformationContext ctx = new TransformationRule.AbstractTransformationContext(context, originalModel) {
+            TransformationRule.AbstractTransformationContext ctx = new TransformationRule.AbstractTransformationContext(context) {
                 @Override
                 protected TransformationContext getContext() {
                     return super.getContext();
@@ -227,7 +227,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
             };
             originalModel.protect();
             //discard what can be discarded
-            if (description.shouldDiscard(UNDEFINED, ctx)) {
+            if (description.shouldDiscard(UNDEFINED, originalModel, ctx)) {
                 return OperationTransformer.DISCARD.transformOperation(context, address, operation);
             }
 
