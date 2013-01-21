@@ -29,7 +29,6 @@ import org.jboss.as.controller.transform.CombinedTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
-import org.jboss.as.controller.transform.SubsystemTransformer;
 import org.jboss.staxmapper.XMLElementWriter;
 
 /**

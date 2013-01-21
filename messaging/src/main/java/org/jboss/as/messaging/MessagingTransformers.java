@@ -38,17 +38,19 @@ import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
 import static org.jboss.as.messaging.CommonAttributes.ID_CACHE_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.RUNTIME_QUEUE;
-import static org.jboss.as.messaging.MessagingExtension.SUBSYSTEM_NAME;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_1_0;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Regular.FACTORY_TYPE;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.transform.AbstractSubsystemTransformer;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.DiscardUndefinedAttributesTransformer;
 import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
-import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.ResourceTransformationContext;
+import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.controller.transform.chained.ChainedOperationTransformer;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes;
@@ -61,7 +63,7 @@ import org.jboss.dmr.Property;
 
 /**
  * Resource transformations for the messaging subsystem.
- *
+ * <p/>
  * <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012 Red Hat, inc.
  */
 public class MessagingTransformers {
@@ -72,17 +74,17 @@ public class MessagingTransformers {
 
     private static void registerTransformers_1_1_0(final SubsystemRegistration subsystem) {
 
-        final TransformersSubRegistration transformers = subsystem.registerModelTransformers(VERSION_1_1_0, new AbstractSubsystemTransformer(SUBSYSTEM_NAME) {
+        final TransformersSubRegistration transformers = subsystem.registerModelTransformers(VERSION_1_1_0, new ResourceTransformer() {
 
             private void removeAttributes(ModelNode model, AttributeDefinition... removedAttributes) {
-                for(AttributeDefinition attr: removedAttributes) {
+                for (AttributeDefinition attr : removedAttributes) {
                     model.remove(attr.getName());
                 }
             }
 
             @Override
-            public ModelNode transformModel(final TransformationContext context, final ModelNode model) {
-                ModelNode oldModel = model.clone();
+            public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
+                ModelNode oldModel = resource.getModel();
                 if (oldModel.hasDefined(HORNETQ_SERVER)) {
                     for (Property server : oldModel.get(HORNETQ_SERVER).asPropertyList()) {
                         ModelNode oldServer = oldModel.get(HORNETQ_SERVER, server.getName());
@@ -131,7 +133,7 @@ public class MessagingTransformers {
                         }
                     }
                 }
-                return oldModel;
+                resource.writeModel(oldModel);
             }
         });
 
@@ -180,17 +182,17 @@ public class MessagingTransformers {
 
         rejectExpressions(server, QueueDefinition.PATH, QueueDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0);
 
-        for (String path :  new String[]{ CommonAttributes.ACCEPTOR, CommonAttributes.CONNECTOR }) {
+        for (String path : new String[]{CommonAttributes.ACCEPTOR, CommonAttributes.CONNECTOR}) {
             TransformersSubRegistration transport = rejectExpressions(server, PathElement.pathElement(path), CommonAttributes.FACTORY_CLASS);
             rejectExpressions(transport, TransportParamDefinition.PATH, TransportParamDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0);
         }
 
-        for (String path :  new String[]{ CommonAttributes.IN_VM_ACCEPTOR, CommonAttributes.IN_VM_CONNECTOR }) {
+        for (String path : new String[]{CommonAttributes.IN_VM_ACCEPTOR, CommonAttributes.IN_VM_CONNECTOR}) {
             TransformersSubRegistration transport = rejectExpressions(server, PathElement.pathElement(path), InVMTransportDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0);
             rejectExpressions(transport, TransportParamDefinition.PATH, TransportParamDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0);
         }
 
-        for (String path :  new String[]{ CommonAttributes.REMOTE_ACCEPTOR, CommonAttributes.REMOTE_CONNECTOR }) {
+        for (String path : new String[]{CommonAttributes.REMOTE_ACCEPTOR, CommonAttributes.REMOTE_CONNECTOR}) {
             TransformersSubRegistration transport = server.registerSubResource(PathElement.pathElement(path));
             rejectExpressions(transport, TransportParamDefinition.PATH, TransportParamDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0);
         }
