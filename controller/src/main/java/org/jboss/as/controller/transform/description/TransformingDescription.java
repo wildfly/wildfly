@@ -101,7 +101,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
         final Iterator<TransformationRule> iterator = rules.iterator();
         final ModelNode originalModel = operation.clone();
         originalModel.protect();
-        final TransformationRule.OperationContext context = new TransformationRule.OperationContext(ctx) {
+        final TransformationRule.ChainedOperationContext context = new TransformationRule.ChainedOperationContext(ctx) {
 
             @Override
             void invokeNext(OperationTransformer.TransformedOperation transformedOperation) throws OperationFailedException {
@@ -129,7 +129,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
             return; // discard
         }
         final Iterator<TransformationRule> iterator = rules.iterator();
-        final TransformationRule.ResourceContext context = new TransformationRule.ResourceContext(ctx) {
+        final TransformationRule.ChainedResourceContext context = new TransformationRule.ChainedResourceContext(ctx) {
             @Override
             void invokeNext(final Resource resource) throws OperationFailedException {
                 if(iterator.hasNext()) {
@@ -161,7 +161,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
 
             // Process
             final ModelNode originalModel = operation.clone();
-            TransformationRule.AbstractTransformationContext ctx = new TransformationRule.AbstractTransformationContext(context) {
+            TransformationRule.AbstractChainedContext ctx = new TransformationRule.AbstractChainedContext(context) {
                 @Override
                 protected TransformationContext getContext() {
                     return super.getContext();
@@ -219,7 +219,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
 
             // Process
             final ModelNode originalModel = operation.clone();
-            TransformationRule.AbstractTransformationContext ctx = new TransformationRule.AbstractTransformationContext(context) {
+            TransformationRule.AbstractChainedContext ctx = new TransformationRule.AbstractChainedContext(context) {
                 @Override
                 protected TransformationContext getContext() {
                     return super.getContext();

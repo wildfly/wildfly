@@ -52,7 +52,7 @@ class AttributeTransformationDescription {
         this.converter = converter;
     }
 
-    boolean shouldDiscard(ModelNode attributeValue, ModelNode operation, TransformationRule.AbstractTransformationContext context) {
+    boolean shouldDiscard(ModelNode attributeValue, ModelNode operation, TransformationRule.AbstractChainedContext context) {
         if (discardChecker == null) {
             return false;
         }
@@ -89,7 +89,7 @@ class AttributeTransformationDescription {
      * @param context the context
      * @return {@code true} if it can be transformed, {@code false} otherwise
      */
-    boolean checkAttributeValueIsValid(ModelNode attributeValue, ModelNode operation, TransformationRule.AbstractTransformationContext context) {
+    boolean checkAttributeValueIsValid(ModelNode attributeValue, ModelNode operation, TransformationRule.AbstractChainedContext context) {
         for (RejectAttributeChecker checker : checks) {
             boolean rejected = false;
             if (operation != null) {
@@ -104,7 +104,7 @@ class AttributeTransformationDescription {
         return true;
     }
 
-    void isExistingValue(PathAddress address, ModelNode attributeValue, ModelNode operation, TransformationRule.AbstractTransformationContext context) {
+    void isExistingValue(PathAddress address, ModelNode attributeValue, ModelNode operation, TransformationRule.AbstractChainedContext context) {
         if (converter != null) {
             if (operation != null) {
                 converter.convertOperationParameter(address, name, attributeValue, operation, context.getContext());
@@ -114,7 +114,7 @@ class AttributeTransformationDescription {
         }
     }
 
-    void convertValue(PathAddress address, ModelNode attributeValue, ModelNode operation, TransformationRule.AbstractTransformationContext context) {
+    void convertValue(PathAddress address, ModelNode attributeValue, ModelNode operation, TransformationRule.AbstractChainedContext context) {
         if (converter != null) {
             if (operation != null) {
                 converter.convertOperationParameter(address, name, attributeValue, operation, context.getContext());
