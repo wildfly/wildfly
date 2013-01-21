@@ -89,7 +89,7 @@ public class BasicResourceTestCase {
         final ResourceTransformationDescriptionBuilder attrResourceBuilder = builder.addChildResource(PathElement.pathElement("attribute-resource"))
                 .getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, "test-resource")
                 .end()
-                .setResourceTransformer(new ResourceTransformer() {
+                .setCustomResourceTransformer(new ResourceTransformer() {
                     @Override
                     public void transformResource(final ResourceTransformationContext context, final PathAddress address, final Resource resource) throws OperationFailedException {
                         // Remote the test-resource attribute
@@ -112,7 +112,7 @@ public class BasicResourceTestCase {
                         }
                     })
                 .getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, "test-attribute").end()
-                .setResourceTransformer(new ResourceTransformer() {
+                .setCustomResourceTransformer(new ResourceTransformer() {
                     @Override
                     public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
                         // Get the current attribute

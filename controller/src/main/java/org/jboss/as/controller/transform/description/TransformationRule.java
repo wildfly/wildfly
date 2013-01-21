@@ -45,7 +45,7 @@ import org.jboss.dmr.ModelNode;
 abstract class TransformationRule {
 
     abstract void transformOperation(ModelNode operation, PathAddress address, OperationContext context) throws OperationFailedException;
-    abstract void tranformResource(Resource resource, PathAddress address, ResourceContext context) throws OperationFailedException;
+    abstract void transformResource(Resource resource, PathAddress address, ResourceContext context) throws OperationFailedException;
 
     abstract static class AbstractTransformationContext {
 

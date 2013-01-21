@@ -73,7 +73,7 @@ class AttributeTransformationRule extends TransformationRule {
     }
 
     @Override
-    void tranformResource(final Resource resource, final PathAddress address, final ResourceContext context) throws OperationFailedException {
+    void transformResource(final Resource resource, final PathAddress address, final ResourceContext context) throws OperationFailedException {
         final ModelNode model = resource.getModel();
         final Set<String> reject = new HashSet<String>();
         doTransform(address, model, null, context, reject);
