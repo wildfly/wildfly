@@ -281,13 +281,15 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
                                 //the client has just sent a username and password
                                 final byte[] username = sasCurrent.get_incoming_username();
                                 final byte[] incomingPassword = sasCurrent.get_incoming_password();
-                                String name = new String(username, "UTF-8");
-                                int domainIndex = name.indexOf('@');
-                                if (domainIndex > 0) {
-                                    name = name.substring(0, domainIndex);
+                                if(username.length > 0) {
+                                    String name = new String(username, "UTF-8");
+                                    int domainIndex = name.indexOf('@');
+                                    if (domainIndex > 0) {
+                                        name = name.substring(0, domainIndex);
+                                    }
+                                    principal = new SimplePrincipal(name);
+                                    credential = new String(incomingPassword, "UTF-8").toCharArray();
                                 }
-                                principal = new SimplePrincipal(name);
-                                credential = new String(incomingPassword, "UTF-8").toCharArray();
                             }
 
                             if (securityDomain != null) {
