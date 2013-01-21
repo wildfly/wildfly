@@ -179,6 +179,9 @@ public interface PathTransformation {
         }
 
         protected PathAddress start() {
+            if(original == PathAddress.EMPTY_ADDRESS || original.size() == 0) {
+                return PathAddress.EMPTY_ADDRESS;
+            }
             if(transformers.hasNext()) {
                 final PathTransformation transformer = transformers.next();
                 final PathElement next = original.getElement(idx++);
