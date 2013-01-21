@@ -32,6 +32,14 @@
             <paths>
                 <path name="com/sun/script/javascript"/>
                 <path name="com/sun/image/codec/jpeg"/>
+                <path name="com/sun/imageio/plugins/bmp"/>
+                <path name="com/sun/imageio/plugins/common"/>
+                <path name="com/sun/imageio/plugins/gif"/>
+                <path name="com/sun/imageio/plugins/jpeg"/>
+                <path name="com/sun/imageio/plugins/png"/>
+                <path name="com/sun/imageio/plugins/wbmp"/>
+                <path name="com/sun/imageio/spi"/>
+                <path name="com/sun/imageio/stream"/>
                 <path name="com/sun/jndi/dns"/>
                 <path name="com/sun/jndi/ldap"/>
                 <path name="com/sun/jndi/url"/>
