@@ -468,12 +468,12 @@ public class AttributesTestCase {
         resourceModel.get("old").set("existing");
 
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
-        builder.getAttributeBuilder().addAttribute("added", (new DefaultAttributeConverter() {
+        builder.getAttributeBuilder().setValueConverter(new DefaultAttributeConverter() {
             @Override
             public void convertAttribute(PathAddress address, String name, ModelNode attributeValue, TransformationContext context) {
                 attributeValue.set("extra");
             }
-        })).end()
+        }, "added").end()
         .build().register(transformersSubRegistration);
 
         final Resource resource = transformResource();
@@ -513,12 +513,12 @@ public class AttributesTestCase {
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
         builder.getAttributeBuilder()
                 .addRejectCheck(rejectAttributeChecker, "one", "two")
-                .addAttribute("one", new DefaultAttributeConverter() {
+                .setValueConverter(new DefaultAttributeConverter() {
                     @Override
                     public void convertAttribute(PathAddress address, String name, ModelNode attributeValue, TransformationContext context) {
-                        attributeValue.set("ONE");
+                        attributeValue.set("NEW");
                     }
-                })
+                }, "new")
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, "four", "five")
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, "six")
                 .setValueConverter(new DefaultAttributeConverter() {
@@ -545,7 +545,7 @@ public class AttributesTestCase {
         Assert.assertNotNull(toto);
         final ModelNode model = toto.getModel();
         Assert.assertEquals(4, model.keys().size());
-        Assert.assertEquals("ONE", model.get("one").asString());
+        Assert.assertEquals("NEW", model.get("new").asString());
         Assert.assertEquals("UNO", model.get("uno").asString());
         Assert.assertEquals("DOS", model.get("dos").asString());
         Assert.assertEquals("TRES", model.get("tres").asString());
@@ -564,7 +564,7 @@ public class AttributesTestCase {
         transAdd.remove(OP);
         transAdd.remove(OP_ADDR);
         Assert.assertEquals(4, transAdd.keys().size());
-        Assert.assertEquals("ONE", transAdd.get("one").asString());
+        Assert.assertEquals("NEW", transAdd.get("new").asString());
         Assert.assertEquals("UNO", transAdd.get("uno").asString());
         Assert.assertEquals("DOS", transAdd.get("dos").asString());
         Assert.assertEquals("TRES", transAdd.get("tres").asString());
@@ -598,7 +598,7 @@ public class AttributesTestCase {
         Assert.assertNotNull(toto2);
         final ModelNode model2 = toto2.getModel();
         Assert.assertEquals(4, model2.keys().size());
-        Assert.assertEquals("ONE", model2.get("one").asString());
+        Assert.assertEquals("NEW", model2.get("new").asString());
         Assert.assertEquals("UNO", model2.get("uno").asString());
         Assert.assertEquals("DOS", model2.get("dos").asString());
         Assert.assertEquals("TRES", model2.get("tres").asString());
@@ -628,7 +628,7 @@ public class AttributesTestCase {
         resourceModel.get("value").set("test");
 
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
-            builder.getAttributeBuilder().addAttribute("name", AttributeConverter.NAME_FROM_ADDRESS).end()
+        builder.getAttributeBuilder().setValueConverter(AttributeConverter.NAME_FROM_ADDRESS, "name").end()
             .build().register(transformersSubRegistration);
 
         final Resource resource = transformResource();
@@ -658,13 +658,12 @@ public class AttributesTestCase {
         VisibilityCheckerAndConverter checker = new VisibilityCheckerAndConverter();
 
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
-            builder.getAttributeBuilder()
-                .addRejectCheck(checker, "checked")
-                .setDiscard(checker, "checked")
-                .setValueConverter(checker, "checked")
-                .end()
-
-            .build().register(transformersSubRegistration);
+        builder.getAttributeBuilder()
+            .addRejectCheck(checker, "checked")
+            .setDiscard(checker, "checked")
+            .setValueConverter(checker, "checked")
+            .end()
+        .build().register(transformersSubRegistration);
 
         final Resource resource = transformResource();
         Assert.assertNotNull(resource);
@@ -688,6 +687,29 @@ public class AttributesTestCase {
         OperationTransformer.TransformedOperation transformedWrite = transformOperation(write);
         Assert.assertFalse(transformedWrite.rejectOperation(success()));
         checker.checkValues("value");
+    }
+
+    @Test
+    public void testConvertVsAdd() throws Exception {
+        resourceModel.get("convert").set("test");
+        resourceModel.get("undefined");
+
+        AttributeNameValueConverter converter = new AttributeNameValueConverter();
+        final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
+        builder.getAttributeBuilder()
+            .setValueConverter(converter, "convert", "undefined", "new", "dontAdd")
+            .end()
+        .build().register(transformersSubRegistration);
+
+        final Resource resource = transformResource();
+        Assert.assertNotNull(resource);
+        final Resource toto = resource.getChild(PATH);
+        Assert.assertNotNull(toto);
+        final ModelNode model = toto.getModel();
+        Assert.assertEquals(3, model.keys().size());
+        Assert.assertEquals("convert", model.get("convert").asString());
+        Assert.assertEquals("undefined", model.get("undefined").asString());
+        Assert.assertEquals("new", model.get("new").asString());
     }
 
     private void checkWriteOp(ModelNode write, String name, ModelNode value) throws OperationFailedException{
@@ -877,5 +899,13 @@ public class AttributesTestCase {
         }
     }
 
+    private static class AttributeNameValueConverter extends DefaultAttributeConverter {
+        @Override
+        protected void convertAttribute(PathAddress address, String name, ModelNode attributeValue, TransformationContext context) {
+            if (!name.equals("dontAdd")) {
+                attributeValue.set(name);
+            }
+        }
 
+    }
 }

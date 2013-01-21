@@ -91,8 +91,10 @@ class AttributeTransformationRule extends TransformationRule {
             AttributeTransformationDescription description = entry.getValue();
 
             //discard what can be discarded
+            boolean discarded = false;
             if (description.shouldDiscard(attributeValue, operation, context)) {
                 modelOrOp.remove(attributeName);
+                discarded = true;
             }
 
             //Check the rest of the model can be transformed
@@ -101,18 +103,23 @@ class AttributeTransformationRule extends TransformationRule {
             }
 
             //Now transform the value
+            boolean isNewAttribute;
+            if (operation != null) {
+                isNewAttribute = !operation.has(attributeName);
+            } else {
+                isNewAttribute = !modelOrOp.has(attributeName);
+            }
             description.convertValue(address, attributeValue, operation, context);
+            if (!attributeValue.isDefined()) {
+                modelOrOp.remove(attributeName);
+            } else if (isNewAttribute && !discarded) {
+                adds.put(attributeName, attributeValue);
+            }
 
             //Store the rename until we are done
             String newName = description.getNewName();
             if (newName != null) {
                 renames.put(attributeName, newName);
-            }
-
-            //Add attribute
-            ModelNode added = description.addAttribute(address, operation, context);
-            if (added != null) {
-                adds.put(attributeName, added);
             }
         }
 
