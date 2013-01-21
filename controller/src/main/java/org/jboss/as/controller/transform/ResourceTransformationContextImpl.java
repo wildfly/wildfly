@@ -156,6 +156,12 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
         return new ResourceTransformationContextImpl(root, absoluteAddress, read, originalModel);
     }
 
+    @Override
+    public Resource readTransformedResource(final PathAddress relativeAddress) {
+        final PathAddress address = this.current.append(relativeAddress);
+        return Resource.Tools.navigate(root, address);
+    }
+
     public TransformerEntry resolveTransformerEntry(PathAddress address) {
         final TransformerEntry entry = originalModel.target.getTransformerEntry(address);
         if(entry == null) {
@@ -233,7 +239,7 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
         });
         final ResourceTransformer transformer = resolveTransformer(entry, childAddress);
         final ResourceTransformationContext childContext = new ResourceTransformationContextImpl(root, currentAddress, childAddress, originalModel);
-        transformer.transformResource(childContext, childAddress, child);
+        transformer.transformResource(childContext, currentAddress, child);
     }
 
     @Override

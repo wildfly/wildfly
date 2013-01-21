@@ -25,6 +25,7 @@ package org.jboss.as.controller.transform.description;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.PathTransformation;
 import org.jboss.as.controller.transform.ResourceTransformer;
 
 /**
@@ -86,6 +87,16 @@ public interface ResourceTransformationDescriptionBuilder extends Transformation
      * @return the builder for the child resource
      */
     ResourceTransformationDescriptionBuilder addChildRedirection(PathElement oldAddress, PathElement newAddress);
+
+    /**
+     * Add a child resource, where all operation will get redirected to a different address defined by
+     * the path transformation.
+     *
+     * @param pathElement the path element of the child
+     * @param pathTransformation the path transformation
+     * @return the builder for the child resource
+     */
+    ResourceTransformationDescriptionBuilder addChildRedirection(PathElement pathElement, PathTransformation pathTransformation);
 
     /**
      * Add a child resource.
