@@ -43,7 +43,6 @@ public interface ResourceTransformationDescriptionBuilder extends Transformation
      */
     AttributeTransformationDescriptionBuilder getAttributeBuilder();
 
-
     /**
      * Add an operation transformation entry for a specific operation.
      *
@@ -62,14 +61,14 @@ public interface ResourceTransformationDescriptionBuilder extends Transformation
     ResourceTransformationDescriptionBuilder addRawOperationTransformationOverride(String operationName, OperationTransformer operationTransformer);
 
     /**
-     * Set a custom resource transformer. This transformer is going to be called after all attribute transformations happened
-     * and needs to take care of adding the currently transformed resource properly. If not specified, the resource will be
-     * added according to other rules defined by this builder.
+     * Set a (optional) custom resource transformer. This transformer is going to be called after all attribute transformations
+     * happened and needs to take care of adding the currently transformed resource properly. If not specified, the resource
+     * will be added according to other rules defined by this builder.
      *
      * @param resourceTransformer the resource transformer
      * @return the builder for the current resource
      */
-    ResourceTransformationDescriptionBuilder setResourceTransformer(ResourceTransformer resourceTransformer);
+    ResourceTransformationDescriptionBuilder setCustomResourceTransformer(ResourceTransformer resourceTransformer);
 
     /**
      * Add a child resource.
@@ -80,13 +79,13 @@ public interface ResourceTransformationDescriptionBuilder extends Transformation
     ResourceTransformationDescriptionBuilder addChildResource(PathElement pathElement);
 
     /**
-     * Add a child resource, where all operations will get redirected to the new element address.
+     * Add a child resource, where all operations will get redirected to the legacy address.
      *
-     * @param oldAddress the old path element
-     * @param newAddress the new path element
+     * @param current the current path element
+     * @param legacy the legacy path element
      * @return the builder for the child resource
      */
-    ResourceTransformationDescriptionBuilder addChildRedirection(PathElement oldAddress, PathElement newAddress);
+    ResourceTransformationDescriptionBuilder addChildRedirection(PathElement current, PathElement legacy);
 
     /**
      * Add a child resource, where all operation will get redirected to a different address defined by

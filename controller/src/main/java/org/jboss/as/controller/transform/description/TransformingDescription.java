@@ -134,7 +134,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
             void invokeNext(final Resource resource) throws OperationFailedException {
                 if(iterator.hasNext()) {
                     final TransformationRule next = iterator.next();
-                    next.tranformResource(resource, address, this);
+                    next.transformResource(resource, address, this);
                 } else {
                     resourceTransfomer.transformResource(ctx, address, resource);
                 }
@@ -142,7 +142,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
         };
         // Kick off the chain
         final TransformationRule rule = new AttributeTransformationRule(attributeTransformations);
-        rule.tranformResource(original, address, context);
+        rule.transformResource(original, address, context);
     }
 
     private class WriteAttributeTransformer implements OperationTransformer {

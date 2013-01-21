@@ -45,7 +45,7 @@ class DiscardRule extends TransformationRule {
     }
 
     @Override
-    void tranformResource(Resource resource, PathAddress address, ResourceContext context) throws OperationFailedException {
+    void transformResource(Resource resource, PathAddress address, ResourceContext context) throws OperationFailedException {
         // nothing
     }
 

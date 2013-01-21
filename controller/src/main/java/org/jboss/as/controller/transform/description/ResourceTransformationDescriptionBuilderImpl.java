@@ -72,9 +72,9 @@ class ResourceTransformationDescriptionBuilderImpl extends AbstractTransformatio
     }
 
     @Override
-    public ResourceTransformationDescriptionBuilder addChildRedirection(final PathElement oldAddress, final PathElement newAddress) {
-        final PathTransformation transformation = new PathTransformation.BasicPathTransformation(newAddress);
-        return addChildRedirection(oldAddress, transformation);
+    public ResourceTransformationDescriptionBuilder addChildRedirection(final PathElement current, final PathElement legacy) {
+        final PathTransformation transformation = new PathTransformation.BasicPathTransformation(legacy);
+        return addChildRedirection(current, transformation);
     }
 
     @Override
@@ -85,7 +85,7 @@ class ResourceTransformationDescriptionBuilderImpl extends AbstractTransformatio
     }
 
     @Override
-    public ResourceTransformationDescriptionBuilder setResourceTransformer(final ResourceTransformer resourceTransformer) {
+    public ResourceTransformationDescriptionBuilder setCustomResourceTransformer(final ResourceTransformer resourceTransformer) {
         super.setResourceTransformer(resourceTransformer);
         return this;
     }
