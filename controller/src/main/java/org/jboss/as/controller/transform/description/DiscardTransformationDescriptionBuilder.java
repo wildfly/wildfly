@@ -24,7 +24,7 @@ package org.jboss.as.controller.transform.description;
 
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.transform.OperationTransformer;
-import org.jboss.as.controller.transform.PathTransformation;
+import org.jboss.as.controller.transform.PathAddressTransformer;
 import org.jboss.as.controller.transform.ResourceTransformer;
 
 /**
@@ -35,7 +35,7 @@ import org.jboss.as.controller.transform.ResourceTransformer;
 public final class DiscardTransformationDescriptionBuilder extends AbstractTransformationDescriptionBuilder implements TransformationDescriptionBuilder {
 
     protected DiscardTransformationDescriptionBuilder(PathElement pathElement) {
-        super(pathElement, PathTransformation.DEFAULT, ResourceTransformer.DISCARD, OperationTransformer.DISCARD);
+        super(pathElement, PathAddressTransformer.DEFAULT, ResourceTransformer.DISCARD, OperationTransformer.DISCARD);
     }
 
     @Override

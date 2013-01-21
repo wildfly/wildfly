@@ -216,8 +216,8 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
     public void processChild(final PathElement element, Resource child) throws OperationFailedException {
         final PathAddress childAddress = read.append(element); // read
         final TransformerEntry entry = resolveTransformerEntry(childAddress);
-        final PathTransformation path = entry.getPathTransformation();
-        final PathAddress currentAddress = path.transform(element, new PathTransformation.Builder() { // write
+        final PathAddressTransformer path = entry.getPathTransformation();
+        final PathAddress currentAddress = path.transform(element, new PathAddressTransformer.Builder() { // write
             @Override
             public PathAddress getOriginal() {
                 return childAddress;

@@ -30,7 +30,7 @@ import java.util.Map;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.transform.OperationTransformer;
-import org.jboss.as.controller.transform.PathTransformation;
+import org.jboss.as.controller.transform.PathAddressTransformer;
 import org.jboss.as.controller.transform.ResourceTransformer;
 
 /**
@@ -43,11 +43,11 @@ class ResourceTransformationDescriptionBuilderImpl extends AbstractTransformatio
     private final AttributeTransformationDescriptionBuilderImpl.AttributeTransformationDescriptionBuilderRegistry registry = new AttributeTransformationDescriptionBuilderImpl.AttributeTransformationDescriptionBuilderRegistry();
 
     protected ResourceTransformationDescriptionBuilderImpl(final PathElement pathElement) {
-        this(pathElement, PathTransformation.DEFAULT);
+        this(pathElement, PathAddressTransformer.DEFAULT);
     }
 
-    protected ResourceTransformationDescriptionBuilderImpl(final PathElement pathElement, final PathTransformation pathTransformation) {
-        super(pathElement, pathTransformation, ResourceTransformer.DEFAULT, OperationTransformer.DEFAULT);
+    protected ResourceTransformationDescriptionBuilderImpl(final PathElement pathElement, final PathAddressTransformer pathAddressTransformer) {
+        super(pathElement, pathAddressTransformer, ResourceTransformer.DEFAULT, OperationTransformer.DEFAULT);
     }
 
     @Override
@@ -73,13 +73,13 @@ class ResourceTransformationDescriptionBuilderImpl extends AbstractTransformatio
 
     @Override
     public ResourceTransformationDescriptionBuilder addChildRedirection(final PathElement current, final PathElement legacy) {
-        final PathTransformation transformation = new PathTransformation.BasicPathTransformation(legacy);
+        final PathAddressTransformer transformation = new PathAddressTransformer.BasicPathAddressTransformer(legacy);
         return addChildRedirection(current, transformation);
     }
 
     @Override
-    public ResourceTransformationDescriptionBuilder addChildRedirection(final PathElement oldAddress, final PathTransformation pathTransformation) {
-        final ResourceTransformationDescriptionBuilderImpl builder = new ResourceTransformationDescriptionBuilderImpl(oldAddress, pathTransformation);
+    public ResourceTransformationDescriptionBuilder addChildRedirection(final PathElement oldAddress, final PathAddressTransformer pathAddressTransformer) {
+        final ResourceTransformationDescriptionBuilderImpl builder = new ResourceTransformationDescriptionBuilderImpl(oldAddress, pathAddressTransformer);
         children.add(builder);
         return builder;
     }
@@ -113,7 +113,7 @@ class ResourceTransformationDescriptionBuilderImpl extends AbstractTransformatio
             children.add(builder.build());
         }
         // Create the description
-        return new TransformingDescription(pathElement, pathTransformation, discardPolicy, resourceTransformer, attributes, operations, children);
+        return new TransformingDescription(pathElement, pathAddressTransformer, discardPolicy, resourceTransformer, attributes, operations, children);
     }
 
     @Override

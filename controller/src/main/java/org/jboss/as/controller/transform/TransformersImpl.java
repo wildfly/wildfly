@@ -67,10 +67,10 @@ public class TransformersImpl implements Transformers {
             ControllerLogger.ROOT_LOGGER.tracef("operation %s does not need transformation", operation);
             return new OperationTransformer.TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
         }
-        final List<PathTransformation> addresses = target.getPathTransformation(address);
-        final Iterator<PathTransformation> transformations = addresses.iterator();
+        final List<PathAddressTransformer> addresses = target.getPathTransformation(address);
+        final Iterator<PathAddressTransformer> transformations = addresses.iterator();
         // transformations.next();
-        final PathTransformation.BuilderImpl builder = new PathTransformation.BuilderImpl(transformations, address);
+        final PathAddressTransformer.BuilderImpl builder = new PathAddressTransformer.BuilderImpl(transformations, address);
         final PathAddress transformed = builder.start();
         ResourceTransformationContext opCtx = ResourceTransformationContextImpl.createForOperation(context, operation);
         return transformer.transformOperation(opCtx, transformed, operation);

@@ -26,7 +26,6 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -65,7 +64,7 @@ public interface TransformationTarget {
      * @param address the path address
      * @return a list of registered path transformers
      */
-    List<PathTransformation> getPathTransformation(PathAddress address);
+    List<PathAddressTransformer> getPathTransformation(PathAddress address);
 
     /**
      * Resolve a resource transformer for agiven address.

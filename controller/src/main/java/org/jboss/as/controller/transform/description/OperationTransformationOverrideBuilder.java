@@ -34,24 +34,24 @@ public interface OperationTransformationOverrideBuilder extends AttributeTransfo
     /**
      * Give the operation a new name
      *
-     * @param the new name
+     * @param newName the new name of the operation
      * @return this operation transformer builder
      */
     OperationTransformationOverrideBuilder rename(String newName);
 
     /**
-     * Set a specific operation transformer, which is called after all attribute rules where executed.
+     * Set an optional operation transformer, which is called after all attribute rules were executed.
      *
      * @param operationTransformer the operation transformer
      * @return this operation transformer builder
      */
-    OperationTransformationOverrideBuilder setOperationTransformer(OperationTransformer operationTransformer);
+    OperationTransformationOverrideBuilder setCustomOperationTransformer(OperationTransformer operationTransformer);
 
     /**
-     * Inherit all existing attribute rules from the resource.
+     * Inherit all existing attribute rules from the resource for this operation transformer.
      *
      * @return this operation transformer builder
      */
-    OperationTransformationOverrideBuilder inherit();
+    OperationTransformationOverrideBuilder inheritResourceAttributeDefinitions();
 
 }

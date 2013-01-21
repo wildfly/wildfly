@@ -25,9 +25,8 @@ package org.jboss.as.controller.transform.description;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.transform.CombinedTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
-import org.jboss.as.controller.transform.PathTransformation;
+import org.jboss.as.controller.transform.PathAddressTransformer;
 import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.TransformersSubRegistration;
 
 import java.util.Collections;
 import java.util.List;
@@ -43,7 +42,7 @@ public final class ExplicitTransformationDescriptionBuilder extends AbstractTran
     // TODO operation and children
 
     public ExplicitTransformationDescriptionBuilder(PathElement pathElement) {
-        super(pathElement, PathTransformation.DEFAULT, ResourceTransformer.DEFAULT, OperationTransformer.DEFAULT);
+        super(pathElement, PathAddressTransformer.DEFAULT, ResourceTransformer.DEFAULT, OperationTransformer.DEFAULT);
     }
 
     public ExplicitTransformationDescriptionBuilder setTransformer(final CombinedTransformer transformer) {
@@ -64,7 +63,7 @@ public final class ExplicitTransformationDescriptionBuilder extends AbstractTran
 
     @Override
     public TransformationDescription build() {
-        return new AbstractDescription(pathElement, pathTransformation) {
+        return new AbstractDescription(pathElement, pathAddressTransformer) {
 
             @Override
             public OperationTransformer getOperationTransformer() {

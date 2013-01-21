@@ -22,19 +22,15 @@
 
 package org.jboss.as.controller.transform.description;
 
-import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.ModelVersionRange;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.OperationTransformer;
-import org.jboss.as.controller.transform.PathTransformation;
+import org.jboss.as.controller.transform.PathAddressTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.dmr.ModelNode;
 
 import java.util.Collections;
@@ -47,7 +43,7 @@ import java.util.Map;
 class DiscardDefinition extends AbstractDescription implements TransformationDescription, OperationTransformer, ResourceTransformer {
 
     public DiscardDefinition(PathElement pathElement) {
-        super(pathElement, PathTransformation.DEFAULT);
+        super(pathElement, PathAddressTransformer.DEFAULT);
     }
 
     @Override
