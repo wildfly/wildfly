@@ -72,9 +72,14 @@ class ResourceTransformationDescriptionBuilderImpl extends AbstractTransformatio
     }
 
     @Override
-    public ResourceTransformationDescriptionBuilder addChildRedirection(PathElement oldAddress, PathElement newAddress) {
+    public ResourceTransformationDescriptionBuilder addChildRedirection(final PathElement oldAddress, final PathElement newAddress) {
         final PathTransformation transformation = new PathTransformation.BasicPathTransformation(newAddress);
-        final ResourceTransformationDescriptionBuilderImpl builder = new ResourceTransformationDescriptionBuilderImpl(oldAddress, transformation);
+        return addChildRedirection(oldAddress, transformation);
+    }
+
+    @Override
+    public ResourceTransformationDescriptionBuilder addChildRedirection(final PathElement oldAddress, final PathTransformation pathTransformation) {
+        final ResourceTransformationDescriptionBuilderImpl builder = new ResourceTransformationDescriptionBuilderImpl(oldAddress, pathTransformation);
         children.add(builder);
         return builder;
     }

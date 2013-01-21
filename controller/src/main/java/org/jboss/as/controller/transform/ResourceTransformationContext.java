@@ -86,6 +86,16 @@ public interface ResourceTransformationContext extends TransformationContext {
     void processChild(PathElement element, Resource child) throws OperationFailedException;
 
     /**
+     * Read a resource from the transformed model.
+     *
+     * NOTE: this is going to use the path transformed address
+     *
+     * @param address the relative address
+     * @return the resource
+     */
+    Resource readTransformedResource(PathAddress address);
+
+    /**
      * Get the transformed root.
      *
      * @return the transformed root

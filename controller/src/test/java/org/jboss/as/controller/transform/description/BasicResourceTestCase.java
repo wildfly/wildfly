@@ -43,7 +43,9 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.PathTransformation;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
+import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.TransformationTargetImpl;
@@ -57,7 +59,7 @@ import org.junit.Test;
 /**
  * @author Emanuel Muckenhuber
  */
-public class BasicTestCase {
+public class BasicResourceTestCase {
 
     private static PathElement PATH = PathElement.pathElement("toto", "testSubsystem");
     private static PathElement DISCARD = PathElement.pathElement("discard");
@@ -82,6 +84,47 @@ public class BasicTestCase {
             .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, "test")
             .addAttribute("othertest", AttributeConverter.Factory.createHardCoded(new ModelNode(true)))
             .end();
+
+        // Create a child resource based on an attribute
+        final ResourceTransformationDescriptionBuilder attrResourceBuilder = builder.addChildResource(PathElement.pathElement("attribute-resource"))
+                .getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, "test-resource")
+                .end()
+                .setResourceTransformer(new ResourceTransformer() {
+                    @Override
+                    public void transformResource(final ResourceTransformationContext context, final PathAddress address, final Resource resource) throws OperationFailedException {
+                        // Remote the test-resource attribute
+                        final ModelNode model = resource.getModel();
+                        final ModelNode testResource = model.remove("test-resource");
+                        // Add the current resource
+                        context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
+                        // Use the test-resource attribute to create a child
+                        final Resource child = Resource.Factory.create();
+                        child.getModel().get("attribute").set(testResource);
+                        context.addTransformedResource(PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement("resource", "test")), child);
+                        context.processChildren(resource);
+                    }
+                });
+
+        attrResourceBuilder.addChildRedirection(PathElement.pathElement("resource-attribute"), new PathTransformation() {
+                        @Override
+                        public PathAddress transform(PathElement current, Builder builder) {
+                            return builder.next(); // skip the current element
+                        }
+                    })
+                .getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, "test-attribute").end()
+                .setResourceTransformer(new ResourceTransformer() {
+                    @Override
+                    public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
+                        // Get the current attribute
+                        final ModelNode attribute = resource.getModel().get("test-attribute");
+                        // Add it to the existing resource
+                        final Resource existing = context.readTransformedResource(PathAddress.EMPTY_ADDRESS); //
+                        final ModelNode model = existing.getModel();
+                        model.get("test-attribute").set(attribute);
+
+                    }
+                });
+
 
         builder.addOperationTransformationOverride("test-operation")
         .inherit()
@@ -126,6 +169,16 @@ public class BasicTestCase {
         configuration.registerChild(SETTING_DIRECTORY, setting);
         toto.registerChild(CONFIGURATION_TEST, configuration);
 
+        // attribute-resource
+        final Resource attrResource = Resource.Factory.create();
+        attrResource.getModel().get("test-resource").set("abc");
+        toto.registerChild(PathElement.pathElement("attribute-resource", "test"), attrResource);
+
+        // resource-attribute
+        final Resource resourceAttr = Resource.Factory.create();
+        resourceAttr.getModel().get("test-attribute").set("test");
+        attrResource.registerChild(PathElement.pathElement("resource-attribute", "test"), resourceAttr);
+
         //
         resourceRoot.registerChild(PATH, toto);
 
@@ -157,6 +210,14 @@ public class BasicTestCase {
         Assert.assertNotNull(toto);
         Assert.assertFalse(toto.hasChild(PathElement.pathElement("discard", "one")));
         Assert.assertFalse(toto.hasChild(CONFIGURATION_TEST));
+
+        final Resource attResource = toto.getChild(PathElement.pathElement("attribute-resource", "test"));
+        Assert.assertNotNull(attResource);
+        final ModelNode attResourceModel = attResource.getModel();
+        Assert.assertFalse(attResourceModel.get("test-resource").isDefined());  // check that the resource got removed
+        Assert.assertTrue(attResourceModel.hasDefined("test-attribute"));
+        Assert.assertTrue(attResource.hasChild(PathElement.pathElement("resource", "test")));
+
     }
 
     @Test
