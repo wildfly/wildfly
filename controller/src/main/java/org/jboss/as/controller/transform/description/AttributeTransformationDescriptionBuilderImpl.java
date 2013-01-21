@@ -138,18 +138,6 @@ class AttributeTransformationDescriptionBuilderImpl implements AttributeTransfor
         return this;
     }
 
-    @Override
-    public AttributeTransformationDescriptionBuilder addAttribute(AttributeDefinition attribute, AttributeConverter attributeConverter) {
-        registry.addAddedAttribute(getAttributeName(attribute), attributeConverter);
-        return this;
-    }
-
-    @Override
-    public AttributeTransformationDescriptionBuilder addAttribute(String attribute, AttributeConverter attributeConverter) {
-        registry.addAddedAttribute(attribute, attributeConverter);
-        return this;
-    }
-
     protected String getAttributeName(AttributeDefinition attr) {
         return attr.getName();
     }
@@ -164,7 +152,6 @@ class AttributeTransformationDescriptionBuilderImpl implements AttributeTransfor
         private final Map<String, DiscardAttributeChecker> discardedAttributes = new HashMap<String, DiscardAttributeChecker>();
         private final Map<String, String> renamedAttributes = new HashMap<String, String>();
         private final Map<String, AttributeConverter> convertedAttributes = new HashMap<String, AttributeConverter>();
-        private final Map<String, AttributeConverter> addedAttributes = new HashMap<String, AttributeConverter>();
 
 
         void addToAllAttributes(String attributeName) {
@@ -201,18 +188,13 @@ class AttributeTransformationDescriptionBuilderImpl implements AttributeTransfor
             convertedAttributes.put(attributeName, attributeConverter);
         }
 
-        void addAddedAttribute(String attributeName, AttributeConverter attributeConverter) {
-            addToAllAttributes(attributeName);
-            addedAttributes.put(attributeName, attributeConverter);
-        }
-
         Map<String, AttributeTransformationDescription> buildAttributes(){
             Map<String, AttributeTransformationDescription> attributes = new HashMap<String, AttributeTransformationDescription>();
             for (String name : allAttributes) {
                 List<RejectAttributeChecker> checkers = attributeRestrictions.get(name);
                 String newName = renamedAttributes.get(name);
                 DiscardAttributeChecker discardChecker = discardedAttributes.get(name);
-                attributes.put(name, new AttributeTransformationDescription(name, checkers, newName, discardChecker, convertedAttributes.get(name), addedAttributes.get(name)));
+                attributes.put(name, new AttributeTransformationDescription(name, checkers, newName, discardChecker, convertedAttributes.get(name)));
             }
             return attributes;
         }
@@ -231,8 +213,6 @@ class AttributeTransformationDescriptionBuilderImpl implements AttributeTransfor
         result.renamedAttributes.putAll(two.renamedAttributes);
         result.convertedAttributes.putAll(one.convertedAttributes);
         result.convertedAttributes.putAll(two.convertedAttributes);
-        result.addedAttributes.putAll(one.addedAttributes);
-        result.addedAttributes.putAll(two.addedAttributes);
 
         return result;
     }

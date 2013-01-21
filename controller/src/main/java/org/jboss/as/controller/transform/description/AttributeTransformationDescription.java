@@ -42,16 +42,14 @@ class AttributeTransformationDescription {
     final String newName;
     final DiscardAttributeChecker discardChecker;
     final AttributeConverter converter;
-    final AttributeConverter addConverter;
 
 
-    AttributeTransformationDescription(String name, List<RejectAttributeChecker> checks, String newName, DiscardAttributeChecker discardChecker, AttributeConverter converter, AttributeConverter addConverter) {
+    AttributeTransformationDescription(String name, List<RejectAttributeChecker> checks, String newName, DiscardAttributeChecker discardChecker, AttributeConverter converter) {
         this.name = name;
         this.checks = checks != null ? checks : Collections.<RejectAttributeChecker>emptyList();
         this.newName = newName;
         this.discardChecker = discardChecker;
         this.converter = converter;
-        this.addConverter = addConverter;
     }
 
     boolean shouldDiscard(ModelNode attributeValue, ModelNode operation, TransformationRule.AbstractTransformationContext context) {
@@ -106,7 +104,7 @@ class AttributeTransformationDescription {
         return true;
     }
 
-    void convertValue(PathAddress address, ModelNode attributeValue, ModelNode operation, TransformationRule.AbstractTransformationContext context) {
+    void isExistingValue(PathAddress address, ModelNode attributeValue, ModelNode operation, TransformationRule.AbstractTransformationContext context) {
         if (converter != null) {
             if (operation != null) {
                 converter.convertOperationParameter(address, name, attributeValue, operation, context.getContext());
@@ -116,18 +114,13 @@ class AttributeTransformationDescription {
         }
     }
 
-
-    ModelNode addAttribute(PathAddress address, ModelNode operation, TransformationRule.AbstractTransformationContext context) {
-        if (addConverter != null) {
-            ModelNode attributeValue = new ModelNode();
+    void convertValue(PathAddress address, ModelNode attributeValue, ModelNode operation, TransformationRule.AbstractTransformationContext context) {
+        if (converter != null) {
             if (operation != null) {
-                addConverter.convertOperationParameter(address, name, attributeValue, operation, context.getContext());
+                converter.convertOperationParameter(address, name, attributeValue, operation, context.getContext());
             } else {
-                addConverter.convertResourceAttribute(address, name, attributeValue, context.getContext());
+                converter.convertResourceAttribute(address, name, attributeValue, context.getContext());
             }
-            return attributeValue;
         }
-        return null;
     }
-
 }

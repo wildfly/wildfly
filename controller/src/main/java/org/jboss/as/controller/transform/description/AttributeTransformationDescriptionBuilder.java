@@ -121,7 +121,6 @@ public interface AttributeTransformationDescriptionBuilder {
      * @return this builder
      */
     AttributeTransformationDescriptionBuilder addRenames(Map<String, String> renames);
-    // AttributeTransformationDescriptionBuilder<T> addRenames(Map<AttributeDefinition, String> renames);
 
     /**
      * Use to convert an attribute's value. This is done after the attribute has been checked for discarding and checked for rejection.
@@ -134,30 +133,13 @@ public interface AttributeTransformationDescriptionBuilder {
 
     /**
      * Use to convert an attribute's value. This is done after the attribute has been checked for discarding and checked for rejection.
+     * If it is a new attribute, it is added after the attribute has been checked for discarding and checked for rejection.
      *
      * @param attributeConverter the attribute converter used to convert the value of an attribute
      * @param convertedAttributes the attributes the attribute converter should be used on
      * @return this builder
      */
     AttributeTransformationDescriptionBuilder setValueConverter(AttributeConverter attributeConverter, AttributeDefinition...convertedAttributes);
-
-    /**
-     * Use to add an attribute. This is done after the attribute has been checked for discarding and checked for rejection.
-     *
-     * @param attribute the name of the attribute to add
-     * @param attributeConverter the attribute converter used to set the value of the new attribute
-     * @return this builder
-     */
-    AttributeTransformationDescriptionBuilder addAttribute(String attribute, AttributeConverter attributeConverter);
-
-    /**
-     * Use to add an attribute. This is done after the attribute has been checked for discarding and checked for rejection.
-     *
-     * @param attribute the name of the attribute to add
-     * @param attributeConverter the attribute converter used to set the value of the new attribute
-     * @return this builder
-     */
-    AttributeTransformationDescriptionBuilder addAttribute(AttributeDefinition attribute, AttributeConverter attributeConverter);
 
     /**
      * Finish with this attribute builder and return control to the parent resource transformation builder
