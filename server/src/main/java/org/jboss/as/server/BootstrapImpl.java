@@ -22,7 +22,6 @@
 
 package org.jboss.as.server;
 
-import java.io.File;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -41,7 +40,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.threads.AsyncFuture;
 import org.jboss.threads.AsyncFutureTask;
 import org.jboss.threads.JBossExecutors;
-import org.jboss.vfs.VFSUtils;
 
 /**
  * The bootstrap implementation.
@@ -72,7 +70,6 @@ final class BootstrapImpl implements Bootstrap {
         } catch (ModuleLoadException e) {
             throw ServerMessages.MESSAGES.vfsNotAvailable();
         }
-        clearEnvironment(configuration.getServerEnvironment());
         final FutureServiceContainer future = new FutureServiceContainer(container);
         final ServiceTarget tracker = container.subTarget();
         final ControlledProcessState processState = new ControlledProcessState(configuration.getServerEnvironment().isStandalone());
@@ -136,17 +133,6 @@ final class BootstrapImpl implements Bootstrap {
             return (AsyncFuture<ServiceContainer>) controller.getValue();
         } catch (Exception ex) {
             throw ServerMessages.MESSAGES.cannotStartServer(ex);
-        }
-    }
-
-    private static void clearEnvironment(ServerEnvironment serverEnvironment){
-        File tmp = serverEnvironment.getServerTempDir().getAbsoluteFile();
-        String[] directories = tmp.list();
-        for(String dir:directories){
-            File childDir = new File(tmp,dir);
-            if(childDir.exists()){
-                VFSUtils.recursiveDelete(childDir);
-            }
         }
     }
 
