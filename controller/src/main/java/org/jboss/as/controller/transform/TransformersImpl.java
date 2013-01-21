@@ -22,26 +22,18 @@
 
 package org.jboss.as.controller.transform;
 
-import org.jboss.as.controller.ControllerLogger;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ProcessType;
-import org.jboss.as.controller.ResourceDefinition;
-import org.jboss.as.controller.RunningMode;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.Iterator;
 import java.util.List;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import org.jboss.as.controller.ControllerLogger;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 
 /**
  * @author Emanuel Muckenhuber
@@ -80,7 +72,8 @@ public class TransformersImpl implements Transformers {
         // transformations.next();
         final PathTransformation.BuilderImpl builder = new PathTransformation.BuilderImpl(transformations, address);
         final PathAddress transformed = builder.start();
-        return transformer.transformOperation(context, transformed, operation);
+        ResourceTransformationContext opCtx = ResourceTransformationContextImpl.createForOperation(context, operation);
+        return transformer.transformOperation(opCtx, transformed, operation);
     }
 
     @Override

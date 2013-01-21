@@ -23,6 +23,7 @@
 package org.jboss.as.controller.transform;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -298,6 +299,16 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
             throw new IllegalArgumentException("wrong context type");
         }
     }
+
+    public static ResourceTransformationContext createForOperation(TransformationContext context, ModelNode operation) {
+        if(context instanceof ResourceTransformationContextImpl) {
+            final ResourceTransformationContextImpl impl = (ResourceTransformationContextImpl) context;
+            return new ResourceTransformationContextImpl(impl.root, PathAddress.pathAddress(operation.get(OP_ADDR)), impl.originalModel);
+        } else {
+            throw new IllegalArgumentException("wrong context type");
+        }
+    }
+
 
     static class OriginalModel {
 
