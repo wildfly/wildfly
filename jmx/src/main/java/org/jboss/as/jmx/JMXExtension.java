@@ -39,13 +39,13 @@ import static org.jboss.as.jmx.CommonAttributes.REMOTING_CONNECTOR;
 
 import java.util.Collections;
 import java.util.List;
-
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -53,11 +53,12 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.AbstractOperationTransformer;
-import org.jboss.as.controller.transform.AbstractSubsystemTransformer;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
+import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
@@ -121,11 +122,11 @@ public class JMXExtension implements Extension {
         return createOperation(ADD);
     }
 
-    private static ModelNode createOperation(String name, String...addressElements) {
+    private static ModelNode createOperation(String name, String... addressElements) {
         final ModelNode op = new ModelNode();
         op.get(OP).set(name);
         op.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
-        for (int i = 0 ; i < addressElements.length ; i++) {
+        for (int i = 0; i < addressElements.length; i++) {
             op.get(OP_ADDR).add(addressElements[i], addressElements[++i]);
         }
         return op;
@@ -133,14 +134,15 @@ public class JMXExtension implements Extension {
 
     private void registerTransformers1_0_0(SubsystemRegistration registration) {
         // Register the transformers
-        final TransformersSubRegistration transformers = registration.registerModelTransformers(ModelVersion.create(1, 0, 0), new AbstractSubsystemTransformer(SUBSYSTEM_NAME) {
+        final TransformersSubRegistration transformers = registration.registerModelTransformers(ModelVersion.create(1, 0, 0), new ResourceTransformer() {
             @Override
-            protected ModelNode transformModel(TransformationContext context, ModelNode model) {
+            public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
+                ModelNode model = resource.getModel();
                 boolean showModel = model.get(CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED).isDefined();
                 ModelNode result = model.clone();
                 result.get(CommonAttributes.SHOW_MODEL).set(showModel);
                 result.remove(CommonAttributes.EXPOSE_MODEL);
-                return result;
+                context.processChildren(resource);
             }
         });
 
@@ -179,15 +181,15 @@ public class JMXExtension implements Extension {
             @Override
             public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation) {
                 return new TransformedOperation(null, new OperationResultTransformer() {
-                        @Override
-                        public ModelNode transformResult(ModelNode result) {
-                            if (operation.get(NAME).asString().equals(CommonAttributes.DOMAIN_NAME)) {
-                                result.get(RESULT).set(CommonAttributes.DEFAULT_RESOLVED_DOMAIN);
-                            }
-                            result.get(OUTCOME).set(SUCCESS);
-                            result.get(RESULT);
-                            return result;
+                    @Override
+                    public ModelNode transformResult(ModelNode result) {
+                        if (operation.get(NAME).asString().equals(CommonAttributes.DOMAIN_NAME)) {
+                            result.get(RESULT).set(CommonAttributes.DEFAULT_RESOLVED_DOMAIN);
                         }
+                        result.get(OUTCOME).set(SUCCESS);
+                        result.get(RESULT);
+                        return result;
+                    }
                 });
             }
         });
@@ -388,22 +390,22 @@ public class JMXExtension implements Extension {
             String domainName = null;
             Boolean properPropertyFormat = null;
 
-            for (int i = 0 ; i < reader.getAttributeCount() ; i++) {
+            for (int i = 0; i < reader.getAttributeCount(); i++) {
                 final String value = reader.getAttributeValue(i);
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
-                case DOMAIN_NAME:
-                    ExposeModelResource.getDomainNameAttribute(showModelChild).parseAndSetParameter(value, op, reader);
-                    break;
-                case PROPER_PROPETY_FORMAT:
-                    if (showModelChild.equals(CommonAttributes.RESOLVED)) {
-                        ExposeModelResourceResolved.PROPER_PROPERTY_FORMAT.parseAndSetParameter(value, op, reader);
-                    } else {
+                    case DOMAIN_NAME:
+                        ExposeModelResource.getDomainNameAttribute(showModelChild).parseAndSetParameter(value, op, reader);
+                        break;
+                    case PROPER_PROPETY_FORMAT:
+                        if (showModelChild.equals(CommonAttributes.RESOLVED)) {
+                            ExposeModelResourceResolved.PROPER_PROPERTY_FORMAT.parseAndSetParameter(value, op, reader);
+                        } else {
+                            throw ParseUtils.unexpectedAttribute(reader, i);
+                        }
+                        break;
+                    default:
                         throw ParseUtils.unexpectedAttribute(reader, i);
-                    }
-                    break;
-                default:
-                    throw ParseUtils.unexpectedAttribute(reader, i);
                 }
             }
 
