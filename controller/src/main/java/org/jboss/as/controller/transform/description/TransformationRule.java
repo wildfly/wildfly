@@ -44,13 +44,13 @@ import org.jboss.dmr.ModelNode;
  */
 abstract class TransformationRule {
 
-    abstract void transformOperation(ModelNode operation, PathAddress address, OperationContext context) throws OperationFailedException;
-    abstract void transformResource(Resource resource, PathAddress address, ResourceContext context) throws OperationFailedException;
+    abstract void transformOperation(ModelNode operation, PathAddress address, ChainedOperationContext context) throws OperationFailedException;
+    abstract void transformResource(Resource resource, PathAddress address, ChainedResourceContext context) throws OperationFailedException;
 
-    abstract static class AbstractTransformationContext {
+    abstract static class AbstractChainedContext {
 
         private final TransformationContext context;
-        protected AbstractTransformationContext(final TransformationContext context) {
+        protected AbstractChainedContext(final TransformationContext context) {
             this.context = new TransformationContextWrapper(context);
         }
 
@@ -60,11 +60,11 @@ abstract class TransformationRule {
 
     }
 
-    abstract static class OperationContext extends AbstractTransformationContext {
+    abstract static class ChainedOperationContext extends AbstractChainedContext {
 
         private final List<OperationTransformer.TransformedOperation> transformed = new ArrayList<OperationTransformer.TransformedOperation>();
         private ModelNode lastOperation;
-        protected OperationContext(TransformationContext context) {
+        protected ChainedOperationContext(TransformationContext context) {
             super(context);
         }
 
@@ -88,9 +88,9 @@ abstract class TransformationRule {
 
     }
 
-    abstract static class ResourceContext extends AbstractTransformationContext {
+    abstract static class ChainedResourceContext extends AbstractChainedContext {
 
-        protected ResourceContext(ResourceTransformationContext context) {
+        protected ChainedResourceContext(ResourceTransformationContext context) {
             super(context);
         }
 

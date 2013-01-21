@@ -46,7 +46,7 @@ class AttributeTransformationRule extends TransformationRule {
     }
 
     @Override
-    void transformOperation(final ModelNode operation, PathAddress address, OperationContext context) throws OperationFailedException {
+    void transformOperation(final ModelNode operation, PathAddress address, ChainedOperationContext context) throws OperationFailedException {
         final ModelNode transformed = operation.clone();
         final Set<String> reject = new HashSet<String>();
         doTransform(address, transformed, transformed.clone(), context, reject);
@@ -73,7 +73,7 @@ class AttributeTransformationRule extends TransformationRule {
     }
 
     @Override
-    void transformResource(final Resource resource, final PathAddress address, final ResourceContext context) throws OperationFailedException {
+    void transformResource(final Resource resource, final PathAddress address, final ChainedResourceContext context) throws OperationFailedException {
         final ModelNode model = resource.getModel();
         final Set<String> reject = new HashSet<String>();
         doTransform(address, model, null, context, reject);
@@ -81,7 +81,7 @@ class AttributeTransformationRule extends TransformationRule {
         context.invokeNext(resource);
     }
 
-    private void doTransform(PathAddress address, ModelNode modelOrOp, ModelNode operation, AbstractTransformationContext context, Set<String> reject) {
+    private void doTransform(PathAddress address, ModelNode modelOrOp, ModelNode operation, AbstractChainedContext context, Set<String> reject) {
         Map<String, String> renames = new HashMap<String, String>();
         Map<String, ModelNode> adds = new HashMap<String, ModelNode>();
         for(final Map.Entry<String, AttributeTransformationDescription> entry : descriptions.entrySet()) {

@@ -37,7 +37,7 @@ import org.jboss.dmr.ModelNode;
 class DiscardRule extends TransformationRule {
 
     @Override
-    void transformOperation(ModelNode operation, PathAddress address, OperationContext context) throws OperationFailedException {
+    void transformOperation(ModelNode operation, PathAddress address, ChainedOperationContext context) throws OperationFailedException {
         final TransformationContext ctx = context.getContext();
         final OperationTransformer.TransformedOperation transformed = OperationTransformer.DISCARD.transformOperation(context.getContext(), address, operation);
         context.recordTransformedOperation(transformed);
@@ -45,7 +45,7 @@ class DiscardRule extends TransformationRule {
     }
 
     @Override
-    void transformResource(Resource resource, PathAddress address, ResourceContext context) throws OperationFailedException {
+    void transformResource(Resource resource, PathAddress address, ChainedResourceContext context) throws OperationFailedException {
         // nothing
     }
 

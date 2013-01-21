@@ -77,7 +77,7 @@ class OperationTransformationOverrideBuilderImpl extends AttributeTransformation
                 final Iterator<TransformationRule> iterator = Collections.<TransformationRule>emptyList().iterator();
                 final ModelNode originalModel = operation.clone();
                 originalModel.protect();
-                final TransformationRule.OperationContext context = new TransformationRule.OperationContext(ctx) {
+                final TransformationRule.ChainedOperationContext context = new TransformationRule.ChainedOperationContext(ctx) {
 
                     @Override
                     void invokeNext(OperationTransformer.TransformedOperation transformedOperation) throws OperationFailedException {
