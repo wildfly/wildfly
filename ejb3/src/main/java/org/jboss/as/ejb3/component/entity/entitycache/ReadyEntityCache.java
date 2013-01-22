@@ -67,6 +67,15 @@ public interface ReadyEntityCache {
     EntityBeanComponentInstance get(Object key) throws NoSuchEntityException;
 
     /**
+     * Checks whether an entity bean instance for the given primary key is cached.
+     * The reference counter will not be increased.
+     *
+     * @param key the identifier of the object
+     * @return <code>true</code> if the object is cached.
+     */
+    boolean contains(Object key);
+
+    /**
      * Checks whether an entity bean instance for the given primary key is cached and the entity is not marked as removed.
      * The reference counter will not be increased.
      *

@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.component.entity.interceptors;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicReference;
@@ -38,8 +40,6 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.Interceptors;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Interceptor factory for entity beans that class the corresponding ejbCreate method.
@@ -90,9 +90,9 @@ public class EntityBeanEjbCreateMethodInterceptorFactory implements InterceptorF
                 //now add the instance to the cache, so it is usable
                 //note that we do not release it back to the pool
                 //the cache will do that when it is expired or removed
-
                 boolean synchronizationRegistered = false;
                 boolean exception = false;
+                final boolean instanceCachedBefore = entityBeanComponent.getCache().contains(primaryKey);
                 entityBeanComponent.getCache().create(instance);
 
                 try {
@@ -104,17 +104,19 @@ public class EntityBeanEjbCreateMethodInterceptorFactory implements InterceptorF
 
                     final TransactionSynchronizationRegistry transactionSynchronizationRegistry = entityBeanComponent.getTransactionSynchronizationRegistry();
                     if (transactionSynchronizationRegistry.getTransactionKey() != null) {
-                        transactionSynchronizationRegistry.registerInterposedSynchronization(new Synchronization() {
-                            @Override
-                            public void beforeCompletion() {
+                        if(!instanceCachedBefore) {
+                            transactionSynchronizationRegistry.registerInterposedSynchronization(new Synchronization() {
+                                @Override
+                                public void beforeCompletion() {
 
-                            }
+                                }
 
-                            @Override
-                            public void afterCompletion(final int status) {
-                                entityBeanComponent.getCache().release(instance, status == Status.STATUS_COMMITTED);
-                            }
-                        });
+                                @Override
+                                public void afterCompletion(final int status) {
+                                    entityBeanComponent.getCache().release(instance, status == Status.STATUS_COMMITTED);
+                                }
+                            });
+                        }
                         synchronizationRegistered = true;
                     }
                     return context.proceed();
