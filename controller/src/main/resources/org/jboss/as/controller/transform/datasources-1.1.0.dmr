@@ -544,7 +544,7 @@
                         "description" => "Specifies if the datasource should be enabled",
                         "expressions-allowed" => true,
                         "nillable" => true,
-                        "default" => true
+                        "default" => false
                     }
                 },
                 "children" => {"xa-datasource-properties" => {"description" => "List of xa-datasource-property"}}
@@ -909,7 +909,7 @@
                         "description" => "Specifies if the datasource should be enabled",
                         "expressions-allowed" => true,
                         "nillable" => true,
-                        "default" => true
+                        "default" => false
                     }
                 },
                 "children" => {"connection-properties" => {"description" => "The connection-properties element allows you to pass in arbitrary connection properties to the Driver.connect(url, props) method"}}

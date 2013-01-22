@@ -372,7 +372,7 @@
                     "description" => "The size of the cache for pre-creating message IDs.",
                     "expressions-allowed" => false,
                     "nillable" => true,
-                    "default" => 2000
+                    "default" => 20000
                 },
                 "security-domain" => {
                     "type" => STRING,

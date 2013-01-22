@@ -73,7 +73,7 @@ public class SubsystemDescriptionDump implements OperationStepHandler {
                 String subsystem = pe.getValue();
                 SubsystemInformation info = registry.getSubsystemInfo(subsystem);
                 ModelNode desc = readFullModelDescription(PathAddress.pathAddress(pe), registration);
-                String name = subsystem + "-" + info.getManagementInterfaceMajorVersion() + "." + info.getManagementInterfaceMinorVersion() + ".dmr";
+                String name = subsystem + "-" + info.getManagementInterfaceMajorVersion() + "." + info.getManagementInterfaceMinorVersion() +"."+info.getManagementInterfaceMicroVersion()+ ".dmr";
                 PrintWriter pw = new PrintWriter(new File(path, name));
                 desc.writeString(pw, false);
                 pw.close();

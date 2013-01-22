@@ -397,7 +397,7 @@ final class SubsystemTestDelegate {
                 file.mkdir();
             }
         }
-        PrintWriter pw = new PrintWriter(new File(file, mainSubsystemName + "-" + modelVersion.getMajor() + "." + modelVersion.getMinor() + ".dmr"));
+        PrintWriter pw = new PrintWriter(new File(file, mainSubsystemName + "-" + modelVersion.getMajor() + "." + modelVersion.getMinor() +"."+modelVersion.getMicro()+ ".dmr"));
         try {
             desc.writeString(pw, false);
         } finally {
@@ -432,6 +432,7 @@ final class SubsystemTestDelegate {
 
         //2) Check that the transformed model is valid according to the resource definition in the legacy subsystem controller
         ResourceDefinition rd = TransformerRegistry.loadSubsystemDefinition(mainSubsystemName, modelVersion);
+        Assert.assertNotNull("Could not load legacy dmr for subsystem '"+mainSubsystemName+"' version: '"+modelVersion+"' please add it", rd);
         ManagementResourceRegistration rr = ManagementResourceRegistration.Factory.create(rd);
         ModelTestUtils.checkModelAgainstDefinition(transformed, rr);
         return legacyModel;
