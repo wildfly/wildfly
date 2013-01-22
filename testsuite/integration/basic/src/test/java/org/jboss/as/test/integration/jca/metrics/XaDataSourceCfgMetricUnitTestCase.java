@@ -23,17 +23,14 @@
 package org.jboss.as.test.integration.jca.metrics;
 
 
-import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
-import org.jboss.dmr.ModelNode;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.*;
 
 /**
  * XA datasource configuration and metrics unit test.
@@ -67,7 +64,17 @@ public class XaDataSourceCfgMetricUnitTestCase extends DsMgmtTestBase {
     public void testDefaultXaDsProperties() throws Exception {
         setModel("xa-default-properties.xml");
         assertTrue(readAttribute(baseAddress, "wrap-xa-resource").asBoolean());
-        removeDs();
+        assertFalse(readAttribute(baseAddress, "same-rm-override").isDefined());
+        try{
+        	readAttribute(baseAddress, "same-rm-override").asBoolean();
+        	fail("Got  boolean value of undefined parameter");
+        }catch(Exception e){
+        	//Expected
+        }
+        finally{
+        	removeDs();
+        }
+
     }
 
     @Test
@@ -120,7 +127,7 @@ public class XaDataSourceCfgMetricUnitTestCase extends DsMgmtTestBase {
     public void testRollbackCleanup() throws Exception {
         try {
             setBadModel("wrong-xa-bogus-driver.xml");
-            Assert.fail("bad model did not produce an exception");
+            fail("bad model did not produce an exception");
         } catch (Exception e) {
             // Confirm a correct model adding the same resources can be added
             testDefaultXaDsAttributes();
