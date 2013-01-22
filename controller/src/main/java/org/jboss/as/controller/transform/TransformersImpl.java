@@ -54,9 +54,6 @@ public class TransformersImpl implements Transformers {
 
     @Override
     public OperationTransformer.TransformedOperation transformOperation(final TransformationContext context, final ModelNode operation) throws OperationFailedException {
-//        if (!target.isTransformationNeeded()) {
-//            return operation;
-//        }
 
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String operationName = operation.require(OP).asString();
@@ -66,11 +63,11 @@ public class TransformersImpl implements Transformers {
             ControllerLogger.ROOT_LOGGER.tracef("operation %s does not need transformation", operation);
             return new OperationTransformer.TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
         }
-        final List<PathAddressTransformer> addresses = target.getPathTransformation(address);
-        final Iterator<PathAddressTransformer> transformations = addresses.iterator();
-        // transformations.next();
-        final PathAddressTransformer.BuilderImpl builder = new PathAddressTransformer.BuilderImpl(transformations, address);
-        final PathAddress transformed = builder.start();
+        // Transform the path address
+        final PathAddress transformed = transformAddress(address, target);
+        // Update the operation using the new path address
+        operation.get(OP_ADDR).set(transformed.toModelNode()); // TODO should this happen by default?
+
         ResourceTransformationContext opCtx = ResourceTransformationContextImpl.wrapForOperation(context, operation);
         OperationTransformer.TransformedOperation res = transformer.transformOperation(opCtx, transformed, operation);
         context.getLogger().flushLogQueue();
@@ -94,7 +91,9 @@ public class TransformersImpl implements Transformers {
         operation.get(OP_ADDR).set(transformed.toModelNode()); // TODO should this happen by default?
 
         final TransformationContext context = ResourceTransformationContextImpl.create(operationContext, target, transformed, original);
-        return transformer.transformOperation(context, transformed, operation);
+        final OperationTransformer.TransformedOperation op = transformer.transformOperation(context, transformed, operation);
+        context.getLogger().flushLogQueue();
+        return op;
     }
 
     @Override
@@ -112,14 +111,12 @@ public class TransformersImpl implements Transformers {
         final PathAddress transformed = transformAddress(original, target);
         final ResourceTransformationContext context = ResourceTransformationContextImpl.create(operationContext, target, transformed, original);
         transformer.transformResource(context, transformed, resource);
+        context.getLogger().flushLogQueue();
         return context.getTransformedRoot();
     }
 
     @Override
     public Resource transformResource(final ResourceTransformationContext context, Resource resource) throws OperationFailedException {
-//        if (!target.isTransformationNeeded()) {
-//            return resource;
-//        }
 
         final ResourceTransformer transformer = target.resolveTransformer(PathAddress.EMPTY_ADDRESS);
         if (transformer == null) {

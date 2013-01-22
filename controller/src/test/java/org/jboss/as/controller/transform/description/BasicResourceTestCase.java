@@ -23,6 +23,7 @@
 package org.jboss.as.controller.transform.description;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.Collections;
 import java.util.Locale;
@@ -273,6 +274,10 @@ public class BasicResourceTestCase {
 
         OperationTransformer.TransformedOperation op = transformOperation(node);
         Assert.assertTrue(op.rejectOperation(success()));
+
+        final PathAddress transformed = PathAddress.pathAddress(op.getTransformedOperation().require(OP_ADDR));
+        Assert.assertEquals(transformed.getLastElement().getKey(), "test");
+        Assert.assertEquals(transformed.getLastElement().getValue(), "configuration");
 
         node.get("test-config").set("concrete");
         op = transformOperation(node);

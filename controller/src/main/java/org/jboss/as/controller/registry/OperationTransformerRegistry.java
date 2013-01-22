@@ -188,13 +188,13 @@ public class OperationTransformerRegistry {
     }
 
     protected void resolvePathTransformers(Iterator<PathElement> iterator, List<PathAddressTransformer> list) {
-        list.add(pathAddressTransformer);
         if(iterator.hasNext()) {
             final PathElement element = iterator.next();
             SubRegistry sub = subRegistriesUpdater.get(this, element.getKey());
             if(sub != null) {
                 final OperationTransformerRegistry reg = sub.get(element.getValue());
                 if(reg != null) {
+                    list.add(reg.getPathAddressTransformer());
                     reg.resolvePathTransformers(iterator, list);
                     return;
                 }
