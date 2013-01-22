@@ -59,6 +59,8 @@ public class NamingExtension implements Extension {
     static final String RESOURCE_NAME = NamingExtension.class.getPackage().getName() + ".LocalDescriptions";
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, NamingExtension.SUBSYSTEM_NAME);
 
+    public static final ModelVersion VERSION_1_1_0 = ModelVersion.create(1, 1, 0);
+
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
         return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, NamingExtension.class.getClassLoader(), true, true);
     }
@@ -86,7 +88,7 @@ public class NamingExtension implements Extension {
 
         if (context.isRegisterTransformers()) {
             // register 1.1.0 transformer
-            final TransformersSubRegistration transformersSubRegistration110 = subsystem.registerModelTransformers(ModelVersion.create(1, 1, 0), ResourceTransformer.DEFAULT);
+            final TransformersSubRegistration transformersSubRegistration110 = subsystem.registerModelTransformers(VERSION_1_1_0, ResourceTransformer.DEFAULT);
             transformersSubRegistration110.registerSubResource(NamingSubsystemModel.BINDING_PATH,new Naming11Transformer());
         }
     }
