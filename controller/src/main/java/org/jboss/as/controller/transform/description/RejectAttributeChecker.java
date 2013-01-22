@@ -23,7 +23,9 @@ package org.jboss.as.controller.transform.description;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -35,7 +37,6 @@ import org.jboss.dmr.Property;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public interface RejectAttributeChecker {
-
     /**
      * Determines whether the given operation parameter value is not understandable by the target process and needs
      * to be rejected.
@@ -50,6 +51,13 @@ public interface RejectAttributeChecker {
     boolean rejectOperationParameter(String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context);
 
     /**
+     * Gets the log adapter for use outputting the detail message of why attributes were rejected
+     *
+     * @return the log adapter
+     */
+    RejectAttributeLogAdapter getLogAdapter();
+
+    /**
      * Gets whether the given operation parameter value is not understandable by the target process and needs
      * to be rejected.
      *
@@ -62,6 +70,14 @@ public interface RejectAttributeChecker {
     boolean rejectResourceAttribute(String attributeName, ModelNode attributeValue, TransformationContext context);
 
     public abstract class DefaultRejectAttributeChecker implements RejectAttributeChecker {
+
+        RejectAttributeLogAdapter logAdapter;
+
+        protected DefaultRejectAttributeChecker(RejectAttributeLogAdapter logAdapter) {
+            assert logAdapter != null;
+            this.logAdapter = logAdapter;
+        }
+
         public  boolean rejectOperationParameter(String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context) {
             return rejectAttribute(attributeName, attributeValue, context);
         }
@@ -70,18 +86,29 @@ public interface RejectAttributeChecker {
             return rejectAttribute(attributeName, attributeValue, context);
         }
 
+        public RejectAttributeLogAdapter getLogAdapter() {
+            return logAdapter;
+        }
+
         protected abstract boolean rejectAttribute(String attributeName, ModelNode attributeValue, TransformationContext context);
     }
     /**
      * Checks a simple attribute for expressions
      */
-    RejectAttributeChecker SIMPLE_EXPRESSIONS = new DefaultRejectAttributeChecker() {
+    RejectAttributeChecker SIMPLE_EXPRESSIONS = new DefaultRejectAttributeChecker(RejectExpressionsLogAdapter.INSTANCE) {
+
+        RejectAttributeLogAdapter logAdapter = RejectExpressionsLogAdapter.INSTANCE;
 
         @Override
         protected boolean rejectAttribute(String attributeName, ModelNode attributeValue, TransformationContext context) {
             return checkForExpression(attributeValue);
         }
 
+
+        @Override
+        public RejectAttributeLogAdapter getLogAdapter() {
+            return logAdapter;
+        }
         /**
          * Check an attribute for expressions.
          *
@@ -129,6 +156,11 @@ public interface RejectAttributeChecker {
         }
 
         @Override
+        public RejectAttributeLogAdapter getLogAdapter() {
+            return elementChecker.getLogAdapter();
+        }
+
+        @Override
         public boolean rejectOperationParameter(String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context) {
             if (attributeValue.isDefined()) {
                 for (ModelNode element : attributeValue.asList()) {
@@ -156,12 +188,21 @@ public interface RejectAttributeChecker {
     RejectAttributeChecker SIMPLE_LIST_EXPRESSIONS = new ListRejectAttributeChecker(SIMPLE_EXPRESSIONS);
 
     public class ObjectFieldsRejectAttributeChecker implements RejectAttributeChecker {
+        private final RejectAttributeLogAdapter logAdapter;
 
         private final Map<String, RejectAttributeChecker> fields = new HashMap<String, RejectAttributeChecker>();
 
-        public ObjectFieldsRejectAttributeChecker(Map<String, RejectAttributeChecker> fields) {
+        public ObjectFieldsRejectAttributeChecker(Map<String, RejectAttributeChecker> fields, RejectAttributeLogAdapter logAdapter) {
             this.fields.putAll(fields);
+            this.logAdapter = logAdapter;
         }
+
+
+        @Override
+        public RejectAttributeLogAdapter getLogAdapter() {
+            return logAdapter;
+        }
+
 
         @Override
         public boolean rejectOperationParameter(String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context) {
@@ -188,6 +229,17 @@ public interface RejectAttributeChecker {
         }
     }
 
+    public static class RejectExpressionsLogAdapter implements RejectAttributeLogAdapter {
+        static final RejectAttributeLogAdapter INSTANCE = new RejectExpressionsLogAdapter();
 
+        private RejectExpressionsLogAdapter() {
+        }
+
+
+        @Override
+        public String getDetailMessage(Set<String> attributeNames) {
+            return ControllerMessages.MESSAGES.attributesDoNotSupportExpressions(attributeNames);
+        }
+    }
 
 }

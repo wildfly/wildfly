@@ -23,9 +23,7 @@
 package org.jboss.as.controller.transform.description;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -48,40 +46,47 @@ class AttributeTransformationRule extends TransformationRule {
     @Override
     void transformOperation(final ModelNode operation, PathAddress address, ChainedOperationContext context) throws OperationFailedException {
         final ModelNode transformed = operation.clone();
-        final Set<String> reject = new HashSet<String>();
-        doTransform(address, transformed, transformed.clone(), context, reject);
+        final RejectedAttributesLogContext rejectedAttributes = new RejectedAttributesLogContext(context.getContext(), address, operation);
+        doTransform(address, transformed, transformed.clone(), context, rejectedAttributes);
 
-        final OperationRejectionPolicy policy = createPolicy(! reject.isEmpty(), reject);
-        context.invokeNext(new OperationTransformer.TransformedOperation(transformed, policy, OperationResultTransformer.ORIGINAL_RESULT));
-    }
+        final OperationRejectionPolicy policy;
+        if (!rejectedAttributes.hasRejections()) {
+            policy = OperationTransformer.DEFAULT_REJECTION_POLICY;
+        } else {
+            rejectedAttributes.errorOrWarn();
+            policy = new OperationRejectionPolicy() {
+                @Override
+                public boolean rejectOperation(ModelNode preparedResult) {
+                    return true;
+                }
 
-    OperationRejectionPolicy createPolicy(final boolean reject, final Set<String> rejected) {
-        if(! reject) {
-            return OperationTransformer.DEFAULT_REJECTION_POLICY;
+                @Override
+                public String getFailureDescription() {
+                    try {
+                        return rejectedAttributes.errorOrWarn();
+                    } catch (OperationFailedException e) {
+                        //This will not happen
+                        return null;
+                    }
+                }
+            };
         }
-        return new OperationRejectionPolicy() {
-            @Override
-            public boolean rejectOperation(ModelNode preparedResult) {
-                return reject;
-            }
 
-            @Override
-            public String getFailureDescription() {
-                return "cannot transform attributes: "  + rejected.toString();
-            }
-        };
+        context.invokeNext(new OperationTransformer.TransformedOperation(transformed, policy, OperationResultTransformer.ORIGINAL_RESULT));
     }
 
     @Override
     void transformResource(final Resource resource, final PathAddress address, final ChainedResourceContext context) throws OperationFailedException {
         final ModelNode model = resource.getModel();
-        final Set<String> reject = new HashSet<String>();
-        doTransform(address, model, null, context, reject);
-        //TODO do something with the reject
+        RejectedAttributesLogContext rejectedAttributes = new RejectedAttributesLogContext(context.getContext(), address, null);
+        doTransform(address, model, null, context, rejectedAttributes);
+        if (rejectedAttributes.hasRejections()) {
+            rejectedAttributes.errorOrWarn();
+        }
         context.invokeNext(resource);
     }
 
-    private void doTransform(PathAddress address, ModelNode modelOrOp, ModelNode operation, AbstractChainedContext context, Set<String> reject) {
+    private void doTransform(PathAddress address, ModelNode modelOrOp, ModelNode operation, AbstractChainedContext context, RejectedAttributesLogContext rejectedAttributes) {
         Map<String, String> renames = new HashMap<String, String>();
         Map<String, ModelNode> adds = new HashMap<String, ModelNode>();
         for(final Map.Entry<String, AttributeTransformationDescription> entry : descriptions.entrySet()) {
@@ -98,9 +103,7 @@ class AttributeTransformationRule extends TransformationRule {
             }
 
             //Check the rest of the model can be transformed
-            if (!description.checkAttributeValueIsValid(attributeValue, operation, context)) {
-                reject.add(attributeName);
-            }
+            description.rejectAttributes(rejectedAttributes, attributeValue);
 
             //Now transform the value
             boolean isNewAttribute;
