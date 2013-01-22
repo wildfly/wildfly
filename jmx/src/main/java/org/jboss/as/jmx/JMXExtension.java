@@ -39,6 +39,7 @@ import static org.jboss.as.jmx.CommonAttributes.REMOTING_CONNECTOR;
 
 import java.util.Collections;
 import java.util.List;
+
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
@@ -47,6 +48,7 @@ import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
@@ -54,6 +56,7 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.registry.Resource.ResourceEntry;
 import org.jboss.as.controller.transform.AbstractOperationTransformer;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
@@ -138,11 +141,24 @@ public class JMXExtension implements Extension {
             @Override
             public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
                 ModelNode model = resource.getModel();
-                boolean showModel = model.get(CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED).isDefined();
-                ModelNode result = model.clone();
-                result.get(CommonAttributes.SHOW_MODEL).set(showModel);
-                result.remove(CommonAttributes.EXPOSE_MODEL);
-                context.processChildren(resource);
+
+                //The existance of the expose-model=>resolved child is translated into the show-model=>true attribute
+                Resource exposeResolvedResource = resource.getChild(PathElement.pathElement(CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED));
+                boolean showModel = false;
+                if (exposeResolvedResource != null) {
+                     showModel = model.isDefined();
+                }
+                model.get(CommonAttributes.SHOW_MODEL).set(showModel);
+                ResourceTransformationContext childContext = context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
+
+                //Process all the child resources skipping the expose-model=>* children
+                for (String type :resource.getChildTypes()) {
+                    if (!type.equals(CommonAttributes.EXPOSE_MODEL)) {
+                        for (ResourceEntry child : resource.getChildren(type)) {
+                            childContext.processChild(child.getPathElement(), child);
+                        }
+                    }
+                }
             }
         });
 
