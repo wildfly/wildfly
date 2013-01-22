@@ -103,8 +103,8 @@ public class AttributesTestCase {
         resourceModel.get("reject").setExpression("${expr}");
 
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
-            builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, "reject").end()
-            .build().register(transformersSubRegistration);
+        builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, "reject").end();
+        TransformationDescription.Tools.register(builder.build(), transformersSubRegistration);
 
         final Resource resource = transformResource();
         Assert.assertNotNull(resource);
@@ -134,8 +134,8 @@ public class AttributesTestCase {
             builder.getAttributeBuilder()
                 .addRejectCheck(dontRejectChecker, "reject")
                 .addRejectCheck(rejectAttributeChecker, "reject")
-                .end()
-            .build().register(transformersSubRegistration);
+                .end();
+        TransformationDescription.Tools.register(builder.build(), transformersSubRegistration);
 
         dontRejectChecker.called = false;
         rejectAttributeChecker.rejected = false;
@@ -177,8 +177,8 @@ public class AttributesTestCase {
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
         builder.getAttributeBuilder()
             .addRejectCheck(new RejectAttributeChecker.ListRejectAttributeChecker(checker), "reject")
-            .end()
-        .build().register(transformersSubRegistration);
+            .end();
+        TransformationDescription.Tools.register(builder.build(), transformersSubRegistration);
 
         final Resource resource = transformResource();
         Assert.assertNotNull(resource);
@@ -226,8 +226,8 @@ public class AttributesTestCase {
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
         builder.getAttributeBuilder()
             .addRejectCheck(new RejectAttributeChecker.ObjectFieldsRejectAttributeChecker(mapChecker, RejectExpressionsLogAdapter.INSTANCE), "reject")
-            .end()
-        .build().register(transformersSubRegistration);
+            .end();
+        TransformationDescription.Tools.register(builder.build(), transformersSubRegistration);
 
         final Resource resource = transformResource();
         Assert.assertNotNull(resource);
@@ -268,8 +268,8 @@ public class AttributesTestCase {
         resourceModel.get("keep").set("here");
 
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
-            builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, "discard").end()
-            .build().register(transformersSubRegistration);
+            builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, "discard").end();
+        TransformationDescription.Tools.register(builder.build(), transformersSubRegistration);
 
         final Resource resource = transformResource();
         Assert.assertNotNull(resource);
@@ -299,8 +299,8 @@ public class AttributesTestCase {
         resourceModel.get("keep").set("here");
 
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
-            builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.UNDEFINED, "discard", "keep").end()
-            .build().register(transformersSubRegistration);
+            builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.UNDEFINED, "discard", "keep").end();
+        TransformationDescription.Tools.register(builder.build(), transformersSubRegistration);
 
         final Resource resource = transformResource();
         Assert.assertNotNull(resource);
@@ -335,8 +335,8 @@ public class AttributesTestCase {
                 public boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
                     return true;
                 }
-            }, "discard").end()
-            .build().register(transformersSubRegistration);
+            }, "discard").end();
+        TransformationDescription.Tools.register(builder.build(), transformersSubRegistration);
 
         final Resource resource = transformResource();
         Assert.assertNotNull(resource);
@@ -372,8 +372,8 @@ public class AttributesTestCase {
                     }
                     return false;
                 }
-            }, "discard", "keep").end()
-            .build().register(transformersSubRegistration);
+            }, "discard", "keep").end();
+        TransformationDescription.Tools.register(builder.build(), transformersSubRegistration);
 
         final Resource resource = transformResource();
         Assert.assertNotNull(resource);
@@ -401,8 +401,8 @@ public class AttributesTestCase {
         resourceModel.get("old").set("value");
 
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
-            builder.getAttributeBuilder().addRename("old", "new").end()
-            .build().register(transformersSubRegistration);
+            builder.getAttributeBuilder().addRename("old", "new").end();
+        TransformationDescription.Tools.register(builder.build(), transformersSubRegistration);
 
         final Resource resource = transformResource();
         Assert.assertNotNull(resource);
@@ -437,8 +437,8 @@ public class AttributesTestCase {
                     attributeValue.set(1);
                 }
             }
-        }, "value1", "value2").end()
-        .build().register(transformersSubRegistration);
+        }, "value1", "value2").end();
+        TransformationDescription.Tools.register(builder.build(), transformersSubRegistration);
 
         final Resource resource = transformResource();
         Assert.assertNotNull(resource);
@@ -475,8 +475,8 @@ public class AttributesTestCase {
             public void convertAttribute(PathAddress address, String name, ModelNode attributeValue, TransformationContext context) {
                 attributeValue.set("extra");
             }
-        }, "added").end()
-        .build().register(transformersSubRegistration);
+        }, "added").end();
+        TransformationDescription.Tools.register(builder.build(), transformersSubRegistration);
 
         final Resource resource = transformResource();
         Assert.assertNotNull(resource);
@@ -536,8 +536,8 @@ public class AttributesTestCase {
                 .addRenames(renames)
                 .addRename("three", "tres")
                 //.rename(Collections.singletonMap("four", "cuatro"))
-                .end()
-            .build().register(transformersSubRegistration);
+                .end();
+        TransformationDescription.Tools.register(builder.build(), transformersSubRegistration);
 
         //Try first with no expressions
         rejectAttributeChecker.rejected = false;
@@ -630,8 +630,8 @@ public class AttributesTestCase {
         resourceModel.get("value").set("test");
 
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
-        builder.getAttributeBuilder().setValueConverter(AttributeConverter.NAME_FROM_ADDRESS, "name").end()
-            .build().register(transformersSubRegistration);
+        builder.getAttributeBuilder().setValueConverter(AttributeConverter.NAME_FROM_ADDRESS, "name").end();
+        TransformationDescription.Tools.register(builder.build(), transformersSubRegistration);
 
         final Resource resource = transformResource();
         Assert.assertNotNull(resource);
@@ -664,8 +664,8 @@ public class AttributesTestCase {
             .addRejectCheck(checker, "checked")
             .setDiscard(checker, "checked")
             .setValueConverter(checker, "checked")
-            .end()
-        .build().register(transformersSubRegistration);
+            .end();
+        TransformationDescription.Tools.register(builder.build(), transformersSubRegistration);
 
         final Resource resource = transformResource();
         Assert.assertNotNull(resource);
@@ -700,8 +700,8 @@ public class AttributesTestCase {
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
         builder.getAttributeBuilder()
             .setValueConverter(converter, "convert", "undefined", "new", "dontAdd")
-            .end()
-        .build().register(transformersSubRegistration);
+            .end();
+        TransformationDescription.Tools.register(builder.build(), transformersSubRegistration);
 
         final Resource resource = transformResource();
         Assert.assertNotNull(resource);

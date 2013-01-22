@@ -185,7 +185,7 @@ public class BasicResourceTestCase {
 
         // Register the description
         final TransformersSubRegistration reg = registry.getServerRegistration(ModelVersion.create(1));
-        description.register(reg);
+        TransformationDescription.Tools.register(description, reg);
 
     }
 
