@@ -56,7 +56,7 @@ public class RaAdd extends AbstractAddStepHandler {
 
     @Override
     public void performRuntime(final OperationContext context, ModelNode operation, ModelNode model, final ServiceVerificationHandler verificationHandler,
-                               final List<ServiceController<?>> controllers) throws OperationFailedException {
+                               final List<ServiceController<?>> newControllers) throws OperationFailedException {
         // Compensating is remove
         final ModelNode address = operation.require(OP_ADDR);
         final String name = PathAddress.pathAddress(address).getLastElement().getValue();
@@ -74,9 +74,9 @@ public class RaAdd extends AbstractAddStepHandler {
         ModifiableResourceAdapter resourceAdapter = RaOperationUtil.buildResourceAdaptersObject(context, operation, archiveOrModuleName);
 
         if (model.get(ARCHIVE.getName()).isDefined()) {
-            RaOperationUtil.installRaServices(context, verificationHandler, name, resourceAdapter);
+            RaOperationUtil.installRaServices(context, verificationHandler, name, resourceAdapter, newControllers);
         } else {
-            RaOperationUtil.installRaServicesAndDeployFromModule(context, verificationHandler, name, resourceAdapter, archiveOrModuleName);
+            RaOperationUtil.installRaServicesAndDeployFromModule(context, verificationHandler, name, resourceAdapter, archiveOrModuleName, newControllers);
         }
 
 

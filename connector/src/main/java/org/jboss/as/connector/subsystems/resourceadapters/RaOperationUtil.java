@@ -267,15 +267,14 @@ public class RaOperationUtil {
         RaServicesFactory.createDeploymentService(inactive.getRegistration(), inactive.getConnectorXmlDescriptor(), inactive.getModule(), inactive.getServiceTarget(), raName, inactive.getDeploymentUnitServiceName(), inactive.getDeployment(), raxml, inactive.getResource(), serviceVerificationHandler);
     }
 
-    public static ServiceName installRaServices(OperationContext context, ServiceVerificationHandler verificationHandler, String name, ModifiableResourceAdapter resourceAdapter) {
+    public static ServiceName installRaServices(OperationContext context, ServiceVerificationHandler verificationHandler, String name, ModifiableResourceAdapter resourceAdapter, final List<ServiceController<?>> newControllers) {
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
         final ServiceController<?> resourceAdaptersService = context.getServiceRegistry(false).getService(
                 ConnectorServices.RESOURCEADAPTERS_SERVICE);
-        ServiceController<?> controller = null;
         if (resourceAdaptersService == null) {
-            controller = serviceTarget.addService(ConnectorServices.RESOURCEADAPTERS_SERVICE,
-                    new ResourceAdaptersService()).setInitialMode(ServiceController.Mode.ACTIVE).addListener(verificationHandler).install();
+            newControllers.add(serviceTarget.addService(ConnectorServices.RESOURCEADAPTERS_SERVICE,
+                    new ResourceAdaptersService()).setInitialMode(ServiceController.Mode.ACTIVE).addListener(verificationHandler).install());
         }
         ServiceName raServiceName = ServiceName.of(ConnectorServices.RA_SERVICE, name);
         String bootStrapCtxName = DEFAULT_NAME;
@@ -285,16 +284,16 @@ public class RaOperationUtil {
         final ServiceController<?> service = context.getServiceRegistry(true).getService(raServiceName);
         if (service == null) {
             ResourceAdapterService raService = new ResourceAdapterService(resourceAdapter);
-            serviceTarget.addService(raServiceName, raService).setInitialMode(ServiceController.Mode.ACTIVE)
+            newControllers.add(serviceTarget.addService(raServiceName, raService).setInitialMode(ServiceController.Mode.ACTIVE)
                     .addDependency(ConnectorServices.RESOURCEADAPTERS_SERVICE, ResourceAdaptersService.ModifiableResourceAdaptors.class, raService.getResourceAdaptersInjector())
                     .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(bootStrapCtxName))
-                    .addListener(verificationHandler).install();
+                    .addListener(verificationHandler).install());
         }
         return raServiceName;
     }
 
-    public static void installRaServicesAndDeployFromModule(OperationContext context, ServiceVerificationHandler verificationHandler, String name, ModifiableResourceAdapter resourceAdapter, String fullModuleName) throws OperationFailedException{
-        ServiceName raServiceName =  installRaServices(context, verificationHandler, name, resourceAdapter);
+    public static void installRaServicesAndDeployFromModule(OperationContext context, ServiceVerificationHandler verificationHandler, String name, ModifiableResourceAdapter resourceAdapter, String fullModuleName, final List<ServiceController<?>> newControllers) throws OperationFailedException{
+        ServiceName raServiceName =  installRaServices(context, verificationHandler, name, resourceAdapter, newControllers);
         final boolean resolveProperties = true;
         final ServiceTarget serviceTarget = context.getServiceTarget();
         final String moduleName;
@@ -352,7 +351,7 @@ public class RaOperationUtil {
                 final ServiceController<?> deployerService = context.getServiceRegistry(true).getService(deployerServiceName);
                 if (deployerService == null) {
                     ServiceBuilder builder = ParsedRaDeploymentProcessor.process(connectorXmlDescriptor, ironJacamarXmlDescriptor, module.getClassLoader(), serviceTarget, annotationIndexes, RAR_MODULE.append(name), verificationHandler);
-                    builder.addDependency(raServiceName).setInitialMode(ServiceController.Mode.ACTIVE).install();
+                    newControllers.add(builder.addDependency(raServiceName).setInitialMode(ServiceController.Mode.ACTIVE).install());
                 }
                 String rarName = resourceAdapter.getArchive();
 
@@ -361,9 +360,9 @@ public class RaOperationUtil {
                     ServiceName serviceName = ConnectorServices.INACTIVE_RESOURCE_ADAPTER_SERVICE.append(name);
 
                     InactiveResourceAdapterDeploymentService service = new InactiveResourceAdapterDeploymentService(connectorXmlDescriptor, module, name, name, RAR_MODULE.append(name), null, serviceTarget, null);
-                    ServiceBuilder builder = serviceTarget
-                            .addService(serviceName, service);
-                    builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+                    newControllers.add(serviceTarget
+                            .addService(serviceName, service)
+                            .setInitialMode(ServiceController.Mode.ACTIVE).addListener(verificationHandler).install());
 
                 }
 

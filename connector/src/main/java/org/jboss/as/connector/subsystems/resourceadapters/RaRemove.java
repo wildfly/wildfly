@@ -22,6 +22,8 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.jboss.as.connector.util.ConnectorServices;
@@ -107,11 +109,12 @@ public class RaRemove implements OperationStepHandler {
                     @Override
                     public void handleRollback(OperationContext context, ModelNode operation) {
                         if (resourceAdapter != null) {
+                            List<ServiceController<?>>  newControllers = new LinkedList<ServiceController<?>>();
                             if (model.get(ARCHIVE.getName()).isDefined()) {
-                                RaOperationUtil.installRaServices(context, new ServiceVerificationHandler(), name, resourceAdapter);
+                                RaOperationUtil.installRaServices(context, new ServiceVerificationHandler(), name, resourceAdapter, newControllers);
                             } else {
                                 try {
-                                    RaOperationUtil.installRaServicesAndDeployFromModule(context, new ServiceVerificationHandler(), name, resourceAdapter, archiveOrModuleName);
+                                    RaOperationUtil.installRaServicesAndDeployFromModule(context, new ServiceVerificationHandler(), name, resourceAdapter, archiveOrModuleName, newControllers);
                                 } catch (OperationFailedException e) {
 
                                 }
