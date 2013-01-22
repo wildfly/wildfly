@@ -22,15 +22,21 @@
 
 package org.jboss.as.controller.transform.description;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.registry.Resource.ResourceEntry;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
@@ -48,9 +54,15 @@ abstract class TransformationRule {
     abstract void transformOperation(ModelNode operation, PathAddress address, ChainedOperationContext context) throws OperationFailedException;
     abstract void transformResource(Resource resource, PathAddress address, ChainedResourceContext context) throws OperationFailedException;
 
+    static ModelNode cloneAndProtect(ModelNode modelNode) {
+        ModelNode clone = modelNode.clone();
+        clone.protect();
+        return clone;
+    }
+
     abstract static class AbstractChainedContext {
 
-        private final TransformationContext context;
+        private final TransformationContextWrapper context;
         protected AbstractChainedContext(final TransformationContext context) {
             this.context = new TransformationContextWrapper(context);
         }
@@ -59,6 +71,9 @@ abstract class TransformationRule {
             return context;
         }
 
+        void setImmutableResource(boolean immutable) {
+            context.setImmutableResource(immutable);
+        }
     }
 
     abstract static class ChainedOperationContext extends AbstractChainedContext {
@@ -106,6 +121,7 @@ abstract class TransformationRule {
     private static class TransformationContextWrapper implements TransformationContext {
 
         private final TransformationContext delegate;
+        private volatile boolean immutable;
         private TransformationContextWrapper(TransformationContext delegate) {
             this.delegate = delegate;
         }
@@ -137,12 +153,20 @@ abstract class TransformationRule {
 
         @Override
         public Resource readResource(PathAddress address) {
-            return delegate.readResource(address);
+            Resource resource = delegate.readResource(address);
+            if (resource != null) {
+                return immutable ? new ProtectedModelResource(resource) : resource;
+            }
+            return null;
         }
 
         @Override
         public Resource readResourceFromRoot(PathAddress address) {
-            return delegate.readResourceFromRoot(address);
+            Resource resource = delegate.readResourceFromRoot(address);
+            if (resource != null) {
+                return immutable ? new ProtectedModelResource(resource) : resource;
+            }
+            return null;
         }
 
         @Override
@@ -159,6 +183,10 @@ abstract class TransformationRule {
         @Override
         public boolean doesTargetSupportIgnoredResources(TransformationTarget target) {
             return delegate.doesTargetSupportIgnoredResources(target);
+        }
+
+        void setImmutableResource(boolean immutable) {
+            this.immutable = immutable;
         }
     }
 
@@ -209,5 +237,132 @@ abstract class TransformationRule {
         }
     }
 
+   /**
+    *  Implementation of resource that returns an unmodifiable model
+    */
+   private static class ProtectedModelResource implements Resource {
 
+       private Resource delegate;
+
+       ProtectedModelResource(Resource delegate){
+           this.delegate = delegate;
+       }
+
+       @Override
+       public ModelNode getModel() {
+           return TransformationRule.cloneAndProtect(delegate.getModel());
+       }
+
+       @Override
+       public void writeModel(ModelNode newModel) {
+           throw MESSAGES.immutableResource();
+       }
+
+       @Override
+       public boolean isModelDefined() {
+           return delegate.isModelDefined();
+       }
+
+       @Override
+       public boolean hasChild(PathElement element) {
+           return delegate.hasChild(element);
+       }
+
+       @Override
+       public Resource getChild(PathElement element) {
+           Resource resource = delegate.getChild(element);
+           if (resource != null) {
+               return new ProtectedModelResource(resource);
+           }
+           return null;
+       }
+
+       @Override
+       public Resource requireChild(PathElement element) {
+           Resource resource = delegate.requireChild(element);
+           if (resource != null) {
+               return new ProtectedModelResource(resource);
+           }
+           return null;
+       }
+
+       @Override
+       public boolean hasChildren(String childType) {
+           return delegate.hasChildren(childType);
+       }
+
+       @Override
+       public Resource navigate(PathAddress address) {
+           Resource resource = delegate.navigate(address);
+           if (resource != null) {
+               return new ProtectedModelResource(resource);
+           }
+           return null;
+       }
+
+       @Override
+       public Set<String> getChildTypes() {
+           return delegate.getChildTypes();
+       }
+
+       @Override
+       public Set<String> getChildrenNames(String childType) {
+           return delegate.getChildrenNames(childType);
+       }
+
+       @Override
+       public Set<ResourceEntry> getChildren(String childType) {
+           Set<ResourceEntry> children = delegate.getChildren(childType);
+           if (children != null) {
+               Set<ResourceEntry> protectedChildren = new LinkedHashSet<Resource.ResourceEntry>();
+               for (ResourceEntry entry : children) {
+                   protectedChildren.add(new ProtectedModelResourceEntry(entry));
+               }
+           }
+           return null;
+       }
+
+       @Override
+       public void registerChild(PathElement address, Resource resource) {
+           throw MESSAGES.immutableResource();
+       }
+
+       @Override
+       public Resource removeChild(PathElement address) {
+           throw MESSAGES.immutableResource();
+       }
+
+       @Override
+       public boolean isRuntime() {
+           return delegate.isRuntime();
+       }
+
+       @Override
+       public boolean isProxy() {
+           return delegate.isProxy();
+       }
+
+       public Resource clone() {
+           return new ProtectedModelResource(delegate.clone());
+       }
+   }
+
+
+    private static class ProtectedModelResourceEntry extends ProtectedModelResource implements ResourceEntry {
+        ResourceEntry delegate;
+
+        ProtectedModelResourceEntry(ResourceEntry delegate){
+            super(delegate);
+        }
+
+        @Override
+        public String getName() {
+            return delegate.getName();
+        }
+
+        @Override
+        public PathElement getPathElement() {
+            return delegate.getPathElement();
+        }
+    }
 }

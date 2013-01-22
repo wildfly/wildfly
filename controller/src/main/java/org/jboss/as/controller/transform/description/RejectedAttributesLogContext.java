@@ -38,7 +38,6 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.dmr.ModelNode;
 
@@ -49,27 +48,24 @@ import org.jboss.dmr.ModelNode;
 @Deprecated //todo replace with context.getLogger
 class RejectedAttributesLogContext {
 
-    private final TransformationContext context;
+    private final TransformationRule.AbstractChainedContext context;
     private final PathAddress address;
     private final ModelNode op;
     Map<RejectAttributeLogAdapter, Set<String>> failedAttributes;
 
-    RejectedAttributesLogContext(TransformationContext context, PathAddress address, ModelNode op) {
+    RejectedAttributesLogContext(TransformationRule.AbstractChainedContext context, PathAddress address, ModelNode op) {
         this.context = context;
         this.address = address;
         this.op = op;
     }
 
     void checkAttribute(RejectAttributeChecker checker, String attributeName, ModelNode attributeValue) {
-      //Protect the value so badly behaved reject checkers cannot modify it
-        ModelNode protectedAttributeValue = attributeValue.clone();
-        protectedAttributeValue.protect();
         if (op == null) {
-            if (checker.rejectResourceAttribute(address, attributeName, protectedAttributeValue, context)) {
+            if (checker.rejectResourceAttribute(address, attributeName, attributeValue, context.getContext())) {
                 reject(checker, attributeName);
             }
         } else {
-            if (checker.rejectOperationParameter(address, attributeName, protectedAttributeValue, op, context)){
+            if (checker.rejectOperationParameter(address, attributeName, attributeValue, op, context.getContext())){
                 reject(checker, attributeName);
             }
         }
@@ -99,7 +95,7 @@ class RejectedAttributesLogContext {
         }
         //TODO the determining of whether the version is 1.4.0, i.e. knows about ignored resources or not could be moved to a utility method
 
-        final TransformationTarget tgt = context.getTarget();
+        final TransformationTarget tgt = context.getContext().getTarget();
         final String legacyHostName = tgt.getHostName();
         final ModelVersion coreVersion = tgt.getVersion();
         final String subsystemName = findSubsystemName(address);

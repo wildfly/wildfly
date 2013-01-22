@@ -65,15 +65,12 @@ class AttributeTransformationDescription {
             return false;
         }
 
-        //Protect the value so badly behaved discard checkers cannot modify it
-        ModelNode protectedAttributeValue = attributeValue.clone();
-        protectedAttributeValue.protect();
         if (operation != null) {
-            if (discardChecker.isOperationParameterDiscardable(address, name, protectedAttributeValue, operation, context.getContext())) {
+            if (discardChecker.isOperationParameterDiscardable(address, name, attributeValue, operation, context.getContext())) {
                 return true;
             }
         } else {
-            if (discardChecker.isResourceAttributeDiscardable(address, name, protectedAttributeValue, context.getContext())) {
+            if (discardChecker.isResourceAttributeDiscardable(address, name, attributeValue, context.getContext())) {
                 return true;
             }
         }
