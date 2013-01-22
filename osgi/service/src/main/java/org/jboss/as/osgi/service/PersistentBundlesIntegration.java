@@ -21,10 +21,11 @@
  */
 package org.jboss.as.osgi.service;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.osgi.deployment.deployer.Deployment;
@@ -40,8 +41,11 @@ import org.jboss.osgi.framework.spi.IntegrationServices;
  */
 class PersistentBundlesIntegration extends BootstrapBundlesInstall<Void> {
 
-    PersistentBundlesIntegration() {
+    private final InitialDeploymentTracker deploymentTracker;
+
+    PersistentBundlesIntegration(InitialDeploymentTracker deploymentTracker) {
         super(IntegrationServices.PERSISTENT_BUNDLES);
+        this.deploymentTracker = deploymentTracker;
     }
 
     @Override
@@ -54,9 +58,18 @@ class PersistentBundlesIntegration extends BootstrapBundlesInstall<Void> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        // This actually does not install any bundle deployments
-        // At server startup the persistet bundles are deployed like any other persistet deployment
-        List<Deployment> deployments = Collections.emptyList();
-        installBootstrapBundles(context.getChildTarget(), deployments);
+
+        // Get the set of persistent bundle deployments from {@link InitialDeploymentTracker}
+        Set<Deployment> deployments = deploymentTracker.getDeployments();
+
+        // Collect the Bundle.INSTALLED services
+        Set<ServiceName> installedServices = new HashSet<ServiceName>();
+        for (Deployment dep : deployments) {
+            ServiceName serviceName = dep.getAttachment(ServiceName.class);
+            installedServices.add(serviceName);
+        }
+
+        // Install the persistent bundle resolve service
+        installResolveService(context.getChildTarget(), installedServices);
     }
 }
