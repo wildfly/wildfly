@@ -65,21 +65,6 @@ import org.junit.Test;
  */
 public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
-    private static boolean canTest713 = false;
-
-    @BeforeClass
-    public static void checkVersionAvailability() {
-        // See if we can load the 7.1.3 GAV
-        try {
-            new ChildFirstClassLoaderBuilder().addMavenResourceURL("org.jboss.as:jboss-as-transactions:7.1.3.Final");
-            canTest713 = true;
-        } catch (MalformedURLException oops) {
-            throw new RuntimeException(oops);
-        } catch (RuntimeException e) {
-            canTest713 = false;
-        }
-    }
-
     public TransactionSubsystemTestCase() {
         super(TransactionExtension.SUBSYSTEM_NAME, new TransactionExtension());
     }
@@ -144,10 +129,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    @Ignore("Need a 7.1.3.dmr")
     public void testTransformers111() throws Exception {
-        if (!canTest713)
-            return;
         String subsystemXml = readResource("subsystem.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 1, 1);
         //Use the non-runtime version of the extension which will happen on the HC
@@ -188,11 +170,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
 
     @Test
-    @Ignore("Need a 7.1.3.dmr")
     public void testTransformersFull111() throws Exception {
-        if (!canTest713)
-            return;
-
         String subsystemXml = readResource("full-expressions.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 1, 1);
         //Use the non-runtime version of the extension which will happen on the HC
@@ -248,9 +226,6 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testRejectTransformers111() throws Exception {
-        if (!canTest713)
-            return;
-
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
         // Add legacy subsystems

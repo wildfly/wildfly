@@ -52,10 +52,7 @@ class TransformationUtils {
     public static ModelNode getSubsystemDefinitionForVersion(final String subsystemName, ModelVersion version) {
 
         StringBuilder key = new StringBuilder(subsystemName).append("-").append(version.getMajor()).append(".").append(version.getMinor());
-        if(version.getMicro()!=0){
-            key.append('.').append(version.getMicro());
-        }
-        key.append(".dmr");
+        key.append('.').append(version.getMicro()).append(".dmr");
         InputStream is = null;
         try {
             is = TransformerRegistry.class.getResourceAsStream(key.toString());
