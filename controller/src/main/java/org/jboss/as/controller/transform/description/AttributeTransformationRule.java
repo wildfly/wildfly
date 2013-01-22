@@ -23,7 +23,9 @@
 package org.jboss.as.controller.transform.description;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -46,8 +48,9 @@ class AttributeTransformationRule extends TransformationRule {
     @Override
     void transformOperation(final ModelNode operation, PathAddress address, ChainedOperationContext context) throws OperationFailedException {
         final ModelNode transformed = operation.clone();
-        final RejectedAttributesLogContext rejectedAttributes = new RejectedAttributesLogContext(context.getContext(), address, operation);
-        doTransform(address, transformed, transformed.clone(), context, rejectedAttributes);
+        final RejectedAttributesLogContext rejectedAttributes = new RejectedAttributesLogContext(context, address, operation);
+
+        doTransform(address, transformed, operation, context, rejectedAttributes);
 
         final OperationRejectionPolicy policy;
         if (!rejectedAttributes.hasRejections()) {
@@ -78,7 +81,7 @@ class AttributeTransformationRule extends TransformationRule {
     @Override
     void transformResource(final Resource resource, final PathAddress address, final ChainedResourceContext context) throws OperationFailedException {
         final ModelNode model = resource.getModel();
-        RejectedAttributesLogContext rejectedAttributes = new RejectedAttributesLogContext(context.getContext(), address, null);
+        RejectedAttributesLogContext rejectedAttributes = new RejectedAttributesLogContext(context, address, null);
         doTransform(address, model, null, context, rejectedAttributes);
         if (rejectedAttributes.hasRejections()) {
             rejectedAttributes.errorOrWarn();
@@ -89,41 +92,62 @@ class AttributeTransformationRule extends TransformationRule {
     private void doTransform(PathAddress address, ModelNode modelOrOp, ModelNode operation, AbstractChainedContext context, RejectedAttributesLogContext rejectedAttributes) {
         Map<String, String> renames = new HashMap<String, String>();
         Map<String, ModelNode> adds = new HashMap<String, ModelNode>();
-        for(final Map.Entry<String, AttributeTransformationDescription> entry : descriptions.entrySet()) {
-            final String attributeName = entry.getKey();
-            final ModelNode attributeValue = modelOrOp.get(attributeName);
+        Set<String> newAttributes = new HashSet<String>();
+        Set<String> discardedAttributes = new HashSet<String>();
 
-            AttributeTransformationDescription description = entry.getValue();
+        //Make sure that context.readResourceXXX() returns an unmodifiable Resource
+        context.setImmutableResource(true);
+        try {
+            //Initial setup and discard
+            for(final Map.Entry<String, AttributeTransformationDescription> entry : descriptions.entrySet()) {
+                final String attributeName = entry.getKey();
+                final boolean isNewAttribute = !modelOrOp.has(attributeName);
+                final ModelNode attributeValue = modelOrOp.get(attributeName);
 
-            //discard what can be discarded
-            boolean discarded = false;
-            if (description.shouldDiscard(address, attributeValue, operation, context)) {
-                modelOrOp.remove(attributeName);
-                discarded = true;
+                if (isNewAttribute) {
+                    newAttributes.add(attributeName);
+                }
+
+                AttributeTransformationDescription description = entry.getValue();
+
+                //discard what can be discarded
+                if (description.shouldDiscard(address, TransformationRule.cloneAndProtect(attributeValue), operation, context)) {
+                    modelOrOp.remove(attributeName);
+                    discardedAttributes.add(attributeName);
+                }
+
+                String newName = description.getNewName();
+                if (newName != null) {
+                    renames.put(attributeName, newName);
+                }
             }
 
-            //Check the rest of the model can be transformed
-            description.rejectAttributes(rejectedAttributes, attributeValue);
+            //Check rejections
+            for(final Map.Entry<String, AttributeTransformationDescription> entry : descriptions.entrySet()) {
+                final String attributeName = entry.getKey();
+                final ModelNode attributeValue = modelOrOp.get(attributeName);
+                AttributeTransformationDescription description = entry.getValue();
 
-            //Now transform the value
-            boolean isNewAttribute;
-            if (operation != null) {
-                isNewAttribute = !operation.has(attributeName);
-            } else {
-                isNewAttribute = !modelOrOp.has(attributeName);
-            }
-            description.convertValue(address, attributeValue, operation, context);
-            if (!attributeValue.isDefined()) {
-                modelOrOp.remove(attributeName);
-            } else if (isNewAttribute && !discarded) {
-                adds.put(attributeName, attributeValue);
+                //Check the rest of the model can be transformed
+                description.rejectAttributes(rejectedAttributes, TransformationRule.cloneAndProtect(attributeValue));
             }
 
-            //Store the rename until we are done
-            String newName = description.getNewName();
-            if (newName != null) {
-                renames.put(attributeName, newName);
+            //Do conversions
+            for(final Map.Entry<String, AttributeTransformationDescription> entry : descriptions.entrySet()) {
+                final String attributeName = entry.getKey();
+                final ModelNode attributeValue = modelOrOp.get(attributeName);
+                AttributeTransformationDescription description = entry.getValue();
+
+                description.convertValue(address, attributeValue, operation, context);
+                if (!attributeValue.isDefined()) {
+                    modelOrOp.remove(attributeName);
+                } else if (newAttributes.contains(attributeName) && !discardedAttributes.contains(attributeName)) {
+                    adds.put(attributeName, attributeValue);
+                }
             }
+
+        } finally {
+            context.setImmutableResource(false);
         }
 
         if (renames.size() > 0) {

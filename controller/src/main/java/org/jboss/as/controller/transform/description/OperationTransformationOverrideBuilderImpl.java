@@ -75,8 +75,7 @@ class OperationTransformationOverrideBuilderImpl extends AttributeTransformation
                     return OperationTransformer.DISCARD.transformOperation(ctx, address, operation);
                 }
                 final Iterator<TransformationRule> iterator = Collections.<TransformationRule>emptyList().iterator();
-                final ModelNode originalModel = operation.clone();
-                originalModel.protect();
+                final ModelNode originalModel = TransformationRule.cloneAndProtect(operation);
                 final TransformationRule.ChainedOperationContext context = new TransformationRule.ChainedOperationContext(ctx) {
 
                     @Override

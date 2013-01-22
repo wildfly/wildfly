@@ -99,8 +99,6 @@ class TransformingDescription extends AbstractDescription implements Transformat
             return OperationTransformer.DISCARD.transformOperation(ctx, address, operation);
         }
         final Iterator<TransformationRule> iterator = rules.iterator();
-        final ModelNode originalModel = operation.clone();
-        originalModel.protect();
         final TransformationRule.ChainedOperationContext context = new TransformationRule.ChainedOperationContext(ctx) {
 
             @Override
@@ -122,8 +120,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
 
     @Override
     public void transformResource(final ResourceTransformationContext ctx, final PathAddress address, final Resource original) throws OperationFailedException {
-        final ModelNode originalModel = original.getModel().clone();
-        originalModel.protect();
+        final ModelNode originalModel = TransformationRule.cloneAndProtect(original.getModel());
         if(discardPolicy.discard(originalModel, address, ctx)) {
             return; // discard
         }
@@ -158,56 +155,60 @@ class TransformingDescription extends AbstractDescription implements Transformat
             ModelNode attributeValue = operation.get(ModelDescriptionConstants.VALUE);
 
             // Process
-            final ModelNode originalModel = operation.clone();
             TransformationRule.AbstractChainedContext ctx = new TransformationRule.AbstractChainedContext(context) {
                 @Override
                 protected TransformationContext getContext() {
                     return super.getContext();
                 }
             };
-            originalModel.protect();
             //discard what can be discarded
             if (description.shouldDiscard(address, attributeValue, operation, ctx)) {
                 return OperationTransformer.DISCARD.transformOperation(context, address, operation);
             }
 
-            //Check the rest of the model can be transformed
-            final RejectedAttributesLogContext rejectedAttributes = new RejectedAttributesLogContext(context, address, operation);
-            description.rejectAttributes(rejectedAttributes, attributeValue);
-            final OperationRejectionPolicy policy;
-            if(rejectedAttributes.hasRejections()) {
+            //Make sure that context.readResourceXXX() returns an unmodifiable Resource
+            ctx.setImmutableResource(true);
+            try {
+                //Check the rest of the model can be transformed
+                final RejectedAttributesLogContext rejectedAttributes = new RejectedAttributesLogContext(ctx, address, TransformationRule.cloneAndProtect(operation));
+                description.rejectAttributes(rejectedAttributes, attributeValue);
+                final OperationRejectionPolicy policy;
+                if(rejectedAttributes.hasRejections()) {
 
-                rejectedAttributes.errorOrWarn();
-                policy = new OperationRejectionPolicy() {
-                    @Override
-                    public boolean rejectOperation(ModelNode preparedResult) {
-                        return true;
-                    }
-
-                    @Override
-                    public String getFailureDescription() {
-                        try {
-                            return rejectedAttributes.errorOrWarn();
-                        } catch (OperationFailedException e) {
-                            //This will not happen
-                            return null;
+                    rejectedAttributes.errorOrWarn();
+                    policy = new OperationRejectionPolicy() {
+                        @Override
+                        public boolean rejectOperation(ModelNode preparedResult) {
+                            return true;
                         }
-                    }
-                };
-            } else {
-                policy = DEFAULT_REJECTION_POLICY;
+
+                        @Override
+                        public String getFailureDescription() {
+                            try {
+                                return rejectedAttributes.errorOrWarn();
+                            } catch (OperationFailedException e) {
+                                //This will not happen
+                                return null;
+                            }
+                        }
+                    };
+                } else {
+                    policy = DEFAULT_REJECTION_POLICY;
+                }
+
+                //Now transform the value
+                description.convertValue(address, attributeValue, TransformationRule.cloneAndProtect(operation), ctx);
+
+                //Change the name
+                String newName = description.getNewName();
+                if (newName != null) {
+                    operation.get(NAME).set(newName);
+                }
+
+                return new TransformedOperation(operation, policy, OperationResultTransformer.ORIGINAL_RESULT);
+            } finally {
+                ctx.setImmutableResource(false);
             }
-
-            //Now transform the value
-            description.convertValue(address, attributeValue, originalModel, ctx);
-
-            //Store the rename until we are done
-            String newName = description.getNewName();
-            if (newName != null) {
-                operation.get(NAME).set(newName);
-            }
-
-            return new TransformedOperation(operation, policy, OperationResultTransformer.ORIGINAL_RESULT);
         }
     }
 
@@ -223,7 +224,6 @@ class TransformingDescription extends AbstractDescription implements Transformat
                 return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
             }
 
-            // Process
             final ModelNode originalModel = operation.clone();
             TransformationRule.AbstractChainedContext ctx = new TransformationRule.AbstractChainedContext(context) {
                 @Override
@@ -231,12 +231,17 @@ class TransformingDescription extends AbstractDescription implements Transformat
                     return super.getContext();
                 }
             };
-            originalModel.protect();
-            //discard what can be discarded
-            if (description.shouldDiscard(address, UNDEFINED, originalModel, ctx)) {
-                return OperationTransformer.DISCARD.transformOperation(context, address, operation);
-            }
 
+            //Make sure that context.readResourceXXX() returns an unmodifiable Resource
+            ctx.setImmutableResource(true);
+            try {
+                //discard what can be discarded
+                if (description.shouldDiscard(address, UNDEFINED, originalModel, ctx)) {
+                    return OperationTransformer.DISCARD.transformOperation(context, address, operation);
+                }
+            } finally {
+                ctx.setImmutableResource(false);
+            }
             return new TransformedOperation(operation, DEFAULT_REJECTION_POLICY, OperationResultTransformer.ORIGINAL_RESULT);
         }
     }
