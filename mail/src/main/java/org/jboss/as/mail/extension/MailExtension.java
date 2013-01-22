@@ -22,16 +22,14 @@
 
 package org.jboss.as.mail.extension;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.mail.extension.MailSubsystemModel.CUSTOM_SERVER_PATH;
+import static org.jboss.as.mail.extension.MailSubsystemModel.SERVER_TYPE;
 import static org.jboss.as.mail.extension.MailSubsystemModel.SMTP_SERVER_PATH;
 import static org.jboss.as.mail.extension.MailSubsystemModel.TLS;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -39,13 +37,10 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.AbstractOperationTransformer;
-import org.jboss.as.controller.transform.ResourceTransformationContext;
-import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
-import org.jboss.dmr.ModelNode;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 
 
 /**
@@ -104,30 +99,26 @@ public class MailExtension implements Extension {
     }
 
     private void registerTransformers(SubsystemRegistration subsystem) {
-        TransformersSubRegistration sessionTransformers = subsystem.registerModelTransformers(ModelVersion.create(1, 1, 0), null)
-                .registerSubResource(MAIL_SESSION_PATH);
-        TransformersSubRegistration serverTransformers = sessionTransformers
-                .registerSubResource(SMTP_SERVER_PATH, new ResourceTransformer() {
-                    // FIXME produces inconsistent domain if profile is not ignored
-                    @Override
-                    public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
-                        ModelNode serverModel = resource.getModel();
-                        if (serverModel.has(TLS)) {
-                            serverModel.remove(TLS);
-                        }
-                    }
-                });
-        serverTransformers.registerOperationTransformer(ADD, new AbstractOperationTransformer() {
-            // FIXME produces inconsistent domain if profile is not ignored
-            @Override
-            protected ModelNode transform(TransformationContext context, PathAddress address, ModelNode operation) {
-                if (operation.has(TLS)) {
-                    operation.remove(TLS);
-                }
-                return operation;
-            }
-        });
+        TransformersSubRegistration sessionTransformers = subsystem.registerModelTransformers(ModelVersion.create(1, 1, 0), null).registerSubResource(MAIL_SESSION_PATH);
+        TransformationDescription smtpServerTransformers = TransformationDescriptionBuilder.Factory.createInstance(PathElement.pathElement(SERVER_TYPE))
+                .getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, TLS)
+                .end()
+                .build();
+        TransformationDescription.Tools.register(smtpServerTransformers,sessionTransformers);
         sessionTransformers.registerSubResource(CUSTOM_SERVER_PATH, true);
+        //todo i think this should work with builders:
+        /*TransformationDescription transformers = TransformationDescriptionBuilder.Factory.createInstance(MAIL_SESSION_PATH)
+                .addChildResource(PathElement.pathElement(SERVER_TYPE))
+                .getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, TLS)
+                .end()
+                .end() / parent() //this part is not here now
+                .discardChildResource(CUSTOM_SERVER_PATH)
+                .build();
+        TransformationDescription.Tools.register(transformers,subsystemTransformers);
+
+        also why is DiscardUndefinedAttributesTransformer different from .setDiscard(DiscardAttributeChecker.UNDEFINED, TLS) ?
+                */
+
     }
 
 }

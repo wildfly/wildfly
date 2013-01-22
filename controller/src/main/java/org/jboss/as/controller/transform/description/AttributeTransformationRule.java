@@ -115,7 +115,7 @@ class AttributeTransformationRule extends TransformationRule {
                     modelOrOp.remove(attributeName);
                     discardedAttributes.add(attributeName);
                 }
-
+                context.getContext().getLogger().logWarning(address,discardedAttributes);
                 String newName = description.getNewName();
                 if (newName != null) {
                     renames.put(attributeName, newName);
