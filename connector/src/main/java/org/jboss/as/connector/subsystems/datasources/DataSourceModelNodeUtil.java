@@ -83,16 +83,13 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOU
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_RESOURCE_TIMEOUT;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import org.jboss.as.connector.util.ModelNodeUtil;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PropertiesAttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.jca.common.api.metadata.Defaults;
 import org.jboss.jca.common.api.metadata.common.Credential;
 import org.jboss.jca.common.api.metadata.common.Extension;
@@ -124,55 +121,55 @@ class DataSourceModelNodeUtil {
     static ModifiableDataSource from(final OperationContext operationContext, final ModelNode dataSourceNode, final String dsName) throws OperationFailedException, ValidateException {
         final Map<String, String> connectionProperties= Collections.emptyMap();
 
-        final String connectionUrl = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, CONNECTION_URL, null);
-        final String driverClass = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, DRIVER_CLASS, null);
-        final String dataSourceClass = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, DATASOURCE_CLASS, null);
-        final String jndiName = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, JNDI_NAME, null);
-        final String driver = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, DATASOURCE_DRIVER, null);
-        final String newConnectionSql = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, NEW_CONNECTION_SQL, null);
+        final String connectionUrl = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, CONNECTION_URL);
+        final String driverClass = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, DRIVER_CLASS);
+        final String dataSourceClass = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, DATASOURCE_CLASS);
+        final String jndiName = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, JNDI_NAME);
+        final String driver = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, DATASOURCE_DRIVER);
+        final String newConnectionSql = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, NEW_CONNECTION_SQL);
         final String poolName = dsName;
-        final String urlDelimiter = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, URL_DELIMITER, null);
-        final String urlSelectorStrategyClassName = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode,
-                URL_SELECTOR_STRATEGY_CLASS_NAME, null);
-        final boolean useJavaContext = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, USE_JAVA_CONTEXT, Defaults.USE_JAVA_CONTEXT);
-        final boolean enabled = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, ENABLED, Defaults.ENABLED);
-        final boolean jta = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, JTA, Defaults.JTA);
-        final Integer maxPoolSize = getIntIfSetOrGetDefault(operationContext, dataSourceNode, MAX_POOL_SIZE, Defaults.MAX_POOL_SIZE);
-        final Integer minPoolSize = getIntIfSetOrGetDefault(operationContext, dataSourceNode, MIN_POOL_SIZE, Defaults.MIN_POOL_SIZE);
-        final boolean prefill = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, POOL_PREFILL, Defaults.PREFILL);
-        final boolean useStrictMin = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, POOL_USE_STRICT_MIN, Defaults.USE_STRICT_MIN);
-        final String flushStrategyString = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, POOL_FLUSH_STRATEGY, Defaults.FLUSH_STRATEGY.toString());
+        final String urlDelimiter = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, URL_DELIMITER);
+        final String urlSelectorStrategyClassName = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode,
+                URL_SELECTOR_STRATEGY_CLASS_NAME);
+        final boolean useJavaContext = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, USE_JAVA_CONTEXT);
+        final boolean enabled = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, ENABLED);
+        final boolean jta = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, JTA);
+        final Integer maxPoolSize = ModelNodeUtil.getIntIfSetOrGetDefault(operationContext, dataSourceNode, MAX_POOL_SIZE);
+        final Integer minPoolSize = ModelNodeUtil.getIntIfSetOrGetDefault(operationContext, dataSourceNode, MIN_POOL_SIZE);
+        final boolean prefill = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, POOL_PREFILL);
+        final boolean useStrictMin = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, POOL_USE_STRICT_MIN);
+        final String flushStrategyString = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, POOL_FLUSH_STRATEGY);
         final FlushStrategy flushStrategy = FlushStrategy.forName(flushStrategyString); // TODO relax case sensitivity
-        final Boolean allowMultipleUsers = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, ALLOW_MULTIPLE_USERS, Defaults.ALLOW_MULTIPLE_USERS);
+        final Boolean allowMultipleUsers = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, ALLOW_MULTIPLE_USERS);
 
            final DsPool pool = new DsPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy, allowMultipleUsers);
 
-        final String username =getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, USERNAME, null);
+        final String username = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, USERNAME);
 
-        final String password = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, PASSWORD, null);
-        final String securityDomain = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, SECURITY_DOMAIN, null);
+        final String password = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, PASSWORD);
+        final String securityDomain = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, SECURITY_DOMAIN);
 
-        final Extension reauthPlugin = extractExtension(operationContext, dataSourceNode, REAUTH_PLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES);
+        final Extension reauthPlugin = ModelNodeUtil.extractExtension(operationContext, dataSourceNode, REAUTH_PLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES);
 
         final DsSecurity security = new DsSecurityImpl(username, password, securityDomain, reauthPlugin);
 
-        final boolean sharePreparedStatements = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, SHARE_PREPARED_STATEMENTS, Defaults.SHARE_PREPARED_STATEMENTS);
-        final Long preparedStatementsCacheSize = getLongIfSetOrGetDefault(operationContext, dataSourceNode, PREPARED_STATEMENTS_CACHE_SIZE, null);
-        final String trackStatementsString = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, TRACK_STATEMENTS, Defaults.TRACK_STATEMENTS.toString());
+        final boolean sharePreparedStatements = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, SHARE_PREPARED_STATEMENTS);
+        final Long preparedStatementsCacheSize = ModelNodeUtil.getLongIfSetOrGetDefault(operationContext, dataSourceNode, PREPARED_STATEMENTS_CACHE_SIZE);
+        final String trackStatementsString = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, TRACK_STATEMENTS);
         final Statement.TrackStatementsEnum trackStatements = Statement.TrackStatementsEnum.valueOf(trackStatementsString.toUpperCase(Locale.ENGLISH));
         final Statement statement = new StatementImpl(sharePreparedStatements, preparedStatementsCacheSize, trackStatements);
 
-        final Integer allocationRetry = getIntIfSetOrGetDefault(operationContext, dataSourceNode, ALLOCATION_RETRY, null);
-        final Long allocationRetryWaitMillis = getLongIfSetOrGetDefault(operationContext, dataSourceNode, ALLOCATION_RETRY_WAIT_MILLIS, null);
-        final Long blockingTimeoutMillis = getLongIfSetOrGetDefault(operationContext, dataSourceNode, BLOCKING_TIMEOUT_WAIT_MILLIS, null);
-        final Long idleTimeoutMinutes = getLongIfSetOrGetDefault(operationContext, dataSourceNode, IDLETIMEOUTMINUTES, null);
-        final Long queryTimeout = getLongIfSetOrGetDefault(operationContext, dataSourceNode, QUERY_TIMEOUT, null);
-        final Integer xaResourceTimeout = getIntIfSetOrGetDefault(operationContext, dataSourceNode, XA_RESOURCE_TIMEOUT, null);
-        final Long useTryLock = getLongIfSetOrGetDefault(operationContext, dataSourceNode, USE_TRY_LOCK, null);
-        final boolean setTxQueryTimeout = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, SET_TX_QUERY_TIMEOUT, Defaults.SET_TX_QUERY_TIMEOUT);
+        final Integer allocationRetry = ModelNodeUtil.getIntIfSetOrGetDefault(operationContext, dataSourceNode, ALLOCATION_RETRY);
+        final Long allocationRetryWaitMillis = ModelNodeUtil.getLongIfSetOrGetDefault(operationContext, dataSourceNode, ALLOCATION_RETRY_WAIT_MILLIS);
+        final Long blockingTimeoutMillis = ModelNodeUtil.getLongIfSetOrGetDefault(operationContext, dataSourceNode, BLOCKING_TIMEOUT_WAIT_MILLIS);
+        final Long idleTimeoutMinutes = ModelNodeUtil.getLongIfSetOrGetDefault(operationContext, dataSourceNode, IDLETIMEOUTMINUTES);
+        final Long queryTimeout = ModelNodeUtil.getLongIfSetOrGetDefault(operationContext, dataSourceNode, QUERY_TIMEOUT);
+        final Integer xaResourceTimeout = ModelNodeUtil.getIntIfSetOrGetDefault(operationContext, dataSourceNode, XA_RESOURCE_TIMEOUT);
+        final Long useTryLock = ModelNodeUtil.getLongIfSetOrGetDefault(operationContext, dataSourceNode, USE_TRY_LOCK);
+        final boolean setTxQueryTimeout = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, SET_TX_QUERY_TIMEOUT);
         final TimeOut timeOut = new TimeOutImpl(blockingTimeoutMillis, idleTimeoutMinutes, allocationRetry,
                 allocationRetryWaitMillis, xaResourceTimeout, setTxQueryTimeout, queryTimeout, useTryLock);
-        final String transactionIsolationString = getResolvedStringIfSetOrGetDefault(operationContext,  dataSourceNode, TRANSACTION_ISOLATION, null);
+        final String transactionIsolationString = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, TRANSACTION_ISOLATION);
         TransactionIsolation transactionIsolation = null;
         if (transactionIsolationString != null) {
             transactionIsolation = TransactionIsolation.forName(transactionIsolationString); // TODO relax case sensitivity
@@ -181,20 +178,20 @@ class DataSourceModelNodeUtil {
             }
         }
 
-        final String checkValidConnectionSql = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, CHECK_VALID_CONNECTION_SQL, null);
+        final String checkValidConnectionSql = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, CHECK_VALID_CONNECTION_SQL);
 
-        final Extension exceptionSorter = extractExtension(operationContext, dataSourceNode, EXCEPTION_SORTER_CLASSNAME, EXCEPTION_SORTER_PROPERTIES);
-        final Extension staleConnectionChecker = extractExtension(operationContext, dataSourceNode, STALE_CONNECTION_CHECKER_CLASSNAME,
+        final Extension exceptionSorter = ModelNodeUtil.extractExtension(operationContext, dataSourceNode, EXCEPTION_SORTER_CLASSNAME, EXCEPTION_SORTER_PROPERTIES);
+        final Extension staleConnectionChecker = ModelNodeUtil.extractExtension(operationContext, dataSourceNode, STALE_CONNECTION_CHECKER_CLASSNAME,
                 STALE_CONNECTION_CHECKER_PROPERTIES);
-        final Extension validConnectionChecker = extractExtension(operationContext, dataSourceNode, VALID_CONNECTION_CHECKER_CLASSNAME,
+        final Extension validConnectionChecker = ModelNodeUtil.extractExtension(operationContext, dataSourceNode, VALID_CONNECTION_CHECKER_CLASSNAME,
                 VALID_CONNECTION_CHECKER_PROPERTIES);
 
-        Long backgroundValidationMillis = getLongIfSetOrGetDefault(operationContext, dataSourceNode, BACKGROUNDVALIDATIONMILLIS, null);
-        final boolean backgroundValidation = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, BACKGROUNDVALIDATION, Defaults.BACKGROUND_VALIDATION);
-        boolean useFastFail = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, USE_FAST_FAIL, Defaults.USE_FAST_FAIL);
-        final boolean validateOnMatch = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, VALIDATE_ON_MATCH, Defaults.VALIDATE_ON_MATCH);
-        final boolean spy = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, SPY, Defaults.SPY);
-        final boolean useCcm = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, USE_CCM, Defaults.USE_CCM);
+        Long backgroundValidationMillis = ModelNodeUtil.getLongIfSetOrGetDefault(operationContext, dataSourceNode, BACKGROUNDVALIDATIONMILLIS);
+        final boolean backgroundValidation = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, BACKGROUNDVALIDATION);
+        boolean useFastFail = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, USE_FAST_FAIL);
+        final boolean validateOnMatch = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, VALIDATE_ON_MATCH);
+        final boolean spy = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, SPY);
+        final boolean useCcm = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, USE_CCM);
 
         final Validation validation = new ValidationImpl(backgroundValidation, backgroundValidationMillis, useFastFail,
                 validConnectionChecker, checkValidConnectionSql, validateOnMatch, staleConnectionChecker, exceptionSorter);
@@ -208,59 +205,59 @@ class DataSourceModelNodeUtil {
         final Map<String, String> xaDataSourceProperty;
         xaDataSourceProperty = Collections.emptyMap();
 
-        final String xaDataSourceClass = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, XA_DATASOURCE_CLASS, null);
-        final String jndiName = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, JNDI_NAME, null);
-        final String module = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, DATASOURCE_DRIVER, null);
-        final String newConnectionSql = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, NEW_CONNECTION_SQL, null);
+        final String xaDataSourceClass = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, XA_DATASOURCE_CLASS);
+        final String jndiName = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, JNDI_NAME);
+        final String module = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, DATASOURCE_DRIVER);
+        final String newConnectionSql = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, NEW_CONNECTION_SQL);
         final String poolName = dsName;
-        final String urlDelimiter = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, URL_DELIMITER, null);
-        final String urlSelectorStrategyClassName = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode,
-                URL_SELECTOR_STRATEGY_CLASS_NAME, null);
-        final Boolean useJavaContext = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, USE_JAVA_CONTEXT, Defaults.USE_JAVA_CONTEXT);
-        final Boolean enabled = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, ENABLED, Defaults.ENABLED);
-        final Integer maxPoolSize = getIntIfSetOrGetDefault(operationContext, dataSourceNode, MAX_POOL_SIZE, Defaults.MAX_POOL_SIZE);
-        final Integer minPoolSize = getIntIfSetOrGetDefault(operationContext, dataSourceNode, MIN_POOL_SIZE, Defaults.MIN_POOL_SIZE);
-        final Boolean prefill = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, POOL_PREFILL, Defaults.PREFILL);
-        final Boolean useStrictMin = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, POOL_USE_STRICT_MIN, Defaults.USE_STRICT_MIN);
-        final Boolean interleaving = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, INTERLEAVING, Defaults.INTERLEAVING);
-        final Boolean noTxSeparatePool = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, NO_TX_SEPARATE_POOL, Defaults.NO_TX_SEPARATE_POOL);
-        final Boolean padXid = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, PAD_XID, Defaults.PAD_XID);
-        final Boolean isSameRmOverride = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, SAME_RM_OVERRIDE, Defaults.IS_SAME_RM_OVERRIDE);
-        final Boolean wrapXaDataSource = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, WRAP_XA_RESOURCE, Defaults.WRAP_XA_RESOURCE);
-        final String flushStrategyString = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, POOL_FLUSH_STRATEGY, Defaults.FLUSH_STRATEGY.toString());
+        final String urlDelimiter = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, URL_DELIMITER);
+        final String urlSelectorStrategyClassName = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode,
+                URL_SELECTOR_STRATEGY_CLASS_NAME);
+        final Boolean useJavaContext = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, USE_JAVA_CONTEXT);
+        final Boolean enabled = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, ENABLED);
+        final Integer maxPoolSize = ModelNodeUtil.getIntIfSetOrGetDefault(operationContext, dataSourceNode, MAX_POOL_SIZE);
+        final Integer minPoolSize = ModelNodeUtil.getIntIfSetOrGetDefault(operationContext, dataSourceNode, MIN_POOL_SIZE);
+        final Boolean prefill = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, POOL_PREFILL);
+        final Boolean useStrictMin = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, POOL_USE_STRICT_MIN);
+        final Boolean interleaving = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, INTERLEAVING);
+        final Boolean noTxSeparatePool = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, NO_TX_SEPARATE_POOL);
+        final Boolean padXid = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, PAD_XID);
+        final Boolean isSameRmOverride = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, SAME_RM_OVERRIDE);
+        final Boolean wrapXaDataSource = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, WRAP_XA_RESOURCE);
+        final String flushStrategyString = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, POOL_FLUSH_STRATEGY);
         final FlushStrategy flushStrategy = FlushStrategy.forName(flushStrategyString); // TODO relax case sensitivity
 
-        final Boolean allowMultipleUsers = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, ALLOW_MULTIPLE_USERS, Defaults.ALLOW_MULTIPLE_USERS);
+        final Boolean allowMultipleUsers = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, ALLOW_MULTIPLE_USERS);
 
         final DsXaPool xaPool = new DsXaPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy,
                 isSameRmOverride, interleaving, padXid, wrapXaDataSource, noTxSeparatePool, allowMultipleUsers);
 
-        final String username = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, USERNAME, null);
-        final String password = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, PASSWORD, null);
-        final String securityDomain = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, SECURITY_DOMAIN, null);
+        final String username = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, USERNAME);
+        final String password = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, PASSWORD);
+        final String securityDomain = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, SECURITY_DOMAIN);
 
-        final Extension reauthPlugin = extractExtension(operationContext, dataSourceNode, REAUTH_PLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES);
+        final Extension reauthPlugin = ModelNodeUtil.extractExtension(operationContext, dataSourceNode, REAUTH_PLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES);
 
         final DsSecurity security = new DsSecurityImpl(username, password, securityDomain, reauthPlugin);
 
         final Boolean sharePreparedStatements = dataSourceNode.hasDefined(SHARE_PREPARED_STATEMENTS.getName()) ? dataSourceNode.get(
                 SHARE_PREPARED_STATEMENTS.getName()).asBoolean() : Defaults.SHARE_PREPARED_STATEMENTS;
-        final Long preparedStatementsCacheSize = getLongIfSetOrGetDefault(operationContext, dataSourceNode, PREPARED_STATEMENTS_CACHE_SIZE, null);
-        final String trackStatementsString = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, TRACK_STATEMENTS, Defaults.TRACK_STATEMENTS.toString());
+        final Long preparedStatementsCacheSize = ModelNodeUtil.getLongIfSetOrGetDefault(operationContext, dataSourceNode, PREPARED_STATEMENTS_CACHE_SIZE);
+        final String trackStatementsString = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, TRACK_STATEMENTS);
         final Statement.TrackStatementsEnum trackStatements = Statement.TrackStatementsEnum.valueOf(trackStatementsString.toUpperCase(Locale.ENGLISH));
         final Statement statement = new StatementImpl(sharePreparedStatements, preparedStatementsCacheSize, trackStatements);
 
-        final Integer allocationRetry = getIntIfSetOrGetDefault(operationContext, dataSourceNode, ALLOCATION_RETRY, null);
-        final Long allocationRetryWaitMillis = getLongIfSetOrGetDefault(operationContext, dataSourceNode, ALLOCATION_RETRY_WAIT_MILLIS, null);
-        final Long blockingTimeoutMillis = getLongIfSetOrGetDefault(operationContext, dataSourceNode, BLOCKING_TIMEOUT_WAIT_MILLIS, null);
-        final Long idleTimeoutMinutes = getLongIfSetOrGetDefault(operationContext, dataSourceNode, IDLETIMEOUTMINUTES, null);
-        final Long queryTimeout = getLongIfSetOrGetDefault(operationContext, dataSourceNode, QUERY_TIMEOUT, null);
-        final Integer xaResourceTimeout = getIntIfSetOrGetDefault(operationContext, dataSourceNode, XA_RESOURCE_TIMEOUT, null);
-        final Long useTryLock = getLongIfSetOrGetDefault(operationContext, dataSourceNode, USE_TRY_LOCK, null);
-        final Boolean setTxQueryTimeout = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, SET_TX_QUERY_TIMEOUT, Defaults.SET_TX_QUERY_TIMEOUT);
+        final Integer allocationRetry = ModelNodeUtil.getIntIfSetOrGetDefault(operationContext, dataSourceNode, ALLOCATION_RETRY);
+        final Long allocationRetryWaitMillis = ModelNodeUtil.getLongIfSetOrGetDefault(operationContext, dataSourceNode, ALLOCATION_RETRY_WAIT_MILLIS);
+        final Long blockingTimeoutMillis = ModelNodeUtil.getLongIfSetOrGetDefault(operationContext, dataSourceNode, BLOCKING_TIMEOUT_WAIT_MILLIS);
+        final Long idleTimeoutMinutes = ModelNodeUtil.getLongIfSetOrGetDefault(operationContext, dataSourceNode, IDLETIMEOUTMINUTES);
+        final Long queryTimeout = ModelNodeUtil.getLongIfSetOrGetDefault(operationContext, dataSourceNode, QUERY_TIMEOUT);
+        final Integer xaResourceTimeout = ModelNodeUtil.getIntIfSetOrGetDefault(operationContext, dataSourceNode, XA_RESOURCE_TIMEOUT);
+        final Long useTryLock = ModelNodeUtil.getLongIfSetOrGetDefault(operationContext, dataSourceNode, USE_TRY_LOCK);
+        final Boolean setTxQueryTimeout = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, SET_TX_QUERY_TIMEOUT);
         final TimeOut timeOut = new TimeOutImpl(blockingTimeoutMillis, idleTimeoutMinutes, allocationRetry,
                 allocationRetryWaitMillis, xaResourceTimeout, setTxQueryTimeout, queryTimeout, useTryLock);
-        final String transactionIsolationString = getResolvedStringIfSetOrGetDefault(operationContext,  dataSourceNode, TRANSACTION_ISOLATION, null);
+        final String transactionIsolationString = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, TRANSACTION_ISOLATION);
         TransactionIsolation transactionIsolation = null;
         if (transactionIsolationString != null) {
             transactionIsolation = TransactionIsolation.forName(transactionIsolationString); // TODO relax case sensitivity
@@ -268,27 +265,27 @@ class DataSourceModelNodeUtil {
                 transactionIsolation = TransactionIsolation.customLevel(transactionIsolationString);
             }
         }
-        final String checkValidConnectionSql = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, CHECK_VALID_CONNECTION_SQL, null);
+        final String checkValidConnectionSql = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, CHECK_VALID_CONNECTION_SQL);
 
-        final Extension exceptionSorter = extractExtension(operationContext, dataSourceNode, EXCEPTION_SORTER_CLASSNAME, EXCEPTION_SORTER_PROPERTIES);
-        final Extension staleConnectionChecker = extractExtension(operationContext, dataSourceNode, STALE_CONNECTION_CHECKER_CLASSNAME,
+        final Extension exceptionSorter = ModelNodeUtil.extractExtension(operationContext, dataSourceNode, EXCEPTION_SORTER_CLASSNAME, EXCEPTION_SORTER_PROPERTIES);
+        final Extension staleConnectionChecker = ModelNodeUtil.extractExtension(operationContext, dataSourceNode, STALE_CONNECTION_CHECKER_CLASSNAME,
                 STALE_CONNECTION_CHECKER_PROPERTIES);
-        final Extension validConnectionChecker = extractExtension(operationContext, dataSourceNode, VALID_CONNECTION_CHECKER_CLASSNAME,
+        final Extension validConnectionChecker = ModelNodeUtil.extractExtension(operationContext, dataSourceNode, VALID_CONNECTION_CHECKER_CLASSNAME,
                 VALID_CONNECTION_CHECKER_PROPERTIES);
 
-        Long backgroundValidationMillis = getLongIfSetOrGetDefault(operationContext, dataSourceNode, BACKGROUNDVALIDATIONMILLIS, null);
-        final Boolean backgroundValidation = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, BACKGROUNDVALIDATION, Defaults.BACKGROUND_VALIDATION);
-        boolean useFastFail = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, USE_FAST_FAIL, Defaults.USE_FAST_FAIL);
-        final Boolean validateOnMatch = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, VALIDATE_ON_MATCH, Defaults.VALIDATE_ON_MATCH);
-        final Boolean spy = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, SPY, Defaults.SPY);
-        final Boolean useCcm = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, USE_CCM, Defaults.USE_CCM);
+        Long backgroundValidationMillis = ModelNodeUtil.getLongIfSetOrGetDefault(operationContext, dataSourceNode, BACKGROUNDVALIDATIONMILLIS);
+        final Boolean backgroundValidation = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, BACKGROUNDVALIDATION);
+        boolean useFastFail = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, USE_FAST_FAIL);
+        final Boolean validateOnMatch = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, VALIDATE_ON_MATCH);
+        final Boolean spy = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, SPY);
+        final Boolean useCcm = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, USE_CCM);
         final Validation validation = new ValidationImpl(backgroundValidation, backgroundValidationMillis, useFastFail,
                 validConnectionChecker, checkValidConnectionSql, validateOnMatch, staleConnectionChecker, exceptionSorter);
 
-        final String recoveryUsername = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, RECOVERY_USERNAME, null);
-        final String recoveryPassword = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, RECOVERY_PASSWORD, null);
-        final String recoverySecurityDomain = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, RECOVERY_SECURITY_DOMAIN, null);
-        Boolean noRecovery = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, NO_RECOVERY, null);
+        final String recoveryUsername = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, RECOVERY_USERNAME);
+        final String recoveryPassword = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, RECOVERY_PASSWORD);
+        final String recoverySecurityDomain = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, RECOVERY_SECURITY_DOMAIN);
+        Boolean noRecovery = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, NO_RECOVERY);
 
         Recovery recovery = null;
         if ((recoveryUsername != null && recoveryPassword != null) || recoverySecurityDomain != null || noRecovery != null) {
@@ -297,7 +294,7 @@ class DataSourceModelNodeUtil {
             if ((recoveryUsername != null && recoveryPassword != null) || recoverySecurityDomain != null)
                credential = new CredentialImpl(recoveryUsername, recoveryPassword, recoverySecurityDomain);
 
-            Extension recoverPlugin = extractExtension(operationContext, dataSourceNode, RECOVER_PLUGIN_CLASSNAME, RECOVER_PLUGIN_PROPERTIES);
+            Extension recoverPlugin = ModelNodeUtil.extractExtension(operationContext, dataSourceNode, RECOVER_PLUGIN_CLASSNAME, RECOVER_PLUGIN_PROPERTIES);
 
             if (noRecovery == null)
                 noRecovery = Boolean.FALSE;
@@ -309,82 +306,4 @@ class DataSourceModelNodeUtil {
                 xaDataSourceClass, module, newConnectionSql, xaPool, recovery);
     }
 
-    private static Long getLongIfSetOrGetDefault(final OperationContext context, final ModelNode dataSourceNode, final SimpleAttributeDefinition key, final Long defaultValue) throws OperationFailedException {
-        // FIXME get rid of the defaultValue param and ensure the default is stored in 'key', then do this
-//        ModelNode resolvedNode = key.resolveModelAttribute(context, dataSourceNode);
-//        return resolvedNode.isDefined() ? resolvedNode.asLong() : null;
-        if (dataSourceNode.hasDefined(key.getName())) {
-            if (key.isAllowExpression()) {
-                return context.resolveExpressions(dataSourceNode.get(key.getName())).asLong();
-            } else {
-                return dataSourceNode.get(key.getName()).asLong();
-            }
-        } else {
-            return defaultValue;
-        }
-    }
-
-    private static Integer getIntIfSetOrGetDefault(final OperationContext context, final ModelNode dataSourceNode, final SimpleAttributeDefinition key, final Integer defaultValue) throws OperationFailedException {
-        // FIXME get rid of the defaultValue param and ensure the default is stored in 'key', then do this
-//        ModelNode resolvedNode = key.resolveModelAttribute(context, dataSourceNode);
-//        return resolvedNode.isDefined() ? resolvedNode.asInt() : null;
-        if (dataSourceNode.hasDefined(key.getName())) {
-            if (key.isAllowExpression()) {
-                return context.resolveExpressions(dataSourceNode.get(key.getName())).asInt();
-            } else {
-                return dataSourceNode.get(key.getName()).asInt();
-            }
-        } else {
-            return defaultValue;
-        }
-    }
-
-    private static Boolean getBooleanIfSetOrGetDefault(final OperationContext context, final ModelNode dataSourceNode, final SimpleAttributeDefinition key,
-            final Boolean defaultValue) throws OperationFailedException {
-        // FIXME get rid of the defaultValue param and ensure the default is stored in 'key', then do this
-//        ModelNode resolvedNode = key.resolveModelAttribute(context, dataSourceNode);
-//        return resolvedNode.isDefined() ? resolvedNode.asBoolean() : null;
-        if (dataSourceNode.hasDefined(key.getName())) {
-            if (key.isAllowExpression()) {
-                return context.resolveExpressions(dataSourceNode.get(key.getName())).asBoolean();
-            } else {
-                return dataSourceNode.get(key.getName()).asBoolean();
-            }
-        } else {
-            return defaultValue;
-        }
-    }
-
-    private static String getResolvedStringIfSetOrGetDefault(final OperationContext context, final ModelNode dataSourceNode, final SimpleAttributeDefinition key, final String defaultValue) throws OperationFailedException {
-        // FIXME get rid of the defaultValue param and ensure the default is stored in 'key', then do this
-        //ModelNode resolvedNode = key.resolveModelAttribute(context, dataSourceNode);
-        //String resolvedString = resolvedNode.isDefined() ? resolvedNode.asString() : null;
-        //if (resolvedString != null && resolvedString.trim().length() == 0) {
-        //    resolvedString = null;
-        //}
-        //return resolvedString;
-        if (dataSourceNode.hasDefined(key.getName())) {
-            String returnValue = key.resolveModelAttribute(context,dataSourceNode).asString();
-            return (returnValue != null && returnValue.trim().length() != 0) ? returnValue : null;
-        } else {
-            return defaultValue;
-        }
-    }
-
-    private static Extension extractExtension(final OperationContext operationContext, final ModelNode dataSourceNode,
-                                              final SimpleAttributeDefinition className, final PropertiesAttributeDefinition propertyName)
-            throws ValidateException, OperationFailedException {
-        if (dataSourceNode.hasDefined(className.getName())) {
-            String exceptionSorterClassName = dataSourceNode.get(className.getName()).asString();
-            // FIXME the return value of this call is discarded
-            getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, className, null);
-
-            Map<String, String> unwrapped = propertyName.unwrap(operationContext, dataSourceNode);
-            Map<String, String> exceptionSorterProperty = unwrapped.size() > 0 ? unwrapped : null;
-
-            return new Extension(exceptionSorterClassName, exceptionSorterProperty);
-        } else {
-            return null;
-        }
-    }
 }
