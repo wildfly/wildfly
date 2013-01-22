@@ -52,19 +52,4 @@ abstract class AbstractDescription implements TransformationDescription {
         return pathAddressTransformer;
     }
 
-    @Override
-    public void register(final SubsystemRegistration subsytem, ModelVersion... versions) {
-        TransformationDescription.Tools.register(this, subsytem, versions);
-    }
-
-    @Override
-    public void register(SubsystemRegistration subsytem, ModelVersionRange range) {
-        TransformationDescription.Tools.register(this, subsytem, range);
-    }
-
-    @Override
-    public void register(TransformersSubRegistration parent) {
-        TransformationDescription.Tools.register(this, parent);
-    }
-
 }

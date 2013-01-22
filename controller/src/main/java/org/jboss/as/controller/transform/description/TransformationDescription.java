@@ -35,14 +35,14 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The final tranformation description.
+ * The final transformation description.
  *
  * @author Emanuel Muckenhuber
  */
 public interface TransformationDescription {
 
     /**
-     * Get the path for this transformtion description.
+     * Get the path for this transformation description.
      *
      * @return the path element
      */
@@ -83,13 +83,6 @@ public interface TransformationDescription {
      */
     List<TransformationDescription> getChildren();
 
-    @Deprecated
-    void register(SubsystemRegistration subsytem, ModelVersion... versions);
-    @Deprecated
-    void register(SubsystemRegistration subsytem, ModelVersionRange range);
-    @Deprecated
-    void register(TransformersSubRegistration parent);
-
     public static final class Tools {
 
         private Tools() {
@@ -111,7 +104,13 @@ public interface TransformationDescription {
         }
 
         public static void register(TransformationDescription description, SubsystemRegistration registration, ModelVersionRange range) {
-            throw new IllegalStateException("implement operation transformer registration for subsystems");
+            final TransformersSubRegistration subRegistration = registration.registerModelTransformers(range, description.getResourceTransformer(), description.getOperationTransformer());
+            for (final Map.Entry<String, OperationTransformer> entry : description.getOperationTransformers().entrySet()) {
+                subRegistration.registerOperationTransformer(entry.getKey(), entry.getValue());
+            }
+            for (final TransformationDescription child : description.getChildren()) {
+                register(child, subRegistration);
+            }
         }
 
     }
