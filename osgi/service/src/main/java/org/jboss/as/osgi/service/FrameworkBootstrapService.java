@@ -78,12 +78,13 @@ public class FrameworkBootstrapService implements Service<Void> {
 
     private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<ServerEnvironment>();
     private final InjectedValue<SubsystemState> injectedSubsystemState = new InjectedValue<SubsystemState>();
+    private final InitialDeploymentTracker deploymentTracker;
     private final ServiceVerificationHandler verificationHandler;
     private final List<SubsystemExtension> extensions;
     private final OSGiRuntimeResource resource;
 
-    public static ServiceController<Void> addService(ServiceTarget target, OSGiRuntimeResource resource, List<SubsystemExtension> extensions, ServiceVerificationHandler verificationHandler) {
-        FrameworkBootstrapService service = new FrameworkBootstrapService(resource, extensions, verificationHandler);
+    public static ServiceController<Void> addService(ServiceTarget target, OSGiRuntimeResource resource, InitialDeploymentTracker deploymentTracker, List<SubsystemExtension> extensions, ServiceVerificationHandler verificationHandler) {
+        FrameworkBootstrapService service = new FrameworkBootstrapService(resource, deploymentTracker, extensions, verificationHandler);
         ServiceBuilder<Void> builder = target.addService(FrameworkBootstrapService.SERVICE_NAME, service);
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedServerEnvironment);
         builder.addDependency(OSGiConstants.SUBSYSTEM_STATE_SERVICE_NAME, SubsystemState.class, service.injectedSubsystemState);
@@ -91,8 +92,9 @@ public class FrameworkBootstrapService implements Service<Void> {
         return builder.install();
     }
 
-    private FrameworkBootstrapService(OSGiRuntimeResource resource, List<SubsystemExtension> extensions, ServiceVerificationHandler verificationHandler) {
+    private FrameworkBootstrapService(OSGiRuntimeResource resource, InitialDeploymentTracker deploymentTracker, List<SubsystemExtension> extensions, ServiceVerificationHandler verificationHandler) {
         this.verificationHandler = verificationHandler;
+        this.deploymentTracker = deploymentTracker;
         this.extensions = extensions;
         this.resource = resource;
     }
@@ -133,7 +135,7 @@ public class FrameworkBootstrapService implements Service<Void> {
             builder.registerIntegrationService(FrameworkPhase.CREATE, new ModuleLoaderIntegration());
             builder.registerIntegrationService(FrameworkPhase.CREATE, new SystemServicesIntegration(resource, extensions));
             builder.registerIntegrationService(FrameworkPhase.INIT, new BootstrapBundlesIntegration());
-            builder.registerIntegrationService(FrameworkPhase.INIT, new PersistentBundlesIntegration());
+            builder.registerIntegrationService(FrameworkPhase.INIT, new PersistentBundlesIntegration(deploymentTracker));
 
             // Install the services to create the framework
             builder.installServices(FrameworkPhase.CREATE, serviceTarget, verificationHandler);
