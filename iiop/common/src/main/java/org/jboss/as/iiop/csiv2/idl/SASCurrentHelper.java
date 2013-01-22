@@ -47,11 +47,11 @@ public final class SASCurrentHelper {
     }
 
     public static org.omg.CORBA.TypeCode type() {
-        return ORB.init().create_interface_tc("IDL:org/jboss/as/jacorb/csiv2/idl/SASCurrent:1.0", "SASCurrent");
+        return ORB.init().create_interface_tc("IDL:org/jboss/as/iiop/csiv2/idl/SASCurrent:1.0", "SASCurrent");
     }
 
     public static String id() {
-        return "IDL:org/jboss/as/jacorb/csiv2/idl/SASCurrent:1.0";
+        return "IDL:org/jboss/as/iiop/csiv2/idl/SASCurrent:1.0";
     }
 
     public static SASCurrent read(final InputStream in) {

@@ -31,7 +31,7 @@ import org.omg.CORBA.LocalObject;
  */
 public abstract class _SASCurrentLocalBase extends LocalObject implements SASCurrent {
 
-    private String[] _type_ids = {"IDL:org/jboss/as/jacorb/csiv2/idl/SASCurrent:1.0", "IDL:omg.org/CORBA/Current:1.0"};
+    private String[] _type_ids = {"IDL:org/jboss/as/iiop/csiv2/idl/SASCurrent:1.0", "IDL:omg.org/CORBA/Current:1.0"};
 
     public String[] _ids() {
         return _type_ids.clone();
