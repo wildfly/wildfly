@@ -52,7 +52,7 @@ class AttributeTransformationDescription {
         this.converter = converter;
     }
 
-    boolean shouldDiscard(ModelNode attributeValue, ModelNode operation, TransformationRule.AbstractChainedContext context) {
+    boolean shouldDiscard(PathAddress address, ModelNode attributeValue, ModelNode operation, TransformationRule.AbstractChainedContext context) {
         if (discardChecker == null) {
             return false;
         }
@@ -65,12 +65,15 @@ class AttributeTransformationDescription {
             return false;
         }
 
+        //Protect the value so badly behaved discard checkers cannot modify it
+        ModelNode protectedAttributeValue = attributeValue.clone();
+        protectedAttributeValue.protect();
         if (operation != null) {
-            if (discardChecker.isOperationParameterDiscardable(name, attributeValue, operation, context.getContext())) {
+            if (discardChecker.isOperationParameterDiscardable(address, name, protectedAttributeValue, operation, context.getContext())) {
                 return true;
             }
         } else {
-            if (discardChecker.isResourceAttributeDiscardable(name, attributeValue, context.getContext())) {
+            if (discardChecker.isResourceAttributeDiscardable(address, name, protectedAttributeValue, context.getContext())) {
                 return true;
             }
         }

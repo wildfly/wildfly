@@ -61,12 +61,15 @@ class RejectedAttributesLogContext {
     }
 
     void checkAttribute(RejectAttributeChecker checker, String attributeName, ModelNode attributeValue) {
+      //Protect the value so badly behaved reject checkers cannot modify it
+        ModelNode protectedAttributeValue = attributeValue.clone();
+        protectedAttributeValue.protect();
         if (op == null) {
-            if (checker.rejectResourceAttribute(attributeName, attributeValue, context)) {
+            if (checker.rejectResourceAttribute(address, attributeName, protectedAttributeValue, context)) {
                 reject(checker, attributeName);
             }
         } else {
-            if (checker.rejectOperationParameter(attributeName, attributeValue, op, context)){
+            if (checker.rejectOperationParameter(address, attributeName, protectedAttributeValue, op, context)){
                 reject(checker, attributeName);
             }
         }

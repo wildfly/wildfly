@@ -47,7 +47,7 @@ public interface ResourceTransformationDescriptionBuilder extends Transformation
 
     /**
      * Add an operation transformation entry for a given operation. By default all operations inherit the attribute
-     * transformation rules from this transformation description. This behavior can be override for a given operation.
+     * transformation rules from this transformation description. This behavior can be overridden for a given operation.
      *
      * @param operationName the operation name
      * @return the operation transformation builder

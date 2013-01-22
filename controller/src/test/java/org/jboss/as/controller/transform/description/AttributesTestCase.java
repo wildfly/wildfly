@@ -332,7 +332,7 @@ public class AttributesTestCase {
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
             builder.getAttributeBuilder().setDiscard(new DefaultDiscardAttributeChecker(false, false) {
                 @Override
-                public boolean isValueDiscardable(String attributeName, ModelNode attributeValue, TransformationContext context) {
+                public boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
                     return true;
                 }
             }, "discard").end()
@@ -364,7 +364,7 @@ public class AttributesTestCase {
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
             builder.getAttributeBuilder().setDiscard(new DefaultDiscardAttributeChecker(false, true) {
                 @Override
-                public boolean isValueDiscardable(String attributeName, ModelNode attributeValue, TransformationContext context) {
+                public boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
                     if (attributeName.equals("discard") || attributeName.equals("keep")) {
                         if (attributeValue.asString().equals("default")) {
                             return true;
@@ -795,7 +795,7 @@ public class AttributesTestCase {
         }
 
         @Override
-        public boolean rejectAttribute(String attributeName, ModelNode attributeValue, TransformationContext context) {
+        public boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
             called = true;
             return false;
         }
@@ -812,15 +812,15 @@ public class AttributesTestCase {
         };
 
         @Override
-        public boolean rejectOperationParameter(String attributeName, ModelNode attributeValue, ModelNode operation,
+        public boolean rejectOperationParameter(PathAddress address, String attributeName, ModelNode attributeValue, ModelNode operation,
                 TransformationContext context) {
-            rejected = SIMPLE_EXPRESSIONS.rejectOperationParameter(attributeName, attributeValue, operation, context);
+            rejected = SIMPLE_EXPRESSIONS.rejectOperationParameter(address, attributeName, attributeValue, operation, context);
             return rejected;
         }
 
         @Override
-        public boolean rejectResourceAttribute(String attributeName, ModelNode attributeValue, TransformationContext context) {
-            rejected = SIMPLE_EXPRESSIONS.rejectResourceAttribute(attributeName, attributeValue, context);
+        public boolean rejectResourceAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+            rejected = SIMPLE_EXPRESSIONS.rejectResourceAttribute(address, attributeName, attributeValue, context);
             return rejected;
         }
 
@@ -843,15 +843,10 @@ public class AttributesTestCase {
         }
 
         @Override
-        public boolean rejectAttribute(String attributeName, ModelNode attributeValue, TransformationContext context) {
+        public boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
             count++;
             rejected = attributeValue.asString().equals("two");
             return rejected;
-        }
-
-        @Override
-        public RejectAttributeLogAdapter getLogAdapter() {
-            return logAdapter;
         }
     }
 
@@ -891,7 +886,7 @@ public class AttributesTestCase {
         }
 
         @Override
-        public boolean isOperationParameterDiscardable(String attributeName, ModelNode attributeValue, ModelNode operation,
+        public boolean isOperationParameterDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, ModelNode operation,
                 TransformationContext context) {
             if (operation.get(OP).asString().equals(WRITE_ATTRIBUTE_OPERATION) || operation.get(OP).asString().equals(UNDEFINE_ATTRIBUTE_OPERATION)) {
                 discardValue = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().get("other").asString();
@@ -902,7 +897,7 @@ public class AttributesTestCase {
         }
 
         @Override
-        public boolean isResourceAttributeDiscardable(String attributeName, ModelNode attributeValue,
+        public boolean isResourceAttributeDiscardable(PathAddress address, String attributeName, ModelNode attributeValue,
                 TransformationContext context) {
             discardValue = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().get("other").asString();
             return false;
@@ -925,7 +920,7 @@ public class AttributesTestCase {
         }
 
         @Override
-        public boolean rejectOperationParameter(String attributeName, ModelNode attributeValue, ModelNode operation,
+        public boolean rejectOperationParameter(PathAddress address, String attributeName, ModelNode attributeValue, ModelNode operation,
                 TransformationContext context) {
             if (operation.get(OP).asString().equals(WRITE_ATTRIBUTE_OPERATION) || operation.get(OP).asString().equals(UNDEFINE_ATTRIBUTE_OPERATION)) {
                 rejectValue = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().get("other").asString();
@@ -936,7 +931,7 @@ public class AttributesTestCase {
         }
 
         @Override
-        public boolean rejectResourceAttribute(String attributeName, ModelNode attributeValue, TransformationContext context) {
+        public boolean rejectResourceAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
             rejectValue = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().get("other").asString();
             return false;
         }

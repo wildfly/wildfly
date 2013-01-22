@@ -33,7 +33,7 @@ import org.jboss.as.controller.AttributeDefinition;
  * Builder for the attribute transformer.
  *
  * @author Emanuel Muckenhuber
- * @author kabir
+ * @author Kabir Khan
  */
 public interface AttributeTransformationDescriptionBuilder {
 
