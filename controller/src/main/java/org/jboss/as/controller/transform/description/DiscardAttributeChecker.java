@@ -24,6 +24,7 @@ package org.jboss.as.controller.transform.description;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Checks whether an attribute should be discarded or not
@@ -159,4 +160,47 @@ public interface DiscardAttributeChecker {
         }
     };
 
+    /**
+     * An attribute checker that discards attributes if they are one or more allowed values
+     */
+    public static class DiscardAttributeValueChecker extends DefaultDiscardAttributeChecker {
+        final ModelNode[] values;
+
+        /**
+         * Constructor. Discards if the attribite value is either undefined or matches one of the
+         * allowed values;
+         *
+         * @param values the allowed values
+         */
+        public DiscardAttributeValueChecker(ModelNode...values) {
+            super(false, true);
+            this.values = values;
+        }
+
+        /**
+         * Constructor. Discards if the attribite value if it matches one of the
+         * passed in values;
+         *
+         * @param discardExpressions {@code true} if the attribute should be discarded if expressions are used
+         * @param discardUndefined {@code true} if the attribute should be discarded if expressions are used
+         * @param values the allowed values
+         */
+        public DiscardAttributeValueChecker(boolean discardExpressions, boolean discardUndefined, ModelNode...values) {
+            super(discardExpressions, discardUndefined);
+            this.values = values;
+        }
+
+        @Override
+        protected boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue,
+                TransformationContext context) {
+            if (attributeValue.getType() != ModelType.EXPRESSION) {
+                for (ModelNode value : values) {
+                    if (attributeValue.equals(value)){
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+    }
 }
