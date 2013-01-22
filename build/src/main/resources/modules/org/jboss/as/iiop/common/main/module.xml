@@ -43,5 +43,6 @@
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.corba"/>
+        <module name="org.picketbox"/>
     </dependencies>
 </module>

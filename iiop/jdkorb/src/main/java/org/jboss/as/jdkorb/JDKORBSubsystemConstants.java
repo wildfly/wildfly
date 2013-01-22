@@ -101,8 +101,9 @@ public final class JDKORBSubsystemConstants {
     public static final String ORB_SINGLETON_CLASS = "org.omg.CORBA.ORBSingletonClass";
     public static final String ORB_INITIALIZER_PREFIX = "org.omg.PortableInterceptor.ORBInitializerClass.";
 
-    // JacORB implementation classes and standard interceptors.
     public static final String SUN_ORB_CLASS = "com.sun.corba.ee.impl.orb.ORBImpl";
     public static final String SUN_ORB_ORB_SINGLETON_CLASS = "com.sun.corba.ee.impl.orb.ORBSingleton";
+
+    public static final String ORB_SSL_PORT = "org.jboss.as.jdkorb.ORB_SSL_PORT";
 
 }

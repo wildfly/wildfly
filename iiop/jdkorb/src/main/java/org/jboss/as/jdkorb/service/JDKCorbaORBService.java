@@ -112,14 +112,16 @@ public class JDKCorbaORBService implements Service<ORB>, OrbService {
             if (this.sunORBSSLSocketBindingInjector.getValue() != null) {
                 InetSocketAddress address = this.sunORBSSLSocketBindingInjector.getValue().getSocketAddress();
                 //TODO: not sure what the Sun equivlent is
-                //properties.setProperty(SunORBSubsystemConstants.ORB_SSL_PORT, String.valueOf(address.getPort()));
+                properties.setProperty(JDKORBSubsystemConstants.ORB_SSL_PORT, String.valueOf(address.getPort()));
                 if (!properties.containsKey(ORBConstants.SERVER_HOST_PROPERTY)) {
                     properties.setProperty(ORBConstants.SERVER_HOST_PROPERTY, address.getAddress().getHostAddress());
                     properties.setProperty(ORBConstants.INITIAL_HOST_PROPERTY, address.getAddress().getHostAddress());
                 }
             }
 
-            // configure the naming service initial reference.
+            this.properties = properties;
+
+            //configure the naming service initial reference.
             //String rootContext = properties.getProperty(SunORBSubsystemConstants.NAMING_ROOT_CONTEXT);
             //String host = properties.getProperty(SunORBSubsystemConstants.ORB_ADDRESS);
             //String port = properties.getProperty(SunORBSubsystemConstants.ORB_PORT);
@@ -159,7 +161,6 @@ public class JDKCorbaORBService implements Service<ORB>, OrbService {
         CorbaUtils.setOrbProperties(properties);
 
         JDKORBLogger.ROOT_LOGGER.corbaORBServiceStarted();
-        this.properties = properties;
     }
 
     @Override
@@ -232,7 +233,7 @@ public class JDKCorbaORBService implements Service<ORB>, OrbService {
 
     @Override
     public String sslPort() {
-        return ""; //getORBProperty(SunORBSubsystemConstants.ORB_SSL_PORT);
+        return getORBProperty(JDKORBSubsystemConstants.ORB_SSL_PORT);
     }
 
     @Override

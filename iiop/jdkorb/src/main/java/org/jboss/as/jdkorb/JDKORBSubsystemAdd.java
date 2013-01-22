@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 
+import com.sun.corba.se.impl.orbutil.ORBConstants;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -40,6 +41,7 @@ import org.jboss.as.iiop.rmi.DelegatingStubFactoryFactory;
 import org.jboss.as.iiop.service.CorbaNamingService;
 import org.jboss.as.iiop.service.CorbaPOAService;
 import org.jboss.as.jdkorb.deployment.JDKORBDependencyProcessor;
+import org.jboss.as.jdkorb.security.JDKSocketFactory;
 import org.jboss.as.jdkorb.service.JDKCorbaORBService;
 import org.jboss.as.jdkorb.service.JDKORBNamingService;
 import org.jboss.as.naming.InitialContext;
@@ -271,8 +273,9 @@ public class JDKORBSubsystemAdd extends AbstractAddStepHandler {
         // add the standard jacorb initializer plus all configured initializers.
         //props.setProperty(SunORBSubsystemConstants.JACORB_STD_INITIALIZER_KEY,
         //        SunORBSubsystemConstants.SUN_ORB_STD_INITIALIZER_VALUE);
-        for (String initializerClass : orbInitializers)
+        for (String initializerClass : orbInitializers) {
             props.setProperty(JDKORBSubsystemConstants.ORB_INITIALIZER_PREFIX + initializerClass, "");
+        }
     }
 
     /**
@@ -287,7 +290,7 @@ public class JDKORBSubsystemAdd extends AbstractAddStepHandler {
      */
     private void setupSSLFactories(final Properties props) throws OperationFailedException {
         String supportSSLKey = PropertiesMap.SUN_ORB_PROPS_MAP.get(JDKORBSubsystemConstants.SECURITY_SUPPORT_SSL);
-        boolean supportSSL = false; // "on".equalsIgnoreCase(props.getProperty(supportSSLKey));
+        boolean supportSSL = true; // "on".equalsIgnoreCase(props.getProperty(supportSSLKey));
 
         if (supportSSL) {
             // if SSL is to be used, check if a security domain has been specified.
@@ -295,9 +298,8 @@ public class JDKORBSubsystemAdd extends AbstractAddStepHandler {
             if (securityDomain == null || securityDomain.isEmpty())
                 throw JDKORBMessages.MESSAGES.noSecurityDomainSpecified();
 
-            // add the domain socket factories.
-            //props.setProperty(ORBConstants.SOCKET_FACTORY_CLASS_PROPERTY, DomainSocketFactory.class.getName());
-            //props.setProperty(SunORBSubsystemConstants.JACORB_SSL_SERVER_SOCKET_FACTORY, SunSocketFactory.class.getName());
+            // add the domain socket factory
+            props.setProperty(ORBConstants.SOCKET_FACTORY_CLASS_PROPERTY, JDKSocketFactory.class.getName());
         }
     }
 }

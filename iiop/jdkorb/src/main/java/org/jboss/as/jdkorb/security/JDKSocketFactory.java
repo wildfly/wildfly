@@ -32,6 +32,8 @@ import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 
 import com.sun.corba.se.impl.transport.DefaultSocketFactoryImpl;
+import com.sun.corba.se.spi.orb.ORB;
+import com.sun.corba.se.spi.transport.SocketInfo;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -39,33 +41,6 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.JSSESecurityDomain;
 
-/**
- * <p>
- * This class implements a JacORB {@code ServerSocketFactory} that uses a {@code JSSESecurityDomain} to build SSL server
- * sockets. It is installed if SSL support is enabled in the subsystem configuration. For example:
- * <p/>
- * <pre>
- *     <subsystem xmlns="urn:jboss:domain:jacorb:1.1">
- *         <orb....>
- *             <initializers security="on"/>
- *         </orb>
- *         <security support-ssl="on" security-domain="ssl-domain"/>
- *     </subsystem>
- * </pre>
- * <p/>
- * The security domain name is required and must match a configured domain that contains JSSE configuration:
- * <p/>
- * <pre>
- *     <subsystem xmlns="urn:jboss:domain:security:1.1">
- *         <security-domain name="ssl-domain">
- *             <jsse keystore-url="..." keystore-password="..." truststore-url=".." truststore-password="..." />
- *         </security-domain>
- *     </subsystem>
- * </pre>
- * </p>
- *
- * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
- */
 public class JDKSocketFactory extends DefaultSocketFactoryImpl implements Service<JDKSocketFactory> {
 
     private SSLContext sslContext;
@@ -76,9 +51,16 @@ public class JDKSocketFactory extends DefaultSocketFactoryImpl implements Servic
 
     private final boolean require_mutual_auth;
 
-    public JDKSocketFactory(final boolean request_mutual_auth, final boolean require_mutual_auth) {
-        this.request_mutual_auth = request_mutual_auth;
-        this.require_mutual_auth = require_mutual_auth;
+    private ORB orb;
+
+    public JDKSocketFactory(/*final boolean request_mutual_auth, final boolean require_mutual_auth*/) {
+        this.request_mutual_auth = false;
+        this.require_mutual_auth = false;
+    }
+
+    public void setORB(ORB orb) {
+        super.setORB(orb);
+        this.orb = orb;
     }
 
     private ServerSocket createServerSocket(int port, int backlog, InetAddress inetAddress) throws IOException {
@@ -100,7 +82,11 @@ public class JDKSocketFactory extends DefaultSocketFactoryImpl implements Servic
 
     @Override
     public ServerSocket createServerSocket(final String type, final InetSocketAddress inetSocketAddress) throws IOException {
-        return createServerSocket(inetSocketAddress.getPort(), 50, inetSocketAddress.getAddress());
+        if(type.equals(SocketInfo.IIOP_CLEAR_TEXT)) {
+            return super.createServerSocket(type, inetSocketAddress);
+        } else {
+            return createServerSocket(inetSocketAddress.getPort(), 50, inetSocketAddress.getAddress());
+        }
     }
 
     @Override
