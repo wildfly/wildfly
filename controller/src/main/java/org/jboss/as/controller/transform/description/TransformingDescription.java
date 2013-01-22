@@ -167,7 +167,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
             };
             originalModel.protect();
             //discard what can be discarded
-            if (description.shouldDiscard(attributeValue, operation, ctx)) {
+            if (description.shouldDiscard(address, attributeValue, operation, ctx)) {
                 return OperationTransformer.DISCARD.transformOperation(context, address, operation);
             }
 
@@ -233,7 +233,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
             };
             originalModel.protect();
             //discard what can be discarded
-            if (description.shouldDiscard(UNDEFINED, originalModel, ctx)) {
+            if (description.shouldDiscard(address, UNDEFINED, originalModel, ctx)) {
                 return OperationTransformer.DISCARD.transformOperation(context, address, operation);
             }
 

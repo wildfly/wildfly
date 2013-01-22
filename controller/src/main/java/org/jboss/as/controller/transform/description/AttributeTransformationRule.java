@@ -97,7 +97,7 @@ class AttributeTransformationRule extends TransformationRule {
 
             //discard what can be discarded
             boolean discarded = false;
-            if (description.shouldDiscard(attributeValue, operation, context)) {
+            if (description.shouldDiscard(address, attributeValue, operation, context)) {
                 modelOrOp.remove(attributeName);
                 discarded = true;
             }

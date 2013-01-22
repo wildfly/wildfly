@@ -21,6 +21,7 @@
  */
 package org.jboss.as.controller.transform.description;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.dmr.ModelNode;
 
@@ -45,10 +46,36 @@ public interface DiscardAttributeChecker {
      */
     boolean isDiscardUndefined();
 
-    boolean isOperationParameterDiscardable(String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context);
+    /**
+     * Gets whether the given operation parameter can be discarded
+     *
+     * @param address the address of the operation
+     * @param attributeName the name of the attribute
+     * @param attributeValue the value of the attribute
+     * @param operation the operation executed. This is unmodifiable.
+     * @param context the context of the transformation
+     *
+     * @return {@code true} if the operation parameter value should be discarded, {@code false} otherwise.
+     */
+    boolean isOperationParameterDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context);
 
-    boolean isResourceAttributeDiscardable(String attributeName, ModelNode attributeValue, TransformationContext context);
+    /**
+     * Gets whether the given operation parameter can be discarded
+     *
+     * @param address the address of the operation
+     * @param attributeName the name of the attribute
+     * @param attributeValue the value of the attribute
+     * @param operation the operation executed. This is unmodifiable.
+     * @param context the context of the transformation
+     *
+     * @return {@code true} if the attribute value should be discarded, {@code false} otherwise.
+     */
+    boolean isResourceAttributeDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context);
 
+    /**
+     * A default implementation of DiscardAttributeChecker
+     *
+     */
     abstract class DefaultDiscardAttributeChecker implements DiscardAttributeChecker {
         protected final boolean discardExpressions;
         protected final boolean discardUndefined;
@@ -66,6 +93,7 @@ public interface DiscardAttributeChecker {
 
         /**
          * Constructor.
+         *
          * Sets it up with {@code discardExpressions==false} and {@code discardUndefined==true}
          *
          */
@@ -73,43 +101,40 @@ public interface DiscardAttributeChecker {
             this(false, true);
         }
 
-        /**
-         * Returns {@code true} if the attribute should be discarded if expressions are used
-         *
-         * @return whether to discard if exressions are used
-         */
+        /** {@inheritDoc} */
         public boolean isDiscardExpressions() {
             return discardExpressions;
         }
 
-        /**
-         * Returns {@code true} if the attribute should be discarded if it is undefined
-         *
-         * @return whether to discard if the attribute is undefined
-         */
+        /** {@inheritDoc} */
         public boolean isDiscardUndefined() {
             return discardUndefined;
         }
 
+        /** {@inheritDoc} */
         @Override
-        public boolean isOperationParameterDiscardable(String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context) {
-            return isValueDiscardable(attributeName, attributeValue, context);
+        public boolean isOperationParameterDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context) {
+            return isValueDiscardable(address, attributeName, attributeValue, context);
         }
 
+        /** {@inheritDoc} */
         @Override
-        public boolean isResourceAttributeDiscardable(String attributeName, ModelNode attributeValue, TransformationContext context) {
-            return isValueDiscardable(attributeName, attributeValue, context);
+        public boolean isResourceAttributeDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+            return isValueDiscardable(address, attributeName, attributeValue, context);
         }
 
         /**
-         * Returns {@code true} if the attribute should be discarded.
+         * Gets called by the default implementations of {@link #isOperationParameterDiscardable(PathAddress, String, ModelNode, ModelNode, TransformationContext)} and
+         * {@link #isResourceAttributeDiscardable(PathAddress, String, ModelNode, TransformationContext)}.
          *
+         * @param address the address of the operation or resource
          * @param attributeName the name of the attribute
          * @param attributeValue the value of the attribute
-         * @param context the TransformationContext
-         * @return whether to discard if exressions are used
+         * @param context the context of the transformation
+         *
+         * @return {@code true} if the attribute or parameter value is not understandable by the target process and so needs to be rejected, {@code false} otherwise.
          */
-        protected abstract boolean isValueDiscardable(String attributeName, ModelNode attributeValue, TransformationContext context);
+        protected abstract boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context);
     }
 
     /**
@@ -118,18 +143,18 @@ public interface DiscardAttributeChecker {
     DiscardAttributeChecker ALWAYS = new DefaultDiscardAttributeChecker(true, true) {
 
         @Override
-        public boolean isValueDiscardable(String attributeName, ModelNode attributeValue, TransformationContext context) {
+        public boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
             return true;
         }
     };
 
     /**
-     * A standard checker which will discard the attribute if it is undefined, as long as it is not an expressions
+     * A standard checker which will discard the attribute if it is undefined, as long as it is not an expression
      */
     DiscardAttributeChecker UNDEFINED = new DefaultDiscardAttributeChecker(false, true) {
 
         @Override
-        public boolean isValueDiscardable(String attributeName, ModelNode attributeValue, TransformationContext context) {
+        public boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
             return false;
         }
     };
