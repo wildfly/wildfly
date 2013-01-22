@@ -64,6 +64,15 @@ public class ReferenceCountingEntityCache implements ReadyEntityCache {
         return cacheEntry;
     }
 
+    @Override
+    public synchronized boolean contains(final Object key) {
+        if(cache.containsKey(key)) {
+            final CacheEntry cacheEntry = cache.get(key);
+            return true;
+        }
+        return false;
+    }
+    @Override
     public synchronized boolean containsNotRemoved(final Object key) {
         if(cache.containsKey(key)) {
             final CacheEntry cacheEntry = cache.get(key);
