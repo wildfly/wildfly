@@ -83,14 +83,28 @@ public final class TransformerRegistry {
     /**
      * Register a subsystem transformer.
      *
+     * @param name the subsystem name
      * @param range the version range
      * @param subsystemTransformer the resource transformer
      * @return the sub registry
      */
     public TransformersSubRegistration registerSubsystemTransformers(final String name, final ModelVersionRange range, final ResourceTransformer subsystemTransformer) {
+        return  registerSubsystemTransformers(name, range, subsystemTransformer, OperationTransformer.DEFAULT);
+    }
+
+    /**
+     * Register a subsystem transformer.
+     *
+     * @param name the subsystem name
+     * @param range the version range
+     * @param subsystemTransformer the resource transformer
+     * @param operationTransformer the operation transformer
+     * @return the sub registry
+     */
+    public TransformersSubRegistration registerSubsystemTransformers(final String name, final ModelVersionRange range, final ResourceTransformer subsystemTransformer, final OperationTransformer operationTransformer) {
         final PathAddress subsystemAddress = PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(SUBSYSTEM, name));
         for(final ModelVersion version : range.getVersions()) {
-            subsystem.createChildRegistry(subsystemAddress, version, subsystemTransformer, false);
+            subsystem.createChildRegistry(subsystemAddress, version, subsystemTransformer, operationTransformer);
         }
         return new TransformersSubRegistrationImpl(range, subsystem, subsystemAddress);
     }

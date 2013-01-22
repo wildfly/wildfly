@@ -50,11 +50,22 @@ public interface Transformers {
     /**
      * Transform an operation.
      *
+     * @param context the transformation context
      * @param operation the operation to transform
      * @return the transformed operation
      * @throws OperationFailedException
      */
     OperationTransformer.TransformedOperation transformOperation(TransformationContext context, ModelNode operation) throws OperationFailedException;
+
+    /**
+     * Transform an operation.
+     *
+     * @param operationContext the operation context
+     * @param operation the operation to transform
+     * @return the transformed operation
+     * @throws OperationFailedException
+     */
+    OperationTransformer.TransformedOperation transformOperation(OperationContext operationContext, ModelNode operation) throws OperationFailedException;
 
     /**
      * Transform given resource at given context
@@ -66,21 +77,22 @@ public interface Transformers {
      */
     Resource transformResource(ResourceTransformationContext context, Resource resource) throws OperationFailedException;
 
+    /**
+     * Transform a given root resource.
+     *
+     * @param operationContext the operation context
+     * @param resource the root resource
+     * @return the transformed resource
+     * @throws OperationFailedException
+     */
+    Resource transformRootResource(OperationContext operationContext, Resource resource) throws OperationFailedException;
+
     public static class Factory {
         private Factory() {
         }
 
         public static Transformers create(final TransformationTarget target) {
             return new TransformersImpl(target);
-        }
-
-        public static ResourceTransformationContext getTransformationContext(final Transformers transformers, final OperationContext context) {
-            return getTransformationContext(transformers.getTarget(), context);
-        }
-
-        public static ResourceTransformationContext getTransformationContext(final TransformationTarget target, final OperationContext context) {
-            // TODO differentiate between operation / resource transformation
-            return ResourceTransformationContextImpl.create(context, target);
         }
 
         public static ResourceTransformationContext create(TransformationTarget target, Resource model, ImmutableManagementResourceRegistration registration, ExpressionResolver resolver, RunningMode runningMode, ProcessType type) {

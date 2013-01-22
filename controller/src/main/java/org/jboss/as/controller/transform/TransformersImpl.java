@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.jboss.as.controller.ControllerLogger;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
@@ -72,8 +73,46 @@ public class TransformersImpl implements Transformers {
         // transformations.next();
         final PathAddressTransformer.BuilderImpl builder = new PathAddressTransformer.BuilderImpl(transformations, address);
         final PathAddress transformed = builder.start();
-        ResourceTransformationContext opCtx = ResourceTransformationContextImpl.createForOperation(context, operation);
+        ResourceTransformationContext opCtx = ResourceTransformationContextImpl.wrapForOperation(context, operation);
         return transformer.transformOperation(opCtx, transformed, operation);
+    }
+
+    @Override
+    public OperationTransformer.TransformedOperation transformOperation(final OperationContext operationContext, final ModelNode operation) throws OperationFailedException {
+
+        final PathAddress original = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String operationName = operation.require(OP).asString();
+
+        final OperationTransformer transformer = target.resolveTransformer(original, operationName);
+        if (transformer == null) {
+            ControllerLogger.ROOT_LOGGER.tracef("operation %s does not need transformation", operation);
+            return new OperationTransformer.TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
+        }
+        // Transform the path address
+        final PathAddress transformed = transformAddress(original, target);
+        // Update the operation using the new path address
+        operation.get(OP_ADDR).set(transformed.toModelNode()); // TODO should this happen by default?
+
+        final TransformationContext context = ResourceTransformationContextImpl.create(operationContext, target, transformed, original);
+        return transformer.transformOperation(context, transformed, operation);
+    }
+
+    @Override
+    public Resource transformRootResource(OperationContext operationContext, Resource resource) throws OperationFailedException {
+        return transformResource(operationContext, PathAddress.EMPTY_ADDRESS, resource);
+    }
+
+    public Resource transformResource(final OperationContext operationContext, PathAddress original, Resource resource) throws OperationFailedException {
+        final ResourceTransformer transformer = target.resolveTransformer(original);
+        if(transformer == null) {
+            ControllerLogger.ROOT_LOGGER.tracef("resource %s does not need transformation", resource);
+            return resource;
+        }
+        // Transform the path address
+        final PathAddress transformed = transformAddress(original, target);
+        final ResourceTransformationContext context = ResourceTransformationContextImpl.create(operationContext, target, transformed, original);
+        transformer.transformResource(context, transformed, resource);
+        return context.getTransformedRoot();
     }
 
     @Override
@@ -89,6 +128,20 @@ public class TransformersImpl implements Transformers {
         }
         transformer.transformResource(context, PathAddress.EMPTY_ADDRESS, resource);
         return context.getTransformedRoot();
+    }
+
+    /**
+     * Transform a path address.
+     *
+     * @param original the path address to be transformed
+     * @param target the transformation target
+     * @return the transformed path address
+     */
+    protected static PathAddress transformAddress(final PathAddress original, final TransformationTarget target) {
+        final List<PathAddressTransformer> transformers = target.getPathTransformation(original);
+        final Iterator<PathAddressTransformer> transformations = transformers.iterator();
+        final PathAddressTransformer.BuilderImpl builder = new PathAddressTransformer.BuilderImpl(transformations, original);
+        return builder.start();
     }
 
 }

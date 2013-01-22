@@ -37,7 +37,7 @@ import org.jboss.dmr.Property;
 public interface RejectAttributeChecker {
 
     /**
-     * Gets whether the given operation parameter value is not understandable by the target process and needs
+     * Determines whether the given operation parameter value is not understandable by the target process and needs
      * to be rejected.
      *
      * @param attributeName the name of the attribute

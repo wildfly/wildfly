@@ -108,6 +108,8 @@ import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.as.controller.transform.CombinedTransformer;
+import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
@@ -1187,7 +1189,17 @@ public class ThreadsSubsystemParsingTestCase {
 
                 @Override
                 public TransformersSubRegistration registerModelTransformers(ModelVersionRange version, ResourceTransformer resourceTransformer) {
-                    return transformerRegistry.registerSubsystemTransformers(name, version, resourceTransformer);
+                    return registerModelTransformers(version, resourceTransformer, OperationTransformer.DEFAULT);
+                }
+
+                @Override
+                public TransformersSubRegistration registerModelTransformers(ModelVersionRange version, ResourceTransformer resourceTransformer, OperationTransformer operationTransformer) {
+                    return transformerRegistry.registerSubsystemTransformers(name, version, resourceTransformer, operationTransformer);
+                }
+
+                @Override
+                public TransformersSubRegistration registerModelTransformers(ModelVersionRange version, CombinedTransformer combinedTransformer) {
+                    return registerModelTransformers(version, combinedTransformer, combinedTransformer);
                 }
             };
         }

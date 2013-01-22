@@ -76,11 +76,10 @@ class ReadTransformedResourceOperation implements OperationStepHandler {
 
         final TransformationTarget target = TransformationTargetImpl.create(transformerRegistry, coreModelVersion, subsystemVersions, null, TransformationTarget.TransformationTargetType.SERVER);
         final Transformers transformers = Transformers.Factory.create(target);
-        final ResourceTransformationContext ctx = Transformers.Factory.getTransformationContext(target, context);
 
         final ImmutableManagementResourceRegistration rr = context.getRootResourceRegistration();
         Resource root = TransformerRegistry.modelToResource(rr, rootData, true);
-        Resource transformed = transformers.transformResource(ctx, root);
+        Resource transformed = transformers.transformRootResource(context, root);
 
         return Resource.Tools.readModel(transformed);
     }
