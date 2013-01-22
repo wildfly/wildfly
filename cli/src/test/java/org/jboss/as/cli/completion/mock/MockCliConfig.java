@@ -80,4 +80,9 @@ public class MockCliConfig implements CliConfig {
     public boolean isResolveParameterValues() {
         return false;
     }
+
+    @Override
+    public boolean isSilent() {
+        return false;
+    }
 }
