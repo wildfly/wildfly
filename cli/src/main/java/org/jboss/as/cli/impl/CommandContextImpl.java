@@ -220,6 +220,9 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
     /** whether to resolve system properties passed in as values of operation parameters*/
     private boolean resolveParameterValues;
 
+    /** whether to write messages to the terminal output */
+    private boolean silent;
+
     /**
      * Version mode - only used when --version is called from the command line.
      *
@@ -236,6 +239,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         defaultControllerPort = config.getDefaultControllerPort();
         resolveParameterValues = config.isResolveParameterValues();
         this.connectionTimeout = config.getConnectionTimeout();
+        silent = config.isSilent();
         initSSLContext();
     }
 
@@ -269,6 +273,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
             this.defaultControllerPort = config.getDefaultControllerPort();
         }
         resolveParameterValues = config.isResolveParameterValues();
+        silent = config.isSilent();
         initCommands();
 
         initSSLContext();
@@ -308,6 +313,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
             this.defaultControllerPort = config.getDefaultControllerPort();
         }
         resolveParameterValues = config.isResolveParameterValues();
+        silent = config.isSilent();
         initCommands();
 
         initSSLContext();
@@ -647,11 +653,13 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
             return;
         }
 
-        if (console != null) {
-            console.print(message);
-            console.printNewLine();
-        } else { // non-interactive mode
-            System.out.println(message);
+        if(!silent) {
+            if (console != null) {
+                console.print(message);
+                console.printNewLine();
+            } else { // non-interactive mode
+                System.out.println(message);
+            }
         }
     }
 
@@ -700,11 +708,13 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
             return;
         }
 
-        if (console != null) {
-            console.printColumns(col);
-        } else { // non interactive mode
-            for (String item : col) {
-                System.out.println(item);
+        if(!silent) {
+            if (console != null) {
+                console.printColumns(col);
+            } else { // non interactive mode
+                for (String item : col) {
+                    System.out.println(item);
+                }
             }
         }
     }
@@ -1202,6 +1212,16 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
                 printLine("(Although the command prompt will wrongly indicate connection until the next line is entered)");
             }
         }
+    }
+
+    @Override
+    public boolean isSilent() {
+        return this.silent;
+    }
+
+    @Override
+    public void setSilent(boolean silent) {
+        this.silent = silent;
     }
 
     private class AuthenticationCallbackHandler implements CallbackHandler {

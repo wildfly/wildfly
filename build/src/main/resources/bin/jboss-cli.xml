@@ -24,4 +24,7 @@
         <file-dir>${user.home}</file-dir>
         <max-size>500</max-size>
     </history>
+    
+    <!-- Whether to write info and error messages to the terminal output -->
+    <silent>false</silent>
 </jboss-cli>

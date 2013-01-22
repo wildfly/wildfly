@@ -55,6 +55,8 @@
                 <xs:element ref="connection-timeout" minOccurs="0" maxOccurs="1"/>
 
                 <xs:element ref="ssl" minOccurs="0" maxOccurs="1"/>
+                
+                <xs:element ref="silent" minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -133,5 +135,16 @@
                 </xs:element>
             </xs:sequence>
         </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="silent" type="xs:boolean" default="false">
+        <xs:annotation>
+            <xs:documentation>
+                Whether to write info and error messages to the terminal output.
+                Even if the value is false, the messages will still be logged
+                using the logger if its configuration allows and/or if the
+                output target was specified as part of the command line using '>'.
+            </xs:documentation>
+        </xs:annotation>
     </xs:element>
 </xs:schema>

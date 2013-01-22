@@ -64,6 +64,7 @@ class CliConfigImpl implements CliConfig {
     private static final String PORT = "port";
     private static final String CONNECTION_TIMEOUT = "connection-timeout";
     private static final String RESOLVE_PARAMETER_VALUES = "resolve-parameter-values";
+    private static final String SILENT = "silent";
     private static final String VALIDATE_OPERATION_REQUESTS = "validate-operation-requests";
 
     static CliConfig load(final CommandContext ctx) throws CliInitializationException {
@@ -191,6 +192,8 @@ class CliConfigImpl implements CliConfig {
 
     private SSLConfig sslConfig;
 
+    private boolean silent;
+
     @Override
     public String getDefaultControllerHost() {
         return defaultControllerHost;
@@ -239,6 +242,11 @@ class CliConfigImpl implements CliConfig {
     @Override
     public SSLConfig getSslConfig() {
         return sslConfig;
+    }
+
+    @Override
+    public boolean isSilent() {
+        return silent;
     }
 
     static class SslConfig implements SSLConfig {
@@ -359,6 +367,8 @@ class CliConfigImpl implements CliConfig {
                         } catch(NumberFormatException e) {
                             throw new XMLStreamException("Failed to parse " + JBOSS_CLI + " " + CONNECTION_TIMEOUT + " value '" + text + "'", e);
                         }
+                    } else if(localName.equals(SILENT)) {
+                        config.silent = resolveBoolean(reader.getElementText());
                     } else {
                         throw new XMLStreamException("Unexpected element: " + localName);
                     }

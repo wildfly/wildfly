@@ -106,4 +106,20 @@ public interface CliConfig {
      * of the parameter values should happen on the server side.
      */
     boolean isResolveParameterValues();
+
+    /**
+     * Whether the info or error messages should be written to the terminal output.
+     *
+     * The output of the info and error messages is done in the following way:
+     * 1) the message is always logged using a logger
+     *    (which is disabled in the config by default);
+     * 2) if the output target was specified on the command line using '>'
+     *    it would be used;
+     * 3) if the output target was not specified, whether the message is
+     *    written or not to the terminal output will depend on
+     *    whether it's a silent mode or not.
+     *
+     * @return
+     */
+    boolean isSilent();
 }

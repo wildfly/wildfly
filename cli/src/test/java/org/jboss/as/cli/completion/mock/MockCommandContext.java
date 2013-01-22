@@ -67,6 +67,8 @@ public class MockCommandContext implements CommandContext {
     private File curDir = new File("");
     private boolean resolveParameterValues;
 
+    private boolean silent;
+
     public void parseCommandLine(String buffer) throws CommandFormatException {
         try {
             parsedCmd.parse(prefix, buffer);
@@ -343,5 +345,15 @@ public class MockCommandContext implements CommandContext {
     @Override
     public void setResolveParameterValues(boolean resolve) {
         resolveParameterValues = resolve;
+    }
+
+    @Override
+    public boolean isSilent() {
+        return silent;
+    }
+
+    @Override
+    public void setSilent(boolean silent) {
+        this.silent = silent;
     }
 }

@@ -343,4 +343,31 @@ public interface CommandContext {
      * false if system properties should be resolved on the server side.
      */
     void setResolveParameterValues(boolean resolve);
+
+    /**
+     * Whether the info or error messages should be written to the terminal output.
+     *
+     * The output of the info and error messages is done in the following way:
+     * 1) the message is always logged using a logger
+     *    (which is disabled in the config by default);
+     * 2) if the output target was specified on the command line using '>'
+     *    it would be used;
+     * 3) if the output target was not specified, whether the message is
+     *    written or not to the terminal output will depend on
+     *    whether it's a silent mode or not.
+     *
+     * @return  true if the CLI is in the silent mode, i.e. not writing info
+     *          and error messages to the terminal output, otherwise - false.
+     */
+    boolean isSilent();
+
+    /**
+     * Enables of disables the silent mode.
+     *
+     * @param silent  true if the CLI should go into the silent mode,
+     *                false if the CLI should resume writing info
+     *                and error messages to the terminal output.
+     */
+    void setSilent(boolean silent);
+
 }
