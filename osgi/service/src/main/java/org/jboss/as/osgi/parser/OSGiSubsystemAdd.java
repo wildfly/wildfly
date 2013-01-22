@@ -112,7 +112,7 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                newControllers.add(FrameworkBootstrapService.addService(serviceTarget, resource, extensions, verificationHandler));
+                newControllers.add(FrameworkBootstrapService.addService(serviceTarget, resource, deploymentTracker, extensions, verificationHandler));
                 newControllers.add(registrationTracker.install(serviceTarget, verificationHandler));
                 context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }

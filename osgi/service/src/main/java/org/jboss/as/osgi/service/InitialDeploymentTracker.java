@@ -35,16 +35,20 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.osgi.OSGiConstants;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
+import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.spi.IntegrationServices.BootstrapPhase;
 import org.jboss.osgi.framework.spi.ServiceTracker;
 
@@ -61,6 +65,7 @@ public class InitialDeploymentTracker extends ServiceTracker<Object> {
     public static final ServiceName INITIAL_DEPLOYMENTS_COMPLETE = BootstrapPhase.serviceName(INITIAL_DEPLOYMENTS, BootstrapPhase.COMPLETE);
 
     private final Set<ServiceName> expectedServices = Collections.synchronizedSet(new HashSet<ServiceName>());
+    private final Set<Deployment> deployments = Collections.synchronizedSet(new HashSet<Deployment>());
     private final ServiceTarget serviceTarget;
     private final Set<String> deploymentNames;
 
@@ -72,8 +77,8 @@ public class InitialDeploymentTracker extends ServiceTracker<Object> {
         serviceTarget = context.getServiceTarget();
         deploymentNames = getDeploymentNames(context);
 
-        // Track the persistent DEPENDENCIES services
-        // This makes sure that Bundle.INSTALL services have completed
+        // Track the persistent DEPENDENCIES services. This makes sure that Bundle.INSTALL services have completed
+        // and that all dependencies of the persistent bundles have been configured
         for (String name : deploymentNames) {
             expectedServices.add(Services.deploymentUnitName(name, Phase.DEPENDENCIES));
         }
@@ -87,10 +92,6 @@ public class InitialDeploymentTracker extends ServiceTracker<Object> {
 
         // Check the tracker for completeness
         checkAndComplete();
-    }
-
-    public ServiceTarget getServiceTarget() {
-        return serviceTarget;
     }
 
     @Override
@@ -114,7 +115,15 @@ public class InitialDeploymentTracker extends ServiceTracker<Object> {
     @Override
     protected void serviceStarted(ServiceController<? extends Object> controller) {
         ServiceName serviceName = controller.getName();
-        LOGGER.debugf("ServiceStarted: %s", serviceName);
+        LOGGER.tracef("ServiceStarted: %s", serviceName);
+        // Get the {@link Deployment} from the {@link RootDeploymentUnitService}
+        ServiceContainer serviceContainer = controller.getServiceContainer();
+        ServiceController<?> depUnitController = serviceContainer.getRequiredService(serviceName.getParent());
+        DeploymentUnit depUnit = (DeploymentUnit) depUnitController.getValue();
+        Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
+        if (deployment != null) {
+            deployments.add(deployment);
+        }
     }
 
     @Override
@@ -134,6 +143,10 @@ public class InitialDeploymentTracker extends ServiceTracker<Object> {
 
     public boolean hasDeploymentName(String depname) {
         return deploymentNames.contains(depname);
+    }
+
+    public Set<Deployment> getDeployments() {
+        return Collections.unmodifiableSet(deployments);
     }
 
     private Set<String> getDeploymentNames(OperationContext context) {
