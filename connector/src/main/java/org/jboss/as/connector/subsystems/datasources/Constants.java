@@ -286,7 +286,7 @@ class Constants {
 
     static SimpleAttributeDefinition ALLOCATION_RETRY_WAIT_MILLIS = new SimpleAttributeDefinition(ALLOCATION_RETRY_WAIT_MILLIS_NAME, TimeOut.Tag.ALLOCATION_RETRY_WAIT_MILLIS.getLocalName(), new ModelNode(), ModelType.LONG, true, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition ALLOW_MULTIPLE_USERS = new SimpleAttributeDefinition(ALLOW_MULTIPLE_USERS_NAME, DsPool.Tag.ALLOW_MULTIPLE_USERS.getLocalName(), new ModelNode(false), ModelType.BOOLEAN, true, false, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition ALLOW_MULTIPLE_USERS = new SimpleAttributeDefinition(ALLOW_MULTIPLE_USERS_NAME, DsPool.Tag.ALLOW_MULTIPLE_USERS.getLocalName(), new ModelNode(Defaults.ALLOW_MULTIPLE_USERS), ModelType.BOOLEAN, true, false, MeasurementUnit.NONE);
 
     static SimpleAttributeDefinition QUERY_TIMEOUT = new SimpleAttributeDefinition(QUERYTIMEOUT_NAME, TimeOut.Tag.QUERY_TIMEOUT.getLocalName(), new ModelNode(), ModelType.LONG, true, true, MeasurementUnit.NONE);
 

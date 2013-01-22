@@ -39,6 +39,7 @@ import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.metadata.xmldescriptors.IronJacamarXmlDescriptor;
 import org.jboss.as.connector.services.resourceadapters.deployment.InactiveResourceAdapterDeploymentService;
 import org.jboss.as.connector.util.ConnectorServices;
+import org.jboss.as.connector.util.ModelNodeUtil;
 import org.jboss.as.connector.util.RaServicesFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -131,7 +132,7 @@ public class RaOperationUtil {
         List<CommonAdminObject> adminObjects = new ArrayList<CommonAdminObject>(0);
         TransactionSupportEnum transactionSupport = operation.hasDefined(TRANSACTION_SUPPORT.getName()) ? TransactionSupportEnum
                 .valueOf(operation.get(TRANSACTION_SUPPORT.getName()).asString()) : null;
-        String bootstrapContext = BOOTSTRAP_CONTEXT.resolveModelAttribute(context, operation).asString();
+        String bootstrapContext = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, operation, BOOTSTRAP_CONTEXT);
         List<String> beanValidationGroups = null;
         if (operation.hasDefined(BEANVALIDATION_GROUPS.getName())) {
             beanValidationGroups = new ArrayList<String>(operation.get(BEANVALIDATION_GROUPS.getName()).asList().size());
@@ -151,36 +152,31 @@ public class RaOperationUtil {
     public static ModifiableConnDef buildConnectionDefinitionObject(final OperationContext context, final ModelNode recoveryEnvModel, final String poolName,
                                                                     final boolean isXa) throws OperationFailedException, ValidateException {
         Map<String, String> configProperties = new HashMap<String, String>(0);
-        String className = CLASS_NAME.resolveModelAttribute(context, recoveryEnvModel).asString();
-        String jndiName = JNDINAME.resolveModelAttribute(context, recoveryEnvModel).asString();
-        boolean enabled = ENABLED.resolveModelAttribute(context, recoveryEnvModel).asBoolean();
-        boolean useJavaContext = USE_JAVA_CONTEXT.resolveModelAttribute(context, recoveryEnvModel).asBoolean();
-        boolean useCcm = USE_CCM.resolveModelAttribute(context, recoveryEnvModel).asBoolean();
+        String className = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, recoveryEnvModel, CLASS_NAME);
+        String jndiName = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, recoveryEnvModel, JNDINAME);
+        boolean enabled = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, recoveryEnvModel, ENABLED);
+        boolean useJavaContext = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, recoveryEnvModel, USE_JAVA_CONTEXT);
+        boolean useCcm = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, recoveryEnvModel, USE_CCM);
 
-        int maxPoolSize = MAX_POOL_SIZE.resolveModelAttribute(context, recoveryEnvModel).asInt();
-        int minPoolSize = MIN_POOL_SIZE.resolveModelAttribute(context, recoveryEnvModel).asInt();
-        boolean prefill = POOL_PREFILL.resolveModelAttribute(context, recoveryEnvModel).asBoolean();
-        boolean useStrictMin = POOL_USE_STRICT_MIN.resolveModelAttribute(context, recoveryEnvModel).asBoolean();
+        int maxPoolSize = ModelNodeUtil.getIntIfSetOrGetDefault(context, recoveryEnvModel, MAX_POOL_SIZE);
+        int minPoolSize = ModelNodeUtil.getIntIfSetOrGetDefault(context, recoveryEnvModel, MIN_POOL_SIZE);
+        boolean prefill = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, recoveryEnvModel, POOL_PREFILL);
+        boolean useStrictMin = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, recoveryEnvModel, POOL_USE_STRICT_MIN);
         String flushStrategyString = POOL_FLUSH_STRATEGY.resolveModelAttribute(context, recoveryEnvModel).asString();
         final FlushStrategy flushStrategy = FlushStrategy.forName(flushStrategyString);
-        boolean isSameRM = SAME_RM_OVERRIDE.resolveModelAttribute(context, recoveryEnvModel).asBoolean();
-        boolean interlivng = INTERLEAVING.resolveModelAttribute(context, recoveryEnvModel).asBoolean();
-        boolean padXid = PAD_XID.resolveModelAttribute(context, recoveryEnvModel).asBoolean();
-        boolean wrapXaResource = WRAP_XA_RESOURCE.resolveModelAttribute(context, recoveryEnvModel).asBoolean();
-        boolean noTxSeparatePool = NOTXSEPARATEPOOL.resolveModelAttribute(context, recoveryEnvModel).asBoolean();
-
-        ModelNode allocationRetryModel = ALLOCATION_RETRY.resolveModelAttribute(context, recoveryEnvModel);
-        ModelNode allocationRetryWaitMillisModel = ALLOCATION_RETRY_WAIT_MILLIS.resolveModelAttribute(context, recoveryEnvModel);
-        ModelNode blockingTimeoutMillisModel = BLOCKING_TIMEOUT_WAIT_MILLIS.resolveModelAttribute(context, recoveryEnvModel);
-        ModelNode idleTimeoutMinutesModel = IDLETIMEOUTMINUTES.resolveModelAttribute(context, recoveryEnvModel);
-        ModelNode xaResourceTimeoutModel = XA_RESOURCE_TIMEOUT.resolveModelAttribute(context, recoveryEnvModel);
+        Boolean isSameRM  = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, recoveryEnvModel, SAME_RM_OVERRIDE);
+        boolean interlivng = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, recoveryEnvModel, INTERLEAVING);
+        boolean padXid = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, recoveryEnvModel, PAD_XID);
+        boolean wrapXaResource = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, recoveryEnvModel, WRAP_XA_RESOURCE);
+        boolean noTxSeparatePool = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, recoveryEnvModel, NOTXSEPARATEPOOL);
 
 
-        Integer allocationRetry = allocationRetryModel.isDefined()?allocationRetryModel.asInt():null;
-        Long allocationRetryWaitMillis = allocationRetryWaitMillisModel.isDefined()?allocationRetryWaitMillisModel.asLong():null;
-        Long blockingTimeoutMillis = blockingTimeoutMillisModel.isDefined()?blockingTimeoutMillisModel.asLong():null;
-        Long idleTimeoutMinutes = idleTimeoutMinutesModel.isDefined()?idleTimeoutMinutesModel.asLong():null;
-        Integer xaResourceTimeout = xaResourceTimeoutModel.isDefined()?xaResourceTimeoutModel.asInt():null;
+
+        Integer allocationRetry = ModelNodeUtil.getIntIfSetOrGetDefault(context, recoveryEnvModel, ALLOCATION_RETRY);
+        Long allocationRetryWaitMillis = ModelNodeUtil.getLongIfSetOrGetDefault(context, recoveryEnvModel, ALLOCATION_RETRY_WAIT_MILLIS);
+        Long blockingTimeoutMillis = ModelNodeUtil.getLongIfSetOrGetDefault(context, recoveryEnvModel, BLOCKING_TIMEOUT_WAIT_MILLIS);
+        Long idleTimeoutMinutes = ModelNodeUtil.getLongIfSetOrGetDefault(context, recoveryEnvModel, IDLETIMEOUTMINUTES);
+        Integer xaResourceTimeout = ModelNodeUtil.getIntIfSetOrGetDefault(context, recoveryEnvModel, XA_RESOURCE_TIMEOUT);
 
         CommonTimeOut timeOut = new CommonTimeOutImpl(blockingTimeoutMillis, idleTimeoutMinutes, allocationRetry,
                 allocationRetryWaitMillis, xaResourceTimeout);
@@ -190,34 +186,30 @@ public class RaOperationUtil {
         } else {
             pool = new CommonPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy);
         }
-        ModelNode securityDomainModel = SECURITY_DOMAIN.resolveModelAttribute(context, recoveryEnvModel);
-        String securityDomain = securityDomainModel.isDefined()?securityDomainModel.asString():null;
-        ModelNode securityDomainAndApplicationModel = SECURITY_DOMAIN_AND_APPLICATION.resolveModelAttribute(context, recoveryEnvModel);
-        String securityDomainAndApplication = securityDomainAndApplicationModel.isDefined()?securityDomainAndApplicationModel.asString():null;
+        String securityDomain = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, recoveryEnvModel, SECURITY_DOMAIN);
+        String securityDomainAndApplication = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, recoveryEnvModel, SECURITY_DOMAIN_AND_APPLICATION);
 
-        boolean application = APPLICATION.resolveModelAttribute(context, recoveryEnvModel).asBoolean();
+        boolean application = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, recoveryEnvModel, APPLICATION);
         CommonSecurity security = null;
         if (securityDomain != null || securityDomainAndApplication != null) {
             security = new CommonSecurityImpl(securityDomain, securityDomainAndApplication, application);
         }
-        ModelNode backgroundValidationMillisModel = BACKGROUNDVALIDATIONMILLIS.resolveModelAttribute(context, recoveryEnvModel);
-        Long backgroundValidationMillis = backgroundValidationMillisModel.isDefined()?backgroundValidationMillisModel.asLong():null;
-        boolean backgroundValidation = BACKGROUNDVALIDATION.resolveModelAttribute(context, recoveryEnvModel).asBoolean();
-        boolean useFastFail = USE_FAST_FAIL.resolveModelAttribute(context, recoveryEnvModel).asBoolean();
+        Long backgroundValidationMillis = ModelNodeUtil.getLongIfSetOrGetDefault(context, recoveryEnvModel, BACKGROUNDVALIDATIONMILLIS);
+        boolean backgroundValidation = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, recoveryEnvModel, BACKGROUNDVALIDATION);
+        boolean useFastFail = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, recoveryEnvModel, USE_FAST_FAIL);
         CommonValidation validation = new CommonValidationImpl(backgroundValidation, backgroundValidationMillis, useFastFail);
 
-        final String recoveryUsername = recoveryEnvModel.hasDefined(RECOVERY_USERNAME.getName()) ? RECOVERY_USERNAME.resolveModelAttribute(context, recoveryEnvModel).asString() : null;
+        final String recoveryUsername = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, recoveryEnvModel, RECOVERY_USERNAME);
 
-        final String recoveryPassword =  recoveryEnvModel.hasDefined(RECOVERY_PASSWORD.getName()) ? RECOVERY_PASSWORD.resolveModelAttribute(context, recoveryEnvModel).asString() : null;
-        final ModelNode recoverySecurityDomainModel = RECOVERY_SECURITY_DOMAIN.resolveModelAttribute(context, recoveryEnvModel);
-        final String recoverySecurityDomain = recoverySecurityDomainModel.isDefined()?recoverySecurityDomainModel.asString():null;
-        boolean noRecovery = NO_RECOVERY.resolveModelAttribute(context, recoveryEnvModel).asBoolean();
+        final String recoveryPassword =  ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, recoveryEnvModel, RECOVERY_PASSWORD);
+        final String recoverySecurityDomain = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, recoveryEnvModel, RECOVERY_SECURITY_DOMAIN);
+        boolean noRecovery = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, recoveryEnvModel, NO_RECOVERY);
 
         Recovery recovery = null;
         if ((recoveryUsername != null && recoveryPassword != null) || recoverySecurityDomain != null) {
             Credential credential = null;
             credential = new CredentialImpl(recoveryUsername, recoveryPassword, recoverySecurityDomain);
-            Extension recoverPlugin = extractExtension(context, recoveryEnvModel, RECOVERLUGIN_CLASSNAME, RECOVERLUGIN_PROPERTIES);
+            Extension recoverPlugin = ModelNodeUtil.extractExtension(context, recoveryEnvModel, RECOVERLUGIN_CLASSNAME, RECOVERLUGIN_PROPERTIES);
             recovery = new Recovery(credential, recoverPlugin, noRecovery);
         }
         ModifiableConnDef connectionDefinition = new ModifiableConnDef(configProperties, className, jndiName, poolName,
@@ -229,28 +221,16 @@ public class RaOperationUtil {
 
     public static ModifiableAdminObject buildAdminObjects(final OperationContext context, ModelNode operation, final String poolName) throws OperationFailedException, ValidateException {
         Map<String, String> configProperties = new HashMap<String, String>(0);
-        String className = CLASS_NAME.resolveModelAttribute(context, operation).asString();
-        String jndiName = JNDINAME.resolveModelAttribute(context, operation).asString();
-        boolean enabled = ENABLED.resolveModelAttribute(context, operation).asBoolean();
-        boolean useJavaContext = USE_JAVA_CONTEXT.resolveModelAttribute(context, operation).asBoolean();
+        String className = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, operation, CLASS_NAME);
+        String jndiName = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, operation, JNDINAME);
+        boolean enabled = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, operation, ENABLED);
+        boolean useJavaContext = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, operation, USE_JAVA_CONTEXT);
 
         ModifiableAdminObject adminObject = new ModifiableAdminObject(configProperties, className, jndiName, poolName,
                 enabled, useJavaContext);
         return adminObject;
     }
 
-    private static Extension extractExtension(final OperationContext operationContext, final ModelNode node,
-                                              final SimpleAttributeDefinition className, final PropertiesAttributeDefinition propertyName)
-            throws ValidateException, OperationFailedException {
-        if (node.hasDefined(className.getName())) {
-            String exceptionSorterClassName = className.resolveModelAttribute(operationContext, node).asString();
-            Map<String, String> unwrapped = propertyName.unwrap(operationContext, node);
-            Map<String, String> exceptionSorterProperty = unwrapped.size() > 0 ? unwrapped : null;
-            return new Extension(exceptionSorterClassName, exceptionSorterProperty);
-        } else {
-            return null;
-        }
-    }
 
     public static boolean deactivateIfActive(OperationContext context, String raName) throws OperationFailedException {
         boolean wasActive = false;

@@ -265,8 +265,6 @@ public class Constants {
             .setAllowNull(true)
             .setAllowExpression(true)
             .setXmlName(CommonXaPool.Tag.IS_SAME_RM_OVERRIDE.getLocalName())
-            //.setDefaultValue(new ModelNode(Defaults.IS_SAME_RM_OVERRIDE)) //this is wrong, it should not be null
-            .setDefaultValue(new ModelNode(false))
             .build();
 
     static SimpleAttributeDefinition WRAP_XA_RESOURCE = new SimpleAttributeDefinition(WRAP_XA_RESOURCE_NAME, CommonXaPool.Tag.WRAP_XA_RESOURCE.getLocalName(), new ModelNode().set(Defaults.WRAP_XA_RESOURCE), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
