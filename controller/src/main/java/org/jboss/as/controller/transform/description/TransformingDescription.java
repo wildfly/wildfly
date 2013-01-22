@@ -147,7 +147,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
     private class WriteAttributeTransformer implements OperationTransformer {
 
         @Override
-        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
+        public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation) throws OperationFailedException {
 
             final String attributeName = operation.require(ModelDescriptionConstants.NAME).asString();
             final AttributeTransformationDescription description = attributeTransformations.get(attributeName);
@@ -172,9 +172,11 @@ class TransformingDescription extends AbstractDescription implements Transformat
             }
 
             //Check the rest of the model can be transformed
-            final boolean reject = !description.checkAttributeValueIsValid(attributeValue, originalModel, ctx);
+            final RejectedAttributesLogContext rejectedAttributes = new RejectedAttributesLogContext(context, address, operation);
+            description.rejectAttributes(rejectedAttributes, attributeValue);
             final OperationRejectionPolicy policy;
-            if(reject) {
+            if(rejectedAttributes.hasRejections()) {
+                rejectedAttributes.errorOrWarn();
                 policy = new OperationRejectionPolicy() {
                     @Override
                     public boolean rejectOperation(ModelNode preparedResult) {
@@ -183,7 +185,12 @@ class TransformingDescription extends AbstractDescription implements Transformat
 
                     @Override
                     public String getFailureDescription() {
-                        return "";
+                        try {
+                            return rejectedAttributes.errorOrWarn();
+                        } catch (OperationFailedException e) {
+                            //This will not happen
+                            return null;
+                        }
                     }
                 };
             } else {

@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import junit.framework.Assert;
 
@@ -60,6 +61,7 @@ import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.controller.transform.description.AttributeConverter.DefaultAttributeConverter;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker.DefaultDiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker.DefaultRejectAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker.RejectExpressionsLogAdapter;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.junit.Before;
@@ -223,7 +225,7 @@ public class AttributesTestCase {
 
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
         builder.getAttributeBuilder()
-            .addRejectCheck(new RejectAttributeChecker.ObjectFieldsRejectAttributeChecker(mapChecker), "reject")
+            .addRejectCheck(new RejectAttributeChecker.ObjectFieldsRejectAttributeChecker(mapChecker, RejectExpressionsLogAdapter.INSTANCE), "reject")
             .end()
         .build().register(transformersSubRegistration);
 
@@ -782,6 +784,16 @@ public class AttributesTestCase {
 
     private static class DontRejectChecker extends DefaultRejectAttributeChecker {
         boolean called;
+
+        DontRejectChecker(){
+            super(new RejectAttributeLogAdapter() {
+                @Override
+                public String getDetailMessage(Set<String> attributeNames) {
+                    return "Rejected " + attributeNames;
+                }
+            });
+        }
+
         @Override
         public boolean rejectAttribute(String attributeName, ModelNode attributeValue, TransformationContext context) {
             called = true;
@@ -791,6 +803,13 @@ public class AttributesTestCase {
 
     private static class CustomRejectExpressionsChecker implements RejectAttributeChecker {
         boolean rejected;
+
+        RejectAttributeLogAdapter logAdapter = new RejectAttributeLogAdapter() {
+            @Override
+            public String getDetailMessage(Set<String> attributeNames) {
+                return "Rejected " + attributeNames;
+            }
+        };
 
         @Override
         public boolean rejectOperationParameter(String attributeName, ModelNode attributeValue, ModelNode operation,
@@ -804,17 +823,35 @@ public class AttributesTestCase {
             rejected = SIMPLE_EXPRESSIONS.rejectResourceAttribute(attributeName, attributeValue, context);
             return rejected;
         }
+
+        @Override
+        public RejectAttributeLogAdapter getLogAdapter() {
+            return logAdapter;
+        }
     }
 
     private static class RejectTwoChecker extends DefaultRejectAttributeChecker {
         int count;
         boolean rejected;
+        RejectTwoChecker(){
+            super(new RejectAttributeLogAdapter() {
+                @Override
+                public String getDetailMessage(Set<String> attributeNames) {
+                    return "Rejected " + attributeNames;
+                }
+            });
+        }
 
         @Override
         public boolean rejectAttribute(String attributeName, ModelNode attributeValue, TransformationContext context) {
             count++;
             rejected = attributeValue.asString().equals("two");
             return rejected;
+        }
+
+        @Override
+        public RejectAttributeLogAdapter getLogAdapter() {
+            return logAdapter;
         }
     }
 
@@ -823,6 +860,12 @@ public class AttributesTestCase {
         String convertValue;
         String discardValue;
         String rejectValue;
+        RejectAttributeLogAdapter logAdapter = new RejectAttributeLogAdapter() {
+            @Override
+            public String getDetailMessage(Set<String> attributeNames) {
+                return "Rejected " + attributeNames;
+            }
+        };
 
         void checkValues(String expected) {
             Assert.assertEquals(expected, discardValue);
@@ -896,6 +939,11 @@ public class AttributesTestCase {
         public boolean rejectResourceAttribute(String attributeName, ModelNode attributeValue, TransformationContext context) {
             rejectValue = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().get("other").asString();
             return false;
+        }
+
+        @Override
+        public RejectAttributeLogAdapter getLogAdapter() {
+            return logAdapter;
         }
     }
 

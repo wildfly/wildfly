@@ -82,26 +82,15 @@ class AttributeTransformationDescription {
     }
 
     /**
-     * Checks that an attribute can be transformed
+     * Checks attributes for rejection
      *
-     * @param name the attribute name
-     * @param attributeValue the attribtue value
-     * @param context the context
-     * @return {@code true} if it can be transformed, {@code false} otherwise
+     * @param rejectedAttributes gathers information about failed attributes
+     * @param attributeValue the attribute value
      */
-    boolean checkAttributeValueIsValid(ModelNode attributeValue, ModelNode operation, TransformationRule.AbstractChainedContext context) {
+    void rejectAttributes(RejectedAttributesLogContext rejectedAttributes, ModelNode attributeValue) {
         for (RejectAttributeChecker checker : checks) {
-            boolean rejected = false;
-            if (operation != null) {
-                rejected = checker.rejectOperationParameter(name, attributeValue, operation, context.getContext());
-            } else {
-                rejected = checker.rejectResourceAttribute(name, attributeValue, context.getContext());
-            }
-            if (rejected) {
-                return false;
-            }
+            rejectedAttributes.checkAttribute(checker, name, attributeValue);
         }
-        return true;
     }
 
     void isExistingValue(PathAddress address, ModelNode attributeValue, ModelNode operation, TransformationRule.AbstractChainedContext context) {

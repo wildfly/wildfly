@@ -27,6 +27,7 @@ import static org.jboss.logging.Logger.Level.WARN;
 
 import java.io.Closeable;
 import java.net.InetAddress;
+import java.util.List;
 import java.util.Set;
 
 import javax.xml.stream.XMLStreamWriter;
@@ -452,5 +453,15 @@ public interface ControllerLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 13404, value = "Transforming resource %s for host controller '%s' to subsystem '%s' model version '%s' -- attributes %s are not understood in that model version and this resource will need to be ignored on that host.")
     void newAttributesSubsystemModelResourceTransformerFoundDefinedAttributes(PathAddress pathAddress, String legacyHostName, String subsystem, ModelVersion modelVersion, Set<String> attributeNames);
+
+    //The 'details' attribute needs to list the rejected attributes and what was wrong with them, an example is message id 14898
+    @LogMessage(level = WARN)
+    @Message(id = 13405, value = "Transforming resource %s for host controller '%s' to subsystem '%s' model version '%s' --there were problems with some of the attributes and this resource will need to be ignored on that host. Details of problems: %s")
+    void rejectAttributesSubsystemModelResourceTransformer(PathAddress address, String legacyHostName, String subsystemName, ModelVersion usedVersion, List<String> details);
+
+    //The 'details' attribute needs to list the rejected attributes and what was wrong with them, an example is message id 14898
+    @LogMessage(level = WARN)
+    @Message(id = 13406, value = "Transforming resource %s for host controller '%s' to core model version '%s' -- there were problems with some of the attributes and this resource will need to be ignored on that host. Details of the problems: %s")
+    void rejectAttributesCoreModelResourceTransformer(PathAddress address, String legacyHostName, ModelVersion usedVersion, List<String> details);
 
 }
