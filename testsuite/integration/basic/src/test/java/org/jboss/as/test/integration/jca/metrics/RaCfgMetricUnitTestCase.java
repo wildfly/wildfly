@@ -38,6 +38,7 @@ import org.junit.runner.RunWith;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.fail;
 
 /**
  * Resource adapters configuration and metrics unit test.
@@ -191,7 +192,16 @@ public class RaCfgMetricUnitTestCase extends DsMgmtTestBase {
         assertTrue(readAttribute(address1, "security-application").asBoolean());
         assertTrue(readAttribute(address1, "wrap-xa-resource").asBoolean());
         assertFalse(readAttribute(address1, "pad-xid").asBoolean());
-        removeRa();
+        assertFalse(readAttribute(address1, "same-rm-override").isDefined());
+        try{
+        	readAttribute(address1, "same-rm-override").asBoolean();
+        	fail("Got  boolean value of undefined parameter");
+        }catch(Exception e){
+        	//Expected
+        }
+        finally{
+        	removeRa();
+        }
     }
 
     @Test
