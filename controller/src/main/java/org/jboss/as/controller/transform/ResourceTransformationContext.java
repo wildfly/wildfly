@@ -88,7 +88,7 @@ public interface ResourceTransformationContext extends TransformationContext {
     /**
      * Read a resource from the transformed model.
      *
-     * NOTE: this is going to use the path transformed address
+     * NOTE: this is going to already use the path transformed address {@linkplain PathAddressTransformer}.
      *
      * @param address the relative address
      * @return the resource

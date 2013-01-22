@@ -50,12 +50,16 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
     private final OriginalModel originalModel;
 
     static ResourceTransformationContext create(final OperationContext context, final TransformationTarget target) {
+        return create(context, target, PathAddress.EMPTY_ADDRESS, PathAddress.EMPTY_ADDRESS);
+    }
+
+    static ResourceTransformationContext create(final OperationContext context, final TransformationTarget target, final PathAddress current, final PathAddress read) {
         final Resource root = Resource.Factory.create();
         final Resource original = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, true);
         final ImmutableManagementResourceRegistration registration = context.getRootResourceRegistration().getSubModel(PathAddress.EMPTY_ADDRESS);
         final ExpressionResolver expressionResolver = TransformerExpressionResolver.create(context, target.getTargetType());
         final OriginalModel originalModel = new OriginalModel(original, context.getRunningMode(), context.getProcessType(), target, registration, expressionResolver);
-        return new ResourceTransformationContextImpl(root, PathAddress.EMPTY_ADDRESS, originalModel);
+        return new ResourceTransformationContextImpl(root, current, read, originalModel);
     }
 
     static ResourceTransformationContext create(TransformationTarget target, Resource model, ImmutableManagementResourceRegistration registration, ExpressionResolver resolver, RunningMode runningMode, ProcessType type) {
@@ -300,7 +304,8 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
         }
     }
 
-    public static ResourceTransformationContext createForOperation(TransformationContext context, ModelNode operation) {
+    @Deprecated
+    static ResourceTransformationContext wrapForOperation(TransformationContext context, ModelNode operation) {
         if(context instanceof ResourceTransformationContextImpl) {
             final ResourceTransformationContextImpl impl = (ResourceTransformationContextImpl) context;
             return new ResourceTransformationContextImpl(impl.root, PathAddress.pathAddress(operation.get(OP_ADDR)), impl.originalModel);

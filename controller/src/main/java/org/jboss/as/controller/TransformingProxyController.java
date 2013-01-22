@@ -91,7 +91,16 @@ public interface TransformingProxyController extends ProxyController {
                 @Override
                 public Resource transformResource(ResourceTransformationContext context, Resource resource) throws OperationFailedException {
                     return transformers.transformResource(context, resource);
+                }
 
+                @Override
+                public OperationTransformer.TransformedOperation transformOperation(OperationContext operationContext, ModelNode operation) throws OperationFailedException {
+                    return transformers.transformOperation(operationContext, operation);
+                }
+
+                @Override
+                public Resource transformRootResource(OperationContext operationContext, Resource resource) throws OperationFailedException {
+                    return transformers.transformRootResource(operationContext, resource);
                 }
             };
             return create(proxy, delegating);
@@ -130,8 +139,7 @@ public interface TransformingProxyController extends ProxyController {
 
         @Override
         public OperationTransformer.TransformedOperation transformOperation(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-            final TransformationContext transformationContext = Transformers.Factory.getTransformationContext(transformers, context);
-            return transformers.transformOperation(transformationContext, operation);
+            return transformers.transformOperation(context, operation);
         }
 
         @Override

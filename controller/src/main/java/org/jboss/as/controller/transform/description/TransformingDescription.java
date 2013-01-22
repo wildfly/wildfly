@@ -53,7 +53,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
     private final Map<String, AttributeTransformationDescription> attributeTransformations;
     private final List<TransformationRule> rules = Collections.emptyList();
     private final Map<String, OperationTransformer> operationTransformers;
-    private final ResourceTransformer resourceTransfomer;
+    private final ResourceTransformer resourceTransformer;
 
     public TransformingDescription(final PathElement pathElement, final PathAddressTransformer pathAddressTransformer,
                                    final DiscardPolicy discardPolicy,
@@ -64,7 +64,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
         super(pathElement, pathAddressTransformer);
         this.children = children;
         this.discardPolicy = discardPolicy;
-        this.resourceTransfomer = resourceTransformer;
+        this.resourceTransformer = resourceTransformer;
         this.attributeTransformations = attributeTransformations;
 
         this.operationTransformers = operations;
@@ -113,7 +113,6 @@ class TransformingDescription extends AbstractDescription implements Transformat
                 }
             }
         };
-        operation.get(ModelDescriptionConstants.OP_ADDR).set(address.toModelNode());
         // Kick off the chain
         final TransformationRule first = new AttributeTransformationRule(attributeTransformations);
         first.transformOperation(operation, address, context);
@@ -136,7 +135,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
                     final TransformationRule next = iterator.next();
                     next.transformResource(resource, address, this);
                 } else {
-                    resourceTransfomer.transformResource(ctx, address, resource);
+                    resourceTransformer.transformResource(ctx, address, resource);
                 }
             }
         };
@@ -157,7 +156,6 @@ class TransformingDescription extends AbstractDescription implements Transformat
             }
 
             ModelNode attributeValue = operation.get(ModelDescriptionConstants.VALUE);
-
 
             // Process
             final ModelNode originalModel = operation.clone();

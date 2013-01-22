@@ -43,7 +43,7 @@ abstract class AbstractTransformationDescriptionBuilder implements Transformatio
     protected ResourceTransformer resourceTransformer;
     protected OperationTransformer operationTransformer;
 
-    protected final Map<String, OperationTransformationOverrideBuilderImpl> operationTransformers = new HashMap<String, OperationTransformationOverrideBuilderImpl>();
+    protected final Map<String, OperationTransformationEntry> operationTransformers = new HashMap<String, OperationTransformationEntry>();
     protected final List<AbstractTransformationDescriptionBuilder> children = new ArrayList<AbstractTransformationDescriptionBuilder>();
 
     protected AbstractTransformationDescriptionBuilder(PathElement pathElement, PathAddressTransformer pathAddressTransformer,
@@ -54,28 +54,25 @@ abstract class AbstractTransformationDescriptionBuilder implements Transformatio
         this.operationTransformer = operationTransformer;
     }
 
-    public TransformationDescriptionBuilder setPathTransformation(PathAddressTransformer pathAddressTransformer) {
-        this.pathAddressTransformer = pathAddressTransformer;
-        return this;
-    }
-
     public TransformationDescriptionBuilder setResourceTransformer(ResourceTransformer resourceTransformer) {
         this.resourceTransformer = resourceTransformer;
         return this;
     }
 
-    public TransformationDescriptionBuilder setOperationTransformer(OperationTransformer operationTransformer) {
-        this.operationTransformer = operationTransformer;
-        return this;
-    }
-
-    void addOperationTransformerEntry(String operationName, OperationTransformationOverrideBuilderImpl transformer) {
+    void addOperationTransformerEntry(String operationName, OperationTransformationEntry transformer) {
         operationTransformers.put(operationName, transformer);
     }
 
-    void addOperationTransformerEntry(String operationName, OperationTransformationOverrideBuilderImpl transformer, OperationTransformer operationTransformer) {
-        transformer.setCustomOperationTransformer(operationTransformer);
-        operationTransformers.put(operationName, transformer);
+    abstract static class OperationTransformationEntry {
+
+        /**
+         * Get the operation transformer.
+         *
+         * @param resourceRegistry the attribute transformation description for the resource
+         * @return the operation transformer
+         */
+        abstract OperationTransformer getOperationTransformer(AttributeTransformationDescriptionBuilderImpl.AttributeTransformationDescriptionBuilderRegistry resourceRegistry);
+
     }
 
 }

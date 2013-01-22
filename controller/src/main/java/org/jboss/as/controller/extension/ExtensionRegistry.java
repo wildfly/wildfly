@@ -68,6 +68,8 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.as.controller.transform.CombinedTransformer;
+import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
@@ -627,6 +629,16 @@ public class ExtensionRegistry {
         @Override
         public TransformersSubRegistration registerModelTransformers(final ModelVersionRange range, final ResourceTransformer subsystemTransformer) {
             return transformerRegistry.registerSubsystemTransformers(name, range, subsystemTransformer);
+        }
+
+        @Override
+        public TransformersSubRegistration registerModelTransformers(ModelVersionRange version, ResourceTransformer resourceTransformer, OperationTransformer operationTransformer) {
+            return transformerRegistry.registerSubsystemTransformers(name, version, resourceTransformer, operationTransformer);
+        }
+
+        @Override
+        public TransformersSubRegistration registerModelTransformers(ModelVersionRange version, CombinedTransformer combinedTransformer) {
+            return transformerRegistry.registerSubsystemTransformers(name, version, combinedTransformer, combinedTransformer);
         }
 
         private ManagementResourceRegistration getDummyRegistration() {

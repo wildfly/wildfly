@@ -25,6 +25,8 @@ package org.jboss.as.controller;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.CombinedTransformer;
+import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformer;
@@ -93,5 +95,24 @@ public interface SubsystemRegistration {
      * @return the transformers registry
      */
     TransformersSubRegistration registerModelTransformers(ModelVersionRange version, ResourceTransformer resourceTransformer);
+
+    /**
+     * Register transformers for a given model version.
+     *
+     * @param version the model version
+     * @param resourceTransformer the subsystem resource transformer
+     * @param operationTransformer the subsystem operation transformer
+     * @return the transformers registry
+     */
+    TransformersSubRegistration registerModelTransformers(ModelVersionRange version, ResourceTransformer resourceTransformer, OperationTransformer operationTransformer);
+
+    /**
+     * Register transformers for a given model version.
+     *
+     * @param version the model version
+     * @param combinedTransformer the combined transformer
+     * @return the subsystem registration
+     */
+    TransformersSubRegistration registerModelTransformers(ModelVersionRange version, CombinedTransformer combinedTransformer);
 
 }

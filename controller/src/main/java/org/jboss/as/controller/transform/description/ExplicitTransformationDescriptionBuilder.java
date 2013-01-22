@@ -61,6 +61,16 @@ public final class ExplicitTransformationDescriptionBuilder extends AbstractTran
         return this;
     }
 
+    public ExplicitTransformationDescriptionBuilder addOperationTransformation(final String operationName, final OperationTransformer operationTransformer) {
+        addOperationTransformerEntry(operationName, new OperationTransformationEntry() {
+            @Override
+            OperationTransformer getOperationTransformer(AttributeTransformationDescriptionBuilderImpl.AttributeTransformationDescriptionBuilderRegistry resourceRegistry) {
+                return operationTransformer;
+            }
+        });
+        return this;
+    }
+
     @Override
     public TransformationDescription build() {
         return new AbstractDescription(pathElement, pathAddressTransformer) {

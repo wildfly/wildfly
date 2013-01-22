@@ -102,8 +102,8 @@ class ResourceTransformationDescriptionBuilderImpl extends AbstractTransformatio
         final Map<String, AttributeTransformationDescription> attributes = registry.buildAttributes();
 
         final Map<String, OperationTransformer> operations = new HashMap<String, OperationTransformer>();
-        for(final Map.Entry<String, OperationTransformationOverrideBuilderImpl> entry: operationTransformers.entrySet()) {
-            final OperationTransformer transformer = entry.getValue().createTransformer(registry);
+        for(final Map.Entry<String, OperationTransformationEntry> entry: operationTransformers.entrySet()) {
+            final OperationTransformer transformer = entry.getValue().getOperationTransformer(registry);
             operations.put(entry.getKey(), transformer);
         }
 
@@ -117,16 +117,25 @@ class ResourceTransformationDescriptionBuilderImpl extends AbstractTransformatio
     }
 
     @Override
-    public OperationTransformationOverrideBuilder addOperationTransformationOverride(String operationName) {
+    public OperationTransformationOverrideBuilder addOperationTransformationOverride(final String operationName) {
         final OperationTransformationOverrideBuilderImpl transformationBuilder = new OperationTransformationOverrideBuilderImpl(this);
-        addOperationTransformerEntry(operationName, transformationBuilder);
+        addOperationTransformerEntry(operationName, new OperationTransformationEntry() {
+            @Override
+            OperationTransformer getOperationTransformer(AttributeTransformationDescriptionBuilderImpl.AttributeTransformationDescriptionBuilderRegistry resourceRegistry) {
+                return transformationBuilder.createTransformer(resourceRegistry);
+            }
+        });
         return transformationBuilder;
     }
 
     @Override
-    public ResourceTransformationDescriptionBuilder addRawOperationTransformationOverride(String operationName, OperationTransformer operationTransformer) {
-        final OperationTransformationOverrideBuilderImpl transformationBuilder = new OperationTransformationOverrideBuilderImpl(this);
-        addOperationTransformerEntry(operationName, transformationBuilder, operationTransformer);
+    public ResourceTransformationDescriptionBuilder addRawOperationTransformationOverride(final String operationName, final OperationTransformer operationTransformer) {
+        addOperationTransformerEntry(operationName, new OperationTransformationEntry() {
+            @Override
+            OperationTransformer getOperationTransformer(AttributeTransformationDescriptionBuilderImpl.AttributeTransformationDescriptionBuilderRegistry resourceRegistry) {
+                return operationTransformer;
+            }
+        });
         return this;
     }
 

@@ -89,8 +89,6 @@ public interface OperationTransformer {
     OperationTransformer DEFAULT = new OperationTransformer() {
        @Override
        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode original) throws OperationFailedException {
-           // Update the operation address
-           original.get(ModelDescriptionConstants.OP_ADDR).set(address.toModelNode());
            return new TransformedOperation(original, OperationResultTransformer.ORIGINAL_RESULT);
        }
     };

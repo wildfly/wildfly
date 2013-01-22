@@ -245,7 +245,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
             final Transformers transformers = Transformers.Factory.create(target);
             // Build the extensions list
             final ModelNode extensions = new ModelNode();
-            final Resource transformed = transformers.transformResource(Transformers.Factory.getTransformationContext(target, context), root);
+            final Resource transformed = transformers.transformRootResource(context, root);
             final Collection<Resource.ResourceEntry> resources = transformed.getChildren(EXTENSION);
             for(final Resource.ResourceEntry entry : resources) {
                 extensions.add(entry.getName());
