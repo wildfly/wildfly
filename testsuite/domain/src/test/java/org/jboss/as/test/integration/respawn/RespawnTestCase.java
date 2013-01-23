@@ -224,17 +224,16 @@ public class RespawnTestCase {
 
         //Read HC model until there are no servers
         long timeout = System.currentTimeMillis() + TIMEOUT;
+        long minCheckPeriod =  System.currentTimeMillis() + 5000;
         while (true) {
             Thread.sleep(500);
             if (lookupServerInModel(MASTER, SERVER_ONE) || lookupServerInModel(MASTER, SERVER_TWO)) {
-                if (System.currentTimeMillis() < timeout) {
-                    continue;
-                } else {
+                if (System.currentTimeMillis() >= timeout) {
                     Assert.fail("Should not have servers in restarted admin-only HC model");
                 }
-            } else {
+            } else if (System.currentTimeMillis() >= minCheckPeriod) {
                 break;
-            }
+            } // else loop and retest in case the server reconnects w/in minCheckPeriod
         }
 
         //Execute reload w/ restart-servers=false, admin-only=false
