@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
@@ -63,7 +64,7 @@ public final class ResourceAdaptersService implements Service<ResourceAdaptersSe
     public static final class ModifiableResourceAdaptors implements ResourceAdapters {
 
         private static final long serialVersionUID = 9096011997958619051L;
-        private final ArrayList<ResourceAdapter> resourceAdapters = new ArrayList<ResourceAdapter>(0);
+        private final List<ResourceAdapter> resourceAdapters = new CopyOnWriteArrayList<ResourceAdapter>();
 
         /**
          * Get the resourceAdapters.
@@ -72,23 +73,15 @@ public final class ResourceAdaptersService implements Service<ResourceAdaptersSe
          */
         @Override
         public List<ResourceAdapter> getResourceAdapters() {
-            return (List<ResourceAdapter>) Collections.unmodifiableList(resourceAdapters);
+            return Collections.unmodifiableList(resourceAdapters);
         }
 
         public boolean addResourceAdapter(ResourceAdapter ra) {
             return resourceAdapters.add(ra);
         }
 
-        public boolean addAllResourceAdapters(Collection<ResourceAdapter> ras) {
-            return resourceAdapters.addAll(ras);
-        }
-
         public boolean removeResourceAdapter(ResourceAdapter ra) {
             return resourceAdapters.remove(ra);
-        }
-
-        public boolean removeAllResourceAdapters(Collection<ResourceAdapter> ras) {
-            return resourceAdapters.removeAll(ras);
         }
 
     }
