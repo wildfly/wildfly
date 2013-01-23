@@ -27,6 +27,8 @@ import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.dmr.ModelNode;
 
 /**
+ * Policy defining whether resource or operation transformations should be rejected.
+ *
  * @author Emanuel Muckenhuber
  */
 public interface DiscardPolicy {
@@ -37,22 +39,42 @@ public interface DiscardPolicy {
      * @param node the model or operation
      * @param address the current address
      * @param context the transformation context
-     * @return {@code true} to discard, {@code false} otherwise
+     * @return the discard type
      */
-    boolean discard(ModelNode node, PathAddress address, TransformationContext context);
+    DiscardType discard(ModelNode node, PathAddress address, TransformationContext context);
 
     DiscardPolicy ALWAYS = new DiscardPolicy() {
         @Override
-        public boolean discard(final ModelNode node, final PathAddress address, final TransformationContext context) {
-            return true;
+        public DiscardType discard(final ModelNode node, final PathAddress address, final TransformationContext context) {
+            return DiscardType.REJECT_AND_FAIL;
         }
     };
 
     DiscardPolicy NEVER = new DiscardPolicy() {
         @Override
-        public boolean discard(final ModelNode node, final PathAddress address, final TransformationContext context) {
-            return false;
+        public DiscardType discard(final ModelNode node, final PathAddress address, final TransformationContext context) {
+            return DiscardType.NEVER;
         }
     };
+
+    public enum DiscardType {
+        /**
+         * Don't discard the resource or operation.
+         */
+        NEVER,
+        /**
+         * Reject operations and fail for resource transformations.
+         */
+        REJECT_AND_FAIL,
+        /**
+         * Reject operations and only warn for resource transformations.
+         */
+        REJECT_AND_WARN,
+        /**
+         * Discard silently.
+         */
+        SILENT,
+        ;
+    }
 
 }

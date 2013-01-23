@@ -66,7 +66,6 @@ public interface DiscardAttributeChecker {
      * @param address the address of the operation
      * @param attributeName the name of the attribute
      * @param attributeValue the value of the attribute
-     * @param operation the operation executed. This is unmodifiable.
      * @param context the context of the transformation
      *
      * @return {@code true} if the attribute value should be discarded, {@code false} otherwise.

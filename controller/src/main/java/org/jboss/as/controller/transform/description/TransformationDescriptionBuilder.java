@@ -45,7 +45,6 @@ public interface TransformationDescriptionBuilder {
          * Create a resource builder instance.
          *
          * @return the transformation builder
-         * @deprecated experimental
          */
         public static ResourceTransformationDescriptionBuilder createSubsystemInstance() {
             return new ResourceTransformationDescriptionBuilderImpl(null);
@@ -55,7 +54,6 @@ public interface TransformationDescriptionBuilder {
          * Create a resource builder instance.
          *
          * @return the transformation builder
-         * @deprecated experimental
          */
         public static ResourceTransformationDescriptionBuilder createInstance(final PathElement pathElement) {
             return new ResourceTransformationDescriptionBuilderImpl(pathElement);
@@ -65,7 +63,6 @@ public interface TransformationDescriptionBuilder {
          * Create a builder instance.
          *
          * @return the transformation builder
-         * @deprecated experimental
          */
         public static DiscardTransformationDescriptionBuilder createDiscardInstance(PathElement pathElement) {
             return new DiscardTransformationDescriptionBuilder(pathElement);

@@ -71,9 +71,12 @@ class OperationTransformationOverrideBuilderImpl extends AttributeTransformation
         return new OperationTransformer() {
             @Override
             public TransformedOperation transformOperation(final TransformationContext ctx, final PathAddress address, final ModelNode operation) throws OperationFailedException {
-                if(discardPolicy.discard(operation, address, ctx)) {
+
+                final DiscardPolicy.DiscardType type = discardPolicy.discard(operation, address, ctx);
+                if(type == DiscardPolicy.DiscardType.SILENT) {
                     return OperationTransformer.DISCARD.transformOperation(ctx, address, operation);
-                }
+                } // TODO handle other cases
+
                 final Iterator<TransformationRule> iterator = Collections.<TransformationRule>emptyList().iterator();
                 final ModelNode originalModel = TransformationRule.cloneAndProtect(operation);
                 final TransformationRule.ChainedOperationContext context = new TransformationRule.ChainedOperationContext(ctx) {

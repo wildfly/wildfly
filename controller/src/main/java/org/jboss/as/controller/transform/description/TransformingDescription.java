@@ -95,7 +95,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
 
     @Override
     public OperationTransformer.TransformedOperation transformOperation(final TransformationContext ctx, final PathAddress address, final ModelNode operation) throws OperationFailedException {
-        if(discardPolicy.discard(operation, address, ctx)) {
+        if(discardPolicy.discard(operation, address, ctx) == DiscardPolicy.DiscardType.SILENT) {
             return OperationTransformer.DISCARD.transformOperation(ctx, address, operation);
         }
         final Iterator<TransformationRule> iterator = rules.iterator();
@@ -121,7 +121,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
     @Override
     public void transformResource(final ResourceTransformationContext ctx, final PathAddress address, final Resource original) throws OperationFailedException {
         final ModelNode originalModel = TransformationRule.cloneAndProtect(original.getModel());
-        if(discardPolicy.discard(originalModel, address, ctx)) {
+        if(discardPolicy.discard(originalModel, address, ctx) == DiscardPolicy.DiscardType.SILENT) {
             return; // discard
         }
         final Iterator<TransformationRule> iterator = rules.iterator();
