@@ -22,6 +22,24 @@
 package org.jboss.as.ejb3.component;
 
 
+import java.lang.reflect.Method;
+import java.rmi.Remote;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.ejb.EJBLocalObject;
+import javax.ejb.TimerService;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagementType;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.Component;
@@ -76,23 +94,6 @@ import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-
-import javax.ejb.EJBLocalObject;
-import javax.ejb.TimerService;
-import javax.ejb.TransactionAttributeType;
-import javax.ejb.TransactionManagementType;
-import java.lang.reflect.Method;
-import java.rmi.Remote;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
@@ -274,14 +275,17 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         this.annotationMethodPermissions = new ApplicableMethodInformation<EJBMethodSecurityAttribute>(componentName, null);
 
 
-        //add a dependency on the module deployment service
-        //we need to make sure this is up before the EJB starts, so that remote invocations are available
-        addDependency(deploymentUnitServiceName.append(ModuleDeployment.SERVICE_NAME), ServiceBuilder.DependencyType.REQUIRED);
 
         getConfigurators().addFirst(EJBValidationConfigurator.INSTANCE);
         getConfigurators().add(new ComponentConfigurator() {
             @Override
             public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+
+                //add a dependency on the module deployment service
+                //we need to make sure this is up before the EJB starts, so that remote invocations are available
+                if (!isViewDependsOnStart()) {
+                    addDependency(deploymentUnitServiceName.append(ModuleDeployment.SERVICE_NAME), ServiceBuilder.DependencyType.REQUIRED);
+                }
 
                 //make sure java:comp/env is always available, even if nothing is bound there
                 if (description.getNamingMode() == ComponentNamingMode.CREATE) {

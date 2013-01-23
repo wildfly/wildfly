@@ -128,6 +128,11 @@ public class ComponentDescription implements ResourceInjectionTarget {
     private String beanDeploymentArchiveId;
 
     /**
+     * If this is set then then view service will depend on the components start service
+     */
+    private boolean viewDependsOnStart = false;
+
+    /**
      * Construct a new instance.
      *
      * @param componentName             the component name
@@ -530,6 +535,14 @@ public class ComponentDescription implements ResourceInjectionTarget {
      */
     public boolean isOptional() {
         return false;
+    }
+
+    public boolean isViewDependsOnStart() {
+        return viewDependsOnStart;
+    }
+
+    public void setViewDependsOnStart(final boolean viewDependsOnStart) {
+        this.viewDependsOnStart = viewDependsOnStart;
     }
 
     private static InterceptorFactory weaved(final Collection<InterceptorFactory> interceptorFactories) {

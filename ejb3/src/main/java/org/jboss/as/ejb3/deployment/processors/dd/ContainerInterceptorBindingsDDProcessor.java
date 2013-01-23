@@ -22,6 +22,13 @@
 
 package org.jboss.as.ejb3.deployment.processors.dd;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -36,19 +43,11 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.proxy.MethodIdentifier;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.metadata.ejb.spec.InterceptorBindingMetaData;
 import org.jboss.metadata.ejb.spec.InterceptorBindingsMetaData;
 import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 import org.jboss.modules.Module;
-
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
@@ -59,8 +58,6 @@ import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
  * @author Jaikiran Pai
  */
 public class ContainerInterceptorBindingsDDProcessor implements DeploymentUnitProcessor {
-
-    private static final Logger logger = Logger.getLogger(ContainerInterceptorBindingsDDProcessor.class);
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
