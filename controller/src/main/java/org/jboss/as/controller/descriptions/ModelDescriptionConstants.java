@@ -280,6 +280,7 @@ public class ModelDescriptionConstants {
     public static final String SUBDEPLOYMENT = "subdeployment";
     public static final String SUBSYSTEM = "subsystem";
     public static final String SUCCESS = "success";
+    public static final String SYMLINKING_ENABLED = "symbolic-linking-enabled";
     public static final String SYSTEM_PROPERTY = "system-property";
     public static final String SYSTEM_PROPERTIES = "system-properties";
     public static final String TAIL_COMMENT_ALLOWED = "tail-comment-allowed";

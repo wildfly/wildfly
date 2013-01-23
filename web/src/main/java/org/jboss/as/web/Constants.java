@@ -106,6 +106,7 @@ public interface Constants {
     String SUBSTITUTION = "substitution";
     String SUBSYSTEM = "subsystem";
     String SETTING = "setting";
+    String SYMLINKING_ENABLED = "symbolic-linking-enabled";
     String TAG_POOLING = "tag-pooling";
     String TARGET_VM = "target-vm";
     String TEST = "test";

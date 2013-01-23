@@ -58,6 +58,7 @@ import org.jboss.as.web.security.JBossWebRealmService;
 import org.jboss.as.web.security.SecurityContextAssociationValve;
 import org.jboss.as.web.security.WarJaccService;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.jboss.metadata.ear.jboss.JBossAppMetaData;
 import org.jboss.metadata.ear.spec.EarMetaData;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
@@ -99,6 +100,8 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
 
     private final String defaultHost;
     private final WebServerService service;
+
+    private static final Logger logger = Logger.getLogger(WarDeploymentProcessor.class);
 
     public WarDeploymentProcessor(String defaultHost, WebServerService service) {
         if (defaultHost == null) {
@@ -209,6 +212,13 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
             }
         }
 
+        // AS7-3414:
+        // Pass the boolean on whether or not symbolic linking is enabled to the StandardContext.
+        if (metaData.getSymbolicLinking()) {
+            logger.infof("Setting to allow symlinking in the web context.");
+            webContext.setAllowLinking(true);
+        }
+
         final Loader loader = new WebCtxLoader(classLoader);
         webContext.setLoader(loader);
 
@@ -229,12 +239,12 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
                 switch (listener.getListenerType()) {
                     case CONTAINER:
                         ContainerListener containerListener = (ContainerListener) getInstance(module, listener.getModule(), listener.getListenerClass(),
-                                listener.getParams());
+                                                                                                     listener.getParams());
                         webContext.addContainerListener(containerListener);
                         break;
                     case LIFECYCLE:
                         LifecycleListener lifecycleListener = (LifecycleListener) getInstance(module, listener.getModule(), listener.getListenerClass(),
-                                listener.getParams());
+                                                                                                     listener.getParams());
                         if (webContext instanceof Lifecycle) {
                             ((Lifecycle) webContext).addLifecycleListener(lifecycleListener);
                         }
@@ -271,7 +281,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         String securityDomain = metaDataSecurityDomain == null ? SecurityConstants.DEFAULT_APPLICATION_POLICY : SecurityUtil
-                .unprefixSecurityDomain(metaDataSecurityDomain);
+                                                                                                                        .unprefixSecurityDomain(metaDataSecurityDomain);
 
         // Setup an deployer configured ServletContext attributes
         final List<ServletContextAttribute> attributes = deploymentUnit.getAttachment(ServletContextAttribute.ATTACHMENT_KEY);
@@ -288,14 +298,14 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
             ServiceBuilder<Realm> realmBuilder = serviceTarget.addService(realmServiceName, realmService);
             realmBuilder
                     .addDependency(DependencyType.REQUIRED, SecurityDomainService.SERVICE_NAME.append(securityDomain), SecurityDomainContext.class,
-                            realmService.getSecurityDomainContextInjector()).setInitialMode(Mode.ACTIVE).install();
+                                          realmService.getSecurityDomainContextInjector()).setInitialMode(Mode.ACTIVE).install();
 
             final WebDeploymentService webappService = new WebDeploymentService(webContext, injectionContainer, setupActions, attributes);
             ServiceBuilder<StandardContext> webappBuilder = serviceTarget.addService(webappServiceName, webappService)
-                    .addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName), VirtualHost.class, new WebContextInjector(webContext))
-                    .addDependencies(injectionContainer.getServiceNames()).addDependency(realmServiceName, Realm.class, webappService.getRealm())
-                    .addDependencies(deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES))
-                    .addDependency(JndiNamingDependencyProcessor.serviceName(deploymentUnit.getServiceName()));
+                                                                    .addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName), VirtualHost.class, new WebContextInjector(webContext))
+                                                                    .addDependencies(injectionContainer.getServiceNames()).addDependency(realmServiceName, Realm.class, webappService.getRealm())
+                                                                    .addDependencies(deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES))
+                                                                    .addDependency(JndiNamingDependencyProcessor.serviceName(deploymentUnit.getServiceName()));
 
             // inject the server executor which can be used by the WebDeploymentService for blocking tasks in start/stop
             // of that service
@@ -341,7 +351,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
                     // add dependency to parent policy
                     final DeploymentUnit parentDU = deploymentUnit.getParent();
                     jaccBuilder.addDependency(parentDU.getServiceName().append(JaccService.SERVICE_NAME), PolicyConfiguration.class,
-                            jaccService.getParentPolicyInjector());
+                                                     jaccService.getParentPolicyInjector());
                 }
                 // add dependency to web deployment service
                 jaccBuilder.addDependency(webappServiceName);

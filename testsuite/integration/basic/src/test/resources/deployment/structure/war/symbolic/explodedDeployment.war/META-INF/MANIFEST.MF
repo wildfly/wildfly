@@ -1,0 +1,2 @@
+Manifest-version: 1.0
+Build-Jdk: 1.7.0_07
