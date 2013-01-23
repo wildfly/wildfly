@@ -29,9 +29,8 @@
 
     <parent>
         <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-parent</artifactId>
+        <artifactId>jboss-as-iiop</artifactId>
         <version>7.2.0.Alpha1-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <groupId>org.jboss.as</groupId>

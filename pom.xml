@@ -6411,9 +6411,7 @@
                 <module>ee-deployment</module>
                 <module>ejb3</module>
                 <module>host-controller</module>
-                <module>iiop/common</module>
-                <module>iiop/jacorb</module>
-                <module>iiop/jdkorb</module>
+                <module>iiop</module>
                 <module>jaxr</module>
                 <module>jaxrs</module>
                 <module>jdr</module>
