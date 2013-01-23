@@ -140,7 +140,7 @@ class ResourceTransformationDescriptionBuilderImpl extends AbstractTransformatio
     }
 
     @Override
-    public AttributeTransformationDescriptionBuilder getAttributeBuilder() {
-        return new AttributeTransformationDescriptionBuilderImpl(this, registry);
+    public ConcreteAttributeTransformationDescriptionBuilder getAttributeBuilder() {
+        return new ConcreteAttributeTransformationDescriptionBuilder(this, registry);
     }
 }

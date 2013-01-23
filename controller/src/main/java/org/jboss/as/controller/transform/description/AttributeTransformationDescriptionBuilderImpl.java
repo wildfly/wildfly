@@ -34,7 +34,7 @@ import org.jboss.as.controller.AttributeDefinition;
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-class AttributeTransformationDescriptionBuilderImpl implements AttributeTransformationDescriptionBuilder {
+abstract class AttributeTransformationDescriptionBuilderImpl<T extends AttributeTransformationDescriptionBuilder> implements AttributeTransformationDescriptionBuilder<T> {
 
     private AttributeTransformationDescriptionBuilderRegistry registry;
     private ResourceTransformationDescriptionBuilder builder;
@@ -50,92 +50,92 @@ class AttributeTransformationDescriptionBuilderImpl implements AttributeTransfor
     }
 
     @Override
-    public AttributeTransformationDescriptionBuilder setDiscard(DiscardAttributeChecker discardChecker, AttributeDefinition...discardedAttributes) {
+    public T setDiscard(DiscardAttributeChecker discardChecker, AttributeDefinition...discardedAttributes) {
         AttributeDefinition[] useDefs = discardedAttributes;
         for (AttributeDefinition attribute : useDefs) {
             String attrName = getAttributeName(attribute);
             registry.setDiscardedAttribute(discardChecker, attrName);
         }
-        return this;
+        return thisBuilder();
     }
 
     @Override
-    public AttributeTransformationDescriptionBuilder setDiscard(DiscardAttributeChecker discardChecker, String... discardedAttributes) {
+    public T setDiscard(DiscardAttributeChecker discardChecker, String... discardedAttributes) {
         String[] useDefs = discardedAttributes;
         for (String attrName : useDefs) {
             registry.setDiscardedAttribute(discardChecker, attrName);
         }
-        return this;
+        return thisBuilder();
     }
 
     @Override
-    public AttributeTransformationDescriptionBuilderImpl addRejectCheck(final RejectAttributeChecker checker, final AttributeDefinition...rejectedAttributes){
+    public T addRejectCheck(final RejectAttributeChecker checker, final AttributeDefinition...rejectedAttributes){
         for (AttributeDefinition attribute : rejectedAttributes) {
             String attrName = getAttributeName(attribute);
             registry.addAttributeCheck(attrName, checker);
         }
-        return this;
+        return thisBuilder();
     }
 
     @Override
-    public AttributeTransformationDescriptionBuilder addRejectCheck(RejectAttributeChecker rejectChecker, String... rejectedAttributes) {
+    public T addRejectCheck(RejectAttributeChecker rejectChecker, String... rejectedAttributes) {
         for (String attribute : rejectedAttributes) {
             registry.addAttributeCheck(attribute, rejectChecker);
         }
-        return this;
+        return thisBuilder();
     }
 
     @Override
-    public AttributeTransformationDescriptionBuilder addRejectChecks(List<RejectAttributeChecker> rejectCheckers, AttributeDefinition...rejectedAttributes) {
+    public T addRejectChecks(List<RejectAttributeChecker> rejectCheckers, AttributeDefinition...rejectedAttributes) {
         for (RejectAttributeChecker rejectChecker : rejectCheckers) {
             addRejectCheck(rejectChecker, rejectedAttributes);
         }
-        return this;
+        return thisBuilder();
     }
 
     @Override
-    public AttributeTransformationDescriptionBuilder addRejectChecks(List<RejectAttributeChecker> rejectCheckers, String... rejectedAttributes) {
+    public T addRejectChecks(List<RejectAttributeChecker> rejectCheckers, String... rejectedAttributes) {
         for (RejectAttributeChecker rejectChecker : rejectCheckers) {
             addRejectCheck(rejectChecker, rejectedAttributes);
         }
-        return this;
+        return thisBuilder();
     }
 
     @Override
-    public AttributeTransformationDescriptionBuilder addRename(AttributeDefinition attributeName, String newName) {
+    public T addRename(AttributeDefinition attributeName, String newName) {
         registry.addRenamedAttribute(getAttributeName(attributeName), newName);
-        return this;
+        return thisBuilder();
     }
 
     @Override
-    public AttributeTransformationDescriptionBuilder addRename(String attributeName, String newName) {
+    public T addRename(String attributeName, String newName) {
         registry.addRenamedAttribute(attributeName, newName);
-        return this;
+        return thisBuilder();
     }
 
-    public AttributeTransformationDescriptionBuilder addRenames(Map<String, String> renames) {
+    public T addRenames(Map<String, String> renames) {
         for (Map.Entry<String, String> rename : renames.entrySet()) {
             registry.addRenamedAttribute(rename.getKey(), rename.getValue());
         }
-        return this;
+        return thisBuilder();
     }
 
 
     @Override
-    public AttributeTransformationDescriptionBuilder setValueConverter(AttributeConverter attributeConverter, AttributeDefinition...convertedAttributes) {
+    public T setValueConverter(AttributeConverter attributeConverter, AttributeDefinition...convertedAttributes) {
         for (AttributeDefinition attribute : convertedAttributes) {
             String attrName = getAttributeName(attribute);
             registry.addAttributeConverter(attrName, attributeConverter);
         }
-        return this;
+        return thisBuilder();
     }
 
     @Override
-    public AttributeTransformationDescriptionBuilder setValueConverter(AttributeConverter attributeConverter, String... convertedAttributes) {
+    public T setValueConverter(AttributeConverter attributeConverter, String... convertedAttributes) {
         for (String attribute : convertedAttributes) {
             registry.addAttributeConverter(attribute, attributeConverter);
         }
-        return this;
+        return thisBuilder();
     }
 
     protected String getAttributeName(AttributeDefinition attr) {
@@ -216,5 +216,10 @@ class AttributeTransformationDescriptionBuilderImpl implements AttributeTransfor
 
         return result;
     }
+
+    /**
+     * @return this builder
+     */
+    protected abstract T thisBuilder();
 
 }

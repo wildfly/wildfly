@@ -43,7 +43,7 @@ public interface ResourceTransformationDescriptionBuilder extends Transformation
      *
      * @return the attribute transformation builder
      */
-    AttributeTransformationDescriptionBuilder getAttributeBuilder();
+    ConcreteAttributeTransformationDescriptionBuilder getAttributeBuilder();
 
     /**
      * Add an operation transformation entry for a given operation. By default all operations inherit the attribute

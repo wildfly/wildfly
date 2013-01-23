@@ -37,7 +37,7 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Emanuel Muckenhuber
  */
-class OperationTransformationOverrideBuilderImpl extends AttributeTransformationDescriptionBuilderImpl implements OperationTransformationOverrideBuilder {
+class OperationTransformationOverrideBuilderImpl extends AttributeTransformationDescriptionBuilderImpl<OperationTransformationOverrideBuilder> implements OperationTransformationOverrideBuilder {
 
     private boolean inherit = false;
     private DiscardPolicy discardPolicy = DiscardPolicy.NEVER;
@@ -110,4 +110,10 @@ class OperationTransformationOverrideBuilderImpl extends AttributeTransformation
         }
         return local;
     }
+
+    @Override
+    protected OperationTransformationOverrideBuilder thisBuilder() {
+        return this;
+    }
+
 }

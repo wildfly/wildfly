@@ -28,7 +28,9 @@ import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.PathAddressTransformer;
 import org.jboss.as.controller.transform.ResourceTransformer;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -73,6 +75,14 @@ public final class ExplicitTransformationDescriptionBuilder extends AbstractTran
 
     @Override
     public TransformationDescription build() {
+        final Map<String, OperationTransformer> operations = new HashMap<String, OperationTransformer>();
+        for(final Map.Entry<String, OperationTransformationEntry> entry : operationTransformers.entrySet()) {
+            operations.put(entry.getKey(), entry.getValue().getOperationTransformer(null));
+        }
+        final List<TransformationDescription> childDescriptions = new ArrayList<TransformationDescription>();
+        for(final TransformationDescriptionBuilder builder : children) {
+            childDescriptions.add(builder.build());
+        }
         return new AbstractDescription(pathElement, pathAddressTransformer) {
 
             @Override
@@ -87,12 +97,12 @@ public final class ExplicitTransformationDescriptionBuilder extends AbstractTran
 
             @Override
             public Map<String, OperationTransformer> getOperationTransformers() {
-                return Collections.emptyMap();
+                return Collections.unmodifiableMap(operations);
             }
 
             @Override
             public List<TransformationDescription> getChildren() {
-                return Collections.emptyList();
+                return Collections.unmodifiableList(childDescriptions);
             }
         };
     }
