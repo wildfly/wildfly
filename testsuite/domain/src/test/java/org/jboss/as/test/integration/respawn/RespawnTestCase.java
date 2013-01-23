@@ -148,7 +148,6 @@ public class RespawnTestCase {
         args.add("-Xms64m");
         args.add("-Xmx512m");
         args.add("-XX:MaxPermSize=256m");
-        args.add("-Dorg.jboss.resolver.warning=true");
         args.add("--");
         args.add("-default-jvm");
         args.add(processUtil.getJavaCommand());
