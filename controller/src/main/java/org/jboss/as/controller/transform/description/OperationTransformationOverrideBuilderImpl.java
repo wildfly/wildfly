@@ -90,7 +90,7 @@ class OperationTransformationOverrideBuilderImpl extends AttributeTransformation
                                 transformedOperation.getTransformedOperation().get(OP).set(newName);
                             }
                             final TransformationContext ctx = getContext();
-                            transformer.transformOperation(ctx, address, transformedOperation.getTransformedOperation());
+                            recordTransformedOperation(transformer.transformOperation(ctx, address, transformedOperation.getTransformedOperation()));
                         }
                     }
                 };
