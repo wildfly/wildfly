@@ -107,7 +107,7 @@ public class JDKORBSubsystemAdd extends AbstractAddStepHandler {
         JDKORBLogger.ROOT_LOGGER.activatingSubsystem();
 
         // set the ORBUseDynamicStub system property.
-        SecurityActions.setSystemProperty("org.jboss.com.sun.CORBA.ORBUseDynamicStub", "true");
+        SecurityActions.setSystemProperty("com.sun.CORBA.ORBUseDynamicStub", "true");
         //we set the same stub factory to both the static and dynamic stub factory. As there is no way to dynamically change
         //the userDynamicStubs's property at runtime it is possible for the ORB class's <clinit> method to be
         //called before this property is set.
@@ -289,8 +289,7 @@ public class JDKORBSubsystemAdd extends AbstractAddStepHandler {
      *          but no security domain has been specified).
      */
     private void setupSSLFactories(final Properties props) throws OperationFailedException {
-        String supportSSLKey = PropertiesMap.SUN_ORB_PROPS_MAP.get(JDKORBSubsystemConstants.SECURITY_SUPPORT_SSL);
-        boolean supportSSL = true; // "on".equalsIgnoreCase(props.getProperty(supportSSLKey));
+        boolean supportSSL = "on".equalsIgnoreCase(props.getProperty(JDKORBSubsystemConstants.SECURITY_SUPPORT_SSL));
 
         if (supportSSL) {
             // if SSL is to be used, check if a security domain has been specified.

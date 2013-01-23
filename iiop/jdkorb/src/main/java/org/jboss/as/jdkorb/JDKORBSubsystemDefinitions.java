@@ -41,7 +41,7 @@ import org.jboss.dmr.ModelType;
 
 /**
  * <p>
- * This class contains all Sun ORB subsystem attribute definitions.
+ * This class contains all JDK ORB subsystem attribute definitions.
  * </p>
  *
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
