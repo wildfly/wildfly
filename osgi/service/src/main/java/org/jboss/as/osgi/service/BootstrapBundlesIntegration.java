@@ -311,6 +311,13 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
                 input.close();
             }
         }
+
+        // Check for a jbosgi-xservice.properties in the root of a module directory under $JBOSS_HOME/modules
+        // Following https://issues.jboss.org/browse/AS7-6344 this will no longer find any standard module shipped
+        // with the AS or by a layered distribution or add-on based upon it.  It may, however, find user provided
+        // modules, since $JBOSS_HOME/modules is a valid root for user modules. Layered distributions/add-ons should
+        // not be using this mechanism to provide bundles anyway. Any bundles they ship in the modules repo should
+        // be discoverable via the module.getClassLoader().getResource(JarFile.MANIFEST_NAME) mechanism used above
         File homeDir = injectedServerEnvironment.getValue().getHomeDir();
         final File modulesDir = new File(homeDir + File.separator + "modules");
         final ModuleIdentifier identifier = module.getIdentifier();

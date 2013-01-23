@@ -27,16 +27,22 @@ import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 
 import org.jboss.as.server.ServerEnvironment;
+import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.osgi.repository.RepositoryResolutionException;
 import org.jboss.osgi.repository.URLResourceBuilderFactory;
+import org.jboss.osgi.repository.XRepository;
 import org.jboss.osgi.repository.spi.AbstractRepository;
 import org.jboss.osgi.resolver.XCapability;
 import org.jboss.osgi.resolver.XResourceBuilder;
@@ -44,7 +50,7 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 
 /**
- * An {@link ArtifactProviderPlugin} that resolves artifacts from the local modules/bundles location
+ * An {@link XRepository} that resolves artifacts from the local modules/bundles location
  *
  * @author thomas.diesler@jboss.com
  * @since 20-Jan-2012
@@ -73,6 +79,14 @@ final class ModuleIdentityRepository extends AbstractRepository {
             try {
                 File contentFile = getRepositoryEntry(bundlesDir, moduleIdentifier);
                 if (contentFile == null) {
+                    // See if we can use the boot module loader and work out a path from it
+                    contentFile = getRepositoryEntryFromModuleLoader(moduleIdentifier);
+                }
+                if (contentFile == null) {
+                    // As a last gasp, try $JBOSS_HOME/modules. Following AS7-6344 this will no longer
+                    // find any standard module shipped with the AS or by a layered distribution or
+                    // add-on based upon it. It may, however, find user provided modules, since $JBOSS_HOME/modules
+                    // is a valid root for user modules.
                     contentFile = getRepositoryEntry(modulesDir, moduleIdentifier);
                 }
                 if (contentFile != null) {
@@ -96,7 +110,7 @@ final class ModuleIdentityRepository extends AbstractRepository {
      */
     static File getRepositoryEntry(File rootDir, ModuleIdentifier identifier) throws IOException {
 
-        String identifierPath = identifier.getName().replace('.', '/') + "/" + identifier.getSlot();
+        String identifierPath = getModuleIdAsPath(identifier);
         File entryDir = new File(rootDir + "/" + identifierPath);
         if (entryDir.isDirectory() == false) {
             LOGGER.tracef("Cannot obtain directory: %s", entryDir);
@@ -125,5 +139,53 @@ final class ModuleIdentityRepository extends AbstractRepository {
         }
 
         return entryFile;
+    }
+
+    private static File getRepositoryEntryFromModuleLoader(ModuleIdentifier moduleIdentifier) {
+
+        // Attempt to load the module from the modules hierarchy
+        String identifierPath = getModuleIdAsPath(moduleIdentifier);
+        try {
+            final ModuleLoader moduleLoader = Module.getBootModuleLoader();
+            final Module module = moduleLoader.loadModule(moduleIdentifier);
+
+            // Extract URLs from the module and look for one that includes 'identifierPath'.
+            // To do this we have to provide a path to getResources that we expect any usable
+            // module will have, so we use META-INF
+            Enumeration<URL> manifestURLs = module.getClassLoader().getResources("META-INF");
+            while (manifestURLs.hasMoreElements()) {
+                URL manifestURL = manifestURLs.nextElement();
+
+                String manifestString = manifestURL.toExternalForm();
+                int idx = manifestString.indexOf(identifierPath);
+                if (idx > -1) {
+                    // A URL related to our desired module. See if we can get a File URI pointing
+                    // to the module root from which this module was loaded
+                    String parent = manifestString.substring(0, idx);
+                    if (parent.startsWith("jar:")) {
+                        parent = parent.substring(4);
+                    }
+                    try {
+                        File file = new File(new URI(parent));
+                        return getRepositoryEntry(file, moduleIdentifier);
+                    } catch (Exception e) {
+                        // probably URISyntaxException on the URI or IAE from new File(URI)
+                        // In any case, resolution via this mechanism is not available for this module
+                        break;
+                    }
+
+                } // else it's a META-INF in a jar in some other module our module depends on
+            }
+        } catch (ModuleLoadException ex) {
+            // not available
+        } catch (IOException ex) {
+            // not available
+        }
+
+        return null;
+    }
+
+    private static String getModuleIdAsPath(ModuleIdentifier moduleIdentifier) {
+        return moduleIdentifier.getName().replace('.', '/') + "/" + moduleIdentifier.getSlot();
     }
 }
