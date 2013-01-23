@@ -94,7 +94,8 @@ public interface TransformingProxyController extends ProxyController {
                 }
 
                 @Override
-                public OperationTransformer.TransformedOperation transformOperation(OperationContext operationContext, ModelNode operation) throws OperationFailedException {
+                public OperationTransformer.TransformedOperation transformOperation(OperationContext operationContext, ModelNode original) throws OperationFailedException {
+                    final ModelNode operation = proxy.translateOperationForProxy(original);
                     return transformers.transformOperation(operationContext, operation);
                 }
 
