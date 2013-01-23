@@ -247,6 +247,7 @@
       <xs:sequence>
          <xs:element name="module-option" type="propertyType" minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
+      <xs:attribute name="name" type="xs:string" use="optional"/>
       <xs:attribute name="code" type="xs:string" use="required"/>
       <xs:attribute name="flag" type="module-option-flag" use="required"/>
       <xs:attribute name="module" type="xs:string" use="optional"/>
@@ -282,6 +283,7 @@
       <xs:sequence>
          <xs:element name="module-option" type="propertyType" minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
+      <xs:attribute name="name" type="xs:string" use="optional"/>
       <xs:attribute name="code" type="xs:string" use="required"/>
       <xs:attribute name="flag" type="module-option-flag" use="optional"/>
       <xs:attribute name="login-module-stack-ref" type="xs:string" use="optional"/>
@@ -299,6 +301,7 @@
       <xs:sequence>
          <xs:element name="module-option" type="propertyType" minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
+      <xs:attribute name="name" type="xs:string" use="optional"/>
       <xs:attribute name="code" type="xs:string" use="required"/>
       <xs:attribute name="flag" type="module-option-flag" use="required"/>
       <xs:attribute name="module" type="xs:string" use="optional"/>
@@ -315,6 +318,7 @@
       <xs:sequence>
          <xs:element name="module-option" type="propertyType" minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
+      <xs:attribute name="name" type="xs:string" use="optional"/>
       <xs:attribute name="code" type="xs:string" use="required"/>
       <xs:attribute name="flag" type="module-option-flag" use="required"/>
       <xs:attribute name="module" type="xs:string" use="optional"/>
@@ -331,6 +335,7 @@
       <xs:sequence>
           <xs:element name="module-option" type="propertyType" minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
+      <xs:attribute name="name" type="xs:string" use="optional"/>
       <xs:attribute name="type" type="xs:string" use="optional"/>
       <xs:attribute name="code" type="xs:string" use="required"/>
       <xs:attribute name="module" type="xs:string" use="optional"/>
@@ -347,6 +352,7 @@
       <xs:sequence>
           <xs:element name="module-option" type="propertyType" minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
+      <xs:attribute name="name" type="xs:string" use="optional"/>
       <xs:attribute name="code" type="xs:string" use="required"/>
       <xs:attribute name="module" type="xs:string" use="optional"/>
    </xs:complexType>
@@ -362,6 +368,7 @@
       <xs:sequence>
           <xs:element name="module-option" type="propertyType" minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
+      <xs:attribute name="name" type="xs:string" use="optional"/>
       <xs:attribute name="code" type="xs:string" use="required"/>
       <xs:attribute name="flag" type="module-option-flag" use="required"/>
       <xs:attribute name="module" type="xs:string" use="optional"/>
