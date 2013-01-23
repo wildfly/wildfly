@@ -27,7 +27,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import org.jboss.as.configadmin.ConfigAdmin;
 import org.jboss.as.configadmin.service.ConfigAdminInternal;
@@ -45,10 +44,11 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
-import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
-import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
@@ -99,34 +99,33 @@ public class ConfigAdminExtension implements Extension {
 
     private void registerTransformers_1_0_0(final SubsystemRegistration subsystemRegistration) {
         final ModelVersion version = ModelVersion.create(1, 0, 0);
-        final TransformersSubRegistration subsystemTransformers = subsystemRegistration.registerModelTransformers(version, ResourceTransformer.DEFAULT);
-        RejectExpressionValuesTransformer rejectTransformer = new RejectExpressionValuesTransformer(ConfigurationResource.ENTRIES);
-        final TransformersSubRegistration configurationTransformers =
-                subsystemTransformers.registerSubResource(PathElement.pathElement(ModelConstants.CONFIGURATION),
-                        (ResourceTransformer) rejectTransformer);
-        configurationTransformers.registerOperationTransformer(ADD, rejectTransformer);
-        configurationTransformers.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, rejectTransformer.getWriteAttributeTransformer());
-        configurationTransformers.registerOperationTransformer(ModelConstants.UPDATE, new OperationTransformer() {
 
-            @Override
-            public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation)
-                    throws OperationFailedException {
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        builder.addChildResource(PathElement.pathElement(ModelConstants.CONFIGURATION))
+            .getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_LIST_EXPRESSIONS, ConfigurationResource.ENTRIES)
+                .end()
+            .addOperationTransformationOverride(ModelConstants.UPDATE)
+                .setCustomOperationTransformer(new OperationTransformer() {
+                    @Override
+                    public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation)
+                            throws OperationFailedException {
+                        ModelNode remove = operation.clone();
+                        remove.get(OP).set(REMOVE);
+                        remove.remove(ModelConstants.ENTRIES);
 
-                ModelNode remove = operation.clone();
-                remove.get(OP).set(REMOVE);
-                remove.remove(ModelConstants.ENTRIES);
+                        ModelNode add = operation.clone();
+                        add.get(OP).set(ADD);
 
-                ModelNode add = operation.clone();
-                add.get(OP).set(ADD);
+                        ModelNode composite = new ModelNode();
+                        composite.get(OP).set(COMPOSITE);
+                        composite.get(OP_ADDR).setEmptyList();
+                        composite.get(STEPS).add(remove);
+                        composite.get(STEPS).add(add);
 
-                ModelNode composite = new ModelNode();
-                composite.get(OP).set(COMPOSITE);
-                composite.get(OP_ADDR).setEmptyList();
-                composite.get(STEPS).add(remove);
-                composite.get(STEPS).add(add);
-
-                return new TransformedOperation(composite, OperationResultTransformer.ORIGINAL_RESULT);
-            }
-        });
+                        return new TransformedOperation(composite, OperationResultTransformer.ORIGINAL_RESULT);
+                    }
+                });
+        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, version);
     }
 }
