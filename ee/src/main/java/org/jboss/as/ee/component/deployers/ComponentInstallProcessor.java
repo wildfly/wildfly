@@ -22,11 +22,6 @@
 
 package org.jboss.as.ee.component.deployers;
 
-import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-import static org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION;
-import static org.jboss.as.server.deployment.Attachments.MODULE;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -69,6 +64,11 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+
+import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+import static org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION;
+import static org.jboss.as.server.deployment.Attachments.MODULE;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -143,7 +143,10 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         Services.addServerExecutorDependency(startBuilder, startService.getExecutorInjector(), false);
 
         //don't start components until all bindings are up
-        startBuilder.addDependency(bindingDependencyService);
+        if(!configuration.getComponentDescription().isViewDependsOnStart()) {
+            startBuilder.addDependency(bindingDependencyService);
+        }
+
         final ServiceName contextServiceName;
         //set up the naming context if necessary
         if (configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE) {
@@ -171,8 +174,15 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
             for(final DependencyConfigurator<ViewService> depConfig : viewConfiguration.getDependencies()) {
                 depConfig.configureDependency(componentViewServiceBuilder, viewService);
             }
+
+            if(configuration.getComponentDescription().isViewDependsOnStart()) {
+                componentViewServiceBuilder.addDependency(startServiceName);
+            } else {
+                //TODO: I don't think we need this
+                startBuilder.addDependency(serviceName);
+            }
+
             componentViewServiceBuilder.install();
-            startBuilder.addDependency(serviceName);
             // The bindings for the view
             for (BindingConfiguration bindingConfiguration : viewConfiguration.getBindingConfigurations()) {
                 final String bindingName = bindingConfiguration.getName();

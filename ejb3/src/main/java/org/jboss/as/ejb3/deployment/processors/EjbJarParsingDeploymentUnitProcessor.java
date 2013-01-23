@@ -42,6 +42,7 @@ import org.jboss.as.ee.structure.SpecDescriptorPropertyReplacement;
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.cache.EJBBoundCacheParser;
 import org.jboss.as.ejb3.clustering.EJBBoundClusteringMetaDataParser;
+import org.jboss.as.ejb3.component.ImplicitDependsOnParser;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.interceptor.ContainerInterceptorsParser;
@@ -303,6 +304,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
         parsers.put(EJBBoundPoolParser.NAMESPACE_URI, new EJBBoundPoolParser());
         parsers.put(EJBBoundCacheParser.NAMESPACE_URI, new EJBBoundCacheParser());
         parsers.put(ContainerInterceptorsParser.NAMESPACE_URI_1_0, ContainerInterceptorsParser.INSTANCE);
+        parsers.put(ImplicitDependsOnParser.NAMESPACE_URI_1_0, ImplicitDependsOnParser.INSTANCE);
         return parsers;
     }
 }
