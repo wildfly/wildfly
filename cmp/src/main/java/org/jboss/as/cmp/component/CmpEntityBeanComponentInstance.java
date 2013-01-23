@@ -48,6 +48,7 @@ import org.jboss.logging.Logger;
 
 /**
  * @author John Bailey
+ * @author <a href="mailto:wfink@redhat.com">Wolf-Dieter Fink</a>
  */
 public class CmpEntityBeanComponentInstance extends EntityBeanComponentInstance {
     private final Logger log;
@@ -157,6 +158,7 @@ public class CmpEntityBeanComponentInstance extends EntityBeanComponentInstance 
     public void passivate() {
         final JDBCEntityPersistenceStore store = getComponent().getStoreManager();
         try {
+            super.invokeEjbPassivate();
             store.passivateEntity(this.getEjbContext());
             clearPrimaryKey();
             setRemoved(false);
