@@ -44,7 +44,7 @@ abstract class AbstractTransformationDescriptionBuilder implements Transformatio
     protected OperationTransformer operationTransformer;
 
     protected final Map<String, OperationTransformationEntry> operationTransformers = new HashMap<String, OperationTransformationEntry>();
-    protected final List<AbstractTransformationDescriptionBuilder> children = new ArrayList<AbstractTransformationDescriptionBuilder>();
+    protected final List<TransformationDescriptionBuilder> children = new ArrayList<TransformationDescriptionBuilder>();
 
     protected AbstractTransformationDescriptionBuilder(PathElement pathElement, PathAddressTransformer pathAddressTransformer,
                                              ResourceTransformer resourceTransformer, OperationTransformer operationTransformer) {

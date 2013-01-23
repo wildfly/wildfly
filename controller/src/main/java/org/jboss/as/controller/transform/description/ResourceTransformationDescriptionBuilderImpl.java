@@ -85,6 +85,12 @@ class ResourceTransformationDescriptionBuilderImpl extends AbstractTransformatio
     }
 
     @Override
+    public ResourceTransformationDescriptionBuilder addChildBuilder(TransformationDescriptionBuilder builder) {
+        children.add(builder);
+        return this;
+    }
+
+    @Override
     public ResourceTransformationDescriptionBuilder setCustomResourceTransformer(final ResourceTransformer resourceTransformer) {
         super.setResourceTransformer(resourceTransformer);
         return this;
