@@ -22,8 +22,12 @@
 
 package org.jboss.as.controller.transform.description;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 
 import java.util.Collections;
 import java.util.Locale;
@@ -43,6 +47,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.PathAddressTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
@@ -54,6 +59,7 @@ import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.controller.transform.Transformers;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -136,6 +142,28 @@ public class BasicResourceTestCase {
         .rename("new-name-op")
         .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode(true)), "operation-test")
         .end();
+
+        builder.addOperationTransformationOverride("operation-with-transformer")
+            .setCustomOperationTransformer(new OperationTransformer() {
+                @Override
+                public TransformedOperation transformOperation(TransformationContext context, PathAddress address,
+                        ModelNode operation) throws OperationFailedException {
+                    ModelNode remove = operation.clone();
+                    remove.get(OP).set(REMOVE);
+                    remove.remove("test");
+
+                    ModelNode add = operation.clone();
+                    add.get(OP).set(ADD);
+                    add.get("new").set("shiny");
+
+                    ModelNode composite = new ModelNode();
+                    composite.get(OP).set(COMPOSITE);
+                    composite.get(OP_ADDR).setEmptyList();
+                    composite.get(STEPS).add(remove);
+                    composite.get(STEPS).add(add);
+
+                    return new TransformedOperation(composite, OperationResultTransformer.ORIGINAL_RESULT);                }
+            });
 
         // Discard all
         builder.discardChildResource(DISCARD);
@@ -286,7 +314,7 @@ public class BasicResourceTestCase {
     }
 
     @Test
-    public void testOperationTransformer() throws Exception {
+    public void testOperationOverride() throws Exception {
 
         final ModelNode address = new ModelNode();
         address.add("toto", "testSubsystem");
@@ -302,6 +330,38 @@ public class BasicResourceTestCase {
         Assert.assertTrue(transformed.get("othertest").asBoolean()); // inherited
         Assert.assertTrue(op.rejectOperation(success())); // inherited
 
+    }
+
+    @Test
+    public void testOperationTransformer() throws Exception {
+
+        final ModelNode address = new ModelNode();
+        address.add("toto", "testSubsystem");
+
+        final ModelNode operation = new ModelNode();
+        operation.get(ModelDescriptionConstants.OP).set("operation-with-transformer");
+        operation.get(ModelDescriptionConstants.OP_ADDR).set(address);
+        operation.get("test").set("a");
+
+        OperationTransformer.TransformedOperation op = transformOperation(operation);
+        final ModelNode transformed = op.getTransformedOperation();
+        System.out.println(transformed);
+        Assert.assertEquals(COMPOSITE, transformed.get(OP).asString());
+        Assert.assertEquals(new ModelNode().setEmptyList(), transformed.get(OP_ADDR));
+        Assert.assertEquals(ModelType.LIST, transformed.get(STEPS).getType());
+        Assert.assertEquals(2, transformed.get(STEPS).asList().size());
+
+        ModelNode remove = transformed.get(STEPS).asList().get(0);
+        Assert.assertEquals(2, remove.keys().size());
+        Assert.assertEquals(REMOVE, remove.get(OP).asString());
+        Assert.assertEquals(PATH, PathAddress.pathAddress(remove.get(OP_ADDR)).iterator().next());
+
+        ModelNode add = transformed.get(STEPS).asList().get(1);
+        Assert.assertEquals(4, add.keys().size());
+        Assert.assertEquals(ADD, add.get(OP).asString());
+        Assert.assertEquals(PATH, PathAddress.pathAddress(add.get(OP_ADDR)).iterator().next());
+        Assert.assertEquals("a", add.get("test").asString());
+        Assert.assertEquals("shiny", add.get("new").asString());
     }
 
 
@@ -325,7 +385,6 @@ public class BasicResourceTestCase {
         Assert.assertFalse(op.rejectOperation(success())); // inherited
 
     }
-
 
     private Resource transformResource() throws OperationFailedException {
         final TransformationTarget target = create(registry, ModelVersion.create(1));
