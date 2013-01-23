@@ -27,8 +27,8 @@ import static org.jboss.logging.Logger.Level.WARN;
 
 import java.io.Closeable;
 import java.net.InetAddress;
-import java.util.List;
 import java.util.Set;
+
 import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.dmr.ModelNode;
@@ -439,16 +439,4 @@ public interface ControllerLogger extends BasicLogger {
     @Message(id = 13403, value = "There ware some problems during transformation process for target host: '%s' \n Problems found: %s")
     @LogMessage(level = WARN)
     void tranformationWarnings(String hostName, Set<String> problems);
-
-    //The 'details' attribute needs to list the rejected attributes and what was wrong with them, an example is message id 14898
-    @LogMessage(level = WARN)
-    @Message(id = 13405, value = "Transforming resource %s for host controller '%s' to subsystem '%s' model version '%s' --there were problems with some of the attributes and this resource will need to be ignored on that host. Details of problems: %s")
-    void rejectAttributesSubsystemModelResourceTransformer(PathAddress address, String legacyHostName, String subsystemName, ModelVersion usedVersion, List<String> details);
-
-    //The 'details' attribute needs to list the rejected attributes and what was wrong with them, an example is message id 14898
-    @Message(id = 13406, value = "Transforming resource %s for host controller '%s' to core model version '%s' -- there were problems with some of the attributes and this resource will need to be ignored on that host. Details of the problems: %s")
-    @LogMessage(level = WARN)
-    void rejectAttributesCoreModelResourceTransformer(PathAddress address, String legacyHostName, ModelVersion usedVersion, List<String> details);
-
-
 }

@@ -21,9 +21,9 @@
  */
 package org.jboss.as.controller.transform.description;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.PathAddress;
@@ -66,27 +66,31 @@ public interface RejectAttributeChecker {
     boolean rejectResourceAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context);
 
     /**
-     * Gets the log adapter for outputting the detail message of why attributes were rejected
+     * Returns the log message id used by this checker. This is used to group it so that all attributes failing a type of rejction
+     * end up in the same error message
      *
-     * @return the log adapter
+     * @return the log message id
      */
-    RejectAttributeLogAdapter getLogAdapter();
+    String getRejectionLogMessageId();
+
+    /**
+     * Gets the log message if the attribute failed rejection
+     *
+     * @param a map of all attributes failed in this checker and their values
+     * @return the formatted log message
+     */
+    String getRejectionLogMessage(Map<String, ModelNode> attributes);
 
     /**
      * A standard implementation of RejectAttributeChecker.
      */
     public abstract class DefaultRejectAttributeChecker implements RejectAttributeChecker {
-
-        private final RejectAttributeLogAdapter logAdapter;
-
+        private volatile String logMessageId;
         /**
          * Constructor
          *
-         * @param logAdapter the log adapter for outputting the detail message of why attributes were rejected
          */
-        protected DefaultRejectAttributeChecker(RejectAttributeLogAdapter logAdapter) {
-            assert logAdapter != null;
-            this.logAdapter = logAdapter;
+        protected DefaultRejectAttributeChecker() {
         }
 
         /** {@inheritDoc} */
@@ -97,15 +101,6 @@ public interface RejectAttributeChecker {
         /** {@inheritDoc} */
         public boolean rejectResourceAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
             return rejectAttribute(address, attributeName, attributeValue, context);
-        }
-
-        /**
-         * Gets the log adapter
-         *
-         * @return the log adapter
-         */
-        public RejectAttributeLogAdapter getLogAdapter() {
-            return logAdapter;
         }
 
         /**
@@ -120,26 +115,33 @@ public interface RejectAttributeChecker {
          * @return {@code true} if the attribute or parameter value is not understandable by the target process and so needs to be rejected, {@code false} otherwise.
          */
         protected abstract boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context);
+
+        /**
+         * Returns the log message id used by this checker. This is used to group it so that all attributes failing a type of rejction
+         * end up in the same error message. This default implementation uses the formatted log message with an empty attribute map as the id.
+         *
+         * @return the log message id
+         */
+        public String getRejectionLogMessageId() {
+            String id = logMessageId;
+            if (id == null) {
+                id = getRejectionLogMessage(Collections.<String, ModelNode>emptyMap());
+            }
+            logMessageId = id;
+            return logMessageId;
+        }
     }
 
 
     /**
      * Checks a simple attribute for expressions
      */
-    RejectAttributeChecker SIMPLE_EXPRESSIONS = new DefaultRejectAttributeChecker(RejectExpressionsLogAdapter.INSTANCE) {
-
-        private final RejectAttributeLogAdapter logAdapter = RejectExpressionsLogAdapter.INSTANCE;
+    RejectAttributeChecker SIMPLE_EXPRESSIONS = new DefaultRejectAttributeChecker() {
 
         /** {@inheritDoc} */
         @Override
         protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
             return checkForExpression(attributeValue);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public RejectAttributeLogAdapter getLogAdapter() {
-            return logAdapter;
         }
 
         /**
@@ -177,6 +179,11 @@ public interface RejectAttributeChecker {
         private boolean checkForExpression(final String value) {
             return ExpressionPattern.EXPRESSION_PATTERN.matcher(value).matches();
         }
+
+        @Override
+        public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+            return ControllerMessages.MESSAGES.attributesDoNotSupportExpressions(attributes.keySet());
+        }
     };
 
 
@@ -194,12 +201,6 @@ public interface RejectAttributeChecker {
          */
         public ListRejectAttributeChecker(RejectAttributeChecker elementChecker) {
             this.elementChecker = elementChecker;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public RejectAttributeLogAdapter getLogAdapter() {
-            return elementChecker.getLogAdapter();
         }
 
         /** {@inheritDoc} */
@@ -227,6 +228,15 @@ public interface RejectAttributeChecker {
             }
             return false;
         }
+
+        public String getRejectionLogMessageId() {
+            return elementChecker.getRejectionLogMessageId();
+        }
+
+        @Override
+        public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+            return elementChecker.getRejectionLogMessage(attributes);
+        }
     }
 
     /**
@@ -238,7 +248,6 @@ public interface RejectAttributeChecker {
      * A RejectAttributeChecker for {@link ModelType#OBJECT} attribute values
      */
     public class ObjectFieldsRejectAttributeChecker implements RejectAttributeChecker {
-        private final RejectAttributeLogAdapter logAdapter;
 
         private final Map<String, RejectAttributeChecker> fields = new HashMap<String, RejectAttributeChecker>();
 
@@ -246,16 +255,11 @@ public interface RejectAttributeChecker {
          * Constructor
          *
          * @param a map of keys in the object type and the RejectAttributeChecker to use to check the entries
-         * @param logAdapter the log adapter for outputting the detail message of why attributes were rejected
          */
-        public ObjectFieldsRejectAttributeChecker(Map<String, RejectAttributeChecker> fields, RejectAttributeLogAdapter logAdapter) {
+        public ObjectFieldsRejectAttributeChecker(Map<String, RejectAttributeChecker> fields) {
+            assert fields != null : "Null fields";
+            assert fields.size() > 0 : "Empty fields";
             this.fields.putAll(fields);
-            this.logAdapter = logAdapter;
-        }
-
-        /** {@inheritDoc} */
-        public RejectAttributeLogAdapter getLogAdapter() {
-            return logAdapter;
         }
 
         /** {@inheritDoc} */
@@ -283,23 +287,17 @@ public interface RejectAttributeChecker {
             }
             return false;
         }
-    }
 
-    /**
-     * A log adapter for rejecting expressions in RejectAttributeChecker
-     */
-    public static class RejectExpressionsLogAdapter implements RejectAttributeLogAdapter {
-        static final RejectAttributeLogAdapter INSTANCE = new RejectExpressionsLogAdapter();
-
-        private RejectExpressionsLogAdapter() {
-        }
-
-
-        /** {@inheritDoc} */
         @Override
-        public String getDetailMessage(Set<String> attributeNames) {
-            return ControllerMessages.MESSAGES.attributesDoNotSupportExpressions(attributeNames);
+        public String getRejectionLogMessageId() {
+            return fields.entrySet().iterator().next().getValue().getRejectionLogMessageId();
         }
-    }
 
+        @Override
+        public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+            return fields.entrySet().iterator().next().getValue().getRejectionLogMessage(attributes);
+        }
+
+
+    }
 }
