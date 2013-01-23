@@ -115,4 +115,10 @@ public interface OSGiMessages {
 
     @Message(id = 11971, value = "Servlet %s already registered with HttpService")
     String servletAlreadyRegistered(String info);
+
+    @Message(id = 11972, value = "No layers directory found at %s")
+    IllegalStateException illegalStateNoLayersDirectoryFound(File dir);
+
+    @Message(id = 11973, value = "Cannot find layer %s under directory %s")
+    IllegalStateException illegalStateCannotFindLayer(String layer, File dir);
 }

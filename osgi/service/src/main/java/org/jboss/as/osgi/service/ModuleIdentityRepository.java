@@ -58,15 +58,16 @@ import org.osgi.resource.Requirement;
 final class ModuleIdentityRepository extends AbstractRepository {
 
     private final File modulesDir;
-    private final File bundlesDir;
+    private final List<File> bundlesPath;
 
     ModuleIdentityRepository(ServerEnvironment serverEnvironment) {
-        bundlesDir = serverEnvironment.getBundlesDir();
+        File bundlesDir = serverEnvironment.getBundlesDir();
         if (bundlesDir.isDirectory() == false)
             throw MESSAGES.illegalStateArtifactBaseLocation(bundlesDir);
         modulesDir = new File(bundlesDir.getParent() + File.separator + "modules");
         if (modulesDir.isDirectory() == false)
             throw MESSAGES.illegalStateArtifactBaseLocation(modulesDir);
+        bundlesPath = LayeredBundlePathFactory.resolveLayeredBundlePath(serverEnvironment);
     }
 
     @Override
@@ -77,7 +78,7 @@ final class ModuleIdentityRepository extends AbstractRepository {
             String moduleId = (String) req.getAttributes().get(MODULE_IDENTITY_NAMESPACE);
             ModuleIdentifier moduleIdentifier = ModuleIdentifier.fromString(moduleId);
             try {
-                File contentFile = getRepositoryEntry(bundlesDir, moduleIdentifier);
+                File contentFile = getRepositoryEntry(bundlesPath, moduleIdentifier);
                 if (contentFile == null) {
                     // See if we can use the boot module loader and work out a path from it
                     contentFile = getRepositoryEntryFromModuleLoader(moduleIdentifier);
@@ -108,9 +109,28 @@ final class ModuleIdentityRepository extends AbstractRepository {
     /**
      * Get file for the singe jar that corresponds to the given identifier
      */
-    static File getRepositoryEntry(File rootDir, ModuleIdentifier identifier) throws IOException {
+    static File getRepositoryEntry(List<File> bundlesPath, ModuleIdentifier identifier) throws IOException {
+        String identifierPath = getModuleIdAsPath(identifier);
+        for (File bundlesDir : bundlesPath) {
+            File contentFile = getRepositoryEntry(bundlesDir, identifierPath);
+            if (contentFile != null) {
+                return contentFile;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get file for the singe jar that corresponds to the given identifier
+     */
+    private static File getRepositoryEntry(File rootDir, ModuleIdentifier identifier) throws IOException {
 
         String identifierPath = getModuleIdAsPath(identifier);
+        return getRepositoryEntry(rootDir, identifierPath);
+    }
+
+    private static File getRepositoryEntry(File rootDir, String identifierPath) throws IOException {
+
         File entryDir = new File(rootDir + "/" + identifierPath);
         if (entryDir.isDirectory() == false) {
             LOGGER.tracef("Cannot obtain directory: %s", entryDir);

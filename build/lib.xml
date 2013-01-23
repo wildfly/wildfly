@@ -28,7 +28,7 @@
     <property name="module.repo.output.dir" value="${output.dir}/modules/system/layers/base"/>
     <property name="module.xml" value="module.xml"/>
 
-    <property name="bundle.repo.output.dir" value="${output.dir}/bundles"/>
+    <property name="bundle.repo.output.dir" value="${output.dir}/bundles/system/layers/base"/>
 
 
     <taskdef name="jandex" classname="org.jboss.jandex.JandexAntTask" />

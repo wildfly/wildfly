@@ -109,7 +109,7 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
     private final InjectedValue<XEnvironment> injectedEnvironment = new InjectedValue<XEnvironment>();
     private final InjectedValue<XRepository> injectedRepository = new InjectedValue<XRepository>();
     private List<OSGiCapability> modulecaps;
-    private File bundlesDir;
+    private List<File> bundlesPath;
 
     BootstrapBundlesIntegration() {
         super(IntegrationServices.BOOTSTRAP_BUNDLES);
@@ -134,9 +134,7 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
         List<Deployment> deployments = new ArrayList<Deployment>();
         try {
             ServerEnvironment serverEnvironment = injectedServerEnvironment.getValue();
-            bundlesDir = serverEnvironment.getBundlesDir();
-            if (bundlesDir.isDirectory() == false)
-                throw MESSAGES.illegalStateCannotFindBundleDir(bundlesDir);
+            bundlesPath = LayeredBundlePathFactory.resolveLayeredBundlePath(serverEnvironment);
 
             modulecaps = new ArrayList<OSGiCapability>();
 
@@ -177,7 +175,7 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
             ModuleIdentifier moduleId = ModuleIdentifier.fromString(identifier);
 
             // Find the module in the bundles hierarchy
-            File bundleFile = ModuleIdentityRepository.getRepositoryEntry(bundlesDir, moduleId);
+            File bundleFile = ModuleIdentityRepository.getRepositoryEntry(bundlesPath, moduleId);
             if (bundleFile == null) {
 
                 LOGGER.tracef("Installing initial module capability: %s", identifier);
@@ -236,7 +234,7 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
             ModuleIdentifier moduleId = ModuleIdentifier.fromString(identifier);
 
             // Attempt to install the bundle from the bundles hierarchy
-            File bundleFile = ModuleIdentityRepository.getRepositoryEntry(bundlesDir, moduleId);
+            File bundleFile = ModuleIdentityRepository.getRepositoryEntry(bundlesPath, moduleId);
             if (bundleFile != null) {
                 LOGGER.tracef("Installing initial bundle capability: %s", identifier);
                 URL bundleURL = bundleFile.toURI().toURL();
