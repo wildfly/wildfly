@@ -121,4 +121,12 @@ public interface ResourceTransformationDescriptionBuilder extends Transformation
      */
     ResourceTransformationDescriptionBuilder addChildRedirection(PathElement pathElement, PathAddressTransformer pathAddressTransformer);
 
+    /**
+     * Add an already created {@link TransformationDescriptionBuilder} as a child of this builder.
+     *
+     * @param builder the builder
+     * @return the builder for this resource
+     */
+    ResourceTransformationDescriptionBuilder addChildBuilder(TransformationDescriptionBuilder builder);
+
 }
