@@ -22,10 +22,6 @@
 
 package org.jboss.as.modcluster;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.modcluster.CustomLoadMetricDefinition.CLASS;
 import static org.jboss.as.modcluster.DynamicLoadProviderDefinition.DECAY;
 import static org.jboss.as.modcluster.DynamicLoadProviderDefinition.HISTORY;
@@ -45,13 +41,15 @@ import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.CIPHER_SUI
 import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.KEY_ALIAS;
 import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.PROTOCOL;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+
 import javax.xml.stream.XMLStreamConstants;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
@@ -59,17 +57,12 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.OperationResultTransformer;
-import org.jboss.as.controller.transform.OperationTransformer;
-import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
-import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.as.controller.transform.TransformersSubRegistration;
-import org.jboss.as.controller.transform.chained.ChainedOperationTransformer;
-import org.jboss.as.controller.transform.chained.ChainedResourceTransformationContext;
-import org.jboss.as.controller.transform.chained.ChainedResourceTransformer;
-import org.jboss.as.controller.transform.chained.ChainedResourceTransformerEntry;
+import org.jboss.as.controller.transform.description.DefaultCheckersAndConverter;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -143,99 +136,99 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
 
     private static void registerTransformers_1_2_0(SubsystemRegistration subsystem) {
 
-        TransformersSubRegistration transformers = subsystem.registerModelTransformers(ModelVersion.create(1, 2, 0), ResourceTransformer.DEFAULT);
-
-        // ModClusterConfigResourceDefinition
-        RejectExpressionValuesTransformer configRejectExpressionTransformer = new RejectExpressionValuesTransformer(ADVERTISE, AUTO_ENABLE_CONTEXTS, FLUSH_PACKETS, STICKY_SESSION, STICKY_SESSION_REMOVE, STICKY_SESSION_FORCE, PING);
-        TransformersSubRegistration config = transformers.registerSubResource(CONFIGURATION_PATH, (ResourceTransformer) configRejectExpressionTransformer);
-        config.registerOperationTransformer(ModelDescriptionConstants.ADD, configRejectExpressionTransformer);
-
-
-        // ModClusterSSLResourceDefinition
-        RejectExpressionValuesTransformer sslRejectExpressionTransformer = new RejectExpressionValuesTransformer(CIPHER_SUITE, KEY_ALIAS, PROTOCOL);
-        TransformersSubRegistration ssl = transformers.registerSubResource(SSL_CONFIGURATION_PATH, (ResourceTransformer) sslRejectExpressionTransformer);
-        ssl.registerOperationTransformer(ADD, sslRejectExpressionTransformer);
-        ssl.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, sslRejectExpressionTransformer.getWriteAttributeTransformer());
-
-        // DynamicLoadProviderDefinition
-        RejectExpressionValuesTransformer dynamicProviderRejectExpressionTransformer = new RejectExpressionValuesTransformer(DECAY, HISTORY);
-        TransformersSubRegistration dynamicProvider = config.registerSubResource(DYNAMIC_LOAD_PROVIDER_PATH, (ResourceTransformer) dynamicProviderRejectExpressionTransformer);
-        dynamicProvider.registerOperationTransformer(ADD, dynamicProviderRejectExpressionTransformer);
-        dynamicProvider.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, dynamicProviderRejectExpressionTransformer.getWriteAttributeTransformer());
-
-        // CustomLoadMetricDefinition
-        RejectExpressionValuesTransformer customRejectExpressionTransformer = new RejectExpressionValuesTransformer(CLASS);
-        TransformersSubRegistration customMetric = dynamicProvider.registerSubResource(CUSTOM_LOAD_METRIC_PATH, (ResourceTransformer) customRejectExpressionTransformer);
-        customMetric.registerOperationTransformer(ADD, customRejectExpressionTransformer);
-        customMetric.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, customRejectExpressionTransformer.getWriteAttributeTransformer());
-
-        // LoadMetricDefinition
-        RejectExpressionValuesTransformer loadMetricRejectExpressionTransformer = new RejectExpressionValuesTransformer(TYPE, WEIGHT, CAPACITY, PROPERTY);
-        ChainedResourceTransformer loadMetricResourceTransformer = new ChainedResourceTransformer(loadMetricRejectExpressionTransformer.getChainedTransformer(), ConvertCapacityTransformer.INSTANCE);
-        TransformersSubRegistration metric = dynamicProvider.registerSubResource(LOAD_METRIC_PATH, loadMetricResourceTransformer);
-        metric.registerOperationTransformer(ADD, new ChainedOperationTransformer(loadMetricRejectExpressionTransformer, ConvertCapacityTransformer.INSTANCE));
-        metric.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, new ChainedOperationTransformer(loadMetricRejectExpressionTransformer.getWriteAttributeTransformer(), ConvertCapacityTransformer.INSTANCE.getWriteAttributeTransformer()));
-
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        ResourceTransformationDescriptionBuilder dynamicLoadProvider = builder.addChildResource(CONFIGURATION_PATH)
+            .getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ADVERTISE, AUTO_ENABLE_CONTEXTS, FLUSH_PACKETS, STICKY_SESSION, STICKY_SESSION_REMOVE, STICKY_SESSION_FORCE, PING)
+                .end()
+            .addChildResource(DYNAMIC_LOAD_PROVIDER_PATH)
+                .getAttributeBuilder()
+                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, DECAY, HISTORY)
+                    .end();
+        dynamicLoadProvider.addChildResource(CUSTOM_LOAD_METRIC_PATH)
+                    .getAttributeBuilder()
+                        .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CLASS)
+                        .end();
+        dynamicLoadProvider.addChildResource(LOAD_METRIC_PATH)
+                    .getAttributeBuilder()
+                        .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, TYPE, WEIGHT, CAPACITY)
+                        .addRejectCheck(new RejectAttributeChecker.ObjectFieldsRejectAttributeChecker(Collections.singletonMap(PROPERTY.getName(), RejectAttributeChecker.SIMPLE_EXPRESSIONS)), PROPERTY)
+                        .addRejectCheck(CapacityCheckerAndConverter.INSTANCE, CAPACITY)
+                        .setValueConverter(CapacityCheckerAndConverter.INSTANCE, CAPACITY)
+                        .addRejectCheck(PropertyCheckerAndConverter.INSTANCE, PROPERTY)
+                        .setValueConverter(PropertyCheckerAndConverter.INSTANCE, PROPERTY)
+                        .end();
+        builder.addChildResource(SSL_CONFIGURATION_PATH)
+            .getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CIPHER_SUITE, KEY_ALIAS, PROTOCOL)
+                .end();
+        TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 2, 0));
     }
 
-    private static class ConvertCapacityTransformer implements ChainedResourceTransformerEntry, OperationTransformer {
-        private static final ConvertCapacityTransformer INSTANCE = new ConvertCapacityTransformer();
-
+    private static class CapacityCheckerAndConverter extends DefaultCheckersAndConverter {
+        private static final CapacityCheckerAndConverter INSTANCE = new CapacityCheckerAndConverter();
         @Override
-        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
-            return internalTransformOperation(operation);
+        public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+            return ModClusterMessages.MESSAGES.capacityIsGreaterThanIntegerMaxValue(convert(attributes.get(attributes.get(CAPACITY.getName()))));
         }
 
         @Override
-        public void transformResource(ChainedResourceTransformationContext context, PathAddress address, Resource resource)
-                throws OperationFailedException {
-            resource.writeModel(internalTransform(resource.getModel()));
+        protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+            return (convert(attributeValue) != null && convert(attributeValue) > Integer.MAX_VALUE);
         }
 
-        private void transformProperties(ModelNode model) {
-            if (model.isDefined()) {
-                for (Property p : model.asPropertyList()) {//legacy was broken, only one property can be passed trough
-                    model.set(p.getName(), p.getValue().asString());
+        @Override
+        protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+            Long converted = convert(attributeValue);
+            if (converted != null) {
+                attributeValue.set((int)converted.longValue());
+            }
+        }
+
+        @Override
+        protected boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+            //Not used for discard
+            return false;
+        }
+
+        private Long convert(ModelNode attributeValue) {
+            if (attributeValue.isDefined() && attributeValue.getType() != ModelType.EXPRESSION) {
+                return Math.round(attributeValue.asDouble());
+            }
+            return null;
+        }
+    }
+
+    private static class PropertyCheckerAndConverter extends DefaultCheckersAndConverter {
+        private static final PropertyCheckerAndConverter INSTANCE = new PropertyCheckerAndConverter();
+        @Override
+        public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+            return ModClusterMessages.MESSAGES.propertyCanOnlyHaveOneEntry();
+        }
+
+        @Override
+        protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+            //TODO will  need to fix tests to test for this
+            //  if (attributeValue.isDefined()) {
+            //      return attributeValue.asPropertyList().size() > 1;
+            //  }
+              return false;
+        }
+
+        @Override
+        protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+            if (attributeValue.isDefined()) {
+                List<Property> list = attributeValue.asPropertyList();
+                if (list.size() > 0) {
+                    attributeValue.set(list.get(0).getName(), list.get(0).getValue().asString());
                 }
             }
         }
 
-        private TransformedOperation internalTransformOperation(ModelNode operation) {
-            return new TransformedOperation(internalTransform(operation), OperationResultTransformer.ORIGINAL_RESULT);
-        }
-
-        private void transformCapacity(ModelNode model) {
-            if (model.isDefined() && model.getType() != ModelType.EXPRESSION) {
-                long rounded = Math.round(model.asDouble());
-                if (rounded > Integer.MAX_VALUE) {
-                    throw ModClusterMessages.MESSAGES.capacityIsGreaterThanIntegerMaxValue(rounded);
-                }
-                model.set((int) rounded);
-            }
-        }
-
-        private ModelNode internalTransform(ModelNode model) {
-            model = model.clone();
-            transformCapacity(model.get(CAPACITY.getName()));
-            transformProperties(model.get(LoadMetricDefinition.PROPERTY.getName()));
-            return model;
-        }
-
-        OperationTransformer getWriteAttributeTransformer() {
-            return new OperationTransformer() {
-                @Override
-                public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation)
-                        throws OperationFailedException {
-                    ModelNode transformed = operation.get(VALUE);
-                    String name = operation.get(NAME).asString();
-                    if (name.equals(PROPERTY.getName())) {
-                        transformProperties(transformed);
-                    } else if (name.equals(CAPACITY.getName())) {
-                        transformCapacity(transformed);
-                    }
-                    return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
-                }
-            };
+        @Override
+        protected boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+            //Not used for discard
+            return false;
         }
     }
 }
