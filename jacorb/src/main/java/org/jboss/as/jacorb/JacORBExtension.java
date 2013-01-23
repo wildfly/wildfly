@@ -22,8 +22,9 @@
 
 package org.jboss.as.jacorb;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.jacorb.JacORBSubsystemConstants.CLIENT;
+import static org.jboss.as.jacorb.JacORBSubsystemConstants.IDENTITY;
+import static org.jboss.as.jacorb.JacORBSubsystemConstants.SECURITY;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -32,16 +33,20 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
-import org.jboss.as.controller.transform.TransformersSubRegistration;
-import org.jboss.as.controller.transform.chained.ChainedOperationTransformer;
-import org.jboss.as.controller.transform.chained.ChainedResourceTransformer;
+import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.description.AttributeConverter;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.dmr.ModelNode;
 
 /**
  * <p>
@@ -101,11 +106,23 @@ public class JacORBExtension implements Extension {
                 expressionKeys.add(def.getName());
             }
         }
-        final RejectExpressionValuesTransformer rejectTransformer = new RejectExpressionValuesTransformer(expressionKeys);
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        builder.getAttributeBuilder()
+            .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, expressionKeys.toArray(new String[expressionKeys.size()]))
+            .setValueConverter(new AttributeConverter.DefaultAttributeConverter() {
 
-        final TransformersSubRegistration registration = subsystem.registerModelTransformers(version110, new ChainedResourceTransformer(rejectTransformer.getChainedTransformer(), SecurityInterceptorTransformer.INSTANCE));
-        registration.registerOperationTransformer(ADD, new ChainedOperationTransformer(rejectTransformer, SecurityInterceptorTransformer.INSTANCE));
-        registration.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, new ChainedOperationTransformer(rejectTransformer.getWriteAttributeTransformer(), SecurityInterceptorTransformer.INSTANCE));
+                @Override
+                protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
+                        TransformationContext context) {
+                    final String security = attributeValue.asString();
+                    //TODO this is adapted from the old SecurityInterceptorTransformer but it does not look totally right
+                    if (security.equals(CLIENT) || security.equals(IDENTITY)) {
+                        attributeValue.set("on");
+                    }
+                }
+            }, SECURITY)
+            .end();
+        TransformationDescription.Tools.register(builder.build(), subsystem, version110);
     }
 
 }

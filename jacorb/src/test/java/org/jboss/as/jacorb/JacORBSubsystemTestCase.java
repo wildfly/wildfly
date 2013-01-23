@@ -283,6 +283,9 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
         assertTrue(legacyServices.isSuccessfulBoot());
 
         checkSubsystemModelTransformation(mainServices, version_1_1_0);
+
+        //TODO test the security conversion better, this should also be in the xml
+
     }
 
     @Test
