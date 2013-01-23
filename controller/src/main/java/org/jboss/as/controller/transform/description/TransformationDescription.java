@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The final transformation description.
+ * The final transformation description including child resources.
  *
  * @author Emanuel Muckenhuber
  */
@@ -89,7 +89,14 @@ public interface TransformationDescription {
             //
         }
 
-        public static void register(final TransformationDescription description, TransformersSubRegistration parent) {
+        /**
+         * Register a transformation description as a sub-resource at a given {@linkplain TransformersSubRegistration}.
+         *
+         * @param description the transformation description.
+         * @param parent the parent registration
+         * @return the created sub registration
+         */
+        public static TransformersSubRegistration register(final TransformationDescription description, TransformersSubRegistration parent) {
             final TransformersSubRegistration registration = parent.registerSubResource(description.getPath(), description.getPathAddressTransformer(), description.getResourceTransformer(), description.getOperationTransformer());
             for (final Map.Entry<String, OperationTransformer> entry : description.getOperationTransformers().entrySet()) {
                 registration.registerOperationTransformer(entry.getKey(), entry.getValue());
@@ -97,13 +104,30 @@ public interface TransformationDescription {
             for (final TransformationDescription child : description.getChildren()) {
                 register(child, registration);
             }
+            return registration;
         }
 
-        public static void register(TransformationDescription description, SubsystemRegistration registration, ModelVersion... versions) {
-            register(description, registration, ModelVersionRange.Versions.range(versions));
+        /**
+         * Register a transformation description as a sub-resource at a given {@linkplain SubsystemRegistration}.
+         *
+         * @param description the subsystem transformation description
+         * @param registration the subsystem registrations
+         * @param versions the model versions the transformation description applies to
+         * @return the created sub registration
+         */
+        public static TransformersSubRegistration register(TransformationDescription description, SubsystemRegistration registration, ModelVersion... versions) {
+            return register(description, registration, ModelVersionRange.Versions.range(versions));
         }
 
-        public static void register(TransformationDescription description, SubsystemRegistration registration, ModelVersionRange range) {
+        /**
+         * Register a transformation description as a sub-resource at a given {@linkplain SubsystemRegistration}.
+         *
+         * @param description the subsystem transformation description
+         * @param registration the subsystem registrations
+         * @param range the model version range the transformation applies to
+         * @return the create sub registration
+         */
+        public static TransformersSubRegistration register(TransformationDescription description, SubsystemRegistration registration, ModelVersionRange range) {
             final TransformersSubRegistration subRegistration = registration.registerModelTransformers(range, description.getResourceTransformer(), description.getOperationTransformer());
             for (final Map.Entry<String, OperationTransformer> entry : description.getOperationTransformers().entrySet()) {
                 subRegistration.registerOperationTransformer(entry.getKey(), entry.getValue());
@@ -111,6 +135,7 @@ public interface TransformationDescription {
             for (final TransformationDescription child : description.getChildren()) {
                 register(child, subRegistration);
             }
+            return subRegistration;
         }
 
     }

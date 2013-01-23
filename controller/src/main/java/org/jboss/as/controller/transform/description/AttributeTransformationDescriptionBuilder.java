@@ -35,7 +35,7 @@ import org.jboss.as.controller.AttributeDefinition;
  * @author Emanuel Muckenhuber
  * @author Kabir Khan
  */
-public interface AttributeTransformationDescriptionBuilder {
+public interface AttributeTransformationDescriptionBuilder<T extends AttributeTransformationDescriptionBuilder> {
 
     /**
      * Adds a RejectAttributeChecker. The RejectAttributeCheckers are processed in the order they are added to the passed in attributes.
@@ -45,7 +45,7 @@ public interface AttributeTransformationDescriptionBuilder {
      * @param rejectedAttributes the attributes to check
      * @return this builder
      */
-    AttributeTransformationDescriptionBuilder addRejectCheck(RejectAttributeChecker rejectChecker, String...rejectedAttributes);
+    T addRejectCheck(RejectAttributeChecker rejectChecker, String...rejectedAttributes);
 
     /**
      * Adds a RejectAttributeChecker. The RejectAttributeCheckers are processed in the order they are added to the passed in attributes.
@@ -55,7 +55,7 @@ public interface AttributeTransformationDescriptionBuilder {
      * @param rejectedAttributes the attributes to check
      * @return this builder
      */
-    AttributeTransformationDescriptionBuilder addRejectCheck(RejectAttributeChecker rejectChecker, AttributeDefinition...rejectedAttributes);
+    T addRejectCheck(RejectAttributeChecker rejectChecker, AttributeDefinition...rejectedAttributes);
 
     /**
      * Adds a list of RejectAttributeCheckers. The RejectAttributeCheckers are processed in the order they are added to the passed in attributes.
@@ -65,7 +65,7 @@ public interface AttributeTransformationDescriptionBuilder {
      * @param rejectedAttributes the attributes to check
      * @return this builder
      */
-    AttributeTransformationDescriptionBuilder addRejectChecks(List<RejectAttributeChecker> rejectCheckers, String...rejectedAttributes);
+    T addRejectChecks(List<RejectAttributeChecker> rejectCheckers, String...rejectedAttributes);
 
     /**
      * Adds a list of RejectAttributeCheckers. The RejectAttributeCheckers are processed in the order they are added to the passed in attributes.
@@ -75,7 +75,7 @@ public interface AttributeTransformationDescriptionBuilder {
      * @param rejectedAttributes the attributes to check
      * @return this builder
      */
-    AttributeTransformationDescriptionBuilder addRejectChecks(List<RejectAttributeChecker> rejectCheckers, AttributeDefinition...rejectedAttributes);
+    T addRejectChecks(List<RejectAttributeChecker> rejectCheckers, AttributeDefinition...rejectedAttributes);
 
     /**
      * Sets the DiscardChecker.
@@ -84,7 +84,7 @@ public interface AttributeTransformationDescriptionBuilder {
      * @param discardedAttributes the attributes to check
      * @return this builder
      */
-    AttributeTransformationDescriptionBuilder setDiscard(DiscardAttributeChecker discardChecker, String...discardedAttributes);
+    T setDiscard(DiscardAttributeChecker discardChecker, String...discardedAttributes);
 
     /**
      * Sets the DiscardChecker.
@@ -93,7 +93,7 @@ public interface AttributeTransformationDescriptionBuilder {
      * @param discardedAttributes the attributes to check
      * @return this builder
      */
-    AttributeTransformationDescriptionBuilder setDiscard(DiscardAttributeChecker discardChecker, AttributeDefinition...discardedAttributes);
+    T setDiscard(DiscardAttributeChecker discardChecker, AttributeDefinition...discardedAttributes);
 
     /**
      * Use to rename an attribute. This is done after all attributes have been discarded, checked for rejection and converted.
@@ -102,7 +102,7 @@ public interface AttributeTransformationDescriptionBuilder {
      * @param newName the new name for the attribute
      * @return this builder
      */
-    AttributeTransformationDescriptionBuilder addRename(String attributeName, String newName);
+    T addRename(String attributeName, String newName);
 
     /**
      * Use to rename an attribute. This is done after all attributes have been discarded, checked for rejection and converted.
@@ -111,7 +111,7 @@ public interface AttributeTransformationDescriptionBuilder {
      * @param newName the new name for the attribute
      * @return this builder
      */
-    AttributeTransformationDescriptionBuilder addRename(AttributeDefinition attributeName, String newName);
+    T addRename(AttributeDefinition attributeName, String newName);
 
     /**
      * Use to rename attribute. This is done after all attributes have been discarded, checked for rejection and converted.
@@ -119,7 +119,7 @@ public interface AttributeTransformationDescriptionBuilder {
      * @param renames a Map where the keys are the original attribute names, and the values are the new attribute names
      * @return this builder
      */
-    AttributeTransformationDescriptionBuilder addRenames(Map<String, String> renames);
+    T addRenames(Map<String, String> renames);
 
     /**
      * Use to convert an attribute's value. This is done after the attribute has been checked for discarding and checked for rejection.
@@ -128,7 +128,7 @@ public interface AttributeTransformationDescriptionBuilder {
      * @param convertedAttributes the attributes the attribute converter should be used on
      * @return this builder
      */
-    AttributeTransformationDescriptionBuilder setValueConverter(AttributeConverter attributeConverter, String...convertedAttributes);
+    T setValueConverter(AttributeConverter attributeConverter, String...convertedAttributes);
 
     /**
      * Use to convert an attribute's value. This is done after the attribute has been checked for discarding and checked for rejection.
@@ -138,7 +138,7 @@ public interface AttributeTransformationDescriptionBuilder {
      * @param convertedAttributes the attributes the attribute converter should be used on
      * @return this builder
      */
-    AttributeTransformationDescriptionBuilder setValueConverter(AttributeConverter attributeConverter, AttributeDefinition...convertedAttributes);
+    T setValueConverter(AttributeConverter attributeConverter, AttributeDefinition...convertedAttributes);
 
     /**
      * Finish with this attribute builder and return control to the parent resource transformation builder

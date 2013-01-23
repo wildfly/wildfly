@@ -22,36 +22,20 @@
 
 package org.jboss.as.controller.transform.description;
 
-import org.jboss.as.controller.transform.OperationTransformer;
-
 /**
- * Transformation builder interface for overriding a given operation.
+ * A concrete implementation of the {@link AttributeTransformationDescriptionBuilder}.
  *
  * @author Emanuel Muckenhuber
  */
-public interface OperationTransformationOverrideBuilder extends AttributeTransformationDescriptionBuilder<OperationTransformationOverrideBuilder> {
+public class ConcreteAttributeTransformationDescriptionBuilder extends AttributeTransformationDescriptionBuilderImpl<ConcreteAttributeTransformationDescriptionBuilder> {
 
-    /**
-     * Give the operation a new name
-     *
-     * @param newName the new name of the operation
-     * @return this operation transformer builder
-     */
-    OperationTransformationOverrideBuilder rename(String newName);
+    protected ConcreteAttributeTransformationDescriptionBuilder(ResourceTransformationDescriptionBuilder builder, AttributeTransformationDescriptionBuilderRegistry registry) {
+        super(builder, registry);
+    }
 
-    /**
-     * Set an optional operation transformer, which is called after all attribute rules were executed.
-     *
-     * @param operationTransformer the operation transformer
-     * @return this operation transformer builder
-     */
-    OperationTransformationOverrideBuilder setCustomOperationTransformer(OperationTransformer operationTransformer);
-
-    /**
-     * Inherit all existing attribute rules from the resource for this operation transformer.
-     *
-     * @return this operation transformer builder
-     */
-    OperationTransformationOverrideBuilder inheritResourceAttributeDefinitions();
+    @Override
+    protected ConcreteAttributeTransformationDescriptionBuilder thisBuilder() {
+        return this;
+    }
 
 }

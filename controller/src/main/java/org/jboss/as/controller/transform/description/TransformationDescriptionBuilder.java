@@ -32,7 +32,8 @@ import org.jboss.as.controller.PathElement;
 public interface TransformationDescriptionBuilder {
 
     /**
-     * Build the transformation description.
+     * Build the transformation description. Modifications to the builder won't affect the built description after this
+     * method was called.
      *
      * @return the transformation description
      */
