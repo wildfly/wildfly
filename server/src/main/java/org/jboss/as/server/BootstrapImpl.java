@@ -56,6 +56,13 @@ final class BootstrapImpl implements Bootstrap {
     public AsyncFuture<ServiceContainer> bootstrap(final Configuration configuration, final List<ServiceActivator> extraServices) {
 
         assert configuration != null : "configuration is null";
+
+        // AS7-6381 set this property so we can get it out of the launch scripts
+        String resolverWarning = SecurityActions.getSystemProperty("org.jboss.resolver.warning");
+        if (resolverWarning == null) {
+            SecurityActions.setSystemProperty("org.jboss.resolver.warning", "true");
+        }
+
         final ModuleLoader moduleLoader = configuration.getModuleLoader();
         final Bootstrap.ConfigurationPersisterFactory configurationPersisterFactory = configuration.getConfigurationPersisterFactory();
         assert configurationPersisterFactory != null : "configurationPersisterFactory is null";
