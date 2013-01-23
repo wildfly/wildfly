@@ -42,13 +42,19 @@ public class ModClusterRemoveProxy implements OperationStepHandler {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     ServiceController<?> controller = context.getServiceRegistry(false).getService(ModClusterService.NAME);
-                    ModCluster modcluster = (ModCluster) controller.getValue();
+                    final ModCluster modcluster = (ModCluster) controller.getValue();
                     ROOT_LOGGER.debugf("remove-proxy: %s", operation);
 
-                    Proxy proxy = new Proxy(operation);
+                    final Proxy proxy = new Proxy(operation);
                     modcluster.removeProxy(proxy.host, proxy.port);
-                    // TODO AS7-5695 handle rollback
-                    context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+
+                    context.completeStep(new OperationContext.RollbackHandler() {
+                        @Override
+                        public void handleRollback(OperationContext context, ModelNode operation) {
+                            // TODO What if mod_cluster was never aware of this proxy?
+                            modcluster.addProxy(proxy.host, proxy.port);
+                        }
+                    });
                 }
             }, OperationContext.Stage.RUNTIME);
         }

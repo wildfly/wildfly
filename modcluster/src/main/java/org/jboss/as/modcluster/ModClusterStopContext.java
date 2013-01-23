@@ -43,17 +43,23 @@ public class ModClusterStopContext implements OperationStepHandler {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     ServiceController<?> controller = context.getServiceRegistry(false).getService(ModClusterService.NAME);
-                    ModCluster modcluster = (ModCluster) controller.getValue();
+                    final ModCluster modcluster = (ModCluster) controller.getValue();
                     ROOT_LOGGER.debugf("stop-context: %s", operation);
-                    ContextHost contexthost = new ContextHost(operation);
+                    final ContextHost contexthost = new ContextHost(operation);
 
                     try {
                         modcluster.stopContext(contexthost.webhost, contexthost.webcontext, contexthost.waittime);
                     } catch(IllegalArgumentException e) {
                         throw new OperationFailedException(new ModelNode().set(MESSAGES.ContextorHostNotFound(contexthost.webhost, contexthost.webcontext)));
                     }
-                    // TODO AS7-5695 handle rollback
-                    context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+
+                    context.completeStep(new OperationContext.RollbackHandler() {
+                        @Override
+                        public void handleRollback(OperationContext context, ModelNode operation) {
+                            // TODO We're assuming that the context was previously enabled, but it could have been disabled
+                            modcluster.enableContext(contexthost.webhost, contexthost.webcontext);
+                        }
+                    });
                 }
             }, OperationContext.Stage.RUNTIME);
         }
