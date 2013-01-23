@@ -124,15 +124,15 @@ public class TransformersLogger {
         String msg = entry.message == null ? ControllerMessages.MESSAGES.attributesAreNotUnderstoodAndWillBeIgnored() : entry.message;
         if (operation == null) {//resource transformation
             if (subsystemName != null) {
-                return ControllerMessages.MESSAGES.newAttributesSubsystemModelResourceTransformerFoundDefinedAttributes(address, hostName, subsystemName, usedVersion, entry.attributes, msg);
+                return ControllerMessages.MESSAGES.transformerLoggerSubsystemModelResourceTransformerAttributes(address, hostName, subsystemName, usedVersion, entry.attributes, msg);
             } else {
-                return ControllerMessages.MESSAGES.newAttributesCoreModelResourceTransformerFoundDefinedAttributes(address, hostName, usedVersion, entry.attributes, msg);
+                return ControllerMessages.MESSAGES.transformerLoggerCoreModelResourceTransformerAttributes(address, hostName, usedVersion, entry.attributes, msg);
             }
         } else {//operation transformation
             if (subsystemName != null) {
-                return ControllerMessages.MESSAGES.newAttributesSubsystemModelOperationTransformerFoundDefinedAttributes(operation, address, hostName, subsystemName, usedVersion, entry.attributes, msg);
+                return ControllerMessages.MESSAGES.transformerLoggerSubsystemModelOperationTransformerAttributes(operation, address, hostName, subsystemName, usedVersion, entry.attributes, msg);
             } else {
-                return ControllerMessages.MESSAGES.newAttributesCoreModelOperationTransformerFoundDefinedAttributes(operation, address, hostName, usedVersion, entry.attributes, msg);
+                return ControllerMessages.MESSAGES.transformerLoggerCoreModelOperationTransformerAttributes(operation, address, hostName, usedVersion, entry.attributes, msg);
             }
         }
     }

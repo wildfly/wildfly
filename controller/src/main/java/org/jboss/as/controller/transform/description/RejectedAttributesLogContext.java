@@ -26,32 +26,31 @@ package org.jboss.as.controller.transform.description;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.transform.TransformationTarget;
+import org.jboss.as.controller.transform.TransformersLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-@Deprecated //todo replace with context.getLogger
 class RejectedAttributesLogContext {
 
     private final TransformationRule.AbstractChainedContext context;
     private final PathAddress address;
     private final ModelNode op;
-    Map<RejectAttributeLogAdapter, Set<String>> failedAttributes;
+    Map<String, RejectAttributeChecker> failedCheckers;
+    Map<String, Map<String, ModelNode>> failedAttributes;
 
     RejectedAttributesLogContext(TransformationRule.AbstractChainedContext context, PathAddress address, ModelNode op) {
         this.context = context;
@@ -62,26 +61,34 @@ class RejectedAttributesLogContext {
     void checkAttribute(RejectAttributeChecker checker, String attributeName, ModelNode attributeValue) {
         if (op == null) {
             if (checker.rejectResourceAttribute(address, attributeName, attributeValue, context.getContext())) {
-                reject(checker, attributeName);
+                reject(checker, attributeName, attributeValue);
             }
         } else {
             if (checker.rejectOperationParameter(address, attributeName, attributeValue, op, context.getContext())){
-                reject(checker, attributeName);
+                reject(checker, attributeName, attributeValue);
             }
         }
     }
 
-    private void reject(RejectAttributeChecker checker, String attributeName) {
-        assert checker.getLogAdapter() != null : "Null log adapter";
+    private void reject(RejectAttributeChecker checker, String attributeName, ModelNode attributeValue) {
+        assert checker.getRejectionLogMessageId() != null : "Null log id";
+        final String id = checker.getRejectionLogMessageId();
+        if (failedCheckers == null) {
+            failedCheckers = new HashMap<String, RejectAttributeChecker>();
+        }
+        if (failedCheckers.get(id) == null) {
+            failedCheckers.put(id, checker);
+        }
+
         if (failedAttributes == null) {
-            failedAttributes = new LinkedHashMap<RejectAttributeLogAdapter, Set<String>>();
+            failedAttributes = new LinkedHashMap<String, Map<String, ModelNode>>();
         }
-        Set<String> attributes = failedAttributes.get(checker.getLogAdapter());
+        Map<String, ModelNode> attributes = failedAttributes.get(checker.getRejectionLogMessageId());
         if (attributes == null) {
-            attributes = new HashSet<String>();
-            failedAttributes.put(checker.getLogAdapter(), attributes);
+            attributes = new HashMap<String, ModelNode>();
+            failedAttributes.put(checker.getRejectionLogMessageId(), attributes);
         }
-        attributes.add(attributeName);
+        attributes.put(attributeName, attributeValue);
     }
 
     boolean hasRejections() {
@@ -101,35 +108,34 @@ class RejectedAttributesLogContext {
         final String subsystemName = findSubsystemName(address);
         final ModelVersion usedVersion = subsystemName == null ? coreVersion : tgt.getSubsystemVersion(subsystemName);
 
-        List<String> messages = new ArrayList<String>();
-        for (Map.Entry<RejectAttributeLogAdapter, Set<String>> entry : failedAttributes.entrySet()) {
-            messages.add(entry.getKey().getDetailMessage(entry.getValue()));
-        }
+        final TransformersLogger logger = context.getContext().getLogger();
+        final boolean error = op == null && context.getContext().doesTargetSupportIgnoredResources(context.getContext().getTarget());
+        List<String> messages = error ? new ArrayList<String>() : null;
 
-        if (op == null) {
-            if (coreVersion.getMajor() >= 1 && coreVersion.getMinor() >= 4) {
-                //We are 7.2.x so we should throw an error
-                if (subsystemName != null) {
-                    throw ControllerMessages.MESSAGES.rejectAttributesSubsystemModelResourceTransformer(address, legacyHostName, subsystemName, usedVersion, messages);
+        for (Map.Entry<String, Map<String, ModelNode>> entry : failedAttributes.entrySet()) {
+            RejectAttributeChecker checker = failedCheckers.get(entry.getKey());
+            String message = checker.getRejectionLogMessage(entry.getValue());
+
+            if (error) {
+                //Create our own custom exception containing everything
+                messages.add(message);
+            } else {
+                if (op == null) {
+                    logger.logWarning(address, null, message, entry.getValue().keySet());
+                } else {
+                    return logger.getWarning(address, op, message, entry.getValue().keySet());
                 }
-                throw ControllerMessages.MESSAGES.rejectAttributesCoreModelResourceTransformer(address, legacyHostName, usedVersion, messages);
             }
         }
 
-        if (op == null) {
+        if (error) {
+            //We are 7.2.x so we should throw an error
             if (subsystemName != null) {
-                ControllerLogger.TRANSFORMER_LOGGER.rejectAttributesSubsystemModelResourceTransformer(address, legacyHostName, subsystemName, usedVersion, messages);
-            } else {
-                ControllerLogger.TRANSFORMER_LOGGER.rejectAttributesCoreModelResourceTransformer(address, legacyHostName, usedVersion, messages);
+                throw ControllerMessages.MESSAGES.rejectAttributesSubsystemModelResourceTransformer(address, legacyHostName, subsystemName, usedVersion, messages);
             }
-            return null;
-        } else {
-            if (subsystemName != null) {
-                return ControllerMessages.MESSAGES.rejectAttributesSubsystemModelOperationTransformer(op, address, legacyHostName, subsystemName, usedVersion, messages);
-            } else {
-                return ControllerMessages.MESSAGES.rejectAttributesCoreModelOperationTransformer(op, address, legacyHostName, usedVersion, messages);
-            }
+            throw ControllerMessages.MESSAGES.rejectAttributesCoreModelResourceTransformer(address, legacyHostName, usedVersion, messages);
         }
+        return null;
     }
 
     private static String findSubsystemName(PathAddress pathAddress) {
