@@ -45,7 +45,7 @@ public class ModClusterStop implements OperationStepHandler {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     ServiceController<?> controller = context.getServiceRegistry(false).getService(ModClusterService.NAME);
-                    ModCluster modcluster = (ModCluster) controller.getValue();
+                    final ModCluster modcluster = (ModCluster) controller.getValue();
                     List<Property> list = operation.asPropertyList();
                     Iterator<Property> it = list.iterator();
                     int waittime = 10;
@@ -56,8 +56,14 @@ public class ModClusterStop implements OperationStepHandler {
                         }
                     }
                     modcluster.stop(waittime);
-                    // TODO AS7-5695 handle rollback
-                    context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+
+                    context.completeStep(new OperationContext.RollbackHandler() {
+                        @Override
+                        public void handleRollback(OperationContext context, ModelNode operation) {
+                            // TODO We're assuming that the all contexts were previously enabled, but they could have been disabled
+                            modcluster.enable();
+                        }
+                    });
                 }
             }, OperationContext.Stage.RUNTIME);
         }
