@@ -24,7 +24,6 @@ package org.jboss.as.mail.extension;
 
 import static org.jboss.as.mail.extension.MailSubsystemModel.CUSTOM_SERVER_PATH;
 import static org.jboss.as.mail.extension.MailSubsystemModel.SERVER_TYPE;
-import static org.jboss.as.mail.extension.MailSubsystemModel.SMTP_SERVER_PATH;
 import static org.jboss.as.mail.extension.MailSubsystemModel.TLS;
 
 import org.jboss.as.controller.Extension;
@@ -37,8 +36,8 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 
@@ -99,26 +98,13 @@ public class MailExtension implements Extension {
     }
 
     private void registerTransformers(SubsystemRegistration subsystem) {
-        TransformersSubRegistration sessionTransformers = subsystem.registerModelTransformers(ModelVersion.create(1, 1, 0), null).registerSubResource(MAIL_SESSION_PATH);
-        TransformationDescription smtpServerTransformers = TransformationDescriptionBuilder.Factory.createInstance(PathElement.pathElement(SERVER_TYPE))
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        ResourceTransformationDescriptionBuilder sessionBuilder = builder.addChildResource(MAIL_SESSION_PATH);
+        sessionBuilder.addChildResource(PathElement.pathElement(SERVER_TYPE))
                 .getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, TLS)
-                .end()
-                .build();
-        TransformationDescription.Tools.register(smtpServerTransformers,sessionTransformers);
-        sessionTransformers.registerSubResource(CUSTOM_SERVER_PATH, true);
-        //todo i think this should work with builders:
-        /*TransformationDescription transformers = TransformationDescriptionBuilder.Factory.createInstance(MAIL_SESSION_PATH)
-                .addChildResource(PathElement.pathElement(SERVER_TYPE))
-                .getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, TLS)
-                .end()
-                .end() / parent() //this part is not here now
-                .discardChildResource(CUSTOM_SERVER_PATH)
-                .build();
-        TransformationDescription.Tools.register(transformers,subsystemTransformers);
-
-        also why is DiscardUndefinedAttributesTransformer different from .setDiscard(DiscardAttributeChecker.UNDEFINED, TLS) ?
-                */
-
+                .end();
+        sessionBuilder.discardChildResource(CUSTOM_SERVER_PATH);
+        TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 1, 0));
     }
 
 }
