@@ -43,6 +43,17 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
 /**
+ * Logger utility class that provides unified mechanism to log warnings that occur as part of transformation process
+ * <p/>
+ * All log messages are queued for time of transformation and then written in log as single entry for all problems that occurred.
+ * This way it is simple to see what potential problems could happen for each host that is of different version as domain controller
+ * <p/>
+ * Sample output would look like this:
+ * There ware some problems during transformation process for target host: 'host-name'
+ * Problems found:
+ * Transforming operation %s at resource %s to subsystem '%s' model version '%s' -- attributes %s attributes ware rejected
+ * Transforming operation %s at resource %s to core model '%s' model version '%s' -- attributes %s attributes ware rejected
+ *
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 public class TransformersLogger {
@@ -64,46 +75,130 @@ public class TransformersLogger {
         return null;
     }
 
+    /**
+     * log warning for resource at provided address and single attribute.
+     * appended message is default 'are not understood in that model version and this resource will need to be ignored on that host.'
+     *
+     * @param address   where warning occurred
+     * @param attribute attribute we are warning about
+     */
     public void logWarning(PathAddress address, String attribute) {
         logWarning(address, null, null, attribute);
     }
 
+    /**
+     * log warning for resource at provided address and attributes.
+     * error message is default 'are not understood in that model version and this resource will need to be ignored on that host.'
+     *
+     * @param address    where warning occurred
+     * @param attributes attributes we are warning about
+     */
     public void logWarning(PathAddress address, Set<String> attributes) {
         logWarning(address, null, null, attributes);
     }
 
+    /**
+     * log warning for resource at provided address and single attribute.
+     *
+     * @param address   where warning occurred
+     * @param message   custom error message to append
+     * @param attribute attribute we are warning about
+     */
     public void logWarning(PathAddress address, String message, String attribute) {
         logWarning(address, null, message, attribute);
     }
 
+    /**
+     * log warning for resource at provided address for passed attributes with custom message
+     *
+     * @param address    where warning occurred
+     * @param message    custom error message to append
+     * @param attributes attributes we that have problems about
+     */
     public void logWarning(PathAddress address, String message, Set<String> attributes) {
         messageQueue.add(new LogEntry(address, null, message, attributes));
     }
 
+
+    /**
+     * log warning for operation at provided address for passed attribute with custom message
+     *
+     * @param address   where warning occurred
+     * @param operation where which problem occurred
+     * @param message   custom error message to append
+     * @param attribute attribute we that has problem
+     */
     public void logWarning(PathAddress address, ModelNode operation, String message, String attribute) {
         messageQueue.add(new LogEntry(address, operation, message, attribute));
     }
 
+    /**
+     * log warning for operation at provided address for passed attributes with custom message
+     *
+     * @param address    where warning occurred
+     * @param operation  where which problem occurred
+     * @param message    custom error message to append
+     * @param attributes attributes we that have problems about
+     */
     public void logWarning(PathAddress address, ModelNode operation, String message, Set<String> attributes) {
         messageQueue.add(new LogEntry(address, operation, message, attributes));
     }
 
+    /**
+     * get warning message for operation at provided address for passed attributes with custom message appended
+     * This is useful when you need to pass it as result of getFailureMessage()
+     *
+     * @param address    where warning occurred
+     * @param operation  where which problem occurred
+     * @param message    custom error message to append
+     * @param attributes attributes we that have problems about
+     */
     public String getWarning(PathAddress address, ModelNode operation, String message, Set<String> attributes) {
         return getMessage(new LogEntry(address, operation, message, attributes));
     }
 
+    /**
+     * get warning message for operation at provided address for passed attributes with custom message appended
+     * This is useful when you need to pass it as result of getFailureMessage()
+     *
+     * @param address    where warning occurred
+     * @param operation  where which problem occurred
+     * @param message    custom error message to append
+     * @param attributes attributes we that have problems about
+     */
     private String getWarning(PathAddress address, ModelNode operation, String message, String... attributes) {
         return getMessage(new LogEntry(address, operation, message, attributes));
     }
 
+    /**
+     * get warning message for operation at provided address for passed attributes with custom message appended
+     * This is useful when you need to pass it as result of getFailureMessage()
+     * appended message is default 'are not understood in that model version and this resource will need to be ignored on that host.'
+     *
+     * @param address    where warning occurred
+     * @param operation  where which problem occurred
+     * @param attributes attributes we that have problems about
+     */
     public String getWarning(PathAddress address, ModelNode operation, String... attributes) {
         return getWarning(address, operation, null, attributes);
     }
 
+    /**
+     * get warning message for operation at provided address for passed attributes with custom message appended
+     * This is useful when you need to pass it as result of getFailureMessage()
+     * appended message is default 'are not understood in that model version and this resource will need to be ignored on that host.'
+     *
+     * @param address    where warning occurred
+     * @param operation  where which problem occurred
+     * @param attributes attributes we that have problems about
+     */
     public String getWarning(PathAddress address, ModelNode operation, Set<String> attributes) {
         return getMessage(new LogEntry(address, operation, null, attributes));
     }
 
+    /**
+     * flushes log queue, this actually writes combined log message into system log
+     */
     void flushLogQueue() {
         Set<String> problems = new LinkedHashSet<String>();
         for (LogEntry entry : messageQueue) {
@@ -115,7 +210,6 @@ public class TransformersLogger {
     }
 
     private String getMessage(LogEntry entry) {
-        final String hostName = target.getHostName();
         final ModelVersion coreVersion = target.getVersion();
         final String subsystemName = findSubsystemName(entry.address);
         final ModelVersion usedVersion = subsystemName == null ? coreVersion : target.getSubsystemVersion(subsystemName);
@@ -124,15 +218,15 @@ public class TransformersLogger {
         String msg = entry.message == null ? ControllerMessages.MESSAGES.attributesAreNotUnderstoodAndWillBeIgnored() : entry.message;
         if (operation == null) {//resource transformation
             if (subsystemName != null) {
-                return ControllerMessages.MESSAGES.transformerLoggerSubsystemModelResourceTransformerAttributes(address, hostName, subsystemName, usedVersion, entry.attributes, msg);
+                return ControllerMessages.MESSAGES.transformerLoggerSubsystemModelResourceTransformerAttributes(address, subsystemName, usedVersion, entry.attributes, msg);
             } else {
-                return ControllerMessages.MESSAGES.transformerLoggerCoreModelResourceTransformerAttributes(address, hostName, usedVersion, entry.attributes, msg);
+                return ControllerMessages.MESSAGES.transformerLoggerCoreModelResourceTransformerAttributes(address, usedVersion, entry.attributes, msg);
             }
         } else {//operation transformation
             if (subsystemName != null) {
-                return ControllerMessages.MESSAGES.transformerLoggerSubsystemModelOperationTransformerAttributes(operation, address, hostName, subsystemName, usedVersion, entry.attributes, msg);
+                return ControllerMessages.MESSAGES.transformerLoggerSubsystemModelOperationTransformerAttributes(operation, address, subsystemName, usedVersion, entry.attributes, msg);
             } else {
-                return ControllerMessages.MESSAGES.transformerLoggerCoreModelOperationTransformerAttributes(operation, address, hostName, usedVersion, entry.attributes, msg);
+                return ControllerMessages.MESSAGES.transformerLoggerCoreModelOperationTransformerAttributes(operation, address, usedVersion, entry.attributes, msg);
             }
         }
     }

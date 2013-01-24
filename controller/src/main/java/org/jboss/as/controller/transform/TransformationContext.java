@@ -22,7 +22,6 @@
 
 package org.jboss.as.controller.transform;
 
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessType;
@@ -32,8 +31,8 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
 /**
-* @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
-*/
+ * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
+ */
 public interface TransformationContext {
 
     /**
@@ -53,7 +52,7 @@ public interface TransformationContext {
     /**
      * Gets the running mode of the process.
      *
-     * @return   the running mode. Will not be {@code null}
+     * @return the running mode. Will not be {@code null}
      */
     RunningMode getRunningMode();
 
@@ -91,21 +90,31 @@ public interface TransformationContext {
 
     /**
      * Resolve an expression.
-     *
+     * <p/>
      * In some cases an outdated target might not understand expressions for a given attribute, therefore it needs to be
      * resolve before being sent to the target.
      *
      * @param node the node
      * @return the resolved expression
      * @throws OperationFailedException
-     *
      * @deprecated expressions cannot be reliably resolved during transformation
      */
     @Deprecated
     ModelNode resolveExpressions(ModelNode node) throws OperationFailedException;
 
+    /**
+     * Returns Transformers logger that must be used for reporting any problems with transformation
+     *
+     * @return TransformersLogger associated with target host
+     */
     TransformersLogger getLogger();
 
+    /**
+     * Returns true if TransformationTarget supports ignored resources
+     *
+     * @param target TransformationTarget for which want to know if it supports ignored resources
+     * @return boolean
+     */
     boolean doesTargetSupportIgnoredResources(TransformationTarget target);
 
 }
