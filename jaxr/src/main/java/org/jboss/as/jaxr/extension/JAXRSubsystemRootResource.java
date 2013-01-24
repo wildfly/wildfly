@@ -21,9 +21,6 @@
  */
 package org.jboss.as.jaxr.extension;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
@@ -32,9 +29,10 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
-import org.jboss.as.controller.transform.TransformersSubRegistration;
-import org.jboss.as.controller.transform.chained.ChainedOperationTransformer;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.as.jaxr.JAXRConfiguration;
 import org.jboss.as.jaxr.ModelConstants;
 import org.jboss.dmr.ModelType;
@@ -78,10 +76,10 @@ class JAXRSubsystemRootResource extends SimpleResourceDefinition {
     static void registerTransformerers(SubsystemRegistration subsystem) {
 
         ModelVersion subsystem110 = ModelVersion.create(1, 1);
-
-        RejectExpressionValuesTransformer rejectTransformer = new RejectExpressionValuesTransformer(CONNECTION_FACTORY_ATTRIBUTE);
-        final TransformersSubRegistration transformers110 = subsystem.registerModelTransformers(subsystem110, rejectTransformer);
-        transformers110.registerOperationTransformer(ADD, rejectTransformer);
-        transformers110.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, rejectTransformer.getWriteAttributeTransformer());
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        builder.getAttributeBuilder()
+            .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CONNECTION_FACTORY_ATTRIBUTE)
+            .end();
+        TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 1, 0));
     }
 }
