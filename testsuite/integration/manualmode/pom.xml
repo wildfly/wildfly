@@ -85,6 +85,10 @@
                                 <phase>test</phase>
                                 <goals><goal>test</goal></goals>
                                 <configuration>
+
+                                    <!-- Workaround for nasty and hacky tests not cleaning up completely after themselves. -->
+                                    <forkMode>pertest</forkMode>
+
                                     <includes>
                                         <include>org/jboss/as/test/manualmode/**/*TestCase.java</include>
                                     </includes>
