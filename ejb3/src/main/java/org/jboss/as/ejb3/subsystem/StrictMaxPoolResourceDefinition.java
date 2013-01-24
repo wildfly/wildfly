@@ -22,9 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -41,11 +38,8 @@ import org.jboss.as.controller.operations.validation.TimeUnitValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.controller.transform.AddNameFromAddressResourceTransformer;
-import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
-import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.TransformersSubRegistration;
-import org.jboss.as.controller.transform.chained.ChainedResourceTransformer;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.ejb3.component.pool.StrictMaxPoolConfig;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -108,11 +102,9 @@ public class StrictMaxPoolResourceDefinition extends SimpleResourceDefinition {
         }
     }
 
-    static void registerTransformers_1_1_0(TransformersSubRegistration parent) {
-
-        RejectExpressionValuesTransformer rejectTransformer = new RejectExpressionValuesTransformer(INSTANCE_ACQUISITION_TIMEOUT_UNIT);
-        final TransformersSubRegistration transformers110 = parent.registerSubResource(INSTANCE.getPathElement(), (ResourceTransformer) rejectTransformer);
-        transformers110.registerOperationTransformer(ADD, rejectTransformer);
-        transformers110.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, rejectTransformer.getWriteAttributeTransformer());
+    static void registerTransformers_1_1_0(ResourceTransformationDescriptionBuilder parent) {
+        parent.addChildResource(INSTANCE.getPathElement())
+            .getAttributeBuilder()
+            .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, INSTANCE_ACQUISITION_TIMEOUT_UNIT);
     }
 }

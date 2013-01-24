@@ -22,16 +22,17 @@
 
 package org.jboss.as.connector.subsystems.jca;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.TransformersSubRegistration;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
@@ -76,9 +77,8 @@ public class JcaSubsystemRootDefinition extends SimpleResourceDefinition {
     }
 
     static void registerTransformers(SubsystemRegistration subsystem) {
-
-        ModelVersion subsystem110 = ModelVersion.create(1, 1);
-        TransformersSubRegistration transformers110 = subsystem.registerModelTransformers(subsystem110, ResourceTransformer.DEFAULT);
-        JcaWorkManagerDefinition.registerTransformers110(transformers110);
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        JcaWorkManagerDefinition.registerTransformers110(builder);
+        TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 1, 0));
     }
 }

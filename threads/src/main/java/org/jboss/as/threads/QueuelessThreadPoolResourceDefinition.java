@@ -22,22 +22,13 @@
 
 package org.jboss.as.threads;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-
-import java.util.HashMap;
-import java.util.Map;
-
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.AttributeTransformationRequirementChecker;
-import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
-import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -103,19 +94,14 @@ public class QueuelessThreadPoolResourceDefinition extends SimpleResourceDefinit
         }
     }
 
-    public static void registerTransformers1_0(TransformersSubRegistration parent) {
+    public static void registerTransformers1_0(ResourceTransformationDescriptionBuilder parent) {
         registerTransformers1_0(parent, CommonAttributes.BLOCKING_QUEUELESS_THREAD_POOL);
         registerTransformers1_0(parent, CommonAttributes.QUEUELESS_THREAD_POOL);
     }
 
-    public static void registerTransformers1_0(TransformersSubRegistration parent, String type) {
-
-        final RejectExpressionValuesTransformer TRANSFORMER =
-                new RejectExpressionValuesTransformer(PoolAttributeDefinitions.KEEPALIVE_TIME.getName(),
-                                                    KeepAliveTimeAttributeDefinition.TRANSFORMATION_REQUIREMENT_CHECKER);
-
-        final TransformersSubRegistration pool = parent.registerSubResource(PathElement.pathElement(type), (ResourceTransformer) TRANSFORMER);
-        pool.registerOperationTransformer(ADD, TRANSFORMER);
-        pool.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, TRANSFORMER.getWriteAttributeTransformer());
+    public static void registerTransformers1_0(ResourceTransformationDescriptionBuilder parent, String type) {
+        parent.addChildResource(PathElement.pathElement(type))
+        .getAttributeBuilder()
+            .addRejectCheck(KeepAliveTimeAttributeDefinition.TRANSFORMATION_CHECKER, PoolAttributeDefinitions.KEEPALIVE_TIME);
     }
 }

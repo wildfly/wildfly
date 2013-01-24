@@ -34,8 +34,9 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 
 /**
  * Extension for thread management.
@@ -93,15 +94,14 @@ public class ThreadsExtension implements Extension {
      * @param subsystem the subsystems registration
      */
     private static void registerTransformers1_0(final SubsystemRegistration subsystem) {
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        BoundedQueueThreadPoolResourceDefinition.registerTransformers1_0(builder);
+        QueuelessThreadPoolResourceDefinition.registerTransformers1_0(builder);
+        ScheduledThreadPoolResourceDefinition.registerTransformers1_0(builder);
+        UnboundedQueueThreadPoolResourceDefinition.registerTransformers1_0(builder);
+        ThreadFactoryResourceDefinition.registerTransformers1_0(builder);
+        TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 0, 0));
 
-        // Transformation to model version 1.0.0
-        final ModelVersion version100 = ModelVersion.create(1, 0, 0);
-        final TransformersSubRegistration registration = subsystem.registerModelTransformers(version100, ResourceTransformer.DEFAULT);
-        BoundedQueueThreadPoolResourceDefinition.registerTransformers1_0(registration);
-        QueuelessThreadPoolResourceDefinition.registerTransformers1_0(registration);
-        ScheduledThreadPoolResourceDefinition.registerTransformers1_0(registration);
-        UnboundedQueueThreadPoolResourceDefinition.registerTransformers1_0(registration);
-        ThreadFactoryResourceDefinition.registerTransformers1_0(registration);
     }
 
 

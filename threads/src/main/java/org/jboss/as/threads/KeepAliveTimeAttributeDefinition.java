@@ -45,7 +45,7 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.parsing.ParseUtils;
-import org.jboss.as.controller.transform.AttributeTransformationRequirementChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -66,14 +66,14 @@ class KeepAliveTimeAttributeDefinition extends ObjectTypeAttributeDefinition {
             .setValidator(new EnumValidator<TimeUnit>(TimeUnit.class, false, true))
             .build();
 
-    static final AttributeTransformationRequirementChecker TRANSFORMATION_REQUIREMENT_CHECKER;
 
+    static final RejectAttributeChecker TRANSFORMATION_CHECKER;
     static {
 
-        Map<String, AttributeTransformationRequirementChecker> fieldCheckers = new HashMap<String, AttributeTransformationRequirementChecker>();
-        fieldCheckers.put(KeepAliveTimeAttributeDefinition.KEEPALIVE_TIME_TIME.getName(), AttributeTransformationRequirementChecker.SIMPLE_EXPRESSIONS);
-        fieldCheckers.put(KeepAliveTimeAttributeDefinition.KEEPALIVE_TIME_UNIT.getName(), AttributeTransformationRequirementChecker.SIMPLE_EXPRESSIONS);
-        TRANSFORMATION_REQUIREMENT_CHECKER = new AttributeTransformationRequirementChecker.ObjectFieldsAttributeTransformationRequirementChecker(fieldCheckers);
+        Map<String, RejectAttributeChecker> fieldCheckers = new HashMap<String, RejectAttributeChecker>();
+        fieldCheckers.put(KeepAliveTimeAttributeDefinition.KEEPALIVE_TIME_TIME.getName(), RejectAttributeChecker.SIMPLE_EXPRESSIONS);
+        fieldCheckers.put(KeepAliveTimeAttributeDefinition.KEEPALIVE_TIME_UNIT.getName(), RejectAttributeChecker.SIMPLE_EXPRESSIONS);
+        TRANSFORMATION_CHECKER = new RejectAttributeChecker.ObjectFieldsRejectAttributeChecker(fieldCheckers);
     }
 
     KeepAliveTimeAttributeDefinition() {

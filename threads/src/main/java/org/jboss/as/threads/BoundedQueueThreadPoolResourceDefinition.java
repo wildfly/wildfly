@@ -22,25 +22,14 @@
 
 package org.jboss.as.threads;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.resource.AbstractSocketBindingResourceDefinition;
-import org.jboss.as.controller.transform.AttributeTransformationRequirementChecker;
-import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
-import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -104,21 +93,16 @@ public class BoundedQueueThreadPoolResourceDefinition extends SimpleResourceDefi
         }
     }
 
-    public static void registerTransformers1_0(TransformersSubRegistration parent) {
+    public static void registerTransformers1_0(ResourceTransformationDescriptionBuilder parent) {
         registerTransformers1_0(parent, CommonAttributes.BLOCKING_BOUNDED_QUEUE_THREAD_POOL);
         registerTransformers1_0(parent, CommonAttributes.BOUNDED_QUEUE_THREAD_POOL);
     }
 
-    public static void registerTransformers1_0(TransformersSubRegistration parent, String type) {
-
-        Map<String, AttributeTransformationRequirementChecker> attributeCheckers = new HashMap<String, AttributeTransformationRequirementChecker>();
-        attributeCheckers.put(PoolAttributeDefinitions.ALLOW_CORE_TIMEOUT.getName(), AttributeTransformationRequirementChecker.SIMPLE_EXPRESSIONS);
-        attributeCheckers.put(PoolAttributeDefinitions.KEEPALIVE_TIME.getName(), KeepAliveTimeAttributeDefinition.TRANSFORMATION_REQUIREMENT_CHECKER);
-
-        final RejectExpressionValuesTransformer TRANSFORMER = new RejectExpressionValuesTransformer(attributeCheckers);
-
-        final TransformersSubRegistration pool = parent.registerSubResource(PathElement.pathElement(type), (ResourceTransformer) TRANSFORMER);
-        pool.registerOperationTransformer(ADD, TRANSFORMER);
-        pool.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, TRANSFORMER.getWriteAttributeTransformer());
+    public static void registerTransformers1_0(ResourceTransformationDescriptionBuilder parent, String type) {
+        parent.addChildResource(PathElement.pathElement(type))
+            .getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, PoolAttributeDefinitions.ALLOW_CORE_TIMEOUT)
+                .addRejectCheck(KeepAliveTimeAttributeDefinition.TRANSFORMATION_CHECKER, PoolAttributeDefinitions.KEEPALIVE_TIME);
     }
+
 }

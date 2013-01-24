@@ -22,9 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -42,9 +39,8 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
-import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
-import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -113,12 +109,9 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
         }
     }
 
-    static void registerTransformers_1_1_0(TransformersSubRegistration parent) {
-
-        RejectExpressionValuesTransformer transformer = new RejectExpressionValuesTransformer(PATH);
-        final TransformersSubRegistration transformers110 = parent.registerSubResource(EJB3SubsystemModel.TIMER_SERVICE_PATH,
-                (ResourceTransformer) transformer);
-        transformers110.registerOperationTransformer(ADD, transformer);
-        transformers110.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, transformer.getWriteAttributeTransformer());
+    static void registerTransformers_1_1_0(ResourceTransformationDescriptionBuilder parent) {
+        parent.addChildResource(EJB3SubsystemModel.TIMER_SERVICE_PATH)
+            .getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, PATH);
     }
 }
