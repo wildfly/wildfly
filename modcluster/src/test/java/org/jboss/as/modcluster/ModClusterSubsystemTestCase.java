@@ -30,12 +30,16 @@ import static org.jboss.as.modcluster.CommonAttributes.CONFIGURATION;
 import static org.jboss.as.modcluster.CommonAttributes.MOD_CLUSTER_CONFIG;
 
 import java.io.IOException;
+import java.util.Set;
 
 import junit.framework.Assert;
+
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.FailedOperationTransformationConfig.AttributesPathAddressConfig;
+import org.jboss.as.model.test.FailedOperationTransformationConfig.ChainedConfig;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
@@ -129,8 +133,10 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, parse(subsystemXml),
                 new FailedOperationTransformationConfig()
                         .addFailedAttribute(metrAddr,
-                                new FailedOperationTransformationConfig.RejectExpressionsConfig(CommonAttributes.CAPACITY, CommonAttributes.WEIGHT
-                                ))
+                                ChainedConfig.createBuilder(CommonAttributes.CAPACITY, CommonAttributes.WEIGHT, CommonAttributes.PROPERTY)
+                                    .addConfig(new FailedOperationTransformationConfig.RejectExpressionsConfig(CommonAttributes.CAPACITY, CommonAttributes.WEIGHT))
+                                    .addConfig(new FailedOperationTransformationConfig.RejectExpressionsConfig(CommonAttributes.PROPERTY))
+                                    .addConfig(new OnlyOnePropertyConfig(CommonAttributes.PROPERTY)).build())
                         .addFailedAttribute(custAddr,
                                 new FailedOperationTransformationConfig.RejectExpressionsConfig(CommonAttributes.CAPACITY, CommonAttributes.WEIGHT,
                                         CommonAttributes.CLASS))
@@ -197,4 +203,44 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertEquals(modClusterConfig.getSslCrlFile(), "/home/rhusar/revocations");
     }
 
+
+    /**
+     * Checks that the attribute list only has one entry
+     *
+     */
+    private static class OnlyOnePropertyConfig extends AttributesPathAddressConfig<OnlyOnePropertyConfig> {
+
+        public OnlyOnePropertyConfig(String...attributes) {
+            super(attributes);
+        }
+
+        @Override
+        protected ModelNode correctValue(ModelNode value, boolean isWriteAttribute) {
+            if (value.getType() == ModelType.OBJECT) {
+                Set<String> keys = value.keys();
+                if (keys.size() > 1) {
+                    String key = keys.iterator().next();
+                    value.remove(key);
+                }
+            }
+            return value;
+        }
+
+        @Override
+        protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
+            if (!attribute.isDefined()) {
+                return false;
+            }
+            if (attribute.getType() == ModelType.OBJECT) {
+                return attribute.keys().size() > 1;
+
+            }
+            return false;
+        }
+
+        @Override
+        protected boolean isAttributeWritable(String attributeName) {
+            return false;
+        }
+    }
 }

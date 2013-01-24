@@ -23,25 +23,19 @@
 package org.jboss.as.ejb3.subsystem;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.RunningMode;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestUtils;
-import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
-import org.jboss.as.threads.CommonAttributes;
 import org.jboss.as.threads.PoolAttributeDefinitions;
-import org.jboss.as.threads.ThreadsExtension;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.junit.Assert;
@@ -132,14 +126,13 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
         FailedOperationTransformationConfig.RejectExpressionsConfig keepaliveOnly =
                 new FailedOperationTransformationConfig.RejectExpressionsConfig(PoolAttributeDefinitions.KEEPALIVE_TIME);
 
-        Map<String, FailedOperationTransformationConfig.PathAddressConfig> map = new HashMap<String, FailedOperationTransformationConfig.PathAddressConfig>();
-        map.put(EJB3SubsystemRootResourceDefinition.ENABLE_STATISTICS.getName(),
-                new FailedOperationTransformationConfig.RejectExpressionsConfig(EJB3SubsystemRootResourceDefinition.ENABLE_STATISTICS));
-        map.put(EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN.getName(),
-                new FailedOperationTransformationConfig.NewAttributesConfig(EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN));
-
         return new FailedOperationTransformationConfig()
-                .addFailedAttribute(subsystemAddress, new FailedOperationTransformationConfig.ChainedConfig(map))
+                .addFailedAttribute(subsystemAddress,
+                        FailedOperationTransformationConfig.ChainedConfig.createBuilder(
+                                EJB3SubsystemRootResourceDefinition.ENABLE_STATISTICS,
+                                EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN)
+                                .addConfig(new FailedOperationTransformationConfig.RejectExpressionsConfig(EJB3SubsystemRootResourceDefinition.ENABLE_STATISTICS))
+                                .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN)).build())
                 .addFailedAttribute(subsystemAddress.append(PathElement.pathElement(EJB3SubsystemModel.THREAD_POOL)),
                         keepaliveOnly)
                 .addFailedAttribute(subsystemAddress.append(StrictMaxPoolResourceDefinition.INSTANCE.getPathElement()),

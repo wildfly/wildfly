@@ -383,7 +383,7 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
     private void parseProperties(XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
         while (reader.nextTag() != END_ELEMENT) {
             reader.require(START_ELEMENT, Namespace.CURRENT.getUriString(), Element.PROPERTY.getLocalName());
-            final Property property = readProperty(reader);
+            final Property property = readProperty(reader, true);
             ModelNode propertyOp = new ModelNode();
             propertyOp.get(OP).set(ADD);
             propertyOp.get(OP_ADDR).set(address).add(PROPERTY, property.getName());
@@ -421,7 +421,7 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
         final int count = reader.getAttributeCount();
         String name = null;
         String outboundSocketBindingRef = null;
-        String username = null;
+        ModelNode username = null;
         String securityRealm = null;
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
@@ -438,7 +438,7 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
                     break;
                 }
                 case USERNAME: {
-                    username = value;
+                    username = RemoteOutboundConnectionResourceDefinition.USERNAME.parse(value, reader.getLocation());
                     break;
                 }
                 case SECURITY_REALM: {
@@ -584,7 +584,7 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
         return getConnectionAddOperation(connectionName, outboundSocketBindingRef, null, null, address);
     }
 
-    static ModelNode getConnectionAddOperation(final String connectionName, final String outboundSocketBindingRef, final String userName, final String securityRealm, PathAddress address) {
+    static ModelNode getConnectionAddOperation(final String connectionName, final String outboundSocketBindingRef, final ModelNode userName, final String securityRealm, PathAddress address) {
         if (connectionName == null || connectionName.trim().isEmpty()) {
             throw MESSAGES.connectionNameEmpty();
         }

@@ -41,7 +41,6 @@ import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.CIPHER_SUI
 import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.KEY_ALIAS;
 import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.PROTOCOL;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -151,8 +150,7 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
                         .end();
         dynamicLoadProvider.addChildResource(LOAD_METRIC_PATH)
                     .getAttributeBuilder()
-                        .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, TYPE, WEIGHT, CAPACITY)
-                        .addRejectCheck(new RejectAttributeChecker.ObjectFieldsRejectAttributeChecker(Collections.singletonMap(PROPERTY.getName(), RejectAttributeChecker.SIMPLE_EXPRESSIONS)), PROPERTY)
+                        .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, TYPE, WEIGHT, CAPACITY, PROPERTY)
                         .addRejectCheck(CapacityCheckerAndConverter.INSTANCE, CAPACITY)
                         .setValueConverter(CapacityCheckerAndConverter.INSTANCE, CAPACITY)
                         .addRejectCheck(PropertyCheckerAndConverter.INSTANCE, PROPERTY)
@@ -208,10 +206,11 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
 
         @Override
         protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-            //TODO will  need to fix tests to test for this
-            //  if (attributeValue.isDefined()) {
-            //      return attributeValue.asPropertyList().size() > 1;
-            //  }
+              if (attributeValue.isDefined()) {
+                  if (attributeValue.asPropertyList().size() > 1) {
+                      return true;
+                  }
+              }
               return false;
         }
 
@@ -219,7 +218,7 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
             if (attributeValue.isDefined()) {
                 List<Property> list = attributeValue.asPropertyList();
-                if (list.size() > 0) {
+                if (list.size() == 1) {
                     attributeValue.set(list.get(0).getName(), list.get(0).getValue().asString());
                 }
             }

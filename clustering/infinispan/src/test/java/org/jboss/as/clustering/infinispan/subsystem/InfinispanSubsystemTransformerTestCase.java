@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import java.io.IOException;
 import java.util.List;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -141,10 +142,17 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
 
         // cache attributes
         for (int i=0; i < cachePaths.length; i++) {
+//            config.addFailedAttribute(subsystemAddress.append(CacheContainerResource.CONTAINER_PATH).append(cachePaths[i]),
+//                    new FailedOperationTransformationConfig.RejectExpressionsConfig(
+//                            InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_CACHE_ATTRIBUTES).setNotExpectedWriteFailure(ModelKeys.SEGMENTS));
+
             config.addFailedAttribute(subsystemAddress.append(CacheContainerResource.CONTAINER_PATH).append(cachePaths[i]),
-                    new FailedOperationTransformationConfig.RejectExpressionsConfig(
-                            // InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_CACHE_ATTRIBUTES).setNotExpectedWriteFailure(ModelKeys.INDEXING_PROPERTIES, ModelKeys.SEGMENTS));
-                            InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_CACHE_ATTRIBUTES).setNotExpectedWriteFailure(ModelKeys.INDEXING_PROPERTIES));
+//                    new FailedOperationTransformationConfig.RejectExpressionsConfig(
+//                            // InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_CACHE_ATTRIBUTES).setNotExpectedWriteFailure(ModelKeys.INDEXING_PROPERTIES, ModelKeys.SEGMENTS));
+//                            InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_CACHE_ATTRIBUTES).setNotExpectedWriteFailure(ModelKeys.INDEXING_PROPERTIES));
+                    FailedOperationTransformationConfig.ChainedConfig.createBuilder(InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_CACHE_ATTRIBUTES)
+                    .addConfig(new FailedOperationTransformationConfig.RejectExpressionsConfig(InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_CACHE_ATTRIBUTES))
+                    .addConfig(new RemoveResolvedIndexingPropertiesConfig(CacheResource.INDEXING_PROPERTIES)).build().setNotExpectedWriteFailure(ModelKeys.SEGMENTS));
 
             PathElement[] childPaths = {
                     LockingResource.LOCKING_PATH,
@@ -192,5 +200,33 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
             }
         }
         return config ;
+    }
+
+    private static class RemoveResolvedIndexingPropertiesConfig extends FailedOperationTransformationConfig.AttributesPathAddressConfig<RemoveResolvedIndexingPropertiesConfig>{
+
+        protected RemoveResolvedIndexingPropertiesConfig(AttributeDefinition...attributes) {
+            super(convert(attributes));
+        }
+        @Override
+        protected boolean isAttributeWritable(String attributeName) {
+            return true;
+        }
+
+        @Override
+        protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
+            //The add does not currently reject the defined indexing-properties
+            //TODO once this is moved to builders, the add should also remove the defined indexing-properties
+            if (isWriteAttribute && attribute.isDefined() && attrName.equals(CacheResource.INDEXING_PROPERTIES.getName())) {
+                ModelNode resolved = attribute.resolve();
+                return resolved.equals(attribute);
+            }
+            return false;
+        }
+
+        @Override
+        protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
+            return new ModelNode();
+        }
+
     }
 }

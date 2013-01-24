@@ -297,7 +297,5 @@ public interface RejectAttributeChecker {
         public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
             return fields.entrySet().iterator().next().getValue().getRejectionLogMessage(attributes);
         }
-
-
     }
 }

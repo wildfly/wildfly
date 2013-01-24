@@ -115,6 +115,10 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
                                     CommonAttributes.NO_DICTIONARY,
                                     CommonAttributes.NO_PLAIN_TEXT,
                                     CommonAttributes.PASS_CREDENTIALS))
+                    .addFailedAttribute(rootAddr.append(PathElement.pathElement(CommonAttributes.CONNECTOR))
+                                .append(PathElement.pathElement(CommonAttributes.PROPERTY)),
+                            new FailedOperationTransformationConfig.RejectExpressionsConfig(
+                                    CommonAttributes.VALUE))
                     .addFailedAttribute(rootAddr.append(
                             PathElement.pathElement(CommonAttributes.CONNECTOR))
                                 .append(PathElement.pathElement(CommonAttributes.SECURITY, CommonAttributes.SASL))

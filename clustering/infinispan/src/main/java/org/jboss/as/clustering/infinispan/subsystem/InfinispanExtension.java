@@ -193,6 +193,7 @@ public class InfinispanExtension implements Extension {
         registerCacheResourceChildren(replicatedCacheBuilder, true);
 
         TransformationDescription.Tools.register(subsystemBuilder.build(), subsystem, version);
+
     }
 
     private void registerCacheResourceChildren(final ResourceTransformationDescriptionBuilder parent, final boolean addStateTransfer) {
@@ -321,6 +322,7 @@ public class InfinispanExtension implements Extension {
                     StoreWriteBehindResource.FLUSH_LOCK_TIMEOUT, StoreWriteBehindResource.MODIFICATION_QUEUE_SIZE, StoreWriteBehindResource.SHUTDOWN_TIMEOUT, StoreWriteBehindResource.THREAD_POOL_SIZE)
             .end();
     }
+
     private static void setMapValues(Map<String, RejectAttributeChecker> map, RejectAttributeChecker checker, AttributeDefinition...defs) {
         for (AttributeDefinition def : defs) {
             map.put(def.getName(), checker);
@@ -425,4 +427,5 @@ public class InfinispanExtension implements Extension {
 //            super(attributes);
 //        }
 //    }
+
 }
