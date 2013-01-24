@@ -124,7 +124,7 @@ public class RemoteCallWhileShuttingDownTestCase {
             RemoteLatch latch = (RemoteLatch) context.lookup("ejb:/dep1/LatchBean!" + RemoteLatch.class.getName());
 
             //now we need to shutdown the container
-            //but we need to do it asyncronously
+            //but we need to do it asynchronously
 
             final ModelNode op = new ModelNode();
             op.get(ModelDescriptionConstants.ADDRESS);
@@ -141,9 +141,6 @@ public class RemoteCallWhileShuttingDownTestCase {
                 Thread.sleep(50);
             }
 
-            container.start(CONTAINER);
-
-
         } finally {
             try {
                 if (!managementClient.isServerInRunningState()) {
@@ -152,7 +149,7 @@ public class RemoteCallWhileShuttingDownTestCase {
                 this.deployer.undeploy(DEP1);
                 this.container.stop(CONTAINER);
             } catch (Exception e) {
-                logger.debug("Exception during container shutdown", e);
+                logger.warn("Exception during container shutdown", e);
             }
             client.close();
         }
