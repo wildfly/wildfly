@@ -22,6 +22,10 @@
 
 package org.jboss.as.web;
 
+import java.util.List;
+
+import javax.management.MBeanServer;
+
 import org.jboss.as.clustering.web.DistributedCacheManagerFactory;
 import org.jboss.as.clustering.web.DistributedCacheManagerFactoryService;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
@@ -62,9 +66,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 
-import javax.management.MBeanServer;
-import java.util.List;
-
 /**
  * Adds the web subsystem.
  *
@@ -74,11 +75,12 @@ import java.util.List;
  */
 class WebSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
-    static final WebSubsystemAdd INSTANCE = new WebSubsystemAdd();
     private static final String TEMP_DIR = "jboss.server.temp.dir";
 
-    private WebSubsystemAdd() {
-        //
+    private final WarMetaDataProcessor warMetadataProcessor;
+
+    WebSubsystemAdd(final WarMetaDataProcessor warMetadataProcessor) {
+        this.warMetadataProcessor = warMetadataProcessor;
     }
 
 
@@ -87,6 +89,7 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler {
         WebDefinition.DEFAULT_VIRTUAL_SERVER.validateAndSet(operation, model);
         WebDefinition.NATIVE.validateAndSet(operation, model);
         WebDefinition.INSTANCE_ID.validateAndSet(operation, model);
+        WebDefinition.SYMLINKING_ENABLED.validateAndSet(operation, model);
     }
 
     @Override
@@ -100,6 +103,9 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final boolean useNative = WebDefinition.NATIVE.resolveModelAttribute(context, fullModel).asBoolean();
         final ModelNode instanceIdModel = WebDefinition.INSTANCE_ID.resolveModelAttribute(context, fullModel);
         final String instanceId = instanceIdModel.isDefined() ? instanceIdModel.asString() : null;
+
+        final boolean symbolicEnabled = WebDefinition.SYMLINKING_ENABLED.resolveModelAttribute(context, fullModel).asBoolean();
+        warMetadataProcessor.setSymbolicEnabled(symbolicEnabled);
 
         final WebServerService service = new WebServerService(defaultVirtualServer, useNative, instanceId, TEMP_DIR);
 
@@ -120,7 +126,7 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(WebExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_ANNOTATION_WAR, new WarAnnotationDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(WebExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_WEB_COMPONENTS, new WebComponentProcessor());
                 processorTarget.addDeploymentProcessor(WebExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_EAR_CONTEXT_ROOT, new EarContextRootProcessor());
-                processorTarget.addDeploymentProcessor(WebExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_WEB_MERGE_METADATA, new WarMetaDataProcessor());
+                processorTarget.addDeploymentProcessor(WebExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_WEB_MERGE_METADATA, warMetadataProcessor);
 
                 processorTarget.addDeploymentProcessor(WebExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_WAR_MODULE, new WarClassloadingDependencyProcessor());
 
@@ -128,23 +134,24 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
                 processorTarget.addDeploymentProcessor(WebExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_SERVLET_INIT_DEPLOYMENT, new ServletContainerInitializerDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(WebExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_WAR_DEPLOYMENT, new WarDeploymentProcessor(defaultVirtualServer, service));
+
             }
         }, OperationContext.Stage.RUNTIME);
 
         final ServiceTarget target = context.getServiceTarget();
         newControllers.add(target.addService(WebSubsystemServices.JBOSS_WEB, service)
-                .addDependency(PathManagerService.SERVICE_NAME, PathManager.class, service.getPathManagerInjector())
-                .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, service.getMbeanServer())
-                .setInitialMode(Mode.ON_DEMAND)
-                .install());
+                                   .addDependency(PathManagerService.SERVICE_NAME, PathManager.class, service.getPathManagerInjector())
+                                   .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, service.getMbeanServer())
+                                   .setInitialMode(Mode.ON_DEMAND)
+                                   .install());
 
         final DistributedCacheManagerFactory factory = new DistributedCacheManagerFactoryService().getValue();
         if (factory != null) {
             final InjectedValue<WebServer> server = new InjectedValue<WebServer>();
             newControllers.add(target.addService(DistributedCacheManagerFactoryService.JVM_ROUTE_REGISTRY_ENTRY_PROVIDER_SERVICE_NAME, new JvmRouteRegistryEntryProviderService(server))
-                    .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, server)
-                    .setInitialMode(Mode.ON_DEMAND)
-                    .install());
+                                       .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, server)
+                                       .setInitialMode(Mode.ON_DEMAND)
+                                       .install());
             newControllers.addAll(factory.installServices(target));
         }
     }

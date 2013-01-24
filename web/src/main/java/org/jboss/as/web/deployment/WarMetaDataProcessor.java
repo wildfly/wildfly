@@ -22,8 +22,6 @@
 
 package org.jboss.as.web.deployment;
 
-import static org.jboss.as.web.WebMessages.MESSAGES;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,6 +64,8 @@ import org.jboss.metadata.web.spec.WebFragmentMetaData;
 import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.vfs.VirtualFile;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 /**
  * Merge all metadata into a main JBossWebMetaData.
  *
@@ -74,8 +74,13 @@ import org.jboss.vfs.VirtualFile;
  */
 public class WarMetaDataProcessor implements DeploymentUnitProcessor {
 
+    private static final Logger log = Logger.getLogger(WarMetaDataProcessor.class);
+
+    private volatile boolean symbolicEnabled = false;
+
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        log.infof("Entered deploy() call within WarMetaDataProcessor.");
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
             return; // Skip non web deployments
@@ -136,7 +141,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
                 if (fragmentMetaData.getOrdering() != null) {
                     if (fragmentMetaData.getOrdering().getAfter() != null) {
                         for (OrderingElementMetaData orderingElementMetaData : fragmentMetaData.getOrdering().getAfter()
-                                .getOrdering()) {
+                                                                                       .getOrdering()) {
                             if (orderingElementMetaData.isOthers()) {
                                 webOrdering.setAfterOthers(true);
                             } else {
@@ -146,7 +151,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
                     }
                     if (fragmentMetaData.getOrdering().getBefore() != null) {
                         for (OrderingElementMetaData orderingElementMetaData : fragmentMetaData.getOrdering().getBefore()
-                                .getOrdering()) {
+                                                                                       .getOrdering()) {
                             if (orderingElementMetaData.isOthers()) {
                                 webOrdering.setBeforeOthers(true);
                             } else {
@@ -363,6 +368,10 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
                     SecurityRolesMetaDataMerger.merge(mergedMetaData.getSecurityRoles(), mergedMetaData.getSecurityRoles(), earSecurityRolesMetaData);
                 }
             }
+        }
+
+        if(symbolicEnabled) {
+            mergedMetaData.setSymbolicLinking(true);
         }
     }
 
@@ -714,4 +723,13 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
 
     }
 
+    /**
+     * Method to set whether or not symbolic linking should be enabled on exploded deployments or not.
+     *
+     * @param symbolicEnabled
+     */
+    public void setSymbolicEnabled(final boolean symbolicEnabled) {
+        log.debugf("In setSymbolicEnabled() call. Boolean value is: " + symbolicEnabled);
+        this.symbolicEnabled = symbolicEnabled;
+    }
 }
