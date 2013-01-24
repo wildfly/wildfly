@@ -27,9 +27,8 @@ import static org.jboss.as.logging.CommonAttributes.FILTER_SPEC;
 import static org.jboss.as.logging.CommonAttributes.HANDLERS;
 import static org.jboss.as.logging.CommonAttributes.HANDLER_NAME;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
-import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER_ATTRIBUTE_NAME;
-import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER_NAME;
-import static org.jboss.as.logging.CommonAttributes.USE_PARENT_HANDLERS;
+import static org.jboss.as.logging.RootLoggerResourceDefinition.ROOT_LOGGER_ATTRIBUTE_NAME;
+import static org.jboss.as.logging.LoggerResourceDefinition.USE_PARENT_HANDLERS;
 import static org.jboss.as.logging.Logging.createOperationFailure;
 import static org.jboss.as.logging.LoggingOperations.LoggingAddOperationStepHandler;
 import static org.jboss.as.logging.LoggingOperations.LoggingRemoveOperationStepHandler;
@@ -38,14 +37,12 @@ import static org.jboss.as.logging.LoggingOperations.LoggingWriteAttributeHandle
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.logging.logmanager.ConfigurationPersistence;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.config.LogContextConfiguration;
 import org.jboss.logmanager.config.LoggerConfiguration;

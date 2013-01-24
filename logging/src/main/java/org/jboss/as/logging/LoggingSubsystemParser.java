@@ -36,46 +36,46 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.controller.services.path.PathResourceDefinition.PATH;
 import static org.jboss.as.controller.services.path.PathResourceDefinition.RELATIVE_TO;
 import static org.jboss.as.logging.CommonAttributes.APPEND;
-import static org.jboss.as.logging.CommonAttributes.ASYNC_HANDLER;
+import static org.jboss.as.logging.AsyncHandlerResourceDefinition.ASYNC_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
-import static org.jboss.as.logging.CommonAttributes.CATEGORY;
-import static org.jboss.as.logging.CommonAttributes.CLASS;
-import static org.jboss.as.logging.CommonAttributes.CONSOLE_HANDLER;
-import static org.jboss.as.logging.CommonAttributes.CUSTOM_HANDLER;
+import static org.jboss.as.logging.LoggerResourceDefinition.CATEGORY;
+import static org.jboss.as.logging.CustomHandlerResourceDefinition.CLASS;
+import static org.jboss.as.logging.ConsoleHandlerResourceDefinition.CONSOLE_HANDLER;
+import static org.jboss.as.logging.CustomHandlerResourceDefinition.CUSTOM_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.ENABLED;
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FILE;
-import static org.jboss.as.logging.CommonAttributes.FILE_HANDLER;
+import static org.jboss.as.logging.FileHandlerResourceDefinition.FILE_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.FILTER_SPEC;
 import static org.jboss.as.logging.CommonAttributes.FORMATTER;
 import static org.jboss.as.logging.CommonAttributes.HANDLERS;
 import static org.jboss.as.logging.CommonAttributes.HANDLER_NAME;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
-import static org.jboss.as.logging.CommonAttributes.LOGGER;
+import static org.jboss.as.logging.LoggerResourceDefinition.LOGGER;
 import static org.jboss.as.logging.CommonAttributes.LOGGING_PROFILE;
 import static org.jboss.as.logging.CommonAttributes.LOGGING_PROFILES;
-import static org.jboss.as.logging.CommonAttributes.MAX_BACKUP_INDEX;
+import static org.jboss.as.logging.SizeRotatingHandlerResourceDefinition.MAX_BACKUP_INDEX;
 import static org.jboss.as.logging.CommonAttributes.MAX_INCLUSIVE;
 import static org.jboss.as.logging.CommonAttributes.MAX_LEVEL;
 import static org.jboss.as.logging.CommonAttributes.MIN_INCLUSIVE;
 import static org.jboss.as.logging.CommonAttributes.MIN_LEVEL;
-import static org.jboss.as.logging.CommonAttributes.MODULE;
+import static org.jboss.as.logging.CustomHandlerResourceDefinition.MODULE;
 import static org.jboss.as.logging.CommonAttributes.NAME;
-import static org.jboss.as.logging.CommonAttributes.OVERFLOW_ACTION;
+import static org.jboss.as.logging.AsyncHandlerResourceDefinition.OVERFLOW_ACTION;
 import static org.jboss.as.logging.CommonAttributes.PATTERN;
-import static org.jboss.as.logging.CommonAttributes.PERIODIC_ROTATING_FILE_HANDLER;
-import static org.jboss.as.logging.CommonAttributes.PROPERTIES;
-import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
+import static org.jboss.as.logging.PeriodicHandlerResourceDefinition.PERIODIC_ROTATING_FILE_HANDLER;
+import static org.jboss.as.logging.CustomHandlerResourceDefinition.PROPERTIES;
+import static org.jboss.as.logging.AsyncHandlerResourceDefinition.QUEUE_LENGTH;
 import static org.jboss.as.logging.CommonAttributes.REPLACEMENT;
 import static org.jboss.as.logging.CommonAttributes.REPLACE_ALL;
-import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER;
-import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER_ATTRIBUTE_NAME;
-import static org.jboss.as.logging.CommonAttributes.ROTATE_SIZE;
-import static org.jboss.as.logging.CommonAttributes.SIZE_ROTATING_FILE_HANDLER;
-import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
-import static org.jboss.as.logging.CommonAttributes.SUFFIX;
-import static org.jboss.as.logging.CommonAttributes.TARGET;
-import static org.jboss.as.logging.CommonAttributes.USE_PARENT_HANDLERS;
+import static org.jboss.as.logging.RootLoggerResourceDefinition.ROOT_LOGGER_PATH_NAME;
+import static org.jboss.as.logging.RootLoggerResourceDefinition.ROOT_LOGGER_ATTRIBUTE_NAME;
+import static org.jboss.as.logging.SizeRotatingHandlerResourceDefinition.ROTATE_SIZE;
+import static org.jboss.as.logging.SizeRotatingHandlerResourceDefinition.SIZE_ROTATING_FILE_HANDLER;
+import static org.jboss.as.logging.AsyncHandlerResourceDefinition.SUBHANDLERS;
+import static org.jboss.as.logging.PeriodicHandlerResourceDefinition.SUFFIX;
+import static org.jboss.as.logging.ConsoleHandlerResourceDefinition.TARGET;
+import static org.jboss.as.logging.LoggerResourceDefinition.USE_PARENT_HANDLERS;
 import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
 import java.util.ArrayList;
@@ -364,7 +364,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
 
         final ModelNode node = new ModelNode();
         node.get(OP).set(ADD);
-        node.get(OP_ADDR).set(address.toModelNode()).add(ROOT_LOGGER, ROOT_LOGGER_ATTRIBUTE_NAME);
+        node.get(OP_ADDR).set(address.toModelNode()).add(ROOT_LOGGER_PATH_NAME, ROOT_LOGGER_ATTRIBUTE_NAME);
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         final Namespace namespace = Namespace.forUri(reader.getNamespaceURI());
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -1318,8 +1318,8 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                 writeLogger(writer, name, node.get(LOGGER, name));
             }
         }
-        if (node.hasDefined(ROOT_LOGGER)) {
-            writeRootLogger(writer, node.get(ROOT_LOGGER, ROOT_LOGGER_ATTRIBUTE_NAME));
+        if (node.hasDefined(ROOT_LOGGER_PATH_NAME)) {
+            writeRootLogger(writer, node.get(ROOT_LOGGER_PATH_NAME, ROOT_LOGGER_ATTRIBUTE_NAME));
         }
     }
 
