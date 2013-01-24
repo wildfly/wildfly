@@ -2,7 +2,7 @@
 <config xmlns="http://zanata.org/namespace/config/">
     <url>https://translate.jboss.org/</url>
     <project>jboss_as</project>
-    <project-version>master</project-version>
+    <project-version>eap6</project-version>
     <project-type>properties</project-type>
 
     <locales mapping="java">
