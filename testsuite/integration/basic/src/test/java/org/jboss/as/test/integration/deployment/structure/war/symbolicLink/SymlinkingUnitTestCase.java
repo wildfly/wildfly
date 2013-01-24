@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import javax.servlet.jsp.SkipPageException;
+
 import junit.framework.Assert;
 import org.apache.commons.lang.SystemUtils;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -19,6 +21,7 @@ import org.jboss.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -32,6 +35,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("AS7-3414")
 public class SymlinkingUnitTestCase {
 
     private static final Logger logger = Logger.getLogger(SymlinkingUnitTestCase.class);
