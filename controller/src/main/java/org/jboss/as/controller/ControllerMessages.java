@@ -2585,17 +2585,17 @@ public interface ControllerMessages {
     @Message(id = 14886, value = "are not understood in that model version and this resource will need to be ignored on that host.")
     String attributesAreNotUnderstoodAndWillBeIgnored();
 
-    @Message(id = 14887, value = "Transforming resource %s for host controller '%s' to core model version '%s' -- attributes %s %s")
-    String transformerLoggerCoreModelResourceTransformerAttributes(PathAddress pathAddress, String legacyHostName, ModelVersion modelVersion, Set<String> attributeNames, String message);
+    @Message(id = 14887, value = "Transforming resource %s to core model version '%s' -- attributes %s %s")
+    String transformerLoggerCoreModelResourceTransformerAttributes(PathAddress pathAddress, ModelVersion modelVersion, Set<String> attributeNames, String message);
 
-    @Message(id = 14888, value = "Transforming operation %s at resource %s for host controller '%s' to core model version '%s' -- attributes %s %s")
-    String transformerLoggerCoreModelOperationTransformerAttributes(ModelNode op, PathAddress pathAddress, String legacyHostName, ModelVersion modelVersion, Set<String> attributeNames, String message);
+    @Message(id = 14888, value = "Transforming operation %s at resource %s to core model version '%s' -- attributes %s %s")
+    String transformerLoggerCoreModelOperationTransformerAttributes(ModelNode op, PathAddress pathAddress, ModelVersion modelVersion, Set<String> attributeNames, String message);
 
-    @Message(id = 14889, value = "Transforming resource %s for host controller '%s' to subsystem '%s' model version '%s' -- attributes %s %s")
-    String transformerLoggerSubsystemModelResourceTransformerAttributes(PathAddress pathAddress, String legacyHostName, String subsystem, ModelVersion modelVersion, Set<String> attributeNames, String message);
+    @Message(id = 14889, value = "Transforming resource %s to subsystem '%s' model version '%s' -- attributes %s %s")
+    String transformerLoggerSubsystemModelResourceTransformerAttributes(PathAddress pathAddress, String subsystem, ModelVersion modelVersion, Set<String> attributeNames, String message);
 
-    @Message(id = 14890, value = "Transforming operation %s at resource %s for host controller '%s' to subsystem '%s' model version '%s' -- attributes %s %s")
-    String transformerLoggerSubsystemModelOperationTransformerAttributes(ModelNode op, PathAddress pathAddress, String legacyHostName, String subsystem, ModelVersion modelVersion, Set<String> attributeNames, String message);
+    @Message(id = 14890, value = "Transforming operation %s at resource %s to subsystem '%s' model version '%s' -- attributes %s %s")
+    String transformerLoggerSubsystemModelOperationTransformerAttributes(ModelNode op, PathAddress pathAddress, String subsystem, ModelVersion modelVersion, Set<String> attributeNames, String message);
 
     @Message(id = 14891, value="Node contains an unresolved expression %s -- a resolved model is required")
     OperationFailedException illegalUnresolvedModel(String expression);
