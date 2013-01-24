@@ -212,7 +212,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         final Loader loader = new WebCtxLoader(classLoader);
         webContext.setLoader(loader);
 
-        webContext.setAllowLinking(metaData.getSymbolicLinking());
+        webContext.setAllowLinking(metaData.isSymbolicLinkingEnabled());
 
         // Valves
         List<ValveMetaData> valves = metaData.getValves();
