@@ -40,6 +40,11 @@ import org.jboss.as.controller.transform.chained.ChainedOperationTransformer;
 import org.jboss.as.controller.transform.chained.ChainedResourceTransformationContext;
 import org.jboss.as.controller.transform.chained.ChainedResourceTransformer;
 import org.jboss.as.controller.transform.chained.ChainedResourceTransformerEntry;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -83,49 +88,24 @@ public class OSGiExtension implements Extension {
     private void registerTransformers1_0_0(SubsystemRegistration subsystem) {
 
         // Root resource
-        RejectExpressionValuesTransformer rootReject = new RejectExpressionValuesTransformer(OSGiRootResource.ACTIVATION);
-        TransformersSubRegistration subsystemTransformer = subsystem.registerModelTransformers(ModelVersion.create(1, 0, 0), rootReject);
-        subsystemTransformer.registerOperationTransformer(ModelDescriptionConstants.ADD, rootReject);
-        subsystemTransformer.registerOperationTransformer(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, rootReject.getWriteAttributeTransformer());
+        final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        subsystemRoot.getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, OSGiRootResource.ACTIVATION);
 
         // Capabilities
-        RemoveUndefinedTransformer undefinedTransformer = new RemoveUndefinedTransformer();
-        RejectExpressionValuesTransformer capabilityReject = new RejectExpressionValuesTransformer(FrameworkCapabilityResource.STARTLEVEL);
-        TransformersSubRegistration capability = subsystemTransformer.registerSubResource(FrameworkCapabilityResource.CAPABILITY_PATH,
-                new ChainedResourceTransformer(undefinedTransformer, capabilityReject.getChainedTransformer()));
-        capability.registerOperationTransformer(ModelDescriptionConstants.ADD,
-                new ChainedOperationTransformer(undefinedTransformer, capabilityReject));
-        // Attribute is read-only so we don't want to apply reject-expression transformation to write-attribute
-        //capability.registerOperationTransformer(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, capabilityReject.getWriteAttributeTransformer());
+        subsystemRoot.addChildResource(FrameworkCapabilityResource.CAPABILITY_PATH)
+                .getAttributeBuilder()
+                /** 1.0.0 does not like "start-level"=>undefined, so we remove this here */
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, FrameworkCapabilityResource.STARTLEVEL)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, FrameworkCapabilityResource.STARTLEVEL);
 
         // Properties
-        RejectExpressionValuesTransformer valueReject = new RejectExpressionValuesTransformer(FrameworkPropertyResource.VALUE);
-        TransformersSubRegistration property = subsystemTransformer.registerSubResource(FrameworkPropertyResource.PROPERTY_PATH,
-                (ResourceTransformer) valueReject);
-        property.registerOperationTransformer(ModelDescriptionConstants.ADD, valueReject);
-        property.registerOperationTransformer(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, valueReject.getWriteAttributeTransformer());
+        subsystemRoot.addChildResource(FrameworkPropertyResource.PROPERTY_PATH)
+                .getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, FrameworkPropertyResource.VALUE);
+
+        // Register
+        TransformationDescription.Tools.register(subsystemRoot.build(), subsystem, ModelVersion.create(1, 0, 0));
     }
 
-    /** 1.0.0 does not like "start-level"=>undefined, so we remove this here */
-    private static class RemoveUndefinedTransformer implements ChainedResourceTransformerEntry, OperationTransformer {
-
-        @Override
-        public void transformResource(ChainedResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
-            ModelNode model = resource.getModel();
-            removeUndefinedStartLevel(model);
-        }
-
-        @Override
-        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
-            ModelNode op = operation.clone();
-            removeUndefinedStartLevel(op);
-            return new TransformedOperation(op, OperationResultTransformer.ORIGINAL_RESULT);
-        }
-
-        private static void removeUndefinedStartLevel(ModelNode model) {
-            if (model.has(ModelConstants.STARTLEVEL) && !model.hasDefined(ModelConstants.STARTLEVEL)) {
-                model.remove(ModelConstants.STARTLEVEL);
-            }
-        }
-    }
 }
