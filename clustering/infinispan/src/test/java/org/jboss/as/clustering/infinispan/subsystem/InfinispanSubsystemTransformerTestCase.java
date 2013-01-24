@@ -81,6 +81,13 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
         Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot()); ;
 
         checkSubsystemModelTransformation(mainServices, version);
+
+        // check that segments is translated into virtual nodes and both segments and indexing properties are removed
+        ModelNode model = mainServices.readTransformedModel(version);
+        ModelNode distCache = model.get(SUBSYSTEM,"infinispan",ModelKeys.CACHE_CONTAINER, "maximal", ModelKeys.DISTRIBUTED_CACHE, "dist") ;
+        Assert.assertFalse(distCache.has(ModelKeys.INDEXING_PROPERTIES));
+        Assert.assertFalse(distCache.has(ModelKeys.SEGMENTS));
+        Assert.assertTrue(distCache.get(ModelKeys.VIRTUAL_NODES).isDefined());
     }
 
     @Test

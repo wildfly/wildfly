@@ -337,7 +337,9 @@ public final class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<
                     break;
                 }
                 case VIRTUAL_NODES: {
-                    ROOT_LOGGER.virtualNodesAttributeDeprecated();
+                    // AS7-5753: convert any non-expression virtual nodes value to a segments value,
+                    DistributedCacheResource.SEGMENTS.parseAndSetParameter(
+                            InfinispanResourceAndOperationTransformer_1_3.virtualNodesToSegments(value), cache, reader);
                     break;
                 }
                 case L1_LIFESPAN: {
