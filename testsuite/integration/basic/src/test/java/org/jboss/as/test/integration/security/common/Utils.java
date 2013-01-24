@@ -57,20 +57,24 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.ProtocolException;
 import org.apache.http.StatusLine;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.RedirectStrategy;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.params.AuthPolicy;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.protocol.HTTP;
+import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -97,6 +101,24 @@ import org.jboss.util.Base64;
 public class Utils {
 
     private static final Logger LOGGER = Logger.getLogger(Utils.class);
+
+    /** The REDIRECT_STRATEGY for Apache HTTP Client */
+    private final static RedirectStrategy REDIRECT_STRATEGY = new DefaultRedirectStrategy() {
+        @Override
+        public boolean isRedirected(HttpRequest request, HttpResponse response, HttpContext context) {
+            boolean isRedirect = false;
+            try {
+                isRedirect = super.isRedirected(request, response, context);
+            } catch (ProtocolException e) {
+                e.printStackTrace();
+            }
+            if (!isRedirect) {
+                final int responseCode = response.getStatusLine().getStatusCode();
+                isRedirect = (responseCode == 301 || responseCode == 302);
+            }
+            return isRedirect;
+        }
+    };
 
     /**
      * Return MD5 hash of the given string value, encoded with given {@link Coding}. If the value or coding is <code>null</code>
@@ -286,7 +308,7 @@ public class Utils {
         nvps.add(new BasicNameValuePair("j_username", user));
         nvps.add(new BasicNameValuePair("j_password", pass));
 
-        httpost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
+        httpost.setEntity(new UrlEncodedFormEntity(nvps, "UTF-8"));
 
         response = httpclient.execute(httpost);
 
@@ -341,7 +363,7 @@ public class Utils {
             nvps.add(new BasicNameValuePair("j_username", user));
             nvps.add(new BasicNameValuePair("j_password", pass));
 
-            httpost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
+            httpost.setEntity(new UrlEncodedFormEntity(nvps, "UTF-8"));
 
             response = httpclient.execute(httpost);
             entity = response.getEntity();
@@ -490,7 +512,7 @@ public class Utils {
      * expected one. If the server returns {@link HttpServletResponse#SC_UNAUTHORIZED} and an username is provided, then the
      * given user is authenticated against Kerberos and a new request is executed under the new subject.
      * 
-     * @param url URL to which the request should be made
+     * @param uri URI to which the request should be made
      * @param user Username
      * @param pass Password
      * @param krb5ConfPath full path to krb5.conf file
@@ -561,6 +583,156 @@ public class Utils {
 
             setSystemProperty("java.security.krb5.conf", origKrb5Conf);
             setSystemProperty("sun.security.krb5.debug", origKrbDebug);
+        }
+    }
+
+    /**
+     * Creates request against SPNEGO protected web-app with FORM fallback. It tries to login using SPNEGO first - if it fails,
+     * FORM is used.
+     * 
+     * @param contextUrl
+     * @param page
+     * @param user
+     * @param pass
+     * @param expectedStatusCode
+     * @return
+     * @throws ClientProtocolException
+     * @throws IOException
+     * @throws URISyntaxException
+     * @throws PrivilegedActionException
+     * @throws LoginException
+     */
+    public static String makeHttpCallWithFallback(final String contextUrl, final String page, final String user,
+            final String pass, final int expectedStatusCode) throws ClientProtocolException, IOException, URISyntaxException,
+            PrivilegedActionException, LoginException {
+        final String strippedContextUrl = StringUtils.stripEnd(contextUrl, "/");
+        final String url = strippedContextUrl + page;
+        LOGGER.info("Requesting URL: " + url);
+        final DefaultHttpClient httpClient = new DefaultHttpClient();
+        httpClient.setRedirectStrategy(REDIRECT_STRATEGY);
+        String unauthorizedPageBody = null;
+        try {
+            httpClient.getAuthSchemes().register(AuthPolicy.SPNEGO, new JBossNegotiateSchemeFactory(null, true));
+            httpClient.getCredentialsProvider().setCredentials(new AuthScope(null, -1, null), new NullHCCredentials());
+
+            final HttpGet httpGet = new HttpGet(url);
+            final HttpResponse response = httpClient.execute(httpGet);
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (HttpServletResponse.SC_UNAUTHORIZED != statusCode || StringUtils.isEmpty(user)) {
+                assertEquals("Unexpected HTTP response status code.", expectedStatusCode, statusCode);
+                return EntityUtils.toString(response.getEntity());
+            }
+            final Header[] authnHeaders = response.getHeaders("WWW-Authenticate");
+            assertTrue("WWW-Authenticate header is present", authnHeaders != null && authnHeaders.length > 0);
+            final Set<String> authnHeaderValues = new HashSet<String>();
+            for (final Header header : authnHeaders) {
+                authnHeaderValues.add(header.getValue());
+            }
+            assertTrue("WWW-Authenticate: Negotiate header is missing", authnHeaderValues.contains("Negotiate"));
+
+            LOGGER.debug("HTTP response was SC_UNAUTHORIZED, let's authenticate the user " + user);
+            unauthorizedPageBody = EntityUtils.toString(response.getEntity());
+
+            // Use our custom configuration to avoid reliance on external config
+            Configuration.setConfiguration(new Krb5LoginConfiguration());
+            // 1. Authenticate to Kerberos.
+            final LoginContext lc = new LoginContext(Utils.class.getName(), new UsernamePasswordHandler(user, pass));
+            lc.login();
+
+            // 2. Perform the work as authenticated Subject.
+            final String responseBody = Subject.doAs(lc.getSubject(), new PrivilegedExceptionAction<String>() {
+                public String run() throws Exception {
+                    final HttpResponse response = httpClient.execute(httpGet);
+                    int statusCode = response.getStatusLine().getStatusCode();
+                    assertEquals("Unexpected status code returned after the authentication.", expectedStatusCode, statusCode);
+                    return EntityUtils.toString(response.getEntity());
+                }
+            });
+            lc.logout();
+            return responseBody;
+        } catch (LoginException e) {
+            assertNotNull(unauthorizedPageBody);
+            assertTrue(unauthorizedPageBody.contains("j_security_check"));
+
+            HttpPost httpPost = new HttpPost(strippedContextUrl + "/j_security_check");
+            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+            nameValuePairs.add(new BasicNameValuePair("j_username", user));
+            nameValuePairs.add(new BasicNameValuePair("j_password", pass));
+            httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+            final HttpResponse response = httpClient.execute(httpPost);
+            int statusCode = response.getStatusLine().getStatusCode();
+            assertEquals("Unexpected status code returned after the authentication.", expectedStatusCode, statusCode);
+            return EntityUtils.toString(response.getEntity());
+        } finally {
+            // When HttpClient instance is no longer needed,
+            // shut down the connection manager to ensure
+            // immediate deallocation of all system resources
+            httpClient.getConnectionManager().shutdown();
+        }
+    }
+
+    /**
+     * Creates request against SPNEGO protected web-app with FORM fallback. It doesn't try to login using SPNEGO - it uses FORM
+     * authn directly.
+     * 
+     * @param contextUrl
+     * @param page
+     * @param user
+     * @param pass
+     * @param expectedStatusCode
+     * @return
+     * @throws ClientProtocolException
+     * @throws IOException
+     * @throws URISyntaxException
+     * @throws PrivilegedActionException
+     * @throws LoginException
+     */
+    public static String makeHttpCallWoSPNEGO(final String contextUrl, final String page, final String user, final String pass,
+            final int expectedStatusCode) throws ClientProtocolException, IOException, URISyntaxException,
+            PrivilegedActionException, LoginException {
+        final String strippedContextUrl = StringUtils.stripEnd(contextUrl, "/");
+        final String url = strippedContextUrl + page;
+        LOGGER.info("Requesting URL: " + url);
+        final DefaultHttpClient httpClient = new DefaultHttpClient();
+        httpClient.setRedirectStrategy(REDIRECT_STRATEGY);
+        String unauthorizedPageBody = null;
+        try {
+            final HttpGet httpGet = new HttpGet(url);
+            HttpResponse response = httpClient.execute(httpGet);
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (HttpServletResponse.SC_UNAUTHORIZED != statusCode || StringUtils.isEmpty(user)) {
+                assertEquals("Unexpected HTTP response status code.", expectedStatusCode, statusCode);
+                return EntityUtils.toString(response.getEntity());
+            }
+            final Header[] authnHeaders = response.getHeaders("WWW-Authenticate");
+            assertTrue("WWW-Authenticate header is present", authnHeaders != null && authnHeaders.length > 0);
+            final Set<String> authnHeaderValues = new HashSet<String>();
+            for (final Header header : authnHeaders) {
+                authnHeaderValues.add(header.getValue());
+            }
+            assertTrue("WWW-Authenticate: Negotiate header is missing", authnHeaderValues.contains("Negotiate"));
+
+            LOGGER.debug("HTTP response was SC_UNAUTHORIZED, let's authenticate the user " + user);
+            unauthorizedPageBody = EntityUtils.toString(response.getEntity());
+
+            assertNotNull(unauthorizedPageBody);
+            LOGGER.info(unauthorizedPageBody);
+            assertTrue(unauthorizedPageBody.contains("j_security_check"));
+
+            HttpPost httpPost = new HttpPost(strippedContextUrl + "/j_security_check");
+            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+            nameValuePairs.add(new BasicNameValuePair("j_username", user));
+            nameValuePairs.add(new BasicNameValuePair("j_password", pass));
+            httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+            response = httpClient.execute(httpPost);
+            statusCode = response.getStatusLine().getStatusCode();
+            assertEquals("Unexpected status code returned after the authentication.", expectedStatusCode, statusCode);
+            return EntityUtils.toString(response.getEntity());
+        } finally {
+            // When HttpClient instance is no longer needed,
+            // shut down the connection manager to ensure
+            // immediate deallocation of all system resources
+            httpClient.getConnectionManager().shutdown();
         }
     }
 

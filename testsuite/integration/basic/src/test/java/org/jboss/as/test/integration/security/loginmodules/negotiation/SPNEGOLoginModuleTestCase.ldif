@@ -67,3 +67,16 @@ uid: jduke
 userPassword: theduke
 krb5PrincipalName: jduke@JBOSS.ORG
 krb5KeyVersionNumber: 0
+
+dn: uid=gsstestserver,ou=Users,dc=jboss,dc=org
+objectClass: top
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: krb5principal
+objectClass: krb5kdcentry
+cn: gsstestserver
+sn: Service
+uid: gsstestserver
+userPassword: gsstestpwd
+krb5PrincipalName: gsstestserver/xxx@JBOSS.ORG
+krb5KeyVersionNumber: 0

@@ -22,6 +22,7 @@
 package org.jboss.as.test.integration.security.loginmodules.negotiation;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -52,8 +53,10 @@ public class Krb5ConfServerSetupTask implements ServerSetupTask {
     private static final File WORK_DIR = new File("SPNEGO-workdir");
     private static final String KRB5_CONF = "krb5.conf";
     private static final File KRB5_CONF_FILE = new File(WORK_DIR, KRB5_CONF);
-    private static final String HTTP_KEYTAB = "http.keytab";
-    private static final File HTTP_KEYTAB_FILE = new File(WORK_DIR, HTTP_KEYTAB);
+
+    public static final File HTTP_KEYTAB_FILE = new File(WORK_DIR, "http.keytab");
+    public static final File HNELSON_KEYTAB_FILE = new File(WORK_DIR, "hnelson.keytab");
+    public static final File JDUKE_KEYTAB_FILE = new File(WORK_DIR, "jduke.keytab");
 
     // Public methods --------------------------------------------------------
 
@@ -75,21 +78,9 @@ public class Krb5ConfServerSetupTask implements ServerSetupTask {
         FileUtils.write(KRB5_CONF_FILE,
                 StrSubstitutor.replace(IOUtils.toString(getClass().getResourceAsStream(KRB5_CONF), "UTF-8"), map), "UTF-8");
 
-        final String principalName = "HTTP/" + cannonicalHost + "@JBOSS.ORG";
-        LOGGER.info("Principal name: " + principalName);
-        final KerberosTime timeStamp = new KerberosTime();
-        final long principalType = 1L; //KRB5_NT_PRINCIPAL
-
-        final Keytab keytab = Keytab.getInstance();
-        final List<KeytabEntry> entries = new ArrayList<KeytabEntry>();
-        for (Map.Entry<EncryptionType, EncryptionKey> keyEntry : KerberosKeyFactory.getKerberosKeys(principalName, "httppwd")
-                .entrySet()) {
-            final EncryptionKey key = keyEntry.getValue();
-            final byte keyVersion = (byte) key.getKeyVersion();
-            entries.add(new KeytabEntry(principalName, principalType, timeStamp, keyVersion, key));
-        }
-        keytab.setEntries(entries);
-        keytab.write(HTTP_KEYTAB_FILE);
+        createKeytab("HTTP/" + cannonicalHost + "@JBOSS.ORG", "httppwd", HTTP_KEYTAB_FILE);
+        createKeytab("hnelson@JBOSS.ORG", "secret", HNELSON_KEYTAB_FILE);
+        createKeytab("jduke@JBOSS.ORG", "theduke", JDUKE_KEYTAB_FILE);
     }
 
     /**
@@ -123,13 +114,31 @@ public class Krb5ConfServerSetupTask implements ServerSetupTask {
         return HTTP_KEYTAB_FILE.getAbsolutePath();
     }
 
+    // Private methods -------------------------------------------------------
+
     /**
-     * Returns File which denotes a path to a keytab with JBoss AS credentials (HTTP/host@JBOSS.ORG).
+     * Creates a keytab file for given principal.
      * 
-     * @return
+     * @param principalName
+     * @param passPhrase
+     * @param keytabFile
+     * @throws IOException
      */
-    public static final File getKeyTabFile() {
-        return HTTP_KEYTAB_FILE;
+    private void createKeytab(final String principalName, final String passPhrase, final File keytabFile) throws IOException {
+        LOGGER.info("Principal name: " + principalName);
+        final KerberosTime timeStamp = new KerberosTime();
+        final long principalType = 1L; //KRB5_NT_PRINCIPAL
+
+        final Keytab keytab = Keytab.getInstance();
+        final List<KeytabEntry> entries = new ArrayList<KeytabEntry>();
+        for (Map.Entry<EncryptionType, EncryptionKey> keyEntry : KerberosKeyFactory.getKerberosKeys(principalName, passPhrase)
+                .entrySet()) {
+            final EncryptionKey key = keyEntry.getValue();
+            final byte keyVersion = (byte) key.getKeyVersion();
+            entries.add(new KeytabEntry(principalName, principalType, timeStamp, keyVersion, key));
+        }
+        keytab.setEntries(entries);
+        keytab.write(keytabFile);
     }
 
 }
