@@ -32,12 +32,13 @@ import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.TransformersLogger;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 
 /**
  * Similar to {@link ResourceTransformationContext} but for use with {@link ChainedOperationTransformer} and {@link ChainedOperationTransformerEntry}
  *
- * @deprecated Experimental and likely to change
+ * @deprecated Use {@link TransformationDescriptionBuilder} instead
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 @Deprecated

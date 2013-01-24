@@ -27,12 +27,13 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 
 /**
  * An experimental resource transformer allowing you to combine several transformers.
  * TODO Add the ability to remove child resources - ping me if needed :-)
  *
- * @deprecated Experimental and likely to change
+ * @deprecated Use {@link TransformationDescriptionBuilder} instead
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 @Deprecated
