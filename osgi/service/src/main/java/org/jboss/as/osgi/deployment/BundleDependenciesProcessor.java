@@ -22,8 +22,6 @@
 
 package org.jboss.as.osgi.deployment;
 
-import static org.jboss.as.osgi.service.InitialDeploymentTracker.INITIAL_DEPLOYMENTS_COMPLETE;
-
 import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -31,6 +29,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.osgi.deployment.deployer.Deployment;
+import org.jboss.osgi.framework.spi.IntegrationServices;
 
 /**
  * Add a dependency on the resolve phase for all persisten bundles to be installed.
@@ -48,7 +47,7 @@ public class BundleDependenciesProcessor implements DeploymentUnitProcessor {
             return;
 
         // Add a dependency on the next phase for all persisten bundles to be installed
-        phaseContext.addDeploymentDependency(INITIAL_DEPLOYMENTS_COMPLETE, AttachmentKey.create(Object.class));
+        phaseContext.addDeploymentDependency(IntegrationServices.PERSISTENT_BUNDLES_COMPLETE, AttachmentKey.create(Object.class));
     }
 
     @Override
