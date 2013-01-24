@@ -289,7 +289,7 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
     }
 
     private OSGiMetaData getModuleMetadata(Module module) throws IOException {
-        URL manifestURL = module.getClassLoader().getResource(JarFile.MANIFEST_NAME);
+        URL manifestURL = module.getExportedResource(JarFile.MANIFEST_NAME);
         if (manifestURL != null) {
             InputStream input = manifestURL.openStream();
             try {
