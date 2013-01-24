@@ -22,23 +22,56 @@
 
 package org.jboss.as.logging;
 
-import static org.jboss.as.logging.CommonAttributes.CLASS;
-import static org.jboss.as.logging.CommonAttributes.MODULE;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.DefaultAttributeMarshaller;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleMapAttributeDefinition;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 class CustomHandlerResourceDefinition extends AbstractHandlerDefinition {
-    static final PathElement CUSTOM_HANDLE_PATH = PathElement.pathElement(CommonAttributes.CUSTOM_HANDLER);
+    public static final String CUSTOM_HANDLER = "custom-handler";
+    static final PathElement CUSTOM_HANDLE_PATH = PathElement.pathElement(CUSTOM_HANDLER);
 
-    /*
-    * Configurations
-    */
+    public static final SimpleAttributeDefinition CLASS = SimpleAttributeDefinitionBuilder.create("class", ModelType.STRING)
+            .setAllowExpression(false)
+            .build();
+
+    public static final SimpleAttributeDefinition MODULE = SimpleAttributeDefinitionBuilder.create("module", ModelType.STRING)
+            .setAllowExpression(false)
+            .build();
+
+    public static final SimpleMapAttributeDefinition PROPERTIES = new SimpleMapAttributeDefinition.Builder("properties", true)
+            .setAllowExpression(true)
+            .setAttributeMarshaller(new DefaultAttributeMarshaller() {
+                @Override
+                public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+                    resourceModel = resourceModel.get(attribute.getName());
+                    if (resourceModel.isDefined()) {
+                        writer.writeStartElement(attribute.getName());
+                        for (ModelNode property : resourceModel.asList()) {
+                            writer.writeEmptyElement(Element.PROPERTY.getLocalName());
+                            writer.writeAttribute("name", property.asProperty().getName());
+                            writer.writeAttribute("value", property.asProperty().getValue().asString());
+                        }
+                        writer.writeEndElement();
+                    }
+                }
+            })
+            .build();
+
     static final AttributeDefinition[] READ_ONLY_ATTRIBUTES = {CLASS, MODULE};
-    static final AttributeDefinition[] WRITABLE_ATTRIBUTES = Logging.join(DEFAULT_ATTRIBUTES, CommonAttributes.PROPERTIES);
+    static final AttributeDefinition[] WRITABLE_ATTRIBUTES = Logging.join(DEFAULT_ATTRIBUTES, PROPERTIES);
     // Add attributes are a combination of writable and read-only attributes
     static final AttributeDefinition[] ADD_ATTRIBUTES = Logging.join(WRITABLE_ATTRIBUTES, READ_ONLY_ATTRIBUTES);
 
@@ -47,5 +80,15 @@ class CustomHandlerResourceDefinition extends AbstractHandlerDefinition {
                 (includeLegacyAttributes ? Logging.join(ADD_ATTRIBUTES, LEGACY_ATTRIBUTES) : ADD_ATTRIBUTES),
                 READ_ONLY_ATTRIBUTES,
                 (includeLegacyAttributes ? Logging.join(WRITABLE_ATTRIBUTES, LEGACY_ATTRIBUTES) : WRITABLE_ATTRIBUTES));
+    }
+
+    /**
+     * Register the transformers for the console handler.
+     *
+     * @param registration      the root resource
+     * @param loggingProfileReg the logging profile resource which will be discarded
+     */
+    static void registerTransformers(final TransformersSubRegistration registration, final TransformersSubRegistration loggingProfileReg) {
+        registerTransformers(registration, loggingProfileReg, CUSTOM_HANDLE_PATH, PROPERTIES);
     }
 }

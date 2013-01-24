@@ -59,12 +59,12 @@ import org.junit.BeforeClass;
 public abstract class AbstractLoggingSubsystemTest extends AbstractSubsystemBaseTest {
 
     static final String[] HANDLER_RESOURCE_KEYS = {
-            CommonAttributes.ASYNC_HANDLER,
-            CommonAttributes.CONSOLE_HANDLER,
-            CommonAttributes.CUSTOM_HANDLER,
-            CommonAttributes.FILE_HANDLER,
-            CommonAttributes.PERIODIC_ROTATING_FILE_HANDLER,
-            CommonAttributes.SIZE_ROTATING_FILE_HANDLER
+            AsyncHandlerResourceDefinition.ASYNC_HANDLER,
+            ConsoleHandlerResourceDefinition.CONSOLE_HANDLER,
+            CustomHandlerResourceDefinition.CUSTOM_HANDLER,
+            FileHandlerResourceDefinition.FILE_HANDLER,
+            PeriodicHandlerResourceDefinition.PERIODIC_ROTATING_FILE_HANDLER,
+            SizeRotatingHandlerResourceDefinition.SIZE_ROTATING_FILE_HANDLER
     };
 
     public static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, LoggingExtension.SUBSYSTEM_NAME);
@@ -147,43 +147,43 @@ public abstract class AbstractLoggingSubsystemTest extends AbstractSubsystemBase
     }
 
     static PathAddress createRootLoggerAddress() {
-        return createAddress(CommonAttributes.ROOT_LOGGER, CommonAttributes.ROOT_LOGGER_ATTRIBUTE_NAME);
+        return createAddress(RootLoggerResourceDefinition.ROOT_LOGGER_PATH_NAME, RootLoggerResourceDefinition.ROOT_LOGGER_ATTRIBUTE_NAME);
     }
 
     static PathAddress createRootLoggerAddress(final String profileName) {
-        return createAddress(profileName, CommonAttributes.ROOT_LOGGER, CommonAttributes.ROOT_LOGGER_ATTRIBUTE_NAME);
+        return createAddress(profileName, RootLoggerResourceDefinition.ROOT_LOGGER_PATH_NAME, RootLoggerResourceDefinition.ROOT_LOGGER_ATTRIBUTE_NAME);
     }
 
     static PathAddress createLoggerAddress(final String name) {
-        return createAddress(CommonAttributes.LOGGER, name);
+        return createAddress(LoggerResourceDefinition.LOGGER, name);
     }
 
     static PathAddress createLoggerAddress(final String profileName, final String name) {
-        return createAddress(profileName, CommonAttributes.LOGGER, name);
+        return createAddress(profileName, LoggerResourceDefinition.LOGGER, name);
     }
 
     static PathAddress createAsyncHandlerAddress(final String name) {
-        return createAddress(CommonAttributes.ASYNC_HANDLER, name);
+        return createAddress(AsyncHandlerResourceDefinition.ASYNC_HANDLER, name);
     }
 
     static PathAddress createAsyncHandlerAddress(final String profileName, final String name) {
-        return createAddress(profileName, CommonAttributes.ASYNC_HANDLER, name);
+        return createAddress(profileName, AsyncHandlerResourceDefinition.ASYNC_HANDLER, name);
     }
 
     static PathAddress createConsoleHandlerAddress(final String name) {
-        return createAddress(CommonAttributes.CONSOLE_HANDLER, name);
+        return createAddress(ConsoleHandlerResourceDefinition.CONSOLE_HANDLER, name);
     }
 
     static PathAddress createConsoleHandlerAddress(final String profileName, final String name) {
-        return createAddress(profileName, CommonAttributes.CONSOLE_HANDLER, name);
+        return createAddress(profileName, ConsoleHandlerResourceDefinition.CONSOLE_HANDLER, name);
     }
 
     static PathAddress createFileHandlerAddress(final String name) {
-        return createAddress(CommonAttributes.FILE_HANDLER, name);
+        return createAddress(FileHandlerResourceDefinition.FILE_HANDLER, name);
     }
 
     static PathAddress createFileHandlerAddress(final String profileName, final String name) {
-        return createAddress(profileName, CommonAttributes.FILE_HANDLER, name);
+        return createAddress(profileName, FileHandlerResourceDefinition.FILE_HANDLER, name);
     }
 
     protected KernelServices boot() throws Exception {
@@ -242,12 +242,12 @@ public abstract class AbstractLoggingSubsystemTest extends AbstractSubsystemBase
         final List<String> loggerNames = logContextConfiguration.getLoggerNames();
         for (String name : loggerNames) {
             final LoggerConfiguration loggerConfig = logContextConfiguration.getLoggerConfiguration(name);
-            final ModelNode loggerModel = (name.isEmpty() ? model.get(CommonAttributes.ROOT_LOGGER, CommonAttributes.ROOT_LOGGER_ATTRIBUTE_NAME) :
-                    model.get(CommonAttributes.LOGGER, name));
+            final ModelNode loggerModel = (name.isEmpty() ? model.get(RootLoggerResourceDefinition.ROOT_LOGGER_PATH_NAME, RootLoggerResourceDefinition.ROOT_LOGGER_ATTRIBUTE_NAME) :
+                    model.get(LoggerResourceDefinition.LOGGER, name));
             // Logger could be empty
             if (loggerModel.isDefined()) {
                 final Set<String> attributes = loggerModel.keys();
-                attributes.remove(CommonAttributes.CATEGORY.getName());
+                attributes.remove(LoggerResourceDefinition.CATEGORY.getName());
                 attributes.remove(CommonAttributes.FILTER.getName());
                 attributes.remove(CommonAttributes.NAME.getName());
                 for (String attribute : attributes) {
@@ -276,7 +276,7 @@ public abstract class AbstractLoggingSubsystemTest extends AbstractSubsystemBase
                         } else {
                             Assert.assertTrue("Handlers attached to loggers in the configuration that are not attached to loggers in the model. Logger: " + name, handlerNames.isEmpty());
                         }
-                    } else if (attribute.equals(CommonAttributes.USE_PARENT_HANDLERS.getName())) {
+                    } else if (attribute.equals(LoggerResourceDefinition.USE_PARENT_HANDLERS.getName())) {
                         final Boolean configValue = loggerConfig.getUseParentHandlers();
                         final Boolean modelValue = loggerModel.get(attribute).asBoolean();
                         Assert.assertEquals(String.format("Use parent handler attributes do not match. Config Value: %s  Model Value: %s", configValue, modelValue), configValue, modelValue);
@@ -333,17 +333,17 @@ public abstract class AbstractLoggingSubsystemTest extends AbstractSubsystemBase
                     final String configPropertyName;
                     if (modelPropertyName.equals(CommonAttributes.AUTOFLUSH.getName())) {
                         configPropertyName = CommonAttributes.AUTOFLUSH.getPropertyName();
-                    } else if (modelPropertyName.equals(CommonAttributes.MAX_BACKUP_INDEX.getName())) {
-                        configPropertyName = CommonAttributes.MAX_BACKUP_INDEX.getPropertyName();
-                    } else if (modelPropertyName.equals(CommonAttributes.OVERFLOW_ACTION.getName())) {
-                        configPropertyName = CommonAttributes.OVERFLOW_ACTION.getPropertyName();
-                    } else if (modelPropertyName.equals(CommonAttributes.QUEUE_LENGTH.getName())) {
-                        configPropertyName = CommonAttributes.QUEUE_LENGTH.getPropertyName();
-                    } else if (modelPropertyName.equals(CommonAttributes.ROTATE_SIZE.getName())) {
-                        configPropertyName = CommonAttributes.ROTATE_SIZE.getPropertyName();
+                    } else if (modelPropertyName.equals(SizeRotatingHandlerResourceDefinition.MAX_BACKUP_INDEX.getName())) {
+                        configPropertyName = SizeRotatingHandlerResourceDefinition.MAX_BACKUP_INDEX.getPropertyName();
+                    } else if (modelPropertyName.equals(AsyncHandlerResourceDefinition.OVERFLOW_ACTION.getName())) {
+                        configPropertyName = AsyncHandlerResourceDefinition.OVERFLOW_ACTION.getPropertyName();
+                    } else if (modelPropertyName.equals(AsyncHandlerResourceDefinition.QUEUE_LENGTH.getName())) {
+                        configPropertyName = AsyncHandlerResourceDefinition.QUEUE_LENGTH.getPropertyName();
+                    } else if (modelPropertyName.equals(SizeRotatingHandlerResourceDefinition.ROTATE_SIZE.getName())) {
+                        configPropertyName = SizeRotatingHandlerResourceDefinition.ROTATE_SIZE.getPropertyName();
                         modelStringValue = String.valueOf(SizeResolver.INSTANCE.parseSize(modelValue));
-                    } else if (modelPropertyName.equals(CommonAttributes.USE_PARENT_HANDLERS.getName())) {
-                        configPropertyName = CommonAttributes.USE_PARENT_HANDLERS.getPropertyName();
+                    } else if (modelPropertyName.equals(LoggerResourceDefinition.USE_PARENT_HANDLERS.getName())) {
+                        configPropertyName = LoggerResourceDefinition.USE_PARENT_HANDLERS.getPropertyName();
                     } else if (modelPropertyName.equals(CommonAttributes.FILE.getName())) {
                         configPropertyName = CommonAttributes.FILE.getPropertyName();
                         // Resolve the file
@@ -352,10 +352,10 @@ public abstract class AbstractLoggingSubsystemTest extends AbstractSubsystemBase
                             final String relativeTo = System.getProperty(modelValue.get(PathResourceDefinition.RELATIVE_TO.getName()).asString());
                             modelStringValue = relativeTo + File.separator + modelStringValue;
                         }
-                    } else if (modelPropertyName.equals(CommonAttributes.TARGET.getName())) {
-                        configPropertyName = CommonAttributes.TARGET.getPropertyName();
+                    } else if (modelPropertyName.equals(ConsoleHandlerResourceDefinition.TARGET.getName())) {
+                        configPropertyName = ConsoleHandlerResourceDefinition.TARGET.getPropertyName();
                         modelStringValue = Target.fromString(modelValue.asString()).name();
-                    } else if (modelPropertyName.equals(CommonAttributes.SUBHANDLERS.getName())) {
+                    } else if (modelPropertyName.equals(AsyncHandlerResourceDefinition.SUBHANDLERS.getName())) {
                         final List<String> handlerHandlerNames = handlerConfig.getHandlerNames();
                         final ModelNode handlers = handlerModel.get(modelPropertyName);
                         if (handlers.isDefined()) {
@@ -479,17 +479,17 @@ public abstract class AbstractLoggingSubsystemTest extends AbstractSubsystemBase
                 result = LESS;
             } else if (CommonAttributes.LOGGING_PROFILE.equals(key2)) {
                 result = GREATER;
-            } else if (CommonAttributes.ROOT_LOGGER.equals(key1)) {
+            } else if (RootLoggerResourceDefinition.ROOT_LOGGER_PATH_NAME.equals(key1)) {
                 result = LESS;
-            } else if (CommonAttributes.ROOT_LOGGER.equals(key2)) {
+            } else if (RootLoggerResourceDefinition.ROOT_LOGGER_PATH_NAME.equals(key2)) {
                 result = GREATER;
-            } else if (CommonAttributes.LOGGER.equals(key1)) {
+            } else if (LoggerResourceDefinition.LOGGER.equals(key1)) {
                 result = LESS;
-            } else if (CommonAttributes.LOGGER.equals(key2)) {
+            } else if (LoggerResourceDefinition.LOGGER.equals(key2)) {
                 result = GREATER;
-            } else if (CommonAttributes.ASYNC_HANDLER.equals(key1) && !(CommonAttributes.LOGGER.equals(key2) || CommonAttributes.ROOT_LOGGER.equals(key2))) {
+            } else if (AsyncHandlerResourceDefinition.ASYNC_HANDLER.equals(key1) && !(LoggerResourceDefinition.LOGGER.equals(key2) || RootLoggerResourceDefinition.ROOT_LOGGER_PATH_NAME.equals(key2))) {
                 result = LESS;
-            } else if (CommonAttributes.ASYNC_HANDLER.equals(key2) && !(CommonAttributes.LOGGER.equals(key1) || CommonAttributes.ROOT_LOGGER.equals(key1))) {
+            } else if (AsyncHandlerResourceDefinition.ASYNC_HANDLER.equals(key2) && !(LoggerResourceDefinition.LOGGER.equals(key1) || RootLoggerResourceDefinition.ROOT_LOGGER_PATH_NAME.equals(key1))) {
                 result = GREATER;
             }
             return result;

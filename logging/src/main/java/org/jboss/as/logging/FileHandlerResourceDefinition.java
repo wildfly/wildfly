@@ -24,24 +24,42 @@ package org.jboss.as.logging;
 
 import static org.jboss.as.logging.CommonAttributes.APPEND;
 import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
+import static org.jboss.as.logging.CommonAttributes.ENABLED;
+import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FILE;
-import static org.jboss.as.logging.CommonAttributes.FILE_HANDLER;
+import static org.jboss.as.logging.CommonAttributes.FILTER;
+import static org.jboss.as.logging.CommonAttributes.FORMATTER;
+import static org.jboss.as.logging.CommonAttributes.LEVEL;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.logmanager.handlers.FileHandler;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 class FileHandlerResourceDefinition extends AbstractFileHandlerDefinition {
 
+    public static final String FILE_HANDLER = "file-handler";
     static final PathElement FILE_HANDLER_PATH = PathElement.pathElement(FILE_HANDLER);
+
     static final AttributeDefinition[] ATTRIBUTES = Logging.join(DEFAULT_ATTRIBUTES, AUTOFLUSH, APPEND, FILE);
 
     public FileHandlerResourceDefinition(final ResolvePathHandler resolvePathHandler, final boolean includeLegacyAttributes) {
         super(FILE_HANDLER_PATH, FileHandler.class, resolvePathHandler, (
                 includeLegacyAttributes ? Logging.join(ATTRIBUTES, LEGACY_ATTRIBUTES) : ATTRIBUTES));
+    }
+
+    /**
+     * Register the transformers for the console handler.
+     *
+     * @param registration      the root resource
+     * @param loggingProfileReg the logging profile resource which will be discarded
+     */
+    static void registerTransformers(final TransformersSubRegistration registration, final TransformersSubRegistration loggingProfileReg) {
+        registerTransformers(registration, loggingProfileReg, FILE_HANDLER_PATH, AUTOFLUSH, APPEND, FILE);
     }
 }
