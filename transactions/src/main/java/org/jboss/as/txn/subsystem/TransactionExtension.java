@@ -22,9 +22,6 @@
 
 package org.jboss.as.txn.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
 
 import javax.management.MBeanServer;
@@ -33,7 +30,6 @@ import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
@@ -42,16 +38,14 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
-import org.jboss.as.controller.transform.DiscardAttributesTransformer;
-import org.jboss.as.controller.transform.DiscardUndefinedAttributesTransformer;
-import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
-import org.jboss.as.controller.transform.TransformersSubRegistration;
-import org.jboss.as.controller.transform.chained.ChainedOperationTransformer;
-import org.jboss.as.controller.transform.chained.ChainedResourceTransformationContext;
-import org.jboss.as.controller.transform.chained.ChainedResourceTransformer;
-import org.jboss.as.controller.transform.chained.ChainedResourceTransformerEntry;
+import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.description.AttributeConverter;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.as.txn.TransactionMessages;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -167,57 +161,85 @@ public class TransactionExtension implements Extension {
      */
     private static void registerTransformers(final SubsystemRegistration subsystem) {
 
-        // Commonly used transformers
-        final DiscardUndefinedAttributesTransformer discardJdbcStoreTransformer =
-                new DiscardUndefinedAttributesTransformer(TransactionSubsystemRootResourceDefinition.attributes_1_2);
-        final ChainedResourceTransformerEntry addUUIDTransformer = new ChainedResourceTransformerEntry() {
-            @Override
-            public void transformResource(ChainedResourceTransformationContext context, PathAddress address, Resource resource)
-                    throws OperationFailedException {
-                ModelNode model = resource.getModel();
-                if (!model.hasDefined(TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.getName())) {
-                    model.get(TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.getName()).set(false);
-                }
-            }
-        };
+        final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        subsystemRoot.getAttributeBuilder()
+                .setDiscard(UnneededJDBCStoreChecker.INSTANCE, TransactionSubsystemRootResourceDefinition.attributes_1_2)
+                .setValueConverter(new AttributeConverter() {
+                    @Override
+                    public void convertOperationParameter(PathAddress address, String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context) {
+                        // nothing here
+                    }
+
+                    @Override
+                    public void convertResourceAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+                        if (!attributeValue.isDefined()) {
+                            attributeValue.set(false);
+                        }
+                    }
+                }, TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID);
 
         // Transformations to the 1.1.1 Model:
-        final ModelVersion version111 = ModelVersion.create(1, 1, 1);
         // 1) Remove JDBC store attributes if not used
         // 2) Fail if new attributes are set (and not removed by step 1)
-        final TransformersSubRegistration transformers111 = subsystem.registerModelTransformers(version111,
-                new ChainedResourceTransformer(UnneededJDBCStoreTransformer.INSTANCE, discardJdbcStoreTransformer, addUUIDTransformer));
-        transformers111.registerOperationTransformer(ADD, new ChainedOperationTransformer(UnneededJDBCStoreTransformer.INSTANCE, discardJdbcStoreTransformer));
-        transformers111.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, discardJdbcStoreTransformer.getWriteAttributeTransformer());
-        transformers111.registerOperationTransformer(UNDEFINE_ATTRIBUTE_OPERATION, discardJdbcStoreTransformer.getUndefineAttributeTransformer());
-        // Check the resource and operations for expressions
+        final ModelVersion version111 = ModelVersion.create(1, 1, 1);
+        final TransformationDescription description111 = subsystemRoot.build();
+        TransformationDescription.Tools.register(description111, subsystem, version111);
+
+        // Reuse the builder and add reject expression for 1.1.0
+        subsystemRoot.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, TransactionSubsystemRootResourceDefinition.attributes);
 
         // Transformations to the 1.1.0 Model:
-        final ModelVersion version110 = ModelVersion.create(1, 1, 0);
         // 1) Remove JDBC store attributes if not used
         // 2) Fail if new attributes are set (and not removed by step 1)
         // 3) Reject expressions
-        final RejectExpressionValuesTransformer reject =
-                new RejectExpressionValuesTransformer(TransactionSubsystemRootResourceDefinition.attributes);
-        final TransformersSubRegistration registration = subsystem.registerModelTransformers(version110,
-                new ChainedResourceTransformer(
-                    UnneededJDBCStoreTransformer.INSTANCE,
-                    discardJdbcStoreTransformer,
-                    reject.getChainedTransformer(),
-                    addUUIDTransformer));
-        registration.registerOperationTransformer(ADD,
-                new ChainedOperationTransformer(UnneededJDBCStoreTransformer.INSTANCE, discardJdbcStoreTransformer, reject.getChainedTransformer()));
-        registration.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION,
-                new ChainedOperationTransformer(discardJdbcStoreTransformer.getWriteAttributeTransformer(), reject.getWriteAttributeTransformer()));
-        registration.registerOperationTransformer(UNDEFINE_ATTRIBUTE_OPERATION, discardJdbcStoreTransformer.getUndefineAttributeTransformer());
+        final ModelVersion version110 = ModelVersion.create(1, 1, 0);
+        final TransformationDescription description110 = subsystemRoot.build();
+        TransformationDescription.Tools.register(description110, subsystem, version110);
     }
 
-    static class UnneededJDBCStoreTransformer extends DiscardAttributesTransformer {
-        private static final UnneededJDBCStoreTransformer INSTANCE = new UnneededJDBCStoreTransformer();
+    private static class UnneededJDBCStoreChecker implements DiscardAttributeChecker {
 
-        private UnneededJDBCStoreTransformer() {
-            super(new AttributeValueDiscardApprover(TransactionSubsystemRootResourceDefinition.USE_JDBC_STORE.getName(), new ModelNode(false), true),
-                    TransactionSubsystemRootResourceDefinition.attributes_1_2);
+        static final UnneededJDBCStoreChecker INSTANCE = new UnneededJDBCStoreChecker();
+
+        @Override
+        public boolean isDiscardExpressions() {
+            return false;
         }
+
+        @Override
+        public boolean isDiscardUndefined() {
+            return true;
+        }
+
+        @Override
+        public boolean isOperationParameterDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context) {
+            final String op = operation.get(ModelDescriptionConstants.OP).asString();
+            if(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION.equals(op)) {
+                // Never discard this attribute for write-attribute operations
+                if(attributeName.equals((TransactionSubsystemRootResourceDefinition.USE_JDBC_STORE.getName()))) {
+                    return false;
+                }
+                // Check the current model
+                final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+                model.get(attributeName).set(attributeValue);
+                return discard(model);
+            } else {
+                return discard(operation);
+            }
+        }
+
+        @Override
+        public boolean isResourceAttributeDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+            return discard(context.readResource(PathAddress.EMPTY_ADDRESS).getModel());
+        }
+
+        boolean discard(final ModelNode model) {
+            if(model.hasDefined(TransactionSubsystemRootResourceDefinition.USE_JDBC_STORE.getName())) {
+                return ! model.get(TransactionSubsystemRootResourceDefinition.USE_JDBC_STORE.getName()).asBoolean(true); // discard if false
+            }
+            return true;
+        }
+
     }
+
 }
