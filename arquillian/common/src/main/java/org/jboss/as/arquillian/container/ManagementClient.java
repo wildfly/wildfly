@@ -18,6 +18,7 @@ package org.jboss.as.arquillian.container;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -53,20 +54,19 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
+import static org.jboss.as.controller.client.helpers.ClientConstants.CONTROLLER_PROCESS_STATE_STARTING;
+import static org.jboss.as.controller.client.helpers.ClientConstants.CONTROLLER_PROCESS_STATE_STOPPING;
 import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT;
 import static org.jboss.as.controller.client.helpers.ClientConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OP;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OP_ADDR;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OUTCOME;
 import static org.jboss.as.controller.client.helpers.ClientConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.client.helpers.ClientConstants.READ_CHILDREN_NAMES_OPERATION;
 import static org.jboss.as.controller.client.helpers.ClientConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.client.helpers.ClientConstants.RECURSIVE;
 import static org.jboss.as.controller.client.helpers.ClientConstants.RESULT;
 import static org.jboss.as.controller.client.helpers.ClientConstants.SUBSYSTEM;
 import static org.jboss.as.controller.client.helpers.ClientConstants.SUCCESS;
-import static org.jboss.as.controller.client.helpers.ClientConstants.CONTROLLER_PROCESS_STATE_STARTING;
-import static org.jboss.as.controller.client.helpers.ClientConstants.CONTROLLER_PROCESS_STATE_STOPPING;
 
 /**
  * A helper class to join management related operations, like extract sub system ip/port (web/jmx)
@@ -129,8 +129,16 @@ public class ManagementClient {
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-            String socketBinding = rootNode.get("subsystem").get("web").get("connector").get("http").get("socket-binding").asString();
-            webUri = getBinding("http", socketBinding);
+            ModelNode socketBinding = rootNode.get("subsystem").get("web").get("connector").get("http").get("socket-binding");
+            if(!socketBinding.isDefined()) {
+                try {
+                    webUri = new URI("http://localhost:8080");
+                } catch (URISyntaxException e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                webUri = getBinding("http", socketBinding.asString());
+            }
         }
         return webUri;
     }
