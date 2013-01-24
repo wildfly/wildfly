@@ -22,6 +22,10 @@
 
 package org.jboss.as.connector.subsystems.jca;
 
+import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER;
+import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_LONG_RUNNING;
+import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_SHORT_RUNNING;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
@@ -31,14 +35,10 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.threads.BoundedQueueThreadPoolResourceDefinition;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.dmr.ModelType;
-
-import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER;
-import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_LONG_RUNNING;
-import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_SHORT_RUNNING;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
@@ -79,11 +79,11 @@ public class JcaWorkManagerDefinition extends SimpleResourceDefinition {
 
     }
 
-    static void registerTransformers110(TransformersSubRegistration parent) {
+    static void registerTransformers110(ResourceTransformationDescriptionBuilder parentBuilder) {
 
-        TransformersSubRegistration ours = parent.registerSubResource(PATH_WORK_MANAGER);
-        BoundedQueueThreadPoolResourceDefinition.registerTransformers1_0(ours, WORKMANAGER_SHORT_RUNNING);
-        BoundedQueueThreadPoolResourceDefinition.registerTransformers1_0(ours, WORKMANAGER_LONG_RUNNING);
+        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_WORK_MANAGER);
+        BoundedQueueThreadPoolResourceDefinition.registerTransformers1_0(builder, WORKMANAGER_SHORT_RUNNING);
+        BoundedQueueThreadPoolResourceDefinition.registerTransformers1_0(builder, WORKMANAGER_LONG_RUNNING);
     }
 
     public static enum WmParameters {

@@ -22,10 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
@@ -41,11 +37,11 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.services.path.PathManager;
-import org.jboss.as.controller.transform.DiscardUndefinedAttributesTransformer;
-import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
-import org.jboss.as.controller.transform.TransformersSubRegistration;
-import org.jboss.as.controller.transform.chained.ChainedOperationTransformer;
-import org.jboss.as.controller.transform.chained.ChainedResourceTransformer;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.as.ejb3.deployment.processors.EJBDefaultSecurityDomainProcessor;
 import org.jboss.as.threads.ThreadFactoryResolver;
 import org.jboss.as.threads.ThreadsServices;
@@ -217,21 +213,34 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
 
         ModelVersion subsystem110 = ModelVersion.create(1, 1);
 
-        RejectExpressionValuesTransformer rejectTransformer = new RejectExpressionValuesTransformer(EJB3SubsystemRootResourceDefinition.ENABLE_STATISTICS);
-        DiscardUndefinedAttributesTransformer discardTransformer = new DiscardUndefinedAttributesTransformer(EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN);
-        ChainedResourceTransformer ctr = new ChainedResourceTransformer(rejectTransformer.getChainedTransformer(), discardTransformer);
-        final TransformersSubRegistration transformers110 = subsystemRegistration.registerModelTransformers(subsystem110, ctr);
-        transformers110.registerOperationTransformer(ADD, new ChainedOperationTransformer(rejectTransformer, discardTransformer));
-        transformers110.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION,
-                new ChainedOperationTransformer(rejectTransformer.getWriteAttributeTransformer(), discardTransformer.getWriteAttributeTransformer()));
-        transformers110.registerOperationTransformer(UNDEFINE_ATTRIBUTE_OPERATION, discardTransformer);
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance()
+                .getAttributeBuilder()
+                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, EJB3SubsystemRootResourceDefinition.ENABLE_STATISTICS)
+                    .setDiscard(DiscardAttributeChecker.UNDEFINED, EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN)
+                    .end();
+        UnboundedQueueThreadPoolResourceDefinition.registerTransformers1_0(builder, EJB3SubsystemModel.THREAD_POOL);
+        StrictMaxPoolResourceDefinition.registerTransformers_1_1_0(builder);
+        FilePassivationStoreResourceDefinition.registerTransformers_1_1_0(builder);
+        ClusterPassivationStoreResourceDefinition.registerTransformers_1_1_0(builder);
+        TimerServiceResourceDefinition.registerTransformers_1_1_0(builder);
+        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, subsystem110);
 
-        UnboundedQueueThreadPoolResourceDefinition.registerTransformers1_0(transformers110, EJB3SubsystemModel.THREAD_POOL);
 
-        StrictMaxPoolResourceDefinition.registerTransformers_1_1_0(transformers110);
-        FilePassivationStoreResourceDefinition.registerTransformers_1_1_0(transformers110);
-        ClusterPassivationStoreResourceDefinition.registerTransformers_1_1_0(transformers110);
-        TimerServiceResourceDefinition.registerTransformers_1_1_0(transformers110);
+//        RejectExpressionValuesTransformer rejectTransformer = new RejectExpressionValuesTransformer(EJB3SubsystemRootResourceDefinition.ENABLE_STATISTICS);
+//        DiscardUndefinedAttributesTransformer discardTransformer = new DiscardUndefinedAttributesTransformer(EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN);
+//        ChainedResourceTransformer ctr = new ChainedResourceTransformer(rejectTransformer.getChainedTransformer(), discardTransformer);
+//        final TransformersSubRegistration transformers110 = subsystemRegistration.registerModelTransformers(subsystem110, ctr);
+//        transformers110.registerOperationTransformer(ADD, new ChainedOperationTransformer(rejectTransformer, discardTransformer));
+//        transformers110.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION,
+//                new ChainedOperationTransformer(rejectTransformer.getWriteAttributeTransformer(), discardTransformer.getWriteAttributeTransformer()));
+//        transformers110.registerOperationTransformer(UNDEFINE_ATTRIBUTE_OPERATION, discardTransformer);
+//
+//        UnboundedQueueThreadPoolResourceDefinition.registerTransformers1_0(transformers110, EJB3SubsystemModel.THREAD_POOL);
+//
+//        StrictMaxPoolResourceDefinition.registerTransformers_1_1_0(transformers110);
+//        FilePassivationStoreResourceDefinition.registerTransformers_1_1_0(transformers110);
+//        ClusterPassivationStoreResourceDefinition.registerTransformers_1_1_0(transformers110);
+//        TimerServiceResourceDefinition.registerTransformers_1_1_0(transformers110);
     }
 
     private static class EJB3ThreadFactoryResolver extends ThreadFactoryResolver.SimpleResolver {
