@@ -26,11 +26,12 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 
 /**
  * Provides chained transformation of resources.
  *
- * @deprecated Experimental and likely to change
+ * @deprecated Use {@link TransformationDescriptionBuilder} instead
  * @author Kabir Khan
  */
 @Deprecated
