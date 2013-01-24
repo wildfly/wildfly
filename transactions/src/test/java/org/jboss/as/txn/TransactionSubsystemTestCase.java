@@ -21,7 +21,13 @@
 */
 package org.jboss.as.txn;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.BINDING;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.DEFAULT_TIMEOUT;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.ENABLE_STATISTICS;
@@ -45,6 +51,8 @@ import java.util.List;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.model.test.ChildFirstClassLoaderBuilder;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestUtils;
@@ -165,6 +173,16 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertNotNull(legacyServices);
 
         checkSubsystemModelTransformation(mainServices, modelVersion);
+
+        final ModelNode writeAttribute = new ModelNode();
+        writeAttribute.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+        writeAttribute.get(OP_ADDR).add("subsystem", "transactions");
+        writeAttribute.get(NAME).set("use-jdbc-store");
+        writeAttribute.get(VALUE).set(false);
+
+        final OperationTransformer.TransformedOperation op = mainServices.transformOperation(modelVersion, writeAttribute);
+        Assert.assertNotNull(op);
+        Assert.assertNotNull(op.getTransformedOperation());
 
     }
 
