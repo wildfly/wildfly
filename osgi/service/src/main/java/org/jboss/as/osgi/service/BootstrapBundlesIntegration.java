@@ -179,6 +179,7 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
             // Find the module in the bundles hierarchy
             File bundleFile = ModuleIdentityRepository.getRepositoryEntry(bundlesDir, moduleId);
             if (bundleFile == null) {
+
                 LOGGER.tracef("Installing initial module capability: %s", identifier);
 
                 // Attempt to load the module from the modules hierarchy
@@ -209,6 +210,15 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
                     resource = builder.getResource();
                 }
                 injectedEnvironment.getValue().installResources(resource);
+
+                // Set the start level of the adapted bundle
+                Integer bundleStartLevel = configcap.getStartLevel();
+                if (bundleStartLevel != null && bundleStartLevel > 0) {
+                    StartLevel plugin = injectedStartLevel.getValue();
+                    Long bundleId = resource.getAttachment(Long.class);
+                    XBundle bundle = getBundleManager().getBundleById(bundleId);
+                    plugin.setBundleStartLevel(bundle, bundleStartLevel);
+                }
                 return true;
             }
         }
