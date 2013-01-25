@@ -251,7 +251,6 @@
         <version.org.picketlink>2.1.6.Final</version.org.picketlink>
         <version.org.powermock>1.4.11</version.org.powermock>
         <version.org.projectodd.stilts>0.1.26</version.org.projectodd.stilts>
-        <version.org.rhq.helpers>3.0.4</version.org.rhq.helpers>
         <version.org.scannotation>1.0.2</version.org.scannotation>
         <version.org.slf4j>1.6.1</version.org.slf4j>
         <version.org.sonatype.aether>1.13.1</version.org.sonatype.aether>
@@ -6135,18 +6134,6 @@
                     <exclusion>
                         <groupId>javax.transaction</groupId>
                         <artifactId>jta</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.rhq.helpers</groupId>
-                <artifactId>rhq-pluginAnnotations</artifactId>
-                <version>${version.org.rhq.helpers}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>i18nlog</groupId>
-                        <artifactId>i18nlog</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
