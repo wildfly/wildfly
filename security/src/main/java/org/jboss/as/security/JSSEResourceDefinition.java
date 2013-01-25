@@ -24,7 +24,6 @@ package org.jboss.as.security;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -84,7 +83,7 @@ public class JSSEResourceDefinition extends SimpleResourceDefinition {
     public static final JSSEResourceDefinition INSTANCE = new JSSEResourceDefinition();
 
     private JSSEResourceDefinition() {
-        super(PathElement.pathElement(Constants.JSSE, Constants.CLASSIC),
+        super(SecurityExtension.JSSE_PATH,
               SecurityExtension.getResourceDescriptionResolver(Constants.JSSE),
                 JSSEResourceDefinitionAdd.INSTANCE,
                 new SecurityDomainReloadRemoveHandler());

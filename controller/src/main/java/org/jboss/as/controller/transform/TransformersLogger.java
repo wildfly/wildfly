@@ -28,11 +28,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.ControllerMessages;
@@ -60,10 +63,20 @@ public class TransformersLogger {
     private TransformationTarget target;
     private ControllerLogger logger;
     private List<LogEntry> messageQueue = Collections.synchronizedList(new LinkedList<LogEntry>());
+    private static Map<String,TransformersLogger> loggers = new HashMap<String, TransformersLogger>();
 
-    public TransformersLogger(TransformationTarget target) {
+    private TransformersLogger(TransformationTarget target) {
         this.target = target;
         logger = Logger.getMessageLogger(ControllerLogger.class, ControllerLogger.class.getPackage().getName() + ".transformer." + target.getHostName());
+    }
+
+    public static TransformersLogger getLogger(TransformationTarget target){
+        TransformersLogger log = loggers.get(target.getHostName());
+        if (log == null){
+            log = new TransformersLogger(target);
+            loggers.put(target.getHostName(),log);
+        }
+        return log;
     }
 
     private static String findSubsystemName(PathAddress pathAddress) {

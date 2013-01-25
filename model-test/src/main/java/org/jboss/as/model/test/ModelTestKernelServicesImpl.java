@@ -384,7 +384,7 @@ public abstract class ModelTestKernelServicesImpl<T extends ModelTestKernelServi
 
         @Override
         public TransformersLogger getLogger() {
-            return new TransformersLogger(getTarget());
+            return TransformersLogger.getLogger(getTarget());
         }
 
         @Override

@@ -254,7 +254,7 @@ public interface RejectAttributeChecker {
         /**
          * Constructor
          *
-         * @param a map of keys in the object type and the RejectAttributeChecker to use to check the entries
+         * @param fields map of keys in the object type and the RejectAttributeChecker to use to check the entries
          */
         public ObjectFieldsRejectAttributeChecker(Map<String, RejectAttributeChecker> fields) {
             assert fields != null : "Null fields";
