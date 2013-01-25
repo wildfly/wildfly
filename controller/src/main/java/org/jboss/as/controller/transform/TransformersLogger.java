@@ -28,11 +28,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -63,7 +61,7 @@ public class TransformersLogger {
     private TransformationTarget target;
     private ControllerLogger logger;
     private List<LogEntry> messageQueue = Collections.synchronizedList(new LinkedList<LogEntry>());
-    private static Map<String,TransformersLogger> loggers = new HashMap<String, TransformersLogger>();
+    private static final ConcurrentHashMap<String, TransformersLogger> loggers = new ConcurrentHashMap<String, TransformersLogger>();
 
     private TransformersLogger(TransformationTarget target) {
         this.target = target;
@@ -71,12 +69,14 @@ public class TransformersLogger {
     }
 
     public static TransformersLogger getLogger(TransformationTarget target){
-        TransformersLogger log = loggers.get(target.getHostName());
-        if (log == null){
-            log = new TransformersLogger(target);
-            loggers.put(target.getHostName(),log);
+        String hostName = target.getHostName()==null?"<unknown>":target.getHostName();
+        TransformersLogger result = loggers.get(hostName);
+        if (result == null) {
+            result = new TransformersLogger(target);
+            TransformersLogger existing = loggers.putIfAbsent(hostName, result);
+            result = existing == null ? result : existing;
         }
-        return log;
+        return result;
     }
 
     private static String findSubsystemName(PathAddress pathAddress) {
