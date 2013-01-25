@@ -40,6 +40,7 @@ import java.net.URI;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -65,6 +66,7 @@ import org.jboss.as.domain.controller.operations.ApplyExtensionsHandler;
 import org.jboss.as.domain.controller.operations.ApplyRemoteMasterDomainModelHandler;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.security.SecurityRealmService;
+import org.jboss.as.host.controller.discovery.DiscoveryOption;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.host.controller.mgmt.DomainControllerProtocol;
 import org.jboss.as.host.controller.mgmt.DomainRemoteFileRequestAndHandler;
@@ -184,43 +186,67 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     /** {@inheritDoc} */
     public synchronized void register() throws IOException {
         boolean connected = false;
-        final long timeout = CONNECTION_TIMEOUT;
-        final long endTime = System.currentTimeMillis() + timeout;
-        int retries = 0;
-        while (!connected) {
-            try {
-                // Try to connect to the domain controller
-                connection.connect();
-                connected = true;
-            } catch (IOException e) {
-                Throwable cause = e;
-                HostControllerLogger.ROOT_LOGGER.debugf(e, "failed to connect to %s:%d", localHostInfo.getRemoteDomainControllerHost(), localHostInfo.getRemoteDomainControllerPort());
-                while ((cause = cause.getCause()) != null) {
-                    if (cause instanceof SaslException) {
-                        throw MESSAGES.authenticationFailureUnableToConnect(cause);
-                    } else if (cause instanceof SSLHandshakeException) {
-                        throw MESSAGES.sslFailureUnableToConnect(cause);
-                    } else if (cause instanceof SlaveRegistrationException) {
-                        throw new IOException(cause);
-                    }
-                }
-                if (System.currentTimeMillis() > endTime) {
-                    throw MESSAGES.connectionToMasterTimeout(e, retries, timeout);
-                }
-                try {
-                    HostControllerLogger.ROOT_LOGGER.cannotConnect(localHostInfo.getRemoteDomainControllerHost(), localHostInfo.getRemoteDomainControllerPort(), e);
-                    ReconnectPolicy.CONNECT.wait(retries);
-                    retries++;
-                } catch (InterruptedException ie) {
-                    throw MESSAGES.connectionToMasterInterrupted();
-                }
-            }
-        }
-        if(connected) {
-            // Setup the transaction protocol handler
-            handler.addHandlerFactory(new TransactionalProtocolOperationHandler(controller, handler));
-            // Use the existing channel strategy
-            masterProxy = ExistingChannelModelControllerClient.createAndAdd(handler);
+        List<DiscoveryOption> discoveryOptions = localHostInfo.getRemoteDomainControllerDiscoveryOptions();
+        // Loop through discovery options
+        for (Iterator<DiscoveryOption> i = discoveryOptions.iterator(); i.hasNext(); ) {
+           DiscoveryOption discoveryOption = i.next();
+           final long timeout = CONNECTION_TIMEOUT;
+           final long endTime = System.currentTimeMillis() + timeout;
+           int retries = 0;
+           String host = null;
+           int port = -1;
+           try {
+               // Determine the remote DC host and port to use
+               discoveryOption.discover();
+               host = discoveryOption.getRemoteDomainControllerHost();
+               port = discoveryOption.getRemoteDomainControllerPort();
+               connection.setUri(new URI("remote://" + NetworkUtils.formatPossibleIpv6Address(host) + ":" + port));
+
+               while (!connected) {
+                   try {
+                       // Try to connect to the domain controller
+                       connection.connect();
+                       connected = true;
+                   } catch (IOException e) {
+                       Throwable cause = e;
+                       HostControllerLogger.ROOT_LOGGER.debugf(e, "failed to connect to %s:%d", host, port);
+                       while ((cause = cause.getCause()) != null) {
+                           if (cause instanceof SaslException) {
+                               throw MESSAGES.authenticationFailureUnableToConnect(cause);
+                           } else if (cause instanceof SSLHandshakeException) {
+                               throw MESSAGES.sslFailureUnableToConnect(cause);
+                           } else if (cause instanceof SlaveRegistrationException) {
+                               throw new IOException(cause);
+                           }
+                       }
+                       if (System.currentTimeMillis() > endTime) {
+                           throw MESSAGES.connectionToMasterTimeout(e, retries, timeout);
+                       }
+                       try {
+                           HostControllerLogger.ROOT_LOGGER.cannotConnect(host, port, e);
+                           ReconnectPolicy.CONNECT.wait(retries);
+                           retries++;
+                       } catch (InterruptedException ie) {
+                           throw MESSAGES.connectionToMasterInterrupted();
+                       }
+                   }
+               }
+               if(connected) {
+                   // Setup the transaction protocol handler
+                   handler.addHandlerFactory(new TransactionalProtocolOperationHandler(controller, handler));
+                   // Use the existing channel strategy
+                   masterProxy = ExistingChannelModelControllerClient.createAndAdd(handler);
+                   break;
+               }
+           } catch (Exception e) {
+               if (i.hasNext()) {
+                   HostControllerLogger.ROOT_LOGGER.tryingAnotherDiscoveryOption(e);
+               } else {
+                   // All discovery options have been exhausted
+                   HostControllerLogger.ROOT_LOGGER.noDiscoveryOptionsLeft(e);
+                   throw MESSAGES.discoveryOptionsFailureUnableToConnect(e);
+               }
+           }
         }
     }
 
@@ -289,14 +315,16 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
 
             // Gather the required information to connect to the remote DC
             final ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
-            configuration.setUri(new URI("remote://" + NetworkUtils.formatPossibleIpv6Address(localHostInfo.getRemoteDomainControllerHost()) + ":" + localHostInfo.getRemoteDomainControllerPort()));
+            // The URI will be set accordingly when looping through discovery options when registering with
+            // or reconnecting to the remote DC.
             configuration.setEndpoint(endpointInjector.getValue());
             configuration.setOptionMap(options);
 
             final SecurityRealm realm = securityRealmInjector.getOptionalValue();
             // Create the remote domain channel strategy
             connection = new RemoteDomainConnection(localHostInfo.getLocalHostName(), hostInfo, configuration, realm,
-                    localHostInfo.getRemoteDomainControllerUsername(), executor, scheduledExecutorService,
+                    localHostInfo.getRemoteDomainControllerUsername(),
+                    localHostInfo.getRemoteDomainControllerDiscoveryOptions(), executor, scheduledExecutorService,
                     new RemoteDomainConnection.HostRegistrationCallback() {
 
                 @Override

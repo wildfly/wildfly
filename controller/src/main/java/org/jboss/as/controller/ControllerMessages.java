@@ -2623,4 +2623,18 @@ public interface ControllerMessages {
 
     @Message(id = 14897, value = "Resource %s is rejected on the target host and will need to be ignored on the host: %s")
     String rejectResourceOperationTransformation(PathAddress address, ModelNode operation);
+
+    /**
+     * Creates an exception indicating that {@code discoveryOptionsName} must be declared
+     * or the {@code hostName} and {@code portName} need to be provided.
+     *
+     * @param discoveryOptionsName the discovery-options element name.
+     * @param hostName the host attribute name.
+     * @param portName the port attribute name.
+     * @param location the location of the error.
+     *
+     * @return a {@link XMLStreamException} for the error.
+     */
+    @Message(id = 14898, value = "%s must be declared or the %s and the %s need to be provided.")
+    XMLStreamException discoveryOptionsMustBeDeclared(String discoveryOptionsName, String hostName, String portName, @Param Location location);
 }
