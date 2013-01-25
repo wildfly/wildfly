@@ -22,6 +22,8 @@
 
 package org.jboss.as.connector.services.jca;
 
+import org.jboss.as.connector.util.ConnectorServices;
+import org.jboss.as.connector.util.SerializedService;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.connectionmanager.ccm.CachedConnectionManagerImpl;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
@@ -65,7 +67,11 @@ public class CachedConnectionManagerService implements Service<CachedConnectionM
     public void start(StartContext context) throws StartException {
         value = new CachedConnectionManagerImpl(transactionIntegration.getValue().getTransactionManager(),
                                                 transactionIntegration.getValue().getTransactionSynchronizationRegistry(),
-                                                transactionIntegration.getValue().getUserTransactionRegistry());
+                                                transactionIntegration.getValue().getUserTransactionRegistry()) {
+            Object writeReplace() {
+                return new SerializedService(ConnectorServices.CCM_SERVICE);
+            }
+        };
         value.setDebug(debug);
         value.setError(error);
 
