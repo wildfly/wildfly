@@ -123,7 +123,7 @@ class ResourceTransformationDescriptionBuilderImpl extends AbstractTransformatio
 
     @Override
     public OperationTransformationOverrideBuilder addOperationTransformationOverride(final String operationName) {
-        final OperationTransformationOverrideBuilderImpl transformationBuilder = new OperationTransformationOverrideBuilderImpl(this);
+        final OperationTransformationOverrideBuilderImpl transformationBuilder = new OperationTransformationOverrideBuilderImpl(operationName, this);
         addOperationTransformerEntry(operationName, new OperationTransformationEntry() {
             @Override
             OperationTransformer getOperationTransformer(AttributeTransformationDescriptionBuilderImpl.AttributeTransformationDescriptionBuilderRegistry resourceRegistry) {
