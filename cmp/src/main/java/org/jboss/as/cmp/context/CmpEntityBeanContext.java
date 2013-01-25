@@ -67,6 +67,11 @@ public class CmpEntityBeanContext extends EntityContextImpl {
 
     public void setValid(final boolean valid) {
         this.valid = valid;
+        //TODO not sure whether this is the best place to fix (aloubyansky, wfink)
+        // problem is that the instance must reset the txAssoc if a entity-pool is configured
+        if(!valid) {
+            txAssociation = TransactionEntityMap.NONE;
+        }
     }
 
     public boolean isReadOnly() {
