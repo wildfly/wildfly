@@ -24,9 +24,13 @@ package org.jboss.as.domain.controller.transformers;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -41,7 +45,8 @@ import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
-import org.jboss.as.domain.controller.resources.ServerGroupResourceDefinition;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 
 /**
  * Global transformation rules for the domain, host and server-config model.
@@ -74,13 +79,35 @@ public class DomainTransformers {
         initializeDomainRegistry(registry, VERSION_1_4);
     }
 
-    private static void initializeDomainRegistry(final TransformerRegistry registry, ModelVersion modelVersion) {
+    private static void initializeDomainRegistry(TransformerRegistry registry, ModelVersion modelVersion) {
         TransformersSubRegistration domain = registry.getDomainRegistration(modelVersion);
         if (modelVersion == VERSION_1_2 || modelVersion == VERSION_1_3) {
             // Discard all operations to the newly introduced jsf extension
             domain.registerSubResource(JSF_EXTENSION, IGNORED_EXTENSIONS);
             // Ignore the jsf subsystem as well
-            registry.registerSubsystemTransformers(JSF_SUBSYSTEM, IGNORED_SUBSYSTEMS, ResourceTransformer.DISCARD);
+            registry.registerSubsystemTransformers(JSF_SUBSYSTEM, IGNORED_SUBSYSTEMS, new ResourceTransformer() {
+                @Override
+                public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
+                    final String slotAttributeName = "default-jsf-impl-slot";
+                    final String slotDefaultValue = "main";
+
+                    ModelNode model = resource.getModel();
+                    if (model.hasDefined(slotAttributeName)) {
+                        ModelNode slot = model.get(slotAttributeName);
+                        if (!slotDefaultValue.equals(slot.asString())) {
+                            context.getLogger().logWarning(address, slotAttributeName, MESSAGES.invalidJSFSlotValue(slot.asString()));
+                        }
+                    }
+                    Set<String> attributes = new HashSet<String>();
+                    for(Property prop: resource.getModel().asPropertyList()) {
+                        attributes.add(prop.getName());
+                    }
+                    attributes.remove(slotAttributeName);
+                    if (!attributes.isEmpty()) {
+                            context.getLogger().logWarning(address, ControllerMessages.MESSAGES.attributesAreNotUnderstoodAndWillBeIgnored(), attributes);
+                    }
+                }
+            });
 
             PathsTransformers.registerTransformers120(domain);
             DeploymentTransformers.registerTransformers120(domain);
