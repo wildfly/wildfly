@@ -56,14 +56,14 @@ import static org.junit.Assert.assertNotNull;
  *         JBQA-5737 basic subsystem deployment
  */
 @RunWith(Arquillian.class)
-@ServerSetup(BasicDeploymentTestCase.BasicDeploymentTestCaseSetup.class)
-public class BasicDeploymentTestCase extends ContainerResourceMgmtTestBase {
+@ServerSetup(BasicDeployment16TestCase.BasicDeploymentTestCaseSetup.class)
+public class BasicDeployment16TestCase extends ContainerResourceMgmtTestBase {
 
     static class BasicDeploymentTestCaseSetup extends AbstractMgmtServerSetupTask {
 
         @Override
         public void doSetup(final ManagementClient managementClient) throws Exception {
-            String xml = FileUtils.readFile(BasicDeploymentTestCase.class, "basic.xml");
+            String xml = FileUtils.readFile(BasicDeployment16TestCase.class, "basic16.xml");
             List<ModelNode> operations = xmlToModelOperations(xml, Namespace.CURRENT.getUriString(), new ResourceAdapterSubsystemParser());
             executeOperation(operationListToCompositeOperation(operations));
         }
@@ -93,13 +93,13 @@ public class BasicDeploymentTestCase extends ContainerResourceMgmtTestBase {
                 ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName);
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "multiple.jar");
         ja.addPackage(MultipleConnectionFactory1.class.getPackage()).
-                addClasses(BasicDeploymentTestCase.class,  MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class,
+                addClasses(BasicDeployment16TestCase.class,  MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class,
                         BasicDeploymentTestCaseSetup.class);
 
         ja.addPackage(AbstractMgmtTestBase.class.getPackage());
         raa.addAsLibrary(ja);
 
-        raa.addAsManifestResource(BasicDeploymentTestCase.class.getPackage(), "ra.xml", "ra.xml")
+        raa.addAsManifestResource(BasicDeployment16TestCase.class.getPackage(), "ra16.xml", "ra.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli\n"), "MANIFEST.MF");
         ;
         return raa;
