@@ -22,12 +22,6 @@
 
 package org.jboss.as.controller.transform.description;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -38,8 +32,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.OperationRejectionPolicy;
-import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.PathAddressTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
@@ -73,9 +65,12 @@ class TransformingDescription extends AbstractDescription implements Transformat
 
         this.operationTransformers = operations;
         // TODO override more global operations?
-        // TODO Allow overriding of the default implementations!?
-        operationTransformers.put(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, new WriteAttributeTransformer());
-        operationTransformers.put(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION, new UndefineAttributeTransformer());
+        if(! operationTransformers.containsKey(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION)) {
+            operationTransformers.put(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, OperationTransformationRules.createWriteOperation(attributeTransformations));
+        }
+        if(! operationTransformers.containsKey(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION)) {
+            operationTransformers.put(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION, OperationTransformationRules.createUndefinedOperation(attributeTransformations));
+        }
     }
     @Override
     public OperationTransformer getOperationTransformer() {
@@ -145,119 +140,4 @@ class TransformingDescription extends AbstractDescription implements Transformat
         rule.transformResource(original, address, context);
     }
 
-    private class WriteAttributeTransformer implements OperationTransformer {
-
-        @Override
-        public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation) throws OperationFailedException {
-
-            final String attributeName = operation.require(ModelDescriptionConstants.NAME).asString();
-            final AttributeTransformationDescription description = attributeTransformations.get(attributeName);
-            if(description == null) {
-                return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
-            }
-
-            ModelNode attributeValue = operation.get(ModelDescriptionConstants.VALUE);
-
-            // Process
-            TransformationRule.AbstractChainedContext ctx = new TransformationRule.AbstractChainedContext(context) {
-                @Override
-                protected TransformationContext getContext() {
-                    return super.getContext();
-                }
-            };
-            //discard what can be discarded
-            if (description.shouldDiscard(address, attributeValue, operation, ctx)) {
-                return OperationTransformer.DISCARD.transformOperation(context, address, operation);
-            }
-
-            //Make sure that context.readResourceXXX() returns an unmodifiable Resource
-            ctx.setImmutableResource(true);
-            try {
-                //Check the rest of the model can be transformed
-                final RejectedAttributesLogContext rejectedAttributes = new RejectedAttributesLogContext(ctx, address, TransformationRule.cloneAndProtect(operation));
-                description.rejectAttributes(rejectedAttributes, attributeValue);
-                final OperationRejectionPolicy policy;
-                if(rejectedAttributes.hasRejections()) {
-
-                    rejectedAttributes.errorOrWarn();
-                    policy = new OperationRejectionPolicy() {
-                        @Override
-                        public boolean rejectOperation(ModelNode preparedResult) {
-                            return true;
-                        }
-
-                        @Override
-                        public String getFailureDescription() {
-                            try {
-                                return rejectedAttributes.errorOrWarn();
-                            } catch (OperationFailedException e) {
-                                //This will not happen
-                                return null;
-                            }
-                        }
-                    };
-                } else {
-                    policy = DEFAULT_REJECTION_POLICY;
-                }
-
-                //Now transform the value
-                description.convertValue(address, attributeValue, TransformationRule.cloneAndProtect(operation), ctx);
-
-                //Change the name
-                String newName = description.getNewName();
-                if (newName != null) {
-                    operation.get(NAME).set(newName);
-                }
-
-                return new TransformedOperation(operation, policy, OperationResultTransformer.ORIGINAL_RESULT);
-            } finally {
-                ctx.setImmutableResource(false);
-            }
-        }
-    }
-
-    static final ModelNode UNDEFINED = new ModelNode();
-
-    private class UndefineAttributeTransformer implements OperationTransformer {
-        @Override
-        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
-
-            final String attributeName = operation.require(ModelDescriptionConstants.NAME).asString();
-            final AttributeTransformationDescription description = attributeTransformations.get(attributeName);
-            if(description == null) {
-                return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
-            }
-
-            final ModelNode originalModel = operation.clone();
-            TransformationRule.AbstractChainedContext ctx = new TransformationRule.AbstractChainedContext(context) {
-                @Override
-                protected TransformationContext getContext() {
-                    return super.getContext();
-                }
-            };
-
-            //Make sure that context.readResourceXXX() returns an unmodifiable Resource
-            ctx.setImmutableResource(true);
-            try {
-                final ModelNode value = new ModelNode();
-                description.convertValue(address, value, operation, ctx);
-                if(value.isDefined()) {
-                    final ModelNode writeAttribute = new ModelNode();
-                    writeAttribute.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-                    writeAttribute.get(OP_ADDR).set(address.toModelNode());
-                    writeAttribute.get(NAME).set(attributeName);
-                    writeAttribute.get(VALUE).set(value);
-                    return new TransformedOperation(writeAttribute, OperationResultTransformer.ORIGINAL_RESULT);
-                }
-
-                //discard what can be discarded
-                if (description.shouldDiscard(address, UNDEFINED, originalModel, ctx)) {
-                    return OperationTransformer.DISCARD.transformOperation(context, address, operation);
-                }
-            } finally {
-                ctx.setImmutableResource(false);
-            }
-            return new TransformedOperation(operation, DEFAULT_REJECTION_POLICY, OperationResultTransformer.ORIGINAL_RESULT);
-        }
-    }
 }

@@ -99,13 +99,7 @@ public interface TransformationDescription {
         public static TransformersSubRegistration register(final TransformationDescription description, TransformersSubRegistration parent) {
             final TransformersSubRegistration registration = parent.registerSubResource(description.getPath(), description.getPathAddressTransformer(), description.getResourceTransformer(), description.getOperationTransformer());
             for (final Map.Entry<String, OperationTransformer> entry : description.getOperationTransformers().entrySet()) {
-                try {
-                    registration.registerOperationTransformer(entry.getKey(), entry.getValue());
-                } catch(Exception e) {
-                    System.out.println(description.getPath());
-                    throw new RuntimeException(description.getPath().toString(), e);
-                }
-
+                registration.registerOperationTransformer(entry.getKey(), entry.getValue());
             }
             for (final TransformationDescription child : description.getChildren()) {
                 register(child, registration);

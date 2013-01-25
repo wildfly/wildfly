@@ -23,9 +23,12 @@
 package org.jboss.as.controller.transform.description;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -44,8 +47,11 @@ class OperationTransformationOverrideBuilderImpl extends AttributeTransformation
     private OperationTransformer transformer = OperationTransformer.DEFAULT;
     private String newName;
 
-    protected OperationTransformationOverrideBuilderImpl(ResourceTransformationDescriptionBuilder builder) {
+    private final String operationName;
+
+    protected OperationTransformationOverrideBuilderImpl(final String operationName, final ResourceTransformationDescriptionBuilder builder) {
         super(builder, new AttributeTransformationDescriptionBuilderImpl.AttributeTransformationDescriptionBuilderRegistry());
+        this.operationName = operationName;
     }
 
     @Override
@@ -67,7 +73,22 @@ class OperationTransformationOverrideBuilderImpl extends AttributeTransformation
 
     protected OperationTransformer createTransformer(final AttributeTransformationDescriptionBuilderRegistry resourceRegistry) {
         final AttributeTransformationDescriptionBuilderRegistry registry = resultingRegistry(resourceRegistry);
-        final AttributeTransformationRule first = new AttributeTransformationRule(registry.buildAttributes());
+        final Map<String, AttributeTransformationDescription> descriptions = registry.buildAttributes();
+        if(WRITE_ATTRIBUTE_OPERATION.equals(operationName)) {
+            // Custom write-attribute operation
+            final TransformationRule first = new OperationTransformationRules.WriteAttributeRule(descriptions);
+            return createTransformer(first);
+        } else if(UNDEFINE_ATTRIBUTE_OPERATION.equals(operationName)) {
+            // Custom undefine-attribute operation
+            final TransformationRule first = new OperationTransformationRules.UndefineAttributeRule(descriptions);
+            return createTransformer(first);
+        } else {
+            final AttributeTransformationRule first = new AttributeTransformationRule(descriptions);
+            return createTransformer(first);
+        }
+    }
+
+    protected OperationTransformer createTransformer(final TransformationRule first) {
         return new OperationTransformer() {
             @Override
             public TransformedOperation transformOperation(final TransformationContext ctx, final PathAddress address, final ModelNode operation) throws OperationFailedException {
