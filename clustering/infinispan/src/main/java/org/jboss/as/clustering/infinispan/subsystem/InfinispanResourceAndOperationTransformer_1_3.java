@@ -25,10 +25,13 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
+import java.util.regex.Pattern;
+
+import org.jboss.as.clustering.infinispan.InfinispanMessages;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.AbstractOperationTransformer;
+import org.jboss.as.controller.transform.OperationRejectionPolicy;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
@@ -44,22 +47,55 @@ import org.jboss.dmr.ModelType;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  * @author Richard Achmatowicz (c) RedHat 2013
  */
-public class InfinispanResourceAndOperationTransformer_1_3 extends AbstractOperationTransformer implements ChainedResourceTransformerEntry {
+public class InfinispanResourceAndOperationTransformer_1_3 implements OperationTransformer, ChainedResourceTransformerEntry {
 
     // ratio of segments to virtual nodes to convert between the two
     public static final int SEGMENTS_PER_VIRTUAL_NODE = 6;
 
+    private static final Pattern EXPRESSION_PATTERN = Pattern.compile(".*\\$\\{.*\\}.*");
+
     @Override
-    protected ModelNode transform(TransformationContext context, PathAddress address, ModelNode operation) {
-        convert(operation);
+    public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation) {
+        boolean segmentExpression = convert(operation);
         remove(operation);
-        return operation;
+
+        OperationRejectionPolicy rejectPolicy;
+        if (segmentExpression) {
+            // The slave can't handle an expression in virtual-nodes, but we also can't resolve the expression
+            // and translate. So this operation will fail if the slave hasn't ignored the profile. What we
+            // can do is provide a more useful failure-description.
+            rejectPolicy = new OperationRejectionPolicy() {
+                @Override
+                public boolean rejectOperation(ModelNode preparedResult) {
+                    // Reject successful operations
+                    return true;
+                }
+
+                @Override
+                public String getFailureDescription() {
+                    String message = null;
+                    return context.getLogger().getWarning(address, operation,
+                            InfinispanMessages.MESSAGES.virtualNodesDoesNotSupportExpressions(), null);
+                }
+            };
+        } else {
+            rejectPolicy = OperationTransformer.DEFAULT_REJECTION_POLICY;
+        }
+
+        return new TransformedOperation(operation, rejectPolicy, OperationResultTransformer.ORIGINAL_RESULT);
     }
 
     @Override
     public void transformResource(ChainedResourceTransformationContext context, PathAddress address, Resource resource)
             throws OperationFailedException {
-        convert(resource.getModel());
+        if (convert(resource.getModel())) {
+            // The slave can't handle an expression in virtual-nodes, but we also can't resolve the expression
+            // and translate. So this profile will fail if the slave attempts to launch a server
+            // with it. This is a 7.1.x slave and all we can do here is log a WARN. (If it were
+            // a 7.2 or greater slave we could check if the address is ignored and throw an exception if not.)
+            context.getLogger().logWarning(address, null,
+                    InfinispanMessages.MESSAGES.virtualNodesDoesNotSupportExpressions(), (String) null);
+        }
         remove(resource.getModel());
     }
 
@@ -70,7 +106,7 @@ public class InfinispanResourceAndOperationTransformer_1_3 extends AbstractOpera
 
     private static final OperationTransformer IGNORE = new OperationTransformer() {
         @Override
-        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation)
+        public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation)
                 throws OperationFailedException {
 
             String attrName = operation.get(NAME).asString();
@@ -92,7 +128,27 @@ public class InfinispanResourceAndOperationTransformer_1_3 extends AbstractOpera
                     // return the new transformed operation model node;  this is a write, so the return result is unaffected
                     return new TransformedOperation(transformed, OperationResultTransformer.ORIGINAL_RESULT);
                 }  else {
-                    return OperationTransformer.DISCARD.transformOperation(context, address, operation);
+                    // The slave can't handle an expression in virtual-nodes, but we also can't resolve the expression
+                    // and translate. So this operation will fail if the slave hasn't ignored the profile. What we
+                    // can do is provide a more useful failure-description.
+                    OperationRejectionPolicy rejectPolicy = new OperationRejectionPolicy() {
+                        @Override
+                        public boolean rejectOperation(ModelNode preparedResult) {
+                            // Reject successful operations
+                            return true;
+                        }
+
+                        @Override
+                        public String getFailureDescription() {
+                            String message = null;
+                            return context.getLogger().getWarning(address, operation, message, null);
+                        }
+                    };
+
+                    // transform the operation to a write of virtual nodes
+                    ModelNode transformed = operation.clone();
+                    transformed.get(NAME).set(ModelKeys.VIRTUAL_NODES);
+                    return new TransformedOperation(transformed, rejectPolicy, OperationResultTransformer.ORIGINAL_RESULT);
                 }
             }
             return OperationTransformer.DEFAULT.transformOperation(context, address, operation);
@@ -100,7 +156,8 @@ public class InfinispanResourceAndOperationTransformer_1_3 extends AbstractOpera
     };
 
     private static boolean isExpression(ModelNode node) {
-        return node.getType() == ModelType.EXPRESSION ;
+        final ModelType type = node.getType();
+        return type == ModelType.EXPRESSION  || (type == ModelType.STRING && EXPRESSION_PATTERN.matcher(node.asString()).matches());
     }
 
     private static void remove(ModelNode model) {
@@ -112,22 +169,32 @@ public class InfinispanResourceAndOperationTransformer_1_3 extends AbstractOpera
         }
     }
 
-    private static void convert(ModelNode model) {
+    private static boolean convert(ModelNode model) {
+        boolean segmentExpression = false;
         if (model.has(ModelKeys.SEGMENTS)) {
-            ModelNode segments = model.get(ModelKeys.SEGMENTS) ;
-            if (segments.isDefined() && !isExpression(segments)) {
-                // convert segments value to virtual-nodes value
-                int segmentsValue = Integer.parseInt(segments.asString());
-                int virtualNodes = (segmentsValue / SEGMENTS_PER_VIRTUAL_NODE) + 1;
-                model.get(ModelKeys.VIRTUAL_NODES).set(Integer.toString(virtualNodes));
+            if (model.hasDefined(ModelKeys.SEGMENTS)) {
+                ModelNode segments = model.get(ModelKeys.SEGMENTS) ;
+                segmentExpression = isExpression(segments);
+                if (!segmentExpression) {
+                    // convert segments value to virtual-nodes value
+                    int segmentsValue = Integer.parseInt(segments.asString());
+                    int virtualNodes = (segmentsValue / SEGMENTS_PER_VIRTUAL_NODE) + 1;
+                    model.get(ModelKeys.VIRTUAL_NODES).set(Integer.toString(virtualNodes));
+                } else {
+                    // Pass the invalid value on to the slave in order to ensure any attempt to use this
+                    // on a server generates a failure
+                    model.get(ModelKeys.VIRTUAL_NODES).set(segments);
+                    // We return 'true' to allow the caller to take further action.
+                }
             }
             model.remove(ModelKeys.SEGMENTS);
         }
+
+        return segmentExpression;
     }
 
     /*
      * Convert a 1.3 virtual nodes value to a 1.4 segments value
-     * TODO: handle expressions
      */
     public static String virtualNodesToSegments(String virtualNodesValue) {
         int segments = 0 ;
