@@ -396,4 +396,45 @@ public interface HostControllerLogger extends BasicLogger {
     @LogMessage(level = Level.WARN)
     @Message(id=10939, value="The slave host controller \"%s\"  could not be reached in the last [%d] milliseconds. Unregistering.")
     void slaveHostControllerUnreachable(String hostName, long timeout);
+
+    /**
+     * Logs a warning message indicating that the slave host controller could not
+     * connect to the remote domain controller and that another discovery option
+     * will be tried.
+     *
+     * @param e the cause of the error.
+     */
+    @LogMessage(level = Level.WARN)
+    @Message(id=16534, value = "Could not connect to master. Trying another domain controller discovery option. Error was: %s")
+    void tryingAnotherDiscoveryOption(Exception e);
+
+    /**
+     * Logs a warning message indicating that the slave host controller could not
+     * connect to the remote domain controller and that there are no discovery options left.
+     *
+     * @param e the cause of the error.
+     */
+    @LogMessage(level = Level.WARN)
+    @Message(id=16535, value = "Could not connect to master. No domain controller discovery options left. Error was: %s")
+    void noDiscoveryOptionsLeft(Exception e);
+
+    /**
+     * Logs an error message indicating that the master host controller could not write its
+     * data to the S3 file.
+     *
+     * @param e the cause of the error.
+     */
+    @LogMessage(level = Level.ERROR)
+    @Message(id=16536, value = "Could not write domain controller data to S3 file. Error was: %s")
+    void cannotWriteDomainControllerData(Exception e);
+
+    /**
+     * Logs an error message indicating that the master host controller could not remove
+     * the S3 file.
+     *
+     * @param e the cause of the error.
+     */
+    @LogMessage(level = Level.ERROR)
+    @Message(id=16537, value = "Could not remove S3 file. Error was: %s")
+    void cannotRemoveS3File(Exception e);
 }

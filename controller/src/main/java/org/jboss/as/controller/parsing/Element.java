@@ -48,6 +48,8 @@ public enum Element {
     CLIENT_MAPPING("client-mapping"),
     CONTENT("content"),
 
+    DISCOVERY_OPTION("discovery-option"),
+    DISCOVERY_OPTIONS("discovery-options"),
     DOMAIN("domain"),
     DOMAIN_CONTROLLER("domain-controller"),
     DEPLOYMENT("deployment"),
@@ -138,6 +140,7 @@ public enum Element {
     SOCKET_BINDING_GROUPS("socket-binding-groups"),
     SSL("ssl"),
     STACK("stack"),
+    STATIC_DISCOVERY("static-discovery"),
     SUBNET_MATCH("subnet-match"),
     SUBSYSTEM("subsystem"),
     SYSTEM_PROPERTIES("system-properties"),

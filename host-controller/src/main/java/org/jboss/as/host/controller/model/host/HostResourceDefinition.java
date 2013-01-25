@@ -65,6 +65,9 @@ import org.jboss.as.host.controller.HostModelUtil;
 import org.jboss.as.host.controller.HostRunningModeControl;
 import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.as.host.controller.descriptions.HostEnvironmentResourceDefinition;
+import org.jboss.as.host.controller.discovery.DiscoveryOptionResourceDefinition;
+import org.jboss.as.host.controller.discovery.DiscoveryOptionsResourceDefinition;
+import org.jboss.as.host.controller.discovery.StaticDiscoveryResourceDefinition;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.host.controller.model.jvm.JvmResourceDefinition;
 import org.jboss.as.host.controller.operations.HostShutdownHandler;
@@ -320,6 +323,10 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
         //host-environment
         hostRegistration.registerSubModel(HostEnvironmentResourceDefinition.of(environment));
 
+        // discovery options
+        ManagementResourceRegistration discoveryOptions = hostRegistration.registerSubModel(DiscoveryOptionsResourceDefinition.INSTANCE);
+        discoveryOptions.registerSubModel(new StaticDiscoveryResourceDefinition(hostControllerInfo));
+        discoveryOptions.registerSubModel(new DiscoveryOptionResourceDefinition(hostControllerInfo));
 
         // Jvms
         final ManagementResourceRegistration jvms = hostRegistration.registerSubModel(JvmResourceDefinition.GLOBAL);
