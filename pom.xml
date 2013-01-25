@@ -85,7 +85,7 @@
         <version.com.sun.xsom>20110809</version.com.sun.xsom>
         <version.commons-beanutils>1.8.3</version.commons-beanutils>
         <version.commons-cli>1.2</version.commons-cli>
-        <version.commons-codec>1.4</version.commons-codec>
+        <version.commons-codec>1.6</version.commons-codec>
         <version.commons-collections>3.2.1</version.commons-collections>
         <version.commons-io>2.1</version.commons-io>
         <version.commons-configuration>1.6</version.commons-configuration>
