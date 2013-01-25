@@ -23,6 +23,9 @@
 package org.jboss.as.host.controller.mgmt;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.host.controller.HostControllerLogger.DOMAIN_LOGGER;
 import static org.jboss.as.process.protocol.ProtocolUtils.expectHeader;
 
@@ -349,7 +352,11 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                 try {
                     // The domain model is going to be sent as part of the prepared notification
                     final OperationStepHandler handler = new HostRegistrationStepHandler(transformerRegistry, this);
-                    operationExecutor.execute(READ_DOMAIN_MODEL, OperationMessageHandler.logging, this, OperationAttachments.EMPTY, handler);
+                    ModelNode result = operationExecutor.execute(READ_DOMAIN_MODEL, OperationMessageHandler.logging, this, OperationAttachments.EMPTY, handler);
+                    if (FAILED.equals(result.get(OUTCOME).asString())) {
+                        failed(SlaveRegistrationException.ErrorCode.UNKNOWN, result.get(FAILURE_DESCRIPTION).asString());
+                        return;
+                    }
                 } catch (Exception e) {
                     failed(e);
                     return;
