@@ -65,22 +65,18 @@ import javax.resource.spi.ActivationSpec;
  *
  *         Tests for module deployment of resource adapter archive in
  *         uncompressed form with classes in flat form (under package structure)
- *
- *         Structure of module is:
- *         modulename
+ * 
+ *         Structure of module is: 
+ *         modulename 
  *         modulename/main
- *         modulename/main/module.xml
+ *         modulename/main/module.xml 
  *         modulename/main/META-INF
- *         modulename/main/META-INF/ra.xml
- *         modulename/main/org
- *         modulename/main/org/jboss/
- *         modulename/main/org/jboss/package/
- *         modulename/main/org/jboss/package/First.class
- *         modulename/main/org/jboss/package/Second.class ...
+ *         modulename/main/META-INF/ra.xml 
+ *         modulename/main/module.jar
  */
 @RunWith(Arquillian.class)
-@ServerSetup(InflowFlatTestCase.ModuleAcDeploymentTestCaseSetup.class)
-public class InflowFlatTestCase extends AbstractModuleDeploymentTestCase {
+@ServerSetup(InflowJarTestCase.ModuleAcDeploymentTestCaseSetup.class)
+public class InflowJarTestCase extends AbstractModuleDeploymentTestCase {
 
 	static class ModuleAcDeploymentTestCaseSetup extends
 			ModuleDeploymentTestCaseSetup {
@@ -88,8 +84,8 @@ public class InflowFlatTestCase extends AbstractModuleDeploymentTestCase {
 		@Override
 		public void doSetup(ManagementClient managementClient) throws Exception {
 
-			super.doSetup(managementClient);
-			fillModuleWithFlatClasses("ra3.xml");
+			addModule(defaultPath, "module-jar.xml");
+			fillModuleWithJar("ra3.xml");
 			setConfiguration("inflow.xml");
 
 		}
@@ -186,6 +182,7 @@ public class InflowFlatTestCase extends AbstractModuleDeploymentTestCase {
 		assertNotNull(piId);
 		assertNotNull(repository.getResourceAdapter(piId));
 	}
+
 
 	@Override
 	protected ModelNode getAddress() {
