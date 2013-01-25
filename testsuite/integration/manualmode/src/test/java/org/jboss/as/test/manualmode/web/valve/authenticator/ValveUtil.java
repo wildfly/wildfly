@@ -179,34 +179,39 @@ public class ValveUtil {
             }
         }
     }
-    
+
     /**
      * Provide reload operation on server
-     * 
+     *
      * @throws Exception
      */
     public static void reload(final ManagementClient managementClient) throws Exception {
         ModelNode operation = new ModelNode();
         operation.get(OP).set("reload");
-        applyUpdate(managementClient, operation);
+
+        try {
+            applyUpdate(managementClient, operation);
+        } catch (Exception e) {
+            log.error("Exception applying reload operation. This is probably fine, as the server probably shut down before the response was sent", e);
+        }
         boolean reloaded = false;
         int i = 0;
         while (!reloaded) {
             try {
-                Thread.sleep(5000);
+                Thread.sleep(2000);
                 if (managementClient.isServerInRunningState()) {
                     reloaded = true;
                 }
             } catch (Throwable t) {
                 // nothing to do, just waiting
             } finally {
-                if (!reloaded && i++ > 10) {
+                if (!reloaded && i++ > 20) {
                     throw new Exception("Server reloading failed");
                 }
             }
         }
     }
-    
+
     public static String readASPath(final ModelControllerClient client) throws Exception {
         ModelNode op = new ModelNode();
         op.get(OP).set("read-attribute");
