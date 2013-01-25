@@ -400,6 +400,7 @@ public interface HostControllerLogger extends BasicLogger {
     void slaveHostControllerUnreachable(String hostName, long timeout);
 
     // WARNING -- THESE MESSAGE NUMBERS SHOULD NOT BE IN THIS FILE, BUT NOW THEY ARE OUT IN THE WILD
+
     /**
      * Logs a warning message indicating that the slave host controller could not
      * connect to the remote domain controller and that another discovery option

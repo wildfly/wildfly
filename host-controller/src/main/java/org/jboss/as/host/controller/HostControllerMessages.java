@@ -727,6 +727,8 @@ public interface HostControllerMessages {
     @Message(id=16533, value="Cannot instantiate discovery option class '%s': %s")
     IllegalStateException cannotInstantiateDiscoveryOptionClass(String className, String message);
 
+    // WARNING -- 16534 through 16537 are in HostControllerLogger
+
     @Message(id=16538, value="Invalid value for %s. Must only contain all of the existing discovery options")
     OperationFailedException invalidDiscoveryOptionsOrdering(String name);
 

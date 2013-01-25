@@ -96,6 +96,7 @@ import org.jboss.as.domain.controller.operations.coordination.PrepareStepHandler
 import org.jboss.as.domain.controller.resources.DomainRootDefinition;
 import org.jboss.as.domain.management.CoreManagementResourceDefinition;
 import org.jboss.as.host.controller.RemoteDomainConnectionService.RemoteFileRepository;
+import org.jboss.as.host.controller.discovery.DiscoveryOption;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.host.controller.mgmt.HostControllerRegistrationHandler;
 import org.jboss.as.host.controller.mgmt.MasterDomainControllerOperationHandlerService;
@@ -427,6 +428,14 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
             if (ok) {
 
+                // Now we know our discovery configuration.
+                List<DiscoveryOption> discoveryOptions = hostControllerInfo.getRemoteDomainControllerDiscoveryOptions();
+                if (hostControllerInfo.isMasterDomainController() && (discoveryOptions != null)) {
+                    // Install the discovery service
+                    DiscoveryService.install(serviceTarget, discoveryOptions, hostControllerInfo.getNativeManagementInterface(),
+                            hostControllerInfo.getNativeManagementPort(), hostControllerInfo.isMasterDomainController());
+                }
+
                 // Now we know our management interface configuration. Install the server inventory
                 Future<ServerInventory> inventoryFuture = ServerInventoryService.install(serviceTarget, this, runningModeControl, environment,
                         extensionRegistry, hostControllerInfo.getNativeManagementInterface(), hostControllerInfo.getNativeManagementPort());
@@ -439,7 +448,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
                     // Block for the ServerInventory
                     establishServerInventory(inventoryFuture);
 
-                    if (hostControllerInfo.getRemoteDomainControllerHost() != null) {
+                    if ((discoveryOptions != null) && !discoveryOptions.isEmpty()) {
                         connectToDomainMaster(serviceTarget, currentRunningMode);
                     } else if (currentRunningMode != RunningMode.ADMIN_ONLY) {
                             // Invalid configuration; no way to get the domain config

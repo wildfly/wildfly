@@ -54,6 +54,8 @@ public enum Element {
     CONSTRAINTS("constraints"),
     CONTENT("content"),
 
+    DISCOVERY_OPTION("discovery-option"),
+    DISCOVERY_OPTIONS("discovery-options"),
     DOMAIN("domain"),
     DOMAIN_CONTROLLER("domain-controller"),
     DEPLOYMENT("deployment"),
@@ -168,6 +170,7 @@ public enum Element {
     SOCKET_BINDING_GROUPS("socket-binding-groups"),
     SSL("ssl"),
     STACK("stack"),
+    STATIC_DISCOVERY("static-discovery"),
     SUBNET_MATCH("subnet-match"),
     SUBSYSTEM("subsystem"),
     SYSLOG_HANDLER("syslog-handler"),

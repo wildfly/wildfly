@@ -22,6 +22,7 @@
 package org.jboss.as.host.controller.operations;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISCOVERY_OPTIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_ENVIRONMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
@@ -111,6 +112,9 @@ public class HostModelRegistrationHandler implements OperationStepHandler {
         // Wire in the ignored-resources resource
         Resource.ResourceEntry ignoredRoot = ignoredDomainResourceRegistry.getRootResource();
         rootResource.registerChild(ignoredRoot.getPathElement(), ignoredRoot);
+
+        // Create the empty discovery options resource
+        context.createResource(hostAddress.append(PathElement.pathElement(CORE_SERVICE, DISCOVERY_OPTIONS)));
 
         context.stepCompleted();
     }

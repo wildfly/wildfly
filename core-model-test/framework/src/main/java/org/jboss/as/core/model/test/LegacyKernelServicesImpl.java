@@ -50,6 +50,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.operations.ApplyRemoteMasterDomainModelHandler;
+import org.jboss.as.host.controller.discovery.DiscoveryOption;
 import org.jboss.as.host.controller.ignored.IgnoreDomainResourceTypeResource;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.management.client.content.ManagedDMRContentTypeResource;
@@ -205,12 +206,8 @@ public class LegacyKernelServicesImpl extends AbstractKernelServicesImpl {
                 return null;
             }
 
-            public int getRemoteDomainControllerPort() {
-                return 0;
-            }
-
             @Override
-            public String getRemoteDomainControllerHost() {
+            public List<DiscoveryOption> getRemoteDomainControllerDiscoveryOptions() {
                 return null;
             }
 

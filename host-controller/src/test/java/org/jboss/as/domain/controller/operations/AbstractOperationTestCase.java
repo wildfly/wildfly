@@ -83,6 +83,7 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.management.CoreManagementResourceDefinition;
+import org.jboss.as.host.controller.discovery.DiscoveryOption;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -130,15 +131,11 @@ public abstract class AbstractOperationTestCase {
             return null;
         }
 
-        public String getRemoteDomainControllerHost() {
+        public String getRemoteDomainControllerUsername() {
             return null;
         }
 
-        public int getRemoteDomainControllerPort() {
-            return 0;
-        }
-
-        public String getRemoteDomainControllerUsername() {
+        public List<DiscoveryOption> getRemoteDomainControllerDiscoveryOptions() {
             return null;
         }
 
