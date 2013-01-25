@@ -87,7 +87,7 @@ if "x%JBOSS_MODULEPATH%" == "x" (
 
 
 "%JAVA%" %JAVA_OPTS% ^
- "-Dorg.jboss.server.log.file=%JBOSS_HOME%\appclient\log\appclient.log" ^
+ "-Dorg.jboss.boot.log.file=%JBOSS_HOME%\appclient\log\appclient.log" ^
  "-Dlogging.configuration=file:%JBOSS_HOME%/appclient/configuration/logging.properties" ^
     -jar "%JBOSS_HOME%\jboss-modules.jar" ^
     -mp "%JBOSS_MODULEPATH%" ^
