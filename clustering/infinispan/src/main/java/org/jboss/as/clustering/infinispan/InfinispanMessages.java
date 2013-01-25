@@ -201,4 +201,8 @@ public interface InfinispanMessages {
     @Message(id = 10384, value = "Attribute '%s' has been deprecated.")
     OperationFailedException attributeDeprecated(String attributeName);
 
+    @Message(id = 10385, value = "Attribute 'segments' is an expression and therefore cannot be translated to legacy attribute 'virtual-nodes'. This resource will need to be ignored on that host.")
+    String virtualNodesDoesNotSupportExpressions();
+
+
 }
