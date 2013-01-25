@@ -36,6 +36,10 @@ public class CmpAllowedMethodsInformation extends AllowedMethodsInformation {
 
     public static final CmpAllowedMethodsInformation INSTANCE = new CmpAllowedMethodsInformation();
 
+    protected CmpAllowedMethodsInformation() {
+        super(false);
+    }
+
     @Override
     protected void setup(Set<DeniedMethodKey> denied) {
         super.setup(denied);

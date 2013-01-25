@@ -23,9 +23,7 @@ package org.jboss.as.test.multinode.transaction;
 
 import javax.annotation.Resource;
 import javax.ejb.*;
-import javax.transaction.SystemException;
 import javax.transaction.TransactionSynchronizationRegistry;
-import javax.transaction.UserTransaction;
 import java.rmi.RemoteException;
 
 /**
@@ -42,7 +40,7 @@ public class TransactionalStatefulBean implements SessionSynchronization, Transa
     private boolean rollbackOnlyBeforeCompletion = false;
 
     @Resource
-    private UserTransaction userTransaction;
+    private SessionContext sessionContext;
 
     @Resource
     private TransactionSynchronizationRegistry transactionSynchronizationRegistry;
@@ -50,11 +48,7 @@ public class TransactionalStatefulBean implements SessionSynchronization, Transa
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public int transactionStatus() {
-        try {
-            return userTransaction.getStatus();
-        } catch (SystemException e) {
-            throw new RuntimeException(e);
-        }
+        return transactionSynchronizationRegistry.getTransactionStatus();
     }
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
@@ -82,11 +76,7 @@ public class TransactionalStatefulBean implements SessionSynchronization, Transa
 
     @TransactionAttribute(TransactionAttributeType.MANDATORY)
     public void rollbackOnly() throws RemoteException {
-        try {
-            userTransaction.setRollbackOnly();
-        } catch (SystemException e) {
-            throw new RemoteException("SystemException during setRollbackOnly", e);
-        }
+        this.sessionContext.setRollbackOnly();
     }
 
     public void ejbCreate() {
@@ -101,11 +91,7 @@ public class TransactionalStatefulBean implements SessionSynchronization, Transa
         beforeCompletion = true;
 
         if (rollbackOnlyBeforeCompletion) {
-            try {
-                userTransaction.setRollbackOnly();
-            } catch (SystemException e) {
-                throw new RemoteException("SystemException during setRollbackOnly", e);
-            }
+            this.sessionContext.setRollbackOnly();
         }
     }
 

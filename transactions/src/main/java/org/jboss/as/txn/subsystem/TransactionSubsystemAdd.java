@@ -34,6 +34,7 @@ import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.jacorb.service.CorbaNamingService;
 import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.as.naming.ManagedReferenceInjector;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -52,6 +53,8 @@ import org.jboss.as.txn.service.CoreEnvironmentService;
 import org.jboss.as.txn.service.TransactionManagerService;
 import org.jboss.as.txn.service.TransactionSynchronizationRegistryService;
 import org.jboss.as.txn.service.TxnServices;
+import org.jboss.as.txn.service.UserTransactionBindingService;
+import org.jboss.as.txn.service.UserTransactionAccessControlService;
 import org.jboss.as.txn.service.UserTransactionRegistryService;
 import org.jboss.as.txn.service.UserTransactionService;
 import org.jboss.as.txn.service.XATerminatorService;
@@ -69,6 +72,8 @@ import org.jboss.tm.usertx.UserTransactionRegistry;
 import org.omg.CORBA.ORB;
 
 import javax.transaction.TransactionSynchronizationRegistry;
+import javax.transaction.UserTransaction;
+
 import java.util.List;
 
 import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
@@ -247,21 +252,17 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         tsrBuilder.addListener(verificationHandler);
         controllers.add(tsrBuilder.install());
 
-        // Bind the UserTransaction into JNDI
-        final BinderService utBinderService = new BinderService("UserTransaction");
-        final ServiceBuilder<ManagedReferenceFactory> utBuilder = context.getServiceTarget().addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append("UserTransaction"), utBinderService);
-        utBuilder.addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, ServiceBasedNamingStore.class, utBinderService.getNamingStoreInjector());
-        utBuilder.addDependency(UserTransactionService.SERVICE_NAME, javax.transaction.UserTransaction.class, new Injector<javax.transaction.UserTransaction>() {
-            @Override
-            public void inject(final javax.transaction.UserTransaction value) throws InjectionException {
-                utBinderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(new ImmediateValue<Object>(value)));
-            }
+        // Install the UserTransactionAccessControlService
+        final UserTransactionAccessControlService lookupControlService = new UserTransactionAccessControlService();
+        context.getServiceTarget().addService(UserTransactionAccessControlService.SERVICE_NAME, lookupControlService).install();
 
-            @Override
-            public void uninject() {
-                utBinderService.getManagedObjectInjector().uninject();
-            }
-        });
+        // Bind the UserTransaction into JNDI
+        final UserTransactionBindingService userTransactionBindingService = new UserTransactionBindingService("UserTransaction");
+        final ServiceBuilder<ManagedReferenceFactory> utBuilder = context.getServiceTarget().addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append("UserTransaction"), userTransactionBindingService);
+        utBuilder.addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, ServiceBasedNamingStore.class, userTransactionBindingService.getNamingStoreInjector())
+            .addDependency(UserTransactionAccessControlService.SERVICE_NAME, UserTransactionAccessControlService.class,userTransactionBindingService.getUserTransactionAccessControlServiceInjector())
+            .addDependency(UserTransactionService.SERVICE_NAME, UserTransaction.class,
+                    new ManagedReferenceInjector<UserTransaction>(userTransactionBindingService.getManagedObjectInjector()));
         utBuilder.addListener(verificationHandler);
         controllers.add(utBuilder.install());
 

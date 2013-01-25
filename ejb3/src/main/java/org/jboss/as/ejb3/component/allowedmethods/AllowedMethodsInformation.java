@@ -45,14 +45,15 @@ import java.util.Set;
  */
 public class AllowedMethodsInformation {
 
-    public static final AllowedMethodsInformation INSTANCE = new AllowedMethodsInformation();
-
+    public static final AllowedMethodsInformation INSTANCE_BMT = new AllowedMethodsInformation(true);
+    public static final AllowedMethodsInformation INSTANCE_CMT = new AllowedMethodsInformation(false);
 
     private final Set<DeniedMethodKey> denied;
     private final Set<DeniedSyncMethodKey> deniedSyncMethods;
+    private final boolean beanManagedTransaction;
 
-
-    protected AllowedMethodsInformation() {
+    protected AllowedMethodsInformation(boolean beanManagedTransaction) {
+        this.beanManagedTransaction = beanManagedTransaction;
         final Set<DeniedMethodKey> denied = new HashSet<DeniedMethodKey>();
         add(denied, InvocationType.SET_ENTITY_CONTEXT, MethodType.TIMER_SERVICE_METHOD);
         add(denied, InvocationType.SET_ENTITY_CONTEXT, MethodType.TIMER_SERVICE_METHOD);
@@ -132,6 +133,9 @@ public class AllowedMethodsInformation {
             if (denied.contains(new DeniedMethodKey(invocationType, methodType))) {
                 throwException(methodType, invocationType);
             }
+        }
+        if (!beanManagedTransaction && methodType == MethodType.GET_USER_TRANSACTION) {
+            throw EjbMessages.MESSAGES.unauthorizedAccessToUserTransaction();
         }
     }
 

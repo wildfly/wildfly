@@ -34,7 +34,12 @@ import org.jboss.as.ejb3.component.session.SessionBeanAllowedMethodsInformation;
  */
 public class StatelessAllowedMethodsInformation extends SessionBeanAllowedMethodsInformation {
 
-    public static final StatelessAllowedMethodsInformation INSTANCE = new StatelessAllowedMethodsInformation();
+    public static final StatelessAllowedMethodsInformation INSTANCE_BMT = new StatelessAllowedMethodsInformation(true);
+    public static final StatelessAllowedMethodsInformation INSTANCE_CMT = new StatelessAllowedMethodsInformation(false);
+
+    protected StatelessAllowedMethodsInformation(boolean beanManagedTransaction) {
+        super(beanManagedTransaction);
+    }
 
     @Override
     protected void setup(Set<DeniedMethodKey> denied) {

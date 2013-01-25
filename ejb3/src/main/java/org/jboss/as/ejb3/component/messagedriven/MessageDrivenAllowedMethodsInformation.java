@@ -34,7 +34,12 @@ import org.jboss.as.ejb3.component.allowedmethods.MethodType;
  */
 public class MessageDrivenAllowedMethodsInformation extends AllowedMethodsInformation {
 
-    public static final MessageDrivenAllowedMethodsInformation INSTANCE = new MessageDrivenAllowedMethodsInformation();
+    public static final MessageDrivenAllowedMethodsInformation INSTANCE_BMT = new MessageDrivenAllowedMethodsInformation(true);
+    public static final MessageDrivenAllowedMethodsInformation INSTANCE_CMT = new MessageDrivenAllowedMethodsInformation(false);
+
+    protected MessageDrivenAllowedMethodsInformation(boolean beanManagedTransaction) {
+        super(beanManagedTransaction);
+    }
 
     @Override
     protected void setup(Set<DeniedMethodKey> denied) {

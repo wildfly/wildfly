@@ -34,6 +34,10 @@ import org.jboss.as.ejb3.component.allowedmethods.MethodType;
  */
 public class SessionBeanAllowedMethodsInformation  extends AllowedMethodsInformation {
 
+    protected SessionBeanAllowedMethodsInformation(boolean beanManagedTransaction) {
+        super(beanManagedTransaction);
+    }
+
     @Override
     protected void setup(Set<DeniedMethodKey> denied) {
         super.setup(denied);

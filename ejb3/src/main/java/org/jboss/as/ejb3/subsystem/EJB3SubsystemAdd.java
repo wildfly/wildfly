@@ -126,6 +126,7 @@ import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringProcessor;
 import org.jboss.as.txn.service.TxnServices;
+import org.jboss.as.txn.service.UserTransactionAccessControlService;
 import org.jboss.com.sun.corba.se.impl.javax.rmi.RemoteObjectSubstitutionManager;
 import org.jboss.dmr.ModelNode;
 import org.jboss.ejb.client.EJBClientContext;
@@ -319,6 +320,12 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         addRemoteInvocationServices(context, newControllers, model, appclient);
         // add clustering service
         this.addClusteringServices(context, newControllers, appclient);
+
+        // add user transaction access control service
+        final EJB3UserTransactionAccessControlService userTxAccessControlService = new EJB3UserTransactionAccessControlService();
+        newControllers.add(context.getServiceTarget().addService(EJB3UserTransactionAccessControlService.SERVICE_NAME, userTxAccessControlService)
+                .addDependency(UserTransactionAccessControlService.SERVICE_NAME, UserTransactionAccessControlService.class, userTxAccessControlService.getUserTransactionAccessControlServiceInjector())
+                .install());
 
         if (!appclient) {
             final EJBUtilities utilities = new EJBUtilities();
