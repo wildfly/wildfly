@@ -116,6 +116,12 @@
                         "required" => false,
                         "nillable" => true
                     },
+                    "driver-xa-datasource-class-name" => {
+                        "description" => "The fully qualified class name of the javax.sql.XADataSource implementation",
+                        "type" => STRING,
+                        "required" => false,
+                        "nillable" => true
+                    },
                     "driver-major-version" => {
                         "description" => "The driver's major version number",
                         "type" => INT,
