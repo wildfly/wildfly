@@ -20,13 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering.cluster.ejb3.mapbased.beans;
+package org.jboss.as.test.integration.ejb.mapbased;
+
+import org.jboss.ejb3.annotation.SecurityDomain;
+
+import javax.annotation.Resource;
+import javax.ejb.EJBContext;
+import javax.ejb.Remote;
+import javax.ejb.Stateful;
 
 /**
  * @author Jan Martiska / jmartisk@redhat.com
  */
-public interface StatelessIface {
+@Stateful
+@Remote(StatefulIface.class)
+@SecurityDomain("other")
+public class StatefulBean implements StatefulIface {
 
-    public String echo(String input);
+    @Resource
+    private EJBContext ejbContext;
 
+
+    @Override
+    public String getCallerPrincipalName() {
+        return ejbContext.getCallerPrincipal().getName();
+    }
 }

@@ -20,32 +20,13 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering.cluster.ejb3.mapbased.beans;
-
-import org.jboss.ejb3.annotation.Clustered;
-
-import javax.ejb.Remote;
-import javax.ejb.Stateful;
+package org.jboss.as.test.integration.ejb.mapbased;
 
 /**
  * @author Jan Martiska / jmartisk@redhat.com
  */
-@Stateful
-@Remote(StatefulIface.class)
-@Clustered
-public class StatefulBean implements StatefulIface {
+public interface StatefulIface {
 
-    private int number;
-
-
-    @Override
-    public int getNumber() {
-        return number;
-    }
-
-    @Override
-    public void setNumber(int number) {
-        this.number = number;
-    }
+    public String getCallerPrincipalName();
 
 }

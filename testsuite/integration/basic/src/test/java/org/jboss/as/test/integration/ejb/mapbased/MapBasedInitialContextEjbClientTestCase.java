@@ -26,15 +26,9 @@ import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.ejb.mapbased.beans.StatefulBean;
-import org.jboss.as.test.integration.ejb.mapbased.beans.StatefulIface;
-import org.jboss.as.test.integration.ejb.mapbased.beans.StatelessBean;
-import org.jboss.as.test.integration.ejb.mapbased.beans.StatelessIface;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -44,6 +38,7 @@ import java.util.Properties;
 
 /**
  * Tests for EJBCLIENT-34: properties-based JNDI InitialContext for EJB clients.
+ *
  * @author Jan Martiska / jmartisk@redhat.com
  */
 @RunWith(Arquillian.class)
@@ -51,7 +46,6 @@ import java.util.Properties;
 public class MapBasedInitialContextEjbClientTestCase {
 
     private static final String ARCHIVE_NAME = "map-based-client-1";
-    private static String classLoaderScanPropertyPreviousValue;
 
     @Deployment
     public static Archive<?> getDeployment() {
@@ -60,37 +54,26 @@ public class MapBasedInitialContextEjbClientTestCase {
         return archive;
     }
 
+
     /**
-     * We need to ignore the jboss-ejb-client.properties that will be on the classpath during runtime.
-     * It would clash with the runtime-properties-based solution and this test would not make any sense.
+     * Tests that invocations on a scoped EJB client context use the correct receiver(s)
+     *
+     * @throws Exception
      */
-    @BeforeClass
-    public static void prepare() {
-        classLoaderScanPropertyPreviousValue = System.getProperty("jboss.ejb.client.properties.skip.classloader.scan");
-        System.setProperty("jboss.ejb.client.properties.skip.classloader.scan", "true");
-    }
-
-    @AfterClass
-    public static void after() {
-        if (classLoaderScanPropertyPreviousValue != null) {
-            System.setProperty("jboss.ejb.client.properties.skip.classloader.scan", classLoaderScanPropertyPreviousValue);
-        }
-    }
-
-
     @Test
-    public void doTest() throws Exception {
+    public void testScopedEJBClientContexts() throws Exception {
         InitialContext ctx = new InitialContext(getEjbClientProperties(System.getProperty("node0", "127.0.0.1"), 4447));
-        String lookupName = "ejb:/"+ ARCHIVE_NAME +"/"+StatelessBean.class.getSimpleName()+"!"+StatelessIface.class.getCanonicalName();
-        StatelessIface beanStateless = (StatelessIface)ctx.lookup(lookupName);
-        Assert.assertEquals("Unexpected return value from EJB call", "adf", beanStateless.echo("adf"));
-        ctx.close();
-        ctx = new InitialContext(getEjbClientProperties(System.getProperty("node0", "127.0.0.1"), 4447));
-        lookupName = "ejb:/"+ ARCHIVE_NAME +"/"+StatefulBean.class.getSimpleName()+"!"+StatefulIface.class.getCanonicalName()+"?stateful";
-        StatefulIface beanStateful = (StatefulIface)ctx.lookup(lookupName);
-        beanStateful.setNumber(20);
-        Assert.assertEquals("Unexpected return value from EJB call", 20, beanStateful.getNumber());
-        ctx.close();
+        try {
+            String lookupName = "ejb:/" + ARCHIVE_NAME + "/" + StatelessBean.class.getSimpleName() + "!" + StatelessIface.class.getCanonicalName();
+            StatelessIface beanStateless = (StatelessIface) ctx.lookup(lookupName);
+            Assert.assertEquals("Unexpected EJB client context used for invoking stateless bean", CustomCallbackHandler.USER_NAME, beanStateless.getCallerPrincipalName());
+            lookupName = "ejb:/" + ARCHIVE_NAME + "/" + StatefulBean.class.getSimpleName() + "!" + StatefulIface.class.getCanonicalName() + "?stateful";
+            StatefulIface beanStateful = (StatefulIface) ctx.lookup(lookupName);
+            Assert.assertEquals("Unexpected EJB client context used for invoking stateful bean", CustomCallbackHandler.USER_NAME, beanStateful.getCallerPrincipalName());
+            ctx.close();
+        } finally {
+            ctx.close();
+        }
     }
 
     private Properties getEjbClientProperties(String node, int port) {
@@ -101,6 +84,7 @@ public class MapBasedInitialContextEjbClientTestCase {
         props.put("remote.connections", "main");
         props.put("remote.connection.main.host", node);
         props.put("remote.connection.main.port", Integer.toString(port));
+        props.put("remote.connection.main.callback.handler.class", CustomCallbackHandler.class.getName());
         props.put("remote.connection.main.connect.options.org.xnio.Options.SASL_POLICY_NOANONYMOUS", "false");
         props.put("remote.connection.main.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "true");
         props.put("remote.connectionprovider.create.options.org.xnio.Options.SSL_ENABLED", "false");
