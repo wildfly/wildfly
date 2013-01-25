@@ -24,12 +24,22 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER_NAME;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.DiscardUndefinedAttributesTransformer;
+import org.jboss.as.controller.transform.ResourceTransformer;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+
+import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER_NAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 /**
  * Stefano Maestri
@@ -51,6 +61,14 @@ public class JdbcDriverDefinition extends SimpleResourceDefinition {
         for (AttributeDefinition attribute : Constants.JDBC_DRIVER_ATTRIBUTES) {
             resourceRegistration.registerReadOnlyAttribute(attribute, null);
         }
+    }
+
+    static void registerTransformers110(ResourceTransformationDescriptionBuilder parenBuilder) {
+
+        parenBuilder.addChildResource(PATH_DRIVER).getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Constants.DRIVER_MINOR_VERSION, Constants.DRIVER_MAJOR_VERSION)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.DRIVER_DATASOURCE_CLASS_NAME)
+                .end();
     }
 
 }

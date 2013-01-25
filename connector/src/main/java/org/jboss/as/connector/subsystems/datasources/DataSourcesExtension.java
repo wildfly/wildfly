@@ -168,6 +168,9 @@ public class DataSourcesExtension implements Extension {
         if (registerRuntimeOnly) {
             subsystem.registerDeploymentModel(DataSourcesSubsystemRootDefinition.createDeployedInstance(registerRuntimeOnly));
         }
+        if (context.isRegisterTransformers()) {
+            DataSourcesSubsystemRootDefinition.registerTransformers(subsystem);
+        }
     }
 
     @Override
