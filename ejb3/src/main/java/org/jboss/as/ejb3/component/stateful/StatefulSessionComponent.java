@@ -333,7 +333,7 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
 
     @Override
     public AllowedMethodsInformation getAllowedMethodsInformation() {
-        return StatefulAllowedMethodsInformation.INSTANCE;
+        return isBeanManagedTransaction() ? StatefulAllowedMethodsInformation.INSTANCE_BMT : StatefulAllowedMethodsInformation.INSTANCE_CMT;
     }
 
     public Set<Object> getSerialiableInterceptorContextKeys() {

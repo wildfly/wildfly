@@ -36,6 +36,10 @@ public class EntityBeanAllowedMethodsInformation extends AllowedMethodsInformati
 
     public static final EntityBeanAllowedMethodsInformation INSTANCE = new EntityBeanAllowedMethodsInformation();
 
+    protected EntityBeanAllowedMethodsInformation() {
+        super(false);
+    }
+
     @Override
     protected void setup(Set<DeniedMethodKey> denied) {
         super.setup(denied);

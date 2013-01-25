@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,26 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.multinode.transaction;
-
-import javax.annotation.Resource;
-import javax.ejb.*;
-import javax.transaction.TransactionSynchronizationRegistry;
+package org.jboss.as.txn.service;
 
 /**
- * @author Stuart Douglas
- * @author Ivo Studensky
+ * Objects which control access to User Transaction.
+ *
+ * @author Eduardo Martins
+ *
  */
-@Remote(TransactionalRemote.class)
-@Stateless
-public class TransactionalStatelessBean implements TransactionalRemote {
+public interface UserTransactionAccessControl {
 
-    @Resource
-    private TransactionSynchronizationRegistry transactionSynchronizationRegistry;
-
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public int transactionStatus() {
-        return transactionSynchronizationRegistry.getTransactionStatus();
-    }
+    /**
+     * Authorizes access of user transaction.
+     */
+    void authorizeAccess();
 
 }

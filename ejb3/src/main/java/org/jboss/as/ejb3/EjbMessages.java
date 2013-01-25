@@ -2451,4 +2451,7 @@ public interface EjbMessages {
     @Message(id = 14236, value = "default-missing-method-permissions-deny-access was set to true")
     String rejectTransformationDefinedDefaultMissingMethodPermissionsDenyAccess();
 
+    @Message(id = 14237, value = "Only session and message-driven beans with bean-managed transaction demarcation are allowed to access UserTransaction")
+    IllegalStateException unauthorizedAccessToUserTransaction();
+
 }

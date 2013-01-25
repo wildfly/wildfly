@@ -34,7 +34,12 @@ import org.jboss.as.ejb3.component.session.SessionBeanAllowedMethodsInformation;
  */
 public class SingletonAllowedMethodsInformation extends SessionBeanAllowedMethodsInformation {
 
-    public static final SingletonAllowedMethodsInformation INSTANCE = new SingletonAllowedMethodsInformation();
+    public static final SingletonAllowedMethodsInformation INSTANCE_BMT = new SingletonAllowedMethodsInformation(true);
+    public static final SingletonAllowedMethodsInformation INSTANCE_CMT = new SingletonAllowedMethodsInformation(false);
+
+    protected SingletonAllowedMethodsInformation(boolean beanManagedTransaction) {
+        super(beanManagedTransaction);
+    }
 
     @Override
     protected void setup(Set<DeniedMethodKey> denied) {

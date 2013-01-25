@@ -359,8 +359,6 @@ public abstract class EJBComponent extends BasicComponent {
     }
 
     public UserTransaction getUserTransaction() throws IllegalStateException {
-        if (!isBeanManagedTransaction())
-            throw MESSAGES.failToCallIsBeanManagedTransaction();
         return utilities.getUserTransaction();
     }
 
@@ -495,7 +493,7 @@ public abstract class EJBComponent extends BasicComponent {
     }
 
     public AllowedMethodsInformation getAllowedMethodsInformation() {
-        return AllowedMethodsInformation.INSTANCE;
+        return isBeanManagedTransaction() ? AllowedMethodsInformation.INSTANCE_BMT : AllowedMethodsInformation.INSTANCE_CMT;
     }
 
     public InvocationMetrics getInvocationMetrics() {

@@ -5,13 +5,12 @@ import java.rmi.RemoteException;
 import javax.annotation.Resource;
 import javax.ejb.EJBException;
 import javax.ejb.RemoteHome;
+import javax.ejb.SessionContext;
 import javax.ejb.SessionSynchronization;
 import javax.ejb.Stateful;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.transaction.SystemException;
 import javax.transaction.TransactionSynchronizationRegistry;
-import javax.transaction.UserTransaction;
 
 /**
  * @author Stuart Douglas
@@ -26,7 +25,7 @@ public class IIOPTransactionalStatefulBean implements SessionSynchronization {
     private boolean rollbackOnlyBeforeCompletion = false;
 
     @Resource
-    private UserTransaction userTransaction;
+    private SessionContext sessionContext;
 
     @Resource
     private TransactionSynchronizationRegistry transactionSynchronizationRegistry;
@@ -37,11 +36,7 @@ public class IIOPTransactionalStatefulBean implements SessionSynchronization {
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public int transactionStatus() {
-        try {
-            return userTransaction.getStatus();
-        } catch (SystemException e) {
-            throw new RuntimeException(e);
-        }
+        return transactionSynchronizationRegistry.getTransactionStatus();
     }
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
@@ -69,11 +64,7 @@ public class IIOPTransactionalStatefulBean implements SessionSynchronization {
 
     @TransactionAttribute(TransactionAttributeType.MANDATORY)
     public void rollbackOnly() throws RemoteException {
-        try {
-            userTransaction.setRollbackOnly();
-        } catch (SystemException e) {
-            throw new RemoteException("SystemException during setRollbackOnly", e);
-        }
+        sessionContext.setRollbackOnly();
     }
 
     @Override
@@ -86,11 +77,7 @@ public class IIOPTransactionalStatefulBean implements SessionSynchronization {
         beforeCompletion = true;
 
         if (rollbackOnlyBeforeCompletion) {
-            try {
-                userTransaction.setRollbackOnly();
-            } catch (SystemException e) {
-                throw new RemoteException("SystemException during setRollbackOnly", e);
-            }
+            sessionContext.setRollbackOnly();
         }
     }
 

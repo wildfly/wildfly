@@ -196,9 +196,8 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
 
     @Override
     public AllowedMethodsInformation getAllowedMethodsInformation() {
-        return SingletonAllowedMethodsInformation.INSTANCE;
+        return isBeanManagedTransaction() ? SingletonAllowedMethodsInformation.INSTANCE_BMT : SingletonAllowedMethodsInformation.INSTANCE_CMT;
     }
-
 
     private static ServiceContainer currentServiceContainer() {
         return AccessController.doPrivileged(new PrivilegedAction<ServiceContainer>() {

@@ -211,6 +211,6 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
 
     @Override
     public AllowedMethodsInformation getAllowedMethodsInformation() {
-        return MessageDrivenAllowedMethodsInformation.INSTANCE;
+        return isBeanManagedTransaction() ? MessageDrivenAllowedMethodsInformation.INSTANCE_BMT : MessageDrivenAllowedMethodsInformation.INSTANCE_CMT;
     }
 }

@@ -141,6 +141,6 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
 
     @Override
     public AllowedMethodsInformation getAllowedMethodsInformation() {
-        return StatelessAllowedMethodsInformation.INSTANCE;
+        return isBeanManagedTransaction() ? StatelessAllowedMethodsInformation.INSTANCE_BMT : StatelessAllowedMethodsInformation.INSTANCE_CMT;
     }
 }
