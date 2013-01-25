@@ -13,12 +13,12 @@
 
 	<resourceadapter>
 
-		<managedconnectionfactory-class>org.jboss.as.test.smoke.deployment.rar.MultipleManagedConnectionFactory1</managedconnectionfactory-class>
+		<managedconnectionfactory-class>org.jboss.as.test.integration.jca.rar.MultipleManagedConnectionFactory1</managedconnectionfactory-class>
 
-		<connectionfactory-interface>org.jboss.as.test.smoke.deployment.rar.MultipleConnectionFactory1</connectionfactory-interface>
-		<connectionfactory-impl-class>org.jboss.as.test.smoke.deployment.rar.MultipleConnectionFactory1Impl</connectionfactory-impl-class>
-		<connection-interface>org.jboss.as.test.smoke.deployment.rar.MultipleConnection1</connection-interface>
-		<connection-impl-class>org.jboss.as.test.smoke.deployment.rar.MultipleConnection1Impl</connection-impl-class>
+		<connectionfactory-interface>org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1</connectionfactory-interface>
+		<connectionfactory-impl-class>org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1Impl</connectionfactory-impl-class>
+		<connection-interface>org.jboss.as.test.integration.jca.rar.MultipleConnection1</connection-interface>
+		<connection-impl-class>org.jboss.as.test.integration.jca.rar.MultipleConnection1Impl</connection-impl-class>
 
 		<transaction-support>LocalTransaction</transaction-support>
 		<authentication-mechanism id="amid">

@@ -4,7 +4,7 @@
    <archive>basic10.rar</archive>
       <transaction-support>NoTransaction</transaction-support>
         <connection-definitions>
-        	<connection-definition  class-name="org.jboss.as.test.smoke.deployment.rar.MultipleManagedConnectionFactory1" jndi-name="java:jboss/name1"  pool-name="Pool1">    </connection-definition>
+        	<connection-definition  class-name="org.jboss.as.test.integration.jca.rar.MultipleManagedConnectionFactory1" jndi-name="java:jboss/name1"  pool-name="Pool1">    </connection-definition>
 		</connection-definitions>
     </resource-adapter>
   </resource-adapters>

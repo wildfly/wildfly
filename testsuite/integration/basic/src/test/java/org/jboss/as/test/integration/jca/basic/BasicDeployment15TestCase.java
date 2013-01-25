@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.smoke.deployment.rar.tests.basic;
+package org.jboss.as.test.integration.jca.basic;
 
 import java.util.List;
 
@@ -36,7 +36,8 @@ import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.FileUtils;
-import org.jboss.as.test.smoke.deployment.rar.MultipleConnectionFactory1;
+import org.jboss.as.test.integration.jca.rar.MultipleAdminObject1;
+import org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -55,14 +56,14 @@ import static org.junit.Assert.assertNotNull;
  *         JBQA-5737 basic subsystem deployment
  */
 @RunWith(Arquillian.class)
-@ServerSetup(BasicDeployment10TestCase.BasicDeploymentTestCaseSetup.class)
-public class BasicDeployment10TestCase extends ContainerResourceMgmtTestBase {
+@ServerSetup(BasicDeployment15TestCase.BasicDeploymentTestCaseSetup.class)
+public class BasicDeployment15TestCase extends ContainerResourceMgmtTestBase {
 
     static class BasicDeploymentTestCaseSetup extends AbstractMgmtServerSetupTask {
 
         @Override
         public void doSetup(final ManagementClient managementClient) throws Exception {
-            String xml = FileUtils.readFile(BasicDeployment10TestCase.class, "basic10.xml");
+            String xml = FileUtils.readFile(BasicDeployment15TestCase.class, "basic15.xml");
             List<ModelNode> operations = xmlToModelOperations(xml, Namespace.CURRENT.getUriString(), new ResourceAdapterSubsystemParser());
             executeOperation(operationListToCompositeOperation(operations));
         }
@@ -72,7 +73,7 @@ public class BasicDeployment10TestCase extends ContainerResourceMgmtTestBase {
 
             final ModelNode address = new ModelNode();
             address.add("subsystem", "resource-adapters");
-            address.add("resource-adapter", "basic10.rar");
+            address.add("resource-adapter", "basic15.rar");
             address.protect();
             remove(address);
         }
@@ -86,19 +87,19 @@ public class BasicDeployment10TestCase extends ContainerResourceMgmtTestBase {
     @Deployment
     public static ResourceAdapterArchive createDeployment() throws Exception {
 
-        String deploymentName = "basic10.rar";
+        String deploymentName = "basic15.rar";
 
         ResourceAdapterArchive raa =
                 ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName);
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "multiple.jar");
         ja.addPackage(MultipleConnectionFactory1.class.getPackage()).
-                addClasses(BasicDeployment10TestCase.class,  MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class,
+                addClasses(BasicDeployment15TestCase.class,  MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class,
                         BasicDeploymentTestCaseSetup.class);
 
         ja.addPackage(AbstractMgmtTestBase.class.getPackage());
         raa.addAsLibrary(ja);
 
-        raa.addAsManifestResource(BasicDeployment10TestCase.class.getPackage(), "ra10.xml", "ra.xml")
+        raa.addAsManifestResource(BasicDeployment15TestCase.class.getPackage(), "ra15.xml", "ra.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli\n"), "MANIFEST.MF");
         ;
         return raa;
@@ -108,6 +109,8 @@ public class BasicDeployment10TestCase extends ContainerResourceMgmtTestBase {
     private MultipleConnectionFactory1 connectionFactory1;
 
 
+    @Resource(mappedName = "java:jboss/Name3")
+    private MultipleAdminObject1 adminObject1;
 
 
     /**
@@ -119,5 +122,6 @@ public class BasicDeployment10TestCase extends ContainerResourceMgmtTestBase {
     public void testConfiguration() throws Throwable {
 
         assertNotNull("CF1 not found", connectionFactory1);
+        assertNotNull("AO1 not found", adminObject1);
     }
 }
