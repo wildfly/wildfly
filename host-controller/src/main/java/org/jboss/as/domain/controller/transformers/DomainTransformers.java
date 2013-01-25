@@ -22,20 +22,11 @@
 
 package org.jboss.as.domain.controller.transformers;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
-import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -45,17 +36,11 @@ import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.extension.SubsystemInformation;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.AddNameFromAddressResourceTransformer;
-import org.jboss.as.controller.transform.OperationRejectionPolicy;
-import org.jboss.as.controller.transform.OperationResultTransformer;
-import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 
 /**
  * Global transformation rules for the domain, host and server-config model.
@@ -67,7 +52,6 @@ public class DomainTransformers {
     /** Dummy version for ignored subsystems. */
     static final ModelVersion IGNORED_SUBSYSTEMS = ModelVersion.create(-1);
 
-    private static final String JSF_SUBSYSTEM = "jsf";
     private static final PathElement JSF_EXTENSION = PathElement.pathElement(ModelDescriptionConstants.EXTENSION, "org.jboss.as.jsf");
 
     //AS 7.1.2.Final
@@ -93,71 +77,8 @@ public class DomainTransformers {
         if (modelVersion == VERSION_1_2 || modelVersion == VERSION_1_3) {
             // Discard all operations to the newly introduced jsf extension
             domain.registerSubResource(JSF_EXTENSION, IGNORED_EXTENSIONS);
-            // Ignore the jsf subsystem as well
-            final String slotAttributeName = "default-jsf-impl-slot";
-            final String slotDefaultValue = "main";
-            registry.registerSubsystemTransformers(JSF_SUBSYSTEM, IGNORED_SUBSYSTEMS, new ResourceTransformer() {
-                @Override
-                public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
 
-                    ModelNode model = resource.getModel();
-                    if (model.hasDefined(slotAttributeName)) {
-                        ModelNode slot = model.get(slotAttributeName);
-                        if (!slotDefaultValue.equals(slot.asString())) {
-                            context.getLogger().logWarning(address, slotAttributeName, MESSAGES.invalidJSFSlotValue(slot.asString()));
-                        }
-                    }
-                    Set<String> attributes = new HashSet<String>();
-                    for (Property prop : resource.getModel().asPropertyList()) {
-                        attributes.add(prop.getName());
-                    }
-                    attributes.remove(slotAttributeName);
-                    if (!attributes.isEmpty()) {
-                        context.getLogger().logWarning(address, ControllerMessages.MESSAGES.attributesAreNotUnderstoodAndWillBeIgnored(), attributes);
-                    }
-                }
-            });
-            TransformersSubRegistration jsfSubsystem = domain.registerSubResource(PathElement.pathElement(SUBSYSTEM, JSF_SUBSYSTEM));
-            jsfSubsystem.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, new OperationTransformer() {
-                @Override
-                public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
-                    final String name = operation.require(NAME).asString();
-                    final ModelNode value = operation.get(ModelDescriptionConstants.VALUE);
-                    if (!slotAttributeName.equals(name)) {
-                        context.getLogger().logWarning(address, ControllerMessages.MESSAGES.attributesAreNotUnderstoodAndWillBeIgnored(), name);
-                        return DISCARD.transformOperation(context, address, operation);
-                    }
-                    if (value.isDefined() && value.equals(slotDefaultValue)) {
-                        return DISCARD.transformOperation(context, address, operation);
-                    } else {
-                        OperationRejectionPolicy rejectionPolicy = new OperationRejectionPolicy() {
-                            @Override
-                            public boolean rejectOperation(ModelNode preparedResult) {
-                                return true;
-                            }
-
-                            @Override
-                            public String getFailureDescription() {
-                                return MESSAGES.invalidJSFSlotValue(value.asString());
-                            }
-                        };
-                        return new TransformedOperation(operation, rejectionPolicy, OperationResultTransformer.ORIGINAL_RESULT);
-                    }
-                }
-            });
-            jsfSubsystem.registerOperationTransformer(UNDEFINE_ATTRIBUTE_OPERATION, new OperationTransformer() {
-                @Override
-                public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
-                    String attributeName = operation.require(NAME).asString();
-                    if (!slotAttributeName.equals(attributeName)) {
-                        return DEFAULT.transformOperation(context, address, operation);
-                    } else {
-                        context.getLogger().logWarning(address, ControllerMessages.MESSAGES.attributesAreNotUnderstoodAndWillBeIgnored(), attributeName);
-                        return DISCARD.transformOperation(context, address, operation);
-                    }
-                }
-            });
-
+            JSFSubsystemTransformers.registerTransformers120(registry, domain);
             PathsTransformers.registerTransformers120(domain);
             DeploymentTransformers.registerTransformers120(domain);
             SystemPropertyTransformers.registerTransformers120(domain);
