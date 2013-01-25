@@ -23,6 +23,10 @@
 package org.jboss.as.controller.transform.description;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -235,6 +239,17 @@ class TransformingDescription extends AbstractDescription implements Transformat
             //Make sure that context.readResourceXXX() returns an unmodifiable Resource
             ctx.setImmutableResource(true);
             try {
+                final ModelNode value = new ModelNode();
+                description.convertValue(address, value, operation, ctx);
+                if(value.isDefined()) {
+                    final ModelNode writeAttribute = new ModelNode();
+                    writeAttribute.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+                    writeAttribute.get(OP_ADDR).set(address.toModelNode());
+                    writeAttribute.get(NAME).set(attributeName);
+                    writeAttribute.get(VALUE).set(value);
+                    return new TransformedOperation(writeAttribute, OperationResultTransformer.ORIGINAL_RESULT);
+                }
+
                 //discard what can be discarded
                 if (description.shouldDiscard(address, UNDEFINED, originalModel, ctx)) {
                     return OperationTransformer.DISCARD.transformOperation(context, address, operation);

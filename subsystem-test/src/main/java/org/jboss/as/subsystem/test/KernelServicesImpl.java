@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -35,6 +36,7 @@ import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.TransformationTargetImpl;
 import org.jboss.as.controller.transform.TransformerRegistry;
+import org.jboss.as.controller.transform.Transformers;
 import org.jboss.as.model.test.ModelTestKernelServicesImpl;
 import org.jboss.as.model.test.ModelTestModelControllerService;
 import org.jboss.as.model.test.ModelTestParser;
@@ -129,19 +131,14 @@ public class KernelServicesImpl extends ModelTestKernelServicesImpl<KernelServic
         PathElement pathElement = PathElement.pathElement(SUBSYSTEM, mainSubsystemName);
         PathAddress opAddr = PathAddress.pathAddress(operation.get(OP_ADDR));
         if (opAddr.size() > 0 && opAddr.getElement(0).equals(pathElement)) {
-            TransformerRegistry transformerRegistry = extensionRegistry.getTransformerRegistry();
 
-            final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-            final OperationTransformerRegistry registry = transformerRegistry.resolveServer(modelVersion, createSubsystemVersionRegistry(modelVersion));
+            final Map<PathAddress, ModelVersion> subsystem = Collections.singletonMap(PathAddress.EMPTY_ADDRESS.append(pathElement), modelVersion);
             final TransformationTarget transformationTarget = TransformationTargetImpl.create(extensionRegistry.getTransformerRegistry(), getCoreModelVersionByLegacyModelVersion(modelVersion),
-                    Collections.<PathAddress, ModelVersion>emptyMap(), MOCK_IGNORED_DOMAIN_RESOURCE_REGISTRY, TransformationTarget.TransformationTargetType.DOMAIN);
+                    subsystem, MOCK_IGNORED_DOMAIN_RESOURCE_REGISTRY, TransformationTarget.TransformationTargetType.SERVER);
 
-            TransformationContext transformationContext = createTransformationContext(transformationTarget);
-
-            OperationTransformer operationTransformer = registry.resolveOperationTransformer(address, operation.get(OP).asString()).getTransformer();
-            if (operationTransformer != null) {
-                return operationTransformer.transformOperation(transformationContext, address, operation);
-            }
+            final Transformers transformers = Transformers.Factory.create(transformationTarget);
+            final TransformationContext transformationContext = createTransformationContext(transformationTarget);
+            return transformers.transformOperation(transformationContext, operation);
         }
         return new OperationTransformer.TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
     }

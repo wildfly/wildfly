@@ -22,20 +22,18 @@
 
 package org.jboss.as.web;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
@@ -48,18 +46,14 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.AliasEntry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.AliasOperationTransformer;
-import org.jboss.as.controller.transform.AliasOperationTransformer.AddressTransformer;
-import org.jboss.as.controller.transform.OperationRejectionPolicy;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
-import org.jboss.as.controller.transform.RejectExpressionValuesChainedTransformer;
-import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
-import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.as.controller.transform.TransformersSubRegistration;
-import org.jboss.as.controller.transform.chained.ChainedOperationTransformer;
-import org.jboss.as.controller.transform.chained.ChainedResourceTransformer;
+import org.jboss.as.controller.transform.description.AttributeConverter;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -188,134 +182,91 @@ public class WebExtension implements Extension {
     private void registerTransformers_1_1_0(SubsystemRegistration registration) {
 
         final int defaultRedirectPort = 443;
+        final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
-        final TransformersSubRegistration transformers = registration.registerModelTransformers(ModelVersion.create(1, 1, 0), ResourceTransformer.DEFAULT);
-        transformers.registerSubResource(VALVE_PATH, true);
-        // configuration
-        rejectExpressions(transformers, JSP_CONFIGURATION_PATH, WebJSPDefinition.JSP_ATTRIBUTES);
-        rejectExpressions(transformers, STATIC_RESOURCES_PATH, WebStaticResources.STATIC_ATTRIBUTES);
-        rejectExpressions(transformers, CONTAINER_PATH, WebContainerDefinition.CONTAINER_ATTRIBUTES);
+        // Discard valve
+        subsystemRoot.discardChildResource(VALVE_PATH);
 
-        // Connector
-        final RejectExpressionValuesChainedTransformer reject = new RejectExpressionValuesChainedTransformer(WebConnectorDefinition.CONNECTOR_ATTRIBUTES);
-        final TransformersSubRegistration connectors = transformers.registerSubResource(CONNECTOR_PATH, new ChainedResourceTransformer(reject));
-        connectors.registerOperationTransformer(ADD, new ChainedOperationTransformer(new OperationTransformer() {
-            @Override
-            public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation)
-                    throws OperationFailedException {
+        // Reject expressions for configuration
+        subsystemRoot.addChildResource(JSP_CONFIGURATION_PATH).getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, WebJSPDefinition.JSP_ATTRIBUTES);
+        subsystemRoot.addChildResource(STATIC_RESOURCES_PATH).getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, WebStaticResources.STATIC_ATTRIBUTES);
+        subsystemRoot.addChildResource(CONTAINER_PATH).getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, WebContainerDefinition.CONTAINER_ATTRIBUTES);
 
-                final ModelNode transformedOperation;
-                if (!operation.hasDefined(WebConnectorDefinition.REDIRECT_PORT.getName())) {
-                    // AS7-5871 send the correct default value
-                    transformedOperation = operation.clone();
-                    transformedOperation.get(WebConnectorDefinition.REDIRECT_PORT.getName()).set(defaultRedirectPort);
-                } else {
-                    transformedOperation = operation;
-                }
-
-                // Reject if it does not get ignored on the slave
-                final boolean hasDefinedVirtualServer = operation.hasDefined(Constants.VIRTUAL_SERVER);
-                return new TransformedOperation(transformedOperation, new OperationRejectionPolicy() {
-
+        final ResourceTransformationDescriptionBuilder connectorBuilder = subsystemRoot.addChildResource(CONNECTOR_PATH);
+        connectorBuilder.getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, WebConnectorDefinition.CONNECTOR_ATTRIBUTES)
+                .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
                     @Override
-                    public boolean rejectOperation(ModelNode preparedResult) {
-                        return hasDefinedVirtualServer;
+                    protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+                        return attributeValue.isDefined();
                     }
 
                     @Override
-                    public String getFailureDescription() {
+                    public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
                         return WebMessages.MESSAGES.transformationVersion_1_1_0_JBPAPP_9314();
                     }
-
-                }, OperationResultTransformer.ORIGINAL_RESULT);
-            }
-        }, reject));
-        connectors.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, new ChainedOperationTransformer(new OperationTransformer() {
-
-            @Override
-            public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation)
-                    throws OperationFailedException {
-
-                final String attributeName = operation.get(NAME).asString();
-                final ModelNode transformedOperation;
-                if (WebConnectorDefinition.REDIRECT_PORT.getName().equals(attributeName) && !operation.hasDefined(VALUE)) {
-                    // AS7-5871 send the correct default value
-                    transformedOperation = operation.clone();
-                    transformedOperation.get(VALUE).set(defaultRedirectPort);
-                } else {
-                    transformedOperation = operation;
-                }
-                // Reject if it does not get ignored on the slave
-                final boolean isVirtualServer = operation.get(NAME).asString().equals(Constants.VIRTUAL_SERVER);
-                return new TransformedOperation(transformedOperation, new OperationRejectionPolicy() {
-
+                }, Constants.VIRTUAL_SERVER)
+                .setValueConverter(new AttributeConverter.DefaultAttributeConverter() {
                     @Override
-                    public boolean rejectOperation(ModelNode preparedResult) {
-                        return isVirtualServer;
+                    protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+                        if (!attributeValue.isDefined()) {
+                            attributeValue.set(defaultRedirectPort);
+                        }
                     }
+                }, WebConnectorDefinition.REDIRECT_PORT.getName())
+                .end()
+                .addOperationTransformationOverride(UNDEFINE_ATTRIBUTE_OPERATION)
+                    .inheritResourceAttributeDefinitions() // although probably not necessary
+                    .setCustomOperationTransformer(new OperationTransformer() {
+                        @Override
+                        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
+                            final String attributeName = operation.require(NAME).asString();
+                            if(WebConnectorDefinition.REDIRECT_PORT.getName().equals(attributeName)) {
+                                final ModelNode transformed = new ModelNode();
+                                transformed.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+                                transformed.get(OP_ADDR).set(address.toModelNode());
+                                transformed.get(NAME).set(attributeName);
+                                transformed.get(VALUE).set(defaultRedirectPort);
+                                return new TransformedOperation(transformed, OperationResultTransformer.ORIGINAL_RESULT);
+                            }
+                            return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
+                        }
+                    })
+                ;
 
-                    @Override
-                    public String getFailureDescription() {
-                        return WebMessages.MESSAGES.transformationVersion_1_1_0_JBPAPP_9314();
-                    }
+        //
+        connectorBuilder.addChildRedirection(SSL_PATH, SSL_ALIAS);
 
-                }, OperationResultTransformer.ORIGINAL_RESULT);
-            }
-        }, reject.getWriteAttributeTransformer()));
+        final ResourceTransformationDescriptionBuilder hostBuilder = subsystemRoot.addChildResource(HOST_PATH).getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, WebVirtualHostDefinition.DEFAULT_WEB_MODULE)
+                .end();
 
-        connectors.registerOperationTransformer(UNDEFINE_ATTRIBUTE_OPERATION, new OperationTransformer() {
+        hostBuilder.addChildResource(SSL_PATH).getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, WebSSLDefinition.SSL_ATTRIBUTES)
+                .end();
 
-            @Override
-            public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation)
-                    throws OperationFailedException {
+        final ResourceTransformationDescriptionBuilder rewriteBuilder = hostBuilder.addChildResource(REWRITE_PATH).getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, WebReWriteDefinition.FLAGS, WebReWriteDefinition.PATTERN, WebReWriteDefinition.SUBSTITUTION)
+                .end();
 
-                final String attributeName = operation.get(NAME).asString();
-                final ModelNode transformedOperation;
-                if (WebConnectorDefinition.REDIRECT_PORT.getName().equals(attributeName)) {
-                    // AS7-5871 send the correct default value
-                    transformedOperation = operation.clone();
-                    transformedOperation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-                    transformedOperation.get(VALUE).set(defaultRedirectPort);
-                } else {
-                    transformedOperation = operation;
-                }
-                return new TransformedOperation(transformedOperation, OperationResultTransformer.ORIGINAL_RESULT);
-            }
-        });
+        rewriteBuilder.addChildResource(REWRITECOND_PATH).getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, WebReWriteConditionDefinition.ATTRIBUTES);
 
-        // virtual-host
-        final TransformersSubRegistration virtualHost = rejectExpressions(transformers, HOST_PATH, WebVirtualHostDefinition.DEFAULT_WEB_MODULE);
-        rejectExpressions(virtualHost, SSL_PATH, WebSSLDefinition.SSL_ATTRIBUTES);
+        hostBuilder.addChildRedirection(SSO_PATH, SSO_ALIAS).getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, WebSSODefinition.SSO_ATTRIBUTES)
+                .end();
 
-        final TransformersSubRegistration rewritePath = rejectExpressions(virtualHost, REWRITE_PATH, WebReWriteDefinition.FLAGS, WebReWriteDefinition.PATTERN, WebReWriteDefinition.SUBSTITUTION);
-        rejectExpressions(rewritePath, REWRITECOND_PATH, WebReWriteConditionDefinition.ATTRIBUTES);
+        final ResourceTransformationDescriptionBuilder accessLogBuilder = hostBuilder.addChildRedirection(ACCESS_LOG_PATH, ACCESS_LOG_ALIAS).getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, WebAccessLogDefinition.ACCESS_LOG_ATTRIBUTES)
+                .end();
 
+        accessLogBuilder.addChildRedirection(DIRECTORY_PATH, DIRECTORY_ALIAS);
 
-        // Aliases
-        connectors.registerSubResource(SSL_PATH, AliasOperationTransformer.replaceLastElement(SSL_ALIAS));
-        TransformersSubRegistration virtualServer = transformers.registerSubResource(HOST_PATH);
-        //todo this is broken atm, chained transformers don't play nice AliasTransformer
-        //TransformersSubRegistration sso = rejectExpressions(virtualHost, SSO_PATH, AliasOperationTransformer.replaceLastElement(SSO_ALIAS), WebSSODefinition.SSO_ATTRIBUTES);
-        //TransformersSubRegistration accessLog = rejectExpressions(virtualHost, ACCESS_LOG_PATH, AliasOperationTransformer.replaceLastElement(ACCESS_LOG_ALIAS), WebAccessLogDefinition.ACCESS_LOG_ATTRIBUTES);
-        TransformersSubRegistration sso = virtualServer.registerSubResource(SSO_PATH, AliasOperationTransformer.replaceLastElement(SSO_ALIAS));
-        TransformersSubRegistration accessLog = virtualServer.registerSubResource(ACCESS_LOG_PATH, AliasOperationTransformer.replaceLastElement(ACCESS_LOG_ALIAS));
-
-        accessLog.registerSubResource(DIRECTORY_PATH, AliasOperationTransformer.create(new AddressTransformer() {
-            @Override
-            public PathAddress transformAddress(PathAddress address) {
-                PathAddress copy = PathAddress.EMPTY_ADDRESS;
-                for (PathElement element : address) {
-                    if (element.getKey().equals(Constants.CONFIGURATION)) {
-                        copy = copy.append(ACCESS_LOG_ALIAS);
-                    } else if (element.getKey().equals(Constants.SETTING)) {
-                        copy = copy.append(DIRECTORY_ALIAS);
-                    } else {
-                        copy = copy.append(element);
-                    }
-                }
-                return copy;
-            }
-        }));
+        // Register
+        TransformationDescription.Tools.register(subsystemRoot.build(), registration, ModelVersion.create(1, 1, 0));
     }
 
     private static class StandardWebExtensionAliasEntry extends AliasEntry {
@@ -345,25 +296,4 @@ public class WebExtension implements Extension {
         }
     }
 
-    private static TransformersSubRegistration rejectExpressions(final TransformersSubRegistration parent, final PathElement path, final AttributeDefinition... definitions) {
-        return rejectExpressions(parent, path, getKeys(definitions));
-    }
-
-    private static TransformersSubRegistration rejectExpressions(final TransformersSubRegistration parent, final PathElement path, final Set<String> expressionKeys) {
-        final RejectExpressionValuesTransformer operationTransformer = new RejectExpressionValuesTransformer(expressionKeys);
-        final TransformersSubRegistration registration = parent.registerSubResource(path, operationTransformer.getResourceTransformer());
-        registration.registerOperationTransformer(ADD, operationTransformer);
-        registration.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, operationTransformer.getWriteAttributeTransformer());
-        return registration;
-    }
-
-    private static Set<String> getKeys(final AttributeDefinition... definitions) {
-        final Set<String> keys = new HashSet<String>();
-        for (final AttributeDefinition definition : definitions) {
-            if (definition.isAllowExpression()) {
-                keys.add(definition.getName());
-            }
-        }
-        return keys;
-    }
 }
