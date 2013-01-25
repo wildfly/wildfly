@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RunningMode;
@@ -556,4 +557,12 @@ public interface DomainControllerMessages {
     @Message(id = 10877, value = "Failed to load module '%s'.")
     OperationFailedException failedToLoadModule(@Cause ModuleLoadException e,String module);
 
+    /**
+     * Warning messages when a transformer detects that the JSF subsystem uses a non-default value to setup on a legacy host controller.
+     *
+     * @param slot the non-default value of the slot attribute
+     * @return the message
+     */
+    @Message(id = 10878, value = "Invalid JSF slot value: %s. The host controller is not able to use a JSF slot value different from its default. This resource will be ignored on that host")
+    String invalidJSFSlotValue(String slot);
 }
