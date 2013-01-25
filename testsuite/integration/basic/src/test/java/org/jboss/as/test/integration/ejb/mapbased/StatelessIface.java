@@ -20,21 +20,13 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.ejb.mapbased.beans;
-
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
+package org.jboss.as.test.integration.ejb.mapbased;
 
 /**
  * @author Jan Martiska / jmartisk@redhat.com
  */
-@Stateless
-@Remote(StatelessIface.class)
-public class StatelessBean implements StatelessIface {
+public interface StatelessIface {
 
-    @Override
-    public String echo(String input) {
-        return input.substring(0); // just ensuring that we return a different string instance
-    }
+    public String getCallerPrincipalName();
 
 }
