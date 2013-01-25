@@ -25,21 +25,17 @@ package org.jboss.as.cmp.subsystem;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.AbstractOperationTransformer;
-import org.jboss.as.controller.transform.ResourceTransformationContext;
-import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.as.controller.transform.TransformersSubRegistration;
-import org.jboss.dmr.ModelNode;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 
 /**
  * @author John Bailey
@@ -69,9 +65,19 @@ public class CmpExtension implements Extension {
     }
 
     private void registerTransformers(SubsystemRegistration subsystem) {
-        TransformersSubRegistration transformers = subsystem.registerModelTransformers(ModelVersion.create(1, 0), ResourceTransformer.DEFAULT);
-        transformers.registerSubResource(CmpSubsystemModel.UUID_KEY_GENERATOR_PATH, JndiNameTransformer.INSTANCE,JndiNameTransformer.INSTANCE);
-        transformers.registerSubResource(CmpSubsystemModel.HILO_KEY_GENERATOR_PATH, JndiNameTransformer.INSTANCE,JndiNameTransformer.INSTANCE);
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+
+        builder.addChildResource(CmpSubsystemModel.UUID_KEY_GENERATOR_PATH).getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, AbstractKeyGeneratorResourceDefinition.JNDI_NAME)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, AbstractKeyGeneratorResourceDefinition.JNDI_NAME)
+                .end();
+        builder.addChildResource(CmpSubsystemModel.HILO_KEY_GENERATOR_PATH).getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, AbstractKeyGeneratorResourceDefinition.JNDI_NAME)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, AbstractKeyGeneratorResourceDefinition.JNDI_NAME)
+                .end();
+
+        TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 0, 0));
+
     }
 
     public void initializeParsers(final ExtensionParsingContext context) {
@@ -82,29 +88,6 @@ public class CmpExtension implements Extension {
 
     public static ResourceDescriptionResolver getResolver(final String keyPrefix) {
         return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, CmpExtension.class.getClassLoader(), true, true);
-    }
-
-
-    private static class JndiNameTransformer extends AbstractOperationTransformer implements ResourceTransformer {
-        static JndiNameTransformer INSTANCE = new JndiNameTransformer();
-        private JndiNameTransformer(){
-
-        }
-        @Override
-        public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
-            ModelNode model = resource.getModel();
-            if (model.hasDefined(CmpSubsystemModel.JNDI_NAME)) {
-                model.remove(CmpSubsystemModel.JNDI_NAME);
-            }
-        }
-
-        @Override
-        protected ModelNode transform(TransformationContext context, PathAddress address, ModelNode operation) {
-            if (operation.hasDefined(CmpSubsystemModel.JNDI_NAME)) {
-                operation.remove(CmpSubsystemModel.JNDI_NAME);
-            }
-            return operation;
-        }
     }
 
 }

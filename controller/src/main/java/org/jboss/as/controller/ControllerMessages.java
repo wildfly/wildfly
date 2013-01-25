@@ -2579,10 +2579,10 @@ public interface ControllerMessages {
     @Message(id = 14884, value = "No operation named '%s' exists at address %s")
     String noHandlerForOperation(String operationName, PathAddress address);
 
-    @Message(id = 14885, value = "do not support expressions in that model version and this resource will need to be ignored on that host.")
+    @Message(id = 14885, value = "do not support expressions in that model version and this resource will need to be ignored on target host.")
     String attributesDontSupportExpressions();
 
-    @Message(id = 14886, value = "are not understood in that model version and this resource will need to be ignored on that host.")
+    @Message(id = 14886, value = "are not understood in that model version and this resource will need to be ignored on target host.")
     String attributesAreNotUnderstoodAndWillBeIgnored();
 
     @Message(id = 14887, value = "Transforming resource %s to core model version '%s' -- attributes %s %s")
