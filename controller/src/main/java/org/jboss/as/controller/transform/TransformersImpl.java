@@ -68,7 +68,7 @@ public class TransformersImpl implements Transformers {
         // Update the operation using the new path address
         operation.get(OP_ADDR).set(transformed.toModelNode()); // TODO should this happen by default?
 
-        ResourceTransformationContext opCtx = ResourceTransformationContextImpl.wrapForOperation(context, operation);
+        TransformationContext opCtx = ResourceTransformationContextImpl.wrapForOperation(context, operation);
         OperationTransformer.TransformedOperation res = transformer.transformOperation(opCtx, transformed, operation);
         context.getLogger().flushLogQueue();
         return res;

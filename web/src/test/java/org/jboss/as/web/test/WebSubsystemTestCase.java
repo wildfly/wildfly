@@ -191,7 +191,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         connectorWriteVirtualServer.get(VALUE).add("vs1");
         mainServices.executeForResult(connectorWriteVirtualServer);
         ModelNode result = mainServices.executeOperation(modelVersion, mainServices.transformOperation(modelVersion, connectorWriteVirtualServer));
-        Assert.assertEquals(WebMessages.MESSAGES.transformationVersion_1_1_0_JBPAPP_9314(), result.get(FAILURE_DESCRIPTION).asString());
+        Assert.assertTrue(result.get(FAILURE_DESCRIPTION).asString().endsWith(WebMessages.MESSAGES.transformationVersion_1_1_0_JBPAPP_9314()));
 
         //Grab the current connector values and remove the connector
         ModelNode connectorValues = mainServices.readWholeModel().get(SUBSYSTEM, WebExtension.SUBSYSTEM_NAME, Constants.CONNECTOR, "http");
@@ -209,7 +209,8 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         TransformedOperation transOp = mainServices.transformOperation(modelVersion, connectorAdd);
         result = mainServices.executeOperation(modelVersion, transOp);
         Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
-        Assert.assertEquals(WebMessages.MESSAGES.transformationVersion_1_1_0_JBPAPP_9314(), result.get(FAILURE_DESCRIPTION).asString());
+        Assert.assertTrue(result.get(FAILURE_DESCRIPTION).asString().endsWith(WebMessages.MESSAGES.transformationVersion_1_1_0_JBPAPP_9314()));
+        // Assert.assertEquals(WebMessages.MESSAGES.transformationVersion_1_1_0_JBPAPP_9314(), result.get(FAILURE_DESCRIPTION).asString());
 
         //Now test the correction of the default redirect-port
 
