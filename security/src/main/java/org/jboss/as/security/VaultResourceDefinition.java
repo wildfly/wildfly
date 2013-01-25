@@ -28,7 +28,6 @@ import java.util.Map;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -59,7 +58,7 @@ public class VaultResourceDefinition extends SimpleResourceDefinition {
 
 
     private VaultResourceDefinition() {
-        super(PathElement.pathElement(Constants.VAULT, Constants.CLASSIC),
+        super(SecurityExtension.VAULT_PATH,
                 SecurityExtension.getResourceDescriptionResolver(Constants.VAULT),
                 VaultResourceDefinitionAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
     }

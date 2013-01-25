@@ -79,7 +79,7 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
         this.current = address;
         this.read = read;
         this.originalModel = originalModel;
-        this.logger = new TransformersLogger(originalModel.target);
+        this.logger = TransformersLogger.getLogger(originalModel.target);
     }
 
     public Resource createResource(final PathAddress element) {

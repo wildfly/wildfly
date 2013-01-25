@@ -404,7 +404,7 @@ public class OperationTransformationTestCase {
 
         @Override
         public TransformersLogger getLogger() {
-            return new TransformersLogger(getTarget());
+            return TransformersLogger.getLogger(getTarget());
         }
     };
 
