@@ -25,6 +25,7 @@ package org.jboss.as.test.clustering.cluster.ejb3;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PreDestroy;
+import javax.annotation.Resource;
 import javax.ejb.PrePassivate;
 import javax.ejb.Stateful;
 import javax.ejb.StatefulTimeout;
@@ -41,6 +42,17 @@ import org.jboss.ejb3.annotation.Clustered;
 public class ClusteredBean {
     public static volatile boolean preDestroy = false;
     public static volatile boolean prePassivate = false;
+
+    // Validate serializability of resource manager connection factories
+    // per section 4.2.1 of the EJB spec
+    @Resource(lookup = "java:jboss/datasources/ExampleDS")
+    javax.sql.DataSource ds;
+    @Resource(lookup = "java:jboss/mail/Default")
+    javax.mail.Session s;
+    // Messaging requires standalone-full-ha.xml
+//    @Resource(lookup = "java:/ConnectionFactory")
+//    javax.jms.ConnectionFactory cf;
+    
     private int count = 0;
     
     @PreDestroy
