@@ -42,12 +42,11 @@ public interface RejectAttributeChecker {
      * Determines whether the given operation parameter value is not understandable by the target process and needs
      * to be rejected.
      *
-     * @param address the address of the operation
-     * @param attributeName the name of the attribute
+     * @param address        the address of the operation
+     * @param attributeName  the name of the attribute
      * @param attributeValue the value of the attribute
-     * @param operation the operation executed. This is unmodifiable.
-     * @param context the context of the transformation
-     *
+     * @param operation      the operation executed. This is unmodifiable.
+     * @param context        the context of the transformation
      * @return {@code true} if the parameter value is not understandable by the target process and so needs to be rejected, {@code false} otherwise.
      */
     boolean rejectOperationParameter(PathAddress address, String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context);
@@ -56,11 +55,10 @@ public interface RejectAttributeChecker {
      * Gets whether the given resource attribute value is not understandable by the target process and needs
      * to be rejected.
      *
-     * @param address the address of the resource
-     * @param attributeName the name of the attribute
+     * @param address        the address of the resource
+     * @param attributeName  the name of the attribute
      * @param attributeValue the value of the attribute
-     * @param context the context of the transformation
-     *
+     * @param context        the context of the transformation
      * @return {@code true} if the attribute value is not understandable by the target process and so needs to be rejected, {@code false} otherwise.
      */
     boolean rejectResourceAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context);
@@ -86,19 +84,23 @@ public interface RejectAttributeChecker {
      */
     public abstract class DefaultRejectAttributeChecker implements RejectAttributeChecker {
         private volatile String logMessageId;
+
         /**
          * Constructor
-         *
          */
         protected DefaultRejectAttributeChecker() {
         }
 
-        /** {@inheritDoc} */
-        public  boolean rejectOperationParameter(PathAddress address, String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context) {
+        /**
+         * {@inheritDoc}
+         */
+        public boolean rejectOperationParameter(PathAddress address, String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context) {
             return rejectAttribute(address, attributeName, attributeValue, context);
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public boolean rejectResourceAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
             return rejectAttribute(address, attributeName, attributeValue, context);
         }
@@ -107,11 +109,10 @@ public interface RejectAttributeChecker {
          * Gets called by the default implementations of {@link #rejectOperationParameter(String, ModelNode, ModelNode, TransformationContext)} and
          * {@link #rejectResourceAttribute(String, ModelNode, TransformationContext)}.
          *
-         * @param address the address of the operation
-         * @param attributeName the name of the attribute
+         * @param address        the address of the operation
+         * @param attributeName  the name of the attribute
          * @param attributeValue the value of the attribute
-         * @param context the context of the transformation
-         *
+         * @param context        the context of the transformation
          * @return {@code true} if the attribute or parameter value is not understandable by the target process and so needs to be rejected, {@code false} otherwise.
          */
         protected abstract boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context);
@@ -160,13 +161,13 @@ public interface RejectAttributeChecker {
                 return checkForExpression(resolved.asString());
             } else if (node.getType() == ModelType.OBJECT) {
                 for (Property prop : resolved.asPropertyList()) {
-                    if(checkForExpression(prop.getValue())) {
+                    if (checkForExpression(prop.getValue())) {
                         return true;
                     }
                 }
             } else if (node.getType() == ModelType.LIST) {
                 for (ModelNode current : resolved.asList()) {
-                    if(checkForExpression(current)) {
+                    if (checkForExpression(current)) {
                         return true;
                     }
                 }
@@ -203,7 +204,9 @@ public interface RejectAttributeChecker {
             this.elementChecker = elementChecker;
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public boolean rejectOperationParameter(PathAddress address, String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context) {
             if (attributeValue.isDefined()) {
@@ -216,7 +219,9 @@ public interface RejectAttributeChecker {
             return false;
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public boolean rejectResourceAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
             if (attributeValue.isDefined()) {
@@ -262,7 +267,9 @@ public interface RejectAttributeChecker {
             this.fields.putAll(fields);
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public boolean rejectOperationParameter(PathAddress address, String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context) {
 
@@ -275,7 +282,9 @@ public interface RejectAttributeChecker {
             return false;
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public boolean rejectResourceAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
 
@@ -306,7 +315,8 @@ public interface RejectAttributeChecker {
         }
 
         @Override
-        protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+        protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
+                                          TransformationContext context) {
             return attributeValue.isDefined();
         }
     };

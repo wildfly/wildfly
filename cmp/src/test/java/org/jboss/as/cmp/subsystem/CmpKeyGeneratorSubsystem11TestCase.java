@@ -49,6 +49,9 @@ import junit.framework.Assert;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelTestUtils;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
@@ -58,6 +61,8 @@ import org.junit.Test;
  * @author Manuel Fehlhammer
  */
 public class CmpKeyGeneratorSubsystem11TestCase extends CmpKeyGeneratorSubsystem10TestCase {
+
+    private static final PathAddress SUBSYSTEM_PATH = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, CmpExtension.SUBSYSTEM_NAME));
 
     @Override
     protected String getSubsystemXml() throws IOException {
@@ -116,10 +121,8 @@ public class CmpKeyGeneratorSubsystem11TestCase extends CmpKeyGeneratorSubsystem
     @Test
     public void testTransformers() throws Exception {
         ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
-        KernelServicesBuilder builder = createKernelServicesBuilder(null)
-                .setSubsystemXml(getSubsystemXml());
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
-        //which is why we need to include the jboss-as-controller artifact.
         builder.createLegacyKernelServicesBuilder(null, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-cmp:7.1.2.Final")
                 .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.2.Final")
@@ -128,5 +131,19 @@ public class CmpKeyGeneratorSubsystem11TestCase extends CmpKeyGeneratorSubsystem
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
         Assert.assertTrue(mainServices.getLegacyServices(modelVersion).isSuccessfulBoot());
+
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, parse(getSubsystemXml()),
+                new FailedOperationTransformationConfig()
+                        .addFailedAttribute(SUBSYSTEM_PATH.append(CmpSubsystemModel.UUID_KEY_GENERATOR_PATH),
+                                new FailedOperationTransformationConfig.NewAttributesConfig(AbstractKeyGeneratorResourceDefinition.JNDI_NAME))
+                        .addFailedAttribute(SUBSYSTEM_PATH.append(CmpSubsystemModel.HILO_KEY_GENERATOR_PATH),
+                                new FailedOperationTransformationConfig.NewAttributesConfig(AbstractKeyGeneratorResourceDefinition.JNDI_NAME))
+
+        );
+    }
+
+    @Override
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return AdditionalInitialization.MANAGEMENT;
     }
 }
