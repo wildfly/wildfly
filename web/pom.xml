@@ -154,12 +154,6 @@
             <artifactId>jboss-as-clustering-web-infinispan</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- Unfortunately we have to include this because of http://bugs.sun.com/view_bug.do?bug_id=6550655 -->
-        <dependency>
-            <groupId>org.rhq.helpers</groupId>
-            <artifactId>rhq-pluginAnnotations</artifactId>
-            <scope>test</scope>
-         </dependency>
         <dependency>
             <groupId>org.jboss.marshalling</groupId>
             <artifactId>jboss-marshalling-river</artifactId>
