@@ -21,8 +21,13 @@
 */
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.util.List;
+
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
@@ -32,12 +37,6 @@ import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.io.IOException;
-import java.util.List;
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -105,44 +104,54 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
      * @throws Exception
      */
     private void testTransformer1_1_0(String mavenVersion, String subsystemXml) throws Exception {
-        ModelVersion modelVersion = ModelVersion.create(1, 1, 0); //The old model version
-        //Use the non-runtime version of the extension which will happen on the HC
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXmlResource(subsystemXml);
+        System.setProperty("jboss.as.test.transformation.hack", "true");
+        try {
+            ModelVersion modelVersion = ModelVersion.create(1, 1, 0); //The old model version
+            //Use the non-runtime version of the extension which will happen on the HC
+            KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                    .setSubsystemXmlResource(subsystemXml);
 
-        // Add legacy subsystems
-        builder.createLegacyKernelServicesBuilder(null, modelVersion)
-                              .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + mavenVersion)
-                              .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension");
+            // Add legacy subsystems
+            builder.createLegacyKernelServicesBuilder(null, modelVersion)
+                                  .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + mavenVersion)
+                                  .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension");
 
-        KernelServices mainServices = builder.build();
-        Assert.assertTrue(mainServices.isSuccessfulBoot());
-        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
-        Assert.assertTrue(legacyServices.isSuccessfulBoot());
-        Assert.assertNotNull(legacyServices);
+            KernelServices mainServices = builder.build();
+            Assert.assertTrue(mainServices.isSuccessfulBoot());
+            KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+            Assert.assertTrue(legacyServices.isSuccessfulBoot());
+            Assert.assertNotNull(legacyServices);
 
-        checkSubsystemModelTransformation(mainServices, modelVersion);
+            checkSubsystemModelTransformation(mainServices, modelVersion);
+        } finally {
+            System.clearProperty("jboss.as.test.transformation.hack");
+        }
     }
 
 
     public void testRejectTransformers1_1_0(String mavenVersion, String subsystemXml) throws Exception {
-        ModelVersion modelVersion = ModelVersion.create(1, 1, 0); //The old model version
-        //Use the non-runtime version of the extension which will happen on the HC
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        System.setProperty("jboss.as.test.transformation.hack", "true");
+        try {
+            ModelVersion modelVersion = ModelVersion.create(1, 1, 0); //The old model version
+            //Use the non-runtime version of the extension which will happen on the HC
+            KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
-        // Add legacy subsystems
-        builder.createLegacyKernelServicesBuilder(null, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + mavenVersion)
-                .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension");
+            // Add legacy subsystems
+            builder.createLegacyKernelServicesBuilder(null, modelVersion)
+                    .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + mavenVersion)
+                    .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension");
 
-        KernelServices mainServices = builder.build();
-        assertTrue(mainServices.isSuccessfulBoot());
-        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
-        assertNotNull(legacyServices);
-        assertTrue(legacyServices.isSuccessfulBoot());
+            KernelServices mainServices = builder.build();
+            assertTrue(mainServices.isSuccessfulBoot());
+            KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+            assertNotNull(legacyServices);
+            assertTrue(legacyServices.isSuccessfulBoot());
 
-        List<ModelNode> ops = builder.parseXmlResource(subsystemXml);
-        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops, new FailedOperationTransformationConfig());
+            List<ModelNode> ops = builder.parseXmlResource(subsystemXml);
+            ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops, new FailedOperationTransformationConfig());
+        } finally {
+            System.clearProperty("jboss.as.test.transformation.hack");
+        }
     }
 
 }

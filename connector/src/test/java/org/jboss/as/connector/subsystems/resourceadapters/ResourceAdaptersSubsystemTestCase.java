@@ -25,14 +25,13 @@ import java.io.IOException;
 import java.util.List;
 
 import junit.framework.Assert;
-import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension;
+
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
-import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 
@@ -103,23 +102,28 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
      * @throws Exception
      */
     private void testTransformer1_1_0(String mavenVersion, String subsystemXml) throws Exception {
-        ModelVersion modelVersion = ModelVersion.create(1, 1, 0); //The old model version
-        //Use the non-runtime version of the extension which will happen on the HC
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXmlResource(subsystemXml);
+        System.setProperty("jboss.as.test.transformation.hack", "true");
+        try {
+            ModelVersion modelVersion = ModelVersion.create(1, 1, 0); //The old model version
+            //Use the non-runtime version of the extension which will happen on the HC
+            KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                    .setSubsystemXmlResource(subsystemXml);
 
-        // Add legacy subsystems
-        builder.createLegacyKernelServicesBuilder(null, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + mavenVersion)
-                .setExtensionClassName("org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension");
+            // Add legacy subsystems
+            builder.createLegacyKernelServicesBuilder(null, modelVersion)
+                    .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + mavenVersion)
+                    .setExtensionClassName("org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension");
 
-        KernelServices mainServices = builder.build();
-        org.junit.Assert.assertTrue(mainServices.isSuccessfulBoot());
-        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
-        org.junit.Assert.assertTrue(legacyServices.isSuccessfulBoot());
-        org.junit.Assert.assertNotNull(legacyServices);
+            KernelServices mainServices = builder.build();
+            org.junit.Assert.assertTrue(mainServices.isSuccessfulBoot());
+            KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+            org.junit.Assert.assertTrue(legacyServices.isSuccessfulBoot());
+            org.junit.Assert.assertNotNull(legacyServices);
 
-        checkSubsystemModelTransformation(mainServices, modelVersion);
+            checkSubsystemModelTransformation(mainServices, modelVersion);
+        } finally {
+            System.clearProperty("jboss.as.test.transformation.hack");
+        }
     }
 
 
