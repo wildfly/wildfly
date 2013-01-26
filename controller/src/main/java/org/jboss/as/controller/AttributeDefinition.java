@@ -71,6 +71,7 @@ public abstract class AttributeDefinition {
     private final boolean resourceOnly;
     private final DeprecationData deprecationData;
 
+
     protected AttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
                                final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
                                final ParameterValidator validator, final String[] alternatives, final String[] requires,
@@ -554,7 +555,9 @@ public abstract class AttributeDefinition {
     protected ModelNode convertParameterExpressions(final ModelNode parameter) {
         if (isAllowExpression() && COMPLEX_TYPES.contains(type) && ParseUtils.containExpression(parameter.asString())) {
             // They need to subclass and override
-            throw new IllegalStateException();
+            if (!Boolean.getBoolean("jboss.as.test.transformation.hack")) {
+                throw new IllegalStateException();
+            }
         }
         return isAllowExpression() ? convertStringExpression(parameter) : parameter;
     }
