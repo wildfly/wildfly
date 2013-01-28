@@ -459,7 +459,7 @@ class HornetQServerAdd implements OperationStepHandler {
        /**
      * Process the HornetQ server-side old style interceptors.
      */
-     static void processRemotingInterceptors(final OperationContext context, final Configuration configuration, final ModelNode params) {
+    static void processRemotingInterceptors(final OperationContext context, final Configuration configuration, final ModelNode params) {
         // TODO preemptively check that the interceptor classes can be loaded
         ModelNode interceptors = params.get(CommonAttributes.REMOTING_INTERCEPTORS.getName());
         if (interceptors.isDefined()) {

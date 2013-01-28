@@ -568,25 +568,7 @@ public interface CommonAttributes {
             .setMaxSize(Integer.MAX_VALUE)
             .setRestartAllServices()
             .setValidator(new StringLengthValidator(1, false, true))
-            .setAttributeMarshaller(new AttributeMarshaller() {
-                @Override
-                public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
-                    if (resourceModel.hasDefined(attribute.getName())) {
-                        List<ModelNode> list = resourceModel.get(attribute.getName()).asList();
-                        if (list.size() > 0) {
-                            writer.writeStartElement(attribute.getXmlName());
-
-                            for (ModelNode child : list) {
-                                writer.writeStartElement(Element.CLASS_NAME.getLocalName());
-                                writer.writeCharacters(child.asString());
-                                writer.writeEndElement();
-                            }
-
-                            writer.writeEndElement();
-                        }
-                    }
-                }
-            })
+            .setAttributeMarshaller(AttributeMarshallers.INTERCEPTOR_MARSHALLER)
             .build();
 
     PrimitiveListAttributeDefinition REMOTING_INCOMING_INTERCEPTORS = new PrimitiveListAttributeDefinition.Builder("remoting-incoming-interceptors", ModelType.STRING)
@@ -596,25 +578,7 @@ public interface CommonAttributes {
             .setMaxSize(Integer.MAX_VALUE)
             .setRestartAllServices()
             .setValidator(new StringLengthValidator(1, false, true))
-            .setAttributeMarshaller(new AttributeMarshaller() {
-                @Override
-                public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
-                    if (resourceModel.hasDefined(attribute.getName())) {
-                        List<ModelNode> list = resourceModel.get(attribute.getName()).asList();
-                        if (list.size() > 0) {
-                            writer.writeStartElement(attribute.getXmlName());
-
-                            for (ModelNode child : list) {
-                                writer.writeStartElement(Element.CLASS_NAME.getLocalName());
-                                writer.writeCharacters(child.asString());
-                                writer.writeEndElement();
-                            }
-
-                            writer.writeEndElement();
-                        }
-                    }
-                }
-            })
+            .setAttributeMarshaller(AttributeMarshallers.INTERCEPTOR_MARSHALLER)
             .build();
 
     PrimitiveListAttributeDefinition REMOTING_OUTGOING_INTERCEPTORS = new PrimitiveListAttributeDefinition.Builder("remoting-outgoing-interceptors", ModelType.STRING)
@@ -624,25 +588,7 @@ public interface CommonAttributes {
             .setMaxSize(Integer.MAX_VALUE)
             .setRestartAllServices()
             .setValidator(new StringLengthValidator(1, false, true))
-            .setAttributeMarshaller(new AttributeMarshaller() {
-                @Override
-                public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
-                    if (resourceModel.hasDefined(attribute.getName())) {
-                        List<ModelNode> list = resourceModel.get(attribute.getName()).asList();
-                        if (list.size() > 0) {
-                            writer.writeStartElement(attribute.getXmlName());
-
-                            for (ModelNode child : list) {
-                                writer.writeStartElement(Element.CLASS_NAME.getLocalName());
-                                writer.writeCharacters(child.asString());
-                                writer.writeEndElement();
-                            }
-
-                            writer.writeEndElement();
-                        }
-                    }
-                }
-            })
+            .setAttributeMarshaller(AttributeMarshallers.INTERCEPTOR_MARSHALLER)
             .build();
 
     SimpleAttributeDefinition REPLICATION_CLUSTERNAME = create("replication-clustername", ModelType.STRING)
