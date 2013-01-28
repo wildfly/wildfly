@@ -553,7 +553,7 @@ public abstract class AttributeDefinition {
      * @throws IllegalStateException if expressions are supported, but the {@link #getType() attribute type} is {@link #COMPLEX_TYPES complex}
      */
     protected ModelNode convertParameterExpressions(final ModelNode parameter) {
-        if (isAllowExpression() && COMPLEX_TYPES.contains(type) && ParseUtils.containExpression(parameter.asString())) {
+        if (isAllowExpression() && COMPLEX_TYPES.contains(type)) {
             // They need to subclass and override
             if (!Boolean.getBoolean("jboss.as.test.transformation.hack")) {
                 throw new IllegalStateException();

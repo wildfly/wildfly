@@ -419,18 +419,14 @@ public final class ParseUtils {
 
     public static ModelNode parsePossibleExpression(String value) {
         ModelNode result = new ModelNode();
-        if (containExpression(value)) {
+        int openIdx = value.indexOf("${");
+        if (openIdx > -1 && value.lastIndexOf('}') > openIdx) {
             result.setExpression(value);
         }
         else {
             result.set(value);
         }
         return result;
-    }
-
-    public static boolean containExpression(String value) {
-        int openIdx = value.indexOf("${");
-        return (openIdx > -1 && value.lastIndexOf('}') > openIdx);
     }
 
     public static String getWarningMessage(final String msg, final Location location) {
