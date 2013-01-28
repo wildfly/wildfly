@@ -343,7 +343,10 @@ class HornetQServerAdd implements OperationStepHandler {
         configuration.setEnabledAsyncConnectionExecution(ASYNC_CONNECTION_EXECUTION_ENABLED.resolveModelAttribute(context, model).asBoolean());
 
         configuration.setBackupGroupName(BACKUP_GROUP_NAME.resolveModelAttribute(context, model).asString());
-        configuration.setReplicationClustername(REPLICATION_CLUSTERNAME.resolveModelAttribute(context, model).asString());
+        ModelNode replicationClusterName = REPLICATION_CLUSTERNAME.resolveModelAttribute(context, model);
+        if (replicationClusterName.isDefined()) {
+            configuration.setReplicationClustername(replicationClusterName.asString());
+        }
         configuration.setCheckForLiveServer(CHECK_FOR_LIVE_SERVER.resolveModelAttribute(context, model).asBoolean());
         configuration.setBackup(BACKUP.resolveModelAttribute(context, model).asBoolean());
         configuration.setClusterPassword(CLUSTER_PASSWORD.resolveModelAttribute(context, model).asString());
