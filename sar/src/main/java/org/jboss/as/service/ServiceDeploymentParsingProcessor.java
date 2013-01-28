@@ -45,6 +45,7 @@ import org.jboss.as.server.deployment.module.TempFileProviderService;
 import org.jboss.as.service.descriptor.JBossServiceXmlDescriptor;
 import org.jboss.as.service.descriptor.JBossServiceXmlDescriptorParser;
 import org.jboss.as.service.descriptor.ParseResult;
+import org.jboss.logging.Messages;
 import org.jboss.staxmapper.XMLMapper;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
@@ -128,7 +129,6 @@ public class ServiceDeploymentParsingProcessor implements DeploymentUnitProcesso
         } finally {
             VFSUtils.safeClose(xmlStream);
         }
-
         try {
             final List<VirtualFile> childArchives = deploymentRoot.getChildren(CHILD_ARCHIVE_FILTER);
 
@@ -142,7 +142,7 @@ public class ServiceDeploymentParsingProcessor implements DeploymentUnitProcesso
                 resourceRoot.addToAttachmentList(Attachments.INDEX_IGNORE_PATHS, child.getPathNameRelativeTo(deploymentRoot));
             }
         } catch (IOException e) {
-            // throw SAR.failedToProcessRaChild(e, deploymentRoot);
+            SarMessages.MESSAGES.failedToProcessSarChild(e, deploymentRoot);
         }
     }
 
