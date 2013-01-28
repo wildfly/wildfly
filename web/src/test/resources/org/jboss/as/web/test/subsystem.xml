@@ -37,8 +37,8 @@
                <welcome-file>toto</welcome-file>
                <welcome-file>${prop.welcome.file:titi}</welcome-file>
             </configuration>
-            <connector name="http" scheme="${prop.scheme:http}"
-                       protocol="${prop.protocol:HTTP/1.1}"
+            <connector name="http" scheme="http"
+                       protocol="HTTP/1.1"
                        socket-binding="http"
                        enabled="${prop.enabled:true}"
                        enable-lookups="${prop.enable-lookups:false}"
@@ -48,10 +48,10 @@
                        max-save-post-size="${prop.max-save-post-size:512}"
                        redirect-port="${prop.redirect-port:7778}"
                        max-connections="${prop.max-connections:300}"
-                       secure="${prop.http-secure:false}"
+                       secure="false"
                        executor="some-executor"
                     />
-            <connector name="https" scheme="${prop.scheme:https}" protocol="${prop.protocol:HTTP/1.1}" secure="${prop.secure:true}" socket-binding="https">
+            <connector name="https" scheme="https" protocol="HTTP/1.1" secure="true" socket-binding="https">
             <ssl certificate-key-file="${jboss.server.config.dir}/keystore.p12"
                     ca-certificate-file="${jboss.server.config.dir}/truststore.jks"
                     key-alias="${prop.key-alias:tomcat}"
