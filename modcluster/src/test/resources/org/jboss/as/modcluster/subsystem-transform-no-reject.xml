@@ -51,14 +51,16 @@
             <load-metric capacity="1000.1" type="sessions" weight="2"/>
             <load-metric capacity="512.2" type="send-traffic" weight="3"/>
             <load-metric capacity="1024.1" type="receive-traffic"/>
-            <load-metric capacity="1000.1" type="requests"/>
+            <load-metric type="requests" weight="4"/>
             <load-metric type="mem"/>
             <load-metric type="cpu"/>
             <load-metric type="heap"/>
             <load-metric type="busyness">
                 <property name="name1" value="value1"/>
             </load-metric>
-            <custom-load-metric class="org.jboss.modcluster.SomeFakeLoadMetricClass" weight="5"/>
+            <custom-load-metric class="org.jboss.modcluster.SomeFakeLoadMetricClass1" weight="5" capacity="1.1"/>
+            <custom-load-metric class="org.jboss.modcluster.SomeFakeLoadMetricClass2" capacity="1.1"/>
+            <custom-load-metric class="org.jboss.modcluster.SomeFakeLoadMetricClass3" weight="5"/>
         </dynamic-load-provider>
         <ssl ca-certificate-file="/home/rhusar/client-keystore.jks"
              ca-revocation-url="/home/rhusar/revocations"

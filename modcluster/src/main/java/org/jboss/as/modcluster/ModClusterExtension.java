@@ -147,6 +147,8 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         dynamicLoadProvider.addChildResource(CUSTOM_LOAD_METRIC_PATH)
                     .getAttributeBuilder()
                         .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CLASS)
+                        .addRejectCheck(CapacityCheckerAndConverter.INSTANCE, CAPACITY)
+                        .setValueConverter(CapacityCheckerAndConverter.INSTANCE, CAPACITY)
                         .end();
         dynamicLoadProvider.addChildResource(LOAD_METRIC_PATH)
                     .getAttributeBuilder()
