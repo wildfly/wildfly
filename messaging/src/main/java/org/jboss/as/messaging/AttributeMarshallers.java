@@ -123,6 +123,27 @@ public final class AttributeMarshallers {
         }
     };
 
+
+    public static final AttributeMarshaller INTERCEPTOR_MARSHALLER = new AttributeMarshaller() {
+        @Override
+        public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+            if (resourceModel.hasDefined(attribute.getName())) {
+                List<ModelNode> list = resourceModel.get(attribute.getName()).asList();
+                if (list.size() > 0) {
+                    writer.writeStartElement(attribute.getXmlName());
+
+                    for (ModelNode child : list) {
+                        writer.writeStartElement(Element.CLASS_NAME.getLocalName());
+                        writer.writeCharacters(child.asString());
+                        writer.writeEndElement();
+                    }
+
+                    writer.writeEndElement();
+                }
+            }
+        }
+    };
+
     /**
      * XML marshaller for connector attribute to wrap a list of attributes in a optional XML element.
      */
