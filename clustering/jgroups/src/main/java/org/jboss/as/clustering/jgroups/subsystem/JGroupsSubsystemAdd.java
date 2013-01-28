@@ -36,7 +36,6 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.InjectedValue;
@@ -90,18 +89,6 @@ public class JGroupsSubsystemAdd extends AbstractAddStepHandler {
         if (newControllers != null) {
             newControllers.add(dcfsController);
         }
-    }
-
-    protected void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model)
-            throws OperationFailedException {
-
-        // remove the ProtocolDefaultsService
-        ServiceName protocolDefaultsService = ProtocolDefaultsService.SERVICE_NAME;
-        context.removeService(protocolDefaultsService);
-
-        // remove the DefaultChannelFactoryServiceAlias
-        ServiceName defaultChannelFactoryService = ChannelFactoryService.getServiceName(null);
-        context.removeService(defaultChannelFactoryService);
     }
 
     protected ServiceController<ProtocolDefaults> installProtocolDefaultsService(ServiceTarget target, ServiceVerificationHandler verificationHandler) {

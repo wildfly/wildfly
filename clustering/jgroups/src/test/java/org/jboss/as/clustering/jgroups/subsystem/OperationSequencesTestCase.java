@@ -1,14 +1,18 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+
+import java.util.List;
 
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.byteman.contrib.bmunit.BMRule;
 import org.jboss.byteman.contrib.bmunit.BMUnitRunner;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,6 +24,10 @@ import org.junit.runner.RunWith;
 */
 @RunWith(BMUnitRunner.class)
 public class OperationSequencesTestCase extends OperationTestCaseBase {
+
+    // subsystem test operations
+    static final ModelNode addSubsystemOp = getSubsystemAddOperation("maximal2");
+    static final ModelNode removeSubsystemOp = getSubsystemRemoveOperation();
 
     // stack test operations
     static final ModelNode addStackOp = getProtocolStackAddOperation("maximal2");
@@ -144,5 +152,35 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
         Assert.assertNotNull("channel factory service not installed", servicesA.getContainer().getService(channelFactoryServiceName));
     }
 
+    /*
+     * Tests the ability of the /subsystem=jgroups:add() operation
+     * to correctly process add and remove.
+     */
+    @Test
+    public void testSubsystemRemoveAddSequence() throws Exception {
+        // Parse and install the XML into the controller
+        String subsystemXml = getSubsystemXml() ;
+        KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
 
+        // remove the jgroups subsystem
+        ModelNode result = servicesA.executeOperation(removeSubsystemOp);
+        Assert.assertEquals("failure description: " + result.get(FAILURE_DESCRIPTION).toString(), SUCCESS, result.get(OUTCOME).asString());
+
+        // add the jgroups subsystem  again
+        result = servicesA.executeOperation(addSubsystemOp);
+        Assert.assertEquals("failure description: " + result.get(FAILURE_DESCRIPTION).toString(), SUCCESS, result.get(OUTCOME).asString());
+
+        // remove the jgroups subsystem  again
+        result = servicesA.executeOperation(removeSubsystemOp);
+        Assert.assertEquals("failure description: " + result.get(FAILURE_DESCRIPTION).toString(), SUCCESS, result.get(OUTCOME).asString());
+    }
+
+     private void listMSCServices(KernelServices services, String marker) {
+        ServiceRegistry registry = services.getContainer() ;
+        List<ServiceName> names = registry.getServiceNames() ;
+        System.out.println("Services: " + marker);
+        for (ServiceName name : names) {
+            System.out.println("name = " + name.toString());
+        }
+    }
 }
