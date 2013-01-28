@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CON
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IN_SERIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -563,6 +564,15 @@ public interface DomainControllerMessages {
      * @param slot the non-default value of the slot attribute
      * @return the message
      */
-    @Message(id = 10878, value = "Invalid JSF slot value: %s. The host controller is not able to use a JSF slot value different from its default. This resource will be ignored on that host")
+    @Message(id = 10878, value = "Invalid JSF slot value: '%s'. The host controller is not able to use a JSF slot value different from its default. This resource will be ignored on that host")
     String invalidJSFSlotValue(String slot);
+
+    /**
+     * Warning messages when a transformer detects that an operation defines unknown attributes for a legacy subsystem.
+     *
+     * @param attributes the name of the attributes unknown from the legacy version
+     * @return the message
+     */
+    @Message(id = 10879, value = "Operation '%s' fails because the attributes are not known from the subsytem '%s' model version '%s': %s")
+    String unknownAttributesFromSubsystemVersion(String operationName, String subsystemName, ModelVersion version, Collection<String> attributes);
 }
