@@ -236,29 +236,13 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
                     }, EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN)
                     .setDiscard(DiscardAttributeChecker.UNDEFINED, EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN)
                     .end();
+        EJB3RemoteResourceDefinition.registerTransformers_1_1_0(builder);
         UnboundedQueueThreadPoolResourceDefinition.registerTransformers1_0(builder, EJB3SubsystemModel.THREAD_POOL);
         StrictMaxPoolResourceDefinition.registerTransformers_1_1_0(builder);
         FilePassivationStoreResourceDefinition.registerTransformers_1_1_0(builder);
         ClusterPassivationStoreResourceDefinition.registerTransformers_1_1_0(builder);
         TimerServiceResourceDefinition.registerTransformers_1_1_0(builder);
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, subsystem110);
-
-
-//        RejectExpressionValuesTransformer rejectTransformer = new RejectExpressionValuesTransformer(EJB3SubsystemRootResourceDefinition.ENABLE_STATISTICS);
-//        DiscardUndefinedAttributesTransformer discardTransformer = new DiscardUndefinedAttributesTransformer(EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN);
-//        ChainedResourceTransformer ctr = new ChainedResourceTransformer(rejectTransformer.getChainedTransformer(), discardTransformer);
-//        final TransformersSubRegistration transformers110 = subsystemRegistration.registerModelTransformers(subsystem110, ctr);
-//        transformers110.registerOperationTransformer(ADD, new ChainedOperationTransformer(rejectTransformer, discardTransformer));
-//        transformers110.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION,
-//                new ChainedOperationTransformer(rejectTransformer.getWriteAttributeTransformer(), discardTransformer.getWriteAttributeTransformer()));
-//        transformers110.registerOperationTransformer(UNDEFINE_ATTRIBUTE_OPERATION, discardTransformer);
-//
-//        UnboundedQueueThreadPoolResourceDefinition.registerTransformers1_0(transformers110, EJB3SubsystemModel.THREAD_POOL);
-//
-//        StrictMaxPoolResourceDefinition.registerTransformers_1_1_0(transformers110);
-//        FilePassivationStoreResourceDefinition.registerTransformers_1_1_0(transformers110);
-//        ClusterPassivationStoreResourceDefinition.registerTransformers_1_1_0(transformers110);
-//        TimerServiceResourceDefinition.registerTransformers_1_1_0(transformers110);
     }
 
     private static class EJB3ThreadFactoryResolver extends ThreadFactoryResolver.SimpleResolver {

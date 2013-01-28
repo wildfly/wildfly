@@ -83,6 +83,17 @@ public class FailedOperationTransformationConfig {
         return false;
     }
 
+    boolean expectDiscarded(ModelNode operation) {
+        PathAddressConfig cfg = registry.getConfig(operation);
+        if (cfg == null) {
+            return false;
+        }
+        if (cfg.expectDiscarded(operation)) {
+            return true;
+        }
+        return false;
+    }
+
     boolean canCorrectMore(ModelNode operation) {
         PathAddressConfig cfg = registry.getConfig(operation);
         if (cfg == null) {
@@ -230,6 +241,14 @@ public class FailedOperationTransformationConfig {
          * @return the corrected operation
          */
         ModelNode correctWriteAttributeOperation(ModelNode operation);
+
+        /**
+         * Whether the operation is expected to be discarded
+         *
+         * @return {@code true} if expected to fail
+         */
+        boolean expectDiscarded(ModelNode operation);
+
     }
 
     public abstract static class AttributesPathAddressConfig<T extends AttributesPathAddressConfig<T>> implements PathAddressConfig {
@@ -365,6 +384,11 @@ public class FailedOperationTransformationConfig {
                 return op;
             }
             return operation;
+        }
+
+        @Override
+        public boolean expectDiscarded(ModelNode operation) {
+            return false;
         }
 
         protected abstract boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute);
@@ -634,5 +658,43 @@ public class FailedOperationTransformationConfig {
             return createBuilder(convert(attributes));
         }
     }
+
+    public static final PathAddressConfig DISCARDED_RESOURCE = new PathAddressConfig() {
+
+        @Override
+        public boolean expectFailedWriteAttributeOperation(ModelNode operation) {
+            throw new IllegalStateException("Should not get called");
+        }
+
+        @Override
+        public boolean expectFailed(ModelNode operation) {
+            return false;
+        }
+
+        @Override
+        public boolean expectDiscarded(ModelNode operation) {
+            return true;
+        }
+
+        @Override
+        public List<ModelNode> createWriteAttributeOperations(ModelNode operation) {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public ModelNode correctWriteAttributeOperation(ModelNode operation) {
+            throw new IllegalStateException("Should not get called");
+        }
+
+        @Override
+        public ModelNode correctOperation(ModelNode operation) {
+            throw new IllegalStateException("Should not get called");
+        }
+
+        @Override
+        public boolean canCorrectMore(ModelNode operation) {
+            throw new IllegalStateException("Should not get called");
+        }
+    };
 
 }

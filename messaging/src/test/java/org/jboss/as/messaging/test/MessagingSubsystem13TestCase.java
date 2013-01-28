@@ -35,7 +35,6 @@ import static org.jboss.as.model.test.ModelTestUtils.checkFailedTransformedBootO
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
@@ -255,27 +254,9 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
                                 new RejectExpressionsConfig(JMSTopicDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0))
                         .addFailedAttribute(
                                 subsystemAddress.append(JMSBridgeDefinition.PATH),
-                                new RejectExpressionsConfig(new String[0]) {
-                                    @Override
-                                    public boolean expectFailed(ModelNode operation) {
-                                        // jms-bridge resource was introduced in version 1.2.0
-                                        return true;
-                                    }
-                                })
-        );
+                                FailedOperationTransformationConfig.DISCARDED_RESOURCE));
     }
 
-    private static void configureAttributes(Map<String, FailedOperationTransformationConfig.AttributesPathAddressConfig<?>> map, AttributeDefinition[] rejectedExpression, AttributeDefinition[] newAttributes) {
-        RejectExpressionsConfig rejectExpressionsConfig = new RejectExpressionsConfig(rejectedExpression);
-        for (AttributeDefinition attr : rejectedExpression) {
-            map.put(attr.getName(), rejectExpressionsConfig);
-        }
-        NewAttributesConfig newAttributesConfig = new NewAttributesConfig(newAttributes);
-        for (AttributeDefinition attr: newAttributes) {
-            map.put(attr.getName(), newAttributesConfig);
-        }
-
-    }
 
     private static ChainedConfig createChainedConfig(AttributeDefinition[] rejectedExpression, AttributeDefinition[] newAttributes) {
         AttributeDefinition[] allAttributes = new AttributeDefinition[rejectedExpression.length + newAttributes.length];

@@ -22,6 +22,7 @@
 
 package org.jboss.as.modcluster;
 
+import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
@@ -76,8 +77,8 @@ interface ModClusterMessages {
     @Message(id = 11733, value = "virtualhost: %s or context %s not found")
     String ContextorHostNotFound(String Host, String Context);
 
-    @Message(id = 11734, value = "'cacacity' has a bigger value than Integer.MAX_VALUE: %s")
-    String capacityIsGreaterThanIntegerMaxValue(long value);
+    @Message(id = 11734, value = "'cacacity' is either an expression or has a bigger value than Integer.MAX_VALUE: %s")
+    String capacityIsExpressionOrGreaterThanIntegerMaxValue(ModelNode value);
 
     @Message(id = 11735, value = "'property' can not have more than one entry")
     String propertyCanOnlyHaveOneEntry();

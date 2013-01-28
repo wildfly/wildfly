@@ -66,6 +66,7 @@ public class ChainedOperationTransformer implements OperationTransformer {
 
         private TransformedOperation[] delegates;
         private volatile String failure;
+        private volatile boolean initialized;
 
         public ChainedTransformedOperation(ModelNode transformedOperation, TransformedOperation...delegates) {
             // FIXME ChainedTransformedOperation constructor
@@ -88,6 +89,7 @@ public class ChainedOperationTransformer implements OperationTransformer {
             for (TransformedOperation delegate : delegates) {
                 if (delegate.rejectOperation(preparedResult)) {
                     failure = delegate.getFailureDescription();
+                    initialized = true; //See comment in getFailureDescription()
                     return true;
                 }
             }
@@ -96,6 +98,16 @@ public class ChainedOperationTransformer implements OperationTransformer {
 
         @Override
         public String getFailureDescription() {
+            //In real life this will always be initialized by the transforming proxy before anyone calls this method
+            //For testing we call it directly from ModelTestUtils
+            if (!initialized) {
+                for (TransformedOperation delegate : delegates) {
+                    String failure = delegate.getFailureDescription();
+                    if (failure != null) {
+                        return failure;
+                    }
+                }
+            }
             return failure;
         }
 

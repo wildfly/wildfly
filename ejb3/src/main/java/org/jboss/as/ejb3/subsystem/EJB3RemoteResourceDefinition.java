@@ -22,8 +22,9 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -32,14 +33,8 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
-import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelType;
-
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * A {@link org.jboss.as.controller.ResourceDefinition} for the EJB remote service
@@ -95,10 +90,7 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerSubModel(new ChannelCreationOptionResource());
     }
 
-    static void registerTransformers_1_1_0(TransformersSubRegistration parent) {
-
-        final TransformersSubRegistration transformers110 = parent.registerSubResource(EJB3SubsystemModel.REMOTE_SERVICE_PATH,
-                ResourceTransformer.DEFAULT);
-        ChannelCreationOptionResource.registerTransformers_1_1_0(transformers110);
+    static void registerTransformers_1_1_0(ResourceTransformationDescriptionBuilder builder) {
+        ChannelCreationOptionResource.registerTransformers_1_1_0(builder.addChildResource(EJB3SubsystemModel.REMOTE_SERVICE_PATH));
     }
 }
