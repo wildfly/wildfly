@@ -75,7 +75,7 @@ public class DistributedCacheResource extends SharedCacheResource {
     static final SimpleAttributeDefinition VIRTUAL_NODES =
             new SimpleAttributeDefinitionBuilder(ModelKeys.VIRTUAL_NODES, ModelType.INT, true)
                     .setXmlName(Attribute.VIRTUAL_NODES.getLocalName())
-                    .setAllowExpression(true)
+                    .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(1))
                     .setDeprecated(ModelVersion.create(1, 4, 0))
