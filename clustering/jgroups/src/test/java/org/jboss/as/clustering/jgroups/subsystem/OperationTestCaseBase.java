@@ -51,7 +51,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return compositeOp ;
     }
 
-    protected static ModelNode getSubsystemAddOperation() {
+    protected static ModelNode getSubsystemAddOperation(String defaultStack) {
         // create the address of the subsystem
         PathAddress subsystemAddress =  PathAddress.pathAddress(
                 PathElement.pathElement(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME));
@@ -59,7 +59,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         addOp.get(OP).set(ADD);
         addOp.get(OP_ADDR).set(subsystemAddress.toModelNode());
         // required attributes
-        addOp.get(ModelKeys.DEFAULT_STACK).set("maximal2");
+        addOp.get(ModelKeys.DEFAULT_STACK).set(defaultStack);
         return addOp ;
     }
 
@@ -86,6 +86,16 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         writeOp.get(NAME).set(name);
         writeOp.get(VALUE).set(value);
         return writeOp ;
+    }
+
+    protected static ModelNode getSubsystemRemoveOperation() {
+        // create the address of the subsystem
+        PathAddress subsystemAddress =  PathAddress.pathAddress(
+                PathElement.pathElement(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME));
+        ModelNode removeOp = new ModelNode() ;
+        removeOp.get(OP).set(REMOVE);
+        removeOp.get(OP_ADDR).set(subsystemAddress.toModelNode());
+        return removeOp ;
     }
 
     protected static ModelNode getProtocolStackAddOperation(String stackName) {
