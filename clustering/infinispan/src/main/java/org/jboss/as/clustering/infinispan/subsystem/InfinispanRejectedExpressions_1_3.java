@@ -94,7 +94,8 @@ public class InfinispanRejectedExpressions_1_3 {
             concat(
                 CacheResource.CACHE_ATTRIBUTES,
                 ClusteredCacheResource.CLUSTERED_CACHE_ATTRIBUTES,
-                DistributedCacheResource.DISTRIBUTED_CACHE_ATTRIBUTES
+                DistributedCacheResource.DISTRIBUTED_CACHE_ATTRIBUTES,
+                new AttributeDefinition[]{DistributedCacheResource.VIRTUAL_NODES}
             ),
             ACCEPT14_ACCEPT13_CACHE_ATTRIBUTES
     );
@@ -153,7 +154,8 @@ public class InfinispanRejectedExpressions_1_3 {
             concat(
                 CacheResource.CACHE_ATTRIBUTES,
                 ClusteredCacheResource.CLUSTERED_CACHE_ATTRIBUTES,
-                DistributedCacheResource.DISTRIBUTED_CACHE_ATTRIBUTES
+                DistributedCacheResource.DISTRIBUTED_CACHE_ATTRIBUTES,
+                new AttributeDefinition[]{DistributedCacheResource.VIRTUAL_NODES}
             ),
             NEVER_CACHE_ATTRIBUTES
     );

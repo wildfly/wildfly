@@ -121,10 +121,8 @@ public class InfinispanResourceAndOperationTransformer_1_3 implements OperationT
                     // transform the operation to a write of virtual nodes
                     ModelNode transformed = operation.clone();
                     // convert segments value to virtual-nodes value, and replace SEGMENTS with VIRTUAL_NODES
-                    int segmentsValue = Integer.parseInt(attrValue.asString());
-                    int virtualNodes = (segmentsValue / SEGMENTS_PER_VIRTUAL_NODE) + 1;
                     transformed.get(NAME).set(ModelKeys.VIRTUAL_NODES);
-                    transformed.get(VALUE).set(Integer.toString(virtualNodes));
+                    transformed.get(VALUE).set(segmentsToVirtualNodes(attrValue.toString()));
                     // return the new transformed operation model node;  this is a write, so the return result is unaffected
                     return new TransformedOperation(transformed, OperationResultTransformer.ORIGINAL_RESULT);
                 }  else {
@@ -177,9 +175,7 @@ public class InfinispanResourceAndOperationTransformer_1_3 implements OperationT
                 segmentExpression = isExpression(segments);
                 if (!segmentExpression) {
                     // convert segments value to virtual-nodes value
-                    int segmentsValue = Integer.parseInt(segments.asString());
-                    int virtualNodes = (segmentsValue / SEGMENTS_PER_VIRTUAL_NODE) + 1;
-                    model.get(ModelKeys.VIRTUAL_NODES).set(Integer.toString(virtualNodes));
+                    model.get(ModelKeys.VIRTUAL_NODES).set(segmentsToVirtualNodes(segments.toString()));
                 } else {
                     // Pass the invalid value on to the slave in order to ensure any attempt to use this
                     // on a server generates a failure
@@ -206,5 +202,21 @@ public class InfinispanResourceAndOperationTransformer_1_3 implements OperationT
         }
         return Integer.toString(segments);
     }
+
+    /*
+     * Convert a 1.4 segments value to a 1.3 virtual nodes value
+     */
+    public static String segmentsToVirtualNodes(String segmentsValue) {
+        int virtualNodes = 0 ;
+        try {
+            // divide by zero should not occur as segments is required to be > 0
+            virtualNodes =  Integer.parseInt(segmentsValue) / SEGMENTS_PER_VIRTUAL_NODE;
+        }
+        catch(NumberFormatException nfe) {
+            // in case of expression
+        }
+        return Integer.toString(virtualNodes);
+    }
+
 }
 

@@ -72,7 +72,7 @@ public class DistributedCacheResource extends SharedCacheResource {
 
     @SuppressWarnings("deprecation")
     @Deprecated
-    private static final SimpleAttributeDefinition VIRTUAL_NODES =
+    static final SimpleAttributeDefinition VIRTUAL_NODES =
             new SimpleAttributeDefinitionBuilder(ModelKeys.VIRTUAL_NODES, ModelType.INT, true)
                     .setXmlName(Attribute.VIRTUAL_NODES.getLocalName())
                     .setAllowExpression(true)
