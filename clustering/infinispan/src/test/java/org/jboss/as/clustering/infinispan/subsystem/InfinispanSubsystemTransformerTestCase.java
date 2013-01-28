@@ -143,7 +143,8 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
         for (int i=0; i < cachePaths.length; i++) {
             config.addFailedAttribute(subsystemAddress.append(CacheContainerResource.CONTAINER_PATH).append(cachePaths[i]),
                     new FailedOperationTransformationConfig.RejectExpressionsConfig(
-                            InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_CACHE_ATTRIBUTES).setNotExpectedWriteFailure(ModelKeys.INDEXING_PROPERTIES, ModelKeys.SEGMENTS));
+                            // InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_CACHE_ATTRIBUTES).setNotExpectedWriteFailure(ModelKeys.INDEXING_PROPERTIES, ModelKeys.SEGMENTS));
+                            InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_CACHE_ATTRIBUTES).setNotExpectedWriteFailure(ModelKeys.INDEXING_PROPERTIES));
 
             PathElement[] childPaths = {
                     LockingResource.LOCKING_PATH,
