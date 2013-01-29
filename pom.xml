@@ -4159,7 +4159,8 @@
 
             <dependency>
                 <groupId>org.jboss.jbossts.jts</groupId>
-                <artifactId>jbossjts-jacorb</artifactId>
+                <!--artifactId>jbossjts-jacorb</artifactId-->
+                <artifactId>jbossjts-idlj</artifactId>
                 <version>${version.org.jboss.jbossts.jbossjts}</version>
                 <exclusions>
                     <exclusion>

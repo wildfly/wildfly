@@ -1076,7 +1076,8 @@
         </module-def>
 
         <module-def name="org.jboss.jts">
-            <maven-resource group="org.jboss.jbossts.jts" artifact="jbossjts-jacorb"/>
+            <maven-resource group="org.jboss.jbossts.jts" artifact="jbossjts-idlj"/>
+            <!--maven-resource group="org.jboss.jbossts.jts" artifact="jbossjts-jacorb"/-->
         </module-def>
 
         <module-def name="org.jboss.jts.integration">

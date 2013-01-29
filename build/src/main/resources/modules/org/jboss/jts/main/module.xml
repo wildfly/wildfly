@@ -41,6 +41,6 @@
         <module name="javax.transaction.api"/>
         <module name="javax.resource.api"/>
         <module name="org.hornetq"/>
-        <module name="org.jacorb"/>
+        <module name="org.jboss.corba" export="true"/>
     </dependencies>
 </module>

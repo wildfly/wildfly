@@ -376,7 +376,8 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final ServiceBuilder<RecoveryManagerService> recoveryManagerServiceServiceBuilder = context.getServiceTarget().addService(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, recoveryManagerService);
 
         if(jts) {
-            recoveryManagerServiceServiceBuilder.addDependency(ServiceName.JBOSS.append("jacorb", "orb-service"), ORB.class, recoveryManagerService.getOrbInjector());
+            recoveryManagerServiceServiceBuilder.addDependency(ServiceName.JBOSS.append("iiop", "orb-service"), ORB.class, recoveryManagerService.getOrbInjector());
+//            recoveryManagerServiceServiceBuilder.addDependency(ServiceName.JBOSS.append("jacorb", "orb-service"), ORB.class, recoveryManagerService.getOrbInjector());
         }
 
         controllers.add(recoveryManagerServiceServiceBuilder
@@ -406,7 +407,8 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         //if jts is enabled we need the ORB
         if (jts) {
-            transactionManagerServiceServiceBuilder.addDependency(ServiceName.JBOSS.append("jacorb", "orb-service"), ORB.class, transactionManagerService.getOrbInjector());
+            transactionManagerServiceServiceBuilder.addDependency(ServiceName.JBOSS.append("iiop", "orb-service"), ORB.class, transactionManagerService.getOrbInjector());
+//            transactionManagerServiceServiceBuilder.addDependency(ServiceName.JBOSS.append("jacorb", "orb-service"), ORB.class, transactionManagerService.getOrbInjector());
             transactionManagerServiceServiceBuilder.addDependency(IIOPServiceNames.NAMING_SERVICE_NAME);
         }
 

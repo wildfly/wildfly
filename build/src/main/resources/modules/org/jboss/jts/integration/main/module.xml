@@ -43,6 +43,8 @@
         <module name="org.jboss.as.transactions">
             <imports>
                 <include path="org.jboss.iiop.tm"/>
+<!-- not sure if we need this next include -->
+                <include path="org.jboss.corba"/>
             </imports>
         </module>
     </dependencies>

@@ -2304,7 +2304,8 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.jbossts.jts</groupId>
-      <artifactId>jbossjts-jacorb</artifactId>
+      <artifactId>jbossjts-idlj</artifactId>
+      <!--artifactId>jbossjts-jacorb</artifactId-->
       <licenses>
         <license>
           <name>GNU Lesser General Public License, Version 2.1</name>
