@@ -120,8 +120,8 @@ public class JGroupsSubsystemTransformerTestCase extends OperationTestCaseBase {
     public void testProtocolStackPropertyResolve() throws Exception {
 
         // Parse and install the XML into the controller
-        String subsystemXml = getSubsystemXml() ;
-        KernelServices services = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
+        String subsystemXml =  getSubsystemXml() ;
+        KernelServices services = createKernelServicesBuilder(null).setSubsystemXmlResource(subsystemXml).build();
 
         // set a property to have an expression and let Byteman intercept the performRuntime call
 
@@ -168,7 +168,7 @@ public class JGroupsSubsystemTransformerTestCase extends OperationTestCaseBase {
         ModelTestUtils.checkFailedTransformedBootOperations(
                 mainServices,
                 version_1_1_0,
-                builder.parseXmlResource("/subsystem-jgroups-test.xml"),
+                builder.parseXmlResource("subsystem-jgroups-test.xml"),
                 new FailedOperationTransformationConfig()
                     .addFailedAttribute(
                             subsystemAddress.append(PathElement.pathElement("stack"))
