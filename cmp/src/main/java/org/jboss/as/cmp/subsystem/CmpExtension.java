@@ -61,7 +61,9 @@ public class CmpExtension implements Extension {
         subsystemRegistration.registerSubModel(UUIDKeyGeneratorResourceDefinition.INSTANCE);
 
         subsystemRegistration.registerSubModel(HiLoKeyGeneratorResourceDefinition.INSTANCE);
-        registerTransformers(subsystem);
+        if (context.isRegisterTransformers()){
+            registerTransformers(subsystem);
+        }
     }
 
     private void registerTransformers(SubsystemRegistration subsystem) {
