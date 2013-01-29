@@ -516,19 +516,20 @@ public class ModelTestUtils {
      */
     public static void checkFailedTransformedBootOperations(ModelTestKernelServices<?> mainServices, ModelVersion modelVersion, List<ModelNode> operations, FailedOperationTransformationConfig config) throws OperationFailedException {
         for (ModelNode op : operations) {
-            ModelTestUtils.checkOutcome(mainServices.executeOperation(op));
-            checkFailedTransformedAddOperation(mainServices, modelVersion, op.clone(), config);
-
             List<ModelNode> writeOps = config.createWriteAttributeOperations(op);
+
+            ModelTestUtils.checkOutcome(mainServices.executeOperation(op));
+            checkFailedTransformedAddOperation(mainServices, modelVersion, op, config);
+
             for (ModelNode writeOp : writeOps) {
-                TransformedOperation transformedOperation = mainServices.transformOperation(modelVersion, writeOp);
-                ModelNode result = mainServices.executeOperation(modelVersion, transformedOperation);
+                TransformedOperation transformedOperation = mainServices.transformOperation(modelVersion, writeOp.clone());
                 if (!config.expectFailedWriteAttributeOperation(writeOp)) {
+                    ModelNode result = mainServices.executeOperation(modelVersion, transformedOperation);
                     Assert.assertEquals("Failed: " + writeOp + "\n" + result, SUCCESS, result.get(OUTCOME).asString());
                 } else {
-                    Assert.assertEquals("Expected failure: " + writeOp,  FAILED, result.get(OUTCOME).asString());
+                    Assert.assertNotNull("Expected transformation to get rejected " + writeOp, transformedOperation.getFailureDescription());
                     transformedOperation = mainServices.transformOperation(modelVersion, config.correctWriteAttributeOperation(writeOp));
-                    result = mainServices.executeOperation(modelVersion, transformedOperation);
+                    ModelNode result = mainServices.executeOperation(modelVersion, transformedOperation);
                     Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString() + " for\n:" + transformedOperation.getTransformedOperation(), SUCCESS, result.get(OUTCOME).asString());
                 }
             }
@@ -536,15 +537,17 @@ public class ModelTestUtils {
     }
 
     private static void checkFailedTransformedAddOperation(ModelTestKernelServices<?> mainServices, ModelVersion modelVersion, ModelNode operation, FailedOperationTransformationConfig config) throws OperationFailedException {
-        TransformedOperation transformedOperation = mainServices.transformOperation(modelVersion, operation);
-        ModelNode result = mainServices.executeOperation(modelVersion, transformedOperation);
-        if (!config.expectFailed(operation)) {
-            Assert.assertEquals("Failed: " + operation + "\n: " + result, SUCCESS, result.get(OUTCOME).asString());
-        } else {
-            Assert.assertEquals("Should not have worked: " + operation, FAILED, result.get(OUTCOME).asString());
+        TransformedOperation transformedOperation = mainServices.transformOperation(modelVersion, operation.clone());
+        if (config.expectFailed(operation)) {
+            Assert.assertNotNull("Expected transformation to get rejected " + operation, transformedOperation.getFailureDescription());
             if (config.canCorrectMore(operation)) {
-                checkFailedTransformedAddOperation(mainServices, modelVersion, config.correctOperation(transformedOperation.getTransformedOperation()), config);
+                checkFailedTransformedAddOperation(mainServices, modelVersion, config.correctOperation(operation), config);
             }
+        } else if (config.expectDiscarded(operation)) {
+            Assert.assertNull("Expected null transformed operation for discarded " + operation, transformedOperation.getTransformedOperation());
+        } else {
+            ModelNode result = mainServices.executeOperation(modelVersion, transformedOperation);
+            Assert.assertEquals("Failed: " + operation + "\n: " + result, SUCCESS, result.get(OUTCOME).asString());
         }
     }
 }

@@ -293,9 +293,13 @@ public final class ParseUtils {
     }
 
     public static Property readProperty(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        return readProperty(reader, false);
+    }
+
+    public static Property readProperty(final XMLExtendedStreamReader reader, boolean supportsExpressions) throws XMLStreamException {
         final int cnt = reader.getAttributeCount();
         String name = null;
-        String value = null;
+        ModelNode value = null;
         for (int i = 0; i < cnt; i++) {
             String uri = reader.getAttributeNamespace(i);
             if (uri != null&&!"".equals(XMLConstants.NULL_NS_URI)) {
@@ -305,7 +309,11 @@ public final class ParseUtils {
             if (localName.equals("name")) {
                 name = reader.getAttributeValue(i);
             } else if (localName.equals("value")) {
-                value = reader.getAttributeValue(i);
+                if (supportsExpressions) {
+                    value = parsePossibleExpression(reader.getAttributeValue(i));
+                } else {
+                    value = new ModelNode(reader.getAttributeValue(i));
+                }
             } else {
                 throw unexpectedAttribute(reader, i);
             }
@@ -316,8 +324,9 @@ public final class ParseUtils {
         if (reader.next() != END_ELEMENT) {
             throw unexpectedElement(reader);
         }
-        return new Property(name, new ModelNode().set(value == null ? "" : value));
+        return new Property(name, new ModelNode().set(value == null ? new ModelNode() : value));
     }
+
 
     /**
      * Read an element which contains only a single list attribute of a given

@@ -22,8 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
@@ -36,7 +34,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ASYNC;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CACHE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CLUSTER_PASSIVATION_STORE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ENABLE_BY_DEFAULT;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.FILE_PASSIVATION_STORE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.IIOP;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PATH;
@@ -46,11 +43,11 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.THREAD_POOL;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TIMER_SERVICE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.USE_QUALIFIED_NAME;
 
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
@@ -646,8 +643,8 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
     private void parseTimerService(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
         final ModelNode timerServiceAdd = Util.createAddOperation(SUBSYSTEM_PATH.append(SERVICE, TIMER_SERVICE));
 
-        String dataStorePath = null;
-        String dataStorePathRelativeTo = null;
+        ModelNode dataStorePath = null;
+        ModelNode dataStorePathRelativeTo = null;
 
         final int attCount = reader.getAttributeCount();
         final EnumSet<EJB3SubsystemXMLAttribute> required = EnumSet.of(EJB3SubsystemXMLAttribute.THREAD_POOL_NAME);
@@ -681,13 +678,13 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
                                 if (dataStorePath != null) {
                                     throw unexpectedAttribute(reader, i);
                                 }
-                                dataStorePath = TimerServiceResourceDefinition.PATH.parse(value, reader).asString();
+                                dataStorePath = TimerServiceResourceDefinition.PATH.parse(value, reader);
                                 break;
                             case RELATIVE_TO:
                                 if (dataStorePathRelativeTo != null) {
                                     throw unexpectedAttribute(reader, i);
                                 }
-                                dataStorePathRelativeTo = TimerServiceResourceDefinition.RELATIVE_TO.parse(value, reader).asString();
+                                dataStorePathRelativeTo = TimerServiceResourceDefinition.RELATIVE_TO.parse(value, reader);
                                 break;
                             default:
                                 throw unexpectedAttribute(reader, i);

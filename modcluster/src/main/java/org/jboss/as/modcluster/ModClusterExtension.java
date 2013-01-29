@@ -41,7 +41,6 @@ import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.CIPHER_SUI
 import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.KEY_ALIAS;
 import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.PROTOCOL;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -137,7 +136,8 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
     private static void registerTransformers_1_2_0(SubsystemRegistration subsystem) {
 
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        ResourceTransformationDescriptionBuilder dynamicLoadProvider = builder.addChildResource(CONFIGURATION_PATH)
+        ResourceTransformationDescriptionBuilder configurationBuilder = builder.addChildResource(CONFIGURATION_PATH);
+        ResourceTransformationDescriptionBuilder dynamicLoadProvider = configurationBuilder
             .getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ADVERTISE, AUTO_ENABLE_CONTEXTS, FLUSH_PACKETS, STICKY_SESSION, STICKY_SESSION_REMOVE, STICKY_SESSION_FORCE, PING)
                 .end()
@@ -147,18 +147,19 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
                     .end();
         dynamicLoadProvider.addChildResource(CUSTOM_LOAD_METRIC_PATH)
                     .getAttributeBuilder()
-                        .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CLASS)
+                        .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CLASS, WEIGHT)
+                        .addRejectCheck(CapacityCheckerAndConverter.INSTANCE, CAPACITY)
+                        .setValueConverter(CapacityCheckerAndConverter.INSTANCE, CAPACITY)
                         .end();
         dynamicLoadProvider.addChildResource(LOAD_METRIC_PATH)
                     .getAttributeBuilder()
-                        .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, TYPE, WEIGHT, CAPACITY)
-                        .addRejectCheck(new RejectAttributeChecker.ObjectFieldsRejectAttributeChecker(Collections.singletonMap(PROPERTY.getName(), RejectAttributeChecker.SIMPLE_EXPRESSIONS)), PROPERTY)
+                        .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, TYPE, WEIGHT, CAPACITY, PROPERTY)
                         .addRejectCheck(CapacityCheckerAndConverter.INSTANCE, CAPACITY)
                         .setValueConverter(CapacityCheckerAndConverter.INSTANCE, CAPACITY)
                         .addRejectCheck(PropertyCheckerAndConverter.INSTANCE, PROPERTY)
                         .setValueConverter(PropertyCheckerAndConverter.INSTANCE, PROPERTY)
                         .end();
-        builder.addChildResource(SSL_CONFIGURATION_PATH)
+        configurationBuilder.addChildResource(SSL_CONFIGURATION_PATH)
             .getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CIPHER_SUITE, KEY_ALIAS, PROTOCOL)
                 .end();
@@ -169,12 +170,16 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         private static final CapacityCheckerAndConverter INSTANCE = new CapacityCheckerAndConverter();
         @Override
         public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-            return ModClusterMessages.MESSAGES.capacityIsGreaterThanIntegerMaxValue(convert(attributes.get(attributes.get(CAPACITY.getName()))));
+            return ModClusterMessages.MESSAGES.capacityIsExpressionOrGreaterThanIntegerMaxValue(attributes.get(CAPACITY.getName()));
         }
 
         @Override
         protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-            return (convert(attributeValue) != null && convert(attributeValue) > Integer.MAX_VALUE);
+            if (attributeValue.getType() == ModelType.EXPRESSION) {
+                return true;
+            }
+            Long converted = convert(attributeValue);
+            return (converted != null && converted > Integer.MAX_VALUE);
         }
 
         @Override
@@ -208,10 +213,11 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
 
         @Override
         protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-            //TODO will  need to fix tests to test for this
-            //  if (attributeValue.isDefined()) {
-            //      return attributeValue.asPropertyList().size() > 1;
-            //  }
+              if (attributeValue.isDefined()) {
+                  if (attributeValue.asPropertyList().size() > 1) {
+                      return true;
+                  }
+              }
               return false;
         }
 
@@ -219,7 +225,7 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
             if (attributeValue.isDefined()) {
                 List<Property> list = attributeValue.asPropertyList();
-                if (list.size() > 0) {
+                if (list.size() == 1) {
                     attributeValue.set(list.get(0).getName(), list.get(0).getValue().asString());
                 }
             }

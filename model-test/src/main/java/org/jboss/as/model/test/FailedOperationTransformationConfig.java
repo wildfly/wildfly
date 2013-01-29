@@ -36,7 +36,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -49,7 +48,8 @@ import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 
 /**
- * Sets up how to handle failed transformation for use with {@link ModelTestUtils#checkFailedTransformedAddOperation(ModelTestKernelServices, ModelVersion, ModelNode, FailedOperationTransformationConfig)}
+ * Sets up how to handle failed transformation for use with
+ * {@link ModelTestUtils#checkFailedTransformedAddOperation(ModelTestKernelServices, ModelVersion, ModelNode, FailedOperationTransformationConfig)}
  *
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -78,6 +78,17 @@ public class FailedOperationTransformationConfig {
             return false;
         }
         if (cfg.expectFailed(operation)) {
+            return true;
+        }
+        return false;
+    }
+
+    boolean expectDiscarded(ModelNode operation) {
+        PathAddressConfig cfg = registry.getConfig(operation);
+        if (cfg == null) {
+            return false;
+        }
+        if (cfg.expectDiscarded(operation)) {
             return true;
         }
         return false;
@@ -192,6 +203,7 @@ public class FailedOperationTransformationConfig {
         /**
          * Whether it is expected that the following operation should fail
          *
+         * @param operation the operation to check
          * @return {@code true} if expected to fail
          */
         boolean expectFailed(ModelNode operation);
@@ -200,6 +212,7 @@ public class FailedOperationTransformationConfig {
          * Whether something can be corrected in the operation to make it pass.
          * It is preferable to correct one attribute at a time.
          *
+         * @param the operation to check
          * @return {@code true} if expected to fail, {@code false} otherwise
          */
         boolean canCorrectMore(ModelNode operation);
@@ -208,6 +221,7 @@ public class FailedOperationTransformationConfig {
          * Correct the operation, only called if {@link #canCorrectMore(ModelNode)} returned {@code true}
          * It is preferable to correct one attribute at a time.
          *
+         * @param operation the operation to correct
          * @return the corrected operation
          */
         ModelNode correctOperation(ModelNode operation);
@@ -220,21 +234,34 @@ public class FailedOperationTransformationConfig {
         /**
          * Whether it is expected that the following write attribute operation should fail
          *
+         * @param the 'add' operation to correct
          * @return {@code true} if expected to fail
          */
         boolean expectFailedWriteAttributeOperation(ModelNode operation);
 
         /**
-         * Correct the operation.
+         * Correct the operation. This only deals with one attribute, and
+         * the framework will only call this once if it failed and {@link #correctWriteAttributeOperation(ModelNode)}
+         * returned {@code true}, so make sure to do everything to correct the {@code value} attribute.
          *
+         * @param the 'write-attribute' operation to correct
          * @return the corrected operation
          */
         ModelNode correctWriteAttributeOperation(ModelNode operation);
+
+        /**
+         * Whether the operation is expected to be discarded
+         *
+         * @param operation the operation to check
+         * @return {@code true} if expected to fail
+         */
+        boolean expectDiscarded(ModelNode operation);
+
     }
 
     public abstract static class AttributesPathAddressConfig<T extends AttributesPathAddressConfig<T>> implements PathAddressConfig {
         protected final Set<String> attributes;
-        protected final Map<String, T> complexAttributes = new HashMap<String, T>();
+        protected final Map<String, AttributesPathAddressConfig<?>> complexAttributes = new HashMap<String, AttributesPathAddressConfig<?>>();
         protected final Set<String> noWriteFailureAttributes = new HashSet<String>();
         protected final Set<String> readOnlyAttributes = new HashSet<String>();
 
@@ -250,8 +277,15 @@ public class FailedOperationTransformationConfig {
             return this;
         }
 
+        protected static String[] convert(AttributeDefinition...defs) {
+            String[] attrs = new String[defs.length];
+            for (int i = 0 ; i < defs.length ; i++) {
+                attrs[i] = defs[i].getName();
+            }
+            return attrs;
+        }
 
-        @Override
+
         public List<ModelNode> createWriteAttributeOperations(ModelNode operation) {
             List<ModelNode> list = new ArrayList<ModelNode>();
             for (String attr : attributes) {
@@ -296,6 +330,78 @@ public class FailedOperationTransformationConfig {
             return this;
         }
 
+        @Override
+        public boolean expectFailed(ModelNode operation) {
+            ModelNode op = operation.clone();
+            for (String attr : attributes) {
+                if (checkValue(attr, op.get(attr), false)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+
+        @Override
+        public boolean canCorrectMore(ModelNode operation) {
+            ModelNode op = operation.clone();
+            for (String attr : attributes) {
+                if (checkValue(attr, op.get(attr), false)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public boolean expectFailedWriteAttributeOperation(ModelNode operation) {
+            String name = operation.get(NAME).asString();
+            if (attributes.contains(name)) {
+                return !noWriteFailureAttributes.contains(name) && checkValue(name, operation.clone().get(VALUE), true);
+            }
+            return false;
+        }
+
+        @Override
+        public ModelNode correctOperation(ModelNode operation) {
+            ModelNode op = operation.clone();
+            for (String attr : attributes) {
+                ModelNode value = op.get(attr);
+                if (value.isDefined()) {
+                    if (checkValue(attr, value, false)) {
+                        AttributesPathAddressConfig<?> complexChildConfig = complexAttributes.get(attr);
+                        if (complexChildConfig == null) {
+                            ModelNode resolved = correctValue(op.get(attr), false);
+                            op.get(attr).set(resolved);
+                        } else {
+                            op.get(attr).set(complexChildConfig.correctOperation(operation.get(attr)));
+                        }
+                        return op;
+                    }
+                }
+            }
+            return operation;
+        }
+
+        @Override
+        public ModelNode correctWriteAttributeOperation(ModelNode operation) {
+            ModelNode op = operation.clone();
+            String name = operation.get(NAME).asString();
+            if (attributes.contains(name) && checkValue(name, op.get(VALUE), true)) {
+                op.get(VALUE).set(correctValue(op.get(VALUE), true));
+                return op;
+            }
+            return operation;
+        }
+
+        @Override
+        public boolean expectDiscarded(ModelNode operation) {
+            return false;
+        }
+
+        protected abstract boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute);
+
+        protected abstract ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute);
     }
 
     /**
@@ -312,49 +418,14 @@ public class FailedOperationTransformationConfig {
             super(convert(attributes));
         }
 
-        private static String[] convert(AttributeDefinition...defs) {
-            String[] attrs = new String[defs.length];
-            for (int i = 0 ; i < defs.length ; i++) {
-                attrs[i] = defs[i].getName();
-            }
-            return attrs;
-        }
 
-
-        @Override
-        public boolean expectFailed(ModelNode operation) {
-            ModelNode op = operation.clone();
-            for (String attr : attributes) {
-                if (hasExpressions(attr, op.get(attr))) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        @Override
-        public ModelNode correctOperation(ModelNode operation) {
-            ModelNode op = operation.clone();
-            for (String attr : attributes) {
-                ModelNode value = op.get(attr);
-                if (value.isDefined()) {
-                    if (hasExpressions(attr, value)) {
-                        RejectExpressionsConfig complexChildConfig = complexAttributes.get(attr);
-                        if (complexChildConfig == null) {
-                            ModelNode resolved = resolveValue(op.get(attr));
-                            op.get(attr).set(resolved);
-                        } else {
-                            op.get(attr).set(complexChildConfig.correctOperation(operation.get(attr)));
-                        }
-                        return op;
-                    }
-                }
-            }
-            return operation;
-        }
-
-        private ModelNode resolveValue(ModelNode toResolve) {
+        protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
             ModelNode result = toResolve.resolve();
+            if (isWriteAttribute) {
+                return result;
+            }
+
+
             if (result.getType() == ModelType.STRING) {
                 String rawVal = result.asString().toLowerCase();
                 if ("true".equals(rawVal) || "false".equals(rawVal)) {
@@ -374,16 +445,6 @@ public class FailedOperationTransformationConfig {
             return result;
         }
 
-        @Override
-        public ModelNode correctWriteAttributeOperation(ModelNode operation) {
-            ModelNode op = operation.clone();
-            String name = operation.get(NAME).asString();
-            if (attributes.contains(name) && hasExpressions(name, op.get(VALUE))) {
-                op.get(VALUE).set(op.get(VALUE).resolve());
-                return op;
-            }
-            return operation;
-        }
 
         @Override
         protected boolean isAttributeWritable(String attributeName) {
@@ -391,42 +452,23 @@ public class FailedOperationTransformationConfig {
         }
 
         @Override
-        public boolean canCorrectMore(ModelNode operation) {
-            ModelNode op = operation.clone();
-            for (String attr : attributes) {
-                if (hasExpressions(attr, op.get(attr))) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        @Override
-        public boolean expectFailedWriteAttributeOperation(ModelNode operation) {
-            String name = operation.get(NAME).asString();
-            if (attributes.contains(name)) {
-                return !noWriteFailureAttributes.contains(name) && hasExpressions(name, operation.clone().get(VALUE));
-            }
-            return false;
-        }
-
-        boolean hasExpressions(String attrName, ModelNode attribute) {
+        protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
             if (!attribute.isDefined()) {
                 return false;
             }
 
-            RejectExpressionsConfig complexChildConfig = complexAttributes.get(attrName);
+            AttributesPathAddressConfig<?> complexChildConfig = complexAttributes.get(attrName);
             switch (attribute.getType()) {
             case EXPRESSION:
                 return true;
             case LIST:
                 for (ModelNode entry : attribute.asList()) {
                     if (complexChildConfig == null) {
-                        if (hasExpressions(attrName, entry)) {
+                        if (checkValue(attrName, entry, isWriteAttribute)) {
                             return true;
                         }
                     } else {
-                        if (childHasExpressions(complexChildConfig, attribute.get(attrName))) {
+                        if (childHasExpressions(complexChildConfig, attribute.get(attrName), isWriteAttribute)) {
                             return true;
                         }
                     }
@@ -435,11 +477,11 @@ public class FailedOperationTransformationConfig {
             case OBJECT:
                 for (Property prop : attribute.asPropertyList()) {
                     if (complexChildConfig == null) {
-                        if (hasExpressions(attrName, prop.getValue())) {
+                        if (checkValue(attrName, prop.getValue(), isWriteAttribute)) {
                             return true;
                         }
                     } else {
-                        if (childHasExpressions(complexChildConfig, attribute)) {
+                        if (childHasExpressions(complexChildConfig, attribute, isWriteAttribute)) {
                             return true;
                         }
                     }
@@ -447,11 +489,11 @@ public class FailedOperationTransformationConfig {
                 break;
             case PROPERTY:
                 if (complexChildConfig == null) {
-                    if (hasExpressions(attrName, attribute.asProperty().getValue())) {
+                    if (checkValue(attrName, attribute.asProperty().getValue(), isWriteAttribute)) {
                         return true;
                     }
                 } else {
-                    if (childHasExpressions(complexChildConfig, attribute.asProperty().getValue())) {
+                    if (childHasExpressions(complexChildConfig, attribute.asProperty().getValue(), isWriteAttribute)) {
                         return true;
                     }
                 }
@@ -459,9 +501,9 @@ public class FailedOperationTransformationConfig {
             return false;
         }
 
-        private boolean childHasExpressions(RejectExpressionsConfig complexChildConfig, ModelNode attribute) {
+        private boolean childHasExpressions(AttributesPathAddressConfig<?> complexChildConfig, ModelNode attribute, boolean isWriteAttribute) {
             for (String child : complexChildConfig.attributes) {
-                if (complexChildConfig.hasExpressions(child, attribute.get(child))) {
+                if (complexChildConfig.checkValue(child, attribute.get(child), isWriteAttribute)) {
                     return true;
                 }
             }
@@ -483,88 +525,56 @@ public class FailedOperationTransformationConfig {
             super(convert(attributes));
         }
 
-        static String[] convert(AttributeDefinition...defs) {
-            String[] attrs = new String[defs.length];
-            for (int i = 0 ; i < defs.length ; i++) {
-                attrs[i] = defs[i].getName();
-            }
-            return attrs;
-        }
-
 
         @Override
-        public boolean expectFailed(ModelNode operation) {
-            ModelNode op = operation.clone();
-            for (String attr : attributes) {
-                if (op.hasDefined(attr)) {
-                    return true;
-                }
-            }
-            return false;
+        protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
+            return attribute.isDefined();
         }
 
         @Override
-        public ModelNode correctOperation(ModelNode operation) {
-            ModelNode op = operation.clone();
-            for (String attr : attributes) {
-                if (op.has(attr)) {
-                    op.remove(attr);
-                    return op;
-                }
-            }
-            return operation;
-        }
-
-        @Override
-        public ModelNode correctWriteAttributeOperation(ModelNode operation) {
-            ModelNode op = operation.clone();
-            if (op.hasDefined(VALUE)) {
-                op.get(VALUE).set(new ModelNode());
-                return op;
-            }
-            return operation;
+        protected ModelNode correctValue(ModelNode attribute, boolean isWriteAttribute) {
+            return new ModelNode();
         }
 
         @Override
         protected boolean isAttributeWritable(String attributeName) {
             return true;
         }
-
-        @Override
-        public boolean canCorrectMore(ModelNode operation) {
-            ModelNode op = operation.clone();
-            for (String attr : attributes) {
-                if (op.hasDefined(attr)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        @Override
-        public boolean expectFailedWriteAttributeOperation(ModelNode operation) {
-            String name = operation.require(NAME).asString();
-            return attributes.contains(name) && operation.hasDefined(VALUE);
-        }
-
     }
 
     /**
-     * A standard configuration that allows multiple separate configs to be used.
+     * A standard configuration that allows several checkers to be used for an attribute.
+     * For proper test coverage, the configs should be added in the same order as the rejecting transformers
      */
     public static class ChainedConfig extends AttributesPathAddressConfig<ChainedConfig> {
 
-        private final Map<String, PathAddressConfig> links = new TreeMap<String, PathAddressConfig>();
+        private final List<AttributesPathAddressConfig<?>> list = new ArrayList<FailedOperationTransformationConfig.AttributesPathAddressConfig<?>>();
 
-        public ChainedConfig(Map<String, PathAddressConfig> links) {
-            super(links.keySet().toArray(new String[links.size()]));
-            this.links.putAll(links);
+        /**
+         * Constructor
+         *
+         * @param configs the configurations to use. For proper test coverage, these should be added in the same order as the rejecting transformers
+         * @param attributes the attributes to apply these transformers to
+         */
+        public ChainedConfig(List<AttributesPathAddressConfig<?>> configs, String...attributes) {
+            super(attributes);
+            this.list.addAll(configs);
         }
 
+        /**
+         * Constructor
+         *
+         * @param configs the configurations to use. For proper test coverage, these should be added in the same order as the rejecting transformers
+         * @param attributes the attributes to apply these transformers to
+         */
+        public ChainedConfig(List<AttributesPathAddressConfig<?>> configs, AttributeDefinition...attributes) {
+            super(convert(attributes));
+            this.list.addAll(configs);
+        }
 
         @Override
         public boolean expectFailed(ModelNode operation) {
-            for (PathAddressConfig link : links.values()) {
+            for (AttributesPathAddressConfig<?> link : list) {
                 if (link.expectFailed(operation)) {
                     return true;
                 }
@@ -574,7 +584,7 @@ public class FailedOperationTransformationConfig {
 
         @Override
         public ModelNode correctOperation(ModelNode operation) {
-            for (PathAddressConfig link : links.values()) {
+            for (AttributesPathAddressConfig<?> link : list) {
                 ModelNode op = link.correctOperation(operation);
                 if (!op.equals(operation)) {
                     return op;
@@ -585,13 +595,11 @@ public class FailedOperationTransformationConfig {
 
         @Override
         public ModelNode correctWriteAttributeOperation(ModelNode operation) {
-            for (PathAddressConfig link : links.values()) {
-                ModelNode op = link.correctWriteAttributeOperation(operation);
-                if (!op.equals(operation)) {
-                    return op;
-                }
+            ModelNode op = operation.clone();
+            for (AttributesPathAddressConfig<?> link : list) {
+                op = link.correctWriteAttributeOperation(op);
             }
-            return operation;
+            return op;
         }
 
         @Override
@@ -601,7 +609,7 @@ public class FailedOperationTransformationConfig {
 
         @Override
         public boolean canCorrectMore(ModelNode operation) {
-            for (PathAddressConfig link : links.values()) {
+            for (AttributesPathAddressConfig<?> link : list) {
                 if (link.canCorrectMore(operation)) {
                     return true;
                 }
@@ -612,7 +620,7 @@ public class FailedOperationTransformationConfig {
         @Override
         public boolean expectFailedWriteAttributeOperation(ModelNode operation) {
             if (!noWriteFailureAttributes.contains(operation.get(NAME).asString())) {
-                for (PathAddressConfig link : links.values()) {
+                for (AttributesPathAddressConfig<?> link : list) {
                     if (link.expectFailedWriteAttributeOperation(operation)) {
                         return true;
                     }
@@ -620,6 +628,81 @@ public class FailedOperationTransformationConfig {
             }
             return false;
         }
+
+        @Override
+        protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
+            //Since all the PathAddress methods have been overridden this should never be called
+            throw new IllegalStateException("Not all methods were overridden");
+        }
+
+        @Override
+        protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
+          //Since all the PathAddress methods have been overridden this should never be called
+            throw new IllegalStateException("Not all methods were overridden");
+        }
+
+        public interface Builder {
+            Builder addConfig(AttributesPathAddressConfig<?> cfg);
+            ChainedConfig build();
+        }
+
+        public static Builder createBuilder(final String...attributes) {
+            return new Builder() {
+                ArrayList<AttributesPathAddressConfig<?>> list = new ArrayList<FailedOperationTransformationConfig.AttributesPathAddressConfig<?>>();
+                @Override
+                public ChainedConfig build() {
+                    return new ChainedConfig(list, attributes);
+                }
+
+                @Override
+                public Builder addConfig(AttributesPathAddressConfig<?> cfg) {
+                    list.add(cfg);
+                    return this;
+                }
+            };
+        }
+
+        public static Builder createBuilder(AttributeDefinition...attributes) {
+            return createBuilder(convert(attributes));
+        }
     }
+
+    public static final PathAddressConfig DISCARDED_RESOURCE = new PathAddressConfig() {
+
+        @Override
+        public boolean expectFailedWriteAttributeOperation(ModelNode operation) {
+            throw new IllegalStateException("Should not get called");
+        }
+
+        @Override
+        public boolean expectFailed(ModelNode operation) {
+            return false;
+        }
+
+        @Override
+        public boolean expectDiscarded(ModelNode operation) {
+            return true;
+        }
+
+        @Override
+        public List<ModelNode> createWriteAttributeOperations(ModelNode operation) {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public ModelNode correctWriteAttributeOperation(ModelNode operation) {
+            throw new IllegalStateException("Should not get called");
+        }
+
+        @Override
+        public ModelNode correctOperation(ModelNode operation) {
+            throw new IllegalStateException("Should not get called");
+        }
+
+        @Override
+        public boolean canCorrectMore(ModelNode operation) {
+            throw new IllegalStateException("Should not get called");
+        }
+    };
 
 }

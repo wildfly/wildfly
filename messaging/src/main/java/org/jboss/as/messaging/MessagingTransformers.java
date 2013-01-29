@@ -58,6 +58,7 @@ import org.jboss.as.messaging.jms.ConnectionFactoryDefinition;
 import org.jboss.as.messaging.jms.JMSQueueDefinition;
 import org.jboss.as.messaging.jms.JMSTopicDefinition;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryDefinition;
+import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -246,6 +247,8 @@ public class MessagingTransformers {
         rejectExpressions(server, JMSQueueDefinition.PATH, JMSQueueDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0);
 
         rejectExpressions(server, JMSTopicDefinition.PATH, JMSTopicDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0);
+
+        transformers.registerSubResource(JMSBridgeDefinition.PATH, true);
     }
 
     private static TransformersSubRegistration rejectExpressions(TransformersSubRegistration parent, PathElement path, AttributeDefinition... attributes) {

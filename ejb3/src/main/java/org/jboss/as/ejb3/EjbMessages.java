@@ -70,7 +70,6 @@ import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponent;
 import org.jboss.as.ejb3.concurrency.LockableComponent;
-import org.jboss.as.ejb3.remote.TCCLEJBClientContextSelectorService;
 import org.jboss.as.ejb3.subsystem.deployment.EJBComponentType;
 import org.jboss.as.ejb3.timerservice.TimerImpl;
 import org.jboss.as.ejb3.timerservice.persistence.TimeoutMethod;
@@ -84,11 +83,11 @@ import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jca.core.spi.rar.NotFoundException;
+import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.annotations.Param;
-import org.jboss.logging.Messages;
 import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -2446,5 +2445,7 @@ public interface EjbMessages {
     @Message(id = 14234, value = "Failed to read EJB Locator")
     IOException failedToReadEJBLocator(@Cause Throwable e);
 
+    @Message(id = 14235, value = "default-security-domain was defined")
+    String rejectTransformationDefinedDefaultSecurityDomain();
 
 }

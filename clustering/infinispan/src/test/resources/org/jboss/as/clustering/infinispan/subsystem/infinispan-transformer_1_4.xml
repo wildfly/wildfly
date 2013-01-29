@@ -36,9 +36,13 @@
                 <write-behind flush-lock-timeout="2" modification-queue-size="2048" shutdown-timeout="20000" thread-pool-size="1" />
             </file-store>
             <indexing index="LOCAL">
+            <!-- 
+                 TODO: These are not configurable in 7.1.x and should only be discarded if they have different values from the values assumed in 7.1.x.
+                 Currently it is set up to discard if they are undefined
                 <property name="hibernate.search.default.directory_provider">infinispan</property>
                 <property name="hibernate.search.infinispan.cachemanager_jndiname">java:jboss/infinispan/container/HibernateSearch</property>
                 <property name="hibernate.search.default.worker.backend">jgroups</property>
+                 -->
             </indexing>
         </local-cache>
         <invalidation-cache name="invalid" mode="ASYNC" batching="true" queue-flush-interval="10" queue-size="1000" start="LAZY" async-marshalling="true">
