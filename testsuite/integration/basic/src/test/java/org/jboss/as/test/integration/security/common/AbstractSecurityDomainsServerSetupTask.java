@@ -179,6 +179,7 @@ public abstract class AbstractSecurityDomainsServerSetupTask implements ServerSe
             op.get(OP_ADDR).add(Constants.SECURITY_DOMAIN, domainName);
             // Don't rollback when the AS detects the war needs the module
             op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+            op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             updates.add(op);
         }
         Utils.applyUpdates(updates, managementClient.getControllerClient());
@@ -219,15 +220,8 @@ public abstract class AbstractSecurityDomainsServerSetupTask implements ServerSe
         PathAddress domainAddress = PathAddress.pathAddress()
                 .append(SUBSYSTEM, SUBSYSTEM_SECURITY)
                 .append(SECURITY_DOMAIN, domainName);
-        //steps.add(Util.createAddOperation(domainAddress));
         PathAddress jaspiAddress = domainAddress.append(Constants.AUTHENTICATION, Constants.JASPI);
         steps.add(Util.createAddOperation(jaspiAddress));
-
-        /*final ModelNode securityComponentNode = new ModelNode();
-        securityComponentNode.get(OP).set(ADD);
-        securityComponentNode.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_SECURITY);
-        securityComponentNode.get(OP_ADDR).add(SECURITY_DOMAIN, domainName);
-        securityComponentNode.get(OP_ADDR).add(Constants.AUTHENTICATION, Constants.JASPI);*/
 
         for (final AuthnModule config : securityConfigurations.getAuthnModules()) {
             LOGGER.info("Adding auth-module: " + config);

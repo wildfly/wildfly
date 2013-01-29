@@ -330,6 +330,18 @@ public class Utils {
     }
 
     /**
+     * Exports given archive to the given folder.
+     * 
+     * @param archive archive to export (not-<code>null</code>)
+     * @param folderPath
+     */
+    public static void saveArchiveToFolder(Archive<?> archive, String folderPath) {
+        final File exportFile = new File(folderPath, archive.getName());
+        LOGGER.info("Exporting archive: " + exportFile.getAbsolutePath());
+        archive.as(ZipExporter.class).exportTo(exportFile, true);
+    }
+
+    /**
      * Returns "secondary.test.address" system property if such exists. If not found, then there is a fallback to
      * {@link ManagementClient#getMgmtAddress()}. Returned value can be converted to cannonical hostname if
      * useCannonicalHost==true. Returned value is not formatted for URLs (i.e. square brackets are not placed around IPv6 addr -
