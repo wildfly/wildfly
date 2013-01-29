@@ -4,12 +4,12 @@
 / /_/ / /_/ / /_/ (__  |__  )  / ___ |___/ /     / /  
 \____/_____/\____/____/____/  /_/  |_/____/     /_/   
 
-Welcome to JBoss Application Server 7.1.1
+Welcome to JBoss Application Server 7.2.0
 http://www.jboss.org/jbossas/
 
 Go to the above link for documentation, and additional downloads.
 
-Also, once JBoss AS7 is started you can go to http://localhost:8080
+Also, once JBoss AS7 is started you can go to http://localhost:8080/
 for additional information.
 
 
