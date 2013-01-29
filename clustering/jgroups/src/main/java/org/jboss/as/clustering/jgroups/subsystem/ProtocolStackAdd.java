@@ -84,7 +84,6 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
         // this method is abstract in AbstractAddStepHandler
         // we want to use its more explicit version below, but have to override it anyway
-        StackResource.PROTOCOLS.validateAndSet(operation,model);
     }
 
     @Override
@@ -271,7 +270,7 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
             return null;
         }
         // PROTOCOLS is a list of protocol names only, reflecting the order in which protocols were added to the stack
-        List<ModelNode> protocolOrdering = stack.get(ModelKeys.PROTOCOLS).asList();
+        List<ModelNode> protocolOrdering = stack.get(ModelKeys.PROTOCOLS).clone().asList();
 
         // now construct an ordered list of the full protocol model nodes
         ModelNode unorderedProtocols = stack.get(ModelKeys.PROTOCOL);

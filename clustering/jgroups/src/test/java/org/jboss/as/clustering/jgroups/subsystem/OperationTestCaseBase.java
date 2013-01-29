@@ -354,29 +354,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     }
 
     protected String getSubsystemXml() throws IOException {
-        return getSubsystemXml(SUBSYSTEM_XML_FILE) ;
+        return readResource(SUBSYSTEM_XML_FILE) ;
     }
 
-    protected String getSubsystemXml(String xml_file) throws IOException {
-        URL url = Thread.currentThread().getContextClassLoader().getResource(xml_file);
-        if (url == null) {
-            throw new IllegalStateException(JGroupsMessages.MESSAGES.notFound(xml_file));
-        }
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(new File(url.toURI())));
-            StringWriter writer = new StringWriter();
-            try {
-                String line = reader.readLine();
-                while (line != null) {
-                    writer.write(line);
-                    line = reader.readLine();
-                }
-            } finally {
-                reader.close();
-            }
-            return writer.toString();
-        } catch (URISyntaxException e) {
-            throw new IllegalStateException(e);
-        }
-    }
 }

@@ -27,26 +27,7 @@ public abstract class ClusteringSubsystemTest extends AbstractSubsystemBaseTest 
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        URL url = Thread.currentThread().getContextClassLoader().getResource(this.path);
-        if (url == null) {
-            throw new IllegalStateException(String.format("Failed to locate %s", this.path));
-        }
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(new File(url.toURI())));
-            StringWriter writer = new StringWriter();
-            try {
-                String line = reader.readLine();
-                while (line != null) {
-                    writer.write(line);
-                    line = reader.readLine();
-                }
-            } finally {
-                reader.close();
-            }
-            return writer.toString();
-        } catch (URISyntaxException e) {
-            throw new IllegalStateException(e);
-        }
+        return readResource(path);
     }
 
     /**
