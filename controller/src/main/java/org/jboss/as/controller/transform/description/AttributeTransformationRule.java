@@ -125,24 +125,28 @@ class AttributeTransformationRule extends TransformationRule {
             //Check rejections
             for(final Map.Entry<String, AttributeTransformationDescription> entry : descriptions.entrySet()) {
                 final String attributeName = entry.getKey();
-                final ModelNode attributeValue = modelOrOp.get(attributeName);
-                AttributeTransformationDescription description = entry.getValue();
+                if (!discardedAttributes.contains(attributeName)) {
+                    final ModelNode attributeValue = modelOrOp.get(attributeName);
+                    AttributeTransformationDescription description = entry.getValue();
 
-                //Check the rest of the model can be transformed
-                description.rejectAttributes(rejectedAttributes, TransformationRule.cloneAndProtect(attributeValue));
+                    //Check the rest of the model can be transformed
+                    description.rejectAttributes(rejectedAttributes, TransformationRule.cloneAndProtect(attributeValue));
+                }
             }
 
             //Do conversions
             for(final Map.Entry<String, AttributeTransformationDescription> entry : descriptions.entrySet()) {
                 final String attributeName = entry.getKey();
-                final ModelNode attributeValue = modelOrOp.get(attributeName);
-                AttributeTransformationDescription description = entry.getValue();
+                if (!discardedAttributes.contains(attributeName)) {
+                    final ModelNode attributeValue = modelOrOp.get(attributeName);
+                    AttributeTransformationDescription description = entry.getValue();
 
-                description.convertValue(address, attributeValue, operation, context);
-                if (!attributeValue.isDefined()) {
-                    modelOrOp.remove(attributeName);
-                } else if (newAttributes.contains(attributeName) && !discardedAttributes.contains(attributeName)) {
-                    adds.put(attributeName, attributeValue);
+                    description.convertValue(address, attributeValue, operation, context);
+                    if (!attributeValue.isDefined()) {
+                        modelOrOp.remove(attributeName);
+                    } else if (newAttributes.contains(attributeName)) {
+                        adds.put(attributeName, attributeValue);
+                    }
                 }
             }
 

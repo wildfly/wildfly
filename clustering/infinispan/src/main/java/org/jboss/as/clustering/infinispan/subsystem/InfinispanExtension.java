@@ -21,28 +21,28 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
-import org.jboss.as.controller.transform.DiscardAttributesTransformer;
-import org.jboss.as.controller.transform.OperationTransformer;
-import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
-import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.TransformersSubRegistration;
-import org.jboss.as.controller.transform.chained.ChainedOperationTransformer;
-import org.jboss.as.controller.transform.chained.ChainedResourceTransformer;
+import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.description.AttributeConverter;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 
@@ -122,103 +122,307 @@ public class InfinispanExtension implements Extension {
      *
      * @param subsystem the subsystems registration
      */
-    private static void registerTransformers(final SubsystemRegistration subsystem) {
+    private void registerTransformers(final SubsystemRegistration subsystem) {
+        final ModelVersion version = ModelVersion.create(1, 3);
 
-        // reject expression values for resource - recursive, so have to define all attributes
-        // reject expression values for operations - not recursive, do don't have to define all attributes
+        final ResourceTransformationDescriptionBuilder subsystemBuilder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
-        InfinispanResourceAndOperationTransformer_1_3 resourceAndOperationTransformer = new InfinispanResourceAndOperationTransformer_1_3() ;
-        final RejectExpressionValuesTransformer totalReject = new RejectExpressionValuesTransformer(InfinispanRejectedExpressions_1_3.REJECT_TOTAL);
-        // shold we chain a resource transformer here to ignore expressions on attributes?
-        final ChainedResourceTransformer chainedResourceAndOperationTransformer = new ChainedResourceTransformer(resourceAndOperationTransformer, totalReject.getChainedTransformer());
+        final ResourceTransformationDescriptionBuilder cacheContainerBuilder = subsystemBuilder.addChildResource(CacheContainerResource.CONTAINER_PATH)
+                .getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CacheContainerResource.JNDI_NAME, CacheContainerResource.CACHE_CONTAINER_MODULE, CacheContainerResource.START)
+                .end();
 
-        TransformersSubRegistration registration = subsystem.registerModelTransformers(ModelVersion.create(1, 3), chainedResourceAndOperationTransformer);
+        ResourceTransformationDescriptionBuilder distributedCacheBuilder = cacheContainerBuilder.addChildResource(DistributedCacheResource.DISTRIBUTED_CACHE_PATH)
+                .getAttributeBuilder()
+                .addRejectCheck(
+                        RejectAttributeChecker.SIMPLE_EXPRESSIONS,
+                        ClusteredCacheResource.ASYNC_MARSHALLING, ClusteredCacheResource.BATCHING, ClusteredCacheResource.INDEXING, ClusteredCacheResource.JNDI_NAME, ClusteredCacheResource.MODE,
+                        ClusteredCacheResource.CACHE_MODULE, ClusteredCacheResource.QUEUE_FLUSH_INTERVAL,  ClusteredCacheResource.QUEUE_SIZE,
+                        ClusteredCacheResource.REMOTE_TIMEOUT, ClusteredCacheResource.START,
+                        DistributedCacheResource.L1_LIFESPAN, DistributedCacheResource.OWNERS, DistributedCacheResource.VIRTUAL_NODES, DistributedCacheResource.SEGMENTS)
+                //TODO discard indexing-properties if undefined, and reject it if not set
+                .setDiscard(DiscardAttributeChecker.ALWAYS, CacheResource.INDEXING_PROPERTIES)
+                //Convert segments to virtual-nodes if it is set
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, DistributedCacheResource.SEGMENTS)
+                .setValueConverter(new AttributeConverter.DefaultAttributeConverter() {
+                        @Override
+                        protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
+                                TransformationContext context) {
+                            if (attributeValue.isDefined()) {
+                                attributeValue.set(SegmentsAndVirtualNodeConverter.segmentsToVirtualNodes(attributeValue.asString()));
+                            }
+                        }
+                    }, DistributedCacheResource.SEGMENTS)
+                .addRename(DistributedCacheResource.SEGMENTS, DistributedCacheResource.VIRTUAL_NODES.getName())
+                .end();
+        registerCacheResourceChildren(distributedCacheBuilder, true);
 
-        // cache-container=*
-        // this transformer will check and reject values for cache-container attributes which should not accept expressions in 1.3
-        final RejectExpressionValuesTransformer cacheContainerReject = new RejectExpressionValuesTransformer(InfinispanRejectedExpressions_1_3.REJECT_CONTAINER_ATTRIBUTES);
-        TransformersSubRegistration containerRegistration =
-                registerTransformer(registration, CacheContainerResource.CONTAINER_PATH, cacheContainerReject, cacheContainerReject, cacheContainerReject.getWriteAttributeTransformer(), null);
+        ResourceTransformationDescriptionBuilder invalidationCacheBuilder = cacheContainerBuilder.addChildResource(InvalidationCacheResource.INVALIDATION_CACHE_PATH)
+                .getAttributeBuilder()
+                .addRejectCheck(
+                        RejectAttributeChecker.SIMPLE_EXPRESSIONS,
+                        ClusteredCacheResource.ASYNC_MARSHALLING, ClusteredCacheResource.BATCHING, ClusteredCacheResource.INDEXING, ClusteredCacheResource.JNDI_NAME, ClusteredCacheResource.MODE,
+                        ClusteredCacheResource.CACHE_MODULE, ClusteredCacheResource.QUEUE_FLUSH_INTERVAL, ClusteredCacheResource.QUEUE_SIZE, ClusteredCacheResource.REMOTE_TIMEOUT,
+                        ClusteredCacheResource.START)
+                //TODO discard indexing-properties if undefined, and reject it if not set
+                .setDiscard(DiscardAttributeChecker.ALWAYS, CacheResource.INDEXING_PROPERTIES)
+                .end();
+        registerCacheResourceChildren(invalidationCacheBuilder, false);
 
-        // cache-container=*/transport=TRANSPORT
-        // this transformer will check and reject values for attributes which should not accept expressions in 1.3
-        final RejectExpressionValuesTransformer transportReject = new RejectExpressionValuesTransformer(InfinispanRejectedExpressions_1_3.REJECT_TRANSPORT_ATTRIBUTES);
-        registerTransformer(containerRegistration, TransportResource.TRANSPORT_PATH, transportReject, transportReject, transportReject.getWriteAttributeTransformer(), null);
+        ResourceTransformationDescriptionBuilder localCacheBuilder = cacheContainerBuilder.addChildResource(LocalCacheResource.LOCAL_CACHE_PATH)
+                .getAttributeBuilder()
+                .addRejectCheck(
+                        RejectAttributeChecker.SIMPLE_EXPRESSIONS,
+                        ClusteredCacheResource.BATCHING, ClusteredCacheResource.INDEXING, ClusteredCacheResource.JNDI_NAME,
+                        ClusteredCacheResource.CACHE_MODULE, ClusteredCacheResource.START)
+                //TODO discard indexing-properties if undefined, and reject it if not set
+                .setDiscard(DiscardAttributeChecker.ALWAYS, CacheResource.INDEXING_PROPERTIES)
+                .end();
+        registerCacheResourceChildren(localCacheBuilder, false);
 
-        // cache-container=*/cache=*
-        // this chained transformer will do two things:
-        // - discard attributes INDEXING_PROPERTIES, SEGMENTS and VIRTUAL_NODES from add and write operations in 1.3
-        // - check and reject values for cache attributes which should not accept expressions in 1.3
-        final InfinispanDiscardAttributesTransformer removeSelectedCacheAttributes = new InfinispanDiscardAttributesTransformer(ModelKeys.INDEXING, ModelKeys.SEGMENTS, ModelKeys.VIRTUAL_NODES);
-        final RejectExpressionValuesTransformer cacheReject = new RejectExpressionValuesTransformer(InfinispanRejectedExpressions_1_3.REJECT_CACHE_ATTRIBUTES);
-        final ChainedResourceTransformer chainedResource = new ChainedResourceTransformer(resourceAndOperationTransformer, cacheReject.getChainedTransformer());
-        final ChainedOperationTransformer chainedAdd = new ChainedOperationTransformer(resourceAndOperationTransformer, cacheReject);
-        final ChainedOperationTransformer chainedWrite = new ChainedOperationTransformer(resourceAndOperationTransformer.getWriteAttributeTransformer(), cacheReject.getWriteAttributeTransformer());
+        ResourceTransformationDescriptionBuilder replicatedCacheBuilder = cacheContainerBuilder.addChildResource(ReplicatedCacheResource.REPLICATED_CACHE_PATH)
+                .getAttributeBuilder()
+                .addRejectCheck(
+                        RejectAttributeChecker.SIMPLE_EXPRESSIONS,
+                        ClusteredCacheResource.ASYNC_MARSHALLING, ClusteredCacheResource.BATCHING, ClusteredCacheResource.INDEXING, ClusteredCacheResource.JNDI_NAME, ClusteredCacheResource.MODE,
+                        ClusteredCacheResource.CACHE_MODULE, ClusteredCacheResource.QUEUE_FLUSH_INTERVAL, ClusteredCacheResource.QUEUE_SIZE, ClusteredCacheResource.REMOTE_TIMEOUT,
+                        ClusteredCacheResource.START)
+                //TODO discard indexing-properties if undefined, and reject it if not set
+                .setDiscard(DiscardAttributeChecker.ALWAYS, CacheResource.INDEXING_PROPERTIES)
+                .end();
+        registerCacheResourceChildren(replicatedCacheBuilder, true);
 
-        PathElement[] cachePaths = {
-                LocalCacheResource.LOCAL_CACHE_PATH,
-                InvalidationCacheResource.INVALIDATION_CACHE_PATH,
-                ReplicatedCacheResource.REPLICATED_CACHE_PATH,
-                DistributedCacheResource.DISTRIBUTED_CACHE_PATH
-        };
-        for (int i=0; i < cachePaths.length; i++) {
-            TransformersSubRegistration cacheRegistration =
-                    registerTransformer(containerRegistration, cachePaths[i], chainedResource, chainedAdd, chainedWrite, removeSelectedCacheAttributes.getUndefineAttributeTransformer());
-            registerCacheChildrenTransformers(cacheRegistration) ;
+        TransformationDescription.Tools.register(subsystemBuilder.build(), subsystem, version);
+    }
+
+    private void registerCacheResourceChildren(final ResourceTransformationDescriptionBuilder parent, final boolean addStateTransfer) {
+        parent.addChildResource(LockingResource.LOCKING_PATH)
+            .getAttributeBuilder()
+            .addRejectCheck(
+                    RejectAttributeChecker.SIMPLE_EXPRESSIONS,
+                    LockingResource.ACQUIRE_TIMEOUT, LockingResource.CONCURRENCY_LEVEL, LockingResource.ISOLATION, LockingResource.STRIPING)
+            .end();
+        parent.addChildResource(EvictionResource.EVICTION_PATH)
+            .getAttributeBuilder()
+            .addRejectCheck(
+                    RejectAttributeChecker.SIMPLE_EXPRESSIONS,
+                    EvictionResource.MAX_ENTRIES, EvictionResource.EVICTION_STRATEGY)
+            .end();
+        parent.addChildResource(ExpirationResource.EXPIRATION_PATH)
+            .getAttributeBuilder()
+            .addRejectCheck(
+                    RejectAttributeChecker.SIMPLE_EXPRESSIONS,
+                    ExpirationResource.INTERVAL, EvictionResource.EVICTION_STRATEGY, EvictionResource.MAX_ENTRIES)
+            .end();
+        parent.addChildResource(TransactionResource.TRANSACTION_PATH)
+            .getAttributeBuilder()
+            .addRejectCheck(
+                    RejectAttributeChecker.SIMPLE_EXPRESSIONS,
+                    TransactionResource.LOCKING, TransactionResource.STOP_TIMEOUT)
+            .end();
+
+        // Store transformers ///////
+        registerJdbcStoreTransformers(parent);
+        //fileStore=FILE_STORE
+        ResourceTransformationDescriptionBuilder fileStoreBuilder = parent.addChildResource(FileStoreResource.FILE_STORE_PATH)
+                .getAttributeBuilder()
+                .addRejectCheck(
+                        RejectAttributeChecker.SIMPLE_EXPRESSIONS,
+                        BaseJDBCStoreResource.DATA_SOURCE, StoreResource.FETCH_STATE, StoreResource.PASSIVATION,
+                        StoreResource.PRELOAD, StoreResource.PURGE, StoreResource.SHARED, StoreResource.SINGLETON)
+                .end();
+        registerStoreTransformerChildren(fileStoreBuilder);
+        //store=STORE
+        ResourceTransformationDescriptionBuilder storeBuilder = parent.addChildResource(StoreResource.STORE_PATH)
+                .getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS,
+                        StoreResource.CLASS, StoreResource.FETCH_STATE, StoreResource.PASSIVATION, StoreResource.PRELOAD,
+                        StoreResource.PURGE, StoreResource.SHARED, StoreResource.SINGLETON)
+                .end();
+        registerStoreTransformerChildren(storeBuilder);
+        //remote-store=REMOTE_STORE
+        ResourceTransformationDescriptionBuilder remoteStoreBuilder = parent.addChildResource(RemoteStoreResource.REMOTE_STORE_PATH)
+                .getAttributeBuilder()
+                .addRejectCheck(
+                        RejectAttributeChecker.SIMPLE_EXPRESSIONS,
+                        RemoteStoreResource.CACHE, StoreResource.FETCH_STATE, StoreResource.PASSIVATION, StoreResource.PRELOAD,
+                        StoreResource.PURGE, StoreResource.SHARED, StoreResource.SINGLETON, RemoteStoreResource.SOCKET_TIMEOUT,
+                        RemoteStoreResource.TCP_NO_DELAY)
+                .end();
+        registerStoreTransformerChildren(remoteStoreBuilder);
+
+
+        //TODO
+        /*
+
+            "transaction"
+         */
+        if (addStateTransfer) {
+            parent.addChildResource(StateTransferResource.STATE_TRANSFER_PATH)
+                    .getAttributeBuilder()
+                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, StateTransferResource.STATE_TRANSFER_ATTRIBUTES)
+                    .end();
         }
     }
 
-    private static TransformersSubRegistration registerTransformer(TransformersSubRegistration parent, PathElement path, ResourceTransformer resourceTransformer, OperationTransformer addTransformer,
-                        OperationTransformer writeAttributeTransformer, OperationTransformer undefineAttributeTransformer) {
-        TransformersSubRegistration childReg = parent.registerSubResource(path, resourceTransformer);
-        childReg.registerOperationTransformer(ADD, addTransformer);
-        childReg.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, writeAttributeTransformer);
-        if (undefineAttributeTransformer != null) {
-            childReg.registerOperationTransformer(UNDEFINE_ATTRIBUTE_OPERATION, undefineAttributeTransformer);
-        }
-        return childReg;
+    private void registerJdbcStoreTransformers(ResourceTransformationDescriptionBuilder parent) {
+        //Common jdbc store stuff
+        final RejectAttributeChecker nameTypeChecker = new RejectAttributeChecker.ObjectFieldsRejectAttributeChecker(new HashMap<String, RejectAttributeChecker>(){
+            private static final long serialVersionUID = 1L;
+            {
+                setMapValues(this, RejectAttributeChecker.SIMPLE_EXPRESSIONS, BaseJDBCStoreResource.COLUMN_NAME, BaseJDBCStoreResource.COLUMN_TYPE);
+            }});
+        final RejectAttributeChecker jdbcKeyedTableChecker = new RejectAttributeChecker.ObjectFieldsRejectAttributeChecker(new HashMap<String, RejectAttributeChecker>() {
+            private static final long serialVersionUID = 1L;
+            {
+                setMapValues(this, RejectAttributeChecker.SIMPLE_EXPRESSIONS,
+                        BaseJDBCStoreResource.PREFIX, BaseJDBCStoreResource.BATCH_SIZE, BaseJDBCStoreResource.FETCH_SIZE);
+                setMapValues(this, nameTypeChecker, BaseJDBCStoreResource.ID_COLUMN, BaseJDBCStoreResource.DATA_COLUMN, BaseJDBCStoreResource.TIMESTAMP_COLUMN);
+            }});
+        AttributeDefinition[] jdbcStoreSimpleAttributes = {BaseJDBCStoreResource.DATA_SOURCE, StoreResource.FETCH_STATE, StoreResource.PASSIVATION,
+                StoreResource.PRELOAD, StoreResource.PURGE, StoreResource.SHARED, StoreResource.SINGLETON};
+
+        //binaryKeyedJdbcStore
+        ResourceTransformationDescriptionBuilder binaryKeyedJdbcStoreBuilder = parent.addChildResource(BinaryKeyedJDBCStoreResource.BINARY_KEYED_JDBC_STORE_PATH)
+                .getAttributeBuilder()
+                .addRejectCheck(jdbcKeyedTableChecker, BaseJDBCStoreResource.BINARY_KEYED_TABLE)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, jdbcStoreSimpleAttributes)
+                .end();
+        registerStoreTransformerChildren(binaryKeyedJdbcStoreBuilder);
+
+        //stringKeyedJdbcStore
+        ResourceTransformationDescriptionBuilder stringKeyedJdbcStoreBuilder = parent.addChildResource(StringKeyedJDBCStoreResource.STRING_KEYED_JDBC_STORE_PATH)
+                .getAttributeBuilder()
+                .addRejectCheck(jdbcKeyedTableChecker, BaseJDBCStoreResource.STRING_KEYED_TABLE)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, jdbcStoreSimpleAttributes)
+                .end();
+        registerStoreTransformerChildren(stringKeyedJdbcStoreBuilder);
+
+        //mixedKeyedJdbcStore
+        ResourceTransformationDescriptionBuilder mixedKeyedJdbcStoreBuilder = parent.addChildResource(MixedKeyedJDBCStoreResource.MIXED_KEYED_JDBC_STORE_PATH)
+                .getAttributeBuilder()
+                .addRejectCheck(jdbcKeyedTableChecker, BaseJDBCStoreResource.STRING_KEYED_TABLE, BaseJDBCStoreResource.BINARY_KEYED_TABLE)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, jdbcStoreSimpleAttributes)
+                .end();
+        registerStoreTransformerChildren(mixedKeyedJdbcStoreBuilder);
+
     }
 
-    private static void registerCacheChildrenTransformers(TransformersSubRegistration cacheReg) {
+    private void registerStoreTransformerChildren(ResourceTransformationDescriptionBuilder parent) {
+        parent.addChildResource(StorePropertyResource.STORE_PROPERTY_PATH)
+            .getAttributeBuilder()
+            .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, StorePropertyResource.VALUE)
+            .end();
 
-        // this transformer will check and reject values for cache child attributes which should not accept expressions in 1.3
-        final RejectExpressionValuesTransformer childReject = new RejectExpressionValuesTransformer(InfinispanRejectedExpressions_1_3.REJECT_CHILD_ATTRIBUTES) ;
-
-        PathElement[] childPaths = {
-                LockingResource.LOCKING_PATH,
-                TransactionResource.TRANSACTION_PATH,
-                ExpirationResource.EXPIRATION_PATH,
-                EvictionResource.EVICTION_PATH,
-                StateTransferResource.STATE_TRANSFER_PATH
-        } ;
-
-        for (int i=0; i < childPaths.length; i++) {
-            // reject expressions on operations in children
-            cacheReg.registerSubResource(childPaths[i], (OperationTransformer) childReject);
-        }
-
-        // this transformer will check and reject values for store attributes which should not accept expressions in 1.3
-        final RejectExpressionValuesTransformer storeReject = new RejectExpressionValuesTransformer(InfinispanRejectedExpressions_1_3.REJECT_STORE_ATTRIBUTES);
-        PathElement[] storePaths = {
-                StoreResource.STORE_PATH,
-                FileStoreResource.FILE_STORE_PATH,
-                StringKeyedJDBCStoreResource.STRING_KEYED_JDBC_STORE_PATH,
-                BinaryKeyedJDBCStoreResource.BINARY_KEYED_JDBC_STORE_PATH,
-                MixedKeyedJDBCStoreResource.MIXED_KEYED_JDBC_STORE_PATH,
-                RemoteStoreResource.REMOTE_STORE_PATH
-        } ;
-
-        for (int i=0; i < storePaths.length; i++) {
-            // reject expressions on operations on stores and store properties
-            TransformersSubRegistration storeReg = cacheReg.registerSubResource(storePaths[i], (OperationTransformer) storeReject);
-            storeReg.registerSubResource(StoreWriteBehindResource.STORE_WRITE_BEHIND_PATH, (OperationTransformer) storeReject);
-            storeReg.registerSubResource(StorePropertyResource.STORE_PROPERTY_PATH, (OperationTransformer) storeReject);
+        parent.addChildResource(StoreWriteBehindResource.STORE_WRITE_BEHIND_PATH)
+            .getAttributeBuilder()
+            .addRejectCheck(
+                    RejectAttributeChecker.SIMPLE_EXPRESSIONS,
+                    StoreWriteBehindResource.FLUSH_LOCK_TIMEOUT, StoreWriteBehindResource.MODIFICATION_QUEUE_SIZE, StoreWriteBehindResource.SHUTDOWN_TIMEOUT, StoreWriteBehindResource.THREAD_POOL_SIZE)
+            .end();
+    }
+    private static void setMapValues(Map<String, RejectAttributeChecker> map, RejectAttributeChecker checker, AttributeDefinition...defs) {
+        for (AttributeDefinition def : defs) {
+            map.put(def.getName(), checker);
         }
     }
 
-    private static class InfinispanDiscardAttributesTransformer extends DiscardAttributesTransformer {
-        private InfinispanDiscardAttributesTransformer(String... attributes) {
-            super(attributes);
-        }
-    }
+//    private static void deprecated(final SubsystemRegistration subsystem) {
+//        // reject expression values for resource - recursive, so have to define all attributes
+//        // reject expression values for operations - not recursive, do don't have to define all attributes
+//
+//        InfinispanResourceAndOperationTransformer_1_3 resourceAndOperationTransformer = new InfinispanResourceAndOperationTransformer_1_3() ;
+//        final RejectExpressionValuesTransformer totalReject = new RejectExpressionValuesTransformer(InfinispanRejectedExpressions_1_3.REJECT_TOTAL);
+//        // shold we chain a resource transformer here to ignore expressions on attributes?
+//        final ChainedResourceTransformer chainedResourceAndOperationTransformer = new ChainedResourceTransformer(resourceAndOperationTransformer, totalReject.getChainedTransformer());
+//
+//        TransformersSubRegistration registration = subsystem.registerModelTransformers(ModelVersion.create(1, 3), chainedResourceAndOperationTransformer);
+//
+//        // cache-container=*
+//        // this transformer will check and reject values for cache-container attributes which should not accept expressions in 1.3
+//        final RejectExpressionValuesTransformer cacheContainerReject = new RejectExpressionValuesTransformer(InfinispanRejectedExpressions_1_3.REJECT_CONTAINER_ATTRIBUTES);
+//        TransformersSubRegistration containerRegistration =
+//                registerTransformer(registration, CacheContainerResource.CONTAINER_PATH, cacheContainerReject, cacheContainerReject, cacheContainerReject.getWriteAttributeTransformer(), null);
+//
+//        // cache-container=*/transport=TRANSPORT
+//        // this transformer will check and reject values for attributes which should not accept expressions in 1.3
+//        final RejectExpressionValuesTransformer transportReject = new RejectExpressionValuesTransformer(InfinispanRejectedExpressions_1_3.REJECT_TRANSPORT_ATTRIBUTES);
+//        registerTransformer(containerRegistration, TransportResource.TRANSPORT_PATH, transportReject, transportReject, transportReject.getWriteAttributeTransformer(), null);
+//
+//        // cache-container=*/cache=*
+//        // this chained transformer will do two things:
+//        // - discard attributes INDEXING_PROPERTIES, SEGMENTS and VIRTUAL_NODES from add and write operations in 1.3
+//        // - check and reject values for cache attributes which should not accept expressions in 1.3
+//        final InfinispanDiscardAttributesTransformer removeSelectedCacheAttributes = new InfinispanDiscardAttributesTransformer(ModelKeys.INDEXING, ModelKeys.SEGMENTS, ModelKeys.VIRTUAL_NODES);
+//        final RejectExpressionValuesTransformer cacheReject = new RejectExpressionValuesTransformer(InfinispanRejectedExpressions_1_3.REJECT_CACHE_ATTRIBUTES);
+//        final ChainedResourceTransformer chainedResource = new ChainedResourceTransformer(resourceAndOperationTransformer, cacheReject.getChainedTransformer());
+//        final ChainedOperationTransformer chainedAdd = new ChainedOperationTransformer(resourceAndOperationTransformer, cacheReject);
+//        final ChainedOperationTransformer chainedWrite = new ChainedOperationTransformer(resourceAndOperationTransformer.getWriteAttributeTransformer(), cacheReject.getWriteAttributeTransformer());
+//
+//        PathElement[] cachePaths = {
+//                LocalCacheResource.LOCAL_CACHE_PATH,
+//                InvalidationCacheResource.INVALIDATION_CACHE_PATH,
+//                ReplicatedCacheResource.REPLICATED_CACHE_PATH,
+//                DistributedCacheResource.DISTRIBUTED_CACHE_PATH
+//        };
+//        for (int i=0; i < cachePaths.length; i++) {
+//            TransformersSubRegistration cacheRegistration =
+//                    registerTransformer(containerRegistration, cachePaths[i], chainedResource, chainedAdd, chainedWrite, removeSelectedCacheAttributes.getUndefineAttributeTransformer());
+//            registerCacheChildrenTransformers(cacheRegistration) ;
+//        }
+//    }
+//
+//    private static TransformersSubRegistration registerTransformer(TransformersSubRegistration parent, PathElement path, ResourceTransformer resourceTransformer, OperationTransformer addTransformer,
+//                        OperationTransformer writeAttributeTransformer, OperationTransformer undefineAttributeTransformer) {
+//        TransformersSubRegistration childReg = parent.registerSubResource(path, resourceTransformer);
+//        childReg.registerOperationTransformer(ADD, addTransformer);
+//        childReg.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, writeAttributeTransformer);
+//        if (undefineAttributeTransformer != null) {
+//            childReg.registerOperationTransformer(UNDEFINE_ATTRIBUTE_OPERATION, undefineAttributeTransformer);
+//        }
+//        return childReg;
+//    }
+//
+//    private static void registerCacheChildrenTransformers(TransformersSubRegistration cacheReg) {
+//
+//        // this transformer will check and reject values for cache child attributes which should not accept expressions in 1.3
+//        final RejectExpressionValuesTransformer childReject = new RejectExpressionValuesTransformer(InfinispanRejectedExpressions_1_3.REJECT_CHILD_ATTRIBUTES) ;
+//
+//        PathElement[] childPaths = {
+//                LockingResource.LOCKING_PATH,
+//                TransactionResource.TRANSACTION_PATH,
+//                ExpirationResource.EXPIRATION_PATH,
+//                EvictionResource.EVICTION_PATH,
+//                StateTransferResource.STATE_TRANSFER_PATH
+//        } ;
+//
+//        for (int i=0; i < childPaths.length; i++) {
+//            // reject expressions on operations in children
+//            cacheReg.registerSubResource(childPaths[i], (OperationTransformer) childReject);
+//        }
+//
+//        // this transformer will check and reject values for store attributes which should not accept expressions in 1.3
+//        final RejectExpressionValuesTransformer storeReject = new RejectExpressionValuesTransformer(InfinispanRejectedExpressions_1_3.REJECT_STORE_ATTRIBUTES);
+//        PathElement[] storePaths = {
+//                StoreResource.STORE_PATH,
+//                FileStoreResource.FILE_STORE_PATH,
+//                StringKeyedJDBCStoreResource.STRING_KEYED_JDBC_STORE_PATH,
+//                BinaryKeyedJDBCStoreResource.BINARY_KEYED_JDBC_STORE_PATH,
+//                MixedKeyedJDBCStoreResource.MIXED_KEYED_JDBC_STORE_PATH,
+//                RemoteStoreResource.REMOTE_STORE_PATH
+//        } ;
+//
+//        for (int i=0; i < storePaths.length; i++) {
+//            // reject expressions on operations on stores and store properties
+//            TransformersSubRegistration storeReg = cacheReg.registerSubResource(storePaths[i], (OperationTransformer) storeReject);
+//            storeReg.registerSubResource(StoreWriteBehindResource.STORE_WRITE_BEHIND_PATH, (OperationTransformer) storeReject);
+//            storeReg.registerSubResource(StorePropertyResource.STORE_PROPERTY_PATH, (OperationTransformer) storeReject);
+//        }
+//    }
+//
+//    private static class InfinispanDiscardAttributesTransformer extends DiscardAttributesTransformer {
+//        private InfinispanDiscardAttributesTransformer(String... attributes) {
+//            super(attributes);
+//        }
+//    }
 }

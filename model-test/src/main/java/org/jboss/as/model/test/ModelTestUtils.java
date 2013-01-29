@@ -521,7 +521,7 @@ public class ModelTestUtils {
 
             List<ModelNode> writeOps = config.createWriteAttributeOperations(op);
             for (ModelNode writeOp : writeOps) {
-                TransformedOperation transformedOperation = mainServices.transformOperation(modelVersion, writeOp);
+                TransformedOperation transformedOperation = mainServices.transformOperation(modelVersion, writeOp.clone());
                 ModelNode result = mainServices.executeOperation(modelVersion, transformedOperation);
                 if (!config.expectFailedWriteAttributeOperation(writeOp)) {
                     Assert.assertEquals("Failed: " + writeOp + "\n" + result, SUCCESS, result.get(OUTCOME).asString());
