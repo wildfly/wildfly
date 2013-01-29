@@ -127,15 +127,6 @@ public class InfinispanRejectedExpressions_1_3 {
             ACCEPT14_ACCEPT13_STORE_ATTRIBUTES
     );
 
-    public static final AttributeDefinition[] REJECT_TOTAL =
-            concat(
-                REJECT_CONTAINER_ATTRIBUTES,
-                REJECT_TRANSPORT_ATTRIBUTES,
-                REJECT_CACHE_ATTRIBUTES,
-                REJECT_CHILD_ATTRIBUTES,
-                REJECT_STORE_ATTRIBUTES
-            ) ;
-
     // attributes which accept in 1.4.0 but reject in 1.3.0 only
     // set = all - never accept - always accept
     public static final AttributeDefinition[] ACCEPT14_REJECT13_CONTAINER_ATTRIBUTES = remove(

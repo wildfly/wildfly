@@ -124,15 +124,9 @@ public class InfinispanExtension implements Extension {
      */
     private static void registerTransformers(final SubsystemRegistration subsystem) {
 
-        // reject expression values for resource - recursive, so have to define all attributes
-        // reject expression values for operations - not recursive, do don't have to define all attributes
-
         InfinispanResourceAndOperationTransformer_1_3 resourceAndOperationTransformer = new InfinispanResourceAndOperationTransformer_1_3() ;
-        final RejectExpressionValuesTransformer totalReject = new RejectExpressionValuesTransformer(InfinispanRejectedExpressions_1_3.REJECT_TOTAL);
-        // shold we chain a resource transformer here to ignore expressions on attributes?
-        final ChainedResourceTransformer chainedResourceAndOperationTransformer = new ChainedResourceTransformer(resourceAndOperationTransformer, totalReject.getChainedTransformer());
 
-        TransformersSubRegistration registration = subsystem.registerModelTransformers(ModelVersion.create(1, 3), chainedResourceAndOperationTransformer);
+        TransformersSubRegistration registration = subsystem.registerModelTransformers(ModelVersion.create(1, 3), ResourceTransformer.DEFAULT);
 
         // cache-container=*
         // this transformer will check and reject values for cache-container attributes which should not accept expressions in 1.3
