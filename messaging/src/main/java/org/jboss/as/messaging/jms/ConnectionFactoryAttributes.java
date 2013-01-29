@@ -113,7 +113,7 @@ public interface ConnectionFactoryAttributes {
         AttributeDefinition CONNECTION_LOAD_BALANCING_CLASS_NAME = SimpleAttributeDefinitionBuilder.create("connection-load-balancing-policy-class-name", STRING)
                 .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME))
                 .setAllowNull(true)
-                .setAllowExpression(true)
+                .setAllowExpression(false)
                 .build();
 
         AttributeDefinition CONNECTION_TTL = new SimpleAttributeDefinitionBuilder("connection-ttl", LONG)

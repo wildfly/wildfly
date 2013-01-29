@@ -210,7 +210,7 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition FACTORY_CLASS = create("factory-class", ModelType.STRING)
-            .setAllowExpression(true)
+            .setAllowExpression(false)
             .setRestartAllServices()
             .build();
 
@@ -563,7 +563,7 @@ public interface CommonAttributes {
     PrimitiveListAttributeDefinition REMOTING_INTERCEPTORS = new PrimitiveListAttributeDefinition.Builder("remoting-interceptors", ModelType.STRING)
             .setDeprecated(VERSION_1_2_0)
             .setAllowNull(true)
-            .setAllowExpression(true)
+            .setAllowExpression(false)
             .setMinSize(1)
             .setMaxSize(Integer.MAX_VALUE)
             .setRestartAllServices()
@@ -573,7 +573,7 @@ public interface CommonAttributes {
 
     PrimitiveListAttributeDefinition REMOTING_INCOMING_INTERCEPTORS = new PrimitiveListAttributeDefinition.Builder("remoting-incoming-interceptors", ModelType.STRING)
             .setAllowNull(true)
-            .setAllowExpression(true)
+            .setAllowExpression(false)
             .setMinSize(1)
             .setMaxSize(Integer.MAX_VALUE)
             .setRestartAllServices()
@@ -583,7 +583,7 @@ public interface CommonAttributes {
 
     PrimitiveListAttributeDefinition REMOTING_OUTGOING_INTERCEPTORS = new PrimitiveListAttributeDefinition.Builder("remoting-outgoing-interceptors", ModelType.STRING)
             .setAllowNull(true)
-            .setAllowExpression(true)
+            .setAllowExpression(false)
             .setMinSize(1)
             .setMaxSize(Integer.MAX_VALUE)
             .setRestartAllServices()
@@ -715,7 +715,7 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition TRANSFORMER_CLASS_NAME = create("transformer-class-name", ModelType.STRING)
             .setAllowNull(true)
-            .setAllowExpression(true)
+            .setAllowExpression(false)
             .setRestartAllServices()
             .build();
 

@@ -197,14 +197,8 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(pathElement(CommonAttributes.IN_VM_CONNECTOR)),
                                 new RejectExpressionsConfig(InVMTransportDefinition.SERVER_ID))
                         .addFailedAttribute(
-                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(pathElement(CommonAttributes.CONNECTOR)),
-                                new RejectExpressionsConfig(CommonAttributes.FACTORY_CLASS))
-                        .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(pathElement(CommonAttributes.IN_VM_ACCEPTOR)),
                                 new RejectExpressionsConfig(InVMTransportDefinition.SERVER_ID))
-                        .addFailedAttribute(
-                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(pathElement(CommonAttributes.ACCEPTOR)),
-                                new RejectExpressionsConfig(CommonAttributes.FACTORY_CLASS))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(BroadcastGroupDefinition.PATH),
                                 new RejectExpressionsConfig(BroadcastGroupDefinition.BROADCAST_PERIOD) {
@@ -251,9 +245,6 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(AddressSettingDefinition.PATH),
                                 new RejectExpressionsConfig(AddressSettingDefinition.REJECTED_EXPRESSION_ATTRIBUTES))
-                        .addFailedAttribute(
-                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(ConnectorServiceDefinition.PATH),
-                                new RejectExpressionsConfig(CommonAttributes.FACTORY_CLASS))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(ConnectorServiceDefinition.PATH).append(ConnectorServiceParamDefinition.PATH),
                                 new RejectExpressionsConfig(ConnectorServiceParamDefinition.VALUE))
