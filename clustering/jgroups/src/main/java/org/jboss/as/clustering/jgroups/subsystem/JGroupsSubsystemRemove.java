@@ -43,32 +43,44 @@ public class JGroupsSubsystemRemove extends AbstractRemoveStepHandler {
 
     public static final JGroupsSubsystemRemove INSTANCE = new JGroupsSubsystemRemove();
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model)
-        throws OperationFailedException {
+    @Override
+    protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
-        removeRuntimeServices(context, operation, model);
-    }
+        // remove the subsystem first
+        ModelNode removeSubsystem = Util.createOperation(REMOVE, PathAddress.pathAddress(JGroupsExtension.SUBSYSTEM_PATH));
+        context.addStep(removeSubsystem, new OriginalSubsystemRemoveHandler(), OperationContext.Stage.IMMEDIATE);
 
-    protected void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model)
-            throws OperationFailedException {
-
-        // remove any existing child stacks
+        // now remove any existing child stacks
         if (model.hasDefined(ModelKeys.STACK)) {
             List<Property> stacks = model.get(ModelKeys.STACK).asPropertyList() ;
             for (Property stack: stacks) {
                 PathAddress address = PathAddress.pathAddress(JGroupsExtension.SUBSYSTEM_PATH).append(ModelKeys.STACK, stack.getName());
                 ModelNode removeStack = Util.createOperation(REMOVE, address);
-                // just need to remove the existing stack services
-                ProtocolStackAdd.INSTANCE.removeRuntimeServices(context, removeStack, stack.getValue());
+                // remove the stack
+                context.addStep(removeStack, ProtocolStackRemove.INSTANCE, OperationContext.Stage.IMMEDIATE);
             }
         }
 
-        // remove the ProtocolDefaultsService
-        ServiceName protocolDefaultsService = ProtocolDefaultsService.SERVICE_NAME;
-        context.removeService(protocolDefaultsService);
+        context.stepCompleted();
+    }
 
-        // remove the DefaultChannelFactoryServiceAlias
-        ServiceName defaultChannelFactoryService = ChannelFactoryService.getServiceName(null);
-        context.removeService(defaultChannelFactoryService);
+    static class OriginalSubsystemRemoveHandler extends AbstractRemoveStepHandler {
+
+        protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model)
+            throws OperationFailedException {
+            removeRuntimeServices(context, operation, model);
+        }
+
+        protected void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model)
+                throws OperationFailedException {
+
+            // remove the ProtocolDefaultsService
+            ServiceName protocolDefaultsService = ProtocolDefaultsService.SERVICE_NAME;
+            context.removeService(protocolDefaultsService);
+
+            // remove the DefaultChannelFactoryServiceAlias
+            ServiceName defaultChannelFactoryService = ChannelFactoryService.getServiceName(null);
+            context.removeService(defaultChannelFactoryService);
+        }
     }
 }
