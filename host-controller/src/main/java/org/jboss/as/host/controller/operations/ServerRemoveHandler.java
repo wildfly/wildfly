@@ -61,7 +61,7 @@ public class ServerRemoveHandler extends AbstractRemoveStepHandler {
         final ModelNode verifyOp = new ModelNode();
         verifyOp.get(OP).set("verify-running-server");
         verifyOp.get(OP_ADDR).add(HOST, address.getElement(0).getValue());
-        context.addStep(context.getResult(), verifyOp, new OperationStepHandler() {
+        context.addStep(verifyOp, new OperationStepHandler() {
             @Override
             public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                 final PathAddress serverAddress = PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(SERVER, serverName));
