@@ -69,7 +69,10 @@ public class InterfaceCriteriaTestUtil {
                 Set<InetAddress> addresses = new HashSet<InetAddress>();
                 Enumeration<InetAddress> addressEnumeration = nic.getInetAddresses();
                 while (addressEnumeration.hasMoreElements()) {
-                    addresses.add(addressEnumeration.nextElement());
+                    InetAddress inetAddress = addressEnumeration.nextElement();
+                    if (inetAddress != null) {
+                        addresses.add(inetAddress);
+                    }
                 }
                 if (addresses.size() > 0) {
                     candidates.put(nic, Collections.unmodifiableSet(addresses));
