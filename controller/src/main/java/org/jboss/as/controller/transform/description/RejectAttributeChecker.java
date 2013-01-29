@@ -298,4 +298,16 @@ public interface RejectAttributeChecker {
             return fields.entrySet().iterator().next().getValue().getRejectionLogMessage(attributes);
         }
     }
+
+    RejectAttributeChecker DEFINED = new DefaultRejectAttributeChecker() {
+        @Override
+        public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+            return ControllerMessages.MESSAGES.attributesAreNotUnderstoodAndWillBeIgnored();
+        }
+
+        @Override
+        protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+            return attributeValue.isDefined();
+        }
+    };
 }
