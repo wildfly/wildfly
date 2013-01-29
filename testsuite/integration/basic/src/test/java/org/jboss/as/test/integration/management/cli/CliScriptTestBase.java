@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.as.cli.Util;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 
 /**
@@ -148,14 +149,22 @@ public class CliScriptTestBase {
     protected void logErrors(String cmd, Process cliProc) {
         System.out.println("Failed to execute '" + cmd + "'");
         System.out.println("Command's output: '" + cliOutput + "'");
+
+        java.io.InputStreamReader isr = new java.io.InputStreamReader(cliProc.getErrorStream());
+        java.io.BufferedReader br = new java.io.BufferedReader(isr);
+        String line=null;
         try {
-            int bytesTotal = cliProc.getErrorStream().available();
-            if (bytesTotal > 0) {
-                final byte[] bytes = new byte[bytesTotal];
-                cliProc.getErrorStream().read(bytes);
-                System.out.println("Command's error log: '" + new String(bytes) + "'");
-            } else {
+            line = br.readLine();
+            if(line == null) {
                 System.out.println("No output data for the command.");
+            } else {
+                StringBuilder buf = new StringBuilder(line);
+                while((line = br.readLine()) != null) {
+                    buf.append(Util.LINE_SEPARATOR);
+                    buf.append(line);
+                }
+                System.out.println("Command's error log: '" + buf + "'");
+
             }
         } catch (IOException e) {
             fail("Failed to read command's error output: " + e.getLocalizedMessage());
@@ -163,12 +172,12 @@ public class CliScriptTestBase {
     }
 
     protected void readStream(final StringBuilder cliOutBuf, InputStream cliStream) {
+        java.io.InputStreamReader isr = new java.io.InputStreamReader(cliStream);
+        java.io.BufferedReader br = new java.io.BufferedReader(isr);
+        String line=null;
         try {
-            int bytesTotal = cliStream.available();
-            if (bytesTotal > 0) {
-                final byte[] bytes = new byte[bytesTotal];
-                cliStream.read(bytes);
-                cliOutBuf.append(new String(bytes));
+            while ((line = br.readLine()) != null) {
+                cliOutBuf.append(line).append(Util.LINE_SEPARATOR);
             }
         } catch (IOException e) {
             fail("Failed to read command's output: " + e.getLocalizedMessage());
