@@ -66,10 +66,7 @@ public class ServerRemoveHandler extends AbstractRemoveStepHandler {
             public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                 final PathAddress serverAddress = PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(SERVER, serverName));
                 final ProxyController controller = context.getResourceRegistration().getProxyController(serverAddress);
-                if(! context.getResourceRegistration().getChildNames(PathAddress.EMPTY_ADDRESS).contains(SERVER)) {
-                    throw new OperationFailedException(new ModelNode().set(context.getResourceRegistration().getChildNames(PathAddress.EMPTY_ADDRESS).toString()));
-                }
-                if(controller != null) {
+                if (controller != null) {
                     context.getFailureDescription().set(MESSAGES.serverStillRunning(serverName));
                 }
                 context.stepCompleted();
