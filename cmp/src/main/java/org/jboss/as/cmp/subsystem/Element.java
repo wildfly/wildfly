@@ -28,7 +28,7 @@ import java.util.Map;
 /**
  * @author John Bailey
  */
-public enum Element {
+enum Element {
     UNKNOWN(null),
     BLOCK_SIZE("block-size"),
     CREATE_TABLE("create-table"),

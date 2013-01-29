@@ -32,29 +32,70 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.as.naming.ServiceBasedNamingStore;
+import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.as.naming.service.BinderService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
+
 /**
  * @author John Bailey
  */
-public abstract class AbstractKeyGeneratorAdd extends AbstractAddStepHandler {
+abstract class AbstractKeyGeneratorAdd extends AbstractAddStepHandler {
 
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         final String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
 
-        final Service<KeyGeneratorFactory> keyGeneratorFactory = getKeyGeneratorFactory(operation);
+        final Service<KeyGeneratorFactory> keyGeneratorFactory = getKeyGeneratorFactory(context, model);
         final ServiceBuilder<KeyGeneratorFactory> factoryServiceBuilder = context.getServiceTarget().addService(getServiceName(name), keyGeneratorFactory)
                 .addDependency(KeyGeneratorFactoryRegistry.SERVICE_NAME, KeyGeneratorFactoryRegistry.class, KeyGeneratorFactoryRegistry.getRegistryInjector(name, keyGeneratorFactory))
                 .addListener(verificationHandler);
         addDependencies(operation, keyGeneratorFactory, factoryServiceBuilder);
+
+        ModelNode jndiNode = AbstractKeyGeneratorResourceDefinition.JNDI_NAME.resolveModelAttribute(context, model);
+
+        if (jndiNode.isDefined()) {
+            // Bind the KeyGeneratorFactory into JNDI
+            String jndiName = jndiNode.asString();
+
+            final ManagedReferenceFactory valueManagedReferenceFactory = new org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory() {
+
+                @Override
+                public String getJndiViewInstanceValue() {
+                    return String.valueOf(getReference().getInstance());
+                }
+
+                @Override
+                public String getInstanceClassName() {
+                    final Object value = getReference().getInstance();
+                    return value != null ? value.getClass().getName() : org.jboss.as.naming.ContextListManagedReferenceFactory.DEFAULT_INSTANCE_CLASS_NAME;
+                }
+
+                @Override
+                public org.jboss.as.naming.ManagedReference getReference() {
+                    return new org.jboss.as.naming.ValueManagedReference(new org.jboss.msc.value.ImmediateValue<Object>(keyGeneratorFactory.getValue()));
+                }
+            };
+
+            final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
+            final BinderService keyGenFactoryBinderService = new BinderService(bindInfo.getBindName());
+            final ServiceBuilder<ManagedReferenceFactory> keyGenFactoryBinderBuilder = context.getServiceTarget()
+                    .addService(bindInfo.getBinderServiceName(), keyGenFactoryBinderService)
+                    .addInjection(keyGenFactoryBinderService.getManagedObjectInjector(), valueManagedReferenceFactory)
+                    .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, keyGenFactoryBinderService.getNamingStoreInjector());
+
+            newControllers.add(keyGenFactoryBinderBuilder.install());
+        }
+
         newControllers.add(factoryServiceBuilder.install());
     }
 
-    protected abstract Service<KeyGeneratorFactory> getKeyGeneratorFactory(final ModelNode operation);
+    protected abstract Service<KeyGeneratorFactory> getKeyGeneratorFactory(final OperationContext context, final ModelNode model) throws OperationFailedException;
 
     protected abstract ServiceName getServiceName(final String name);
 

@@ -28,9 +28,11 @@ import java.util.Map;
 /**
  * @author John Bailey
  */
-public enum Attribute {
+enum Attribute {
     UNKNOWN(null),
-    NAME("name");
+    NAME("name"),
+    JNDI_NAME("jndi-name");
+
 
     private final String name;
 

@@ -24,6 +24,8 @@ package org.jboss.as.cmp.subsystem;
 
 import org.jboss.as.cmp.keygenerator.KeyGeneratorFactory;
 import org.jboss.as.cmp.keygenerator.uuid.UUIDKeyGeneratorFactory;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
@@ -32,13 +34,13 @@ import org.jboss.msc.service.ServiceName;
 /**
  * @author John Bailey
  */
-public class UUIDKeyGeneratorAdd extends AbstractKeyGeneratorAdd {
+class UUIDKeyGeneratorAdd extends AbstractKeyGeneratorAdd {
     static UUIDKeyGeneratorAdd INSTANCE = new UUIDKeyGeneratorAdd();
 
     private UUIDKeyGeneratorAdd() {
     }
 
-    protected Service<KeyGeneratorFactory> getKeyGeneratorFactory(final ModelNode operation) {
+    protected Service<KeyGeneratorFactory> getKeyGeneratorFactory(final OperationContext context, final ModelNode operation) {
         return new UUIDKeyGeneratorFactory();
     }
 
@@ -47,6 +49,9 @@ public class UUIDKeyGeneratorAdd extends AbstractKeyGeneratorAdd {
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        for(AttributeDefinition attribute : UUIDKeyGeneratorResourceDefinition.ATTRIBUTES) {
+            attribute.validateAndSet(operation, model);
+        }
     }
 
 }

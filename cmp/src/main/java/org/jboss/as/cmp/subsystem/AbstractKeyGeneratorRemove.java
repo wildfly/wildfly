@@ -33,7 +33,7 @@ import org.jboss.msc.service.ServiceName;
 /**
  * @author John Bailey
  */
-public abstract class AbstractKeyGeneratorRemove extends AbstractRemoveStepHandler {
+abstract class AbstractKeyGeneratorRemove extends AbstractRemoveStepHandler {
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
         context.removeService(getServiceName(name));

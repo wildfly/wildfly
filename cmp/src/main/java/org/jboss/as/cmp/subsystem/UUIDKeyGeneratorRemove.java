@@ -28,7 +28,7 @@ import org.jboss.msc.service.ServiceName;
 /**
  * @author John Bailey
  */
-public class UUIDKeyGeneratorRemove extends AbstractKeyGeneratorRemove  {
+class UUIDKeyGeneratorRemove extends AbstractKeyGeneratorRemove  {
     static UUIDKeyGeneratorRemove INSTANCE = new UUIDKeyGeneratorRemove();
 
     private UUIDKeyGeneratorRemove() {
