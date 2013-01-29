@@ -27,16 +27,16 @@
             <id-cache-size>${id.cache.size:102030}</id-cache-size>
             <persist-id-cache>${persist.id.cache:false}</persist-id-cache>
             <remoting-interceptors>
-                <class-name>${remoting-interceptor.class1:foo.bar}</class-name>
-                <class-name>${remoting-interceptor.class2:bar.foo}</class-name>
+                <class-name>foo.bar</class-name>
+                <class-name>bar.foo</class-name>
             </remoting-interceptors>
             <remoting-incoming-interceptors>
-                <class-name>${remoting-incoming-interceptor.class1:foo.bar}</class-name>
-                <class-name>${remoting-incoming-interceptor.class2:bar.foo}</class-name>
+                <class-name>foo.bar</class-name>
+                <class-name>bar.foo</class-name>
             </remoting-incoming-interceptors>
             <remoting-outgoing-interceptors>
-                <class-name>${remoting-outgoing-interceptor.class1:foo.bar}</class-name>
-                <class-name>${remoting-outgoing-interceptor.class2:bar.foo}</class-name>
+                <class-name>foo.bar</class-name>
+                <class-name>bar.foo</class-name>
             </remoting-outgoing-interceptors>
             <backup>${backup:false}</backup>
             <allow-failback>${allow.failback:false}</allow-failback>
@@ -80,7 +80,7 @@
                   <param key="batch-delay" value="${batch.delay:50}"/>
                </in-vm-connector>
                <connector name="myconnector">
-                  <factory-class>${factory.class:org.hornetq.core.remoting.impl.netty.NettyConnectorFactory}</factory-class>
+                  <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
                   <param key="host" value="192.168.1.2"/>
                   <param key="port" value="5445"/>
                   <param key="key-store-path" value="path/to/server.jks"/>
@@ -97,7 +97,7 @@
                    <param key="batch-delay" value="${batch.delay:50}"/>
                </in-vm-acceptor>
                <acceptor name="myacceptor">
-                  <factory-class>${factory.class:org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory}</factory-class>
+                  <factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>
                   <param key="batch-delay" value="${batch.delay:50}"/>
                </acceptor>
             </acceptors>
@@ -149,7 +149,7 @@
                     <address>${address:address1}</address>
                     <forwarding-address>${forwarding.address:forwardingaddress1}</forwarding-address>
                     <filter string="${filter:afilter}"/>
-                    <transformer-class-name>${transformer.class.name:org.jboss.test.Transformer}</transformer-class-name>
+                    <transformer-class-name>org.jboss.test.Transformer</transformer-class-name>
                     <exclusive>${exclusive:true}</exclusive>
                 </divert>
                 <divert name="testDivert2">
@@ -173,7 +173,7 @@
                     <forwarding-address>${forwarding.address:forwardingaddress1}</forwarding-address>
                     <ha>${ha:true}</ha>
                     <filter string="${filter:afilter}"/>
-                    <transformer-class-name>${transfomer.class.name:foo.bar}</transformer-class-name>
+                    <transformer-class-name>foo.bar</transformer-class-name>
                     <min-large-message-size>${min.large.message.size:10240}</min-large-message-size>
                     <check-period>${check.period:666}</check-period>
                     <connection-ttl>${connection.tt:36000}</connection-ttl>
@@ -275,10 +275,10 @@
 
             <connector-services>
                 <connector-service name="a">
-                    <factory-class>${factory.class:foo.bar}</factory-class>
+                    <factory-class>foo.bar</factory-class>
                 </connector-service>
                 <connector-service name="b">
-                    <factory-class>${factory.class:bar.foo}</factory-class>
+                    <factory-class>bar.foo</factory-class>
                     <param key="foo" value="${connector.value:bar}"/>
                     <param key="bar" value="2"/>
                 </connector-service>
@@ -335,7 +335,7 @@
 			     <max-retry-interval>${max.retry.interval:10000}</max-retry-interval>
 			     <reconnect-attempts>${reconnect.attempts:2}</reconnect-attempts>
 			     <failover-on-initial-connection>${failover.on.initial.connection:true}</failover-on-initial-connection>
-				 <connection-load-balancing-policy-class-name>${connection.load.balancy.policy.class.name:not.a.real.Class}</connection-load-balancing-policy-class-name>
+				 <connection-load-balancing-policy-class-name>connection.load.balancy.policy.class</connection-load-balancing-policy-class-name>
 				 <use-global-pools>${use.global.pools:true}</use-global-pools>
 				 <scheduled-thread-pool-max-size>${scheduled.thread.pool.max.size:24}</scheduled-thread-pool-max-size>
 				 <thread-pool-max-size>${thread.pool.max.size:48}</thread-pool-max-size>
@@ -381,7 +381,7 @@
 			     <max-retry-interval>${max.retry.interval:10000}</max-retry-interval>
 			     <reconnect-attempts>${reconnect.attempts:2}</reconnect-attempts>
 			     <failover-on-initial-connection>${failover.on.initial.connection:true}</failover-on-initial-connection>
-				 <connection-load-balancing-policy-class-name>${connection.load.balancing.policy.class.name:not.a.real.Class}</connection-load-balancing-policy-class-name>
+				 <connection-load-balancing-policy-class-name>connection.load.balancing.policy.class</connection-load-balancing-policy-class-name>
 				 <use-global-pools>${use.global.pools:true}</use-global-pools>
 				 <scheduled-thread-pool-max-size>${scheduled.thread.pool.max.size:24}</scheduled-thread-pool-max-size>
 				 <thread-pool-max-size>${thread.pool.max.size:48}</thread-pool-max-size>

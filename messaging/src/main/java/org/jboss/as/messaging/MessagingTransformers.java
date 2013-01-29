@@ -183,7 +183,7 @@ public class MessagingTransformers {
         rejectExpressions(server, QueueDefinition.PATH, QueueDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0);
 
         for (String path : new String[]{CommonAttributes.ACCEPTOR, CommonAttributes.CONNECTOR}) {
-            TransformersSubRegistration transport = rejectExpressions(server, PathElement.pathElement(path), CommonAttributes.FACTORY_CLASS);
+            TransformersSubRegistration transport = server.registerSubResource(PathElement.pathElement(path));
             rejectExpressions(transport, TransportParamDefinition.PATH, TransportParamDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0);
         }
 
@@ -213,7 +213,7 @@ public class MessagingTransformers {
         clusterConnection.registerOperationTransformer(UNDEFINE_ATTRIBUTE_OPERATION, new ChainedOperationTransformer(
                 discardClusterConnectionUndefinedAttributes.getUndefineAttributeTransformer()));
 
-        TransformersSubRegistration connectorService = rejectExpressions(server, ConnectorServiceDefinition.PATH, CommonAttributes.FACTORY_CLASS);
+        TransformersSubRegistration connectorService = server.registerSubResource(ConnectorServiceDefinition.PATH);
         rejectExpressions(connectorService, ConnectorServiceParamDefinition.PATH, VALUE);
 
         RejectExpressionValuesTransformer rejectConnectionFactoryExpressions = new RejectExpressionValuesTransformer(ConnectionFactoryDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0);
