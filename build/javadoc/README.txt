@@ -44,7 +44,7 @@ TattleTale duplicated classes report may help with this.
 
 7) When done, aggregated JavaDoc will be created in:
   target/apidocs
-  target/jboss-as-build-7.1.2.Final-SNAPSHOT-javadoc.jar
+  target/jboss-as-build-<version>.Final-SNAPSHOT-javadoc.jar
 
 8) Check that the final result contains all packages it should.
 

@@ -12,7 +12,7 @@ And of course Java EE!
 
 Building
 -------------------
-If you already have Maven 3 installed
+If you already have Maven 3.0.3 or newer installed
 
 > mvn install
 
@@ -20,7 +20,7 @@ If you don't have Maven 3
 
 > ./build.sh
 
-If you really must use Windows and don't have Maven 3
+If you use Windows and don't have Maven 3
 
 > build.bat
 
