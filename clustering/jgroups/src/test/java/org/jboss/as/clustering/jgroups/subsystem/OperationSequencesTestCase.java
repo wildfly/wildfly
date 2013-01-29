@@ -158,17 +158,33 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
      */
     @Test
     public void testSubsystemRemoveAddSequence() throws Exception {
+
+        ServiceName maximal = ServiceName.of("jboss","jgroups", "stack", "maximal");
+        ServiceName defaults = ServiceName.of("jboss","jgroups", "defaults");
+        ServiceName defaultStack = ServiceName.of("jboss","jgroups", "stack");
+
         // Parse and install the XML into the controller
         String subsystemXml = getSubsystemXml() ;
         KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
 
         // remove the jgroups subsystem
+        Assert.assertTrue("jboss.jgroups.stack.maximal MSC service not present", isMSCServicePresent(servicesA, maximal));
+        Assert.assertTrue("jboss.jgroups.defaults MSC service not present", isMSCServicePresent(servicesA, defaults));
+        Assert.assertTrue("jboss.jgroups.stack MSC service not present", isMSCServicePresent(servicesA, defaultStack));
+
         ModelNode result = servicesA.executeOperation(removeSubsystemOp);
         Assert.assertEquals("failure description: " + result.get(FAILURE_DESCRIPTION).toString(), SUCCESS, result.get(OUTCOME).asString());
+
+        Assert.assertFalse("jboss.jgroups.stack.maximal MSC service present", isMSCServicePresent(servicesA, maximal));
+        Assert.assertFalse("jboss.jgroups.defaults MSC service present", isMSCServicePresent(servicesA, defaults));
+        Assert.assertFalse("jboss.jgroups.stack MSC service present", isMSCServicePresent(servicesA, defaultStack));
 
         // add the jgroups subsystem  again
         result = servicesA.executeOperation(addSubsystemOp);
         Assert.assertEquals("failure description: " + result.get(FAILURE_DESCRIPTION).toString(), SUCCESS, result.get(OUTCOME).asString());
+
+        Assert.assertTrue("jboss.jgroups.defaults MSC service not present", isMSCServicePresent(servicesA, defaults));
+        Assert.assertTrue("jboss.jgroups.stack MSC service not present", isMSCServicePresent(servicesA, defaultStack));
 
         // remove the jgroups subsystem  again
         result = servicesA.executeOperation(removeSubsystemOp);
@@ -182,5 +198,10 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
         for (ServiceName name : names) {
             System.out.println("name = " + name.toString());
         }
+    }
+
+    private boolean isMSCServicePresent(KernelServices services, ServiceName serviceName) {
+       ServiceRegistry registry = services.getContainer() ;
+       return (registry.getService(serviceName) != null);
     }
 }
