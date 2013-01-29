@@ -174,6 +174,9 @@ public class RespawnTestCase {
 
     @Test
     public void testDomainRespawn() throws Exception {
+
+        System.out.println("testDomainRespawn()");
+
         //Make sure everything started
         List<RunningProcess> processes = waitForAllProcessesFullyStarted();
 
@@ -192,6 +195,9 @@ public class RespawnTestCase {
 
     @Test
     public void testReloadHc() throws Exception {
+
+        System.out.println("testReloadHc()");
+
         List<RunningProcess> original = waitForAllProcessesFullyStarted();
         Set<String> serverIds = new HashSet<String>();
         for (RunningProcess proc : original) {
@@ -217,14 +223,18 @@ public class RespawnTestCase {
 
     @Test
     public void testReloadHcButNotServers() throws Exception {
+
+        System.out.println("testReloadHcButNotServers()");
+
         List<RunningProcess> original = waitForAllProcessesFullyStarted();
 
         //Execute reload w/ restart-servers=false, admin-only=true
         executeReloadOperation(false, true);
 
         //Read HC model until there are no servers
-        long timeout = System.currentTimeMillis() + TIMEOUT;
-        long minCheckPeriod =  System.currentTimeMillis() + 5000;
+        long start = System.currentTimeMillis();
+        long timeout = start + TIMEOUT;
+        long minCheckPeriod =  start + 5000;
         while (true) {
             Thread.sleep(500);
             if (lookupServerInModel(MASTER, SERVER_ONE) || lookupServerInModel(MASTER, SERVER_TWO)) {
@@ -236,8 +246,11 @@ public class RespawnTestCase {
             } // else loop and retest in case the server reconnects w/in minCheckPeriod
         }
 
+        System.out.println("reloaded into admin-only after " + (System.currentTimeMillis() - start) + " ms");
+
         //Execute reload w/ restart-servers=false, admin-only=false
         executeReloadOperation(false, false);
+        System.out.println("reloaded out of admin-only; waiting for servers");
         //Wait for servers
         readHostControllerServers();
 
@@ -254,6 +267,8 @@ public class RespawnTestCase {
 
     @Test
     public void testReloadHcButNotServersWithFailedServer() throws Exception {
+
+        System.out.println("testReloadHcButNotServersWithFailedServer()");
 
         List<RunningProcess> original = waitForAllProcessesFullyStarted();
 
@@ -280,6 +295,9 @@ public class RespawnTestCase {
 
     @Test
     public void testHCReloadAbortPreservesServers() throws Exception {
+
+        System.out.println("testHCReloadAbortPreservesServers()");
+
         List<RunningProcess> original = waitForAllProcessesFullyStarted();
 
         try {
