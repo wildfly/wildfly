@@ -58,13 +58,22 @@ public class ThreadsSubsystemTestCase extends AbstractSubsystemBaseTest {
         standardSubsystemTest("expressions.xml");
     }
 
+    @Test
+    public void testTransformerAS712() throws Exception {
+        testTransformer_1_0("7.1.2.Final");
+    }
+
+    @Test
+    public void testTransformerAS713() throws Exception {
+        testTransformer_1_0("7.1.3.Final");
+    }
+
     /**
      * Tests transformation of model from 1.1.0 version into 1.0.0 version.
      *
      * @throws Exception
      */
-    @Test
-    public void testTransformer_1_0() throws Exception {
+    private void testTransformer_1_0(String mavenVersion) throws Exception {
         String subsystemXml = "threads-transform-1_0.xml";   //This has no expressions not understood by 1.0
         ModelVersion modelVersion = ModelVersion.create(1, 0, 0); //The old model version
         //Use the non-runtime version of the extension which will happen on the HC
@@ -73,7 +82,7 @@ public class ThreadsSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         // Add legacy subsystems
         builder.createLegacyKernelServicesBuilder(null, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-threads:7.1.2.Final");
+                .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + mavenVersion);
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
@@ -82,14 +91,23 @@ public class ThreadsSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testRejectExpressions_1_0_0() throws Exception {
+    public void testRejectExpressionsAS712() throws Exception {
+        testRejectExpressions_1_0_0("7.1.2.Final");
+    }
+
+    @Test
+    public void testRejectExpressionsAS713() throws Exception {
+        testRejectExpressions_1_0_0("7.1.3.Final");
+    }
+
+    private void testRejectExpressions_1_0_0(String mavenVersion) throws Exception {
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
         // create builder for legacy subsystem version
         ModelVersion version_1_0_0 = ModelVersion.create(1, 0, 0);
         builder.createLegacyKernelServicesBuilder(null, version_1_0_0)
-                .addMavenResourceURL("org.jboss.as:jboss-as-threads:7.1.2.Final");
+                .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + mavenVersion);
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(version_1_0_0);
