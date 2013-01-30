@@ -308,12 +308,12 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
     }
 
     @Deprecated
-    static ResourceTransformationContext wrapForOperation(TransformationContext context, ModelNode operation) {
+    static TransformationContext wrapForOperation(TransformationContext context, ModelNode operation) {
         if(context instanceof ResourceTransformationContextImpl) {
             final ResourceTransformationContextImpl impl = (ResourceTransformationContextImpl) context;
             return new ResourceTransformationContextImpl(impl.root, PathAddress.pathAddress(operation.get(OP_ADDR)), impl.originalModel);
         } else {
-            throw new IllegalArgumentException("wrong context type");
+            return context;
         }
     }
 
