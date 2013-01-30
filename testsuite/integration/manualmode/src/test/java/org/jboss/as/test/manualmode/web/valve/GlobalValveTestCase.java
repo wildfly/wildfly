@@ -45,6 +45,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.*;
+import static org.jboss.as.test.manualmode.web.valve.ValveConstants.*;
 
 /**
  * This class tests a global valve.
@@ -65,15 +66,8 @@ public class GlobalValveTestCase {
     @ArquillianResource
     private Deployer deployer;
     
-    private static final String modulename = "org.jboss.testvalve";
-    private static final String classname = TestValve.class.getName();
-    private static final String baseModulePath = "/../modules/" + modulename.replace(".", "/") + "/main";
-    private static final String jarName = "testvalve.jar";
     private static final String VALVE_NAME_1 = "testvalve1";
     private static final String VALVE_NAME_2 = "testvalve2";
-    private static final String PARAM_NAME = "testparam";
-    /** the default value is hardcoded in {@link TestValve} */
-    private static final String DEFAULT_PARAM_VALUE = "DEFAULT_VALUE";
     private static final String DEPLOYMENT = "valve";
 
     @Deployment(name = DEPLOYMENT, managed = false, testable = false)
@@ -108,9 +102,9 @@ public class GlobalValveTestCase {
     @InSequence(0)
     public void addValveOne(@ArquillianResource ManagementClient client) throws Exception {
         // as first test in sequence creating valve module
-        ValveUtil.createValveModule(client, modulename, baseModulePath, jarName);
+        ValveUtil.createValveModule(client, STANDARD_VALVE_MODULE, getBaseModulePath(STANDARD_VALVE_MODULE), STANDARD_VALVE_JAR, VALVE_CLASS);
         // adding valve based on the created module
-        ValveUtil.addValve(client, VALVE_NAME_1, modulename, classname, null);   
+        ValveUtil.addValve(client, VALVE_NAME_1, STANDARD_VALVE_MODULE, VALVE_CLASS.getName(), null);   
     }
     
     
@@ -128,7 +122,7 @@ public class GlobalValveTestCase {
     public void addValveTwo(@ArquillianResource ManagementClient client) throws Exception {
         Map<String,String> params = new HashMap<String, String>();
         params.put(PARAM_NAME, VALVE_NAME_2); //as param of valve defining its name
-        ValveUtil.addValve(client, VALVE_NAME_2, modulename, classname, params);
+        ValveUtil.addValve(client, VALVE_NAME_2, STANDARD_VALVE_MODULE, VALVE_CLASS.getName(), params);
     }
 
     @Test

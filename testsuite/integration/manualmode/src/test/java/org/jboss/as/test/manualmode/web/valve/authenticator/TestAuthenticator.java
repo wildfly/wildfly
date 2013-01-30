@@ -41,7 +41,7 @@ public class TestAuthenticator extends AuthenticatorBase {
 
     private static Logger log = Logger.getLogger(TestAuthenticator.class);
     
-    private String testparam = AuthValveConstants.DEFAULT_PARAM_VALUE;
+    private String testparam = AuthValveConstants.AUTH_VALVE_DEFAULT_PARAM_VALUE;
 
     public void setTestparam(String testparam) {
         this.testparam = testparam;
