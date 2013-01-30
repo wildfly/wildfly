@@ -56,19 +56,22 @@ public class ValveUtil {
 
     private static Logger log = Logger.getLogger(ValveUtil.class);
 
-    public static void createValveModule(final ManagementClient managementClient, String modulename, String baseModulePath, String jarName) throws Exception {
+    public static void createValveModule(final ManagementClient managementClient, String modulename, String baseModulePath, String jarName, Class valveClass) throws Exception {
+        log.info("Creating a valve module " + modulename);
         String path = ValveUtil.readASPath(managementClient.getControllerClient());
         File file = new File(path);
         if (file.exists()) {
             file = new File(path + baseModulePath);
             file.mkdirs();
             file = new File(path + baseModulePath + "/" + jarName);
-            if (file.exists())
+            if (file.exists()) {
                 file.delete();
-            createJar(file);
+            }
+            createJar(file, valveClass);
             file = new File(path + baseModulePath + "/module.xml");
-            if (file.exists())
-                file.delete();              
+            if (file.exists()) {
+                file.delete();
+            }              
             FileWriter fstream = new FileWriter(path + baseModulePath + "/module.xml");
             BufferedWriter out = new BufferedWriter(fstream);
             out.write("<module xmlns=\"urn:jboss:module:1.1\" name=\"" + modulename + "\">\n");
@@ -91,9 +94,9 @@ public class ValveUtil {
         }
     }
     
-    private static void createJar(File file) {
+    private static void createJar(File file, Class valveClass) {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "temporary-name.jar")
-                              .addClass(TestValve.class);       
+                              .addClass(valveClass);       
         log.info(archive.toString(true));
         archive.as(ZipExporter.class).exportTo(file);
     }
@@ -127,9 +130,10 @@ public class ValveUtil {
         applyUpdates(managementClient.getControllerClient(), updates);
     }
     
+   
+    
     public static void activateValve(final ManagementClient managementClient, String valveName, boolean isActive) throws Exception {
         ModelNode op = new ModelNode();
-        op = new ModelNode();
         op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
         op.get(OP_ADDR).set(getValveAddr(valveName));
         op.get(NAME).set("enabled");
@@ -163,9 +167,11 @@ public class ValveUtil {
         for (ModelNode update : updates) {
             log.info("+++ Update on " + client + ":\n" + update.toString());
             ModelNode result = client.execute(new OperationBuilder(update).build());
+            log.info("Whole result: " + result);
             if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
-                if (result.hasDefined("result"))
+                if (result.hasDefined("result")) {
                     log.info(result.get("result"));
+                }
             } else if (result.hasDefined("failure-description")) {
                 throw new RuntimeException(result.get("failure-description").toString());
             } else {
@@ -173,32 +179,39 @@ public class ValveUtil {
             }
         }
     }
-    
+
     /**
      * Provide reload operation on server
-     * 
+     *
      * @throws Exception
      */
     public static void reload(final ManagementClient managementClient) throws Exception {
         ModelNode operation = new ModelNode();
         operation.get(OP).set("reload");
-        applyUpdate(managementClient, operation);
+
+        try {
+            applyUpdate(managementClient, operation);
+        } catch (Exception e) {
+            log.error("Exception applying reload operation. This is probably fine, as the server probably shut down before the response was sent", e);
+        }
         boolean reloaded = false;
         int i = 0;
         while (!reloaded) {
             try {
-                Thread.sleep(5000);
-                if (managementClient.isServerInRunningState())
+                Thread.sleep(2000);
+                if (managementClient.isServerInRunningState()) {
                     reloaded = true;
+                }
             } catch (Throwable t) {
                 // nothing to do, just waiting
             } finally {
-                if (!reloaded && i++ > 10)
+                if (!reloaded && i++ > 20) {
                     throw new Exception("Server reloading failed");
+                }
             }
         }
     }
-    
+
     public static String readASPath(final ModelControllerClient client) throws Exception {
         ModelNode op = new ModelNode();
         op.get(OP).set("read-attribute");
@@ -206,8 +219,9 @@ public class ValveUtil {
         op.get("name").set("path");
         ModelNode result = client.execute(new OperationBuilder(op).build());
         if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
-            if (result.hasDefined("result"))
+            if (result.hasDefined("result")) {
                 return result.get("result").asString();
+            }
         } else if (result.hasDefined("failure-description")) {
             throw new RuntimeException(result.get("failure-description").toString());
         } else {
@@ -216,11 +230,11 @@ public class ValveUtil {
         return null;
     }
     
-    /**
+     /**
      * Access http://localhost/
      * @return "valve" headers
      */
-    public static Header[] hitValve(URL url) throws Exception {
+    public static Header[] hitValve(URL url, int expectedResponseCode) throws Exception {
         HttpGet httpget = new HttpGet(url.toURI());
         DefaultHttpClient httpclient = new DefaultHttpClient();
 
@@ -229,9 +243,14 @@ public class ValveUtil {
 
         int statusCode = response.getStatusLine().getStatusCode();
         Header[] errorHeaders = response.getHeaders("X-Exception");
-        assertEquals("Wrong response code: " + statusCode + " On " + url, HttpURLConnection.HTTP_OK, statusCode);
+        assertEquals("Wrong response code: " + statusCode + " On " + url, expectedResponseCode, statusCode);
         assertEquals("X-Exception(" + Arrays.toString(errorHeaders) + ") is null", 0, errorHeaders.length);
         
         return response.getHeaders("valve");
     }
+    
+     public static Header[] hitValve(URL url) throws Exception {
+         return hitValve(url, HttpURLConnection.HTTP_OK);
+         
+     }
 }

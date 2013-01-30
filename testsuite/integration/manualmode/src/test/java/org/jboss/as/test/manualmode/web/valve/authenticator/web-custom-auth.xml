@@ -15,7 +15,7 @@
 -->
     <servlet>
         <servlet-name>HelloServlet</servlet-name>
-        <servlet-class>org.jboss.as.test.manualmode.web.valve.authenticator.HelloServlet</servlet-class>
+        <servlet-class>org.jboss.as.test.manualmode.web.valve.HelloServlet</servlet-class>
     </servlet>
 
     <servlet-mapping>

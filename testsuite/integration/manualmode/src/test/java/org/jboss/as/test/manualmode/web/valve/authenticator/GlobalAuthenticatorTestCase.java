@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.manualmode.web.valve.authenticator;
 
+import org.jboss.as.test.manualmode.web.valve.HelloServlet;
+import org.jboss.as.test.manualmode.web.valve.ValveUtil;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Arrays;
@@ -126,7 +128,7 @@ public class GlobalAuthenticatorTestCase {
         log.debug("Testing url " + appUrl + " against one global valve authenticator named " + CUSTOM_AUTHENTICATOR_1);
         Header[] valveHeaders = ValveUtil.hitValve(new URL(appUrl));
         assertEquals("There was one valve defined - it's missing now", 1, valveHeaders.length);
-        assertEquals("One valve with not defined param expecting default param value", DEFAULT_PARAM_VALUE, valveHeaders[0].getValue());
+        assertEquals("One valve with not defined param expecting default param value", AUTH_VALVE_DEFAULT_PARAM_VALUE, valveHeaders[0].getValue());
     }
 
     @Test
@@ -155,16 +157,16 @@ public class GlobalAuthenticatorTestCase {
     }
 
     // test scenario when there is a standard valve + authenticator valve
-    // TODO: not yet functional, needs to be finished. It has problem to find a module
     @Test
     @InSequence(20) // put here in order to prevent potential influence for other tests by the standard global valve
     @OperateOnDeployment(value = DEPLOYMENT_NAME)
     public void authWithStandardValve(@ArquillianResource URL url, @ArquillianResource ManagementClient client) throws Exception {
         // as first test in sequence creating valve module
-        ValveUtil.createValveModule(client, STANDARD_VALVE_MODULE, getBaseModulePath(STANDARD_VALVE_MODULE), STANDARD_VALVE_JAR, SimpleValve.class);
+        ValveUtil.createValveModule(client, STANDARD_VALVE_MODULE, getBaseModulePath(STANDARD_VALVE_MODULE), STANDARD_VALVE_JAR, VALVE_CLASS);
+        String classicValveName = "classicValve";
 
         // adding valve based on the created module
-        ValveUtil.addValve(client, STANDARD_VALVE, STANDARD_VALVE_MODULE, SimpleValve.class.getName(), null);
+        ValveUtil.addValve(client, classicValveName, STANDARD_VALVE_MODULE, VALVE_CLASS.getName(), null);
 
         ValveUtil.reload(client);
         try {
@@ -172,11 +174,11 @@ public class GlobalAuthenticatorTestCase {
             log.debug("Testing url " + appUrl + " against two valves defined, one standard valve and one global valve authenticator named " + CUSTOM_AUTHENTICATOR_1);
             Header[] valveHeaders = ValveUtil.hitValve(new URL(appUrl));
             assertEquals("There was one valve defined - it's missing now", 2, valveHeaders.length);
-//         TODO: test if valve headers contain correct values
-            assertEquals("Standard simple valve with not defined param expecting default param value", STANDARD_VALVE_DEFAULT_PARAM_VALUE, valveHeaders[0].getValue());
-            assertEquals("Authenticator valve with not defined param expecting default param value", DEFAULT_PARAM_VALUE, valveHeaders[1].getValue());
+//          test if valve headers contain correct values
+            assertEquals("Standard valve with not defined param expecting default param value", DEFAULT_PARAM_VALUE, valveHeaders[0].getValue());
+            assertEquals("Authenticator valve with not defined param expecting default param value", AUTH_VALVE_DEFAULT_PARAM_VALUE, valveHeaders[1].getValue());
         } finally {
-            ValveUtil.removeValve(client, STANDARD_VALVE);
+            ValveUtil.removeValve(client, classicValveName);
         }
     }
 

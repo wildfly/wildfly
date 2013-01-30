@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.manualmode.web.valve.authenticator;
 
+import org.jboss.as.test.manualmode.web.valve.HelloServlet;
+import org.jboss.as.test.manualmode.web.valve.ValveUtil;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;

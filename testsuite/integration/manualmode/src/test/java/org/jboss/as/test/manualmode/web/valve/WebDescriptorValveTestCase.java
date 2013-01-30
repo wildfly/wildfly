@@ -43,6 +43,8 @@ import org.junit.runner.RunWith;
 
 import static org.junit.Assert.*;
 
+import static org.jboss.as.test.manualmode.web.valve.ValveConstants.*;
+
 /**
  * This class tests a web descriptor valve definition and global valve defined in server conf.
  *
@@ -59,14 +61,7 @@ public class WebDescriptorValveTestCase {
     @ArquillianResource
     private Deployer deployer;
     
-    private static final String modulename = "org.jboss.testvalve";
-    private static final String classname = TestValve.class.getName();
-    private static final String baseModulePath = "/../modules/" + modulename.replace(".", "/") + "/main";
-    private static final String jarName = "testvalve.jar";
     private static final String VALVE_NAME = "testvalve";
-    private static final String PARAM_NAME = "testparam";
-    private static final String WEB_PARAM_VALUE = "webdescriptor";
-    private static final String GLOBAL_PARAM_VALUE = "global";
     private static final String DEPLOYMENT = "valve";
 
     @Deployment(name = DEPLOYMENT, managed = false, testable = false)
@@ -88,7 +83,7 @@ public class WebDescriptorValveTestCase {
     @InSequence(0)
     public void createValveAndDeploy(@ArquillianResource ManagementClient client) throws Exception {
         // as first test in sequence creating valve module
-        ValveUtil.createValveModule(client, modulename, baseModulePath, jarName);
+        ValveUtil.createValveModule(client, STANDARD_VALVE_MODULE, getBaseModulePath(STANDARD_VALVE_MODULE), STANDARD_VALVE_JAR, VALVE_CLASS);
         // valve is ready - let's deploy
         deployer.deploy(DEPLOYMENT);
     }
@@ -108,7 +103,7 @@ public class WebDescriptorValveTestCase {
     public void addValve(@ArquillianResource ManagementClient client) throws Exception {
         Map<String,String> params = new HashMap<String, String>();
         params.put(PARAM_NAME, GLOBAL_PARAM_VALUE);
-        ValveUtil.addValve(client, VALVE_NAME, modulename, classname, params);
+        ValveUtil.addValve(client, VALVE_NAME, STANDARD_VALVE_MODULE, VALVE_CLASS.getName(), params);
         container.stop(GlobalValveTestCase.CONTAINER);
         container.start(GlobalValveTestCase.CONTAINER);
         int i = 0;

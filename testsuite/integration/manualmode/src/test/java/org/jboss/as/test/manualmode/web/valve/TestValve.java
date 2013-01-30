@@ -34,7 +34,7 @@ import org.jboss.logging.Logger;
 public class TestValve extends ValveBase {
     private static final Logger log = Logger.getLogger(TestValve.class);
 
-    private String testparam = "DEFAULT_VALUE";
+    private String testparam = ValveConstants.DEFAULT_PARAM_VALUE;
 
     public void setTestparam(String testparam) {
         this.testparam = testparam;
