@@ -23,15 +23,16 @@
 package org.jboss.as.web;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -44,16 +45,14 @@ import org.jboss.dmr.ModelType;
 public class WebContainerDefinition extends SimpleResourceDefinition {
     public static final WebContainerDefinition INSTANCE = new WebContainerDefinition();
 
-    protected static final SimpleListAttributeDefinition WELCOME_FILES =new SimpleListAttributeDefinition.Builder(Constants.WELCOME_FILE,
-                    new SimpleAttributeDefinitionBuilder(Constants.WELCOME_FILE, ModelType.STRING, true)
-                            .setXmlName(Constants.WELCOME_FILE)
-                            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                            .setValidator(new StringLengthValidator(1, true, true))
-                            .setAllowExpression(true)
-                            .build())
-                    .setAllowNull(true)
-                    .setAllowExpression(true)
-                    .build();
+    protected static final ListAttributeDefinition WELCOME_FILES = new StringListAttributeDefinition.Builder(Constants.WELCOME_FILE)
+            .setXmlName(Constants.WELCOME_FILE)
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .setValidator(new StringLengthValidator(1, true, true))
+            .setAllowExpression(true)
+            .setAllowNull(true)
+            .build();
+
     protected static final PropertiesAttributeDefinition MIME_MAPPINGS = new PropertiesAttributeDefinition.Builder(Constants.MIME_MAPPING, true)
             .setAllowExpression(true)
             .setWrapXmlElement(false)

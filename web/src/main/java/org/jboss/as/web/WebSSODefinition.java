@@ -55,7 +55,7 @@ public class WebSSODefinition extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.DOMAIN, ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new StringLengthValidator(1, true))
+                    .setValidator(new StringLengthValidator(1, true, true))
                     .build();
 
     protected static final SimpleAttributeDefinition REAUTHENTICATE =

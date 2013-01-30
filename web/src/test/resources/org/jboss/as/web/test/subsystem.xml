@@ -18,7 +18,7 @@
                                     keep-generated="${prop.keep-generated:true}"
                                     trim-spaces="${prop.trim-spaces:true}"
                                     tag-pooling="${prop.tag-pooling:true}"
-                                    mapped-file="${prop.mapped-file:some-file-name}"
+                                    mapped-file="${prop.mapped-file:true}"
                                     check-interval="${prop.check-interval:20}"
                                     modification-test-interval="${prop.modification-test-interval:1000}"
                                     recompile-on-fail="${prop.recompile-on-fail:true}"
@@ -30,7 +30,7 @@
                                     source-vm="${prop.source-vm:1.7}"
                                     target-vm="${prop.target-vm:1.7}"
                                     java-encoding="${prop.java-encoding:utf-8}"
-                                    x-powered-by="${prop.x-powered-by:jboss}"
+                                    x-powered-by="${prop.x-powered-by:true}"
                                     display-source-fragment="${prop.display-source-fragment:true}" />
                <mime-mapping name="ogx" value="application/ogg" />
                <mime-mapping name="ogg" value="audio/ogg" />
