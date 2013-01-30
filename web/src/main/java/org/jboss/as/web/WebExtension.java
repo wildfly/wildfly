@@ -50,6 +50,7 @@ import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.AttributeConverter;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
@@ -238,14 +239,12 @@ public class WebExtension implements Extension {
                 ;
 
         //
-        connectorBuilder.addChildRedirection(SSL_PATH, SSL_ALIAS);
+        connectorBuilder.addChildRedirection(SSL_PATH, SSL_ALIAS).getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, WebSSLDefinition.SSL_ATTRIBUTES)
+                .end();
 
         final ResourceTransformationDescriptionBuilder hostBuilder = subsystemRoot.addChildResource(HOST_PATH).getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, WebVirtualHostDefinition.DEFAULT_WEB_MODULE)
-                .end();
-
-        hostBuilder.addChildResource(SSL_PATH).getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, WebSSLDefinition.SSL_ATTRIBUTES)
                 .end();
 
         final ResourceTransformationDescriptionBuilder rewriteBuilder = hostBuilder.addChildResource(REWRITE_PATH).getAttributeBuilder()

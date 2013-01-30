@@ -54,6 +54,7 @@ import java.util.Set;
 
 import junit.framework.Assert;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -171,6 +172,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         final PathAddress defaultHost = subsystem.append(PathElement.pathElement("virtual-server", "default-host"));
 
         List<ModelNode> xmlOps = builder.parseXmlResource("subsystem.xml");
+
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, xmlOps,
                 new FailedOperationTransformationConfig()
                         // configuration=container
@@ -182,20 +184,21 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
                                         "read-only", "webdav", "secret", "max-depth", "disabled"))
                         // configuration=jsp-configuration
                         .addFailedAttribute(subsystem.append(PathElement.pathElement("configuration", "jsp-configuration")),
-                                createChained( // JBAS014688: Wrong type for .... Expected [BOOLEAN] but was STRING
-                                        new FailedOperationTransformationConfig.NewAttributesConfig("mapped-file", "x-powered-by"),
-                                        new FailedOperationTransformationConfig.RejectExpressionsConfig("development", "disabled", "keep-generated",
+                                createChainedConfig(
+                                        new String[] {
+                                                "development", "disabled", "keep-generated",
                                                 "trim-spaces", "tag-pooling", "mapped-file", "check-interval", "modification-test-interval",
                                                 "recompile-on-fail", "smap", "dump-smap", "generate-strings-as-char-arrays",
                                                 "error-on-use-bean-invalid-class-attribute", "scratch-dir", "source-vm", "target-vm",
-                                                "java-encoding", "x-powered-by", "display-source-fragment")))
+                                                "java-encoding", "x-powered-by", "display-source-fragment"},
+                                        new String[0]))
                         // connector=http
                         .addFailedAttribute(subsystem.append(PathElement.pathElement("connector", "http")),
                                 new FailedOperationTransformationConfig.RejectExpressionsConfig("socket-binding", "enabled", "enable-lookups",
                                         "proxy-name", "proxy-port", "max-post-size", "max-save-post-size", "redirect-port",
                                         "max-connections", "executor"))
                         // Connector https
-                        .addFailedAttribute(subsystem.append(PathElement.pathElement("connector", "https"), PathElement.pathElement("ssl", "configuration")),
+                        .addFailedAttribute(subsystem.append(PathElement.pathElement("connector", "https"), PathElement.pathElement("configuration", "ssl")),
                                 new FailedOperationTransformationConfig.RejectExpressionsConfig("certificate-key-file", "ca-certificate-file", "key-alias",
                                         "password", "cipher-suite", "protocol", "verify-client", "verify-depth", "certificate-file", "ca-revocation-url",
                                         "ca-certificate-password", "keystore-type", "truststore-type", "session-cache-size", "session-timeout"))
@@ -209,7 +212,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
                                 new FailedOperationTransformationConfig.RejectExpressionsConfig("flags", "pattern", "substitution"))
                         .addFailedAttribute(defaultHost.append(PathElement.pathElement("rewrite", "with-conditions"), PathElement.pathElement("condition", "https")),
                                 new FailedOperationTransformationConfig.RejectExpressionsConfig("flags", "pattern", "test"))
-                        .addFailedAttribute(defaultHost.append(PathElement.pathElement("sso", "configuration")),
+                        .addFailedAttribute(defaultHost.append(PathElement.pathElement("configuration", "sso")),
                                 new FailedOperationTransformationConfig.RejectExpressionsConfig("reauthenticate", "domain"))
                 );
 
@@ -445,13 +448,14 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         return addr;
     }
 
-    FailedOperationTransformationConfig.PathAddressConfig createChained(final FailedOperationTransformationConfig.PathAddressConfig... configs) {
-        final Map<String, FailedOperationTransformationConfig.PathAddressConfig> links = new HashMap<String, FailedOperationTransformationConfig.PathAddressConfig>();
-        for(final FailedOperationTransformationConfig.PathAddressConfig config : configs) {
-            links.put(config.getClass().getSimpleName(), config);
-        }
-        return new FailedOperationTransformationConfig.ChainedConfig(links);
-    }
+    private static FailedOperationTransformationConfig.ChainedConfig createChainedConfig(String[] rejectedExpression, String[] newAttributes) {
+        String[] allAttributes = new String[rejectedExpression.length + newAttributes.length];
+        System.arraycopy(rejectedExpression, 0, allAttributes, 0, rejectedExpression.length);
+        System.arraycopy(newAttributes, 0, allAttributes, rejectedExpression.length, newAttributes.length);
 
+        return FailedOperationTransformationConfig.ChainedConfig.createBuilder(allAttributes)
+                .addConfig(new FailedOperationTransformationConfig.RejectExpressionsConfig(rejectedExpression))
+                .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(newAttributes)).build();
+    }
 }
 

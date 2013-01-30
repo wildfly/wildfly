@@ -22,11 +22,12 @@
 
 package org.jboss.as.web;
 
+import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -47,15 +48,12 @@ public class WebVirtualHostDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
 
-    protected static final SimpleListAttributeDefinition ALIAS =
-            new SimpleListAttributeDefinition.Builder(Constants.ALIAS,
-                    new SimpleAttributeDefinitionBuilder(Constants.ALIAS, ModelType.STRING, false)
-                            .setXmlName(Constants.ALIAS)
-                            .setAllowNull(false)
-                            .setValidator(new StringLengthValidator(1, false))
-                            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                            .build())
+    protected static final ListAttributeDefinition ALIAS =
+            new StringListAttributeDefinition.Builder(Constants.ALIAS)
+                    .setXmlName(Constants.ALIAS)
                     .setAllowNull(true)
+                    .setValidator(new StringLengthValidator(1, false))
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
     protected static final SimpleAttributeDefinition DEFAULT_WEB_MODULE =
             new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_WEB_MODULE, ModelType.STRING, true)

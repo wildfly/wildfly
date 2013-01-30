@@ -815,13 +815,13 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case PATTERN:
-                    rewrite.get(PATTERN).set(value);
+                    WebReWriteDefinition.PATTERN.parseAndSetParameter(value, rewrite, reader);
                     break;
                 case SUBSTITUTION:
-                    rewrite.get(SUBSTITUTION).set(value);
+                    WebReWriteDefinition.SUBSTITUTION.parseAndSetParameter(value, rewrite, reader);
                     break;
                 case FLAGS:
-                    rewrite.get(FLAGS).set(value);
+                    WebReWriteDefinition.FLAGS.parseAndSetParameter(value, rewrite, reader);
                     break;
                 case NAME:
                     name = value;
@@ -856,13 +856,13 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                                         condName = value;
                                         break;
                                     case TEST:
-                                        condition.get(TEST).set(value);
+                                        WebReWriteConditionDefinition.TEST.parseAndSetParameter(value, condition, reader);
                                         break;
                                     case PATTERN:
-                                        condition.get(PATTERN).set(value);
+                                        WebReWriteConditionDefinition.PATTERN.parseAndSetParameter(value, condition, reader);
                                         break;
                                     case FLAGS:
-                                        condition.get(FLAGS).set(value);
+                                        WebReWriteConditionDefinition.FLAGS.parseAndSetParameter(value, condition, reader);
                                         break;
                                     default:
                                         throw unexpectedAttribute(reader, i);
