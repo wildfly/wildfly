@@ -34,13 +34,10 @@ import junit.framework.Assert;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.RunningMode;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
-import org.jboss.as.subsystem.test.ModelDescriptionValidator;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 
@@ -127,20 +124,17 @@ public class JGroupsSubsystemTest extends AbstractSubsystemBaseTest {
         transport.get("socket-binding").set("jgroups-udp");
 
         ModelNode protocols = new ModelNode();
-        protocols.add("PING");
-        protocols.add("MERGE3");
-        protocols.add("FD_SOCK");
-        protocols.add("FD");
-        protocols.add("VERIFY_SUSPECT");
-        protocols.add("BARRIER");
-        protocols.add("pbcast.NAKACK2");
-        protocols.add("UNICAST2");
-        protocols.add("pbcast.STABLE");
-        protocols.add("pbcast.GMS");
-        protocols.add("UFC");
-        protocols.add("MFC");
-        protocols.add("FRAG2");
-        protocols.add("RSVP");
+        String[] protocolList = {"PING", "MERGE3", "FD_SOCK", "FD", "VERIFY_SUSPECT", "BARRIER", "pbcast.NAKACK2", "UNICAST2",
+                          "pbcast.STABLE", "pbcast.GMS", "UFC", "MFC", "FRAG2", "RSVP"} ;
+
+        for (int i = 0; i < protocolList.length; i++) {
+            ModelNode protocol = new ModelNode();
+            protocol.get(ModelKeys.TYPE).set(protocolList[i]) ;
+            protocol.get("socket-binding").set("jgroups-udp");
+            System.out.println("adding protovcol = " + protocol.toString());
+            protocols.add(protocol);
+        }
+
         op.get("transport").set(transport);
         op.get("protocols").set(protocols);
         ops.add(op);

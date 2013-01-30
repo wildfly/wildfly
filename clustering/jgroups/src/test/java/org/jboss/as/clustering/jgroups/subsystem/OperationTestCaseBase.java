@@ -12,15 +12,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.StringWriter;
-import java.net.URISyntaxException;
-import java.net.URL;
 
-import org.jboss.as.clustering.jgroups.JGroupsMessages;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
@@ -110,17 +103,22 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     }
 
     protected static ModelNode getProtocolStackAddOperationWithParameters(String stackName) {
-        ModelNode addOp = getProtocolStackAddOperation(stackName);
-        // add optional TRANSPORT attribute
-        ModelNode transport = addOp.get(ModelKeys.TRANSPORT);
-        transport.get(ModelKeys.TYPE).set("UDP");
+         ModelNode addOp = getProtocolStackAddOperation(stackName);
+         // add optional TRANSPORT attribute
+         ModelNode transport = addOp.get(ModelKeys.TRANSPORT);
+         transport.get(ModelKeys.TYPE).set("UDP");
 
-        // add optional PROTOCOLS attribute
-        ModelNode protocolsList = addOp.get(ModelKeys.PROTOCOLS);
-        protocolsList.add("MPING");
-        protocolsList.add("pbcast.FLUSH");
-        return addOp ;
-    }
+         // add optional PROTOCOLS attribute
+         ModelNode protocolsList = new ModelNode();
+         ModelNode mping = new ModelNode() ;
+         mping.get(ModelKeys.TYPE).set("MPING");
+         protocolsList.add(mping);
+         ModelNode flush = new ModelNode() ;
+         flush.get(ModelKeys.TYPE).set("pbcast.FLUSH");
+         protocolsList.add(flush);
+         addOp.get(ModelKeys.PROTOCOLS).set(protocolsList);
+         return addOp ;
+     }
 
     protected static ModelNode getProtocolStackRemoveOperation(String stackName) {
         // create the address of the cache
