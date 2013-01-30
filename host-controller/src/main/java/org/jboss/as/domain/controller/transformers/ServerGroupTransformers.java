@@ -22,13 +22,17 @@
 
 package org.jboss.as.domain.controller.transformers;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-
-import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
-import org.jboss.as.controller.transform.ResourceTransformer;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.controller.transform.description.AttributeConverter;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.as.domain.controller.resources.ServerGroupResourceDefinition;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Transformer registration for the server-group resources.
@@ -38,15 +42,21 @@ import org.jboss.as.domain.controller.resources.ServerGroupResourceDefinition;
 class ServerGroupTransformers {
 
     static void registerTransformers120(TransformersSubRegistration parent) {
-
-        RejectExpressionValuesTransformer rejectTransformer =
-                new RejectExpressionValuesTransformer(ServerGroupResourceDefinition.MANAGEMENT_SUBSYSTEM_ENDPOINT,
-                        ServerGroupResourceDefinition.SOCKET_BINDING_PORT_OFFSET);
-
-        TransformersSubRegistration serverGroup = parent.registerSubResource(ServerGroupResourceDefinition.PATH,
-                (ResourceTransformer) rejectTransformer);
-        serverGroup.registerOperationTransformer(ADD, rejectTransformer);
-        serverGroup.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, rejectTransformer.getWriteAttributeTransformer());
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(ServerGroupResourceDefinition.PATH)
+                .getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ServerGroupResourceDefinition.MANAGEMENT_SUBSYSTEM_ENDPOINT, ServerGroupResourceDefinition.SOCKET_BINDING_PORT_OFFSET)
+                .setValueConverter(new AttributeConverter.DefaultAttributeConverter() {
+                    @Override
+                    protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
+                            TransformationContext context) {
+                        //7.1.x had a strict type for the management-susbsystem-endpoint attribute, convert that here if it comes in as a string
+                        if (attributeValue.isDefined() && attributeValue.getType() == ModelType.STRING) {
+                            attributeValue.set(attributeValue.asBoolean());
+                        }
+                    }
+                }, ServerGroupResourceDefinition.MANAGEMENT_SUBSYSTEM_ENDPOINT)
+                .end();
+        TransformersSubRegistration serverGroup = TransformationDescription.Tools.register(builder.build(), parent);
 
         DeploymentTransformers.registerTransformers120(serverGroup);
 

@@ -44,7 +44,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.transform.DiscardUndefinedAttributesTransformer;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 
 /**
@@ -420,29 +419,7 @@ public class FailedOperationTransformationConfig {
 
 
         protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
-            ModelNode result = toResolve.resolve();
-            if (isWriteAttribute) {
-                return result;
-            }
-
-
-            if (result.getType() == ModelType.STRING) {
-                String rawVal = result.asString().toLowerCase();
-                if ("true".equals(rawVal) || "false".equals(rawVal)) {
-                    result.set(Boolean.valueOf(rawVal));
-                } else {
-                    try {
-                        result.set(Integer.valueOf(rawVal));
-                    } catch (Exception e) {
-                        try {
-                            result.set(Long.valueOf(rawVal));
-                        } catch (Exception ignored) {
-                            //
-                        }
-                    }
-                }
-            }
-            return result;
+            return toResolve.resolve();
         }
 
 
