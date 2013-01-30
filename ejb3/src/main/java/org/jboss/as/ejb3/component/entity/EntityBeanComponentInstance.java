@@ -140,7 +140,7 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
      *
      * @param primaryKey The primary key to associate the entity with
      */
-    public synchronized void associate(Object primaryKey) {
+    public synchronized void activate(Object primaryKey) {
         this.primaryKey = primaryKey;
         try {
             final InterceptorContext context = prepareInterceptorContext();
