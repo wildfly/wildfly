@@ -84,7 +84,7 @@ public class EntityBeanEjbCreateMethodInterceptorFactory implements InterceptorF
 
                 //call the ejbCreate method
                 final Object primaryKey = invokeEjbCreate(context, ejbCreate, instance, params);
-                instance.activate(primaryKey);
+                instance.associate(primaryKey);
                 primaryKeyReference.set(primaryKey);
 
                 //now add the instance to the cache, so it is usable
