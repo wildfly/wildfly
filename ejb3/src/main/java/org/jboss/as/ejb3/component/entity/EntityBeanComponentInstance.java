@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.component.entity;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.util.Map;
@@ -39,8 +41,6 @@ import org.jboss.as.ejb3.timerservice.TimerImpl;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * @author Stuart Douglas
@@ -139,6 +139,16 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
      * pool to the entity cache
      *
      * @param primaryKey The primary key to associate the entity with
+     */
+    public synchronized void associate(Object primaryKey) {
+        this.primaryKey = primaryKey;
+    }
+
+    /**
+     * Invoke the ejbActivate and ejbLoad callback methods for the entity bean.
+     * This is called when an entity bean is picked up from the entity cache.
+     *
+     * @param primaryKey The primary key to activate the entity with
      */
     public synchronized void activate(Object primaryKey) {
         this.primaryKey = primaryKey;

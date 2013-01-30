@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.component.entity;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -43,8 +45,6 @@ import org.jboss.ejb.client.EntityEJBLocator;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.Interceptors;
 import org.jboss.msc.value.ImmediateValue;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * @author John Bailey
@@ -89,7 +89,7 @@ public class EntityBeanRemoteViewInstanceFactory implements ViewInstanceFactory 
         //call the ejbCreate method
         final Object primaryKey;
         primaryKey = invokeEjbCreate(contextData, ejbCreate, instance, params);
-        instance.activate(primaryKey);
+        instance.associate(primaryKey);
 
         //now add the instance to the cache, so it is usable
         //note that we do not release it back to the pool

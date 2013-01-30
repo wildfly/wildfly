@@ -22,7 +22,25 @@
 
 package org.jboss.as.test.integration.ejb.security.callerprincipal;
 
-import org.junit.Assert;
+import javax.ejb.EJBHome;
+import javax.ejb.ObjectNotFoundException;
+import javax.jms.DeliveryMode;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.ObjectMessage;
+import javax.jms.Queue;
+import javax.jms.QueueConnection;
+import javax.jms.QueueConnectionFactory;
+import javax.jms.QueueSession;
+import javax.jms.Session;
+import javax.jms.TemporaryQueue;
+import javax.jms.TextMessage;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
+import junit.framework.Assert;
+
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -52,22 +70,6 @@ import org.jboss.util.Base64;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-
-import javax.ejb.EJBHome;
-import javax.jms.DeliveryMode;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.ObjectMessage;
-import javax.jms.Queue;
-import javax.jms.QueueConnection;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.QueueSession;
-import javax.jms.Session;
-import javax.jms.TemporaryQueue;
-import javax.jms.TextMessage;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 /**
  * The Bean Provider can invoke the getCallerPrincipal and isCallerInRole methods only
@@ -338,39 +340,38 @@ public class GetCallerPrincipalTestCase {
     @Test
     public void testEBActivate() throws Exception {
         deployer.deploy("eb");
-        EntityBean eb = setUpEB();
-        SecurityClient client = this.login();
-        ITestResultsSingleton results = this.getResultsSingleton();
+
+        final ITestResultsSingleton results = this.getResultsSingleton();
+
+        EntityBeanHome ebHome = getHome(EntityBeanHome.class, "EntityBeanCallerPrincipal");
+        EntityBean entityBean = null;
 
         try {
-            Assert.assertEquals(OK, results.getEb("ejbactivate"));
+            entityBean = ebHome.findByPrimaryKey("test");
+        } catch (ObjectNotFoundException e) {
+            entityBean = ebHome.create("test");
+        }
+        Assert.assertNotNull("EntityBean was not created or found!", entityBean);
+
+        SecurityClient client = this.login();
+
+        try {
+            Assert.assertNull("ejbActivate was called after create/findByPrimaryKey which is a spec violation!", results.getEb("ejbactivate"));
+            Assert.assertEquals("EntityBean does not have the correct id", "test", entityBean.getId());
+            Assert.assertEquals("ejbActivate was NOT called after invoke a business method which is a spec violation!", OK, results.getEb("ejbactivate"));
         } finally {
-            tearDownEB(eb);
+            tearDownEB(entityBean);
             client.logout();
         }
         deployer.undeploy("eb");
     }
+
 
     // app name: simple jar - empty app name
     // module name: name of jar = eb
     private <T extends EJBHome> T getHome(final Class<T> homeClass, final String beanName) {
         final EJBHomeLocator<T> locator = new EJBHomeLocator<T>(homeClass, "", "eb", beanName, "");
         return EJBClient.createProxy(locator);
-    }
-
-    private EntityBean setUpEB() throws Exception {
-        EntityBeanHome ebHome = getHome(EntityBeanHome.class, "EntityBeanCallerPrincipal");
-        EntityBean entityBean = null;
-
-        try {
-            entityBean = ebHome.findByPrimaryKey("test");
-        } catch (Exception e) {
-        }
-
-        if (entityBean == null) {
-            entityBean = ebHome.create("test");
-        }
-        return entityBean;
     }
 
     private void tearDownEB(EntityBean eb) throws Exception {
