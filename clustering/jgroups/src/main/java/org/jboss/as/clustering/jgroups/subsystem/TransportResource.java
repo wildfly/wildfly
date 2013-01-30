@@ -150,7 +150,7 @@ public class TransportResource extends SimpleResourceDefinition {
                 Builder.of(ModelKeys.TRANSPORT, TRANSPORT_ATTRIBUTES).
                 setAllowNull(true).
                 setSuffix(null).
-                setSuffix("transport").
+                //setSuffix("transport").
                 build();
 
     // operations

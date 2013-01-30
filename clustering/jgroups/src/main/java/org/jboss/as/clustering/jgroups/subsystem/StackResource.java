@@ -22,7 +22,8 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.controller.ObjectListAttributeDefinition;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
@@ -51,6 +52,12 @@ public class StackResource extends SimpleResourceDefinition {
 
     // attributes
     // operations
+    private static final OperationDefinition PROTOCOL_STACK_ADD = new SimpleOperationDefinitionBuilder(ADD, JGroupsExtension.getResourceDescriptionResolver(ModelKeys.STACK))
+          .addParameter(TransportResource.TRANSPORT)
+          .addParameter(ProtocolResource.PROTOCOLS)
+          .setAttributeResolver(JGroupsExtension.getResourceDescriptionResolver("stack.add"))
+          .build();
+
     static final OperationDefinition EXPORT_NATIVE_CONFIGURATION = new SimpleOperationDefinitionBuilder(ModelKeys.EXPORT_NATIVE_CONFIGURATION, JGroupsExtension.getResourceDescriptionResolver("stack"))
             .setReplyType(ModelType.STRING)
             .build();
@@ -59,7 +66,8 @@ public class StackResource extends SimpleResourceDefinition {
     public StackResource(boolean runtimeRegistration) {
         super(STACK_PATH,
                 JGroupsExtension.getResourceDescriptionResolver(ModelKeys.STACK),
-                ProtocolStackAdd.INSTANCE,
+                // register below with custom signature
+                null,
                 ProtocolStackRemove.INSTANCE);
         this.runtimeRegistration = runtimeRegistration;
     }
@@ -67,6 +75,8 @@ public class StackResource extends SimpleResourceDefinition {
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
+        // override to set up TRANSPORT and PROTOCOLS parameters
+        resourceRegistration.registerOperationHandler(PROTOCOL_STACK_ADD, ProtocolStackAdd.INSTANCE);
         // register protocol add and remove
         resourceRegistration.registerOperationHandler(ProtocolResource.PROTOCOL_ADD, ProtocolResource.PROTOCOL_ADD_HANDLER);
         resourceRegistration.registerOperationHandler(ProtocolResource.PROTOCOL_REMOVE, ProtocolResource.PROTOCOL_REMOVE_HANDLER);

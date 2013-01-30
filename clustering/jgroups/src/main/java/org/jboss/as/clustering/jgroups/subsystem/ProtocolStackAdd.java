@@ -23,8 +23,6 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 
 import java.lang.reflect.Field;
 import java.security.AccessController;
@@ -39,6 +37,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
+
 import javax.management.MBeanServer;
 
 import org.jboss.as.clustering.jgroups.ChannelFactory;
@@ -115,8 +114,13 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
             for (int i = protocols.size()-1; i >= 0; i--) {
                 ModelNode protocol = protocols.get(i);
                 // create an ADD operation to add the protocol=* child
-                ModelNode addProtocol = Util.createOperation(ModelKeys.ADD_PROTOCOL,PathAddress.pathAddress(operation.get(OP_ADDR)));
-                addProtocol.get(TYPE).set(protocol);
+                ModelNode addProtocol = protocol.clone();
+                addProtocol.get(OPERATION_NAME).set(ModelKeys.ADD_PROTOCOL);
+                // add-protocol is a stack operation
+                ModelNode protocolAddress = operation.get(OP_ADDR).clone();
+                protocolAddress.protect();
+                addProtocol.get(OP_ADDR).set(protocolAddress);
+
                 // execute the operation using the transport handler
                 context.addStep(addProtocol, ProtocolResource.PROTOCOL_ADD_HANDLER, OperationContext.Stage.IMMEDIATE);
             }
