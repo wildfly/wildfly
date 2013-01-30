@@ -40,6 +40,7 @@
 
     <properties>
         <property.old.as.version>7.1.2.Final</property.old.as.version>
+        <version.org.zanata.plugin>1.5.0</version.org.zanata.plugin>
     </properties>
 
     <dependencies>
@@ -62,4 +63,21 @@
            </exclusions>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Since the jboss-parent pom is used, Zanata is not inherited but needs
+                 to be skipped. Not specifying the plugin causes a build failure when
+                 running the mvn zanata:xxx commands.
+            -->
+            <plugin>
+                <groupId>org.zanata</groupId>
+                <artifactId>zanata-maven-plugin</artifactId>
+                <version>${version.org.zanata.plugin}</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
