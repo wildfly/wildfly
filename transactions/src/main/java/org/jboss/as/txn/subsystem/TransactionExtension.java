@@ -162,8 +162,10 @@ public class TransactionExtension implements Extension {
     private static void registerTransformers(final SubsystemRegistration subsystem) {
 
         final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+
         subsystemRoot.getAttributeBuilder()
                 .setDiscard(UnneededJDBCStoreChecker.INSTANCE, TransactionSubsystemRootResourceDefinition.attributes_1_2)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, TransactionSubsystemRootResourceDefinition.attributes_1_2)
                 .setValueConverter(new AttributeConverter() {
                     @Override
                     public void convertOperationParameter(PathAddress address, String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context) {
@@ -181,18 +183,24 @@ public class TransactionExtension implements Extension {
         // Transformations to the 1.1.1 Model:
         // 1) Remove JDBC store attributes if not used
         // 2) Fail if new attributes are set (and not removed by step 1)
+
+        // Reuse the builder and add reject expression for 1.1.1
+        subsystemRoot.getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, TransactionSubsystemRootResourceDefinition.ATTRIBUTES_WITH_EXPRESSIONS_AFTER_1_1_1);
+
         final ModelVersion version111 = ModelVersion.create(1, 1, 1);
         final TransformationDescription description111 = subsystemRoot.build();
         TransformationDescription.Tools.register(description111, subsystem, version111);
-
-        // Reuse the builder and add reject expression for 1.1.0
-        subsystemRoot.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, TransactionSubsystemRootResourceDefinition.attributes);
 
         // Transformations to the 1.1.0 Model:
         // 1) Remove JDBC store attributes if not used
         // 2) Fail if new attributes are set (and not removed by step 1)
         // 3) Reject expressions
         final ModelVersion version110 = ModelVersion.create(1, 1, 0);
+
+        subsystemRoot.getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, TransactionSubsystemRootResourceDefinition.ATTRIBUTES_WITH_EXPRESSIONS_AFTER_1_1_0);
+
         final TransformationDescription description110 = subsystemRoot.build();
         TransformationDescription.Tools.register(description110, subsystem, version110);
     }
@@ -241,5 +249,4 @@ public class TransactionExtension implements Extension {
         }
 
     }
-
 }
