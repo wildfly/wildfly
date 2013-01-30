@@ -103,7 +103,6 @@ class ResourceTransformationDescriptionBuilderImpl extends AbstractTransformatio
             return new DiscardDefinition(pathElement);
         }
 
-        final List<TransformationRule> rules = new ArrayList<TransformationRule>();
         // Build attribute rules
         final Map<String, AttributeTransformationDescription> attributes = registry.buildAttributes();
 

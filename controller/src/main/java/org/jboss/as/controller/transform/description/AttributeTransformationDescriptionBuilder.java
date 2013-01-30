@@ -19,131 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.controller.transform.description;
 
-import java.util.List;
-import java.util.Map;
-
-import org.jboss.as.controller.AttributeDefinition;
-
-
-
 /**
- * Builder for the attribute transformer.
+ * A builder for resource and default operation transformations. All the functionality is in the super interface.
  *
- * @author Emanuel Muckenhuber
- * @author Kabir Khan
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public interface AttributeTransformationDescriptionBuilder<T extends AttributeTransformationDescriptionBuilder> {
+public interface AttributeTransformationDescriptionBuilder extends BaseAttributeTransformationDescriptionBuilder<AttributeTransformationDescriptionBuilder>{
 
-    /**
-     * Adds a RejectAttributeChecker. The RejectAttributeCheckers are processed in the order they are added to the passed in attributes.
-     * Rejection is done after the attribute has been checked for discarding.
-     *
-     * @param rejectChecker the checker
-     * @param rejectedAttributes the attributes to check
-     * @return this builder
-     */
-    T addRejectCheck(RejectAttributeChecker rejectChecker, String...rejectedAttributes);
-
-    /**
-     * Adds a RejectAttributeChecker. The RejectAttributeCheckers are processed in the order they are added to the passed in attributes.
-     * Rejection is done after the attribute has been checked for discarding.
-     *
-     * @param rejectChecker the checker
-     * @param rejectedAttributes the attributes to check
-     * @return this builder
-     */
-    T addRejectCheck(RejectAttributeChecker rejectChecker, AttributeDefinition...rejectedAttributes);
-
-    /**
-     * Adds a list of RejectAttributeCheckers. The RejectAttributeCheckers are processed in the order they are added to the passed in attributes.
-     * Rejection is done after the attribute has been checked for discarding.
-     *
-     * @param rejectCheckers the checkers
-     * @param rejectedAttributes the attributes to check
-     * @return this builder
-     */
-    T addRejectChecks(List<RejectAttributeChecker> rejectCheckers, String...rejectedAttributes);
-
-    /**
-     * Adds a list of RejectAttributeCheckers. The RejectAttributeCheckers are processed in the order they are added to the passed in attributes.
-     * Rejection is done after the attribute has been checked for discarding.
-     *
-     * @param rejectCheckers the checkers
-     * @param rejectedAttributes the attributes to check
-     * @return this builder
-     */
-    T addRejectChecks(List<RejectAttributeChecker> rejectCheckers, AttributeDefinition...rejectedAttributes);
-
-    /**
-     * Sets the DiscardChecker.
-     *
-     * @param discardChecker the checkers
-     * @param discardedAttributes the attributes to check
-     * @return this builder
-     */
-    T setDiscard(DiscardAttributeChecker discardChecker, String...discardedAttributes);
-
-    /**
-     * Sets the DiscardChecker.
-     *
-     * @param discardChecker the checkers
-     * @param discardedAttributes the attributes to check
-     * @return this builder
-     */
-    T setDiscard(DiscardAttributeChecker discardChecker, AttributeDefinition...discardedAttributes);
-
-    /**
-     * Use to rename an attribute. This is done after all attributes have been discarded, checked for rejection and converted.
-     *
-     * @param attributeName the attribute's original name
-     * @param newName the new name for the attribute
-     * @return this builder
-     */
-    T addRename(String attributeName, String newName);
-
-    /**
-     * Use to rename an attribute. This is done after all attributes have been discarded, checked for rejection and converted.
-     *
-     * @param attributeName the attribute's original name
-     * @param newName the new name for the attribute
-     * @return this builder
-     */
-    T addRename(AttributeDefinition attributeName, String newName);
-
-    /**
-     * Use to rename attribute. This is done after all attributes have been discarded, checked for rejection and converted.
-     *
-     * @param renames a Map where the keys are the original attribute names, and the values are the new attribute names
-     * @return this builder
-     */
-    T addRenames(Map<String, String> renames);
-
-    /**
-     * Use to convert an attribute's value. This is done after the attribute has been checked for discarding and checked for rejection.
-     *
-     * @param attributeConverter the attribute converter used to convert the value of an attribute
-     * @param convertedAttributes the attributes the attribute converter should be used on
-     * @return this builder
-     */
-    T setValueConverter(AttributeConverter attributeConverter, String...convertedAttributes);
-
-    /**
-     * Use to convert an attribute's value. This is done after the attribute has been checked for discarding and checked for rejection.
-     * If it is a new attribute, it is added after the attribute has been checked for discarding and checked for rejection.
-     *
-     * @param attributeConverter the attribute converter used to convert the value of an attribute
-     * @param convertedAttributes the attributes the attribute converter should be used on
-     * @return this builder
-     */
-    T setValueConverter(AttributeConverter attributeConverter, AttributeDefinition...convertedAttributes);
-
-    /**
-     * Finish with this attribute builder and return control to the parent resource transformation builder
-     *
-     * @return the parent builder
-     */
-    ResourceTransformationDescriptionBuilder end();
 }

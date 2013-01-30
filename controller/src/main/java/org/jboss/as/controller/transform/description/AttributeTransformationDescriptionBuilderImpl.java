@@ -34,7 +34,7 @@ import org.jboss.as.controller.AttributeDefinition;
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-abstract class AttributeTransformationDescriptionBuilderImpl<T extends AttributeTransformationDescriptionBuilder> implements AttributeTransformationDescriptionBuilder<T> {
+abstract class AttributeTransformationDescriptionBuilderImpl<T extends BaseAttributeTransformationDescriptionBuilder<?>> implements BaseAttributeTransformationDescriptionBuilder<T> {
 
     private AttributeTransformationDescriptionBuilderRegistry registry;
     private ResourceTransformationDescriptionBuilder builder;

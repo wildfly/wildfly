@@ -22,12 +22,8 @@
 
 package org.jboss.as.controller.transform.description;
 
-import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.ModelVersionRange;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.transform.PathAddressTransformer;
-import org.jboss.as.controller.transform.TransformersSubRegistration;
 
 /**
  * @author Emanuel Muckenhuber

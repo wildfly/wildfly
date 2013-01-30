@@ -25,11 +25,11 @@ package org.jboss.as.controller.transform.description;
 import org.jboss.as.controller.transform.OperationTransformer;
 
 /**
- * Transformation builder interface for overriding a given operation.
+ * Transformation builder interface for overriding a given operation. The phases described in the super-interface apply here as well.
  *
  * @author Emanuel Muckenhuber
  */
-public interface OperationTransformationOverrideBuilder extends AttributeTransformationDescriptionBuilder<OperationTransformationOverrideBuilder> {
+public interface OperationTransformationOverrideBuilder extends BaseAttributeTransformationDescriptionBuilder<OperationTransformationOverrideBuilder> {
 
     /**
      * Give the operation a new name
@@ -40,7 +40,8 @@ public interface OperationTransformationOverrideBuilder extends AttributeTransfo
     OperationTransformationOverrideBuilder rename(String newName);
 
     /**
-     * Set an optional operation transformer, which is called after all attribute rules were executed.
+     * Set an optional operation transformer, which is called after all attribute rules added by the super-interface have
+     * been executed.
      *
      * @param operationTransformer the operation transformer
      * @return this operation transformer builder

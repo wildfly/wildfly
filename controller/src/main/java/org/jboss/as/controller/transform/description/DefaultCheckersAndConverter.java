@@ -30,7 +30,7 @@ import org.jboss.dmr.ModelNode;
 
 /**
  * Utility class combining the functionality of {@link DiscardAttributeChecker.DefaultDiscardAttributeChecker}, {@link RejectAttributeChecker.DefaultRejectAttributeChecker}
- * and {@link AttributeConverter.DefaultAttributeConverter}. Only the parts that are registered in {@link AttributeTransformationDescriptionBuilder} will be used.
+ * and {@link AttributeConverter.DefaultAttributeConverter}. Only the parts that are registered in {@link BaseAttributeTransformationDescriptionBuilder} will be used.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */

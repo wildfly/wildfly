@@ -134,8 +134,8 @@ public class BasicResourceTestCase {
 
 
         builder.addOperationTransformationOverride("test-operation")
-        .inheritResourceAttributeDefinitions()
         .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode(true)), "operation-test")
+        .inheritResourceAttributeDefinitions()
         .end();
 
         builder.addOperationTransformationOverride("rename-operation")

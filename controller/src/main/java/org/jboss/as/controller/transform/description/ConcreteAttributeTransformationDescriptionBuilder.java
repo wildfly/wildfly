@@ -23,18 +23,18 @@
 package org.jboss.as.controller.transform.description;
 
 /**
- * A concrete implementation of the {@link AttributeTransformationDescriptionBuilder}.
+ * A concrete implementation of the {@link BaseAttributeTransformationDescriptionBuilder}.
  *
  * @author Emanuel Muckenhuber
  */
-public class ConcreteAttributeTransformationDescriptionBuilder extends AttributeTransformationDescriptionBuilderImpl<ConcreteAttributeTransformationDescriptionBuilder> {
+class ConcreteAttributeTransformationDescriptionBuilder extends AttributeTransformationDescriptionBuilderImpl<AttributeTransformationDescriptionBuilder> implements AttributeTransformationDescriptionBuilder {
 
     protected ConcreteAttributeTransformationDescriptionBuilder(ResourceTransformationDescriptionBuilder builder, AttributeTransformationDescriptionBuilderRegistry registry) {
         super(builder, registry);
     }
 
     @Override
-    protected ConcreteAttributeTransformationDescriptionBuilder thisBuilder() {
+    protected AttributeTransformationDescriptionBuilder thisBuilder() {
         return this;
     }
 

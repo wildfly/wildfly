@@ -40,10 +40,11 @@ public interface ResourceTransformationDescriptionBuilder extends Transformation
 
     /**
      * Get a builder to define custom attribute transformation rules.
+     * These rules transform the resource and its operations.
      *
      * @return the attribute transformation builder
      */
-    ConcreteAttributeTransformationDescriptionBuilder getAttributeBuilder();
+    AttributeTransformationDescriptionBuilder getAttributeBuilder();
 
     /**
      * Add an operation transformation entry for a given operation. By default all operations inherit the attribute
@@ -65,9 +66,9 @@ public interface ResourceTransformationDescriptionBuilder extends Transformation
     ResourceTransformationDescriptionBuilder addRawOperationTransformationOverride(String operationName, OperationTransformer operationTransformer);
 
     /**
-     * Set a (optional) custom resource transformer. This transformer is going to be called after all attribute transformations
-     * happened and needs to take care of adding the currently transformed resource properly. If not specified, the resource
-     * will be added according to other rules defined by this builder.
+     * Set an <b>optional</b> custom resource transformer. This transformer is going to be called after all attribute transformations
+     * set up by {@link #getAttributeBuilder()} and needs to take care of adding the currently transformed resource properly. If not specified,
+     * the resource will be added according to other rules defined by this builder.
      *
      * @param resourceTransformer the resource transformer
      * @return the builder for the current resource
