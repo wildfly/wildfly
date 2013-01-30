@@ -2579,23 +2579,23 @@ public interface ControllerMessages {
     @Message(id = 14884, value = "No operation named '%s' exists at address %s")
     String noHandlerForOperation(String operationName, PathAddress address);
 
-    @Message(id = 14885, value = "do not support expressions in that model version and this resource will need to be ignored on target host.")
+    @Message(id = 14885, value = "Attributes do not support expressions in the target model version and this resource will need to be ignored on the target host.")
     String attributesDontSupportExpressions();
 
-    @Message(id = 14886, value = "are not understood in that model version and this resource will need to be ignored on target host.")
-    String attributesAreNotUnderstoodAndWillBeIgnored();
+    @Message(id = 14886, value = "Attributes are not understood in the target model version and this resource will need to be ignored on the target host.")
+    String attributesAreNotUnderstoodAndMustBeIgnored();
 
-    @Message(id = 14887, value = "Transforming resource %s to core model version '%s' -- attributes %s %s")
-    String transformerLoggerCoreModelResourceTransformerAttributes(PathAddress pathAddress, ModelVersion modelVersion, Set<String> attributeNames, String message);
+    @Message(id = 14887, value = "Transforming resource %s to core model version '%s' -- %s %s")
+    String transformerLoggerCoreModelResourceTransformerAttributes(PathAddress pathAddress, ModelVersion modelVersion, String attributeNames, String message);
 
-    @Message(id = 14888, value = "Transforming operation %s at resource %s to core model version '%s' -- attributes %s %s")
-    String transformerLoggerCoreModelOperationTransformerAttributes(ModelNode op, PathAddress pathAddress, ModelVersion modelVersion, Set<String> attributeNames, String message);
+    @Message(id = 14888, value = "Transforming operation %s at resource %s to core model version '%s' -- %s %s")
+    String transformerLoggerCoreModelOperationTransformerAttributes(ModelNode op, PathAddress pathAddress, ModelVersion modelVersion, String attributeNames, String message);
 
-    @Message(id = 14889, value = "Transforming resource %s to subsystem '%s' model version '%s' -- attributes %s %s")
-    String transformerLoggerSubsystemModelResourceTransformerAttributes(PathAddress pathAddress, String subsystem, ModelVersion modelVersion, Set<String> attributeNames, String message);
+    @Message(id = 14889, value = "Transforming resource %s to subsystem '%s' model version '%s' -- %s %s")
+    String transformerLoggerSubsystemModelResourceTransformerAttributes(PathAddress pathAddress, String subsystem, ModelVersion modelVersion, String attributeNames, String message);
 
-    @Message(id = 14890, value = "Transforming operation %s at resource %s to subsystem '%s' model version '%s' -- attributes %s %s")
-    String transformerLoggerSubsystemModelOperationTransformerAttributes(ModelNode op, PathAddress pathAddress, String subsystem, ModelVersion modelVersion, Set<String> attributeNames, String message);
+    @Message(id = 14890, value = "Transforming operation %s at resource %s to subsystem '%s' model version '%s' -- %s %s")
+    String transformerLoggerSubsystemModelOperationTransformerAttributes(ModelNode op, PathAddress pathAddress, String subsystem, ModelVersion modelVersion, String attributeNames, String message);
 
     @Message(id = 14891, value="Node contains an unresolved expression %s -- a resolved model is required")
     OperationFailedException illegalUnresolvedModel(String expression);
@@ -2609,4 +2609,11 @@ public interface ControllerMessages {
 
     @Message(id = 14894, value = "The following attributes do not support expressions: %s")
     String attributesDoNotSupportExpressions(Set<String> attributeNames);
+
+    /** The attribute name list fragment to include in the transformation logging messages */
+    @Message(id = Message.NONE, value = "attributes %s")
+    String attributeNames(Set<String> attributes);
+
+    @Message(id = 14895, value = "The following attributes are not understood in the target model version and this resource will need to be ignored on the target host: %s")
+    String attributesAreNotUnderstoodAndMustBeIgnored(Set<String> attributeNames);
 }

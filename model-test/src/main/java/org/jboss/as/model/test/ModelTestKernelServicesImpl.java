@@ -386,10 +386,5 @@ public abstract class ModelTestKernelServicesImpl<T extends ModelTestKernelServi
         public TransformersLogger getLogger() {
             return TransformersLogger.getLogger(getTarget());
         }
-
-        @Override
-        public boolean doesTargetSupportIgnoredResources(TransformationTarget target) {
-            return true;
-        }
     }
 }

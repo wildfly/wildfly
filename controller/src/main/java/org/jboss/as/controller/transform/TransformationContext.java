@@ -108,13 +108,4 @@ public interface TransformationContext {
      * @return TransformersLogger associated with target host
      */
     TransformersLogger getLogger();
-
-    /**
-     * Returns true if TransformationTarget supports ignored resources
-     *
-     * @param target TransformationTarget for which want to know if it supports ignored resources
-     * @return boolean
-     */
-    boolean doesTargetSupportIgnoredResources(TransformationTarget target);
-
 }

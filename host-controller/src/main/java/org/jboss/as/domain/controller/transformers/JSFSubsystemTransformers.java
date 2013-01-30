@@ -76,7 +76,7 @@ class JSFSubsystemTransformers {
                 }
                 attributes.remove(SLOT_ATTRIBUTE_NAME);
                 if (!attributes.isEmpty()) {
-                    context.getLogger().logWarning(address, ControllerMessages.MESSAGES.attributesAreNotUnderstoodAndWillBeIgnored(), attributes);
+                    context.getLogger().logWarning(address, ControllerMessages.MESSAGES.attributesAreNotUnderstoodAndMustBeIgnored(), attributes);
                 }
             }
         });
@@ -141,7 +141,7 @@ class JSFSubsystemTransformers {
                 if (!SLOT_ATTRIBUTE_NAME.equals(attributeName)) {
                     return DEFAULT.transformOperation(context, address, operation);
                 } else {
-                    context.getLogger().logWarning(address, ControllerMessages.MESSAGES.attributesAreNotUnderstoodAndWillBeIgnored(), attributeName);
+                    context.getLogger().logWarning(address, ControllerMessages.MESSAGES.attributesAreNotUnderstoodAndMustBeIgnored(), attributeName);
                     return DISCARD.transformOperation(context, address, operation);
                 }
             }

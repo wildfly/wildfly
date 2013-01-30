@@ -74,7 +74,7 @@ public interface RejectAttributeChecker {
     /**
      * Gets the log message if the attribute failed rejection
      *
-     * @param a map of all attributes failed in this checker and their values
+     * @param attributes a map of all attributes failed in this checker and their values
      * @return the formatted log message
      */
     String getRejectionLogMessage(Map<String, ModelNode> attributes);
@@ -106,8 +106,8 @@ public interface RejectAttributeChecker {
         }
 
         /**
-         * Gets called by the default implementations of {@link #rejectOperationParameter(String, ModelNode, ModelNode, TransformationContext)} and
-         * {@link #rejectResourceAttribute(String, ModelNode, TransformationContext)}.
+         * Gets called by the default implementations of {@link #rejectOperationParameter(PathAddress, String, ModelNode, ModelNode, TransformationContext)}
+         * and {@link #rejectResourceAttribute(PathAddress, String, ModelNode, TransformationContext)}.
          *
          * @param address        the address of the operation
          * @param attributeName  the name of the attribute
@@ -306,7 +306,7 @@ public interface RejectAttributeChecker {
     RejectAttributeChecker DEFINED = new DefaultRejectAttributeChecker() {
         @Override
         public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-            return ControllerMessages.MESSAGES.attributesAreNotUnderstoodAndWillBeIgnored();
+            return ControllerMessages.MESSAGES.attributesAreNotUnderstoodAndMustBeIgnored(attributes.keySet());
         }
 
         @Override

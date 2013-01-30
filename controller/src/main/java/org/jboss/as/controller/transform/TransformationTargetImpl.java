@@ -155,4 +155,9 @@ public class TransformationTargetImpl implements TransformationTarget {
         }
         return transformationExclusion.getHostName();
     }
+
+    @Override
+    public boolean isIgnoredResourceListAvailableAtRegistration() {
+        return version.getMajor() >= 1 && version.getMinor() >= 4;
+    }
 }
