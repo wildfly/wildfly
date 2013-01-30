@@ -12,10 +12,12 @@
        </session-bean>
        <default-security-domain value="other"/>
        <?MDB?>
+       <?ENTITY?>
        <pools>
            <bean-instance-pools>
                <strict-max-pool name="slsb-strict-max-pool" max-pool-size="20" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
                <strict-max-pool name="mdb-strict-max-pool" max-pool-size="20" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
+               <?ENTITY-POOL?>
            </bean-instance-pools>
        </pools>
        <caches>
@@ -50,10 +52,18 @@
          <iiop enable-by-default="false" use-qualified-name="false"/>
       </replacement>
       <replacement placeholder="MDB">
-	       <mdb>
-	           <resource-adapter-ref resource-adapter-name="hornetq-ra"/>
-	           <bean-instance-pool-ref pool-name="mdb-strict-max-pool"/>
-	       </mdb>
+         <mdb>
+             <resource-adapter-ref resource-adapter-name="hornetq-ra"/>
+             <bean-instance-pool-ref pool-name="mdb-strict-max-pool"/>
+         </mdb>
+      </replacement>
+      <replacement placeholder="ENTITY">
+         <entity-bean>
+             <bean-instance-pool-ref pool-name="entity-strict-max-pool"/>
+         </entity-bean>
+      </replacement>
+      <replacement placeholder="ENTITY-POOL">
+               <strict-max-pool name="entity-strict-max-pool" max-pool-size="100" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
       </replacement>
    </supplement>
    <supplement name="ha">

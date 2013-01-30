@@ -48,6 +48,7 @@ import org.jboss.logging.Logger;
 
 /**
  * @author John Bailey
+ * @author <a href="mailto:wfink@redhat.com">Wolf-Dieter Fink</a>
  */
 public class CmpEntityBeanComponentInstance extends EntityBeanComponentInstance {
     private final Logger log;
@@ -109,6 +110,17 @@ public class CmpEntityBeanComponentInstance extends EntityBeanComponentInstance 
             final CmpEntityBeanContext entityContext = getEjbContext();
             getComponent().getStoreManager().loadEntity(entityContext);
             entityContext.setValid(true);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public synchronized void associate(Object primaryKey) {
+        super.associate(primaryKey);
+
+        try {
+            getComponent().getStoreManager().activateEntity(getEjbContext());
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
