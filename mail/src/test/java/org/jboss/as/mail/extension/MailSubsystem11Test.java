@@ -29,9 +29,11 @@ import static org.jboss.as.mail.extension.MailSubsystemModel.SERVER_TYPE;
 
 import java.io.IOException;
 import java.util.Properties;
+
 import javax.mail.Session;
 
 import junit.framework.Assert;
+
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -40,6 +42,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
@@ -78,14 +81,15 @@ public class MailSubsystem11Test extends AbstractSubsystemBaseTest {
 
     private void testTransformers110(String mavenVersion) throws Exception {
         ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
-        KernelServicesBuilder builder = createKernelServicesBuilder(null);
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
           //      .setSubsystemXml(getSubsystemXml());
 
         //which is why we need to include the jboss-as-controller artifact.
         builder.createLegacyKernelServicesBuilder(null, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-mail:" + mavenVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-controller:" + mavenVersion)
-                .addParentFirstClassPattern("org.jboss.as.controller.*");
+                .addParentFirstClassPattern("org.jboss.as.controller.*")
+                .dontPersistXml();
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
