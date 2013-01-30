@@ -87,7 +87,7 @@ public abstract class AbstractKernelServicesImpl extends ModelTestKernelServices
         ContentRepository.Factory.addService(target, repositoryFile);
 
         //Initialize the controller
-        StringConfigurationPersister persister = new StringConfigurationPersister(bootOperations, testParser);
+        StringConfigurationPersister persister = new StringConfigurationPersister(bootOperations, testParser, true);
 
         //Use the default implementation of test controller for the main controller, and for tests that don't have another one set up on the classpath
         TestModelControllerFactory testModelControllerFactory = StandardTestModelControllerServiceFactory.INSTANCE;

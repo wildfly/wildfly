@@ -73,7 +73,8 @@ public class KernelServicesImpl extends ModelTestKernelServicesImpl<KernelServic
     }
 
     static KernelServicesImpl create(String mainSubsystemName, AdditionalInitialization additionalInit,
-            ExtensionRegistry controllerExtensionRegistry, List<ModelNode> bootOperations, ModelTestParser testParser, Extension mainExtension, ModelVersion legacyModelVersion, boolean registerTransformers) throws Exception {
+            ExtensionRegistry controllerExtensionRegistry, List<ModelNode> bootOperations, ModelTestParser testParser, Extension mainExtension, ModelVersion legacyModelVersion,
+            boolean registerTransformers, boolean persistXml) throws Exception {
         ControllerInitializer controllerInitializer = additionalInit.createControllerInitializer();
 
         PathManagerService pathManager = new PathManagerService() {
@@ -92,7 +93,7 @@ public class KernelServicesImpl extends ModelTestKernelServicesImpl<KernelServic
             allOps.addAll(extraOps);
         }
         allOps.addAll(bootOperations);
-        StringConfigurationPersister persister = new StringConfigurationPersister(allOps, testParser);
+        StringConfigurationPersister persister = new StringConfigurationPersister(allOps, testParser, persistXml);
         controllerExtensionRegistry.setWriterRegistry(persister);
         controllerExtensionRegistry.setPathManager(pathManager);
         ModelTestModelControllerService svc = TestModelControllerService.create(mainExtension, controllerInitializer, additionalInit, controllerExtensionRegistry,

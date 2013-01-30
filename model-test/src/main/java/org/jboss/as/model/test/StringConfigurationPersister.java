@@ -29,6 +29,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.persistence.AbstractConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
+import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementWriter;
 
@@ -40,16 +41,21 @@ import org.jboss.staxmapper.XMLElementWriter;
 public class StringConfigurationPersister extends AbstractConfigurationPersister {
 
     private final List<ModelNode> bootOperations;
+    private final boolean persistXml;
     volatile String marshalled;
 
-    public StringConfigurationPersister(List<ModelNode> bootOperations, XMLElementWriter<ModelMarshallingContext> rootDeparser) {
+    public StringConfigurationPersister(List<ModelNode> bootOperations, XMLElementWriter<ModelMarshallingContext> rootDeparser, boolean persistXml) {
         super(rootDeparser);
         this.bootOperations = bootOperations;
+        this.persistXml = persistXml;
     }
 
     @Override
     public PersistenceResource store(ModelNode model, Set<PathAddress> affectedAddresses)
             throws ConfigurationPersistenceException {
+        if (!persistXml) {
+            return new NullConfigurationPersister().store(model, affectedAddresses);
+        }
         return new StringPersistenceResource(model, this);
     }
 

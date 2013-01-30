@@ -100,4 +100,13 @@ public interface LegacyKernelServicesInitializer {
      * @return this initializer
      */
     LegacyKernelServicesInitializer addChildFirstClassPattern(String pattern);
+
+    /**
+     * By default we leave the legacy xml persister on for extra test coverage, but on a real slave xml will not be persisted.
+     * In some cases there may be known bugs in the legacy subsystem's xml persister. Call this method to turn off xml
+     * persisting in the legacy subsystem, when those cases are encountered.
+     *
+     * @return this initializer
+     */
+    LegacyKernelServicesInitializer dontPersistXml();
 }

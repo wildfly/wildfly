@@ -205,7 +205,7 @@ final class SubsystemTestDelegate {
      */
     String outputModel(ModelNode model) throws Exception {
 
-        StringConfigurationPersister persister = new StringConfigurationPersister(Collections.<ModelNode>emptyList(), testParser);
+        StringConfigurationPersister persister = new StringConfigurationPersister(Collections.<ModelNode>emptyList(), testParser, true);
 
         // Use ProcessType.HOST_CONTROLLER for this ExtensionRegistry so we don't need to provide
         // a PathManager via the ExtensionContext. All we need the Extension to do here is register the xml writers
@@ -548,7 +548,8 @@ final class SubsystemTestDelegate {
         public KernelServices build() throws Exception {
             bootOperationBuilder.validateNotAlreadyBuilt();
             List<ModelNode> bootOperations = bootOperationBuilder.build();
-            KernelServicesImpl kernelServices = KernelServicesImpl.create(mainSubsystemName, additionalInit, cloneExtensionRegistry(additionalInit), bootOperations, testParser, mainExtension, null, legacyControllerInitializers.size() > 0);
+            KernelServicesImpl kernelServices = KernelServicesImpl.create(mainSubsystemName, additionalInit, cloneExtensionRegistry(additionalInit), bootOperations,
+                    testParser, mainExtension, null, legacyControllerInitializers.size() > 0, true);
             SubsystemTestDelegate.this.kernelServices.add(kernelServices);
 
             validateDescriptionProviders(additionalInit, kernelServices);
@@ -601,6 +602,7 @@ final class SubsystemTestDelegate {
         private String extensionClassName;
         private ModelVersion modelVersion;
         ChildFirstClassLoaderBuilder classLoaderBuilder = new ChildFirstClassLoaderBuilder();
+        private boolean persistXml = true;
 
         public LegacyKernelServiceInitializerImpl(AdditionalInitialization additionalInit, ModelVersion modelVersion) {
             this.additionalInit = additionalInit == null ? AdditionalInitialization.MANAGEMENT : additionalInit;
@@ -660,7 +662,13 @@ final class SubsystemTestDelegate {
             extension.initializeParsers(extensionParsingRegistry.getExtensionParsingContext("Test", xmlMapper));
 
             //TODO extra parsers from additionalInit
-            return KernelServicesImpl.create(mainSubsystemName, additionalInit, cloneExtensionRegistry(additionalInit), bootOperations, testParser, extension, modelVersion, false);
+            return KernelServicesImpl.create(mainSubsystemName, additionalInit, cloneExtensionRegistry(additionalInit), bootOperations, testParser, extension, modelVersion, false, persistXml);
+        }
+
+        @Override
+        public LegacyKernelServicesInitializer dontPersistXml() {
+            persistXml = false;
+            return this;
         }
     }
 
