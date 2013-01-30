@@ -1,6 +1,7 @@
 SYNOPSIS
 
-    deploy (file_path [--script=script_name] [--name=deployment_name] [--runtime-name=deployment_runtime_name]
+    deploy (file_path [--script=script_name] [--name=deployment_name]
+                      [--runtime-name=deployment_runtime_name]
                       [--force | --disabled] [--unmanaged])
            | --name=deployment_name
            [--server-groups=group_name (,group_name)* | --all-server-groups]
@@ -8,62 +9,70 @@ SYNOPSIS
 
 DESCRIPTION
 
-    Deploys the application designated by the file_path or enables an already existing
-    but disabled in the repository deployment designated by the name argument.
-    If executed w/o arguments, will list all the existing deployments.
+  Deploys the application designated by the file_path or enables an already
+  existing but disabled in the repository deployment designated by the name
+  argument. If executed w/o arguments, will list all the existing deployments.
 
 ARGUMENTS
 
- file_path           - the path to the application to deploy. Required in case the deployment
-                       doesn't exist in the repository.
-                       The path can be either absolute or relative to the current directory.
+ file_path         - the path to the application to deploy. Required in case the
+                     deployment doesn't exist in the repository.
+                     The path can be either absolute or relative to the current
+                     directory.
 
- --name              - the unique name of the deployment. If the file path argument is specified
-                       the name argument is optional with the file name been the default value.
-                       If the file path argument isn't specified then the command is supposed to
-                       enable an already existing but disabled deployment, and in this case the
-                       name argument is required.
+ --name            - the unique name of the deployment. If the file path
+                     argument is specified the name argument is optional with
+                     the file name been the default value. If the file path
+                     argument isn't specified then the command is supposed to
+                     enable an already existing but disabled deployment, and in
+                     this case the name argument is required.
 
- --runtime-name      - optional, the runtime name for the deployment.
+ --runtime-name    - optional, the runtime name for the deployment.
 
- --force             - if the deployment with the specified name already exists, by default,
-                       deploy will be aborted and the corresponding message will printed.
-                       Switch --force (or -f) will force the replacement of the existing deployment
-                       with the one specified in the command arguments.
+ --force           - if the deployment with the specified name already exists,
+                     by default, deploy will be aborted and the corresponding
+                     message will printed. Switch --force (or -f) will force the
+                     replacement of the existing deployment with the one
+                     specified in the command arguments.
 
- --disabled          - indicates that the deployment has to be added to the repository disabled.
+ --disabled       - indicates that the deployment has to be added to the
+                    repository disabled.
  
- --unmanaged         - if this argument is not specified, the deployment content will be
-                       copied (i.e. uploaded) to the server's deployment repository
-                       before it is deployed.
-                       If the argument is present, the deployment content will remain
-                       at and be deployed directly from its original location specified
-                       with the file_path.
-                       NOTE: exploded deployments are supported only as unmanaged.
+ --unmanaged      - if this argument is not specified, the deployment content
+                    will be copied (i.e. uploaded) to the server's deployment
+                    repository before it is deployed. If the argument is
+                    present, the deployment content will remain at and be
+                    deployed directly from its original location specified with
+                    the file_path.
+                    NOTE: exploded deployments are supported only as unmanaged.
 
- --server-groups     - comma separated list of server group names the deploy command should apply to.
-                       Either server-groups or all-server-groups is required in the domain mode.
-                       This argument is not applicable in the standalone mode.
+ --server-groups  - comma separated list of server group names the deploy
+                    command should apply to. Either server-groups or
+                    all-server-groups is required in the domain mode. This
+                    argument is not applicable in the standalone mode.
 
- --all-server-groups - indicates that deploy should apply to all the available server groups.
-                       Either server-groups or all-server-groups is required in domain mode.
-                       This argument is not applicable in the standalone mode.
+ --all-server-groups  - indicates that deploy should apply to all the available
+                        server groups. Either server-groups or all-server-groups
+                        is required in domain mode. This argument is not
+                        applicable in the standalone mode.
 
- -l                  - in case none of the required arguments is specified the command will
-                       print all of the existing deployments in the repository. The presence of the -l switch
-                       will make the existing deployments printed one deployment per line, instead of
-                       in columns (the default).
+ -l               - in case none of the required arguments is specified the
+                    command will print all of the existing deployments in the
+                    repository. The presence of the -l switch will make the
+                    existing deployments printed one deployment per line,
+                    instead of in columns (the default).
 
- --headers           - a list of operation headers separated by a semicolon. For the list of supported
-                       headers, please, refer to the domain management documentation or use tab-completion.
+ --headers        - a list of operation headers separated by a semicolon. For
+                    the list of supported headers, please, refer to the domain
+                    management documentation or use tab-completion.
 
- --script            - optional, can appear only if the file_path points a cli archive.
-                       The value is the name of the script contained in a cli archive to execute.
-                       If not specified, defaults to 'deploy.scr'. 
-                       A cli archive is a zip archive containing script(s) as well as artifacts or applications 
-                       to deploy. To be recognized as a cli archive, the extension of the archive file should be '.cli'.
-                       The deploy command will execute the script given by the --script argument. 
-                       All paths in the scripts are relative to the root directory in the cli archive. 
-                       The script is executed as a batch.
-                                 
-               
+ --script         - optional, can appear only if the file_path points a cli
+                    archive. The value is the name of the script contained in a
+                    cli archive to execute. If not specified, defaults to
+                    'deploy.scr'. A cli archive is a zip archive containing
+                    script(s) as well as artifacts or applications to deploy.
+                    To be recognized as a cli archive, the extension of the
+                    archive file should be '.cli'. The deploy command will
+                    execute the script given by the --script argument. All paths
+                    in the scripts are relative to the root directory in the cli
+                    archive. The script is executed as a batch.

@@ -9,9 +9,9 @@ DESCRIPTION
 				
 ARGUMENTS
 
- current_line_number    - the line number of the existing command line in the batch that
-                          should be moved. Line numbers start with 1.
+ current_line_number  - the line number of the existing command line in the
+                        batch that should be moved. Line numbers start with 1.
 							
- new_line_number        - the new line number the command line should be moved to.
-                          It should be in the range from 1 to the line number of the last
-                          command in the batch.
+ new_line_number      - the new line number the command line should be moved to.
+                        It should be in the range from 1 to the line number of
+                        the last command in the batch.

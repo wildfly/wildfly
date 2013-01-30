@@ -14,4 +14,5 @@ ARGUMENTS
                     If the name isn't provided, the batch will be saved unnamed.
                     If the holdback name is provided, the name must be unique.
                     If there already is a held back batch with the same name,
-                    holdback-batch will fail and the CLI will stay in the batch mode.
+                    holdback-batch will fail and the CLI will stay in the batch
+                    mode.
