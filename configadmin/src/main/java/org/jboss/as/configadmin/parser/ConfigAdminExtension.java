@@ -103,7 +103,7 @@ public class ConfigAdminExtension implements Extension {
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
         builder.addChildResource(PathElement.pathElement(ModelConstants.CONFIGURATION))
             .getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_LIST_EXPRESSIONS, ConfigurationResource.ENTRIES)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ConfigurationResource.ENTRIES)
                 .end()
             .addOperationTransformationOverride(ModelConstants.UPDATE)
                 .setCustomOperationTransformer(new OperationTransformer() {

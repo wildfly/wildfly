@@ -245,11 +245,6 @@ public interface RejectAttributeChecker {
     }
 
     /**
-     * A checker to reject expressions used in list elements
-     */
-    RejectAttributeChecker SIMPLE_LIST_EXPRESSIONS = new ListRejectAttributeChecker(SIMPLE_EXPRESSIONS);
-
-    /**
      * A RejectAttributeChecker for {@link ModelType#OBJECT} attribute values
      */
     public class ObjectFieldsRejectAttributeChecker implements RejectAttributeChecker {

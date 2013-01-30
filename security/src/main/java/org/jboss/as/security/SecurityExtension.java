@@ -188,7 +188,7 @@ public class SecurityExtension implements Extension {
         securityDomain.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, SecurityDomainResourceDefinition.CACHE_TYPE).end();
         builder.addChildResource(VAULT_PATH).getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, VaultResourceDefinition.CODE)
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_LIST_EXPRESSIONS, VaultResourceDefinition.OPTIONS)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, VaultResourceDefinition.OPTIONS)
                 .end();
         builder.addChildResource(JSSE_PATH).getAttributeBuilder()
                 .addRejectCheck(new RejectAttributeChecker.ObjectFieldsRejectAttributeChecker(
