@@ -180,11 +180,6 @@ abstract class TransformationRule {
             return delegate.getLogger();
         }
 
-        @Override
-        public boolean doesTargetSupportIgnoredResources(TransformationTarget target) {
-            return delegate.doesTargetSupportIgnoredResources(target);
-        }
-
         void setImmutableResource(boolean immutable) {
             this.immutable = immutable;
         }

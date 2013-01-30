@@ -38,22 +38,23 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
 /**
- * Logger utility class that provides unified mechanism to log warnings that occur as part of transformation process
+ * Logger utility class that provides a unified mechanism to log warnings that occur as part of the transformation process.
  * <p/>
- * All log messages are queued for time of transformation and then written in log as single entry for all problems that occurred.
- * This way it is simple to see what potential problems could happen for each host that is of different version as domain controller
+ * All log messages are queued for time of transformation and then written in the log as a single entry for all problems that occurred.
+ * This way it is simple to see what potential problems could happen for each host that is of different version than the domain controller
  * <p/>
  * Sample output would look like this:
- * There ware some problems during transformation process for target host: 'host-name'
+ * There were some problems during transformation process for target host: 'host-name'
  * Problems found:
- * Transforming operation %s at resource %s to subsystem '%s' model version '%s' -- attributes %s attributes ware rejected
- * Transforming operation %s at resource %s to core model '%s' model version '%s' -- attributes %s attributes ware rejected
+ * Transforming operation %s at resource %s to subsystem '%s' model version '%s' -- attributes %s attributes were rejected
+ * Transforming operation %s at resource %s to core model '%s' model version '%s' -- attributes %s attributes were rejected
  *
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
@@ -89,8 +90,8 @@ public class TransformersLogger {
     }
 
     /**
-     * log warning for resource at provided address and single attribute.
-     * appended message is default 'are not understood in that model version and this resource will need to be ignored on that host.'
+     * Log a warning for the resource at the provided address and a single attribute. The detail message is a default
+     * 'Attributes are not understood in the target model version and this resource will need to be ignored on the target host.'
      *
      * @param address   where warning occurred
      * @param attribute attribute we are warning about
@@ -100,8 +101,8 @@ public class TransformersLogger {
     }
 
     /**
-     * log warning for resource at provided address and attributes.
-     * error message is default 'are not understood in that model version and this resource will need to be ignored on that host.'
+     * Log a warning for the resource at the provided address and the given attributes. The detail message is a default
+     * 'Attributes are not understood in the target model version and this resource will need to be ignored on the target host.'
      *
      * @param address    where warning occurred
      * @param attributes attributes we are warning about
@@ -111,7 +112,8 @@ public class TransformersLogger {
     }
 
     /**
-     * log warning for resource at provided address and single attribute.
+     * Log warning for the resource at the provided address and single attribute, using the provided detail
+     * message.
      *
      * @param address   where warning occurred
      * @param message   custom error message to append
@@ -122,7 +124,8 @@ public class TransformersLogger {
     }
 
     /**
-     * log warning for resource at provided address for passed attributes with custom message
+     * Log a warning for the resource at the provided address and the given attributes, using the provided detail
+     * message.
      *
      * @param address    where warning occurred
      * @param message    custom error message to append
@@ -134,7 +137,8 @@ public class TransformersLogger {
 
 
     /**
-     * log warning for operation at provided address for passed attribute with custom message
+     * Log a warning for the given operation at the provided address for the given attribute, using the provided detail
+     * message.
      *
      * @param address   where warning occurred
      * @param operation where which problem occurred
@@ -146,7 +150,8 @@ public class TransformersLogger {
     }
 
     /**
-     * log warning for operation at provided address for passed attributes with custom message
+     * Log a warning for the given operation at the provided address for the given attributes, using the provided detail
+     * message.
      *
      * @param address    where warning occurred
      * @param operation  where which problem occurred
@@ -158,8 +163,9 @@ public class TransformersLogger {
     }
 
     /**
-     * get warning message for operation at provided address for passed attributes with custom message appended
-     * This is useful when you need to pass it as result of getFailureMessage()
+     * Get a warning message for the given operation at the provided address for the passed attributes with the given
+     * custom message appended. Intended for use in providing a failure description for an operation
+     * or an exception message for an {@link OperationFailedException}.
      *
      * @param address    where warning occurred
      * @param operation  where which problem occurred
@@ -171,8 +177,9 @@ public class TransformersLogger {
     }
 
     /**
-     * get warning message for operation at provided address for passed attributes with custom message appended
-     * This is useful when you need to pass it as result of getFailureMessage()
+     * Get a warning message for the given operation at the provided address for the passed attributes with the given
+     * custom message appended. Intended for use in providing a failure description for an operation
+     * or an exception message for an {@link OperationFailedException}.
      *
      * @param address    where warning occurred
      * @param operation  where which problem occurred
@@ -184,9 +191,11 @@ public class TransformersLogger {
     }
 
     /**
-     * get warning message for operation at provided address for passed attributes with custom message appended
-     * This is useful when you need to pass it as result of getFailureMessage()
-     * appended message is default 'are not understood in that model version and this resource will need to be ignored on that host.'
+     * Get a warning message for the given operation at the provided address for the passed attributes
+     * with a default message appended. Intended for use in providing a failure description for an operation
+     * or an exception message for an {@link OperationFailedException}.
+     * The default appended message is 'Attributes are not understood in the target model version and this resource
+     * will need to be ignored on the target host.'
      *
      * @param address    where warning occurred
      * @param operation  where which problem occurred
@@ -197,9 +206,10 @@ public class TransformersLogger {
     }
 
     /**
-     * get warning message for operation at provided address for passed attributes with custom message appended
-     * This is useful when you need to pass it as result of getFailureMessage()
-     * appended message is default 'are not understood in that model version and this resource will need to be ignored on that host.'
+     * Get a warning message for the given operation at the provided address for the passed attributes
+     * with a default message appended. This is useful when you need to pass it as result of getFailureMessage()
+     * The default appended message is 'Attributes are not understood in the target model version and this resource
+     * will need to be ignored on the target host.'
      *
      * @param address    where warning occurred
      * @param operation  where which problem occurred
@@ -228,18 +238,19 @@ public class TransformersLogger {
         final ModelVersion usedVersion = subsystemName == null ? coreVersion : target.getSubsystemVersion(subsystemName);
         ModelNode operation = entry.operation;
         PathAddress address = entry.address;
-        String msg = entry.message == null ? ControllerMessages.MESSAGES.attributesAreNotUnderstoodAndWillBeIgnored() : entry.message;
+        String msg = entry.message == null ? ControllerMessages.MESSAGES.attributesAreNotUnderstoodAndMustBeIgnored() : entry.message;
+        String attributeSet = entry.attributes != null && entry.attributes.size() > 0 ? ControllerMessages.MESSAGES.attributeNames(entry.attributes) : "";
         if (operation == null) {//resource transformation
             if (subsystemName != null) {
-                return ControllerMessages.MESSAGES.transformerLoggerSubsystemModelResourceTransformerAttributes(address, subsystemName, usedVersion, entry.attributes, msg);
+                return ControllerMessages.MESSAGES.transformerLoggerSubsystemModelResourceTransformerAttributes(address, subsystemName, usedVersion, attributeSet, msg);
             } else {
-                return ControllerMessages.MESSAGES.transformerLoggerCoreModelResourceTransformerAttributes(address, usedVersion, entry.attributes, msg);
+                return ControllerMessages.MESSAGES.transformerLoggerCoreModelResourceTransformerAttributes(address, usedVersion, attributeSet, msg);
             }
         } else {//operation transformation
             if (subsystemName != null) {
-                return ControllerMessages.MESSAGES.transformerLoggerSubsystemModelOperationTransformerAttributes(operation, address, subsystemName, usedVersion, entry.attributes, msg);
+                return ControllerMessages.MESSAGES.transformerLoggerSubsystemModelOperationTransformerAttributes(operation, address, subsystemName, usedVersion, attributeSet, msg);
             } else {
-                return ControllerMessages.MESSAGES.transformerLoggerCoreModelOperationTransformerAttributes(operation, address, usedVersion, entry.attributes, msg);
+                return ControllerMessages.MESSAGES.transformerLoggerCoreModelOperationTransformerAttributes(operation, address, usedVersion, attributeSet, msg);
             }
         }
     }
@@ -251,13 +262,11 @@ public class TransformersLogger {
         private Set<String> attributes;
 
         private LogEntry(PathAddress address, ModelNode operation, String message, String... attributes) {
-            this.address = address;
-            this.operation = operation;
-            this.message = message;
-            this.attributes = new TreeSet<String>(Arrays.asList(attributes));
+            this(address, operation, message, new TreeSet<String>(Arrays.asList(attributes)));
         }
 
         private LogEntry(PathAddress address, ModelNode operation, String message, Set<String> attributes) {
+            assert message != null || (attributes != null && attributes.size() > 0) : "a message must be provided or a list of attributes or both";
             this.address = address;
             this.operation = operation;
             this.message = message;

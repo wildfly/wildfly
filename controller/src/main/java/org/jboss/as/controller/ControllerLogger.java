@@ -436,7 +436,7 @@ public interface ControllerLogger extends BasicLogger {
     @Message(id = 13400, value = "No operation named '%s' exists at address %s")
     void noHandlerForOperation(String operationName, PathAddress address);
 
-    @Message(id = 13403, value = "There were some problems during transformation process for target host: '%s' \n Problems found: %s")
+    @Message(id = 13403, value = "There were problems during the transformation process for target host: '%s' %nProblems found: %n%s")
     @LogMessage(level = WARN)
     void tranformationWarnings(String hostName, Set<String> problems);
 }

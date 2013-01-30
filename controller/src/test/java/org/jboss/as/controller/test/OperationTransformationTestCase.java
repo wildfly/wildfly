@@ -398,11 +398,6 @@ public class OperationTransformationTestCase {
         }
 
         @Override
-        public boolean doesTargetSupportIgnoredResources(TransformationTarget target) {
-            return true;
-        }
-
-        @Override
         public TransformersLogger getLogger() {
             return TransformersLogger.getLogger(getTarget());
         }

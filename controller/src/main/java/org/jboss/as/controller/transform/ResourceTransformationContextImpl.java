@@ -322,18 +322,6 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
         return logger;
     }
 
-    /**
-     * For 7.1.x, we have no idea if the slave has ignored the resource or not. On 7.2.x the slave registers the ignored resources as
-     * part of the registration process so we have a better idea and can throw errors if the slave was ignored
-     *
-     * @param target for what target are we interested
-     * @return true if target support ignored resoruces
-     */
-    public boolean doesTargetSupportIgnoredResources(TransformationTarget target) {
-        final ModelVersion coreVersion = target.getVersion();
-        return coreVersion.getMajor() >= 1 && coreVersion.getMinor() >= 4;
-    }
-
     static class OriginalModel {
 
         private final Resource original;

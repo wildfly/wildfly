@@ -109,7 +109,7 @@ class RejectedAttributesLogContext {
         final ModelVersion usedVersion = subsystemName == null ? coreVersion : tgt.getSubsystemVersion(subsystemName);
 
         final TransformersLogger logger = context.getContext().getLogger();
-        final boolean error = op == null && context.getContext().doesTargetSupportIgnoredResources(context.getContext().getTarget());
+        final boolean error = op == null && tgt.isIgnoredResourceListAvailableAtRegistration();
         List<String> messages = error ? new ArrayList<String>() : null;
 
         for (Map.Entry<String, Map<String, ModelNode>> entry : failedAttributes.entrySet()) {

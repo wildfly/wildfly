@@ -36,7 +36,7 @@ import org.jboss.as.controller.transform.description.TransformationDescriptionBu
 import org.jboss.dmr.ModelNode;
 
 /**
- * Similar to {@link ResourceTransformationContext} but for use with {@link ChainedOperationTransformer} and {@link ChainedOperationTransformerEntry}
+ * Similar to {@link ResourceTransformationContext} but for use with {@link ChainedOperationTransformer} and {@link ChainedResourceTransformerEntry}
  *
  * @deprecated Use {@link TransformationDescriptionBuilder} instead
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -106,10 +106,5 @@ public class ChainedResourceTransformationContext implements TransformationConte
     @Override
     public TransformersLogger getLogger() {
         return delegate.getLogger();
-    }
-
-    @Override
-    public boolean doesTargetSupportIgnoredResources(TransformationTarget target) {
-        return delegate.doesTargetSupportIgnoredResources(target);
     }
 }

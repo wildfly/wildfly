@@ -119,6 +119,13 @@ public interface TransformationTarget {
      */
     String getHostName();
 
+    /**
+     * Gets whether this target can make its list of ignored resources known when it registers.
+     *
+     * @return {@code true} if the target can provide the ignored resources list; {@code false} if that is not supported.
+     */
+    boolean isIgnoredResourceListAvailableAtRegistration();
+
     public enum TransformationTargetType {
 
         DOMAIN,
