@@ -200,7 +200,7 @@ public class VaultTool {
             }
         } else {
             // add password
-            String password = cmdLine.getOptionValue(ATTRIBUTE_PARAM, "password");
+            String password = cmdLine.getOptionValue(SEC_ATTR_VALUE_PARAM, "password");
             nonInteractiveSession.addSecuredAttributeWithDisplay(vaultBlock, attributeName, password.toCharArray());
             return 0;
         }
