@@ -1,6 +1,7 @@
 SYNOPSIS
 
-    run-batch [--help | [--file [--headers={operation_header (;operation_header)*}] ] ]
+    run-batch [--help |
+               [--file [--headers={operation_header (;operation_header)*}] ] ]
 
 DESCRIPTION
 
@@ -10,8 +11,8 @@ DESCRIPTION
     Otherwise, if there was an error, the CLI will remain in the batch mode
     to let the user modify the batch and run it again.
     
-    With --file argument the command must be executed while not in the batch mode.
-    The command will read the file and execute its content as a batch.
+    With --file argument the command must be executed while not in the batch
+    mode. The command will read the file and execute its content as a batch.
     After that, no matter whether there was an error or not, the CLI will
     exit the batch mode.
 
@@ -24,4 +25,5 @@ ARGUMENTS
               
  --headers  - a list of operation headers (for the resulting composite request)
               separated by a semicolon. For the list of supported
-              headers, please, refer to the domain management documentation or use tab-completion.
+              headers, please, refer to the domain management documentation or
+              use tab-completion.

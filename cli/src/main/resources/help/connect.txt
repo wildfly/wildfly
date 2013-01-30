@@ -4,34 +4,37 @@ SYNOPSIS
 
 DESCRIPTION
 
-   connects to the controller on the specified host and port.
+  Connects to the controller on the specified host and port.
+
+  The default values can be customized by specifying the desired defaults as
+  command line arguments when launching the CLI. E.g.
+ 
+  jboss-cli.sh controller=controller-host.net:1234
+
+  Or
+
+  jboss-cli.sh controller=controller-host.net
+ 
+  In this case, the default port will be 9999.
+
+  Note, specifying controller argument will only set the default host and port
+  values for the connect command but will not automatically connect to the
+  specified controller.
+ 
+  To connect automatically after the launch, use '--connect' switch. E.g.
+ 
+  jboss-cli.sh --connect
+  jboss-cli.sh --connect controller=controller-host.net
+  jboss-cli.sh --connect controller=controller-host.net:1234
+ 
+  The host may be any of these formats:
+  - a host name, e.g. localhost
+  - an ipv4 address, e.g. 127.0.0.1
+  - an ipv6 address, e.g. [::1]
+
 
 ARGUMENTS
 
- host - optional, default value is localhost;
- port - optional, default value is 9999.
- 
-The default values can be customized by specifying the desired defaults as command line
-arguments when launching the CLI. E.g.
- 
- jboss-cli.sh controller=controller-host.net:1234
+  host  - optional, default value is localhost;
 
-Or
-
- jboss-cli.sh controller=controller-host.net
- 
-In this case, the default port will be 9999.
-
-Note, specifying controller argument will only set the default host and port values
-for the connect command but will not automatically connect to the specified controller.
- 
-To connect automatically after the launch, use '--connect' switch. E.g.
- 
- jboss-cli.sh --connect
- jboss-cli.sh --connect controller=controller-host.net
- jboss-cli.sh --connect controller=controller-host.net:1234
- 
- The host may be any of these formats:
--a host name, e.g. localhost
--an ipv4 address, e.g. 127.0.0.1
--an ipv6 address, e.g. [::1]
+  port  - optional, default value is 9999.

@@ -7,10 +7,11 @@ DESCRIPTION
 
     Changes the current node path to the argument.
     The current node path is used as the address for operation requests that
-    don't contains the address part. If an operation request does include the address,
-    the included address is considered relative to the current node path.
-    The current node path may end on a node-type. In that case, to execute an operation
-    specifying a node-name would be sufficient (e.g. logging:read-resource).
+    don't contains the address part. If an operation request does include the
+    address, the included address is considered relative to the current node
+    path. The current node path may end on a node-type. In that case, to execute
+    an operation specifying a node-name would be sufficient
+    (e.g. logging:read-resource).
 
 ARGUMENTS
 

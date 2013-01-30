@@ -48,9 +48,9 @@ DESCRIPTION
                 the next time the server starts.)
     
     - STATUS - the current runtime status of a deployment. Possible status
-               modes are OK, FAILED, and STOPPED.
-             FAILED indicates a dependency is missing or a service could not start.
-             STOPPED indicates that the deployment was manually stopped.
+               modes are OK, FAILED (indicates a dependency is missing or a
+               service could not start) and STOPPED (indicates that the
+               deployment was manually stopped).
 
     In the domain mode, the command can display information about either:
 

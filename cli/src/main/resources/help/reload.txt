@@ -6,8 +6,10 @@ SYNOPSIS
 
    Domain mode:
 
-      reload --host=host_name [--admin-only=true|false] [--restart-servers=true|false]
-             [--user-current-domain-config=true|false] [--user-current-host-config=true|false]
+      reload --host=host_name [--admin-only=true|false]
+             [--restart-servers=true|false]
+             [--user-current-domain-config=true|false]
+             [--user-current-host-config=true|false]
       
 DESCRIPTION
 
@@ -37,11 +39,11 @@ ARGUMENTS
 
  --admin-only  - whether the controller should start in running mode ADMIN_ONLY
                  when it restarts. An ADMIN_ONLY controller will start any
-                 configured management interfaces and accept management requests,
-                 but will not start servers or, if this host controller is
-                 the master for the domain, accept incoming connections from
-                 slave host controllers.
-                 If not present, false value is assumed.
+                 configured management interfaces and accept management
+                 requests, but will not start servers or, if this host
+                 controller is the master for the domain, accept incoming
+                 connections from slave host controllers. If not present, false
+                 value is assumed.
 
  --host        - is allowed and required only in the domain mode, specifies
                  the host name to reload.

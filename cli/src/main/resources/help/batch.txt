@@ -20,9 +20,9 @@ ARGUMENTS
 
  heldback_name  - optional, the name of a held back batch.
  
- --file			- optional, a file system path to a file containing
+ --file         - optional, a file system path to a file containing
                   commands and operations that should be added to the batch;
 
- -l				- optional, prints a list of currently held back batches;
+ -l             - optional, prints a list of currently held back batches;
  
- --help			- optional, prints this message.
+ --help         - optional, prints this message.
