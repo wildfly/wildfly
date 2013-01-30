@@ -24,6 +24,9 @@
 
 package org.jboss.as.mail.extension;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.mail.extension.MailSubsystemModel.SERVER_TYPE;
+
 import java.io.IOException;
 import java.util.Properties;
 import javax.mail.Session;
@@ -34,6 +37,8 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
@@ -45,7 +50,7 @@ import org.junit.Test;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
 public class MailSubsystem11Test extends AbstractSubsystemBaseTest {
-
+    private static final PathAddress SUBSYSTEM_PATH = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, MailExtension.SUBSYSTEM_NAME));
 
     public MailSubsystem11Test() {
         super(MailExtension.SUBSYSTEM_NAME, new MailExtension());
@@ -73,8 +78,8 @@ public class MailSubsystem11Test extends AbstractSubsystemBaseTest {
 
     private void testTransformers110(String mavenVersion) throws Exception {
         ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
-        KernelServicesBuilder builder = createKernelServicesBuilder(null)
-                .setSubsystemXml(getSubsystemXml());
+        KernelServicesBuilder builder = createKernelServicesBuilder(null);
+          //      .setSubsystemXml(getSubsystemXml());
 
         //which is why we need to include the jboss-as-controller artifact.
         builder.createLegacyKernelServicesBuilder(null, modelVersion)
@@ -85,7 +90,12 @@ public class MailSubsystem11Test extends AbstractSubsystemBaseTest {
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
         Assert.assertTrue(mainServices.getLegacyServices(modelVersion).isSuccessfulBoot());
-        checkSubsystemModelTransformation(mainServices, modelVersion);
+        //checkSubsystemModelTransformation(mainServices, modelVersion);
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, parse(getSubsystemXml("subsystem_1_1_expressions.xml")),
+                new FailedOperationTransformationConfig()
+                        .addFailedAttribute(SUBSYSTEM_PATH.append(MailExtension.MAIL_SESSION_PATH).append(PathElement.pathElement(SERVER_TYPE)),
+                                                        new FailedOperationTransformationConfig.NewAttributesConfig(MailServerDefinition.TLS))
+        );
     }
 
     @Test

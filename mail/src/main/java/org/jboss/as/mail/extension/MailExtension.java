@@ -37,6 +37,7 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
@@ -101,7 +102,9 @@ public class MailExtension implements Extension {
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
         ResourceTransformationDescriptionBuilder sessionBuilder = builder.addChildResource(MAIL_SESSION_PATH);
         sessionBuilder.addChildResource(PathElement.pathElement(SERVER_TYPE))
-                .getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, TLS)
+                .getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, TLS)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, TLS)
                 .end();
         sessionBuilder.discardChildResource(CUSTOM_SERVER_PATH);
         TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 1, 0));
