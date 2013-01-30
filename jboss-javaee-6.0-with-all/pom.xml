@@ -100,6 +100,15 @@
             <dependency>
                 <groupId>org.jboss.bom</groupId>
                 <artifactId>
+                    jboss-javaee-6.0-with-resteasy
+                </artifactId>
+                <version>${project.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.bom</groupId>
+                <artifactId>
                     jboss-javaee-6.0-with-richfaces
                 </artifactId>
                 <version>${project.version}</version>
