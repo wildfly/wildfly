@@ -199,7 +199,7 @@ public class TransactionLocalEntityCache implements ReadyEntityCache {
 
     private EntityBeanComponentInstance createInstance(Object pk) {
         final EntityBeanComponentInstance instance = component.acquireUnAssociatedInstance();
-        instance.associate(pk);
+        instance.activate(pk);
         return instance;
     }
 
