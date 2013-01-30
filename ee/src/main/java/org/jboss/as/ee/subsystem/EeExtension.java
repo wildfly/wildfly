@@ -22,8 +22,12 @@
 
 package org.jboss.as.ee.subsystem;
 
+import java.util.Map;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -32,9 +36,14 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.as.ee.EeMessages;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * JBossAS domain extension used to initialize the ee subsystem handlers and associated classes.
@@ -72,6 +81,10 @@ public class EeExtension implements Extension {
         rootResource.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
         subsystem.registerXMLElementWriter(EESubsystemParser11.INSTANCE);
+
+        if (context.isRegisterTransformers()) {
+            registerTransformers(subsystem);
+        }
     }
 
     /**
@@ -81,5 +94,42 @@ public class EeExtension implements Extension {
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.EE_1_0.getUriString(), EESubsystemParser10.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.EE_1_1.getUriString(), EESubsystemParser11.INSTANCE);
+    }
+
+    private void registerTransformers(SubsystemRegistration subsystem) {
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        //Due to https://issues.jboss.org/browse/AS7-4892 the jboss-descriptor-property-replacement attribute
+        //does not get set properly in the model on 7.1.2, it remains undefined and defaults to 'true'.
+        //So although the model version has not changed we register a transformer and reject it for 7.1.2 if it is set
+        //and has a different value from 'true'
+        builder.getAttributeBuilder().addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
+
+            @Override
+            public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+
+                return EeMessages.MESSAGES.onlyTrueAllowedForJBossDescriptorPropertyReplacement_AS7_4892();
+            }
+
+            @Override
+            protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+                if (attributeValue.isDefined()) {
+                    ModelVersion version = context.getTarget().getVersion();
+                    if (version.getMajor() == 1 && version.getMinor() == 2) {
+                        //7.1.2 has model version 1.2.0 and should have this transformation
+                        //7.1.3 has model version 1.3.0 and should not have this transformation
+                        if (attributeValue.getType() == ModelType.BOOLEAN) {
+                            return !attributeValue.asBoolean();
+                        } else {
+                            if (!Boolean.parseBoolean(attributeValue.asString())) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+        }, EeSubsystemRootResource.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT);
+
+        TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 0, 0));
     }
 }

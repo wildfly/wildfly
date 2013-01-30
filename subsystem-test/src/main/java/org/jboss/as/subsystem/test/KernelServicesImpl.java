@@ -221,9 +221,13 @@ public class KernelServicesImpl extends ModelTestKernelServicesImpl<KernelServic
         //7.1.x uses core model version <= 1.4.0 and so we have no idea which resources are ignored
         //This is important for example in RejectExpressionValuesTransformer
 
-        ModelVersion coreModeVersion = KnownVersions.getCoreModelVersionForSubsystemVersion(mainSubsystemName, legacyModelVersion);
-        if (coreModeVersion != null) {
-            return coreModeVersion;
+        if (System.getProperty("jboss.test.core.model.version.override") != null) {
+            return ModelVersion.fromString(System.getProperty("jboss.test.core.model.version.override"));
+        }
+
+        ModelVersion coreModelVersion = KnownVersions.getCoreModelVersionForSubsystemVersion(mainSubsystemName, legacyModelVersion);
+        if (coreModelVersion != null) {
+            return coreModelVersion;
         }
 
         String fileName = mainSubsystemName + "-versions-to-as-versions.properties";
@@ -251,7 +255,7 @@ public class KernelServicesImpl extends ModelTestKernelServicesImpl<KernelServic
                     legacyModelVersion + "'. It needs to map AS versions to model versions. E.g.:\n1.1.0=7.1.2\n1.2.0=7.1.3");
         }
 
-        ModelVersion coreModelVersion = KnownVersions.AS_CORE_MODEL_VERSION_BY_AS_VERSION.get(asVersion);
+        coreModelVersion = KnownVersions.AS_CORE_MODEL_VERSION_BY_AS_VERSION.get(asVersion);
         if (coreModelVersion == null) {
             throw new IllegalArgumentException("Unknown AS version '" + asVersion + "' determined from src/test/resources/" + fileName +
                     ". Known AS versions are " + KnownVersions.AS_CORE_MODEL_VERSION_BY_AS_VERSION.keySet());

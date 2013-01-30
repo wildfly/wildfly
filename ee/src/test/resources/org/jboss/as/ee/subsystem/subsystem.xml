@@ -1,0 +1,9 @@
+<subsystem xmlns="urn:jboss:domain:ee:1.1" >
+	<global-modules>
+	  <module name="org.jboss.logging" slot="main"/>
+	  <module name="org.apache.log4j"/>
+	</global-modules>
+	<ear-subdeployments-isolated>${test-exp:true}</ear-subdeployments-isolated>
+	<spec-descriptor-property-replacement>${test-exp1:false}</spec-descriptor-property-replacement>
+	<jboss-descriptor-property-replacement>${test-exp2:false}</jboss-descriptor-property-replacement>
+</subsystem>
