@@ -426,7 +426,7 @@ public class LoggingSubsystemRollbackTestCase extends AbstractLoggingSubsystemTe
         // Add a handler to be removed
         final PathAddress consoleHandler = createConsoleHandlerAddress(profileName, "CONSOLE");
         // Create a new handler
-        ModelNode op = SubsystemOperations.createWriteAttributeOperation(consoleHandler.toModelNode(), CommonAttributes.TARGET, "System.err");
+        ModelNode op = SubsystemOperations.createWriteAttributeOperation(consoleHandler.toModelNode(), ConsoleHandlerResourceDefinition.TARGET, "System.err");
         ModelNode result = kernelServices.executeOperation(op);
         Assert.assertFalse("The write operation should have failed, but was successful: " + result, SubsystemOperations.isSuccessfulOutcome(result));
 

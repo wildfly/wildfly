@@ -77,8 +77,8 @@ class LoggingSubsystemAdd extends AbstractAddStepHandler {
         }
 
         // remove all configured loggers which aren't in the model
-        if (resource.hasChild(PathElement.pathElement(CommonAttributes.LOGGER))) {
-            final Set<String> loggerNames = resource.getChildrenNames(CommonAttributes.LOGGER);
+        if (resource.hasChild(PathElement.pathElement(LoggerResourceDefinition.LOGGER))) {
+            final Set<String> loggerNames = resource.getChildrenNames(LoggerResourceDefinition.LOGGER);
             final List<String> configuredLoggerNames = logContextConfiguration.getLoggerNames();
             // Always remove the root
             configuredLoggerNames.remove(CommonAttributes.ROOT_LOGGER_NAME);
@@ -90,12 +90,12 @@ class LoggingSubsystemAdd extends AbstractAddStepHandler {
         }
         // handlers
         final List<String> configuredHandlerNames = logContextConfiguration.getHandlerNames();
-        configuredHandlerNames.removeAll(resource.getChildrenNames(CommonAttributes.ASYNC_HANDLER));
-        configuredHandlerNames.removeAll(resource.getChildrenNames(CommonAttributes.CONSOLE_HANDLER));
-        configuredHandlerNames.removeAll(resource.getChildrenNames(CommonAttributes.CUSTOM_HANDLER));
-        configuredHandlerNames.removeAll(resource.getChildrenNames(CommonAttributes.FILE_HANDLER));
-        configuredHandlerNames.removeAll(resource.getChildrenNames(CommonAttributes.PERIODIC_ROTATING_FILE_HANDLER));
-        configuredHandlerNames.removeAll(resource.getChildrenNames(CommonAttributes.SIZE_ROTATING_FILE_HANDLER));
+        configuredHandlerNames.removeAll(resource.getChildrenNames(AsyncHandlerResourceDefinition.ASYNC_HANDLER));
+        configuredHandlerNames.removeAll(resource.getChildrenNames(ConsoleHandlerResourceDefinition.CONSOLE_HANDLER));
+        configuredHandlerNames.removeAll(resource.getChildrenNames(CustomHandlerResourceDefinition.CUSTOM_HANDLER));
+        configuredHandlerNames.removeAll(resource.getChildrenNames(FileHandlerResourceDefinition.FILE_HANDLER));
+        configuredHandlerNames.removeAll(resource.getChildrenNames(PeriodicHandlerResourceDefinition.PERIODIC_ROTATING_FILE_HANDLER));
+        configuredHandlerNames.removeAll(resource.getChildrenNames(SizeRotatingHandlerResourceDefinition.SIZE_ROTATING_FILE_HANDLER));
         for (String name : configuredHandlerNames) {
             LoggingLogger.ROOT_LOGGER.tracef("Removing handler configuration for '%s'", name);
             logContextConfiguration.removeHandlerConfiguration(name);
