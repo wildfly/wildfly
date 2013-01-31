@@ -21,53 +21,11 @@
 */
 package org.jboss.as.jacorb;
 
-import static junit.framework.Assert.assertTrue;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.INTEROP_CHUNK_RMI_VALUETYPES;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.INTEROP_COMET;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.INTEROP_INDIRECT_ENCODING_DISABLE;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.INTEROP_IONA;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.INTEROP_LAX_BOOLEAN_ENCODING;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.INTEROP_STRICT_CHECK_ON_TC_CREATION;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.INTEROP_SUN;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.NAMING_EXPORT_CORBALOC;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.NAMING_ROOT_CONTEXT;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.ORB_CACHE_POA_NAMES;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.ORB_CACHE_TYPECODES;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.ORB_CONN_CLIENT_TIMEOUT;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.ORB_CONN_MAX_MANAGED_BUF_SIZE;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.ORB_CONN_MAX_SERVER_CONNECTIONS;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.ORB_CONN_OUTBUF_CACHE_TIMEOUT;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.ORB_CONN_OUTBUF_SIZE;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.ORB_CONN_RETRIES;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.ORB_CONN_RETRY_INTERVAL;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.ORB_CONN_SERVER_TIMEOUT;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.ORB_GIOP_MINOR_VERSION;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.ORB_INIT_SECURITY;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.ORB_INIT_TX;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.ORB_NAME;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.ORB_PRINT_VERSION;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.ORB_USE_BOM;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.ORB_USE_IMR;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.POA_MONITORING;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.POA_QUEUE_MAX;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.POA_QUEUE_MIN;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.POA_QUEUE_WAIT;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.POA_REQUEST_PROC_MAX_THREADS;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.POA_REQUEST_PROC_POOL_SIZE;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.PROPERTIES;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.SECURITY_ADD_COMPONENT_INTERCEPTOR;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.SECURITY_CLIENT_REQUIRES;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.SECURITY_CLIENT_SUPPORTS;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.SECURITY_SECURITY_DOMAIN;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.SECURITY_SERVER_REQUIRES;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.SECURITY_SERVER_SUPPORTS;
-import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.SECURITY_SUPPORT_SSL;
-import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 import java.util.List;
@@ -76,16 +34,13 @@ import javax.xml.stream.XMLStreamException;
 
 import junit.framework.Assert;
 
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.ControllerInitializer;
 import org.jboss.as.subsystem.test.KernelServices;
-import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 
@@ -106,6 +61,11 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Override
     protected String getSubsystemXml() throws IOException {
         return readResource("subsystem-1.2.xml");
+    }
+
+    @Override
+    protected String getSubsystemXml(String configId) throws IOException {
+        return readResource(configId);
     }
 
     @Test
@@ -267,57 +227,13 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformers() throws Exception {
-        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
-                .setSubsystemXml(getSubsystemXml());
-
-        // Add legacy subsystems
-        ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
-        builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, version_1_1_0)
-                .addMavenResourceURL("org.jboss.as:jboss-as-jacorb:7.1.2.Final");
-
-        KernelServices mainServices = builder.build();
-        assertTrue(mainServices.isSuccessfulBoot());
-        KernelServices legacyServices = mainServices.getLegacyServices(version_1_1_0);
-        assertNotNull(legacyServices);
-        assertTrue(legacyServices.isSuccessfulBoot());
-
-        checkSubsystemModelTransformation(mainServices, version_1_1_0);
-
-        //TODO test the security conversion better, this should also be in the xml
-
+    public void testSubsystemWithSecurityIdentity() throws Exception {
+        super.standardSubsystemTest("subsystem-1.2-security-identity.xml");
     }
 
     @Test
-    public void testTransformersRejectedExpressions() throws Exception {
-
-        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
-
-        // Add legacy subsystems
-        ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
-        builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, version_1_1_0)
-                .addMavenResourceURL("org.jboss.as:jboss-as-jacorb:7.1.2.Final");
-
-        KernelServices mainServices = builder.build();
-        assertTrue(mainServices.isSuccessfulBoot());
-        KernelServices legacyServices = mainServices.getLegacyServices(version_1_1_0);
-        assertNotNull(legacyServices);
-        assertTrue(legacyServices.isSuccessfulBoot());
-
-        FailedOperationTransformationConfig config = new FailedOperationTransformationConfig()
-        .addFailedAttribute(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, "jacorb")),
-                new FailedOperationTransformationConfig.RejectExpressionsConfig(ORB_NAME, ORB_PRINT_VERSION, ORB_USE_IMR, ORB_USE_BOM, ORB_CACHE_TYPECODES,
-                        ORB_CACHE_POA_NAMES, ORB_GIOP_MINOR_VERSION, ORB_CONN_RETRIES, ORB_CONN_RETRY_INTERVAL, ORB_CONN_CLIENT_TIMEOUT,
-                        ORB_CONN_SERVER_TIMEOUT, ORB_CONN_MAX_SERVER_CONNECTIONS, ORB_CONN_MAX_MANAGED_BUF_SIZE, ORB_CONN_OUTBUF_SIZE, ORB_CONN_OUTBUF_CACHE_TIMEOUT, ORB_INIT_SECURITY, ORB_INIT_TX, POA_MONITORING, POA_QUEUE_WAIT, POA_QUEUE_MIN,
-                        POA_QUEUE_MAX, POA_REQUEST_PROC_POOL_SIZE, POA_REQUEST_PROC_MAX_THREADS, NAMING_ROOT_CONTEXT, NAMING_EXPORT_CORBALOC,
-                        INTEROP_SUN, INTEROP_COMET, INTEROP_IONA, INTEROP_CHUNK_RMI_VALUETYPES, INTEROP_LAX_BOOLEAN_ENCODING,
-                        INTEROP_INDIRECT_ENCODING_DISABLE, INTEROP_STRICT_CHECK_ON_TC_CREATION, PROPERTIES, SECURITY_SUPPORT_SSL, SECURITY_SECURITY_DOMAIN,
-                        SECURITY_ADD_COMPONENT_INTERCEPTOR, SECURITY_CLIENT_SUPPORTS, SECURITY_CLIENT_REQUIRES, SECURITY_SERVER_SUPPORTS, SECURITY_SERVER_REQUIRES)
-                );
-
-
-
-        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_1_0, builder.parseXmlResource("expressions-1.2.xml"), config);
+    public void testSubsystemWithSecurityClient() throws Exception {
+        super.standardSubsystemTest("subsystem-1.2-security-client.xml");
     }
 
 }

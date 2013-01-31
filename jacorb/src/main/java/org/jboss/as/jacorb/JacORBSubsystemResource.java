@@ -22,7 +22,11 @@
 
 package org.jboss.as.jacorb;
 
+import java.util.List;
+
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
@@ -30,6 +34,8 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.dmr.ModelNode;
 
 /**
  * @author Tomaz Cerar
@@ -48,10 +54,25 @@ public class JacORBSubsystemResource extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(final ManagementResourceRegistration registry) {
-        OperationStepHandler attributeHander = new ReloadRequiredWriteAttributeHandler(JacORBSubsystemDefinitions.SUBSYSTEM_ATTRIBUTES);
+        OperationStepHandler attributeHander = new JacorbReloadRequiredWriteAttributeHandler(JacORBSubsystemDefinitions.SUBSYSTEM_ATTRIBUTES);
         for (AttributeDefinition attr : JacORBSubsystemDefinitions.SUBSYSTEM_ATTRIBUTES) {
             registry.registerReadWriteAttribute(attr, null, attributeHander);
         }
+    }
 
+    private static class JacorbReloadRequiredWriteAttributeHandler extends ReloadRequiredWriteAttributeHandler {
+        public JacorbReloadRequiredWriteAttributeHandler(List<AttributeDefinition> definitions) {
+            super(definitions);
+        }
+
+        @Override
+        protected void finishModelStage(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue,
+                ModelNode oldValue, Resource model) throws OperationFailedException {
+            //Make sure that security=on becomes security=identity
+            if (attributeName.equals(JacORBSubsystemConstants.ORB_INIT_SECURITY) && newValue.asString().equals("on")) {
+                newValue.set(JacORBSubsystemConstants.IDENTITY);
+            }
+            super.finishModelStage(context, operation, attributeName, newValue, oldValue, model);
+        }
     }
 }
