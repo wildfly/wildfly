@@ -21,9 +21,9 @@
 */
 package org.jboss.as.xts;
 
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-
 import java.io.IOException;
+
+import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -38,4 +38,54 @@ public class XTSSubsystemTestCase extends AbstractSubsystemBaseTest {
     protected String getSubsystemXml() throws IOException {
         return readResource("subsystem.xml");
     }
+    //TODO These cannot work due to problems in the legacydescription
+    //This can only work if we use the legacy classloader to load up everything
+    //There is a problem with how the descriptions for ObjectTypeDefinition play with the current ones which are used for testing
+    //The old resource bundle misses a key which was never used in the old version, while the tests use the new ObjectTypeDefinition
+    //which try to look for that key
+//    @Test
+//    public void testBoot712() throws Exception {
+//        //Override the core model version to make sure that our custom transformer for model version 1.0.0 running on 7.1.2 kicks in
+//        testBootOldVersion("7.1.2.Final");
+//    }
+//
+//    @Test
+//    public void testBoot713() throws Exception {
+//        //The model version has not changed, make sure we can boot 7.1.3 with the current config
+//        testBootOldVersion("7.1.3.Final");
+//    }
+//
+//    private void testBootOldVersion(String asVersion) throws Exception {
+//
+//        String subsystemXml = readResource("subsystem.xml");
+//        ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
+//        //Use the non-runtime version of the extension which will happen on the HC
+//        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+//                .setSubsystemXml(subsystemXml);
+//
+//        // Add legacy subsystems
+//        builder.createLegacyKernelServicesBuilder(new AdditionalInitialization() {
+//                    @Override
+//                    protected RunningMode getRunningMode() {
+//                        return RunningMode.ADMIN_ONLY;
+//                    }
+//
+//                    @Override
+//                    protected boolean isValidateOperations() {
+//                        //There is a problem with how the descriptions for ObjectTypeDefinition play with the current ones which are used for testing
+//                        //The old resource bundle misses a key which was never used in the old version, while the tests use the new ObjectTypeDefinition
+//                        //which try to look for that key
+//                        return false;
+//                    }
+//
+//                }, modelVersion)
+//                .addMavenResourceURL("org.jboss.as:jboss-as-xts:" + asVersion);
+//
+//        KernelServices mainServices = builder.build();
+//        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+//        Assert.assertTrue(mainServices.isSuccessfulBoot());
+//        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+//
+//        checkSubsystemModelTransformation(mainServices, modelVersion);
+//    }
 }
