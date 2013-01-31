@@ -22,11 +22,11 @@
 
 package org.jboss.as.server.deployment.scanner;
 
+import java.io.File;
+
+import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
-
-import java.io.File;
 
 /**
  * Date: 05.11.2011
@@ -164,4 +164,7 @@ public interface DeploymentScannerMessages {
     @Message(id = 15060, value = "File %2$s was configured for auto-deploy but could not be safely auto-deployed. The reason the file " +
             "could not be auto-deployed was: %1$s.  To enable deployment of this file create a file called %2$s%3$s")
     String unsafeAutoDeploy(String errorMsg, String fileName, String marker);
+
+    @Message(id = 15061, value = "Extension with module 'org.jboss.as.deployment-scanner' cannot be installed on a domain controller. Please remove it and any subsystem referencing it")
+    IllegalStateException deploymentScannerNotForDomainMode();
 }
