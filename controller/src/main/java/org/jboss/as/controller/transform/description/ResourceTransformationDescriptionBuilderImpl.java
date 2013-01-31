@@ -72,6 +72,14 @@ class ResourceTransformationDescriptionBuilderImpl extends AbstractTransformatio
     }
 
     @Override
+    public RejectTransformationDescriptionBuilder rejectChildResource(PathElement pathElement) {
+        final RejectTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createRejectInstance(pathElement);
+        children.add(builder);
+        return builder;
+    }
+
+
+    @Override
     public ResourceTransformationDescriptionBuilder addChildRedirection(final PathElement current, final PathElement legacy) {
         final PathAddressTransformer transformation = new PathAddressTransformer.BasicPathAddressTransformer(legacy);
         return addChildRedirection(current, transformation);

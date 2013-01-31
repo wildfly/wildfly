@@ -31,7 +31,6 @@ public interface TransformerEntry {
 
     PathAddressTransformer getPathTransformation();
     ResourceTransformer getResourceTransformer();
-    OperationTransformer getOperationTransformer();
 
     TransformerEntry ALL_DEFAULTS = new TransformerEntry() {
         @Override
@@ -42,11 +41,6 @@ public interface TransformerEntry {
         @Override
         public ResourceTransformer getResourceTransformer() {
             return ResourceTransformer.DEFAULT;
-        }
-
-        @Override
-        public OperationTransformer getOperationTransformer() {
-            return OperationTransformer.DEFAULT;
         }
     };
 

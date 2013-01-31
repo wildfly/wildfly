@@ -22,17 +22,17 @@
 
 package org.jboss.as.controller.transform.description;
 
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.transform.CombinedTransformer;
-import org.jboss.as.controller.transform.OperationTransformer;
-import org.jboss.as.controller.transform.PathAddressTransformer;
-import org.jboss.as.controller.transform.ResourceTransformer;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.transform.CombinedTransformer;
+import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.PathAddressTransformer;
+import org.jboss.as.controller.transform.ResourceTransformer;
 
 /**
  * Explicit transformation description builder using the specified resource and operation transformer directly.
@@ -103,6 +103,11 @@ public final class ExplicitTransformationDescriptionBuilder extends AbstractTran
             @Override
             public List<TransformationDescription> getChildren() {
                 return Collections.unmodifiableList(childDescriptions);
+            }
+
+            @Override
+            public boolean isInherited() {
+                return false;
             }
         };
     }
