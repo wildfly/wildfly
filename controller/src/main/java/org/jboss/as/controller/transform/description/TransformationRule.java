@@ -39,6 +39,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.registry.Resource.ResourceEntry;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformationTarget;
@@ -189,6 +190,7 @@ abstract class TransformationRule {
 
         private final List<OperationTransformer.TransformedOperation> delegates;
         private volatile String failure;
+        private volatile boolean initialized;
 
         public ChainedTransformedOperation(final ModelNode transformedOperation, final List<OperationTransformer.TransformedOperation> delegates) {
             super(transformedOperation, null);
@@ -210,6 +212,7 @@ abstract class TransformationRule {
             for (OperationTransformer.TransformedOperation delegate : delegates) {
                 if (delegate.rejectOperation(preparedResult)) {
                     failure = delegate.getFailureDescription();
+                    initialized = true; //See comment in getFailureDescription()
                     return true;
                 }
             }
@@ -218,6 +221,16 @@ abstract class TransformationRule {
 
         @Override
         public String getFailureDescription() {
+            //In real life this will always be initialized by the transforming proxy before anyone calls this method
+            //For testing we call it directly from ModelTestUtils
+            if (!initialized) {
+                for (TransformedOperation delegate : delegates) {
+                    String failure = delegate.getFailureDescription();
+                    if (failure != null) {
+                        return failure;
+                    }
+                }
+            }
             return failure;
         }
 
