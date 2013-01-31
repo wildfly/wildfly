@@ -41,14 +41,14 @@ import org.jboss.dmr.ModelNode;
  */
 public class TransportParamDefinition extends SimpleResourceDefinition {
 
-    static final PathElement PATH = PathElement.pathElement(CommonAttributes.PARAM);
+    public static final PathElement PATH = PathElement.pathElement(CommonAttributes.PARAM);
 
     static final SimpleAttributeDefinition VALUE = create("value", STRING)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
-    static AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0 = { VALUE };
+    public static AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0 = { VALUE };
 
     static final OperationStepHandler PARAM_ADD = new HornetQReloadRequiredHandlers.AddStepHandler() {
         @Override

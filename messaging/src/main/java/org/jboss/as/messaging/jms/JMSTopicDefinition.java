@@ -57,7 +57,7 @@ public class JMSTopicDefinition extends SimpleResourceDefinition {
 
     public static final AttributeDefinition[] ATTRIBUTES = { CommonAttributes.DESTINATION_ENTRIES };
 
-    public static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0 = { CommonAttributes.DESTINATION_ENTRIES };
+    public static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0 = { CommonAttributes.DESTINATION_ENTRIES };
 
     /**
      * Attributes for deployed JMS topic are stored in runtime

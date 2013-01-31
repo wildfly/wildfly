@@ -211,13 +211,13 @@ public class ClusterConnectionDefinition extends SimpleResourceDefinition {
             DISCOVERY_GROUP_NAME,
     };
 
-    public static final AttributeDefinition[] NEW_ATTRIBUTES_ADDED_AFTER_1_1_0 = {
+    public static final AttributeDefinition[] ATTRIBUTES_ADDED_IN_1_2_0 = {
             CALL_FAILOVER_TIMEOUT,
             NOTIFICATION_ATTEMPTS,
             NOTIFICATION_INTERVAL
     };
 
-    public static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0 = {
+    public static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0 = {
             ADDRESS,
             ALLOW_DIRECT_CONNECTIONS_ONLY, CHECK_PERIOD, CONNECTION_TTL, FORWARD_WHEN_NO_CONSUMERS, MAX_HOPS,
             MAX_RETRY_INTERVAL,

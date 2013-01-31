@@ -72,9 +72,9 @@ public class DiscoveryGroupDefinition extends SimpleResourceDefinition {
             REFRESH_TIMEOUT, INITIAL_WAIT_TIMEOUT
     };
 
-    public static final AttributeDefinition[] NEW_ATTRIBUTES_ADDED_AFTER_1_1_0 = { JGROUPS_CHANNEL, JGROUPS_STACK };
+    public static final AttributeDefinition[] ATTRIBUTES_ADDED_IN_1_2_0 = { JGROUPS_CHANNEL, JGROUPS_STACK };
 
-    public static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0 = { INITIAL_WAIT_TIMEOUT, REFRESH_TIMEOUT};
+    public static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0 = { INITIAL_WAIT_TIMEOUT, REFRESH_TIMEOUT};
 
     private final boolean registerRuntimeOnly;
 

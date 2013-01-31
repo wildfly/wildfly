@@ -82,9 +82,9 @@ public class BroadcastGroupDefinition extends SimpleResourceDefinition {
     public static final AttributeDefinition[] ATTRIBUTES = { JGROUPS_STACK, JGROUPS_CHANNEL, SOCKET_BINDING, LOCAL_BIND_ADDRESS, LOCAL_BIND_PORT,
         GROUP_ADDRESS, GROUP_PORT, BROADCAST_PERIOD, CONNECTOR_REFS };
 
-    public static final AttributeDefinition[] NEW_ATTRIBUTES_ADDED_AFTER_1_1_0 = { JGROUPS_CHANNEL, JGROUPS_STACK };
+    public static final AttributeDefinition[] ATTRIBUTES_ADDED_IN_1_2_0 = { JGROUPS_CHANNEL, JGROUPS_STACK };
 
-    public static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0 = { BROADCAST_PERIOD };
+    public static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0 = { BROADCAST_PERIOD };
 
     public static final String GET_CONNECTOR_PAIRS_AS_JSON = "get-connector-pairs-as-json";
 

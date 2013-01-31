@@ -49,6 +49,8 @@ import org.jboss.as.controller.registry.OperationEntry;
  */
 public class CoreAddressDefinition extends SimpleResourceDefinition {
 
+    public static final PathElement PATH = PathElement.pathElement(CommonAttributes.CORE_ADDRESS);
+
     /**
      * Use the role children instead.
      *
@@ -84,7 +86,7 @@ public class CoreAddressDefinition extends SimpleResourceDefinition {
     public static final String GET_ROLES_AS_JSON = "get-roles-as-json";
 
     public CoreAddressDefinition() {
-        super(PathElement.pathElement(CommonAttributes.CORE_ADDRESS),
+        super(PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.CORE_ADDRESS));
     }
 
