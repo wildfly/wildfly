@@ -22,16 +22,11 @@
 
 package org.jboss.as.domain.controller.transformers;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.transform.AddNameFromAddressResourceTransformer;
-import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
-import org.jboss.as.controller.transform.chained.ChainedResourceTransformer;
-import org.jboss.as.server.controller.resources.DeploymentAttributes;
 
 /**
  * Transformer registration for the deployment resources.
