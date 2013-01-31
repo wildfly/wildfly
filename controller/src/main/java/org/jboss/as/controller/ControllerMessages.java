@@ -2616,4 +2616,11 @@ public interface ControllerMessages {
 
     @Message(id = 14895, value = "The following attributes are not understood in the target model version and this resource will need to be ignored on the target host: %s")
     String attributesAreNotUnderstoodAndMustBeIgnored(Set<String> attributeNames);
+
+    @Message(id = 14896, value = "Resource %s is rejected on the target host, and will need to be ignored on the host")
+    String rejectedResourceResourceTransformation(PathAddress address);
+
+
+    @Message(id = 14897, value = "Resource %s is rejected on the target host and will need to be ignored on the host: %s")
+    String rejectResourceOperationTransformation(PathAddress address, ModelNode operation);
 }

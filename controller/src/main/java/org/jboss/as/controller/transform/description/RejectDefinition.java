@@ -22,6 +22,10 @@
 
 package org.jboss.as.controller.transform.description;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -33,27 +37,28 @@ import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.dmr.ModelNode;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
 /**
  * @author Emanuel Muckenhuber
  */
-class DiscardDefinition extends AbstractDescription implements TransformationDescription, OperationTransformer, ResourceTransformer {
+class RejectDefinition extends AbstractDescription implements TransformationDescription, OperationTransformer, ResourceTransformer {
 
-    public DiscardDefinition(PathElement pathElement) {
+    private final ResourceTransformer resourceTransformer;
+    private final OperationTransformer operationTransformer;
+
+    RejectDefinition(PathElement pathElement, ResourceTransformer resourceTransformer, OperationTransformer operationTransformer) {
         super(pathElement, PathAddressTransformer.DEFAULT);
+        this.resourceTransformer = resourceTransformer;
+        this.operationTransformer = operationTransformer;
     }
 
     @Override
     public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
-        //
+        resourceTransformer.transformResource(context, address, resource);
     }
 
     @Override
     public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
-        return OperationTransformer.DISCARD.transformOperation(context, address, operation);
+        return operationTransformer.transformOperation(context, address, operation);
     }
 
     @Override

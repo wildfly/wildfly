@@ -114,7 +114,7 @@ public class DiscardUndefinedAttributesTransformer implements ChainedResourceTra
 
                 @Override
                 public String getFailureDescription() {
-                    return context.getLogger().getWarning(address, operation, problems);
+                    return context.getLogger().getAttributeWarning(address, operation, problems);
                 }
             };
         } else {
@@ -129,7 +129,7 @@ public class DiscardUndefinedAttributesTransformer implements ChainedResourceTra
 
         Set<String> problems = checkModelNode(resource.getModel());
         if (problems != null) {
-            context.getLogger().logWarning(address, problems);
+            context.getLogger().logAttributeWarning(address, problems);
         }
     }
 
@@ -169,7 +169,7 @@ public class DiscardUndefinedAttributesTransformer implements ChainedResourceTra
 
                     @Override
                     public String getFailureDescription() {
-                        return context.getLogger().getWarning(address, operation, attribute);
+                        return context.getLogger().getAttributeWarning(address, operation, attribute);
                     }
                 };
                 return new TransformedOperation(operation, rejectPolicy, OperationResultTransformer.ORIGINAL_RESULT);

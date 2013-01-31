@@ -140,4 +140,8 @@ class TransformingDescription extends AbstractDescription implements Transformat
         rule.transformResource(original, address, context);
     }
 
+    @Override
+    public boolean isInherited() {
+        return false;
+    }
 }

@@ -22,9 +22,10 @@
 
 package org.jboss.as.controller.transform;
 
-import org.jboss.as.controller.PathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+
+import org.jboss.as.controller.PathElement;
 
 /**
  * Registration for subsystem specific operation transformers.
@@ -91,6 +92,18 @@ public interface TransformersSubRegistration {
      * @return the transformers sub registration
      */
     TransformersSubRegistration registerSubResource(PathElement element, PathAddressTransformer pathAddressTransformer, ResourceTransformer resourceTransformer, OperationTransformer operationTransformer);
+
+    /**
+     * Register a sub resource.
+     *
+     * @param element the path element
+     * @param pathAddressTransformer the path transformation
+     * @param resourceTransformer the resource transformer
+     * @param operationTransformert the default operation transformer
+     * @param inherited {@code true} to make the default operation transformer inherited
+     * @return the transformers sub registration
+     */
+    TransformersSubRegistration registerSubResource(PathElement element, PathAddressTransformer pathAddressTransformer, ResourceTransformer resourceTransformer, OperationTransformer operationTransformer, boolean inherited);
 
     /**
      * Register a sub resource.
