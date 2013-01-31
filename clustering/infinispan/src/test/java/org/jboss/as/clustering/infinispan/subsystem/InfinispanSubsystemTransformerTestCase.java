@@ -64,19 +64,21 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
     }
 
     @Test
-//    @BMRule(name="Debugging support",
-//            targetClass="^org.jboss.as.subsystem.test.SubsystemTestDelegate",
-//            targetMethod="checkSubsystemModelTransformation",
-//            targetLocation="AT INVOKE ModelTestUtils.compare",
-//            binding="legacy:ModelNode = $1; transformed:ModelNode = $2",
-//            condition="TRUE",
-//            action="traceln(\"legacy = \" + legacy.toString() + \" transformed = \" + transformed.toString()")
-    public void testTransformer_1_3_0() throws Exception {
+    public void testTransformer712() throws Exception {
+        testTransformer_1_3_0("7.1.2.Final");
+    }
+
+    @Test
+    public void testTransformer713() throws Exception {
+        testTransformer_1_3_0("7.1.3.Final");
+    }
+
+    private void testTransformer_1_3_0(String asVersion) throws Exception {
         ModelVersion version = ModelVersion.create(1, 3);
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXml(getSubsystemXml());
         builder.createLegacyKernelServicesBuilder(null, version)
-            .addMavenResourceURL("org.jboss.as:jboss-as-clustering-infinispan:7.1.2.Final");
+            .addMavenResourceURL("org.jboss.as:jboss-as-clustering-infinispan:" + asVersion);
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot()); ;
@@ -92,14 +94,23 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
     }
 
     @Test
-    public void testRejectExpressions_1_3_0() throws Exception {
+    public void testRejectExpressions712() throws Exception {
+        testRejectExpressions_1_3_0("7.1.2.Final");
+    }
+
+    @Test
+    public void testRejectExpressions713() throws Exception {
+        testRejectExpressions_1_3_0("7.1.3.Final");
+    }
+
+    public void testRejectExpressions_1_3_0(String asVersion) throws Exception {
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
         // create builder for legacy subsystem version
         ModelVersion version_1_3_0 = ModelVersion.create(1, 3, 0);
         builder.createLegacyKernelServicesBuilder(null, version_1_3_0)
-            .addMavenResourceURL("org.jboss.as:jboss-as-clustering-infinispan:7.1.2.Final");
+            .addMavenResourceURL("org.jboss.as:jboss-as-clustering-infinispan:" + asVersion);
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(version_1_3_0);
