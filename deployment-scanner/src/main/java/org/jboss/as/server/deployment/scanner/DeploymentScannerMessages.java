@@ -165,6 +165,6 @@ public interface DeploymentScannerMessages {
             "could not be auto-deployed was: %1$s.  To enable deployment of this file create a file called %2$s%3$s")
     String unsafeAutoDeploy(String errorMsg, String fileName, String marker);
 
-    @Message(id = 15061, value = "Extension with module 'org.jboss.as.deployment-scanner' cannot be installed on a domain controller. Please remove it and any subsystem referencing it")
+    @Message(id = 15061, value = "Extension with module 'org.jboss.as.deployment-scanner' cannot be installed in a managed domain. Please remove it and any subsystem referencing it")
     IllegalStateException deploymentScannerNotForDomainMode();
 }
