@@ -22,11 +22,12 @@
 
 package org.jboss.as.jacorb;
 
-import static org.jboss.as.jacorb.JacORBSubsystemConstants.CLIENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
 import static org.jboss.as.jacorb.JacORBSubsystemConstants.IDENTITY;
 import static org.jboss.as.jacorb.JacORBSubsystemConstants.SECURITY;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -47,6 +48,7 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * <p>
@@ -109,14 +111,27 @@ public class JacORBExtension implements Extension {
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
         builder.getAttributeBuilder()
             .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, expressionKeys.toArray(new String[expressionKeys.size()]))
+            .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
+
+                @Override
+                public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+                    return JacORBMessages.MESSAGES.cannotUseSecurityClient();
+                }
+
+                @Override
+                protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
+                        TransformationContext context) {
+                    return attributeValue.getType() == ModelType.STRING && attributeValue.asString().equals(JacORBSubsystemConstants.CLIENT);
+                }
+            }, SECURITY)
             .setValueConverter(new AttributeConverter.DefaultAttributeConverter() {
 
                 @Override
                 protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
                         TransformationContext context) {
                     final String security = attributeValue.asString();
-                    //TODO this is adapted from the old SecurityInterceptorTransformer but it does not look totally right
-                    if (security.equals(CLIENT) || security.equals(IDENTITY)) {
+                    //security=IDENTITY in the new model == security=ON in the old model
+                    if (security.equals(IDENTITY)) {
                         attributeValue.set("on");
                     }
                 }
@@ -125,4 +140,15 @@ public class JacORBExtension implements Extension {
         TransformationDescription.Tools.register(builder.build(), subsystem, version110);
     }
 
+    private static ModelNode replaceSecurityClient(ModelNode model) {
+        if (model.hasDefined(SECURITY) && model.get(SECURITY).asString().equals(JacORBSubsystemConstants.CLIENT)) {
+            //security=CLIENT in the new model == security=OFF plus these extra initializers in the old model
+            //Since the write-attribute is restart-required I am not doing anything for the write-attribute operation
+            model.get(SECURITY).set("off");
+            model.get(PROPERTIES).add("org.omg.PortableInterceptor.ORBInitializerClass.org.jboss.as.jacorb.csiv2.CSIv2Initializer", "");
+            model.get(PROPERTIES).add("org.omg.PortableInterceptor.ORBInitializerClass.org.jboss.as.jacorb.csiv2.SASClientInitializer", "");
+            return model;
+        }
+        return null;
+    }
 }
