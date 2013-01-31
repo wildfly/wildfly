@@ -66,6 +66,10 @@ public interface Console {
 
     String readLine(String prompt, Character mask);
 
+    int getTerminalWidth();
+
+    int getTerminalHeight();
+
     static final class Factory {
 
         public static Console getConsole(CommandContext ctx) throws CliInitializationException {
@@ -183,6 +187,16 @@ public interface Console {
                         e.printStackTrace();
                         return null;
                     }
+                }
+
+                @Override
+                public int getTerminalWidth() {
+                    return console.getTerminalWidth();
+                }
+
+                @Override
+                public int getTerminalHeight() {
+                    return console.getTerminalHeight();
                 }
 
             class HistoryImpl implements CommandHistory {

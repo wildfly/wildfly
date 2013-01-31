@@ -370,4 +370,21 @@ public interface CommandContext {
      */
     void setSilent(boolean silent);
 
+    /**
+     * Returns the current terminal window width in case the console
+     * has been initialized. Otherwise -1.
+     *
+     * @return  current terminal with if the console has been initialized,
+     *          -1 otherwise
+     */
+    int getTerminalWidth();
+
+    /**
+     * Returns the current terminal window height in case the console
+     * has been initialized. Otherwise -1.
+     *
+     * @return  current terminal height if the console has been initialized,
+     *          -1 otherwise
+     */
+    int getTerminalHeight();
 }

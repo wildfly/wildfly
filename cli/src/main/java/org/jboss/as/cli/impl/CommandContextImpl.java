@@ -1224,6 +1224,16 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         this.silent = silent;
     }
 
+    @Override
+    public int getTerminalWidth() {
+        return console == null ? -1 : console.getTerminalWidth();
+    }
+
+    @Override
+    public int getTerminalHeight() {
+        return console == null ? -1 : console.getTerminalHeight();
+    }
+
     private class AuthenticationCallbackHandler implements CallbackHandler {
 
         // After the CLI has connected the physical connection may be re-established numerous times.
