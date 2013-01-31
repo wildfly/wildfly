@@ -66,6 +66,8 @@ import org.jboss.dmr.Property;
  */
 public class GenericTypeOperationHandler extends BatchModeCommandHandler {
 
+    private static final int DASH_OFFSET = 22;
+
     protected final String commandName;
     protected final String idProperty;
     protected final String nodeType;
@@ -510,10 +512,8 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
             throw new CommandLineException("Operation description is not available.");
         }
 
-        final StringBuilder buf = new StringBuilder();
-        buf.append("\nDESCRIPTION:\n\n");
-        buf.append(result.get(Util.DESCRIPTION).asString());
-        ctx.printLine(buf.toString());
+        ctx.printLine("\nDESCRIPTION:\n");
+        formatText(ctx, result.get(Util.DESCRIPTION).asString(), 2);
 
         if(result.hasDefined(Util.REQUEST_PROPERTIES)) {
             printProperties(ctx, result.get(Util.REQUEST_PROPERTIES).asPropertyList());
@@ -574,15 +574,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
             ctx.printLine("REQUIRED ARGUMENTS:\n");
         }
         for(String argName : requiredProps.keySet()) {
-            final StringBuilder prop = new StringBuilder();
-            prop.append(' ').append(argName);
-            int spaces = 28 - prop.length();
-            do {
-                prop.append(' ');
-                --spaces;
-            } while(spaces >= 0);
-            prop.append("- ").append(requiredProps.get(argName));
-            ctx.printLine(prop.toString());
+            formatProperty(ctx, argName, requiredProps.get(argName));
         }
 
         if(!optionalProps.isEmpty()) {
@@ -590,54 +582,56 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                 ctx.printLine("\n\nOPTIONAL ARGUMENTS:\n");
             }
             for(String argName : optionalProps.keySet()) {
-                final StringBuilder prop = new StringBuilder();
-                prop.append(' ').append(argName);
-                int spaces = 28 - prop.length();
-                do {
-                    prop.append(' ');
-                    --spaces;
-                } while(spaces >= 0);
-                prop.append("- ").append(optionalProps.get(argName));
-                ctx.printLine(prop.toString());
+                formatProperty(ctx, argName, optionalProps.get(argName));
             }
         }
     }
 
     protected void printNodeDescription(CommandContext ctx) throws CommandFormatException {
 
-        final StringBuilder buf = new StringBuilder();
+        int offset = 2;
 
-        buf.append("\nSYNOPSIS\n\n");
-        buf.append(commandName).append(" --help [--properties | --commands] |\n");
+        ctx.printLine("\nSYNOPSIS\n");
+
+        final StringBuilder buf = new StringBuilder();
+        buf.append("  ").append(commandName).append(" --help [--properties | --commands] |\n");
         if(isDependsOnProfile() && ctx.isDomainMode()) {
-            for(int i = 0; i <= commandName.length(); ++i) {
+            for(int i = 0; i <= commandName.length() + offset; ++i) {
                 buf.append(' ');
             }
             buf.append("--profile=<profile_name>\n");
         }
-        for(int i = 0; i <= commandName.length(); ++i) {
+        for(int i = 0; i <= commandName.length() + offset; ++i) {
             buf.append(' ');
         }
         buf.append('(').append(name.getFullName()).append("=<resource_id> (--<property>=<value>)*) |\n");
-        for(int i = 0; i <= commandName.length(); ++i) {
+        for(int i = 0; i <= commandName.length() + offset; ++i) {
             buf.append(' ');
         }
         buf.append("(<command> ").append(name.getFullName()).append("=<resource_id> (--<parameter>=<value>)*)");
 
         buf.append('\n');
-        for(int i = 0; i <= commandName.length(); ++i) {
+        for(int i = 0; i <= commandName.length() + offset; ++i) {
             buf.append(' ');
         }
         buf.append("[--headers={<operation_header> (;<operation_header>)*}]");
+        ctx.printLine(buf.toString());
 
-        buf.append("\n\nDESCRIPTION\n\n");
-        buf.append("The command is used to manage resources of type " + this.nodeType + ".");
+        ctx.printLine("\n\nDESCRIPTION\n");
 
-        buf.append("\n\nRESOURCE DESCRIPTION\n\n");
+        buf.setLength(0);
+        buf.append("The command is used to manage resources of type ");
+        buf.append(this.nodeType);
+        buf.append(".");
+        formatText(ctx, buf, offset);
+
+        ctx.printLine("\n\nRESOURCE DESCRIPTION\n");
 
         if(isDependsOnProfile() && ctx.isDomainMode() && profile.getValue(ctx.getParsedCommandLine()) == null) {
+            buf.setLength(0);
             buf.append("(Execute '");
             buf.append(commandName).append(" --profile=<profile_name> --help' to include the resource description here.)");
+            formatText(ctx, buf, offset);
         } else {
             ModelNode request = initRequest(ctx);
             if(request == null) {
@@ -657,52 +651,162 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
             } catch (Exception e) {
             }
 
+            buf.setLength(0);
             if(result != null) {
                 buf.append(result.get(Util.DESCRIPTION).asString());
             } else {
                 buf.append("N/A. Please, open a jira issue at https://issues.jboss.org/browse/AS7 to get this fixed. Thanks!");
             }
+            formatText(ctx, buf, offset);
         }
 
-        buf.append("\n\nARGUMENTS\n");
+        ctx.printLine("\n\nARGUMENTS\n");
 
-        buf.append("\n--help                - prints this content.");
-        buf.append("\n--help --properties   - prints the list of the resource properties including their access-type");
-        buf.append("\n                        (read/write/metric), value type, and the description.");
-        buf.append("\n--help --commands     - prints the list of the commands available for the resource.");
-        buf.append("\n                        To get the complete description of a specific command (including its parameters,");
-        buf.append("\n                        their types and descriptions), execute ").append(commandName).append(" <command> --help.");
+        formatProperty(ctx, "--help", "prints this content.");
+
+        formatProperty(ctx, "--help --properties",
+                "prints the list of the resource properties including their access-type " +
+                "(read/write/metric), value type, and the description.");
+
+        formatProperty(ctx, "--help --commands",
+                "prints the list of the commands available for the resource." +
+                " To get the complete description of a specific command (including its parameters, " +
+                "their types and descriptions), execute " + commandName + " <command> --help.");
+
 
         if(isDependsOnProfile() && ctx.isDomainMode()) {
-            buf.append("\n\n--profile    - the name of the profile the target resource belongs to.");
+            formatProperty(ctx, "--profile", "the name of the profile the target resource belongs to.");
         }
 
-        buf.append("\n\n").append(name.getFullName()).append("   - ");
+        buf.setLength(0);
         if(idProperty == null) {
-            buf.append("is the name of the resource that completes the path ").append(nodeType).append(" and \n");
+            buf.append("is the name of the resource that completes the path ").append(nodeType).append(" and ");
         } else {
-            buf.append("corresponds to a property of the resource which \n");
-        }
-        for(int i = 0; i < name.getFullName().length() + 5; ++i) {
-            buf.append(' ');
+            buf.append("corresponds to a property of the resource which ");
         }
         buf.append("is used to identify the resource against which the command should be executed.");
+        formatProperty(ctx, name.getFullName(), buf);
 
-        buf.append("\n\n<property>   - property name of the resource whose value should be updated.");
-        buf.append("\n               For a complete list of available property names, their types and descriptions,");
-        buf.append("\n               execute ").append(commandName).append(" --help --properties.");
+        formatProperty(ctx, "<property>",
+                "property name of the resource whose value should be updated. " +
+                "For a complete list of available property names, their types and descriptions, execute " +
+                commandName + " --help --properties.");
 
-        buf.append("\n\n<command>    - command name provided by the resource. For a complete list of available commands,");
-        buf.append("\n               execute ").append(commandName).append(" --help --commands.");
+        formatProperty(ctx, "<command>",
+                "command name provided by the resource. For a complete list of available commands execute " +
+                commandName + " --help --commands.");
 
-        buf.append("\n\n<parameter>  - parameter name of the <command> provided by the resource.");
-        buf.append("\n               For a complete list of available parameter names of a specific <command>,");
-        buf.append("\n               their types and descriptions, execute ").append(commandName).append(" <command> --help.");
+        formatProperty(ctx, "<parameter>",
+                "parameter name of the <command> provided by the resource. " +
+                "For a complete list of available parameter names of a specific <command>, " +
+                "their types and descriptions execute " + commandName + " <command> --help.");
 
-        buf.append("\n\n--headers    - a list of operation headers separated by a semicolon. For the list of supported");
-        buf.append("\n               headers, please, refer to the domain management documentation or use tab-completion.");
+        formatProperty(ctx, "--headers",
+                "a list of operation headers separated by a semicolon. For the list of supported " +
+                "headers, please, refer to the domain management documentation or use tab-completion.");
+    }
 
-        ctx.printLine(buf.toString());
+    protected void formatText(CommandContext ctx, CharSequence text, int offset) {
+        int terminalWidth = ctx.getTerminalWidth();
+        if(terminalWidth <= 0) {
+            terminalWidth = 80;
+        }
+        final StringBuilder target = new StringBuilder();
+        if(offset >= terminalWidth) {
+            target.append(text);
+        } else {
+            int startIndex = 0;
+            while(startIndex < text.length()) {
+                if(startIndex > 0) {
+                    target.append(Util.LINE_SEPARATOR);
+                }
+                for(int i = 0; i < offset; ++i) {
+                    target.append(' ');
+                }
+                int endIndex = startIndex + terminalWidth - offset;
+                if(endIndex > text.length()) {
+                    endIndex = text.length();
+                    target.append(text.subSequence(startIndex, endIndex));
+                    startIndex = endIndex;
+                } else {
+                    while(endIndex >= startIndex && !Character.isWhitespace(text.charAt(endIndex))) {
+                        --endIndex;
+                    }
+                    if(endIndex <= startIndex) {
+                        endIndex = startIndex + terminalWidth - 2;
+                        target.append(text.subSequence(startIndex, endIndex));
+                        startIndex = endIndex;
+                    } else {
+                        target.append(text.subSequence(startIndex, endIndex));
+                        startIndex = endIndex + 1;
+                    }
+                }
+            }
+        }
+        ctx.printLine(target.toString());
+    }
+
+    protected void formatProperty(CommandContext ctx, String argName, final CharSequence descr) {
+
+        final StringBuilder prop = new StringBuilder();
+        prop.append(' ').append(argName);
+        int spaces = DASH_OFFSET - prop.length();
+        do {
+            prop.append(' ');
+            --spaces;
+        } while(spaces >= 0);
+
+        int terminalWidth = ctx.getTerminalWidth();
+        if(terminalWidth <= 0) {
+            terminalWidth = 80;
+        }
+
+        int dashIndex = prop.length();
+        int textOffset = dashIndex + 3;
+        int textLength = terminalWidth - textOffset;
+        prop.append(" - ");
+
+        if(descr.length() <= textLength) {
+            prop.append(descr);
+            prop.append(Util.LINE_SEPARATOR);
+        } else {
+            int lineStart = 0;
+            int lineNo = 1;
+            while(lineStart < descr.length()) {
+                prop.ensureCapacity(terminalWidth);
+                if(lineStart > 0) {
+                    if(lineNo == 3 && dashIndex > DASH_OFFSET) {
+                        textOffset = DASH_OFFSET + 2;
+                        textLength = terminalWidth - textOffset;
+                    }
+                    for(int i = 0; i < textOffset; ++i) {
+                        prop.append(' ');
+                    }
+                }
+                int lastCharIndex = lineStart + textLength;
+
+                if(lastCharIndex >= descr.length()) {
+                    lastCharIndex = descr.length();
+                    prop.append(descr.subSequence(lineStart, lastCharIndex));
+                    lineStart = lastCharIndex;
+                } else {
+                    while(lastCharIndex >= lineStart && !Character.isWhitespace(descr.charAt(lastCharIndex))) {
+                        --lastCharIndex;
+                    }
+                    if(lastCharIndex <= lineStart) {
+                        lastCharIndex = lineStart + textLength;
+                        prop.append(descr.subSequence(lineStart, lastCharIndex));
+                        lineStart = lastCharIndex;
+                    } else {
+                        prop.append(descr.subSequence(lineStart, lastCharIndex));
+                        lineStart = lastCharIndex + 1;
+                    }
+                }
+                prop.append(Util.LINE_SEPARATOR);
+                ++lineNo;
+            }
+        }
+        ctx.printLine(prop.toString());
     }
 
     protected void printSupportedCommands(CommandContext ctx) throws CommandLineException {

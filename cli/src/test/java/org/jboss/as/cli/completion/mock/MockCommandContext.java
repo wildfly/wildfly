@@ -356,4 +356,14 @@ public class MockCommandContext implements CommandContext {
     public void setSilent(boolean silent) {
         this.silent = silent;
     }
+
+    @Override
+    public int getTerminalWidth() {
+        return -1;
+    }
+
+    @Override
+    public int getTerminalHeight() {
+        return -1;
+    }
 }
