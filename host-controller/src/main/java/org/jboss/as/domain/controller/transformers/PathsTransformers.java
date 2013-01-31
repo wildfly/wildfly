@@ -23,14 +23,15 @@
 package org.jboss.as.domain.controller.transformers;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
-import org.jboss.as.controller.transform.AddNameFromAddressResourceTransformer;
-import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
-import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
-import org.jboss.as.controller.transform.chained.ChainedResourceTransformer;
+import org.jboss.as.controller.transform.description.AttributeConverter;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 
 /**
  * Transformer registration for the domain-level path resources.
@@ -41,14 +42,15 @@ class PathsTransformers {
 
     static void registerTransformers120(TransformersSubRegistration parent) {
 
-        RejectExpressionValuesTransformer rejectTransformer =
-                new RejectExpressionValuesTransformer(PathResourceDefinition.PATH);
-        ChainedResourceTransformer ctr = new ChainedResourceTransformer(AddNameFromAddressResourceTransformer.INSTANCE,
-                rejectTransformer.getChainedTransformer());
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PathResourceDefinition.PATH_ADDRESS)
+             .getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, PathResourceDefinition.PATH)
+                .setValueConverter(AttributeConverter.NAME_FROM_ADDRESS, ModelDescriptionConstants.NAME)
+                .end()
+            .addOperationTransformationOverride(ADD)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, PathResourceDefinition.PATH)
+                .end();
 
-        TransformersSubRegistration serverGroup = parent.registerSubResource(PathResourceDefinition.PATH_ADDRESS, ctr);
-        serverGroup.registerOperationTransformer(ADD, rejectTransformer);
-        serverGroup.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, rejectTransformer.getWriteAttributeTransformer());
-
+        TransformationDescription.Tools.register(builder.build(), parent);
     }
 }
