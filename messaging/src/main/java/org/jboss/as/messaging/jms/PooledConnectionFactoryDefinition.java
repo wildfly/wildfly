@@ -118,14 +118,14 @@ public class PooledConnectionFactoryDefinition extends SimpleResourceDefinition 
     public static final ConnectionFactoryAttribute[] ATTRIBUTES = define(Pooled.ATTRIBUTES, Common.ATTRIBUTES);
 
     // attributes added to the pooled cf resources *after* 1.1.0
-    public static final AttributeDefinition[] NEW_ATTRIBUTES_ADDED_AFTER_1_1_0 = new AttributeDefinition[]{INITIAL_CONNECT_ATTEMPTS,
+    public static final AttributeDefinition[] ATTRIBUTES_ADDED_IN_1_2_0 = new AttributeDefinition[]{INITIAL_CONNECT_ATTEMPTS,
             INITIAL_MESSAGE_PACKET_SIZE,
             COMPRESS_LARGE_MESSAGES,
             USE_AUTO_RECOVERY,
             CALL_FAILOVER_TIMEOUT};
 
     // attributes with expression supported added *after* 1.1.0
-    public static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0 = { ENTRIES, CALL_TIMEOUT,
+    public static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0 = { ENTRIES, CALL_TIMEOUT,
             AUTO_GROUP, BLOCK_ON_ACKNOWLEDGE, BLOCK_ON_DURABLE_SEND, BLOCK_ON_NON_DURABLE_SEND, CACHE_LARGE_MESSAGE_CLIENT, CLIENT_FAILURE_CHECK_PERIOD, CLIENT_ID,
             CONFIRMATION_WINDOW_SIZE, CONNECTION_TTL, CONSUMER_MAX_RATE,
             CONSUMER_WINDOW_SIZE, DUPS_OK_BATCH_SIZE, FAILOVER_ON_INITIAL_CONNECTION, GROUP_ID, HA, MAX_RETRY_INTERVAL, MIN_LARGE_MESSAGE_SIZE, PRE_ACKNOWLEDGE,

@@ -28,6 +28,7 @@ import static org.jboss.as.controller.PathElement.pathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.messaging.CommonAttributes.CALL_FAILOVER_TIMEOUT;
+import static org.jboss.as.messaging.CommonAttributes.PARAM;
 import static org.jboss.as.messaging.HornetQServerResourceDefinition.HORNETQ_SERVER_PATH;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_1_0;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Regular.FACTORY_TYPE;
@@ -53,6 +54,7 @@ import org.jboss.as.messaging.HornetQServerResourceDefinition;
 import org.jboss.as.messaging.InVMTransportDefinition;
 import org.jboss.as.messaging.MessagingExtension;
 import org.jboss.as.messaging.QueueDefinition;
+import org.jboss.as.messaging.TransportParamDefinition;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes;
 import org.jboss.as.messaging.jms.ConnectionFactoryDefinition;
 import org.jboss.as.messaging.jms.JMSQueueDefinition;
@@ -156,6 +158,21 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
         doTestRejectExpressions_1_1_0(builder);
     }
 
+    private static class RejectExpressionsConfigWithAddOnlyParam extends RejectExpressionsConfig {
+
+        RejectExpressionsConfigWithAddOnlyParam(String... attributes) {
+            super(attributes);
+        }
+
+        @Override
+        protected boolean isAttributeWritable(String attributeName) {
+            if (PARAM.equals(attributeName)) {
+                return false;
+            }
+            return super.isAttributeWritable(attributeName);
+        }
+    };
+
     /**
      * Tests rejection of expressions in 1.1.0 model.
      *
@@ -167,6 +184,7 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
         KernelServices legacyServices = mainServices.getLegacyServices(VERSION_1_1_0);
         assertNotNull(legacyServices);
         assertTrue(legacyServices.isSuccessfulBoot());
+
 
         //Use the real xml with expressions for testing all the attributes
         PathAddress subsystemAddress = PathAddress.pathAddress(pathElement(SUBSYSTEM, MessagingExtension.SUBSYSTEM_NAME));
@@ -181,17 +199,47 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH),
                                 createChainedConfig(
-                                            HornetQServerResourceDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0,
-                                            HornetQServerResourceDefinition.NEW_ATTRIBUTES_ADDED_AFTER_1_1_0))
+                                        HornetQServerResourceDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0,
+                                        HornetQServerResourceDefinition.ATTRIBUTES_ADDED_IN_1_2_0))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(pathElement(ModelDescriptionConstants.PATH)),
                                 new RejectExpressionsConfig(ModelDescriptionConstants.PATH))
                         .addFailedAttribute(
-                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(pathElement(CommonAttributes.IN_VM_CONNECTOR)),
-                                new RejectExpressionsConfig(InVMTransportDefinition.SERVER_ID))
-                        .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(pathElement(CommonAttributes.IN_VM_ACCEPTOR)),
-                                new RejectExpressionsConfig(InVMTransportDefinition.SERVER_ID))
+                                new RejectExpressionsConfigWithAddOnlyParam(concat(InVMTransportDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0, PARAM)))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(pathElement(CommonAttributes.IN_VM_ACCEPTOR)).append(TransportParamDefinition.PATH),
+                                new RejectExpressionsConfig(TransportParamDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(pathElement(CommonAttributes.IN_VM_CONNECTOR)),
+                                new RejectExpressionsConfigWithAddOnlyParam(concat(InVMTransportDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0, PARAM)))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(pathElement(CommonAttributes.IN_VM_CONNECTOR)).append(TransportParamDefinition.PATH),
+                                new RejectExpressionsConfig(TransportParamDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(pathElement(CommonAttributes.REMOTE_ACCEPTOR)),
+                                new RejectExpressionsConfigWithAddOnlyParam(PARAM))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(pathElement(CommonAttributes.REMOTE_ACCEPTOR)).append(TransportParamDefinition.PATH),
+                                new RejectExpressionsConfig(TransportParamDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(pathElement(CommonAttributes.REMOTE_CONNECTOR)),
+                                new RejectExpressionsConfigWithAddOnlyParam(PARAM))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(pathElement(CommonAttributes.REMOTE_CONNECTOR)).append(TransportParamDefinition.PATH),
+                                new RejectExpressionsConfig(TransportParamDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(pathElement(CommonAttributes.ACCEPTOR)),
+                                new RejectExpressionsConfigWithAddOnlyParam(PARAM))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(pathElement(CommonAttributes.ACCEPTOR)).append(TransportParamDefinition.PATH),
+                                new RejectExpressionsConfig(TransportParamDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(pathElement(CommonAttributes.CONNECTOR)),
+                                new RejectExpressionsConfigWithAddOnlyParam(PARAM))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(pathElement(CommonAttributes.CONNECTOR)).append(TransportParamDefinition.PATH),
+                                new RejectExpressionsConfig(TransportParamDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(BroadcastGroupDefinition.PATH),
                                 new RejectExpressionsConfig(BroadcastGroupDefinition.BROADCAST_PERIOD) {
@@ -218,45 +266,56 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
                                 })
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(DivertDefinition.PATH),
-                                new RejectExpressionsConfig(DivertDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0))
+                                new RejectExpressionsConfig(DivertDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(QueueDefinition.PATH),
-                                new RejectExpressionsConfig(QueueDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0))
+                                new RejectExpressionsConfig(QueueDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(ClusterConnectionDefinition.PATH),
-                                createChainedConfig(ClusterConnectionDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0,
-                                        ClusterConnectionDefinition.NEW_ATTRIBUTES_ADDED_AFTER_1_1_0))
+                                createChainedConfig(ClusterConnectionDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0,
+                                        ClusterConnectionDefinition.ATTRIBUTES_ADDED_IN_1_2_0))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(BridgeDefinition.PATH),
-                                new RejectExpressionsConfig(BridgeDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0))
+                                new RejectExpressionsConfig(BridgeDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(GroupingHandlerDefinition.PATH),
-                                new RejectExpressionsConfig(GroupingHandlerDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0))
+                                new RejectExpressionsConfig(GroupingHandlerDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(AddressSettingDefinition.PATH),
-                                new RejectExpressionsConfig(AddressSettingDefinition.REJECTED_EXPRESSION_ATTRIBUTES))
+                                new RejectExpressionsConfig(AddressSettingDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(ConnectorServiceDefinition.PATH).append(ConnectorServiceParamDefinition.PATH),
                                 new RejectExpressionsConfig(ConnectorServiceParamDefinition.VALUE))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(ConnectionFactoryDefinition.PATH),
-                                createChainedConfig(ConnectionFactoryDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0,
-                                            new AttributeDefinition[] { CALL_FAILOVER_TIMEOUT }).setReadOnly(FACTORY_TYPE))
+                                createChainedConfig(ConnectionFactoryDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0,
+                                        new AttributeDefinition[]{CALL_FAILOVER_TIMEOUT}).setReadOnly(FACTORY_TYPE))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(PooledConnectionFactoryDefinition.PATH),
-                                createChainedConfig(PooledConnectionFactoryDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0,
-                                        PooledConnectionFactoryDefinition.NEW_ATTRIBUTES_ADDED_AFTER_1_1_0).setReadOnly(ConnectionFactoryAttributes.Pooled.TRANSACTION))
+                                createChainedConfig(PooledConnectionFactoryDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0,
+                                        PooledConnectionFactoryDefinition.ATTRIBUTES_ADDED_IN_1_2_0).setReadOnly(ConnectionFactoryAttributes.Pooled.TRANSACTION))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(JMSQueueDefinition.PATH),
-                                new RejectExpressionsConfig(JMSQueueDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0))
+                                new RejectExpressionsConfig(JMSQueueDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(JMSTopicDefinition.PATH),
-                                new RejectExpressionsConfig(JMSTopicDefinition.ATTRIBUTES_WITH_EXPRESSION_AFTER_1_1_0))
+                                new RejectExpressionsConfig(JMSTopicDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0))
                         .addFailedAttribute(
                                 subsystemAddress.append(JMSBridgeDefinition.PATH),
                                 FailedOperationTransformationConfig.DISCARDED_RESOURCE));
     }
 
+
+    private static String[] concat(AttributeDefinition[] attrs1, String... attrs2) {
+        String[] newAttrs = new String[attrs1.length + attrs2.length];
+        for(int i = 0; i < attrs1.length; i++) {
+            newAttrs[i] = attrs1[i].getName();
+        }
+        for(int i = 0; i < attrs2.length; i++) {
+            newAttrs[attrs1.length + i] = attrs2[i];
+        }
+        return newAttrs;
+    }
 
     private static ChainedConfig createChainedConfig(AttributeDefinition[] rejectedExpression, AttributeDefinition[] newAttributes) {
         AttributeDefinition[] allAttributes = new AttributeDefinition[rejectedExpression.length + newAttributes.length];

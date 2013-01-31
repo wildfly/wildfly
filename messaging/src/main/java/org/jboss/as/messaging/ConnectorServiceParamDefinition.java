@@ -51,6 +51,8 @@ public class ConnectorServiceParamDefinition extends SimpleResourceDefinition {
 
     public static final AttributeDefinition[] ATTRIBUTES = { VALUE };
 
+    public static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0 = { VALUE };
+
     static final OperationStepHandler PARAM_ADD = new HornetQReloadRequiredHandlers.AddStepHandler() {
         @Override
         protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {

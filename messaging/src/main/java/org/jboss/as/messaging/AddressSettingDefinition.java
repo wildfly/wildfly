@@ -118,7 +118,7 @@ public class AddressSettingDefinition extends SimpleResourceDefinition {
             .setAllowExpression(true)
             .build();
 
-    public static final AttributeDefinition[] REJECTED_EXPRESSION_ATTRIBUTES = new AttributeDefinition[]{ DEAD_LETTER_ADDRESS,
+    public static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0 = new AttributeDefinition[]{ DEAD_LETTER_ADDRESS,
             EXPIRY_ADDRESS, REDELIVERY_DELAY, MAX_DELIVERY_ATTEMPTS, MAX_SIZE_BYTES,
             PAGE_SIZE_BYTES, PAGE_MAX_CACHE_SIZE, ADDRESS_FULL_MESSAGE_POLICY, MESSAGE_COUNTER_HISTORY_DAY_LIMIT,
             LAST_VALUE_QUEUE, REDISTRIBUTION_DELAY, SEND_TO_DLA_ON_NO_ROUTE
