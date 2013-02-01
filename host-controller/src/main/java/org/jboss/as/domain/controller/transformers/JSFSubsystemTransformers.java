@@ -67,7 +67,7 @@ class JSFSubsystemTransformers {
                 if (model.hasDefined(SLOT_ATTRIBUTE_NAME)) {
                     ModelNode slot = model.get(SLOT_ATTRIBUTE_NAME);
                     if (!SLOT_DEFAULT_VALUE.equals(slot.asString())) {
-                        context.getLogger().logWarning(address, SLOT_ATTRIBUTE_NAME, MESSAGES.invalidJSFSlotValue(slot.asString()));
+                        context.getLogger().logAttributeWarning(address, SLOT_ATTRIBUTE_NAME, MESSAGES.invalidJSFSlotValue(slot.asString()));
                     }
                 }
                 Set<String> attributes = new HashSet<String>();
@@ -76,7 +76,7 @@ class JSFSubsystemTransformers {
                 }
                 attributes.remove(SLOT_ATTRIBUTE_NAME);
                 if (!attributes.isEmpty()) {
-                    context.getLogger().logWarning(address, ControllerMessages.MESSAGES.attributesAreNotUnderstoodAndMustBeIgnored(), attributes);
+                    context.getLogger().logAttributeWarning(address, ControllerMessages.MESSAGES.attributesAreNotUnderstoodAndMustBeIgnored(), attributes);
                 }
             }
         });
@@ -141,7 +141,7 @@ class JSFSubsystemTransformers {
                 if (!SLOT_ATTRIBUTE_NAME.equals(attributeName)) {
                     return DEFAULT.transformOperation(context, address, operation);
                 } else {
-                    context.getLogger().logWarning(address, ControllerMessages.MESSAGES.attributesAreNotUnderstoodAndMustBeIgnored(), attributeName);
+                    context.getLogger().logAttributeWarning(address, ControllerMessages.MESSAGES.attributesAreNotUnderstoodAndMustBeIgnored(), attributeName);
                     return DISCARD.transformOperation(context, address, operation);
                 }
             }

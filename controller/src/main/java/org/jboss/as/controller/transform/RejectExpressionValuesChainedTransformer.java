@@ -115,7 +115,7 @@ public class RejectExpressionValuesChainedTransformer implements ChainedResource
 
                 @Override
                 public String getFailureDescription() {
-                    return context.getLogger().getWarning(address, operation, MESSAGES.attributesDontSupportExpressions(), attributes);
+                    return context.getLogger().getAttributeWarning(address, operation, MESSAGES.attributesDontSupportExpressions(), attributes);
                 }
             };
         } else {
@@ -132,7 +132,7 @@ public class RejectExpressionValuesChainedTransformer implements ChainedResource
         final ModelNode model = resource.getModel();
         final Set<String> attributes = checkModel(model, context);
         if (attributes.size() > 0) {
-            context.getLogger().logWarning(address, MESSAGES.attributesDontSupportExpressions(), attributes);
+            context.getLogger().logAttributeWarning(address, MESSAGES.attributesDontSupportExpressions(), attributes);
         }
     }
 
@@ -189,7 +189,7 @@ public class RejectExpressionValuesChainedTransformer implements ChainedResource
 
                     @Override
                     public String getFailureDescription() {
-                        return context.getLogger().getWarning(address, operation, MESSAGES.attributesDontSupportExpressions(), attribute);
+                        return context.getLogger().getAttributeWarning(address, operation, MESSAGES.attributesDontSupportExpressions(), attribute);
                     }
                 };
                 return new TransformedOperation(operation, rejectPolicy, OperationResultTransformer.ORIGINAL_RESULT);

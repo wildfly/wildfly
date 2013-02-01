@@ -681,5 +681,42 @@ public class FailedOperationTransformationConfig {
             throw new IllegalStateException("Should not get called");
         }
     };
+    public static final PathAddressConfig REJECTED_RESOURCE = new PathAddressConfig() {
+
+        @Override
+        public boolean expectFailedWriteAttributeOperation(ModelNode operation) {
+            throw new IllegalStateException("Should not get called");
+        }
+
+        @Override
+        public boolean expectFailed(ModelNode operation) {
+            return true;
+        }
+
+        @Override
+        public boolean expectDiscarded(ModelNode operation) {
+            return true;
+        }
+
+        @Override
+        public List<ModelNode> createWriteAttributeOperations(ModelNode operation) {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public ModelNode correctWriteAttributeOperation(ModelNode operation) {
+            throw new IllegalStateException("Should not get called");
+        }
+
+        @Override
+        public ModelNode correctOperation(ModelNode operation) {
+            throw new IllegalStateException("Should not get called");
+        }
+
+        @Override
+        public boolean canCorrectMore(ModelNode operation) {
+            return false;
+        }
+    };
 
 }
