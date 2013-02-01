@@ -31,6 +31,8 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.client.helpers.ClientConstants;
+import org.jboss.as.controller.client.helpers.Operations.CompositeOperationBuilder;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.logging.logmanager.ConfigurationPersistence;
@@ -165,8 +167,6 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
 
     private void testTransformOperations(final KernelServices mainServices, final ModelVersion modelVersion, final ModelNode legacyModel) throws Exception {
 
-        // TODO (jrp) add composite operation test
-
         final PathAddress consoleAddress = createConsoleHandlerAddress("CONSOLE");
         // Get all the console handler
         final ModelNode consoleHandler = legacyModel.get(consoleAddress.getElement(0).getKey(), consoleAddress.getElement(0).getValue(),
@@ -229,10 +229,53 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
         // add/remove from an async-handler
         final PathAddress asyncHandlerAddress = createAsyncHandlerAddress("async");
         addRemoveHandler(mainServices, modelVersion, asyncHandlerAddress.toModelNode(), AsyncHandlerResourceDefinition.SUBHANDLERS, handlerName);
+
+        // Test a composite operation
+        final CompositeOperationBuilder compositeOperationBuilder = CompositeOperationBuilder.create();
+
+        // Add a logger which should add a category attribute after transformation
+        final ModelNode compositeLoggerAddress = createLoggerAddress("compositeLogger").toModelNode();
+        compositeOperationBuilder.addStep(SubsystemOperations.createAddOperation(compositeLoggerAddress));
+
+        // Remove the file handler, then re-add it with the enabled attribute that should be removed
+        compositeOperationBuilder.addStep(SubsystemOperations.createRemoveOperation(handlerAddress.toModelNode()));
+        op = SubsystemOperations.createAddOperation(handlerAddress.toModelNode());
+        op.get(CommonAttributes.FILE.getName(), PathResourceDefinition.RELATIVE_TO.getName()).set("jboss.server.log.dir");
+        op.get(CommonAttributes.FILE.getName(), PathResourceDefinition.PATH.getName()).set("fh.log");
+        op.get(CommonAttributes.AUTOFLUSH.getName()).set(true);
+        op.get(CommonAttributes.ENABLED.getName()).set(true);
+        compositeOperationBuilder.addStep(op);
+
+        compositeOperationBuilder.addStep(SubsystemOperations.createAddOperation(createAddress(CommonAttributes.LOGGING_PROFILE, "composite-profile").toModelNode()));
+
+        // Transform the operation
+        final TransformedOperation transformedOp = mainServices.transformOperation(modelVersion, compositeOperationBuilder.build().getOperation());
+        op = transformedOp.getTransformedOperation();
+        // Iterate the steps and look for specific changes in the operation
+        final List<ModelNode> steps = op.get(ClientConstants.STEPS).asList();
+
+        // There should only be 3 steps as the logging-profile should have been removed
+        Assert.assertEquals("Logging profile step should have been removed", 3, steps.size());
+
+        // First step should be the logger
+        ModelNode stepOp = steps.get(0);
+        // Verify the category was added
+        Assert.assertTrue("category attribute should have been added", stepOp.hasDefined(LoggerResourceDefinition.CATEGORY.getName()));
+
+        // Third operation should the adding the handler
+        stepOp = steps.get(2);
+        // Verify the enabled attribute was removed
+        Assert.assertFalse("enabled attribute should have been removed", stepOp.hasDefined(CommonAttributes.ENABLED.getName()));
+
+        executeTransformOperation(mainServices, modelVersion, transformedOp);
+
     }
 
     private static ModelNode executeTransformOperation(final KernelServices kernelServices, final ModelVersion modelVersion, final ModelNode op) throws OperationFailedException {
-        TransformedOperation transformedOp = kernelServices.transformOperation(modelVersion, op);
+        return executeTransformOperation(kernelServices, modelVersion, kernelServices.transformOperation(modelVersion, op));
+    }
+
+    private static ModelNode executeTransformOperation(final KernelServices kernelServices, final ModelVersion modelVersion, final TransformedOperation transformedOp) throws OperationFailedException {
         ModelNode result = kernelServices.executeOperation(modelVersion, transformedOp);
         Assert.assertTrue(result.asString(), SubsystemOperations.isSuccessfulOutcome(result));
         return result;
