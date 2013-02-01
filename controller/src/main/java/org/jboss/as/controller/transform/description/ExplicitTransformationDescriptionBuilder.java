@@ -109,6 +109,11 @@ public final class ExplicitTransformationDescriptionBuilder extends AbstractTran
             public boolean isInherited() {
                 return false;
             }
+
+            @Override
+            public List<String> getDiscardedOperations() {
+                return discardedOperations;
+            }
         };
     }
 

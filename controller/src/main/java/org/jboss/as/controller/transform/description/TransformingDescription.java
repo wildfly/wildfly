@@ -24,6 +24,7 @@ package org.jboss.as.controller.transform.description;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -49,6 +50,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
     private final Map<String, AttributeTransformationDescription> attributeTransformations;
     private final List<TransformationRule> rules = Collections.emptyList();
     private final Map<String, OperationTransformer> operationTransformers;
+    private final List<String> discardedOperations;
     private final ResourceTransformer resourceTransformer;
 
     public TransformingDescription(final PathElement pathElement, final PathAddressTransformer pathAddressTransformer,
@@ -56,12 +58,14 @@ class TransformingDescription extends AbstractDescription implements Transformat
                                    final ResourceTransformer resourceTransformer,
                                    final Map<String, AttributeTransformationDescription> attributeTransformations,
                                    final Map<String, OperationTransformer> operations,
-                                   final List<TransformationDescription> children) {
+                                   final List<TransformationDescription> children,
+                                   final List<String> discardedOperations) {
         super(pathElement, pathAddressTransformer);
         this.children = children;
         this.discardPolicy = discardPolicy;
         this.resourceTransformer = resourceTransformer;
         this.attributeTransformations = attributeTransformations;
+        this.discardedOperations = discardedOperations;
 
         this.operationTransformers = operations;
         // TODO override more global operations?
@@ -143,5 +147,9 @@ class TransformingDescription extends AbstractDescription implements Transformat
     @Override
     public boolean isInherited() {
         return false;
+    }
+
+    public List<String> getDiscardedOperations() {
+        return discardedOperations;
     }
 }

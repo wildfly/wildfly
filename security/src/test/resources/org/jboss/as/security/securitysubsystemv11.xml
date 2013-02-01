@@ -1,3 +1,27 @@
+<!--
+  ~ /*
+  ~ * JBoss, Home of Professional Open Source.
+  ~ * Copyright 2013, Red Hat, Inc., and individual contributors
+  ~ * as indicated by the @author tags. See the copyright.txt file in the
+  ~ * distribution for a full listing of individual contributors.
+  ~ *
+  ~ * This is free software; you can redistribute it and/or modify it
+  ~ * under the terms of the GNU Lesser General Public License as
+  ~ * published by the Free Software Foundation; either version 2.1 of
+  ~ * the License, or (at your option) any later version.
+  ~ *
+  ~ * This software is distributed in the hope that it will be useful,
+  ~ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ * Lesser General Public License for more details.
+  ~ *
+  ~ * You should have received a copy of the GNU Lesser General Public
+  ~ * License along with this software; if not, write to the Free
+  ~ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  ~ */
+  -->
+
 <subsystem xmlns="urn:jboss:domain:security:1.1">
 	<security-domains>
 		<security-domain name="other" cache-type="default">
@@ -32,16 +56,14 @@
                   keystore-url="../standalone/configuration/keystores/clientcert.jks"
                   keystore-password="changeit"/> 
 		</security-domain>
-		<security-domain name="jaspi-test" cache-type="default">
-             <authentication-jaspi>
-                 <login-module-stack name="lm-stack">
-                     <login-module code="UsersRoles" flag="required">
-                         <module-option name="usersProperties" value="${jboss.server.config.dir}/application-users.properties"/>
-                         <module-option name="rolesProperties" value="${jboss.server.config.dir}/application-roles.properties"/>
-                     </login-module>
-                  </login-module-stack>
-                  <auth-module code="org.jboss.as.web.security.jaspi.modules.HTTPBasicServerAuthModule" login-module-stack-ref="lm-stack"/>
-              </authentication-jaspi>
+		<security-domain name="DsRealm" cache-type="default">
+            <authentication>
+               <login-module code="ConfiguredIdentity" flag="required">
+                  <module-option name="userName" value="sa"/>
+                <module-option name="principal" value="sa"/>
+                <module-option name="password" value="sa"/>
+              </login-module>
+           </authentication>
         </security-domain>
 	</security-domains>
 	<vault code="somevault">
