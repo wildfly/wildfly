@@ -61,8 +61,11 @@ class CompositeOperationTransformer implements OperationTransformer {
                 final OperationTransformer transformer = target.resolveTransformer(stepAddress, operationName);
                 result = transformer.transformOperation(context, stepAddress, step);
             }
-            composite.get(STEPS).add(result.getTransformedOperation());
-            steps.add(new Step(i, result));
+            final ModelNode transformedOperation = result.getTransformedOperation();
+            if (transformedOperation != null) {
+                composite.get(STEPS).add(transformedOperation);
+                steps.add(new Step(i, result));
+            }
         }
         final OperationResultTransformer resultTransformer = new CompositeResultTransformer(steps);
         return new TransformedOperation(composite, resultTransformer);
