@@ -305,7 +305,7 @@ public final class TransformerRegistry {
 
         @Override
         public TransformersSubRegistration registerSubResource(PathElement element, CombinedTransformer transformer) {
-            return registerSubResource(element, (ResourceTransformer) transformer, (OperationTransformer) transformer);
+            return registerSubResource(element, transformer, transformer);
         }
 
         @Override

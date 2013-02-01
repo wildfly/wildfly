@@ -97,7 +97,13 @@ public interface TransformationDescription {
          * @return the created sub registration
          */
         public static TransformersSubRegistration register(final TransformationDescription description, TransformersSubRegistration parent) {
-            final TransformersSubRegistration registration = parent.registerSubResource(description.getPath(), description.getPathAddressTransformer(), description.getResourceTransformer(), description.getOperationTransformer());
+            final TransformersSubRegistration registration;
+            if (description instanceof DiscardDefinition){
+                registration = parent.registerSubResource(description.getPath(), true);
+            }else{
+                registration = parent.registerSubResource(description.getPath(), description.getPathAddressTransformer(), description.getResourceTransformer(), description.getOperationTransformer());
+            }
+
             for (final Map.Entry<String, OperationTransformer> entry : description.getOperationTransformers().entrySet()) {
                 registration.registerOperationTransformer(entry.getKey(), entry.getValue());
             }

@@ -153,8 +153,14 @@ public class WebservicesSubsystemParserTest extends AbstractSubsystemBaseTest {
 
     private FailedOperationTransformationConfig getConfig() {
         PathAddress subsystemAddress = PathAddress.pathAddress(WSExtension.SUBSYSTEM_PATH);
+        PathAddress endpoint = subsystemAddress.append(WSExtension.ENDPOINT_CONFIG_PATH);
         return new FailedOperationTransformationConfig()
-                .addFailedAttribute(subsystemAddress, new FailedOperationTransformationConfig.RejectExpressionsConfig(Attributes.SUBSYSTEM_ATTRIBUTES));
+                .addFailedAttribute(subsystemAddress, new FailedOperationTransformationConfig.RejectExpressionsConfig(Attributes.SUBSYSTEM_ATTRIBUTES))
+                .addFailedAttribute(endpoint.append(WSExtension.PRE_HANDLER_CHAIN_PATH),new FailedOperationTransformationConfig.RejectExpressionsConfig(Attributes.PROTOCOL_BINDINGS))
+                .addFailedAttribute(endpoint.append(WSExtension.POST_HANDLER_CHAIN_PATH),new FailedOperationTransformationConfig.RejectExpressionsConfig(Attributes.PROTOCOL_BINDINGS))
+                .addFailedAttribute(subsystemAddress.append(WSExtension.CLIENT_CONFIG_PATH),FailedOperationTransformationConfig.DISCARDED_RESOURCE)
+                .addFailedAttribute(subsystemAddress.append(WSExtension.CLIENT_CONFIG_PATH).append(WSExtension.PRE_HANDLER_CHAIN_PATH),FailedOperationTransformationConfig.DISCARDED_RESOURCE)
+                .addFailedAttribute(subsystemAddress.append(WSExtension.CLIENT_CONFIG_PATH).append(WSExtension.POST_HANDLER_CHAIN_PATH),FailedOperationTransformationConfig.DISCARDED_RESOURCE);
     }
 
     @Test
@@ -174,7 +180,7 @@ public class WebservicesSubsystemParserTest extends AbstractSubsystemBaseTest {
         Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
-        List<ModelNode> xmlOps = builder.parseXmlResource("ws-subsystem12.xml");
+        List<ModelNode> xmlOps = builder.parseXmlResource("ws-subsystem12-noexpression.xml");
 
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_1_0, xmlOps, getConfig());
     }
