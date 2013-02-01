@@ -22,12 +22,6 @@
 
 package org.jboss.as.threads;
 
-import static org.jboss.as.threads.CommonAttributes.BOUNDED_QUEUE_THREAD_POOL;
-import static org.jboss.as.threads.CommonAttributes.QUEUELESS_THREAD_POOL;
-import static org.jboss.as.threads.CommonAttributes.SCHEDULED_THREAD_POOL;
-import static org.jboss.as.threads.CommonAttributes.THREAD_FACTORY;
-import static org.jboss.as.threads.CommonAttributes.UNBOUNDED_QUEUE_THREAD_POOL;
-
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.dmr.ModelNode;

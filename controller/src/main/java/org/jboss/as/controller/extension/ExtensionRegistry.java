@@ -36,10 +36,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
 import javax.xml.namespace.QName;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
@@ -482,7 +482,6 @@ public class ExtensionRegistry {
             this.registerTransformers = registerTransformers;
         }
 
-
         @Override
         public SubsystemRegistration registerSubsystem(String name, int majorVersion, int minorVersion) throws IllegalArgumentException, IllegalStateException {
             return registerSubsystem(name, majorVersion, minorVersion, 0);
@@ -490,13 +489,22 @@ public class ExtensionRegistry {
 
         @Override
         public SubsystemRegistration registerSubsystem(String name, int majorVersion, int minorVersion, int microVersion) {
+            return registerSubsystem(name, majorVersion, minorVersion, microVersion, false);
+        }
+
+        @Override
+        public SubsystemRegistration registerSubsystem(String name, int majorVersion, int minorVersion, int microVersion, boolean deprecated) {
             assert name != null : "name is null";
             checkNewSubystem(extension.extensionModuleName, name);
             SubsystemInformationImpl info = extension.getSubsystemInfo(name);
             info.setMajorVersion(majorVersion);
             info.setMinorVersion(minorVersion);
             info.setMicroVersion(microVersion);
+            info.setDeprecated(deprecated);
             subsystemsInfo.put(name, info);
+            if (deprecated){
+                ControllerLogger.DEPRECATED_LOGGER.extensionDeprecated(name);
+            }
             return new SubsystemRegistrationImpl(name);
         }
 
@@ -526,7 +534,7 @@ public class ExtensionRegistry {
 
         @Override
         public boolean isRegisterTransformers() {
-            return true;
+            return registerTransformers;
         }
     }
 
@@ -535,6 +543,7 @@ public class ExtensionRegistry {
         private Integer majorVersion;
         private Integer minorVersion;
         private Integer microVersion;
+        private boolean deprecated = false;
         private final List<String> parsingNamespaces = new ArrayList<String>();
 
         @Override
@@ -571,6 +580,14 @@ public class ExtensionRegistry {
 
         private void setMicroVersion(Integer microVersion) {
             this.microVersion = microVersion;
+        }
+
+        public boolean isDeprecated() {
+            return deprecated;
+        }
+
+        private void setDeprecated(boolean deprecated) {
+            this.deprecated = deprecated;
         }
     }
 
