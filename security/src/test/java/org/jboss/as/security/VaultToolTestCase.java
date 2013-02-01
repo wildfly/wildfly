@@ -1,4 +1,28 @@
-package org.jboss.as.security.test;
+/*
+ *
+ *  JBoss, Home of Professional Open Source.
+ *  Copyright 2013, Red Hat, Inc., and individual contributors
+ *  as indicated by the @author tags. See the copyright.txt file in the
+ *  distribution for a full listing of individual contributors.
+ *
+ *  This is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU Lesser General Public License as
+ *  published by the Free Software Foundation; either version 2.1 of
+ *  the License, or (at your option) any later version.
+ *
+ *  This software is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this software; if not, write to the Free
+ *  Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ *  02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * /
+ */
+
+package org.jboss.as.security;
 
 import static java.util.Collections.addAll;
 
@@ -30,7 +54,7 @@ public class VaultToolTestCase {
   private static final String KEYSTORE_ALIAS_VALUE = "vault";
   private static final String ITERATION_COUNT_VALUE = "12";
   private static final String CODE_LOCATION = VaultToolTestCase.class.getProtectionDomain().getCodeSource().getLocation().getFile();
-  private static final String KEYSTORE_URL_VALUE = CODE_LOCATION + "org/jboss/as/security/test/vault.keystore";
+  private static final String KEYSTORE_URL_VALUE = CODE_LOCATION + "org/jboss/as/security/vault.keystore";
   private static final String MASKED_MYPASSWORD_VALUE = "MASK-UWB5tlhOmKYzJVl9KZaPN";
   private static final String SALT_VALUE = "bdfbdf12";
   private static final ByteArrayOutputStream SYSTEM_OUT = new ByteArrayOutputStream();

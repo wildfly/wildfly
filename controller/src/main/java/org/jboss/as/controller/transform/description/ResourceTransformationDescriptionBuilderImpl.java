@@ -23,6 +23,7 @@
 package org.jboss.as.controller.transform.description;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -126,7 +127,7 @@ class ResourceTransformationDescriptionBuilderImpl extends AbstractTransformatio
             children.add(builder.build());
         }
         // Create the description
-        return new TransformingDescription(pathElement, pathAddressTransformer, discardPolicy, resourceTransformer, attributes, operations, children);
+        return new TransformingDescription(pathElement, pathAddressTransformer, discardPolicy, resourceTransformer, attributes, operations, children,discardedOperations);
     }
 
     @Override
@@ -155,5 +156,11 @@ class ResourceTransformationDescriptionBuilderImpl extends AbstractTransformatio
     @Override
     public ConcreteAttributeTransformationDescriptionBuilder getAttributeBuilder() {
         return new ConcreteAttributeTransformationDescriptionBuilder(this, registry);
+    }
+
+    @Override
+    public ResourceTransformationDescriptionBuilder discardOperations(String... operationNames) {
+        Collections.addAll(discardedOperations, operationNames);
+        return this;
     }
 }

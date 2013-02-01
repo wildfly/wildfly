@@ -22,6 +22,10 @@
 
 package org.jboss.as.controller.transform.description;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -32,10 +36,6 @@ import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.dmr.ModelNode;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author Emanuel Muckenhuber
@@ -79,5 +79,10 @@ class DiscardDefinition extends AbstractDescription implements TransformationDes
     @Override
     public boolean isInherited() {
         return true;
+    }
+
+    @Override
+    public List<String> getDiscardedOperations() {
+        return Collections.emptyList();
     }
 }

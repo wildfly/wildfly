@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.security.test;
+package org.jboss.as.security;
 
 import java.io.IOException;
 import java.util.List;

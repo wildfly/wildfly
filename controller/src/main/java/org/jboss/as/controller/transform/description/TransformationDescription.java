@@ -90,6 +90,13 @@ public interface TransformationDescription {
      */
     boolean isInherited();
 
+    /**
+     * operations that must be flat out discarded and not forwarded
+     *
+     * @return list of discarded operations
+     */
+    List<String> getDiscardedOperations();
+
     public static final class Tools {
 
         private Tools() {
@@ -114,6 +121,7 @@ public interface TransformationDescription {
             for (final Map.Entry<String, OperationTransformer> entry : description.getOperationTransformers().entrySet()) {
                 registration.registerOperationTransformer(entry.getKey(), entry.getValue());
             }
+            registration.discardOperations(description.getDiscardedOperations().toArray(new String[description.getDiscardedOperations().size()]));
             for (final TransformationDescription child : description.getChildren()) {
                 register(child, registration);
             }
@@ -148,6 +156,7 @@ public interface TransformationDescription {
             for (final TransformationDescription child : description.getChildren()) {
                 register(child, subRegistration);
             }
+            subRegistration.discardOperations(description.getDiscardedOperations().toArray(new String[description.getDiscardedOperations().size()]));
             return subRegistration;
         }
 

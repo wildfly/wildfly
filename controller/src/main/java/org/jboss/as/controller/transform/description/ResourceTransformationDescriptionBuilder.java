@@ -138,4 +138,13 @@ public interface ResourceTransformationDescriptionBuilder extends Transformation
      */
     ResourceTransformationDescriptionBuilder addChildBuilder(TransformationDescriptionBuilder builder);
 
+
+    /**
+     * Don't forward and just discard the operation.
+     *
+     * @param operationNames the operation names
+     * @return the builder for this resource
+     */
+    ResourceTransformationDescriptionBuilder discardOperations(String... operationNames);
+
 }

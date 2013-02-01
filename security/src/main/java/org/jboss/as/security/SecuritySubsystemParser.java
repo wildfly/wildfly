@@ -338,7 +338,9 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
     }
 
     private void writeLoginModule(XMLExtendedStreamWriter writer, ModelNode modelNode, String key, final String elementName) throws XMLStreamException {
-
+        if (!modelNode.hasDefined(key)){
+            return;
+        }
         final ModelNode modules = modelNode.get(key);
         for (Property moduleProp : modules.asPropertyList()) {
             ModelNode module = moduleProp.getValue();

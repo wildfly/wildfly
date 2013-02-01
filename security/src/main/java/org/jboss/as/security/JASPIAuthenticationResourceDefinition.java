@@ -52,6 +52,7 @@ public class JASPIAuthenticationResourceDefinition extends SimpleResourceDefinit
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         super.registerChildren(resourceRegistration);
         resourceRegistration.registerSubModel(new JASPIMappingModuleDefinition());
+        resourceRegistration.registerSubModel(LoginModuleStackResourceDefinition.INSTANCE);
     }
 
     static class JASPIAuthenticationResourceDefinitionAdd extends SecurityDomainReloadAddHandler {
