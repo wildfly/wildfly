@@ -364,7 +364,7 @@ public abstract class EJBComponent extends BasicComponent {
         return utilities.getUserTransaction();
     }
 
-    private boolean isBeanManagedTransaction() {
+    public boolean isBeanManagedTransaction() {
         return isBeanManagedTransaction;
     }
 

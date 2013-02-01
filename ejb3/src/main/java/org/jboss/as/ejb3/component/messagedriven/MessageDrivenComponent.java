@@ -114,6 +114,8 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
 
             @Override
             public boolean isDeliveryTransacted(Method method) throws NoSuchMethodException {
+                if(isBeanManagedTransaction())
+                    return false;
                 // an MDB doesn't expose a real view
                 return getTransactionAttributeType(BEAN, method) == REQUIRED;
             }
