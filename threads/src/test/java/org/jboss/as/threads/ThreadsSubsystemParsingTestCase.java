@@ -1,23 +1,25 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ *  JBoss, Home of Professional Open Source.
+ *  Copyright 2013, Red Hat, Inc., and individual contributors
+ *  as indicated by the @author tags. See the copyright.txt file in the
+ *  distribution for a full listing of individual contributors.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ *  This is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU Lesser General Public License as
+ *  published by the Free Software Foundation; either version 2.1 of
+ *  the License, or (at your option) any later version.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *  This software is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this software; if not, write to the Free
+ *  Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ *  02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * /
  */
 package org.jboss.as.threads;
 
@@ -61,88 +63,39 @@ import static org.jboss.as.threads.CommonAttributes.TIME;
 import static org.jboss.as.threads.CommonAttributes.UNBOUNDED_QUEUE_THREAD_POOL;
 import static org.jboss.as.threads.CommonAttributes.UNIT;
 
-import java.io.OutputStream;
-import java.io.Reader;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 
-import junit.framework.Assert;
-import org.jboss.as.controller.AbstractControllerService;
-import org.jboss.as.controller.ControlledProcessState;
-import org.jboss.as.controller.ExpressionResolver;
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.ModelVersionRange;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ProcessType;
-import org.jboss.as.controller.ResourceBuilder;
-import org.jboss.as.controller.ResourceDefinition;
-import org.jboss.as.controller.RunningMode;
-import org.jboss.as.controller.RunningModeControl;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
-import org.jboss.as.controller.extension.ExtensionRegistry;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
-import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
-import org.jboss.as.controller.persistence.ConfigurationPersister;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.services.path.PathManager;
-import org.jboss.as.controller.transform.CombinedTransformer;
-import org.jboss.as.controller.transform.OperationTransformer;
-import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.TransformerRegistry;
-import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.subsystem.test.AbstractSubsystemTest;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.dmr.Property;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLMapper;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class ThreadsSubsystemParsingTestCase {
+public class ThreadsSubsystemParsingTestCase extends AbstractSubsystemTest {
+    public ThreadsSubsystemParsingTestCase() {
+        super(ThreadsExtension.SUBSYSTEM_NAME, new ThreadsExtension());
+    }
+/*
 
     static ModelNode profileAddress = new ModelNode();
 
     static {
         profileAddress.add("profile", "test");
     }
+*/
 
+    private KernelServices services;
     private ModelNode model;
 
-    private ServiceContainer container;
+  /*  private ServiceContainer container;
     private ModelController controller;
 
     @Before
@@ -170,14 +123,16 @@ public class ThreadsSubsystemParsingTestCase {
                 container = null;
             }
         }
-    }
+    }*/
 
     @Test
     public void testGetModelDescription() throws Exception {
-        ModelNode operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "test");
+        ModelNode operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION);
         operation.get(RECURSIVE).set(true);
         operation.get(OPERATIONS).set(true);
-        ModelNode result = executeForResult(operation);
+        services = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT).build();
+
+        ModelNode result = services.executeForResult(operation);
 
         ModelNode threadsDescription = result.get(CHILDREN, SUBSYSTEM, MODEL_DESCRIPTION, THREADS);
         assertTrue(threadsDescription.isDefined());
@@ -296,7 +251,7 @@ public class ThreadsSubsystemParsingTestCase {
             }
         }
 
-        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode subsystem = model.require("subsystem").require("threads");
         ModelNode threadFactory = subsystem.require("thread-factory");
         assertEquals(1, threadFactory.keys().size());
     }
@@ -316,14 +271,14 @@ public class ThreadsSubsystemParsingTestCase {
                 + "   thread-name-pattern=\"test-pattern\"" + "   priority=\"5\"/>");
 
         executeForResult(updates.get(0));
-        controller.execute(updates.get(1), null, null, null);
+        executeForResult(updates.get(1));
 
         checkFullTreadFactory();
     }
 
     private void checkFullTreadFactory() {
 
-        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode subsystem = model.require("subsystem").require("threads");
         ModelNode threadFactory = subsystem.require("thread-factory");
         assertEquals(1, threadFactory.keys().size());
         assertEquals("test-group", threadFactory.require("test-factory").require("group-name").asString());
@@ -344,7 +299,7 @@ public class ThreadsSubsystemParsingTestCase {
             }
         }
 
-        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode subsystem = model.require("subsystem").require("threads");
         ModelNode threadFactory = subsystem.require("thread-factory");
         assertEquals(2, threadFactory.keys().size());
         assertEquals("A", threadFactory.require("test-factory").require("group-name").asString());
@@ -363,7 +318,7 @@ public class ThreadsSubsystemParsingTestCase {
             }
         }
 
-        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode subsystem = model.require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("unbounded-queue-thread-pool");
         assertEquals(1, threadPool.keys().size());
     }
@@ -381,7 +336,7 @@ public class ThreadsSubsystemParsingTestCase {
             }
         }
 
-        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode subsystem = model.require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("unbounded-queue-thread-pool");
         assertEquals(1, threadPool.keys().size());
     }
@@ -425,7 +380,7 @@ public class ThreadsSubsystemParsingTestCase {
     }
 
     private void checkFullUnboundedThreadPool() throws Exception {
-        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode subsystem = model.require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("unbounded-queue-thread-pool");
         assertEquals(1, threadPool.keys().size());
         assertEquals(100, threadPool.require("test-pool").require(MAX_THREADS).asInt());
@@ -446,7 +401,7 @@ public class ThreadsSubsystemParsingTestCase {
             }
         }
 
-        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode subsystem = model.require("subsystem").require("threads");
         ModelNode threadFactory = subsystem.require("unbounded-queue-thread-pool");
         assertEquals(2, threadFactory.keys().size());
     }
@@ -466,7 +421,7 @@ public class ThreadsSubsystemParsingTestCase {
             }
         }
 
-        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode subsystem = model.require("subsystem").require("threads");
         ModelNode threadFactory = subsystem.require("unbounded-queue-thread-pool");
         assertEquals(2, threadFactory.keys().size());
     }
@@ -483,7 +438,7 @@ public class ThreadsSubsystemParsingTestCase {
             }
         }
 
-        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode subsystem = model.require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("scheduled-thread-pool");
         assertEquals(1, threadPool.keys().size());
     }
@@ -501,7 +456,7 @@ public class ThreadsSubsystemParsingTestCase {
             }
         }
 
-        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode subsystem = model.require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("scheduled-thread-pool");
         assertEquals(1, threadPool.keys().size());
     }
@@ -545,7 +500,7 @@ public class ThreadsSubsystemParsingTestCase {
     }
 
     private void checkFullScheduledThreadPool() throws Exception {
-        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode subsystem = model.require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("scheduled-thread-pool");
         assertEquals(1, threadPool.keys().size());
         assertEquals(100, threadPool.require("test-pool").require(MAX_THREADS).asInt());
@@ -566,7 +521,7 @@ public class ThreadsSubsystemParsingTestCase {
             }
         }
 
-        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode subsystem = model.require("subsystem").require("threads");
         ModelNode threadFactory = subsystem.require("scheduled-thread-pool");
         assertEquals(2, threadFactory.keys().size());
     }
@@ -586,7 +541,7 @@ public class ThreadsSubsystemParsingTestCase {
             }
         }
 
-        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode subsystem = model.require("subsystem").require("threads");
         ModelNode threadFactory = subsystem.require("scheduled-thread-pool");
         assertEquals(2, threadFactory.keys().size());
     }
@@ -603,7 +558,7 @@ public class ThreadsSubsystemParsingTestCase {
             }
         }
 
-        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode subsystem = model.require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("queueless-thread-pool");
         assertEquals(1, threadPool.keys().size());
     }
@@ -622,7 +577,7 @@ public class ThreadsSubsystemParsingTestCase {
             }
         }
 
-        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode subsystem = model.require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("queueless-thread-pool");
         assertEquals(1, threadPool.keys().size());
     }
@@ -674,7 +629,7 @@ public class ThreadsSubsystemParsingTestCase {
     }
 
     private void checkFullQueuelessThreadPool() throws Exception {
-        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode subsystem = model.require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("queueless-thread-pool");
         assertEquals(2, threadPool.keys().size());
         assertEquals(100, threadPool.require("test-pool").require(MAX_THREADS).asInt());
@@ -696,7 +651,7 @@ public class ThreadsSubsystemParsingTestCase {
             }
         }
 
-        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode subsystem = model.require("subsystem").require("threads");
         ModelNode threadFactory = subsystem.require("queueless-thread-pool");
         assertEquals(2, threadFactory.keys().size());
     }
@@ -713,7 +668,7 @@ public class ThreadsSubsystemParsingTestCase {
             }
         }
 
-        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode subsystem = model.require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("blocking-queueless-thread-pool");
         assertEquals(1, threadPool.keys().size());
     }
@@ -732,7 +687,7 @@ public class ThreadsSubsystemParsingTestCase {
             }
         }
 
-        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode subsystem = model.require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("blocking-queueless-thread-pool");
         assertEquals(1, threadPool.keys().size());
     }
@@ -779,7 +734,7 @@ public class ThreadsSubsystemParsingTestCase {
     }
 
     private void checkFullBlockingQueuelessThreadPool() throws Exception {
-        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode subsystem = model.require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("blocking-queueless-thread-pool");
         assertEquals(1, threadPool.keys().size());
         assertEquals(100, threadPool.require("test-pool").require(MAX_THREADS).asInt());
@@ -802,7 +757,7 @@ public class ThreadsSubsystemParsingTestCase {
             }
         }
 
-        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode subsystem = model.require("subsystem").require("threads");
         ModelNode threadFactory = subsystem.require("blocking-queueless-thread-pool");
         assertEquals(2, threadFactory.keys().size());
     }
@@ -822,7 +777,7 @@ public class ThreadsSubsystemParsingTestCase {
             }
         }
 
-        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode subsystem = model.require("subsystem").require("threads");
         ModelNode threadFactory = subsystem.require("queueless-thread-pool");
         assertEquals(2, threadFactory.keys().size());
     }
@@ -840,7 +795,7 @@ public class ThreadsSubsystemParsingTestCase {
             }
         }
 
-        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode subsystem = model.require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("bounded-queue-thread-pool");
         assertEquals(1, threadPool.keys().size());
     }
@@ -859,7 +814,7 @@ public class ThreadsSubsystemParsingTestCase {
             }
         }
 
-        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode subsystem = model.require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("bounded-queue-thread-pool");
         assertEquals(1, threadPool.keys().size());
     }
@@ -913,7 +868,7 @@ public class ThreadsSubsystemParsingTestCase {
     }
 
     private void checkFullBoundedQueueThreadPool() throws Exception {
-        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode subsystem = model.require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("bounded-queue-thread-pool");
         assertEquals(1, threadPool.keys().size());
         assertTrue(threadPool.require("test-pool").require("allow-core-timeout").asBoolean());
@@ -938,7 +893,7 @@ public class ThreadsSubsystemParsingTestCase {
             }
         }
 
-        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode subsystem = model.require("subsystem").require("threads");
         ModelNode threadFactory = subsystem.require("bounded-queue-thread-pool");
         assertEquals(2, threadFactory.keys().size());
     }
@@ -959,7 +914,7 @@ public class ThreadsSubsystemParsingTestCase {
             }
         }
 
-        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode subsystem = model.require("subsystem").require("threads");
         ModelNode threadFactory = subsystem.require("bounded-queue-thread-pool");
         assertEquals(2, threadFactory.keys().size());
     }
@@ -977,7 +932,7 @@ public class ThreadsSubsystemParsingTestCase {
             }
         }
 
-        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode subsystem = model.require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("blocking-bounded-queue-thread-pool");
         assertEquals(1, threadPool.keys().size());
     }
@@ -996,7 +951,7 @@ public class ThreadsSubsystemParsingTestCase {
             }
         }
 
-        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode subsystem = model.require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("blocking-bounded-queue-thread-pool");
         assertEquals(1, threadPool.keys().size());
     }
@@ -1045,7 +1000,7 @@ public class ThreadsSubsystemParsingTestCase {
     }
 
     private void checkFullBlockingBoundedQueueThreadPool() throws Exception {
-        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode subsystem = model.require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("blocking-bounded-queue-thread-pool");
         assertEquals(1, threadPool.keys().size());
         assertTrue(threadPool.require("test-pool").require("allow-core-timeout").asBoolean());
@@ -1072,7 +1027,7 @@ public class ThreadsSubsystemParsingTestCase {
             }
         }
 
-        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode subsystem = model.require("subsystem").require("threads");
         ModelNode threadFactory = subsystem.require("blocking-bounded-queue-thread-pool");
         assertEquals(2, threadFactory.keys().size());
     }
@@ -1093,7 +1048,7 @@ public class ThreadsSubsystemParsingTestCase {
             }
         }
 
-        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode subsystem = model.require("subsystem").require("threads");
         ModelNode threadFactory = subsystem.require("blocking-bounded-queue-thread-pool");
         assertEquals(2, threadFactory.keys().size());
     }
@@ -1112,223 +1067,17 @@ public class ThreadsSubsystemParsingTestCase {
         return operation;
     }
 
-    // FIXME get rid of this and use standard subsystem test infrastructure
-    static class TestExtensionContext implements ExtensionContext {
-        final ManagementResourceRegistration testProfileRegistration;
-        ManagementResourceRegistration createdRegistration;
-        final TransformerRegistry transformerRegistry;
 
-        TestExtensionContext(ManagementResourceRegistration testProfileRegistration) {
-            this.testProfileRegistration = testProfileRegistration;
-            ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER, new RunningModeControl(RunningMode.NORMAL));
-            transformerRegistry = extensionRegistry.getTransformerRegistry();
-        }
-
-        @Override
-        public ProcessType getProcessType() {
-            return ProcessType.EMBEDDED_SERVER;
-        }
-
-        @Override
-        public RunningMode getRunningMode() {
-            return RunningMode.NORMAL;
-        }
-
-        @Override
-        public boolean isRuntimeOnlyRegistrationValid() {
-            return getProcessType().isServer() && getRunningMode() != RunningMode.ADMIN_ONLY;
-        }
-
-        @Override
-        public PathManager getPathManager() {
-            return null;
-        }
-
-        @Override
-        public SubsystemRegistration registerSubsystem(final String name, final int majorVersion, final int minorVersion) {
-            return registerSubsystem(name, majorVersion, minorVersion, 0);
-        }
-
-        @Override
-        public SubsystemRegistration registerSubsystem(final String name, final int majorVersion,
-                                                       final int minorVersion, final int microVersion) {
-            return new SubsystemRegistration() {
-                @Override
-                public ManagementResourceRegistration registerSubsystemModel(final DescriptionProvider descriptionProvider) {
-                    if (descriptionProvider == null) {
-                        throw new IllegalArgumentException("descriptionProvider is null");
-                    }
-                    PathElement pe = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, name);
-                    return registerSubsystemModel(new SimpleResourceDefinition(pe, new NonResolvingResourceDescriptionResolver()));
-                }
-
-                @Override
-                public ManagementResourceRegistration registerSubsystemModel(ResourceDefinition resourceDefinition) {
-                    if (resourceDefinition == null) {
-                        throw new IllegalArgumentException("resourceDefinition is null");
-                    }
-                    createdRegistration = testProfileRegistration.registerSubModel(resourceDefinition);
-                    Assert.assertEquals("threads", name);
-                    return createdRegistration;
-                }
-
-                @Override
-                public ManagementResourceRegistration registerDeploymentModel(final DescriptionProvider descriptionProvider) {
-                    throw new IllegalStateException("Not implemented");
-                }
-
-                @Override
-                public ManagementResourceRegistration registerDeploymentModel(ResourceDefinition resourceDefinition) {
-                    throw new UnsupportedOperationException("Not implemented");
-                }
-
-                @Override
-                public void registerXMLElementWriter(XMLElementWriter<SubsystemMarshallingContext> writer) {
-                    Assert.assertNotNull(writer);
-                }
-
-                @Override
-                public TransformersSubRegistration registerModelTransformers(ModelVersionRange version, ResourceTransformer resourceTransformer) {
-                    return registerModelTransformers(version, resourceTransformer, OperationTransformer.DEFAULT);
-                }
-
-                @Override
-                public TransformersSubRegistration registerModelTransformers(ModelVersionRange version, ResourceTransformer resourceTransformer, OperationTransformer operationTransformer) {
-                    return transformerRegistry.registerSubsystemTransformers(name, version, resourceTransformer, operationTransformer);
-                }
-
-                @Override
-                public TransformersSubRegistration registerModelTransformers(ModelVersionRange version, CombinedTransformer combinedTransformer) {
-                    return registerModelTransformers(version, combinedTransformer, combinedTransformer);
-                }
-            };
-        }
-
-        @Override
-        public boolean isRegisterTransformers() {
-            return false;
-        }
-    }
-
-    static List<ModelNode> createSubSystem(String subsystemContents) throws XMLStreamException {
+    private List<ModelNode> createSubSystem(String subsystemContents) throws Exception {
         return createSubSystem(subsystemContents, Namespace.CURRENT);
     }
 
-    static List<ModelNode> createSubSystem(String subsystemContents, Namespace namespace) throws XMLStreamException {
-        final String xmlContent = "      <subsystem xmlns=\"" + namespace.getUriString() + "\">" + subsystemContents
-                + "      </subsystem>"; // +
-
-        final Reader reader = new StringReader(xmlContent);
-        XMLStreamReader xmlReader = XMLInputFactory.newInstance().createXMLStreamReader(reader);
-
-        XMLMapper xmlMapper = XMLMapper.Factory.create();
-        xmlMapper.registerRootElement(new QName(namespace.getUriString(), "subsystem"),
-                ThreadsParser.INSTANCE);
-
-        List<ModelNode> updates = new ArrayList<ModelNode>();
-        xmlMapper.parseDocument(updates, xmlReader);
-
-        // Process subsystems
-        for (final ModelNode update : updates) {
-            // Process relative subsystem path address
-            final ModelNode subsystemAddress = profileAddress.clone();
-            for (final Property path : update.get(OP_ADDR).asPropertyList()) {
-                subsystemAddress.add(path.getName(), path.getValue().asString());
-            }
-            update.get(OP_ADDR).set(subsystemAddress);
-        }
-
-        return updates;
-    }
-
-    public class ModelControllerService extends AbstractControllerService {
-
-        private final CountDownLatch latch = new CountDownLatch(2);
-
-        ModelControllerService() {
-            super(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.NORMAL), new TestConfigurationPersister(), new ControlledProcessState(true),
-                    ResourceBuilder.Factory.create(PathElement.pathElement("root"), new NonResolvingResourceDescriptionResolver()).build(), null, ExpressionResolver.TEST_RESOLVER);
-        }
-
-        @Override
-        public void start(StartContext context) throws StartException {
-            super.start(context);
-            latch.countDown();
-        }
-
-        @Override
-        protected void bootThreadDone() {
-            super.bootThreadDone();
-            latch.countDown();
-        }
-
-        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
-            GlobalOperationHandlers.registerGlobalOperations(rootRegistration, processType);
-
-            rootRegistration.registerOperationHandler(new SimpleOperationDefinitionBuilder("setup", new NonResolvingResourceDescriptionResolver())
-                    .setPrivateEntry()
-                    .build(), new OperationStepHandler() {
-                @Override
-                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    context.createResource(PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement("profile", "test")));
-                    context.stepCompleted();
-                }
-            });
-
-            ManagementResourceRegistration profileRegistration = rootRegistration.registerSubModel(
-                    ResourceBuilder.Factory.create(PathElement.pathElement("profile"), new NonResolvingResourceDescriptionResolver())
-                            .addReadOnlyAttribute(SimpleAttributeDefinitionBuilder.create("name", ModelType.STRING, false).setMinSize(1).build())
-                            .build());
-            TestExtensionContext context = new TestExtensionContext(profileRegistration);
-            ThreadsExtension extension = new ThreadsExtension();
-            extension.initialize(context);
-            Assert.assertNotNull(context.createdRegistration);
-        }
-
-    }
-
-    private class TestConfigurationPersister implements ConfigurationPersister {
-
-        @Override
-        public PersistenceResource store(final ModelNode model, Set<PathAddress> affectedAddresses) throws ConfigurationPersistenceException {
-            return new PersistenceResource() {
-                @Override
-                public void commit() {
-                    ThreadsSubsystemParsingTestCase.this.model = model;
-                }
-
-                @Override
-                public void rollback() {
-                }
-            };
-        }
-
-        @Override
-        public void marshallAsXml(ModelNode model, OutputStream output) throws ConfigurationPersistenceException {
-        }
-
-        @Override
-        public List<ModelNode> load() throws ConfigurationPersistenceException {
-            return Collections.emptyList();
-        }
-
-        @Override
-        public void successfulBoot() throws ConfigurationPersistenceException {
-        }
-
-        @Override
-        public String snapshot() {
-            return null;
-        }
-
-        @Override
-        public SnapshotInfo listSnapshots() {
-            return NULL_SNAPSHOT_INFO;
-        }
-
-        @Override
-        public void deleteSnapshot(String name) {
-        }
+    private List<ModelNode> createSubSystem(String subsystemContents, Namespace namespace) throws Exception {
+        final String xmlContent = "<subsystem xmlns=\"" + namespace.getUriString() + "\">" + subsystemContents + "</subsystem>";
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        this.services = builder.build();
+        this.model = services.readWholeModel();
+        return parse(xmlContent);
     }
 
     /**
@@ -1339,10 +1088,12 @@ public class ThreadsSubsystemParsingTestCase {
      * @throws OperationFailedException if the response outcome is "failed"
      */
     public ModelNode executeForResult(ModelNode operation) throws OperationFailedException {
-        ModelNode rsp = controller.execute(operation, null, null, null);
+        createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        ModelNode rsp = services.executeForResult(operation);
         if (FAILED.equals(rsp.get(OUTCOME).asString())) {
             throw new OperationFailedException(rsp.get(FAILURE_DESCRIPTION));
         }
+        model = services.readWholeModel();
         return rsp.get(RESULT);
     }
 }

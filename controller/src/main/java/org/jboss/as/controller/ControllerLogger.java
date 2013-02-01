@@ -439,4 +439,9 @@ public interface ControllerLogger extends BasicLogger {
     @Message(id = 13403, value = "There were problems during the transformation process for target host: '%s' %nProblems found: %n%s")
     @LogMessage(level = WARN)
     void tranformationWarnings(String hostName, Set<String> problems);
+
+
+    @Message(id = 13404, value = "Extension '%s' is deprecated and may not be supported in future versions")
+    @LogMessage(level = WARN)
+    void extensionDeprecated(String extensionName);
 }
