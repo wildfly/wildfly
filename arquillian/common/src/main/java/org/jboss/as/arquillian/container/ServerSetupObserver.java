@@ -127,8 +127,8 @@ public class ServerSetupObserver {
             if (container.getValue() == 0) {
                 if (active.containsKey(container.getKey())) {
                     ManagementClient client = active.get(container.getKey());
-                    for (final ServerSetupTask instance : current) {
-                        instance.tearDown(client, container.getKey());
+                    for (int i = current.size() - 1; i >= 0; i--) {
+                        current.get(i).tearDown(client, container.getKey());
                     }
                     active.remove(container.getKey());
                     it.remove();
