@@ -54,7 +54,7 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
+class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
     static final WSSubsystemAdd INSTANCE = new WSSubsystemAdd();
 
     @Override

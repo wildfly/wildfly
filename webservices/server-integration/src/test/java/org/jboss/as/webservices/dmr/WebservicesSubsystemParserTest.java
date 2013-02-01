@@ -147,25 +147,33 @@ public class WebservicesSubsystemParserTest extends AbstractSubsystemBaseTest {
         List<Property> preHandlers = clientConfigs.get(0).getValue().get(Constants.PRE_HANDLER_CHAIN).asPropertyList();
         List<Property> postHandlers = clientConfigs.get(0).getValue().get(Constants.POST_HANDLER_CHAIN).asPropertyList();
         assertEquals("my-handlers", preHandlers.get(0).getName());
-        assertEquals("org.jboss.ws.common.invocation.MyHandler", preHandlers.get(0).getValue().get(Constants.HANDLER).asPropertyList().get(0).getValue().get(Constants.CLASS).asString());
+        assertEquals("org.jboss.ws.common.invocation.MyHandler", preHandlers.get(1).getValue().get(Constants.HANDLER).asPropertyList().get(0).getValue().get(Constants.CLASS).asString());
         assertEquals("my-handlers2", postHandlers.get(0).getName());
     }
 
     private FailedOperationTransformationConfig getConfig() {
         PathAddress subsystemAddress = PathAddress.pathAddress(WSExtension.SUBSYSTEM_PATH);
+        PathAddress endpoint = subsystemAddress.append(WSExtension.ENDPOINT_CONFIG_PATH);
         return new FailedOperationTransformationConfig()
-                .addFailedAttribute(subsystemAddress, new FailedOperationTransformationConfig.RejectExpressionsConfig(Attributes.SUBSYSTEM_ATTRIBUTES));
+                .addFailedAttribute(subsystemAddress, new FailedOperationTransformationConfig.RejectExpressionsConfig(Attributes.SUBSYSTEM_ATTRIBUTES))
+                .addFailedAttribute(endpoint.append(WSExtension.PRE_HANDLER_CHAIN_PATH),new FailedOperationTransformationConfig.RejectExpressionsConfig(Attributes.PROTOCOL_BINDINGS))
+                .addFailedAttribute(endpoint.append(WSExtension.POST_HANDLER_CHAIN_PATH),new FailedOperationTransformationConfig.RejectExpressionsConfig(Attributes.PROTOCOL_BINDINGS))
+                .addFailedAttribute(subsystemAddress.append(WSExtension.CLIENT_CONFIG_PATH),FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                .addFailedAttribute(subsystemAddress.append(WSExtension.CLIENT_CONFIG_PATH).append(WSExtension.PRE_HANDLER_CHAIN_PATH),FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                .addFailedAttribute(subsystemAddress.append(WSExtension.CLIENT_CONFIG_PATH).append(WSExtension.PRE_HANDLER_CHAIN_PATH).append(WSExtension.HANDLER_PATH),FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                .addFailedAttribute(subsystemAddress.append(WSExtension.CLIENT_CONFIG_PATH).append(WSExtension.POST_HANDLER_CHAIN_PATH),FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                .addFailedAttribute(subsystemAddress.append(WSExtension.CLIENT_CONFIG_PATH).append(WSExtension.POST_HANDLER_CHAIN_PATH).append(WSExtension.HANDLER_PATH),FailedOperationTransformationConfig.REJECTED_RESOURCE);
     }
 
-    @Test
-    public void testRejectExpressions_1_1_0() throws Exception {
+
+   private void testRejectExpressions_1_1_0(String version) throws Exception {
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
         // create builder for legacy subsystem version
         ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
         builder.createLegacyKernelServicesBuilder(null, version_1_1_0)
-                .addMavenResourceURL("org.jboss.as:jboss-as-webservices-server-integration:7.1.2.Final");
+                .addMavenResourceURL("org.jboss.as:jboss-as-webservices-server-integration:"+version);
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(version_1_1_0);
@@ -180,20 +188,12 @@ public class WebservicesSubsystemParserTest extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformers() throws Exception {
-        String subsystemXml = readResource("ws-subsystem12-noexpression.xml");   //This has no expressions
-        ModelVersion modelVersion = ModelVersion.create(1, 1, 0); //The old model version
-        //Use the non-runtime version of the extension which will happen on the HC
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXml(subsystemXml);
+        public void testTransformersAS712() throws Exception {
+        testRejectExpressions_1_1_0("7.1.2.Final");
+        }
 
-        // Add legacy subsystems
-        builder.createLegacyKernelServicesBuilder(null, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-webservices-server-integration:7.1.2.Final");
-
-        KernelServices mainServices = builder.build();
-        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
-        Assert.assertNotNull(legacyServices);
-        checkSubsystemModelTransformation(mainServices, modelVersion);
-    }
+        @Test
+        public void testTransformersAS713() throws Exception {
+            testRejectExpressions_1_1_0("7.1.3.Final");
+        }
 }

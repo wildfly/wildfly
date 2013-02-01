@@ -315,6 +315,6 @@ public class GlobalTransformerRegistry {
     }
 
     static OperationTransformerRegistry.ResourceTransformerEntry RESOURCE_TRANSFORMER = new OperationTransformerRegistry.ResourceTransformerEntry(ResourceTransformer.DEFAULT, false);
-    static OperationTransformerRegistry.ResourceTransformerEntry DISCARD = new OperationTransformerRegistry.ResourceTransformerEntry(ResourceTransformer.DISCARD, false);
+    static OperationTransformerRegistry.ResourceTransformerEntry DISCARD = new OperationTransformerRegistry.ResourceTransformerEntry(ResourceTransformer.DISCARD, true);
 
 }
