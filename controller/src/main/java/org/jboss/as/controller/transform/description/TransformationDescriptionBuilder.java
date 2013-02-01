@@ -68,6 +68,15 @@ public interface TransformationDescriptionBuilder {
             return new DiscardTransformationDescriptionBuilder(pathElement);
         }
 
+        /**
+         * Create a builder instance.
+         *
+         * @return the transformation builder
+         */
+        public static RejectTransformationDescriptionBuilder createRejectInstance(PathElement pathElement) {
+            return new RejectTransformationDescriptionBuilder(pathElement);
+        }
+
     }
 
 }

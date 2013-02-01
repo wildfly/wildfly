@@ -22,6 +22,9 @@
 
 package org.jboss.as.controller.transform.description;
 
+import java.util.List;
+import java.util.Map;
+
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ModelVersionRange;
 import org.jboss.as.controller.PathElement;
@@ -30,9 +33,6 @@ import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.PathAddressTransformer;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * The final transformation description including child resources.
@@ -83,6 +83,13 @@ public interface TransformationDescription {
      */
     List<TransformationDescription> getChildren();
 
+    /**
+     * If this is a discarded or rejected resource it returns {@code true}
+     *
+     * @return {@code true} if this is a discarded or rejected resource
+     */
+    boolean isInherited();
+
     public static final class Tools {
 
         private Tools() {
@@ -97,7 +104,13 @@ public interface TransformationDescription {
          * @return the created sub registration
          */
         public static TransformersSubRegistration register(final TransformationDescription description, TransformersSubRegistration parent) {
-            final TransformersSubRegistration registration = parent.registerSubResource(description.getPath(), description.getPathAddressTransformer(), description.getResourceTransformer(), description.getOperationTransformer());
+            final TransformersSubRegistration registration =
+                    parent.registerSubResource(
+                            description.getPath(),
+                            description.getPathAddressTransformer(),
+                            description.getResourceTransformer(),
+                            description.getOperationTransformer(),
+                            description.isInherited());
             for (final Map.Entry<String, OperationTransformer> entry : description.getOperationTransformers().entrySet()) {
                 registration.registerOperationTransformer(entry.getKey(), entry.getValue());
             }
