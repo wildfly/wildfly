@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 import junit.framework.Assert;
+
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
@@ -144,13 +145,14 @@ public class OperationTransformationTestCase {
         final OperationTransformerRegistry localRegistry = registry.create(ModelVersion.create(1, 0, 0), Collections.<PathAddress, ModelVersion>emptyMap());
 
         OperationTransformerRegistry.OperationTransformerEntry entry = localRegistry.resolveOperationTransformer(address, "testing");
-        Assert.assertEquals(OperationTransformerRegistry.TransformationPolicy.FORWARD, entry.getPolicy());
+        Assert.assertSame(OperationTransformerRegistry.FORWARD, entry);
 
         registry.registerTransformer(address, 1, 0, "testing", NOOP_TRANSFORMER);
         localRegistry.mergeSubsystem(registry, "test", ModelVersion.create(1, 0));
 
         entry = localRegistry.resolveOperationTransformer(address, "testing");
-        Assert.assertEquals(OperationTransformerRegistry.TransformationPolicy.TRANSFORM, entry.getPolicy());
+        Assert.assertNotNull(entry);
+        Assert.assertSame(NOOP_TRANSFORMER, entry.getTransformer());
 
     }
 
@@ -335,7 +337,7 @@ public class OperationTransformationTestCase {
         final String operationName = operation.require(ModelDescriptionConstants.OP).asString();
         final OperationTransformerRegistry transformerRegistry = registry.create(ModelVersion.create(major, minor), Collections.<PathAddress, ModelVersion>emptyMap());
         final OperationTransformerRegistry.OperationTransformerEntry entry = transformerRegistry.resolveOperationTransformer(address, operationName);
-        if (entry.getPolicy() == OperationTransformerRegistry.TransformationPolicy.DISCARD) {
+        if (entry.getTransformer() == OperationTransformer.DISCARD) {
             return null;
         } else {
             final OperationTransformer transformer = entry.getTransformer();

@@ -203,7 +203,7 @@ public class OperationTransformerRegistry {
     }
 
     void registerTransformer(final PathAddress address, final String operationName, final OperationTransformer transformer) {
-        registerTransformer(address.iterator(), operationName, new OperationTransformerEntry(transformer, TransformationPolicy.TRANSFORM, false));
+        registerTransformer(address.iterator(), operationName, new OperationTransformerEntry(transformer, false));
     }
 
     public OperationTransformerEntry getDefaultTransformer() {
@@ -384,18 +384,6 @@ public class OperationTransformerRegistry {
         }
     }
 
-    public static enum TransformationPolicy {
-
-        // Transform the operation
-        TRANSFORM,
-        // Forward unmodified
-        FORWARD,
-        // Discard, don't forward
-        DISCARD,
-        ;
-
-    }
-
     public static class ResourceTransformerEntry {
 
         private final ResourceTransformer transformer;
@@ -418,21 +406,15 @@ public class OperationTransformerRegistry {
     public static class OperationTransformerEntry {
 
         final OperationTransformer transformer;
-        final TransformationPolicy policy;
         final boolean inherited;
 
-        public OperationTransformerEntry(OperationTransformer transformer, TransformationPolicy policy, boolean inherited) {
+        public OperationTransformerEntry(OperationTransformer transformer, boolean inherited) {
             this.transformer = transformer;
-            this.policy = policy;
             this.inherited = inherited;
         }
 
         public OperationTransformer getTransformer() {
             return transformer;
-        }
-
-        public TransformationPolicy getPolicy() {
-            return policy;
         }
 
         public boolean isInherited() {
@@ -451,7 +433,7 @@ public class OperationTransformerRegistry {
 
     static OperationTransformer DISCARD_TRANSFORMER = OperationTransformer.DISCARD;
 
-    public static OperationTransformerEntry DISCARD = new OperationTransformerEntry(DISCARD_TRANSFORMER, TransformationPolicy.DISCARD, true);
-    public static OperationTransformerEntry FORWARD = new OperationTransformerEntry(FORWARD_TRANSFORMER, TransformationPolicy.FORWARD, false);
+    public static OperationTransformerEntry DISCARD = new OperationTransformerEntry(DISCARD_TRANSFORMER, true);
+    public static OperationTransformerEntry FORWARD = new OperationTransformerEntry(FORWARD_TRANSFORMER, false);
 
 }
