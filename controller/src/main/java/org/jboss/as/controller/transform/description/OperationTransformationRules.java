@@ -103,7 +103,6 @@ class OperationTransformationRules {
                 final OperationRejectionPolicy policy;
                 if(rejectedAttributes.hasRejections()) {
 
-                    rejectedAttributes.errorOrWarn();
                     policy = new OperationRejectionPolicy() {
                         @Override
                         public boolean rejectOperation(ModelNode preparedResult) {
@@ -112,12 +111,7 @@ class OperationTransformationRules {
 
                         @Override
                         public String getFailureDescription() {
-                            try {
-                                return rejectedAttributes.errorOrWarn();
-                            } catch (OperationFailedException e) {
-                                //This will not happen
-                                return null;
-                            }
+                            return rejectedAttributes.getOperationRejectDescription();
                         }
                     };
                 } else {

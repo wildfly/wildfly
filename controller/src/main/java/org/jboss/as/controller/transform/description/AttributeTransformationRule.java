@@ -56,7 +56,6 @@ class AttributeTransformationRule extends TransformationRule {
         if (!rejectedAttributes.hasRejections()) {
             policy = OperationTransformer.DEFAULT_REJECTION_POLICY;
         } else {
-            rejectedAttributes.errorOrWarn();
             policy = new OperationRejectionPolicy() {
                 @Override
                 public boolean rejectOperation(ModelNode preparedResult) {
@@ -65,12 +64,7 @@ class AttributeTransformationRule extends TransformationRule {
 
                 @Override
                 public String getFailureDescription() {
-                    try {
-                        return rejectedAttributes.errorOrWarn();
-                    } catch (OperationFailedException e) {
-                        //This will not happen
-                        return null;
-                    }
+                    return rejectedAttributes.getOperationRejectDescription();
                 }
             };
         }
@@ -84,7 +78,7 @@ class AttributeTransformationRule extends TransformationRule {
         RejectedAttributesLogContext rejectedAttributes = new RejectedAttributesLogContext(context, address, null);
         doTransform(address, model, null, context, rejectedAttributes);
         if (rejectedAttributes.hasRejections()) {
-            rejectedAttributes.errorOrWarn();
+            rejectedAttributes.errorOrWarnOnResourceTransformation();
         }
         context.invokeNext(resource);
     }

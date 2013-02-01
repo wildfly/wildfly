@@ -132,7 +132,14 @@ public class RejectExpressionValuesChainedTransformer implements ChainedResource
         final ModelNode model = resource.getModel();
         final Set<String> attributes = checkModel(model, context);
         if (attributes.size() > 0) {
-            context.getLogger().logAttributeWarning(address, MESSAGES.attributesDontSupportExpressions(), attributes);
+            if (context.getTarget().isIgnoredResourceListAvailableAtRegistration()) {
+                // Slave is 7.2.x or higher and we know this resource is not ignored
+                String msg = context.getLogger().getAttributeWarning(address, null, MESSAGES.attributesDontSupportExpressions(), attributes);
+                throw new OperationFailedException(msg);
+            } else {
+                // 7.1.x slave; resource *may* be ignored so we can't fail; just log
+                context.getLogger().logAttributeWarning(address, MESSAGES.attributesDontSupportExpressions(), attributes);
+            }
         }
     }
 
