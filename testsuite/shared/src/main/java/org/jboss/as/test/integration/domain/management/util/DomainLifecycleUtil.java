@@ -304,6 +304,8 @@ public class DomainLifecycleUtil {
     public ModelNode executeAwaitConnectionClosed(final ModelNode operation) throws IOException {
         final DomainTestClient client = internalGetOrCreateClient();
         final Channel channel = client.getChannel();
+        if( null == channel )
+            throw new IllegalStateException("Didn't get a remoting channel from the DomainTestClient.");
         final Connection ref = channel.getConnection();
         ModelNode result = new ModelNode();
         try {
