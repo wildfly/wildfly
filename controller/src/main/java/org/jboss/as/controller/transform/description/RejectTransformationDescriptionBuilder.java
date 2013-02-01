@@ -54,9 +54,6 @@ public class RejectTransformationDescriptionBuilder extends AbstractTransformati
 
         @Override
         public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation) throws OperationFailedException {
-            if (context.getTarget().isIgnoredResourceListAvailableAtRegistration()) {
-                throw new OperationFailedException(ControllerMessages.MESSAGES.rejectResourceOperationTransformation(address, operation));
-            }
             return new TransformedOperation(null, new OperationRejectionPolicy() {
 
                 @Override
