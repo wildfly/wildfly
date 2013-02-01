@@ -31,6 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -95,11 +96,13 @@ class RejectedAttributesLogContext {
     }
 
     @Deprecated //todo replace with context.getLogger()....
-    String errorOrWarn() throws OperationFailedException {
+    String errorOrWarnOnResourceTransformation() throws OperationFailedException {
+        if (op != null) {
+            throw new IllegalStateException();
+        }
         if (failedAttributes == null) {
             return "";
         }
-        //TODO the determining of whether the version is 1.4.0, i.e. knows about ignored resources or not could be moved to a utility method
 
         final TransformationTarget tgt = context.getContext().getTarget();
         final String legacyHostName = tgt.getHostName();
@@ -108,8 +111,7 @@ class RejectedAttributesLogContext {
         final ModelVersion usedVersion = subsystemName == null ? coreVersion : tgt.getSubsystemVersion(subsystemName);
 
         final TransformersLogger logger = context.getContext().getLogger();
-        //TODO should we not also error on resources for slaves where  tgt.isIgnoredResourceListAvailableAtRegistration() == true?
-        final boolean error = op == null && tgt.isIgnoredResourceListAvailableAtRegistration();
+        final boolean error = tgt.isIgnoredResourceListAvailableAtRegistration();
         List<String> messages = error ? new ArrayList<String>() : null;
 
         for (Map.Entry<String, Map<String, ModelNode>> entry : failedAttributes.entrySet()) {
@@ -120,12 +122,36 @@ class RejectedAttributesLogContext {
                 //Create our own custom exception containing everything
                 messages.add(message);
             } else {
-                if (op == null) {
-                    logger.logAttributeWarning(address, null, message, entry.getValue().keySet());
-                } else {
-                    return logger.getAttributeWarning(address, op, message, entry.getValue().keySet());
-                }
+                return logger.getAttributeWarning(address, op, message, entry.getValue().keySet());
             }
+        }
+
+        if (error) {
+            // Target is  7.2.x or higher so we should throw an error
+            if (subsystemName != null) {
+                throw ControllerMessages.MESSAGES.rejectAttributesSubsystemModelResourceTransformer(address, legacyHostName, subsystemName, usedVersion, messages);
+            }
+            throw ControllerMessages.MESSAGES.rejectAttributesCoreModelResourceTransformer(address, legacyHostName, usedVersion, messages);
+        }
+        return null;
+    }
+
+    @Deprecated //todo replace with context.getLogger()....
+    String getOperationRejectDescription() {
+        if (op == null) {
+            throw new IllegalStateException();
+        }
+        if (failedAttributes == null) {
+            return "";
+        }
+
+        final TransformersLogger logger = context.getContext().getLogger();
+
+        for (Map.Entry<String, Map<String, ModelNode>> entry : failedAttributes.entrySet()) {
+            RejectAttributeChecker checker = failedCheckers.get(entry.getKey());
+            String message = checker.getRejectionLogMessage(entry.getValue());
+
+            return logger.getAttributeWarning(address, op, message, entry.getValue().keySet());
         }
         return null;
     }
