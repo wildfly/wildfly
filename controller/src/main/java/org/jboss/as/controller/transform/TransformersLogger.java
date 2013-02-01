@@ -96,8 +96,8 @@ public class TransformersLogger {
      * @param address   where warning occurred
      * @param attribute attribute we are warning about
      */
-    public void logWarning(PathAddress address, String attribute) {
-        logWarning(address, null, null, attribute);
+    public void logAttributeWarning(PathAddress address, String attribute) {
+        logAttributeWarning(address, null, null, attribute);
     }
 
     /**
@@ -107,8 +107,8 @@ public class TransformersLogger {
      * @param address    where warning occurred
      * @param attributes attributes we are warning about
      */
-    public void logWarning(PathAddress address, Set<String> attributes) {
-        logWarning(address, null, null, attributes);
+    public void logAttributeWarning(PathAddress address, Set<String> attributes) {
+        logAttributeWarning(address, null, null, attributes);
     }
 
     /**
@@ -119,8 +119,8 @@ public class TransformersLogger {
      * @param message   custom error message to append
      * @param attribute attribute we are warning about
      */
-    public void logWarning(PathAddress address, String message, String attribute) {
-        logWarning(address, null, message, attribute);
+    public void logAttributeWarning(PathAddress address, String message, String attribute) {
+        logAttributeWarning(address, null, message, attribute);
     }
 
     /**
@@ -131,8 +131,8 @@ public class TransformersLogger {
      * @param message    custom error message to append
      * @param attributes attributes we that have problems about
      */
-    public void logWarning(PathAddress address, String message, Set<String> attributes) {
-        messageQueue.add(new LogEntry(address, null, message, attributes));
+    public void logAttributeWarning(PathAddress address, String message, Set<String> attributes) {
+        messageQueue.add(new AttributeLogEntry(address, null, message, attributes));
     }
 
 
@@ -145,8 +145,8 @@ public class TransformersLogger {
      * @param message   custom error message to append
      * @param attribute attribute we that has problem
      */
-    public void logWarning(PathAddress address, ModelNode operation, String message, String attribute) {
-        messageQueue.add(new LogEntry(address, operation, message, attribute));
+    public void logAttributeWarning(PathAddress address, ModelNode operation, String message, String attribute) {
+        messageQueue.add(new AttributeLogEntry(address, operation, message, attribute));
     }
 
     /**
@@ -158,8 +158,8 @@ public class TransformersLogger {
      * @param message    custom error message to append
      * @param attributes attributes we that have problems about
      */
-    public void logWarning(PathAddress address, ModelNode operation, String message, Set<String> attributes) {
-        messageQueue.add(new LogEntry(address, operation, message, attributes));
+    public void logAttributeWarning(PathAddress address, ModelNode operation, String message, Set<String> attributes) {
+        messageQueue.add(new AttributeLogEntry(address, operation, message, attributes));
     }
 
     /**
@@ -172,8 +172,8 @@ public class TransformersLogger {
      * @param message    custom error message to append
      * @param attributes attributes we that have problems about
      */
-    public String getWarning(PathAddress address, ModelNode operation, String message, Set<String> attributes) {
-        return getMessage(new LogEntry(address, operation, message, attributes));
+    public String getAttributeWarning(PathAddress address, ModelNode operation, String message, Set<String> attributes) {
+        return new AttributeLogEntry(address, operation, message, attributes).getMessage();
     }
 
     /**
@@ -186,8 +186,8 @@ public class TransformersLogger {
      * @param message    custom error message to append
      * @param attributes attributes we that have problems about
      */
-    private String getWarning(PathAddress address, ModelNode operation, String message, String... attributes) {
-        return getMessage(new LogEntry(address, operation, message, attributes));
+    private String getAttributeWarning(PathAddress address, ModelNode operation, String message, String... attributes) {
+        return new AttributeLogEntry(address, operation, message, attributes).getMessage();
     }
 
     /**
@@ -201,8 +201,8 @@ public class TransformersLogger {
      * @param operation  where which problem occurred
      * @param attributes attributes we that have problems about
      */
-    public String getWarning(PathAddress address, ModelNode operation, String... attributes) {
-        return getWarning(address, operation, null, attributes);
+    public String getAttributeWarning(PathAddress address, ModelNode operation, String... attributes) {
+        return getAttributeWarning(address, operation, null, attributes);
     }
 
     /**
@@ -215,8 +215,16 @@ public class TransformersLogger {
      * @param operation  where which problem occurred
      * @param attributes attributes we that have problems about
      */
-    public String getWarning(PathAddress address, ModelNode operation, Set<String> attributes) {
-        return getMessage(new LogEntry(address, operation, null, attributes));
+    public String getAttributeWarning(PathAddress address, ModelNode operation, Set<String> attributes) {
+        return new AttributeLogEntry(address, operation, null, attributes).getMessage();
+    }
+
+    public String getRejectedResourceWarning(PathAddress address, ModelNode operation) {
+        return new RejectResourceLogEntry(address, operation).getMessage();
+    }
+
+    public void logRejectedResourceWarning(PathAddress address, ModelNode operation) {
+        messageQueue.add(new RejectResourceLogEntry(address, null));
     }
 
     /**
@@ -225,52 +233,74 @@ public class TransformersLogger {
     void flushLogQueue() {
         Set<String> problems = new LinkedHashSet<String>();
         for (LogEntry entry : messageQueue) {
-            problems.add("\t\t" + getMessage(entry) + "\n");
+            problems.add("\t\t" + entry.getMessage() + "\n");
         }
         if (!problems.isEmpty()) {
             logger.tranformationWarnings(target.getHostName(), problems);
         }
     }
 
-    private String getMessage(LogEntry entry) {
-        final ModelVersion coreVersion = target.getVersion();
-        final String subsystemName = findSubsystemName(entry.address);
-        final ModelVersion usedVersion = subsystemName == null ? coreVersion : target.getSubsystemVersion(subsystemName);
-        ModelNode operation = entry.operation;
-        PathAddress address = entry.address;
-        String msg = entry.message == null ? ControllerMessages.MESSAGES.attributesAreNotUnderstoodAndMustBeIgnored() : entry.message;
-        String attributeSet = entry.attributes != null && entry.attributes.size() > 0 ? ControllerMessages.MESSAGES.attributeNames(entry.attributes) : "";
-        if (operation == null) {//resource transformation
-            if (subsystemName != null) {
-                return ControllerMessages.MESSAGES.transformerLoggerSubsystemModelResourceTransformerAttributes(address, subsystemName, usedVersion, attributeSet, msg);
-            } else {
-                return ControllerMessages.MESSAGES.transformerLoggerCoreModelResourceTransformerAttributes(address, usedVersion, attributeSet, msg);
-            }
-        } else {//operation transformation
-            if (subsystemName != null) {
-                return ControllerMessages.MESSAGES.transformerLoggerSubsystemModelOperationTransformerAttributes(operation, address, subsystemName, usedVersion, attributeSet, msg);
-            } else {
-                return ControllerMessages.MESSAGES.transformerLoggerCoreModelOperationTransformerAttributes(operation, address, usedVersion, attributeSet, msg);
-            }
-        }
+    private interface LogEntry {
+        String getMessage();
     }
 
-    private static class LogEntry {
-        private PathAddress address;
-        private ModelNode operation;
-        private String message;
-        private Set<String> attributes;
+    private class AttributeLogEntry implements LogEntry {
+        private final PathAddress address;
+        private final ModelNode operation;
+        private final String message;
+        private final Set<String> attributes;
 
-        private LogEntry(PathAddress address, ModelNode operation, String message, String... attributes) {
+        private AttributeLogEntry(PathAddress address, ModelNode operation, String message, String... attributes) {
             this(address, operation, message, new TreeSet<String>(Arrays.asList(attributes)));
         }
 
-        private LogEntry(PathAddress address, ModelNode operation, String message, Set<String> attributes) {
+        private AttributeLogEntry(PathAddress address, ModelNode operation, String message, Set<String> attributes) {
             assert message != null || (attributes != null && attributes.size() > 0) : "a message must be provided or a list of attributes or both";
             this.address = address;
             this.operation = operation;
             this.message = message;
             this.attributes = attributes;
+        }
+
+        public String getMessage() {
+            final ModelVersion coreVersion = target.getVersion();
+            final String subsystemName = findSubsystemName(address);
+            final ModelVersion usedVersion = subsystemName == null ? coreVersion : target.getSubsystemVersion(subsystemName);
+            String msg = message == null ? ControllerMessages.MESSAGES.attributesAreNotUnderstoodAndMustBeIgnored() : message;
+            String attributeSet = attributes != null && attributes.size() > 0 ? ControllerMessages.MESSAGES.attributeNames(attributes) : "";
+            if (operation == null) {//resource transformation
+                if (subsystemName != null) {
+                    return ControllerMessages.MESSAGES.transformerLoggerSubsystemModelResourceTransformerAttributes(address, subsystemName, usedVersion, attributeSet, msg);
+                } else {
+                    return ControllerMessages.MESSAGES.transformerLoggerCoreModelResourceTransformerAttributes(address, usedVersion, attributeSet, msg);
+                }
+            } else {//operation transformation
+                if (subsystemName != null) {
+                    return ControllerMessages.MESSAGES.transformerLoggerSubsystemModelOperationTransformerAttributes(operation, address, subsystemName, usedVersion, attributeSet, msg);
+                } else {
+                    return ControllerMessages.MESSAGES.transformerLoggerCoreModelOperationTransformerAttributes(operation, address, usedVersion, attributeSet, msg);
+                }
+            }
+        }
+    }
+
+    private class RejectResourceLogEntry implements LogEntry {
+        private final PathAddress address;
+        private final ModelNode operation;
+
+        private RejectResourceLogEntry(PathAddress address, ModelNode operation) {
+            this.address = address;
+            this.operation = operation;
+        }
+
+        @Override
+        public String getMessage() {
+            if (operation != null) {
+                return ControllerMessages.MESSAGES.rejectResourceOperationTransformation(address, operation);
+            } else {
+                return ControllerMessages.MESSAGES.rejectedResourceResourceTransformation(address);
+            }
+
         }
     }
 }

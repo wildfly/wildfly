@@ -104,6 +104,14 @@ public interface ResourceTransformationDescriptionBuilder extends Transformation
     DiscardTransformationDescriptionBuilder discardChildResource(PathElement pathElement);
 
     /**
+     * Recursively rejects all child resources and its operations
+     *
+     * @param pathElement the path element
+     * @return the builder for the child resource
+     */
+    RejectTransformationDescriptionBuilder rejectChildResource(PathElement pathElement);
+
+    /**
      * Add a child resource, where all operations will get redirected to the legacy address.
      *
      * @param current the current path element

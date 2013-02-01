@@ -22,17 +22,17 @@
 
 package org.jboss.as.controller.registry;
 
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
+
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.PathAddressTransformer;
 import org.jboss.as.controller.transform.ResourceTransformer;
-
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 /**
  * Versioned operation transformer registry.
@@ -85,7 +85,7 @@ public class GlobalTransformerRegistry {
      * @param transformer the operation transformer
      */
     public void registerTransformer(final PathAddress address, int major, int minor, String operationName, OperationTransformer transformer) {
-        registerTransformer(address.iterator(), ModelVersion.create(major, minor), operationName, new OperationTransformerRegistry.OperationTransformerEntry(transformer, OperationTransformerRegistry.TransformationPolicy.TRANSFORM));
+        registerTransformer(address.iterator(), ModelVersion.create(major, minor), operationName, new OperationTransformerRegistry.OperationTransformerEntry(transformer, false));
     }
 
     public void createDiscardingChildRegistry(final PathAddress address, final ModelVersion version) {
@@ -93,7 +93,7 @@ public class GlobalTransformerRegistry {
     }
 
     public void createChildRegistry(final PathAddress address, final ModelVersion version, OperationTransformer transformer) {
-        createChildRegistry(address.iterator(), version, PathAddressTransformer.DEFAULT, RESOURCE_TRANSFORMER, new OperationTransformerRegistry.OperationTransformerEntry(transformer, OperationTransformerRegistry.TransformationPolicy.TRANSFORM));
+        createChildRegistry(address.iterator(), version, PathAddressTransformer.DEFAULT, RESOURCE_TRANSFORMER, new OperationTransformerRegistry.OperationTransformerEntry(transformer, false));
     }
 
     public void createChildRegistry(final PathAddress address, final ModelVersion version, ResourceTransformer resourceTransformer, boolean inherited) {
@@ -105,7 +105,11 @@ public class GlobalTransformerRegistry {
     }
 
     public void createChildRegistry(final PathAddress address, final ModelVersion version, PathAddressTransformer pathAddressTransformer, ResourceTransformer resourceTransformer, OperationTransformer operationTransformer) {
-        createChildRegistry(address.iterator(), version, pathAddressTransformer, new OperationTransformerRegistry.ResourceTransformerEntry(resourceTransformer, false), new OperationTransformerRegistry.OperationTransformerEntry(operationTransformer, OperationTransformerRegistry.TransformationPolicy.TRANSFORM));
+        createChildRegistry(address.iterator(), version, pathAddressTransformer, new OperationTransformerRegistry.ResourceTransformerEntry(resourceTransformer, false), new OperationTransformerRegistry.OperationTransformerEntry(operationTransformer, false));
+    }
+
+    public void createChildRegistry(final PathAddress address, final ModelVersion version, PathAddressTransformer pathAddressTransformer, ResourceTransformer resourceTransformer, OperationTransformer operationTransformer, boolean inherited) {
+        createChildRegistry(address.iterator(), version, pathAddressTransformer, new OperationTransformerRegistry.ResourceTransformerEntry(resourceTransformer, false), new OperationTransformerRegistry.OperationTransformerEntry(operationTransformer, inherited));
     }
 
 
@@ -118,7 +122,7 @@ public class GlobalTransformerRegistry {
      * @param transformer the operation transformer
      */
     public void registerTransformer(final PathAddress address, final ModelVersion version, String operationName, OperationTransformer transformer) {
-        registerTransformer(address.iterator(), version, operationName, new OperationTransformerRegistry.OperationTransformerEntry(transformer, OperationTransformerRegistry.TransformationPolicy.TRANSFORM));
+        registerTransformer(address.iterator(), version, operationName, new OperationTransformerRegistry.OperationTransformerEntry(transformer, false));
     }
 
     public OperationTransformerRegistry mergeSubtree(final OperationTransformerRegistry parent, final PathAddress address, final Map<PathAddress, ModelVersion> subTree) {

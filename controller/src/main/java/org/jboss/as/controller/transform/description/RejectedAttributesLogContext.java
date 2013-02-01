@@ -109,6 +109,7 @@ class RejectedAttributesLogContext {
         final ModelVersion usedVersion = subsystemName == null ? coreVersion : tgt.getSubsystemVersion(subsystemName);
 
         final TransformersLogger logger = context.getContext().getLogger();
+        //TODO should we not also error on resources for slaves where  tgt.isIgnoredResourceListAvailableAtRegistration() == true?
         final boolean error = op == null && tgt.isIgnoredResourceListAvailableAtRegistration();
         List<String> messages = error ? new ArrayList<String>() : null;
 
@@ -121,9 +122,9 @@ class RejectedAttributesLogContext {
                 messages.add(message);
             } else {
                 if (op == null) {
-                    logger.logWarning(address, null, message, entry.getValue().keySet());
+                    logger.logAttributeWarning(address, null, message, entry.getValue().keySet());
                 } else {
-                    return logger.getWarning(address, op, message, entry.getValue().keySet());
+                    return logger.getAttributeWarning(address, op, message, entry.getValue().keySet());
                 }
             }
         }
