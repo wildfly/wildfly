@@ -21,9 +21,7 @@
  */
 package org.jboss.as.webservices.dmr;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.webservices.dmr.Constants.CLIENT_CONFIG;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONFIG;
@@ -40,10 +38,15 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.ResourceBuilder;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 
 /**
  * The webservices extension.
@@ -55,12 +58,12 @@ import org.jboss.as.controller.transform.TransformersSubRegistration;
  */
 public final class WSExtension implements Extension {
 
-    private static final PathElement ENDPOINT_PATH = PathElement.pathElement(ENDPOINT);
-    private static final PathElement CLIENT_CONFIG_PATH = PathElement.pathElement(CLIENT_CONFIG);
-    private static final PathElement ENDPOINT_CONFIG_PATH = PathElement.pathElement(ENDPOINT_CONFIG);
+    static final PathElement ENDPOINT_PATH = PathElement.pathElement(ENDPOINT);
+    static final PathElement CLIENT_CONFIG_PATH = PathElement.pathElement(CLIENT_CONFIG);
+    static final PathElement ENDPOINT_CONFIG_PATH = PathElement.pathElement(ENDPOINT_CONFIG);
     private static final PathElement PROPERTY_PATH = PathElement.pathElement(PROPERTY);
-    private static final PathElement PRE_HANDLER_CHAIN_PATH = PathElement.pathElement(PRE_HANDLER_CHAIN);
-    private static final PathElement POST_HANDLER_CHAIN_PATH = PathElement.pathElement(POST_HANDLER_CHAIN);
+    static final PathElement PRE_HANDLER_CHAIN_PATH = PathElement.pathElement(PRE_HANDLER_CHAIN);
+    static final PathElement POST_HANDLER_CHAIN_PATH = PathElement.pathElement(POST_HANDLER_CHAIN);
     private static final PathElement HANDLER_PATH = PathElement.pathElement(HANDLER);
     public static final String SUBSYSTEM_NAME = "webservices";
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
@@ -114,14 +117,14 @@ public final class WSExtension implements Extension {
                 .addReadWriteAttribute(Attributes.WSDL_SECURE_PORT, null, new WSSubsystemAttributeChangeHandler(Attributes.WSDL_SECURE_PORT))
                 .addReadWriteAttribute(Attributes.MODIFY_WSDL_ADDRESS, null, new WSSubsystemAttributeChangeHandler(Attributes.MODIFY_WSDL_ADDRESS))
                 .pushChild(ENDPOINT_CONFIG_PATH, EndpointConfigAdd.INSTANCE, EndpointConfigRemove.INSTANCE)
-                    .pushChild(propertyResource).pop()
-                    .pushChild(preHandler).pop()
-                    .pushChild(postHandler).pop()
+                .pushChild(propertyResource).pop()
+                .pushChild(preHandler).pop()
+                .pushChild(postHandler).pop()
                 .pop()
                 .pushChild(CLIENT_CONFIG_PATH, ClientConfigAdd.INSTANCE, ClientConfigRemove.INSTANCE)
-                    .pushChild(propertyResource).pop()
-                    .pushChild(preHandler).pop()
-                    .pushChild(postHandler).pop()
+                .pushChild(propertyResource).pop()
+                .pushChild(preHandler).pop()
+                .pushChild(postHandler).pop()
                 .pop()
                 .build();
         subsystem.registerSubsystemModel(subsystemResource);
@@ -147,11 +150,18 @@ public final class WSExtension implements Extension {
 
     private void registerTransformers1_1_0(SubsystemRegistration registration) {
         ModelVersion version = ModelVersion.create(1, 1, 0);
-        RejectExpressionValuesTransformer rejectNewerExpressions = new RejectExpressionValuesTransformer(Attributes.SUBSYSTEM_ATTRIBUTES);
-        final TransformersSubRegistration subsystem = registration.registerModelTransformers(version, rejectNewerExpressions);
-        subsystem.registerOperationTransformer(ADD, rejectNewerExpressions);
-        subsystem.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, rejectNewerExpressions.getWriteAttributeTransformer());
-        subsystem.registerSubResource(CLIENT_CONFIG_PATH, true);
 
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Attributes.SUBSYSTEM_ATTRIBUTES).end();
+        builder.discardChildResource(CLIENT_CONFIG_PATH);
+        ResourceTransformationDescriptionBuilder client = builder.addChildResource(CLIENT_CONFIG_PATH);
+        client.discardChildResource(PRE_HANDLER_CHAIN_PATH);
+        client.discardChildResource(POST_HANDLER_CHAIN_PATH);
+
+        ResourceTransformationDescriptionBuilder endpoint = builder.addChildResource(ENDPOINT_CONFIG_PATH);
+        endpoint.addChildResource(PRE_HANDLER_CHAIN_PATH).getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Attributes.PROTOCOL_BINDINGS).end();
+        endpoint.addChildResource(POST_HANDLER_CHAIN_PATH).getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Attributes.PROTOCOL_BINDINGS).end();
+
+        TransformationDescription.Tools.register(builder.build(), registration, version);
     }
 }

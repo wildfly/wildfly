@@ -31,7 +31,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class WSSubsystemRemove extends ReloadRequiredRemoveStepHandler {
+class WSSubsystemRemove extends ReloadRequiredRemoveStepHandler {
 
     static final WSSubsystemRemove INSTANCE = new WSSubsystemRemove();
 

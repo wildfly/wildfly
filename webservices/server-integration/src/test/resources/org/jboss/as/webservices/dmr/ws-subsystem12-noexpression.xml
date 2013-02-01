@@ -27,7 +27,7 @@
     <wsdl-host>localhost</wsdl-host>
     <wsdl-port>9090</wsdl-port>
     <wsdl-secure-port>9443</wsdl-secure-port>
-    <endpoint-config name="Standard-Endpoint-Config"/>
+    <!--endpoint-config name="Standard-Endpoint-Config"/>
     <endpoint-config name="Recording-Endpoint-Config">
         <pre-handler-chain name="recording-handlers" protocol-bindings="##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM">
             <handler name="RecordingHandler" class="org.jboss.ws.common.invocation.RecordingServerHandler"/>
@@ -44,5 +44,8 @@
         <post-handler-chain name="my-handlers2" protocol-bindings="##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM">
             <handler name="MyHandler2" class="org.jboss.ws.common.invocation.MyHandler2"/>
         </post-handler-chain>
+    </client-config-->
+    <client-config name="My-Client-Config">
+            <pre-handler-chain name="my-handlers" protocol-bindings="##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM" />
     </client-config>
 </subsystem>
