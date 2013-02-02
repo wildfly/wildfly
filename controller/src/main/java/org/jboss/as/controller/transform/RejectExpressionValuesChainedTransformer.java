@@ -25,18 +25,23 @@ package org.jboss.as.controller.transform;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.transform.AttributeTransformationRequirementChecker.SIMPLE_EXPRESSIONS;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.chained.ChainedResourceTransformationContext;
 import org.jboss.as.controller.transform.chained.ChainedResourceTransformer;
@@ -134,13 +139,33 @@ public class RejectExpressionValuesChainedTransformer implements ChainedResource
         if (attributes.size() > 0) {
             if (context.getTarget().isIgnoredResourceListAvailableAtRegistration()) {
                 // Slave is 7.2.x or higher and we know this resource is not ignored
-                String msg = context.getLogger().getAttributeWarning(address, null, MESSAGES.attributesDontSupportExpressions(), attributes);
-                throw new OperationFailedException(msg);
+                List<String> msg = Collections.singletonList(context.getLogger().getAttributeWarning(address, null, MESSAGES.attributesDontSupportExpressions(), attributes));
+
+                final TransformationTarget tgt = context.getTarget();
+                final String legacyHostName = tgt.getHostName();
+                final ModelVersion coreVersion = tgt.getVersion();
+                final String subsystemName = findSubsystemName(address);
+                final ModelVersion usedVersion = subsystemName == null ? coreVersion : tgt.getSubsystemVersion(subsystemName);
+
+                // Target is  7.2.x or higher so we should throw an error
+                if (subsystemName != null) {
+                    throw ControllerMessages.MESSAGES.rejectAttributesSubsystemModelResourceTransformer(address, legacyHostName, subsystemName, usedVersion, msg);
+                }
+                throw ControllerMessages.MESSAGES.rejectAttributesCoreModelResourceTransformer(address, legacyHostName, usedVersion, msg);
             } else {
                 // 7.1.x slave; resource *may* be ignored so we can't fail; just log
                 context.getLogger().logAttributeWarning(address, MESSAGES.attributesDontSupportExpressions(), attributes);
             }
         }
+    }
+
+    private static String findSubsystemName(PathAddress pathAddress) {
+        for (PathElement element : pathAddress) {
+            if (element.getKey().equals(SUBSYSTEM)) {
+                return element.getValue();
+            }
+        }
+        return null;
     }
 
     /**

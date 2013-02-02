@@ -29,11 +29,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
@@ -131,13 +132,34 @@ public class DiscardUndefinedAttributesTransformer implements ChainedResourceTra
         if (problems != null) {
             if (context.getTarget().isIgnoredResourceListAvailableAtRegistration()) {
                 // Slave is 7.2.x or higher and we know this resource is not ignored
-                String msg = context.getLogger().getAttributeWarning(address, null, problems);
-                throw new OperationFailedException(msg);
+                List<String> msg = Collections.singletonList(context.getLogger().getAttributeWarning(address, null, problems));
+
+                final TransformationTarget tgt = context.getTarget();
+                final String legacyHostName = tgt.getHostName();
+                final ModelVersion coreVersion = tgt.getVersion();
+                final String subsystemName = findSubsystemName(address);
+                final ModelVersion usedVersion = subsystemName == null ? coreVersion : tgt.getSubsystemVersion(subsystemName);
+
+                // Target is  7.2.x or higher so we should throw an error
+                if (subsystemName != null) {
+                    throw ControllerMessages.MESSAGES.rejectAttributesSubsystemModelResourceTransformer(address, legacyHostName, subsystemName, usedVersion, msg);
+                }
+                throw ControllerMessages.MESSAGES.rejectAttributesCoreModelResourceTransformer(address, legacyHostName, usedVersion, msg);
             } else {
                 // 7.1.x slave; resource *may* be ignored so we can't fail; just log
                 context.getLogger().logAttributeWarning(address, problems);
             }
         }
+    }
+
+
+    private static String findSubsystemName(PathAddress pathAddress) {
+        for (PathElement element : pathAddress) {
+            if (element.getKey().equals(SUBSYSTEM)) {
+                return element.getValue();
+            }
+        }
+        return null;
     }
 
     private Set<String> checkModelNode(ModelNode modelNode) {

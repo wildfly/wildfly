@@ -95,7 +95,6 @@ class RejectedAttributesLogContext {
         return failedAttributes != null;
     }
 
-    @Deprecated //todo replace with context.getLogger()....
     String errorOrWarnOnResourceTransformation() throws OperationFailedException {
         if (op != null) {
             throw new IllegalStateException();
