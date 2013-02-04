@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.infinispan.AbstractDelegatingAdvancedCache;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
@@ -36,6 +37,7 @@ import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 
 /**
+ * EmbeddedCacheManager decorator that overrides the default cache semantics of a cache manager.
  * @author Paul Ferraro
  */
 public class DefaultEmbeddedCacheManager extends AbstractDelegatingEmbeddedCacheManager {
@@ -187,18 +189,19 @@ public class DefaultEmbeddedCacheManager extends AbstractDelegatingEmbeddedCache
         return this.cm.getCacheManagerConfiguration().globalJmxStatistics().cacheManagerName();
     }
 
-    class DelegatingCache<K, V> extends AbstractAdvancedCache<K, V> {
+    class DelegatingCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> {
         DelegatingCache(AdvancedCache<K, V> cache) {
-            super(cache);
+            super(cache, new AdvancedCacheWrapper<K, V>() {
+                    @Override
+                    public AdvancedCache<K, V> wrap(AdvancedCache<K, V> cache) {
+                        return new DelegatingCache<K, V>(cache);
+                    }
+                }
+            );
         }
 
         DelegatingCache(Cache<K, V> cache) {
             this(cache.getAdvancedCache());
-        }
-
-        @Override
-        protected AdvancedCache<K, V> wrap(AdvancedCache<K, V> cache) {
-            return new DelegatingCache<K, V>(cache);
         }
 
         @Override
