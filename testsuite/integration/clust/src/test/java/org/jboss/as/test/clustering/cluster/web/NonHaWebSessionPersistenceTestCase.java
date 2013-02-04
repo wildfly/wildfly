@@ -21,21 +21,16 @@
  */
 package org.jboss.as.test.clustering.cluster.web;
 
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_SINGLE;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_2;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URL;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.jboss.arquillian.container.spi.ContainerRegistry;
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -86,7 +81,7 @@ public class NonHaWebSessionPersistenceTestCase {
 
     @Test
     @OperateOnDeployment(DEPLOYMENT_1)
-    public void testSessionPersistence(@ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL) throws ClientProtocolException, IOException {
+    public void testSessionPersistence(@ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL) throws IOException {
         DefaultHttpClient client = new DefaultHttpClient();
 
         String url = baseURL.toString() + "simple";
@@ -98,12 +93,20 @@ public class NonHaWebSessionPersistenceTestCase {
             Assert.assertFalse(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
             response.getEntity().getContent().close();
 
+            response = client.execute(new HttpGet(url));
+            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader("value").getValue()));
+            Assert.assertTrue("The session should have been serialized by now.",
+                    Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
+            response.getEntity().getContent().close();
+
             controller.stop(CONTAINER_SINGLE);
             controller.start(CONTAINER_SINGLE);
 
             response = client.execute(new HttpGet(url));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader("value").getValue()));
+            Assert.assertEquals("Session passivation was configured but session was lost after restart.",
+                    3, Integer.parseInt(response.getFirstHeader("value").getValue()));
             Assert.assertTrue(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
             response.getEntity().getContent().close();
         } finally {
