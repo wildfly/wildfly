@@ -122,6 +122,11 @@ public interface DistributedCacheManager<T extends OutgoingDistributableSessionD
     boolean isPassivationEnabled();
 
     /**
+     * Gets whether the underlying cache supports persistence (is configured with a cache store).
+     */
+    boolean isPersistenceEnabled();
+
+    /**
      * Toggles whether or not to force cache into synchronous mode.
      * @param forceSynchronous true, if cache should force synchronous mode, false otherwise
      */

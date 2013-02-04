@@ -79,6 +79,11 @@ public class MockDistributedCacheManager implements DistributedCacheManager<Outg
         return false;
     }
 
+    @Override
+    public boolean isPersistenceEnabled() {
+        return false;
+    }
+
     public void putAttribute(String realId, Map<String, Object> map) {
         // no-op
     }

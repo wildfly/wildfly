@@ -118,9 +118,12 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
      */
     private final long passivationMaxIdleTime;
 
+    /** Whether the underlying cache supports persistence */
+    private final boolean persistence;
+
     private volatile int maxUnreplicatedInterval;
 
-    /** Id/timestamp of sessions in distributedcache that we haven't loaded locally */
+    /** Id/timestamp of sessions in distributed cache that we haven't loaded locally */
     private final Map<String, OwnedSessionUpdate> unloadedSessions = new ConcurrentHashMap<String, OwnedSessionUpdate>();
     /** Sessions that have been created but not yet loaded. Used to ensure concurrent threads trying to load the same session */
     private final ConcurrentMap<String, ClusteredSession<O>> embryonicSessions = new ConcurrentHashMap<String, ClusteredSession<O>>();
@@ -149,6 +152,8 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
         this.notificationPolicy = this.createClusteredSessionNotificationPolicy();
         this.resolver = resolver;
         this.distributedCacheManager = factory.getDistributedCacheManager(this);
+
+        this.persistence = distributedCacheManager.isPersistenceEnabled();
     }
 
     @Override
@@ -446,6 +451,8 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
      */
     private void clearSessions() {
         boolean passivation = isPassivationEnabled();
+        boolean persistence = isPersistenceEnabled();
+
         // First, the sessions we have actively loaded
         for (Session session: this.sessions.values()) {
             ClusteredSession<O> ses = cast(session);
@@ -457,7 +464,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
                 // they'll be available to the manager for activation after a restart.
                 if (passivation && ses.isValid()) {
                     processSessionPassivation(ses.getRealId());
-                } else {
+                } else if (!persistence) {
                     boolean notify = true;
                     boolean localCall = true;
                     boolean localOnly = true;
@@ -1035,6 +1042,10 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
     @Override
     public boolean isPassivationEnabled() {
         return this.passivate;
+    }
+
+    public boolean isPersistenceEnabled() {
+        return this.persistence;
     }
 
     @Override
