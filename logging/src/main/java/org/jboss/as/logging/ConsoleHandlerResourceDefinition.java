@@ -74,8 +74,8 @@ class ConsoleHandlerResourceDefinition extends AbstractHandlerDefinition {
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, AUTOFLUSH, TARGET)
                 .end();
 
-        // Discard logging profile resources
-        loggingProfileBuilder.discardChildResource(CONSOLE_HANDLER_PATH);
+        // Reject logging profile resources
+        loggingProfileBuilder.rejectChildResource(CONSOLE_HANDLER_PATH);
 
         return registerTransformers(child);
     }

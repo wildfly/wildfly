@@ -87,8 +87,8 @@ class SizeRotatingHandlerResourceDefinition extends AbstractFileHandlerDefinitio
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, AUTOFLUSH, APPEND, FILE, MAX_BACKUP_INDEX, ROTATE_SIZE)
                 .end();
 
-        // Discard logging profile resources
-        loggingProfileBuilder.discardChildResource(SIZE_ROTATING_HANDLER_PATH);
+        // Reject logging profile resources
+        loggingProfileBuilder.rejectChildResource(SIZE_ROTATING_HANDLER_PATH);
 
         return registerTransformers(child);
     }

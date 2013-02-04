@@ -65,8 +65,8 @@ class FileHandlerResourceDefinition extends AbstractFileHandlerDefinition {
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, AUTOFLUSH, APPEND, FILE)
                 .end();
 
-        // Discard logging profile resources
-        loggingProfileBuilder.discardChildResource(FILE_HANDLER_PATH);
+        // Reject logging profile resources
+        loggingProfileBuilder.rejectChildResource(FILE_HANDLER_PATH);
 
         return registerTransformers(child);
     }

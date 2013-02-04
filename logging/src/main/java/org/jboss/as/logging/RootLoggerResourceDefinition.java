@@ -43,7 +43,6 @@ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.logging.LoggingOperations.ReadFilterOperationStepHandler;
@@ -183,8 +182,8 @@ public class RootLoggerResourceDefinition extends SimpleResourceDefinition {
                         // Set the custom resource transformer
                 .setCustomResourceTransformer(new LoggingResourceTransformer(NAME, FILTER_SPEC));
 
-        // Discard logging profile resources
-        loggingProfileBuilder.discardChildResource(ROOT_LOGGER_PATH);
+        // Reject logging profile resources
+        loggingProfileBuilder.rejectChildResource(ROOT_LOGGER_PATH);
 
         return child;
     }

@@ -73,8 +73,8 @@ class PeriodicHandlerResourceDefinition extends AbstractFileHandlerDefinition {
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, AUTOFLUSH, APPEND, FILE, SUFFIX)
                 .end();
 
-        // Discard logging profile resources
-        loggingProfileBuilder.discardChildResource(PERIODIC_HANDLER_PATH);
+        // Reject logging profile resources
+        loggingProfileBuilder.rejectChildResource(PERIODIC_HANDLER_PATH);
 
         return registerTransformers(child);
     }
