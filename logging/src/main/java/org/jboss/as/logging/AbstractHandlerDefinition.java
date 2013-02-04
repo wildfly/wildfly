@@ -33,13 +33,12 @@ import static org.jboss.as.logging.CommonAttributes.FILTER_SPEC;
 import static org.jboss.as.logging.CommonAttributes.FORMATTER;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.NAME;
-import static org.jboss.as.logging.HandlerOperations.HandlerUpdateOperationStepHandler;
-import static org.jboss.as.logging.HandlerOperations.LogHandlerWriteAttributeHandler;
 
 import java.util.logging.Handler;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
 import org.jboss.as.controller.SimpleOperationDefinition;
@@ -49,8 +48,6 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.logging.HandlerOperations.HandlerAddOperationStepHandler;
-import org.jboss.as.logging.LoggingOperations.ReadFilterOperationStepHandler;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
@@ -88,7 +85,7 @@ abstract class AbstractHandlerDefinition extends SimpleResourceDefinition {
             .setParameters(CommonAttributes.LEVEL)
             .build();
 
-    private final LogHandlerWriteAttributeHandler writeHandler;
+    private final OperationStepHandler writeHandler;
     private final AttributeDefinition[] writableAttributes;
     private final AttributeDefinition[] readOnlyAttributes;
 
@@ -113,10 +110,10 @@ abstract class AbstractHandlerDefinition extends SimpleResourceDefinition {
                                         final ConfigurationProperty<?>... constructionProperties) {
         super(path,
                 HANDLER_RESOLVER,
-                new HandlerAddOperationStepHandler(type, addAttributes, constructionProperties),
+                new HandlerOperations.HandlerAddOperationStepHandler(type, addAttributes, constructionProperties),
                 HandlerOperations.REMOVE_HANDLER);
         this.writableAttributes = writableAttributes;
-        writeHandler = new LogHandlerWriteAttributeHandler(this.writableAttributes);
+        writeHandler = new HandlerOperations.LogHandlerWriteAttributeHandler(this.writableAttributes);
         this.readOnlyAttributes = readOnlyAttributes;
     }
 
@@ -125,7 +122,7 @@ abstract class AbstractHandlerDefinition extends SimpleResourceDefinition {
         for (AttributeDefinition def : writableAttributes) {
             // Filter requires a special reader
             if (def.getName().equals(FILTER.getName())) {
-                resourceRegistration.registerReadWriteAttribute(def, ReadFilterOperationStepHandler.INSTANCE, writeHandler);
+                resourceRegistration.registerReadWriteAttribute(def, LoggingOperations.ReadFilterOperationStepHandler.INSTANCE, writeHandler);
             } else {
                 resourceRegistration.registerReadWriteAttribute(def, null, writeHandler);
             }
@@ -149,7 +146,7 @@ abstract class AbstractHandlerDefinition extends SimpleResourceDefinition {
                 .setDeprecated(ModelVersion.create(1, 2, 0))
                 .setParameters(writableAttributes)
                 .build();
-        registration.registerOperationHandler(updateProperties, new HandlerUpdateOperationStepHandler(writableAttributes));
+        registration.registerOperationHandler(updateProperties, new HandlerOperations.HandlerUpdateOperationStepHandler(writableAttributes));
     }
 
     /**
