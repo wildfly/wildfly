@@ -28,6 +28,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DATA_SOURC
 import static org.jboss.as.connector.subsystems.datasources.Constants.GET_INSTALLED_DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.INSTALLED_DRIVERS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.INSTALLED_DRIVERS_LIST;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
@@ -122,7 +123,7 @@ public class DataSourcesSubsystemRootDefinition extends SimpleResourceDefinition
         @Override
         protected void describe(Resource resource, ModelNode address, ModelNode result, ImmutableManagementResourceRegistration registration) {
             super.describe(resource, address, result, registration);
-            if (address.asList().size() == 2 && address.asList().get(1).hasDefined(DATA_SOURCE)) {
+            if (address.asList().size() == 2 && (address.asList().get(1).hasDefined(DATA_SOURCE) || address.asList().get(1).hasDefined(XA_DATASOURCE))) {
                 result.add(createEnableOperation(address, resource.getModel()));
             }
         }
