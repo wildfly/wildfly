@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.ejb.entity.cmp.findbypkey;
+package org.jboss.as.test.integration.ejb.entity.cmp.callback;
 
 import javax.ejb.CreateException;
 import javax.ejb.EntityBean;
@@ -30,10 +30,10 @@ import org.jboss.logging.Logger;
 
 /**
  *
- * EJB CMP bean simple implementation.
+ * EJB2 CMP bean, simple implementation for container test.
  *
  *
- * @author @author <a href="mailto:wfink@redhat.com">Wolf-Dieter Fink</a>
+ * @author <a href="mailto:wfink@redhat.com">Wolf-Dieter Fink</a>
  *
  * @ejb.bean name="SimpleEntity" display-name="SimpleEntity" local-jndi-name="local/SimpleEntity" view-type="local" type="CMP"
  *           cmp-version="2.x" primkey-field="id"
@@ -50,38 +50,48 @@ import org.jboss.logging.Logger;
 public abstract class SimpleEntityBean implements EntityBean {
     private static final Logger LOG = Logger.getLogger(SimpleEntityBean.class);
 
-    private int ejbStoreCall = 0;
+    private EntityContext ctx;
+
+    private SingletonTestResults callbackLog;
 
     public void ejbActivate() {
+        logCallbackInvocation(getId().toString(), "ejbActivate");
     }
 
     public void ejbLoad() {
-        LOG.debug("LOAD pkey="+getId());
+        logCallbackInvocation(getId().toString(), "ejbLoad");
     }
 
     public void ejbPassivate() {
+        logCallbackInvocation(getId().toString(), "ejbPassivate");
     }
 
     public void ejbRemove() throws RemoveException {
-        LOG.debug("REMOVE pkey="+getId());
+        logCallbackInvocation(getId().toString(), "ejbRemove");
     }
 
     public void ejbStore() {
-        ejbStoreCall++;
-        LOG.debug("STORE pkey="+getId()+" calls="+ejbStoreCall);
+        logCallbackInvocation(getId().toString(), "ejbStore");
     }
 
-    public void setEntityContext(EntityContext arg0) {
+    public void setEntityContext(EntityContext context) {
+        this.ctx = context;
+        this.callbackLog = (SingletonTestResults)this.ctx.lookup("java:module/" + SingletonTestResultsBean.class.getSimpleName());
+        logCallbackInvocation("", "setEntityContext");
     }
 
     public void unsetEntityContext() {
+        logCallbackInvocation("", "unsetEntityContext");
+        this.ctx = null;
     }
 
     public Long ejbCreate() throws CreateException {
+        logCallbackInvocation("", "ejbCreate");
         return (null);
     }
 
     public void ejbPostCreate() {
+        logCallbackInvocation("", "ejbPostCreate");
     }
 
     /**
@@ -94,12 +104,19 @@ public abstract class SimpleEntityBean implements EntityBean {
      * @ejb.create-method view-type="local"
      */
     public Long ejbCreate(Long id, String name) throws CreateException {
+        logCallbackInvocation(String.valueOf(id), "ejbCreate");
         setId(id);
         setName(name);
         return (null);
     }
 
     public void ejbPostCreate(Long id, String name) {
+        logCallbackInvocation(getId().toString(), "ejbPostCreate");
+    }
+
+    private void logCallbackInvocation(String pKey, String callbackName) {
+        LOG.info("Callback '"+callbackName+"' executed for " +this.getClass().getSimpleName()+" pKey="+pKey);
+        this.callbackLog.setMethodExecuted("SimpleEntity", pKey, callbackName);
     }
 
     /**
@@ -123,8 +140,4 @@ public abstract class SimpleEntityBean implements EntityBean {
      * @ejb.interface-method
      */
     public abstract void setName(String name);
-
-    public int getEjbStoreCounter() {
-        return this.ejbStoreCall;
-    }
 }
