@@ -302,7 +302,7 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
                                 new RejectExpressionsConfig(JMSTopicDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0))
                         .addFailedAttribute(
                                 subsystemAddress.append(JMSBridgeDefinition.PATH),
-                                FailedOperationTransformationConfig.DISCARDED_RESOURCE));
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE));
     }
 
 

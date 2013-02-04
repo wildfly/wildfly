@@ -90,7 +90,7 @@ public class WebExtension implements Extension {
 
     protected static final PathElement REWRITECOND_PATH = PathElement.pathElement(Constants.CONDITION);
 
-    protected static final PathElement VALVE_PATH = PathElement.pathElement(Constants.VALVE);
+    public static final PathElement VALVE_PATH = PathElement.pathElement(Constants.VALVE);
 
     protected static final PathElement PARAM = PathElement.pathElement(Constants.PARAM);
 
@@ -186,7 +186,7 @@ public class WebExtension implements Extension {
         final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
         // Discard valve
-        subsystemRoot.discardChildResource(VALVE_PATH);
+        subsystemRoot.rejectChildResource(VALVE_PATH);
 
         // Reject expressions for configuration
         subsystemRoot.addChildResource(JSP_CONFIGURATION_PATH).getAttributeBuilder()
