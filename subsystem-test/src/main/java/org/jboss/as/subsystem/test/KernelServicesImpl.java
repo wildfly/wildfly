@@ -1,5 +1,6 @@
 package org.jboss.as.subsystem.test;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -131,7 +132,8 @@ public class KernelServicesImpl extends ModelTestKernelServicesImpl<KernelServic
         checkIsMainController();
         PathElement pathElement = PathElement.pathElement(SUBSYSTEM, mainSubsystemName);
         PathAddress opAddr = PathAddress.pathAddress(operation.get(OP_ADDR));
-        if (opAddr.size() > 0 && opAddr.getElement(0).equals(pathElement)) {
+        // Composite operations have no address
+        if ((opAddr.size() > 0 && opAddr.getElement(0).equals(pathElement)) || operation.get(OP).asString().equals(COMPOSITE)) {
 
             final Map<PathAddress, ModelVersion> subsystem = Collections.singletonMap(PathAddress.EMPTY_ADDRESS.append(pathElement), modelVersion);
             final TransformationTarget transformationTarget = TransformationTargetImpl.create(extensionRegistry.getTransformerRegistry(), getCoreModelVersionByLegacyModelVersion(modelVersion),
