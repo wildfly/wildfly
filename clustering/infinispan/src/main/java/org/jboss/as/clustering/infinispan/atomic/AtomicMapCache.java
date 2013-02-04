@@ -25,19 +25,28 @@ package org.jboss.as.clustering.infinispan.atomic;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.infinispan.AbstractDelegatingAdvancedCache;
 import org.infinispan.AdvancedCache;
 import org.infinispan.atomic.AtomicMapLookup;
 import org.infinispan.util.concurrent.NotifyingFuture;
-import org.jboss.as.clustering.infinispan.AbstractAdvancedCache;
 
-public class AtomicMapCache<K, MK, MV> extends AbstractAdvancedCache<K, Map<MK, MV>> {
+/**
+ * A cache wrapper that simplifies atomic map semantics.
+ * @author Paul Ferraro
+ * @param <K> the cache key
+ * @param <MK> the atomic map key
+ * @param <MV> the atomic map value
+ */
+public class AtomicMapCache<K, MK, MV> extends AbstractDelegatingAdvancedCache<K, Map<MK, MV>> {
+
     public AtomicMapCache(AdvancedCache<K, Map<MK, MV>> cache) {
-        super(cache);
-    }
-
-    @Override
-    protected AdvancedCache<K, Map<MK, MV>> wrap(AdvancedCache<K, Map<MK, MV>> cache) {
-        return new AtomicMapCache<K, MK, MV>(cache);
+        super(cache, new AdvancedCacheWrapper<K, Map<MK, MV>>() {
+                @Override
+                public AdvancedCache<K, Map<MK, MV>> wrap(AdvancedCache<K, Map<MK, MV>> cache) {
+                    return new AtomicMapCache<K, MK, MV>(cache);
+                }
+            }
+        );
     }
 
     @SuppressWarnings("unchecked")
