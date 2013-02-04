@@ -147,8 +147,8 @@ class AsyncHandlerResourceDefinition extends AbstractHandlerDefinition {
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, QUEUE_LENGTH, OVERFLOW_ACTION)
                 .end();
 
-        // Discard logging profile resources
-        loggingProfileBuilder.discardChildResource(ASYNC_HANDLER_PATH);
+        // Reject logging profile resources
+        loggingProfileBuilder.rejectChildResource(ASYNC_HANDLER_PATH);
 
         return registerTransformers(child);
     }

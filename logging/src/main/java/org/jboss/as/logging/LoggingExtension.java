@@ -121,8 +121,8 @@ public class LoggingExtension implements Extension {
 
         // Create the transformer builder
         final ResourceTransformationDescriptionBuilder subsystemBuilder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        // Add discard before add the logging-profile child resource builder
-        subsystemBuilder.discardChildResource(LOGGING_PROFILE_PATH);
+        // Add reject before add the logging-profile child resource builder
+        subsystemBuilder.rejectChildResource(LOGGING_PROFILE_PATH);
         ResourceTransformationDescriptionBuilder loggingProfileBuilder = subsystemBuilder.addChildResource(LOGGING_PROFILE_PATH);
 
         // Add resource transformers to the subsystem

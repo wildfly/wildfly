@@ -99,8 +99,8 @@ class CustomHandlerResourceDefinition extends AbstractHandlerDefinition {
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, PROPERTIES)
                 .end();
 
-        // Discard logging profile resources
-        loggingProfileBuilder.discardChildResource(CUSTOM_HANDLE_PATH);
+        // Reject logging profile resources
+        loggingProfileBuilder.rejectChildResource(CUSTOM_HANDLE_PATH);
 
         return registerTransformers(child);
     }

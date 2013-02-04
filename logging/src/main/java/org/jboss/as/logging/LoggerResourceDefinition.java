@@ -186,8 +186,8 @@ public class LoggerResourceDefinition extends SimpleResourceDefinition {
                         // Set the custom resource transformer
                 .setCustomResourceTransformer(new LoggingResourceTransformer(CATEGORY, FILTER_SPEC));
 
-        // Discard logging profile resources
-        loggingProfileBuilder.discardChildResource(LOGGER_PATH);
+        // Reject logging profile resources
+        loggingProfileBuilder.rejectChildResource(LOGGER_PATH);
 
         return child;
     }
