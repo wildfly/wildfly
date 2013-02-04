@@ -68,10 +68,10 @@ public class MessagingTransformers {
         final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
         // discard JMS bridge resources added in 1.2.0
-        subsystemRoot.discardChildResource(JMSBridgeDefinition.PATH);
+        subsystemRoot.rejectChildResource(JMSBridgeDefinition.PATH);
         // discard runtime resources
-        subsystemRoot.discardChildResource(CoreAddressDefinition.PATH);
-        subsystemRoot.discardChildResource(PathElement.pathElement(RUNTIME_QUEUE));
+        subsystemRoot.rejectChildResource(CoreAddressDefinition.PATH);
+        subsystemRoot.rejectChildResource(PathElement.pathElement(RUNTIME_QUEUE));
 
         ResourceTransformationDescriptionBuilder hornetqServer = subsystemRoot.addChildResource(PathElement.pathElement(HORNETQ_SERVER))
                 .getAttributeBuilder()
