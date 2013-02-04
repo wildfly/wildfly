@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.ejb.entity.cmp.findbypkey;
+package org.jboss.as.test.integration.ejb.entity.cmp.callback;
 
 import static org.junit.Assert.fail;
 
@@ -39,16 +39,17 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Check whether the findByPrimaryKey is optimized to not call DB sync
+ * Check whether the findByPrimaryKey or another finder will not find a removed entity.
+ * This is done in a different or the same transaction.
  *
- * @author @author <a href="mailto:wfink@redhat.com">Wolf-Dieter Fink</a>
+ * @author <a href="mailto:wfink@redhat.com">Wolf-Dieter Fink</a>
  */
 @RunWith(CmpTestRunner.class)
 public class CheckCacheAfterRemoveDifferentTxUnitTestCase extends AbstractCmpTest {
     private static Logger log = Logger.getLogger(CheckCacheAfterRemoveDifferentTxUnitTestCase.class);
 
     private static final String ARCHIVE_NAME = "cmp2-findByPK.jar";
-    private static final String ENTITY_LOOKUP = "java:module/SimpleEntity!org.jboss.as.test.integration.ejb.entity.cmp.findbypkey.SimpleEntityLocalHome";
+    private static final String ENTITY_LOOKUP = "java:module/SimpleEntity!"+SimpleEntityLocalHome.class.getName();
 
     @Deployment
     public static Archive<?> deploy() {

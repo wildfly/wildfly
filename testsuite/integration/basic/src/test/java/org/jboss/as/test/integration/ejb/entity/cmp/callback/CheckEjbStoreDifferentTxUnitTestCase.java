@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.ejb.entity.cmp.findbypkey;
+package org.jboss.as.test.integration.ejb.entity.cmp.callback;
 
 import static org.junit.Assert.fail;
 
@@ -37,16 +37,19 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Check whether the findByPrimaryKey is optimized to not call DB sync
+ * Check whether ejbCreate ejbPostCreate and ejbStore is called during creating an entity bean.
+ * Check if the findByPrimaryKey is optimized to not call DB sync by check whether the ejbStore is called if the finder is executed.
+ * The creation and the test will be called in different transactions to ensure that the entity bean was passivated and is taken
+ * out of the instance pool to check that the pooled instance is correct reseted for reuse.
  *
- * @author @author <a href="mailto:wfink@redhat.com">Wolf-Dieter Fink</a>
+ * @author <a href="mailto:wfink@redhat.com">Wolf-Dieter Fink</a>
  */
 @RunWith(CmpTestRunner.class)
 public class CheckEjbStoreDifferentTxUnitTestCase extends AbstractCmpTest {
     private static Logger log = Logger.getLogger(CheckEjbStoreDifferentTxUnitTestCase.class);
 
     private static final String ARCHIVE_NAME = "cmp2-findByPK.jar";
-    private static final String ENTITY_LOOKUP = "java:module/SimpleEntity!org.jboss.as.test.integration.ejb.entity.cmp.findbypkey.SimpleEntityLocalHome";
+    private static final String ENTITY_LOOKUP = "java:module/SimpleEntity!"+SimpleEntityLocalHome.class.getName();
 
     @Deployment
     public static Archive<?> deploy() {
@@ -73,7 +76,14 @@ public class CheckEjbStoreDifferentTxUnitTestCase extends AbstractCmpTest {
         SimpleEntityLocalHome simpleHome = getHome();
 
         simpleHome.create(1l, "Entity #1");
+        Assert.assertEquals("ejbCreate must be called for Entity#1", 1, TestResults.getNumberOfCalls("SimpleEntity#1.ejbCreate"));
+        Assert.assertEquals("ejbPostCreate must be called for Entity#1", 1, TestResults.getNumberOfCalls("SimpleEntity#1.ejbPostCreate"));
+        Assert.assertEquals("ejbStore must be called for Entity#1", 1, TestResults.getNumberOfCalls("SimpleEntity#1.ejbStore"));
         simpleHome.create(2l, "Entity #2");
+        Assert.assertEquals("ejbCreate must be called for Entity#2", 1, TestResults.getNumberOfCalls("SimpleEntity#2.ejbCreate"));
+        Assert.assertEquals("ejbPostCreate must be called for Entity#2", 1, TestResults.getNumberOfCalls("SimpleEntity#2.ejbPostCreate"));
+        Assert.assertEquals("ejbStore must be called for Entity#2", 1, TestResults.getNumberOfCalls("SimpleEntity#2.ejbStore"));
+        TestResults.resetAll();
     }
 
 
@@ -93,21 +103,21 @@ public class CheckEjbStoreDifferentTxUnitTestCase extends AbstractCmpTest {
 
         log.debug("read Enity #1");
         SimpleEntityLocal e1 = simpleHome.findByPrimaryKey(1l);
-        Assert.assertEquals("ejbStore not called after create!", 0, e1.getEjbStoreCounter());
+        Assert.assertFalse("ejbStore unexpected called after findByPrimaryKey!", TestResults.isCalled("SimpleEntity#1.ejbStore"));
         log.debug("read Enity #2");
         SimpleEntityLocal e2 = simpleHome.findByPrimaryKey(2l);
 
         log.debug("change Enity #1");
         e1.setName("Entity #1 changed");
-        Assert.assertEquals("ejbStore called unexpected after change!", 0, e1.getEjbStoreCounter());
+        Assert.assertFalse("ejbStore called unexpected after change!", TestResults.isCalled("SimpleEntity#1.ejbStore"));
 
         log.debug("findByPKey Enity #2");
         e2 = simpleHome.findByPrimaryKey(2l);
-        Assert.assertEquals("Entity #1 was unexpected flushed to the DB",0, e1.getEjbStoreCounter());
+        Assert.assertFalse("Entity #1 was unexpected flushed to the DB",TestResults.isCalled("SimpleEntity#1.ejbStore"));
 
         log.debug("findById Enity #2");
         e2 = simpleHome.findById(2l);
-        Assert.assertEquals("Entity #1 was not flushed to the DB", 1,e1.getEjbStoreCounter());
+        Assert.assertEquals("Entity #1 was not flushed to the DB ", 1, TestResults.getNumberOfCalls("SimpleEntity#1.ejbStore"));
         log.debug("leaving test");
     }
 }
