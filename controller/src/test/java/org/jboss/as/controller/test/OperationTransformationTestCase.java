@@ -23,10 +23,6 @@
 package org.jboss.as.controller.test;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 import junit.framework.Assert;
 
@@ -59,9 +55,6 @@ import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.controller.transform.Transformers;
 import org.jboss.as.controller.transform.TransformersLogger;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
-import org.jboss.as.controller.transform.chained.ChainedResourceTransformationContext;
-import org.jboss.as.controller.transform.chained.ChainedResourceTransformer;
-import org.jboss.as.controller.transform.chained.ChainedResourceTransformerEntry;
 import org.jboss.dmr.ModelNode;
 import org.junit.Before;
 import org.junit.Test;
@@ -214,83 +207,6 @@ public class OperationTransformationTestCase {
         Assert.assertNull(transformed13.getChild(two));
         Assert.assertNotNull(transformed13.getChild(one));
     }
-
-    @Test
-    public void testChainedTransformer() throws Exception {
-        final PathElement top = PathElement.pathElement("top", "test");
-        final PathElement one = PathElement.pathElement("type", "one");
-        final PathElement two = PathElement.pathElement("type", "two");
-
-        final Resource rootResource = Resource.Factory.create();
-        final Resource topResource = Resource.Factory.create();
-        topResource.getModel().get("A").set("a");
-        final Resource oneResource = Resource.Factory.create();
-        oneResource.getModel().get("A").set("a");
-        final Resource twoResource = Resource.Factory.create();
-        twoResource.getModel().get("A").set("a");
-        twoResource.getModel().get("B").set("b");
-        rootResource.registerChild(top, topResource);
-        topResource.registerChild(one, oneResource);
-        topResource.registerChild(two, twoResource);
-
-
-        final TransformerRegistry transformers = TransformerRegistry.Factory.create(null);
-        TransformersSubRegistration rootTransformers = transformers.getDomainRegistration(ModelVersion.create(1, 0));
-
-        ChainedResourceTransformerEntry shiftKey = new ChainedResourceTransformerEntry() {
-            @Override
-            public void transformResource(ChainedResourceTransformationContext context, PathAddress address, Resource resource)
-                    throws OperationFailedException {
-                ModelNode model = resource.getModel();
-                if (model.isDefined()) {
-                    Map<String, ModelNode> replacements = new HashMap<String, ModelNode>();
-                    Set<String> keys = new HashSet<String>(model.keys());
-                    for (String key : keys) {
-                        replacements.put(key, model.remove(key));
-                    }
-                    for (String key : keys) {
-                        StringBuffer sb = new StringBuffer(key);
-                        for (int i = 0; i < sb.length(); i++) {
-                            char c = sb.charAt(0);
-                            c++;
-                            sb.setCharAt(i, c);
-                        }
-                        model.get(sb.toString()).set(replacements.get(key));
-                    }
-                }
-            }
-        };
-
-        ChainedResourceTransformerEntry upperCaseValue = new ChainedResourceTransformerEntry() {
-            @Override
-            public void transformResource(ChainedResourceTransformationContext context, PathAddress address, Resource resource)
-                    throws OperationFailedException {
-                ModelNode model = resource.getModel();
-                if (model.isDefined()) {
-                    for (String key : model.keys()) {
-                        String s = model.get(key).asString();
-                        s = s.toUpperCase();
-                        model.get(key).set(s);
-                    }
-                }
-            }
-        };
-
-        TransformersSubRegistration topTransformers = rootTransformers.registerSubResource(top, new ChainedResourceTransformer(shiftKey, upperCaseValue));
-        topTransformers.registerSubResource(two, new ChainedResourceTransformer(shiftKey, upperCaseValue));
-
-
-        final TransformationTarget target = create(transformers, ModelVersion.create(1, 0));
-        final Resource transformed = transform(target, rootResource);
-
-        ModelNode expected = new ModelNode();
-        expected.get("top", "test", "B").set("A");
-        expected.get("top", "test", "type", "one", "A").set("a");
-        expected.get("top", "test", "type", "two", "B").set("A");
-        expected.get("top", "test", "type", "two", "C").set("B");
-        Assert.assertEquals(expected, readModelRecursively(transformed));
-    }
-
 
     @Test
     public void testAddSubsystem() throws Exception {

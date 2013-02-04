@@ -32,7 +32,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
-import org.jboss.as.controller.transform.RejectExpressionValuesChainedTransformer;
+import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.controller.transform.description.AttributeConverter;
@@ -52,8 +52,8 @@ import org.jboss.dmr.ModelNode;
 class SystemPropertyTransformers {
 
     @SuppressWarnings("deprecation")
-    static final RejectExpressionValuesChainedTransformer rejectExpressions =
-            new RejectExpressionValuesChainedTransformer(SystemPropertyResourceDefinition.VALUE, SystemPropertyResourceDefinition.BOOT_TIME);
+    static final RejectExpressionValuesTransformer rejectExpressions =
+            new RejectExpressionValuesTransformer(SystemPropertyResourceDefinition.VALUE, SystemPropertyResourceDefinition.BOOT_TIME);
 
 
     static void registerTransformers120(TransformersSubRegistration parent) {

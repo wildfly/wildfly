@@ -28,8 +28,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.chained.ChainedResourceTransformationContext;
-import org.jboss.as.controller.transform.chained.ChainedResourceTransformerEntry;
 
 /**
  * {@link ResourceTransformer} that takes the value in the last element of the given address
@@ -42,7 +40,7 @@ import org.jboss.as.controller.transform.chained.ChainedResourceTransformerEntry
  * @see ReadResourceNameOperationStepHandler
  */
 @SuppressWarnings("deprecation")
-public class AddNameFromAddressResourceTransformer implements ResourceTransformer, ChainedResourceTransformerEntry {
+public class AddNameFromAddressResourceTransformer implements ResourceTransformer {
     public static final AddNameFromAddressResourceTransformer INSTANCE = new AddNameFromAddressResourceTransformer();
 
     private AddNameFromAddressResourceTransformer() {
@@ -54,11 +52,6 @@ public class AddNameFromAddressResourceTransformer implements ResourceTransforme
         transformResourceInternal(address, resource);
         ResourceTransformationContext childContext = context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
         childContext.processChildren(resource);
-    }
-
-    @Override
-    public void transformResource(ChainedResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
-        transformResourceInternal(address, resource);
     }
 
     private void transformResourceInternal(final PathAddress address, final Resource resource) throws OperationFailedException {
