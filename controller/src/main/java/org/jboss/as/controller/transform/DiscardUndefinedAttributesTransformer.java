@@ -41,8 +41,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.chained.ChainedResourceTransformationContext;
-import org.jboss.as.controller.transform.chained.ChainedResourceTransformerEntry;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -51,7 +49,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2012 Red Hat Inc.
  */
-public class DiscardUndefinedAttributesTransformer implements ChainedResourceTransformerEntry, ResourceTransformer, OperationTransformer {
+public class DiscardUndefinedAttributesTransformer implements ResourceTransformer, OperationTransformer {
 
     private final Set<String> attributeNames;
     private final OperationTransformer writeAttributeTransformer = new WriteAttributeTransformer();
@@ -85,10 +83,6 @@ public class DiscardUndefinedAttributesTransformer implements ChainedResourceTra
         return undefineAttributeTransformer;
     }
 
-    @Override
-    public void transformResource(ChainedResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
-        transformResourceInt(context, address, resource);
-    }
 
     @Override
     public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {

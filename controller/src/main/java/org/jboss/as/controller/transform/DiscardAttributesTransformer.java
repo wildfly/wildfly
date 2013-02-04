@@ -37,8 +37,6 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.chained.ChainedResourceTransformationContext;
-import org.jboss.as.controller.transform.chained.ChainedResourceTransformerEntry;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -62,7 +60,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public abstract class DiscardAttributesTransformer implements OperationTransformer, ResourceTransformer, ChainedResourceTransformerEntry {
+public abstract class DiscardAttributesTransformer implements OperationTransformer, ResourceTransformer {
 
     /**
      * Approves the transformation of the resource or operation.
@@ -284,15 +282,6 @@ public abstract class DiscardAttributesTransformer implements OperationTransform
         boolean allowDiscard = discardApprover.isOperationDiscardAllowed(context, address, operation);
         final ModelNode transformedOperation = allowDiscard ? transformInternal(operation.clone()) : operation;
         return new TransformedOperation(transformedOperation, ORIGINAL_RESULT);
-    }
-
-
-    @Override
-    public void transformResource(ChainedResourceTransformationContext context, PathAddress address, Resource resource)
-            throws OperationFailedException {
-        if (discardApprover.isResourceDiscardAllowed(context, address, resource)) {
-            transformInternal(resource.getModel());
-        }
     }
 
     @Override
