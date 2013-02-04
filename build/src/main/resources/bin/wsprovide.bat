@@ -19,7 +19,6 @@ set JBOSS_HOME=%DIRNAME%\..
 
 rem Execute the command
 "%JAVA%" %JAVA_OPTS% ^
-    "-Djava.endorsed.dirs=%JBOSS_HOME%/modules/com/sun/xml/bind/main;%JBOSS_HOME%/modules/javax/xml/ws/api/main" ^
     -jar "%JBOSS_HOME%\jboss-modules.jar" ^
     -mp "%JBOSS_HOME%\modules" ^
     org.jboss.ws.tools.wsprovide ^
