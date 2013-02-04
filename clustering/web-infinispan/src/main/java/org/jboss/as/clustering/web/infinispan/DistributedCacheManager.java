@@ -83,6 +83,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
     private final ForceSynchronousCacheInvoker invoker;
     private final BatchingManager batchingManager;
     private final boolean passivationEnabled;
+    private final boolean persistenceEnabled;
     private final Registry<String, Void> registry;
     private final long lockTimeout;
     private final KeyAffinityService<String> affinity;
@@ -101,6 +102,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
 
         Configuration configuration = this.cache.getCacheConfiguration();
         this.passivationEnabled = configuration.loaders().passivation() && !configuration.loaders().shared() && !configuration.loaders().cacheLoaders().isEmpty();
+        this.persistenceEnabled = !configuration.loaders().passivation() && !configuration.loaders().cacheLoaders().isEmpty();
         this.registry = registry;
         this.affinity = affinityFactory.createService(cache, this);
     }
@@ -351,6 +353,16 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
     @Override
     public boolean isPassivationEnabled() {
         return this.passivationEnabled;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see org.jboss.as.clustering.web.DistributedCacheManager#isPersistenceEnabled()
+     */
+    @Override
+    public boolean isPersistenceEnabled() {
+        return this.persistenceEnabled;
     }
 
     /**
