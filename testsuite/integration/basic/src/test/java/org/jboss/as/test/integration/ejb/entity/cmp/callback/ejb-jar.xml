@@ -9,10 +9,10 @@
         <entity>
             <ejb-name>SimpleEntity</ejb-name>
 
-            <local-home>org.jboss.as.test.integration.ejb.entity.cmp.findbypkey.SimpleEntityLocalHome</local-home>
-            <local>org.jboss.as.test.integration.ejb.entity.cmp.findbypkey.SimpleEntityLocal</local>
+            <local-home>org.jboss.as.test.integration.ejb.entity.cmp.callback.SimpleEntityLocalHome</local-home>
+            <local>org.jboss.as.test.integration.ejb.entity.cmp.callback.SimpleEntityLocal</local>
 
-            <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.findbypkey.SimpleEntityBean</ejb-class>
+            <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.callback.SimpleEntityBean</ejb-class>
             <persistence-type>Container</persistence-type>
             <prim-key-class>java.lang.Long</prim-key-class>
             <reentrant>false</reentrant>

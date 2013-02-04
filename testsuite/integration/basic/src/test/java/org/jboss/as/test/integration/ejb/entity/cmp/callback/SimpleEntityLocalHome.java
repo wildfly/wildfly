@@ -19,22 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.ejb.entity.cmp.findbypkey;
+package org.jboss.as.test.integration.ejb.entity.cmp.callback;
 
 /**
- * Local interface for SimpleEntity.
+ * Local home interface for SimpleEntity.
  *
- * @author @author <a href="mailto:wfink@redhat.com">Wolf-Dieter Fink</a>
+ * @author <a href="mailto:wfink@redhat.com">Wolf-Dieter Fink</a>
  */
-public interface SimpleEntityLocal extends javax.ejb.EJBLocalObject {
+public interface SimpleEntityLocalHome extends javax.ejb.EJBLocalHome {
 
-   public java.lang.Long getId(  ) ;
-
-   public void setId( java.lang.Long id ) ;
-
-   public java.lang.String getName(  ) ;
-
-   public void setName( java.lang.String name ) ;
-
-   public int getEjbStoreCounter();
+   public SimpleEntityLocal create(java.lang.Long id , java.lang.String name) throws javax.ejb.CreateException;
+   public SimpleEntityLocal findById(java.lang.Long id) throws javax.ejb.FinderException;
+   public SimpleEntityLocal findByPrimaryKey(java.lang.Long pk) throws javax.ejb.FinderException;
 }

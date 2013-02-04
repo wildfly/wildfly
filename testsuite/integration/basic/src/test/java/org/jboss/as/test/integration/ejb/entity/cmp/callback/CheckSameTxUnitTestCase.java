@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.ejb.entity.cmp.findbypkey;
+package org.jboss.as.test.integration.ejb.entity.cmp.callback;
 
 import static org.junit.Assert.fail;
 
@@ -38,16 +38,22 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Check whether the findByPrimaryKey is optimized to not call DB sync
+ * <p>
+ * Check whether ejbStore is called during creating an entity bean. Validate if the findByPrimaryKey is optimized to not call DB
+ * sync by check whether the ejbStore is called if the findByPrimaryKey is executed. And ensure that ejbStore is called if a
+ * finder different to findByPrimaryKey is called. The creation and the test will be called within the same transaction.
+ * </p>
+ * <p>
+ * Second test ensure that the entity is not longer found if remove and findByPrimaryKey will be called in the same transaction.
  *
- * @author @author <a href="mailto:wfink@redhat.com">Wolf-Dieter Fink</a>
+ * @author <a href="mailto:wfink@redhat.com">Wolf-Dieter Fink</a>
  */
 @RunWith(CmpTestRunner.class)
 public class CheckSameTxUnitTestCase extends AbstractCmpTest {
     private static Logger log = Logger.getLogger(CheckSameTxUnitTestCase.class);
 
     private static final String ARCHIVE_NAME = "cmp2-findByPK.jar";
-    private static final String ENTITY_LOOKUP = "java:module/SimpleEntity!org.jboss.as.test.integration.ejb.entity.cmp.findbypkey.SimpleEntityLocalHome";
+    private static final String ENTITY_LOOKUP = "java:module/SimpleEntity!"+SimpleEntityLocalHome.class.getName();
 
     @Deployment
     public static Archive<?> deploy() {
@@ -70,9 +76,8 @@ public class CheckSameTxUnitTestCase extends AbstractCmpTest {
     }
 
     /**
-     * From the spec a call to a finder must flush all entities to the database to ensure
-     * a correct result for the query.
-     * This is not necessary for the 'findByPrimaryKey' method and will be a performance improvement.
+     * From the spec a call to a finder must flush all entities to the database to ensure a correct result for the query. This
+     * is not necessary for the 'findByPrimaryKey' method and will be a performance improvement.
      *
      * The test checks whether the entity is not flushed during calls of findByPrimaryKey.
      *
@@ -84,28 +89,30 @@ public class CheckSameTxUnitTestCase extends AbstractCmpTest {
 
         log.debug("create Enity #10001");
         SimpleEntityLocal e1 = simpleHome.create(10001l, "Entity 10001");
-        Assert.assertTrue("ejbStore not called after create!", 1==e1.getEjbStoreCounter());
+        Assert.assertTrue("ejbStore not called after create!", 1 == TestResults.getNumberOfCalls("SimpleEntity#10001.ejbStore"));
         log.debug("create Enity #10002");
         SimpleEntityLocal e2 = simpleHome.create(10002l, "Entity 10002");
 
         log.debug("change Enity #10001");
         e1.setName("Entity 10001 changed");
-        Assert.assertTrue("ejbStore called unexpected after change!", 1==e1.getEjbStoreCounter());
+        Assert.assertTrue("ejbStore called unexpected after change!",
+                1 == TestResults.getNumberOfCalls("SimpleEntity#10001.ejbStore"));
 
         log.debug("findByPKey Enity #10002");
         e2 = simpleHome.findByPrimaryKey(10002l);
-        Assert.assertTrue("Entity #1 was unexpected flushed to the DB",1== e1.getEjbStoreCounter());
+        Assert.assertTrue("Entity #1 was unexpected flushed to the DB",
+                1 == TestResults.getNumberOfCalls("SimpleEntity#10001.ejbStore"));
 
         log.debug("findById Enity #10002");
         e2 = simpleHome.findById(10002l);
-        Assert.assertTrue("Entity #1 was not flushed to the DB", 2==e1.getEjbStoreCounter());
+        Assert.assertTrue("Entity #1 was not flushed to the DB",
+                2 == TestResults.getNumberOfCalls("SimpleEntity#10001.ejbStore"));
         log.debug("leaving test");
     }
 
-
     /**
-     * Check whether the created entity was not found after removing it within the same Tx.
-     * This is to avoid that the entity is deleted from the database but will be returned out of the cache.
+     * Check whether the created entity was not found after removing it within the same Tx. This is to avoid that the entity is
+     * deleted from the database but will be returned out of the cache.
      *
      * @throws Exception
      */
@@ -120,13 +127,13 @@ public class CheckSameTxUnitTestCase extends AbstractCmpTest {
         try {
             simpleHome.findByPrimaryKey(10010l);
             Assert.fail("Entity was unexpected found with findByPrimaryKey() after remove");
-        }catch(ObjectNotFoundException e) {
+        } catch (ObjectNotFoundException e) {
             log.info("Entity not found after remove");
         }
         try {
             simpleHome.findById(10010l);
             Assert.fail("Entity was unexpected found with finder query after remove");
-        }catch(ObjectNotFoundException e) {
+        } catch (ObjectNotFoundException e) {
             log.info("Entity not found after remove by finder query");
         }
     }
