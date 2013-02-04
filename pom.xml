@@ -22,14 +22,14 @@
   -->
   <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
+<!-- test -->
     <parent>
       <groupId>org.jboss</groupId>
       <artifactId>jboss-parent</artifactId>
       <version>10</version>
     </parent>
-
     <groupId>org.jboss.as</groupId>
+
     <artifactId>jboss-as-parent</artifactId>
     <version>7.2.0.Alpha1-SNAPSHOT</version>
 
@@ -51,6 +51,7 @@
         <developerConnection>scm:git:${jboss.as.scm.connection}</developerConnection>
         <url>${jboss.as.scm.url}</url>
     </scm>
+
 
     <properties>
          <!-- Release Info -->

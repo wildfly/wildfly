@@ -124,4 +124,8 @@ public final class Logging {
         System.arraycopy(add, 0, result, base.length, add.length);
         return result;
     }
+
+    static String fixFormatPattern(final String currentPattern) {
+        return currentPattern.replaceAll("(%K\\{[a-zA-Z]*?})", "");
+    }
 }

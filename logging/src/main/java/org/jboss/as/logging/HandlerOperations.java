@@ -22,7 +22,7 @@
 
 package org.jboss.as.logging;
 
-import static org.jboss.as.logging.CommonAttributes.CLASS;
+import static org.jboss.as.logging.CustomHandlerResourceDefinition.CLASS;
 import static org.jboss.as.logging.CommonAttributes.ENABLED;
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FILE;
@@ -31,10 +31,9 @@ import static org.jboss.as.logging.CommonAttributes.FILTER_SPEC;
 import static org.jboss.as.logging.CommonAttributes.FORMATTER;
 import static org.jboss.as.logging.CommonAttributes.HANDLER_NAME;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
-import static org.jboss.as.logging.CommonAttributes.MODULE;
-import static org.jboss.as.logging.CommonAttributes.PROPERTIES;
-import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
-import static org.jboss.as.logging.LoggerOperations.ADD_HANDLER;
+import static org.jboss.as.logging.CustomHandlerResourceDefinition.MODULE;
+import static org.jboss.as.logging.CustomHandlerResourceDefinition.PROPERTIES;
+import static org.jboss.as.logging.AsyncHandlerResourceDefinition.SUBHANDLERS;
 import static org.jboss.as.logging.Logging.createOperationFailure;
 
 import java.util.ArrayList;
@@ -48,7 +47,6 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.logging.LoggingOperations.LoggingAddOperationStepHandler;
 import org.jboss.as.logging.LoggingOperations.LoggingRemoveOperationStepHandler;
 import org.jboss.as.logging.LoggingOperations.LoggingUpdateOperationStepHandler;
