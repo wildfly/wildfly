@@ -22,7 +22,7 @@
 
 package org.jboss.as.logging;
 
-import static org.jboss.as.logging.CustomHandlerResourceDefinition.CLASS;
+import static org.jboss.as.logging.AsyncHandlerResourceDefinition.SUBHANDLERS;
 import static org.jboss.as.logging.CommonAttributes.ENABLED;
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FILE;
@@ -31,9 +31,9 @@ import static org.jboss.as.logging.CommonAttributes.FILTER_SPEC;
 import static org.jboss.as.logging.CommonAttributes.FORMATTER;
 import static org.jboss.as.logging.CommonAttributes.HANDLER_NAME;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
+import static org.jboss.as.logging.CustomHandlerResourceDefinition.CLASS;
 import static org.jboss.as.logging.CustomHandlerResourceDefinition.MODULE;
 import static org.jboss.as.logging.CustomHandlerResourceDefinition.PROPERTIES;
-import static org.jboss.as.logging.AsyncHandlerResourceDefinition.SUBHANDLERS;
 import static org.jboss.as.logging.Logging.createOperationFailure;
 
 import java.util.ArrayList;
@@ -46,11 +46,8 @@ import java.util.logging.Handler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.logging.LoggingOperations.LoggingAddOperationStepHandler;
-import org.jboss.as.logging.LoggingOperations.LoggingRemoveOperationStepHandler;
-import org.jboss.as.logging.LoggingOperations.LoggingUpdateOperationStepHandler;
-import org.jboss.as.logging.LoggingOperations.LoggingWriteAttributeHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.logmanager.LogContext;
@@ -74,7 +71,7 @@ final class HandlerOperations {
     /**
      * A step handler for updating logging handler properties.
      */
-    static class HandlerUpdateOperationStepHandler extends LoggingUpdateOperationStepHandler {
+    static class HandlerUpdateOperationStepHandler extends LoggingOperations.LoggingUpdateOperationStepHandler {
         private final AttributeDefinition[] attributes;
 
         protected HandlerUpdateOperationStepHandler() {
@@ -132,7 +129,7 @@ final class HandlerOperations {
     /**
      * A step handler for add operations of logging handlers. Adds default properties to the handler configuration.
      */
-    static class HandlerAddOperationStepHandler extends LoggingAddOperationStepHandler {
+    static class HandlerAddOperationStepHandler extends LoggingOperations.LoggingAddOperationStepHandler {
         private final String[] constructionProperties;
         private final AttributeDefinition[] attributes;
         private final Class<? extends Handler> type;
@@ -221,7 +218,7 @@ final class HandlerOperations {
     /**
      * A default log handler write attribute step handler.
      */
-    public static class LogHandlerWriteAttributeHandler extends LoggingWriteAttributeHandler {
+    public static class LogHandlerWriteAttributeHandler extends LoggingOperations.LoggingWriteAttributeHandler {
 
         protected LogHandlerWriteAttributeHandler(final AttributeDefinition... attributes) {
             super(attributes);
@@ -266,12 +263,12 @@ final class HandlerOperations {
     /**
      * A step handler to remove a handler
      */
-    public static HandlerUpdateOperationStepHandler CHANGE_LEVEL = new HandlerUpdateOperationStepHandler(LEVEL);
+    public static OperationStepHandler CHANGE_LEVEL = new HandlerUpdateOperationStepHandler(LEVEL);
 
     /**
      * A step handler to remove a handler
      */
-    public static LoggingRemoveOperationStepHandler REMOVE_HANDLER = new LoggingRemoveOperationStepHandler() {
+    public static OperationStepHandler REMOVE_HANDLER = new LoggingOperations.LoggingRemoveOperationStepHandler() {
 
         @Override
         public void performRemove(final OperationContext context, final ModelNode operation, final LogContextConfiguration logContextConfiguration, final String name, final ModelNode model) throws OperationFailedException {
@@ -295,7 +292,7 @@ final class HandlerOperations {
     /**
      * The handler for adding a subhandler to an {@link org.jboss.logmanager.handlers.AsyncHandler}.
      */
-    public static final HandlerUpdateOperationStepHandler ADD_SUBHANDLER = new HandlerUpdateOperationStepHandler() {
+    public static final OperationStepHandler ADD_SUBHANDLER = new HandlerUpdateOperationStepHandler() {
         @Override
         public void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
             HANDLER_NAME.validateAndSet(operation, model);
@@ -319,7 +316,7 @@ final class HandlerOperations {
     /**
      * The handler for removing a subhandler to an {@link org.jboss.logmanager.handlers.AsyncHandler}.
      */
-    public static final HandlerUpdateOperationStepHandler REMOVE_SUBHANDLER = new HandlerUpdateOperationStepHandler() {
+    public static final OperationStepHandler REMOVE_SUBHANDLER = new HandlerUpdateOperationStepHandler() {
         @Override
         public void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
             HANDLER_NAME.validateAndSet(operation, model);
@@ -349,9 +346,9 @@ final class HandlerOperations {
     /**
      * Changes the file for a file handler.
      */
-    public static HandlerUpdateOperationStepHandler CHANGE_FILE = new HandlerUpdateOperationStepHandler(FILE);
+    public static OperationStepHandler CHANGE_FILE = new HandlerUpdateOperationStepHandler(FILE);
 
-    public static LoggingUpdateOperationStepHandler ENABLE_HANDLER = new LoggingUpdateOperationStepHandler() {
+    public static LoggingOperations.LoggingUpdateOperationStepHandler ENABLE_HANDLER = new LoggingOperations.LoggingUpdateOperationStepHandler() {
         @Override
         public void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
             // Nothing to do
@@ -363,7 +360,7 @@ final class HandlerOperations {
         }
     };
 
-    public static LoggingUpdateOperationStepHandler DISABLE_HANDLER = new LoggingUpdateOperationStepHandler() {
+    public static LoggingOperations.LoggingUpdateOperationStepHandler DISABLE_HANDLER = new LoggingOperations.LoggingUpdateOperationStepHandler() {
         @Override
         public void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
             // Nothing to do
