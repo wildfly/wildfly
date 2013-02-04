@@ -67,7 +67,7 @@ class JSFSubsystemTransformers {
                 if (model.hasDefined(SLOT_ATTRIBUTE_NAME)) {
                     ModelNode slot = model.get(SLOT_ATTRIBUTE_NAME);
                     if (!SLOT_DEFAULT_VALUE.equals(slot.asString())) {
-                        context.getLogger().logAttributeWarning(address, SLOT_ATTRIBUTE_NAME, MESSAGES.invalidJSFSlotValue(slot.asString()));
+                        context.getLogger().logAttributeWarning(address, MESSAGES.invalidJSFSlotValue(slot.asString()), SLOT_ATTRIBUTE_NAME);
                     }
                 }
                 Set<String> attributes = new HashSet<String>();
