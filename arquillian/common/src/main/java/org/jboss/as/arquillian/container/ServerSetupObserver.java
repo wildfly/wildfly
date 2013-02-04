@@ -150,8 +150,8 @@ public class ServerSetupObserver {
         int count = deployed.get(container.getName());
         deployed.put(container.getName(), --count);
         if (count == 0 && afterClassRun) {
-            for (final ServerSetupTask instance : current) {
-                instance.tearDown(managementClient.get(), container.getName());
+            for (int i = current.size() - 1; i >= 0; i--) {
+                current.get(i).tearDown(managementClient.get(), container.getName());
             }
             active.remove(container.getName());
             deployed.remove(container.getName());
