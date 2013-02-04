@@ -23,18 +23,34 @@
 package org.jboss.as.logging;
 
 import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
-import static org.jboss.as.logging.CommonAttributes.TARGET;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.operations.validation.EnumValidator;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.logging.resolvers.TargetResolver;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.logmanager.handlers.ConsoleHandler;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 class ConsoleHandlerResourceDefinition extends AbstractHandlerDefinition {
 
-    static final PathElement CONSOLE_HANDLER_PATH = PathElement.pathElement(CommonAttributes.CONSOLE_HANDLER);
+    public static final String CONSOLE_HANDLER = "console-handler";
+    static final PathElement CONSOLE_HANDLER_PATH = PathElement.pathElement(CONSOLE_HANDLER);
+
+    public static final PropertyAttributeDefinition TARGET = PropertyAttributeDefinition.Builder.of("target", ModelType.STRING, true)
+            .setAllowExpression(true)
+            .setAttributeMarshaller(ElementAttributeMarshaller.NAME_ATTRIBUTE_MARSHALLER)
+            .setDefaultValue(new ModelNode(Target.SYSTEM_OUT.toString()))
+            .setResolver(TargetResolver.INSTANCE)
+            .setValidator(EnumValidator.create(Target.class, true, false))
+            .build();
+
     static final AttributeDefinition[] ATTRIBUTES = Logging.join(DEFAULT_ATTRIBUTES, AUTOFLUSH, TARGET);
 
     public ConsoleHandlerResourceDefinition(final boolean includeLegacyAttributes) {
@@ -42,4 +58,25 @@ class ConsoleHandlerResourceDefinition extends AbstractHandlerDefinition {
                 (includeLegacyAttributes ? Logging.join(ATTRIBUTES, LEGACY_ATTRIBUTES) : ATTRIBUTES));
     }
 
+    /**
+     * Add the transformers for the console handler.
+     *
+     * @param subsystemBuilder      the default subsystem builder
+     * @param loggingProfileBuilder the logging profile builder
+     *
+     * @return the builder created for the resource
+     */
+    static ResourceTransformationDescriptionBuilder addTransformers(final ResourceTransformationDescriptionBuilder subsystemBuilder,
+                                                                    final ResourceTransformationDescriptionBuilder loggingProfileBuilder) {
+        // Register the logger resource
+        final ResourceTransformationDescriptionBuilder child = subsystemBuilder.addChildResource(CONSOLE_HANDLER_PATH)
+                .getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, AUTOFLUSH, TARGET)
+                .end();
+
+        // Discard logging profile resources
+        loggingProfileBuilder.discardChildResource(CONSOLE_HANDLER_PATH);
+
+        return registerTransformers(child);
+    }
 }
