@@ -159,9 +159,6 @@ if exist "%JBOSS_HOME%\jboss-modules.jar" (
 
 rem Setup JBoss specific properties
 
-rem Setup the java endorsed dirs
-set JBOSS_ENDORSED_DIRS=%JBOSS_HOME%\lib\endorsed
-
 rem Set default module root paths
 if "x%JBOSS_MODULEPATH%" == "x" (
   set  "JBOSS_MODULEPATH=%JBOSS_HOME%\modules"
