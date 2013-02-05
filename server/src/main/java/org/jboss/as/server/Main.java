@@ -121,7 +121,7 @@ public final class Main {
             try {
                 if (CommandLineConstants.VERSION.equals(arg) || CommandLineConstants.SHORT_VERSION.equals(arg)
                         || CommandLineConstants.OLD_VERSION.equals(arg) || CommandLineConstants.OLD_SHORT_VERSION.equals(arg)) {
-                    productConfig = new ProductConfig(Module.getBootModuleLoader(), SecurityActions.getSystemProperty(ServerEnvironment.HOME_DIR));
+                    productConfig = new ProductConfig(Module.getBootModuleLoader(), SecurityActions.getSystemProperty(ServerEnvironment.HOME_DIR), null);
                     System.out.println(productConfig.getPrettyVersionString());
                     return null;
                 } else if (CommandLineConstants.HELP.equals(arg) || CommandLineConstants.SHORT_HELP.equals(arg) || CommandLineConstants.OLD_HELP.equals(arg)) {
@@ -254,7 +254,7 @@ public final class Main {
             throw ServerMessages.MESSAGES.cannotHaveBothInitialServerConfigAndServerConfig();
         }
         String hostControllerName = null; // No host controller unless in domain mode.
-        productConfig = new ProductConfig(Module.getBootModuleLoader(), SecurityActions.getSystemProperty(ServerEnvironment.HOME_DIR));
+        productConfig = new ProductConfig(Module.getBootModuleLoader(), SecurityActions.getSystemProperty(ServerEnvironment.HOME_DIR), systemProperties);
         return new ServerEnvironment(hostControllerName, systemProperties, systemEnvironment, serverConfig, initialServerConfig, launchType, runningMode, productConfig);
     }
 

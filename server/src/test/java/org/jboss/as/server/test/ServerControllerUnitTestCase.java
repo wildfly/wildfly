@@ -287,7 +287,7 @@ public class ServerControllerUnitTestCase {
             properties.put("jboss.home.dir", ".");
 
             final String hostControllerName = "hostControllerName"; // Host Controller name may not be null when in a managed domain
-            environment = new ServerEnvironment(hostControllerName, properties, new HashMap<String, String>(), null, null, ServerEnvironment.LaunchType.DOMAIN, null, new ProductConfig(Module.getBootModuleLoader(), "."));
+            environment = new ServerEnvironment(hostControllerName, properties, new HashMap<String, String>(), null, null, ServerEnvironment.LaunchType.DOMAIN, null, new ProductConfig(Module.getBootModuleLoader(), ".", properties));
             extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER, new RunningModeControl(RunningMode.NORMAL));
         }
 

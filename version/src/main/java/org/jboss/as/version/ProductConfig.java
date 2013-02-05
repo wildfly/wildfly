@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.Map;
 import java.util.Properties;
 import java.util.jar.Manifest;
 
@@ -40,11 +41,13 @@ import org.jboss.modules.ModuleLoader;
  *
  */
 public class ProductConfig implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private final String name;
     private final String version;
     private final String consoleSlot;
 
-    public ProductConfig(ModuleLoader loader, String home) {
+    public ProductConfig(ModuleLoader loader, String home, Map<?, ?> providedProperties) {
         String productName = null;
         String productVersion = null;
         String consoleSlot = null;
@@ -70,6 +73,8 @@ public class ProductConfig implements Serializable {
                     consoleSlot = manifest.getMainAttributes().getValue("JBoss-Product-Console-Slot");
                 }
             }
+
+            setSystemProperties(props, providedProperties);
         } catch (Exception e) {
             // Don't care
         }
@@ -127,4 +132,34 @@ public class ProductConfig implements Serializable {
         return String.format("JBoss AS %s \"%s\"", version1, version2);
     }
 
+    private void setSystemProperties(final Properties propConfProps, final Map providedProperties) {
+        if (propConfProps.size() == 0) {
+            return;
+        }
+
+        PrivilegedAction<Void> action = new PrivilegedAction<Void>() {
+            @Override
+            public Void run() {
+                for (Map.Entry<Object, Object> entry : propConfProps.entrySet()) {
+                    String key = (String)entry.getKey();
+                    if (!key.equals("slot") && System.getProperty(key) == null) {
+                        //Only set the property if it was not defined by other means
+                        //System properties defined in standalone.xml, domain.xml or host.xml will overwrite
+                        //this as specified in https://issues.jboss.org/browse/AS7-6380
+
+                        System.setProperty(key, (String)entry.getValue());
+
+                        //Add it to the provided properties used on reload by the server environment
+                        providedProperties.put(key, entry.getValue());
+                    }
+                }
+                return null;
+            }
+        };
+        if (System.getSecurityManager() == null) {
+            action.run();
+        } else {
+            AccessController.doPrivileged(action);
+        }
+    }
 }

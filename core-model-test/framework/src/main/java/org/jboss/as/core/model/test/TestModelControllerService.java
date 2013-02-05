@@ -225,7 +225,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
             RunningMode initialRunningMode = runningModeControl.getRunningMode();
             boolean backupDomainFiles = false;
             boolean useCachedDc = false;
-            ProductConfig productConfig = new ProductConfig(null, "");
+            ProductConfig productConfig = new ProductConfig(null, "",  props);
             return new HostControllerEnvironment(props, isRestart, modulePath, processControllerAddress, processControllerPort,
                     hostControllerAddress, hostControllerPort, defaultJVM, domainConfig, initialDomainConfig, hostConfig, initialHostConfig,
                     initialRunningMode, backupDomainFiles, useCachedDc, productConfig);
