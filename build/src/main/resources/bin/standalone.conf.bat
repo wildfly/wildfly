@@ -55,9 +55,6 @@ rem # Make Byteman classes visible in all module loaders
 rem # This is necessary to inject Byteman rules into AS7 deployments
 set "JAVA_OPTS=%JAVA_OPTS% -Djboss.modules.system.pkgs=org.jboss.byteman"
 
-rem # Set the default configuration file to use if -c or --server-config are not used
-set "JAVA_OPTS=%JAVA_OPTS% -Djboss.server.default.config=standalone.xml"
-
 rem # Sample JPDA settings for remote socket debugging
 rem set "JAVA_OPTS=%JAVA_OPTS% -agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=n"
 

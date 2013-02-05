@@ -44,9 +44,9 @@ import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.persistence.AbstractConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
-import org.jboss.as.server.mgmt.domain.ServerBootOperationsService;
 import org.jboss.as.server.mgmt.domain.HostControllerClient;
 import org.jboss.as.server.mgmt.domain.HostControllerConnectionService;
+import org.jboss.as.server.mgmt.domain.ServerBootOperationsService;
 import org.jboss.as.server.parsing.StandaloneXml;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.dmr.ModelNode;
@@ -121,7 +121,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
     @Override
     public AsyncFuture<ServiceContainer> run(final List<ServiceActivator> runServices) {
         final Bootstrap bootstrap = Bootstrap.Factory.newInstance();
-        final ProductConfig productConfig = new ProductConfig(Module.getBootModuleLoader(), home);
+        final ProductConfig productConfig = new ProductConfig(Module.getBootModuleLoader(), home, properties);
         // Create server environment on the server, so that the system properties are getting initialized on the right side
         final ServerEnvironment providedEnvironment = new ServerEnvironment(hostControllerName, properties,
 
