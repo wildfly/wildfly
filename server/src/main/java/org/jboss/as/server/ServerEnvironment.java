@@ -246,6 +246,15 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
      */
     public static final String JBOSS_SERVER_DEFAULT_CONFIG = "jboss.server.default.config";
 
+    /**
+     * The system property used to indicate whether the server was configured to persist changes to the configuration
+     * files.
+     *
+     * @deprecated for internal us only, may change or be removed at any time without notice
+     */
+    @Deprecated
+    public static final String JBOSS_PERSIST_SERVER_CONFIG = "jboss.server.persist.config";
+
     protected static final String DOMAIN_BASE_DIR = "jboss.domain.base.dir";
     protected static final String DOMAIN_CONFIG_DIR = "jboss.domain.config.dir";
 
@@ -253,7 +262,7 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
     private static final Set<String> ILLEGAL_PROPERTIES = new HashSet<String>(Arrays.asList(DOMAIN_BASE_DIR,
             DOMAIN_CONFIG_DIR, JAVA_EXT_DIRS, HOME_DIR, "modules.path", SERVER_BASE_DIR, SERVER_CONFIG_DIR,
             SERVER_DATA_DIR, SERVER_DEPLOY_DIR, SERVER_LOG_DIR, BOOTSTRAP_MAX_THREADS, CONTROLLER_TEMP_DIR,
-            JBOSS_SERVER_DEFAULT_CONFIG));
+            JBOSS_SERVER_DEFAULT_CONFIG, JBOSS_PERSIST_SERVER_CONFIG));
     /** Properties that can only be set via {@link #systemPropertyUpdated(String, String)} during server boot. */
     private static final Set<String> BOOT_PROPERTIES = new HashSet<String>(Arrays.asList(BUNDLES_DIR, SERVER_TEMP_DIR,
             NODE_NAME, SERVER_NAME, HOST_NAME, QUALIFIED_HOST_NAME));
@@ -379,6 +388,10 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         String config = initialServerConfig == null ? serverConfig : initialServerConfig;
         boolean persist = initialServerConfig == null;
         serverConfigurationFile = standalone ? new ConfigurationFile(serverConfigurationDir, defaultServerConfig, config, persist) : null;
+        // Adds a system property to indicate whether or not the server configuration should be persisted
+        @SuppressWarnings("deprecation")
+        final String propertyKey = JBOSS_PERSIST_SERVER_CONFIG;
+        SecurityActions.setSystemProperty(propertyKey, Boolean.toString(persist));
 
         tmp = getFileFromProperty(SERVER_DATA_DIR, props);
         if (tmp == null) {

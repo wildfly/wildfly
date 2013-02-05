@@ -37,6 +37,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.logging.logmanager.ConfigurationPersistence;
+import org.jboss.as.server.ServerEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.LogContext;
 import org.jboss.logmanager.config.LogContextConfiguration;
@@ -82,9 +83,12 @@ final class LoggingOperations {
     private static final class CommitOperationStepHandler implements OperationStepHandler {
         private static AttachmentKey<Boolean> WRITTEN_KEY = AttachmentKey.create(Boolean.class);
         private final ConfigurationPersistence configurationPersistence;
+        private final boolean persistConfig;
 
+        @SuppressWarnings("deprecation")
         CommitOperationStepHandler(final ConfigurationPersistence configurationPersistence) {
             this.configurationPersistence = configurationPersistence;
+            persistConfig = Boolean.parseBoolean(SecurityActions.getSystemProperty(ServerEnvironment.JBOSS_PERSIST_SERVER_CONFIG, Boolean.toString(true)));
         }
 
         @Override
@@ -99,7 +103,9 @@ final class LoggingOperations {
                             // Write once
                             if (context.getAttachment(WRITTEN_KEY) == null) {
                                 context.attachIfAbsent(WRITTEN_KEY, Boolean.TRUE);
-                                configurationPersistence.writeConfiguration(context);
+                                if (persistConfig) {
+                                    configurationPersistence.writeConfiguration(context);
+                                }
                             }
                         }
                     } else if (resultAction == ResultAction.ROLLBACK) {
