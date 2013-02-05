@@ -66,15 +66,20 @@ public class EmbeddedServerFactory {
     private static final String MODULE_ID_VFS = "org.jboss.vfs";
     private static final String SYSPROP_KEY_CLASS_PATH = "java.class.path";
     private static final String SYSPROP_KEY_MODULE_PATH = "module.path";
-    private static final String SYSPROP_KEY_BUNDLE_PATH = "jboss.bundles.dir";
     private static final String SYSPROP_KEY_LOGMANAGER = "java.util.logging.manager";
     private static final String SYSPROP_KEY_JBOSS_HOME_DIR = "jboss.home.dir";
+    private static final String SYSPROP_KEY_JBOSS_MODULES_DIR = "jboss.modules.dir";
+    private static final String SYSPROP_KEY_JBOSS_BUNDLES_DIR = "jboss.bundles.dir";
     private static final String SYSPROP_VALUE_JBOSS_LOGMANAGER = "org.jboss.logmanager.LogManager";
 
     private EmbeddedServerFactory() {
     }
 
     public static StandaloneServer create(String jbossHomePath, String modulePath, String bundlePath, String... systemPackages) {
+        return create(jbossHomePath, modulePath, bundlePath, systemPackages, null);
+    }
+
+    public static StandaloneServer create(String jbossHomePath, String modulePath, String bundlePath, String[] systemPackages, String[] cmdargs) {
         if (jbossHomePath == null || jbossHomePath.isEmpty()) {
             throw MESSAGES.invalidJBossHome(jbossHomePath);
         }
@@ -88,13 +93,17 @@ public class EmbeddedServerFactory {
         if (bundlePath == null)
             bundlePath = jbossHomeDir.getAbsolutePath() + File.separator + "bundles";
 
-        setupBundlePath(bundlePath);
-
-        return create(setupModuleLoader(modulePath, systemPackages), jbossHomeDir);
+        return create(setupModuleLoader(modulePath, systemPackages), jbossHomeDir, bundlePath, cmdargs);
     }
 
     public static StandaloneServer create(ModuleLoader moduleLoader, File jbossHomeDir) {
+        String bundlePath = jbossHomeDir.getAbsolutePath() + File.separator + "bundles";
+        return create(moduleLoader, jbossHomeDir, bundlePath, new String[0]);
+    }
 
+    private static StandaloneServer create(ModuleLoader moduleLoader, File jbossHomeDir, String bundlePath, String[] cmdargs) {
+
+        setupBundlePath(bundlePath);
         setupVfsModule(moduleLoader);
         setupLoggingSystem(moduleLoader);
 
@@ -123,7 +132,7 @@ public class EmbeddedServerFactory {
         // Get a handle to the method which will create the server
         final Method createServerMethod;
         try {
-            createServerMethod = embeddedServerFactoryClass.getMethod("create", File.class, ModuleLoader.class, Properties.class, Map.class);
+            createServerMethod = embeddedServerFactoryClass.getMethod("create", File.class, ModuleLoader.class, Properties.class, Map.class, String[].class);
         } catch (final NoSuchMethodException nsme) {
             throw MESSAGES.cannotGetReflectiveMethod(nsme, "create", embeddedServerFactoryClass.getName());
         }
@@ -131,7 +140,10 @@ public class EmbeddedServerFactory {
         // Create the server
         Object standaloneServerImpl;
         try {
-            standaloneServerImpl = createServerMethod.invoke(null, jbossHomeDir, moduleLoader, SecurityActions.getSystemProperties(), SecurityActions.getSystemEnvironment());
+            Properties sysprops = SecurityActions.getSystemProperties();
+            Map<String, String> sysenv = SecurityActions.getSystemEnvironment();
+            String[] args = cmdargs != null ? cmdargs : new String[0];
+            standaloneServerImpl = createServerMethod.invoke(null, jbossHomeDir, moduleLoader, sysprops, sysenv, args);
         } catch (final InvocationTargetException ite) {
             throw MESSAGES.cannotCreateStandaloneServer(ite.getCause(), createServerMethod);
         } catch (final IllegalAccessException iae) {
@@ -145,6 +157,8 @@ public class EmbeddedServerFactory {
 
         File modulesDir = new File(modulePath);
         assert modulesDir.isDirectory() : "modulePath not a directory";
+
+        SecurityActions.setSystemProperty(SYSPROP_KEY_JBOSS_MODULES_DIR, new File(modulePath).getAbsolutePath());
 
         final String classPath = SecurityActions.getSystemProperty(SYSPROP_KEY_CLASS_PATH);
         try {
@@ -174,7 +188,7 @@ public class EmbeddedServerFactory {
         final File bundlesDir = new File(bundlePath);
         assert bundlesDir.isDirectory() : "bundlesDir not a directory";
 
-        SecurityActions.setSystemProperty(SYSPROP_KEY_BUNDLE_PATH, bundlePath);
+        SecurityActions.setSystemProperty(SYSPROP_KEY_JBOSS_BUNDLES_DIR, bundlesDir.getAbsolutePath());
     }
 
     private static void setupVfsModule(final ModuleLoader moduleLoader) {

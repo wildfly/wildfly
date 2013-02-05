@@ -39,24 +39,18 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.xml.namespace.QName;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
-import org.jboss.as.controller.extension.ExtensionRegistry;
-import org.jboss.as.controller.parsing.Namespace;
-import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
-import org.jboss.as.controller.persistence.TransientConfigurationPersister;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.server.Bootstrap;
 import org.jboss.as.server.Main;
@@ -64,8 +58,6 @@ import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.client.ModelControllerServerDeploymentManager;
-import org.jboss.as.server.parsing.StandaloneXml;
-import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
@@ -105,7 +97,18 @@ public class EmbeddedStandAloneServerFactory {
     private EmbeddedStandAloneServerFactory() {
     }
 
-    public static StandaloneServer create(final File jbossHomeDir, final ModuleLoader moduleLoader, final Properties systemProps, final Map<String, String> systemEnv) {
+    public static StandaloneServer create(final File jbossHomeDir, final ModuleLoader moduleLoader, final Properties systemProps, final Map<String, String> systemEnv, final String[] cmdargs) {
+        if (jbossHomeDir == null)
+            MESSAGES.nullVar("jbossHomeDir");
+        if (moduleLoader == null)
+            MESSAGES.nullVar("moduleLoader");
+        if (systemProps == null)
+            MESSAGES.nullVar("systemProps");
+        if (systemEnv == null)
+            MESSAGES.nullVar("systemEnv");
+        if (cmdargs == null)
+            MESSAGES.nullVar("cmdargs");
+
         setupCleanDirectories(jbossHomeDir, systemProps);
 
         StandaloneServer standaloneServer = new StandaloneServer() {
@@ -152,20 +155,23 @@ public class EmbeddedStandAloneServerFactory {
             public void start() throws ServerStartException {
                 try {
                     // Determine the ServerEnvironment
-                    ServerEnvironment serverEnvironment = Main.determineEnvironment(new String[0], systemProps, systemEnv, ServerEnvironment.LaunchType.EMBEDDED);
+                    ServerEnvironment serverEnvironment = Main.determineEnvironment(cmdargs, systemProps, systemEnv, ServerEnvironment.LaunchType.EMBEDDED);
 
                     Bootstrap bootstrap = Bootstrap.Factory.newInstance();
 
                     Bootstrap.Configuration configuration = new Bootstrap.Configuration(serverEnvironment);
 
+                    /*
+                     * This would setup an {@link TransientConfigurationPersister} which does not persist anything
+                     *
                     final ExtensionRegistry extensionRegistry = configuration.getExtensionRegistry();
-                    // do not persist anything in embedded mode
                     final Bootstrap.ConfigurationPersisterFactory configurationPersisterFactory = new Bootstrap.ConfigurationPersisterFactory() {
                         @Override
                         public ExtensibleConfigurationPersister createConfigurationPersister(ServerEnvironment serverEnvironment, ExecutorService executorService) {
                             final QName rootElement = new QName(Namespace.CURRENT.getUriString(), "server");
                             final StandaloneXml parser = new StandaloneXml(Module.getBootModuleLoader(), executorService, extensionRegistry);
-                            TransientConfigurationPersister persister = new TransientConfigurationPersister(serverEnvironment.getServerConfigurationFile(), rootElement, parser, parser);
+                            final File configurationFile = serverEnvironment.getServerConfigurationFile().getBootFile();
+                            XmlConfigurationPersister persister = new TransientConfigurationPersister(configurationFile, rootElement, parser, parser);
                             for (Namespace namespace : Namespace.domainValues()) {
                                 if (!namespace.equals(Namespace.CURRENT)) {
                                     persister.registerAdditionalRootElement(new QName(namespace.getUriString(), "server"), parser);
@@ -176,6 +182,7 @@ public class EmbeddedStandAloneServerFactory {
                         }
                     };
                     configuration.setConfigurationPersisterFactory(configurationPersisterFactory);
+                    */
 
                     configuration.setModuleLoader(moduleLoader);
 
