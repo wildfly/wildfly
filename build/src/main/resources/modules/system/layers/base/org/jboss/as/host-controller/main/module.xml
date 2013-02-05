@@ -35,6 +35,9 @@
 
     <dependencies>
         <module name="javax.api"/>
+        <module name="org.apache.xalan" services="import"/>
+        <module name="org.apache.xerces" services="import"/>
+        <module name="org.codehaus.woodstox" services="import"/>        
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.vfs"/>
         <module name="org.jboss.as.controller"/>
