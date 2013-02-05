@@ -175,8 +175,6 @@ public class DomainLifecycleUtil {
             cmd.add(modulesJar.getAbsolutePath());
             cmd.add("-mp");
             cmd.add(modulePath);
-            //cmd.add("-jaxpmodule");
-            //cmd.add("javax.xml.jaxp-provider");
             cmd.add("org.jboss.as.process-controller");
             cmd.add("-jboss-home");
             cmd.add(jbossHomeDir);

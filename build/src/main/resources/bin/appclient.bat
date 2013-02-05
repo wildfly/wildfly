@@ -91,7 +91,6 @@ if "x%JBOSS_MODULEPATH%" == "x" (
  "-Dlogging.configuration=file:%JBOSS_HOME%/appclient/configuration/logging.properties" ^
     -jar "%JBOSS_HOME%\jboss-modules.jar" ^
     -mp "%JBOSS_MODULEPATH%" ^
-    -jaxpmodule "javax.xml.jaxp-provider" ^
      org.jboss.as.appclient ^
     -Djboss.home.dir="%JBOSS_HOME%" ^
     -Djboss.server.base.dir="%JBOSS_HOME%\appclient" ^
