@@ -124,7 +124,7 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
             public Object obtain(long timeout, TimeUnit unit) {
                 // like this it's a disconnected invocation
 //                return getComponentView(messageListenerInterface).getViewForInstance(null);
-                return createViewInstanceProxy(messageListenerInterface, emptyMap());
+                return createViewInstanceProxy(getComponentClass(), emptyMap());
             }
 
             @Override
@@ -137,7 +137,7 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
                 return ejbComponentCreateService.getComponentClass().getClassLoader();
             }
         };
-        this.endpointFactory = new JBossMessageEndpointFactory(getComponentClass().getClassLoader(), service);
+        this.endpointFactory = new JBossMessageEndpointFactory(getComponentClass().getClassLoader(), service, (Class<Object>) getComponentClass());
     }
 
     @Override

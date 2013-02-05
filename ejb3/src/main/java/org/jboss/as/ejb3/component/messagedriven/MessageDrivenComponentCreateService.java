@@ -59,13 +59,13 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
      *
      * @param componentConfiguration the component configuration
      */
-    public MessageDrivenComponentCreateService(final ComponentConfiguration componentConfiguration, final ApplicationExceptions ejbJarConfiguration) {
+    public MessageDrivenComponentCreateService(final ComponentConfiguration componentConfiguration, final ApplicationExceptions ejbJarConfiguration, final Class<?> messageListenerInterface) {
         super(componentConfiguration, ejbJarConfiguration);
 
         final MessageDrivenComponentDescription componentDescription = (MessageDrivenComponentDescription) componentConfiguration.getComponentDescription();
         this.resourceAdapterName = this.stripDotRarSuffix(componentDescription.getResourceAdapterName());
         // see MessageDrivenComponentDescription.<init>
-        this.messageListenerInterface = componentConfiguration.getViews().get(0).getViewClass();
+        this.messageListenerInterface = messageListenerInterface;
 
         this.activationProps = componentDescription.getActivationProps();
         this.moduleClassLoader = componentConfiguration.getModuleClassLoader();

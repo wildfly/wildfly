@@ -32,12 +32,17 @@ import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
  * User: jpai
  */
 public class MessageDrivenComponentCreateServiceFactory extends EJBComponentCreateServiceFactory {
+    private final Class<?> messageListenerInterface;
+
+    public MessageDrivenComponentCreateServiceFactory(final Class<?> messageListenerInterface) {
+        this.messageListenerInterface = messageListenerInterface;
+    }
 
     @Override
     public BasicComponentCreateService constructService(ComponentConfiguration configuration) {
         if (this.ejbJarConfiguration == null) {
             throw MESSAGES.ejbJarConfigNotBeenSet(this,configuration.getComponentName());
         }
-        return new MessageDrivenComponentCreateService(configuration, this.ejbJarConfiguration);
+        return new MessageDrivenComponentCreateService(configuration, this.ejbJarConfiguration, messageListenerInterface);
     }
 }
