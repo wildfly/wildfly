@@ -102,7 +102,7 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
     }
 
     @Test
-    public void testTransformers() throws Exception {
+    public void testOperationTransformers_1_1_0() throws Exception {
         ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
@@ -124,6 +124,25 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
                         getConfig()
                 );
 
+    }
+
+    @Test
+    public void testResourceTransformers_1_1_0() throws Exception {
+        ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXmlResource("transformers.xml");
+
+        //which is why we need to include the jboss-as-controller artifact.
+        builder.createLegacyKernelServicesBuilder(null, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-security:7.1.2.Final")
+                .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.2.Final")
+                .addParentFirstClassPattern("org.jboss.as.controller.*")
+                .dontPersistXml();
+
+        KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        Assert.assertTrue(mainServices.getLegacyServices(modelVersion).isSuccessfulBoot());
+        checkSubsystemModelTransformation(mainServices,modelVersion);
     }
 
     private FailedOperationTransformationConfig getConfig(){
