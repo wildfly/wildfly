@@ -79,6 +79,7 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
     private String resourceAdapterName;
 
     private String mdbPoolConfigName;
+    private final String messageListenerInterfaceName;
 
     /**
      * Construct a new instance.
@@ -101,7 +102,8 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         this.resourceAdapterName = defaultResourceAdapterName;
         this.activationProps = activationProps;
 
-        registerView(messageListenerInterfaceName, MethodIntf.MESSAGE_ENDPOINT);
+        this.messageListenerInterfaceName = messageListenerInterfaceName;
+        registerView(getEJBClassName(), MethodIntf.MESSAGE_ENDPOINT);
         // add the interceptor which will invoke the setMessageDrivenContext() method on a MDB which implements
         // MessageDrivenBean interface
         this.addSetMessageDrivenContextMethodInvocationInterceptor();
@@ -117,7 +119,13 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
     public ComponentConfiguration createConfiguration(final ClassIndex classIndex, final ClassLoader moduleClassLoader, final ModuleLoader moduleLoader) {
         final ComponentConfiguration mdbComponentConfiguration = new ComponentConfiguration(this, classIndex, moduleClassLoader, moduleLoader);
         // setup the component create service
-        mdbComponentConfiguration.setComponentCreateServiceFactory(new MessageDrivenComponentCreateServiceFactory());
+        final Class<?> messageListenerInterface;
+        try {
+            messageListenerInterface = Class.forName(getMessageListenerInterfaceName(), true, moduleClassLoader);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        mdbComponentConfiguration.setComponentCreateServiceFactory(new MessageDrivenComponentCreateServiceFactory(messageListenerInterface));
 
         // setup the configurator to inject the PoolConfig in the MessageDrivenComponentCreateService
         final MessageDrivenComponentDescription mdbComponentDescription = (MessageDrivenComponentDescription) mdbComponentConfiguration.getComponentDescription();
@@ -259,6 +267,10 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
 
     public String getPoolConfigName() {
         return this.mdbPoolConfigName;
+    }
+
+    private String getMessageListenerInterfaceName() {
+        return messageListenerInterfaceName;
     }
 
     private class PoolInjectingConfigurator implements DependencyConfigurator<Service<Component>> {

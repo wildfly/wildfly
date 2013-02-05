@@ -1,0 +1,42 @@
+<connector xmlns="http://java.sun.com/xml/ns/j2ee"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
+           http://java.sun.com/xml/ns/j2ee/connector_1_5.xsd"
+           version="1.5">
+
+  <description>Telnet ResourceAdapter</description>
+  <display-name>Telnet ResourceAdapter</display-name>
+
+  <vendor-name>SuperConnectors</vendor-name>
+
+  <eis-type>Telnet Adapter</eis-type>
+
+  <resourceadapter-version>1.0</resourceadapter-version>
+
+  <resourceadapter id="TelnetResourceAdapter">
+
+    <resourceadapter-class>org.jboss.as.test.integration.ejb.mdb.dynamic.adapter.TelnetResourceAdapter</resourceadapter-class>
+
+    <config-property>
+      <config-property-name>beanClass</config-property-name>
+      <!-- java.lang.Class is not a valid type, see javaee:config-property-typeType -->
+      <config-property-type>java.lang.String</config-property-type>
+    </config-property>
+    <config-property>
+      <config-property-name>port</config-property-name>
+      <config-property-type>int</config-property-type>
+      <config-property-value>2020</config-property-value>
+    </config-property>
+    <inbound-resourceadapter>
+      <messageadapter>
+        <messagelistener>
+          <messagelistener-type>org.jboss.as.test.integration.ejb.mdb.dynamic.api.TelnetListener</messagelistener-type>
+          <activationspec>
+            <activationspec-class>org.jboss.as.test.integration.ejb.mdb.dynamic.adapter.TelnetActivationSpec</activationspec-class>
+          </activationspec>
+        </messagelistener>
+      </messageadapter>
+    </inbound-resourceadapter>
+
+  </resourceadapter>
+</connector>

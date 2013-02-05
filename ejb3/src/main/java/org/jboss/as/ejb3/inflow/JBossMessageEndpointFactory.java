@@ -21,12 +21,15 @@
  */
 package org.jboss.as.ejb3.inflow;
 
+import org.jboss.invocation.proxy.ProxyConfiguration;
+import org.jboss.invocation.proxy.ProxyFactory;
+
 import javax.resource.spi.UnavailableException;
 import javax.resource.spi.endpoint.MessageEndpoint;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.transaction.xa.XAResource;
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -34,14 +37,18 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class JBossMessageEndpointFactory implements MessageEndpointFactory {
-    private final ClassLoader classLoader;
-    private final Class<?>[] interfaces;
+    private static final AtomicInteger PROXY_ID = new AtomicInteger(0);
     private final MessageEndpointService service;
+    private final ProxyFactory<Object> factory;
 
-    public JBossMessageEndpointFactory(final ClassLoader classLoader, final MessageEndpointService service) {
-        this.classLoader = classLoader;
+    public JBossMessageEndpointFactory(final ClassLoader classLoader, final MessageEndpointService service, final Class<Object> ejbClass) {
         this.service = service;
-        this.interfaces = new Class[] { service.getMessageListenerInterface(), MessageEndpoint.class };
+        final ProxyConfiguration<Object> configuration = new ProxyConfiguration<Object>()
+                .setClassLoader(classLoader)
+                .setProxyName(ejbClass.getName() + "$$$endpoint" + PROXY_ID.incrementAndGet())
+                .setSuperClass(ejbClass)
+                .addAdditionalInterface(MessageEndpoint.class);
+        this.factory = new ProxyFactory<Object>(configuration);
     }
 
     @Override
@@ -53,7 +60,13 @@ public class JBossMessageEndpointFactory implements MessageEndpointFactory {
     public MessageEndpoint createEndpoint(XAResource xaResource, long timeout) throws UnavailableException {
         Object delegate = service.obtain(timeout, MILLISECONDS);
         MessageEndpointInvocationHandler handler = new MessageEndpointInvocationHandler(service, delegate, xaResource);
-        return (MessageEndpoint) Proxy.newProxyInstance(classLoader, interfaces, handler);
+        try {
+            return (MessageEndpoint) factory.newInstance(handler);
+        } catch (InstantiationException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
