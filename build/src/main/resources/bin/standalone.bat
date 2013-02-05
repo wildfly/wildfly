@@ -199,7 +199,6 @@ echo.
  "-Dlogging.configuration=file:%JBOSS_CONFIG_DIR%/logging.properties" ^
     -jar "%JBOSS_HOME%\jboss-modules.jar" ^
     -mp "%JBOSS_MODULEPATH%" ^
-    -jaxpmodule "javax.xml.jaxp-provider" ^
      org.jboss.as.standalone ^
     -Djboss.home.dir="%JBOSS_HOME%" ^
      %SERVER_OPTS%

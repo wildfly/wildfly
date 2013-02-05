@@ -82,7 +82,6 @@ public final class Main {
         String jbossHome = SecurityActions.getSystemProperty("jboss.home.dir", ".");
         String modulePath = null;
         String bootJar = null;
-        String jaxpModule = "javax.xml.jaxp-provider";
         String bootModule = HOST_CONTROLLER_MODULE;
         final PCSocketConfig pcSocketConfig = new PCSocketConfig();
 
@@ -106,8 +105,6 @@ public final class Main {
                 modulePath = args[++i];
             } else if ("-jar".equals(arg)) {
                 bootJar = args[++i];
-            } else if ("-jaxpmodule".equals(arg)) {
-                jaxpModule = args[++i];
             } else if ("--".equals(arg)) {
                 for (i++; i < args.length; i++) {
                     arg = args[i];
@@ -215,8 +212,6 @@ public final class Main {
         initialCommand.add(bootJar);
         initialCommand.add("-mp");
         initialCommand.add(modulePath);
-        initialCommand.add("-jaxpmodule");
-        initialCommand.add(jaxpModule);
         initialCommand.add(bootModule);
         initialCommand.add("-mp");  // Repeat the module path so HostController's Main sees it
         initialCommand.add(modulePath);
