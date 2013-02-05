@@ -46,7 +46,7 @@ public final class ExplicitTransformationDescriptionBuilder extends AbstractTran
 
     // TODO operation and children
 
-    public ExplicitTransformationDescriptionBuilder(PathElement pathElement) {
+    protected ExplicitTransformationDescriptionBuilder(PathElement pathElement) {
         super(pathElement, PathAddressTransformer.DEFAULT, ResourceTransformer.DEFAULT, OperationTransformer.DEFAULT);
     }
 

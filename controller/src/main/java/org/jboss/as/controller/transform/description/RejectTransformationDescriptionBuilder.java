@@ -21,19 +21,10 @@
  */
 package org.jboss.as.controller.transform.description;
 
-import org.jboss.as.controller.ControllerMessages;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.OperationRejectionPolicy;
-import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.PathAddressTransformer;
-import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.dmr.ModelNode;
 
 /**
  *
@@ -42,38 +33,13 @@ import org.jboss.dmr.ModelNode;
 public class RejectTransformationDescriptionBuilder extends AbstractTransformationDescriptionBuilder implements TransformationDescriptionBuilder {
 
     protected RejectTransformationDescriptionBuilder(PathElement pathElement) {
-        super(pathElement, PathAddressTransformer.DEFAULT, REJECT_RESOURCE, REJECT_OPERATION);
+        super(pathElement, PathAddressTransformer.DEFAULT, ResourceTransformer.DEFAULT, OperationTransformer.DEFAULT);
     }
 
     @Override
     public TransformationDescription build() {
-        return new RejectDefinition(pathElement, REJECT_RESOURCE, REJECT_OPERATION);
+        final AttributeTransformationDescriptionBuilderImpl.AttributeTransformationDescriptionBuilderRegistry empty = new AttributeTransformationDescriptionBuilderImpl.AttributeTransformationDescriptionBuilderRegistry();
+        return buildDefault(DiscardPolicy.REJECT, true, empty);
     }
 
-    private static OperationTransformer REJECT_OPERATION = new OperationTransformer() {
-
-        @Override
-        public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation) throws OperationFailedException {
-            return new TransformedOperation(null, new OperationRejectionPolicy() {
-
-                @Override
-                public boolean rejectOperation(ModelNode preparedResult) {
-                    return true;
-                }
-
-                @Override
-                public String getFailureDescription() {
-                    return ControllerMessages.MESSAGES.rejectResourceOperationTransformation(address, operation);
-                }
-            }, OperationResultTransformer.ORIGINAL_RESULT);
-        }
-    };
-
-    private static ResourceTransformer REJECT_RESOURCE = new ResourceTransformer() {
-        @Override
-        public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) {
-            context.getLogger().logRejectedResourceWarning(address, null);
-        }
-    };
 }
-

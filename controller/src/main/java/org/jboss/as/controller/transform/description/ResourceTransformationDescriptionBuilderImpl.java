@@ -22,12 +22,9 @@
 
 package org.jboss.as.controller.transform.description;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
@@ -109,27 +106,7 @@ class ResourceTransformationDescriptionBuilderImpl extends AbstractTransformatio
 
     @Override
     public TransformationDescription build() {
-        // Just skip the rest, because we can
-        if(discardPolicy == DiscardPolicy.ALWAYS) {
-            return new DiscardDefinition(pathElement);
-        }
-
-        // Build attribute rules
-        final Map<String, AttributeTransformationDescription> attributes = registry.buildAttributes();
-
-        final Map<String, OperationTransformer> operations = new HashMap<String, OperationTransformer>();
-        for(final Map.Entry<String, OperationTransformationEntry> entry: operationTransformers.entrySet()) {
-            final OperationTransformer transformer = entry.getValue().getOperationTransformer(registry);
-            operations.put(entry.getKey(), transformer);
-        }
-
-        // Process children
-        final List<TransformationDescription> children = new ArrayList<TransformationDescription>();
-        for(final TransformationDescriptionBuilder builder : this.children) {
-            children.add(builder.build());
-        }
-        // Create the description
-        return new TransformingDescription(pathElement, pathAddressTransformer, discardPolicy, resourceTransformer, attributes, operations, children,discardedOperations);
+        return buildDefault(discardPolicy, false, registry, discardedOperations);
     }
 
     @Override

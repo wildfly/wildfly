@@ -43,6 +43,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.createCompositeOperation;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.createOperation;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.executeForFailure;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.executeForResult;
@@ -95,6 +96,8 @@ public class OperationTransformationTestCase {
         final PathAddress extension = PathAddress.pathAddress(PathElement.pathElement(EXTENSION, VersionedExtensionCommon.EXTENSION_NAME));
         final PathAddress address = PathAddress.pathAddress(PathElement.pathElement(PROFILE, "default"),
                 PathElement.pathElement(SUBSYSTEM, VersionedExtensionCommon.SUBSYSTEM_NAME));
+        final PathAddress ignored = PathAddress.pathAddress(PathElement.pathElement(PROFILE, "ignored"),
+                PathElement.pathElement(SUBSYSTEM, VersionedExtensionCommon.SUBSYSTEM_NAME));
 
         final ModelNode serverAddress = getRunningServerAddress("slave", "main-three");
         serverAddress.add(SUBSYSTEM, VersionedExtensionCommon.SUBSYSTEM_NAME);
@@ -110,6 +113,11 @@ public class OperationTransformationTestCase {
         final ModelNode mExt = create(READ_RESOURCE_OPERATION, extension.append(PathElement.pathElement(SUBSYSTEM, VersionedExtensionCommon.SUBSYSTEM_NAME)));
         assertVersion(executeForResult(mExt, client), ModelVersion.create(2));
 
+        // Create subsystem in the ignored profile for further use
+        final ModelNode newIgnored = createAdd(ignored);
+        executeForResult(newIgnored, client);
+        Assert.assertTrue(exists(ignored, client));
+
         // Check the new element
         final PathAddress newElement = address.append(PathElement.pathElement("new-element", "new1"));
         final ModelNode addNew = createAdd(newElement);
@@ -121,11 +129,26 @@ public class OperationTransformationTestCase {
         newElementOnSlave.add("new-element", "new1");
         Assert.assertFalse(exists(newElementOnSlave, client));
 
+        // Other new element
+        final PathElement otherNewElementPath = PathElement.pathElement("other-new-element", "new1");
+        // This needs to get rejected
+        final ModelNode addOtherNew = createAdd(address.append(otherNewElementPath));
+        executeForFailure(addOtherNew, client);
+
+        // Same if wrapped in a composite
+
+
+        // This should work
+        final ModelNode addOtherNewIgnored = createAdd(ignored.append(otherNewElementPath));
+        executeForResult(addOtherNewIgnored, client);
+
+
         // Check the renamed element
         final PathAddress renamedAddress = address.append(PathElement.pathElement("renamed", "element"));
         final ModelNode renamedAdd = createAdd(renamedAddress);
         executeForResult(renamedAdd, client);
         Assert.assertTrue(exists(renamedAddress, client));
+
 
         // renamed > element
         final ModelNode renamedElementOnSlave = serverAddress.clone();
@@ -204,9 +227,6 @@ public class OperationTransformationTestCase {
 
         // Test the ignored model
         final PathAddress ignored = PathAddress.pathAddress(PathElement.pathElement(PROFILE, "ignored"), PathElement.pathElement(SUBSYSTEM, VersionedExtensionCommon.SUBSYSTEM_NAME));
-        final ModelNode newIgnored = createAdd(ignored);
-        executeForResult(newIgnored, client);
-        Assert.assertTrue(exists(ignored, client));
 
         final ModelNode writeIgnoredString = writeAttribute(ignored, "string", "${org.jboss.domain.tests.string:abc}");
         executeForResult(writeIgnoredString, client);

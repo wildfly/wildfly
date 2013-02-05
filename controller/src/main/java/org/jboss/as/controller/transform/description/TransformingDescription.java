@@ -28,11 +28,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.OperationRejectionPolicy;
+import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.PathAddressTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
@@ -53,14 +56,14 @@ class TransformingDescription extends AbstractDescription implements Transformat
     private final List<String> discardedOperations;
     private final ResourceTransformer resourceTransformer;
 
-    public TransformingDescription(final PathElement pathElement, final PathAddressTransformer pathAddressTransformer,
-                                   final DiscardPolicy discardPolicy,
+    protected TransformingDescription(final PathElement pathElement, final PathAddressTransformer pathAddressTransformer,
+                                   final DiscardPolicy discardPolicy, final boolean inherited,
                                    final ResourceTransformer resourceTransformer,
                                    final Map<String, AttributeTransformationDescription> attributeTransformations,
                                    final Map<String, OperationTransformer> operations,
                                    final List<TransformationDescription> children,
                                    final List<String> discardedOperations) {
-        super(pathElement, pathAddressTransformer);
+        super(pathElement, pathAddressTransformer, inherited);
         this.children = children;
         this.discardPolicy = discardPolicy;
         this.resourceTransformer = resourceTransformer;
@@ -68,13 +71,6 @@ class TransformingDescription extends AbstractDescription implements Transformat
         this.discardedOperations = discardedOperations;
 
         this.operationTransformers = operations;
-        // TODO override more global operations?
-        if(! operationTransformers.containsKey(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION)) {
-            operationTransformers.put(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, OperationTransformationRules.createWriteOperation(attributeTransformations));
-        }
-        if(! operationTransformers.containsKey(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION)) {
-            operationTransformers.put(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION, OperationTransformationRules.createUndefinedOperation(attributeTransformations));
-        }
     }
     @Override
     public OperationTransformer getOperationTransformer() {
@@ -98,8 +94,25 @@ class TransformingDescription extends AbstractDescription implements Transformat
 
     @Override
     public OperationTransformer.TransformedOperation transformOperation(final TransformationContext ctx, final PathAddress address, final ModelNode operation) throws OperationFailedException {
-        if(discardPolicy.discard(operation, address, ctx) == DiscardPolicy.DiscardType.SILENT) {
-            return OperationTransformer.DISCARD.transformOperation(ctx, address, operation);
+        // See whether the operation should be rejected or not
+        final DiscardPolicy.DiscardType type = discardPolicy.discard(operation, address, ctx);
+        switch (type) {
+            case REJECT_AND_WARN:
+                // Execute a read-resource operation to determine whether this operation should be rejected
+                return new TransformedOperation(operation, new OperationRejectionPolicy() {
+                    @Override
+                    public boolean rejectOperation(ModelNode preparedResult) {
+                        return true;
+                    }
+
+                    @Override
+                    public String getFailureDescription() {
+                        return ControllerMessages.MESSAGES.rejectResourceOperationTransformation(address, operation);
+                    }
+                }, OperationResultTransformer.ORIGINAL_RESULT);
+            case DISCARD_AND_WARN:
+            case SILENT:
+                return OperationTransformer.DISCARD.transformOperation(ctx, address, operation);
         }
         final Iterator<TransformationRule> iterator = rules.iterator();
         final TransformationRule.ChainedOperationContext context = new TransformationRule.ChainedOperationContext(ctx) {
@@ -124,8 +137,16 @@ class TransformingDescription extends AbstractDescription implements Transformat
     @Override
     public void transformResource(final ResourceTransformationContext ctx, final PathAddress address, final Resource original) throws OperationFailedException {
         final ModelNode originalModel = TransformationRule.cloneAndProtect(original.getModel());
-        if(discardPolicy.discard(originalModel, address, ctx) == DiscardPolicy.DiscardType.SILENT) {
-            return; // discard
+        // See whether the model can be discarded
+        final DiscardPolicy.DiscardType type = discardPolicy.discard(originalModel, address, ctx);
+        switch (type) {
+            case DISCARD_AND_WARN:
+            case REJECT_AND_WARN:
+                ctx.getLogger().logRejectedResourceWarning(address, null);
+                return;
+            case SILENT:
+                ResourceTransformer.DISCARD.transformResource(ctx, address, original);
+                return;
         }
         final Iterator<TransformationRule> iterator = rules.iterator();
         final TransformationRule.ChainedResourceContext context = new TransformationRule.ChainedResourceContext(ctx) {
@@ -144,12 +165,8 @@ class TransformingDescription extends AbstractDescription implements Transformat
         rule.transformResource(original, address, context);
     }
 
-    @Override
-    public boolean isInherited() {
-        return false;
-    }
-
     public List<String> getDiscardedOperations() {
         return discardedOperations;
     }
+
 }

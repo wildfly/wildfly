@@ -198,7 +198,8 @@ class HostControllerUpdateTask {
                 userResult.get(RESULT).set(domainResults);
                 if(result.hasDefined(FAILURE_DESCRIPTION)) {
                     userResult.get(FAILURE_DESCRIPTION).set(result.get(FAILURE_DESCRIPTION));
-                }                // Transform the result
+                }
+                // Transform the result
                 final ModelNode transformed = resultTransformer.transformResult(userResult);
                 result.get(RESULT, DOMAIN_RESULTS).set(transformed.get(RESULT));
                 return result;
