@@ -62,7 +62,9 @@ import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.as.txn.service.TxnServices;
+import org.jboss.jca.common.api.metadata.Defaults;
 import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
+import org.jboss.jca.common.api.metadata.common.CommonPool;
 import org.jboss.jca.common.api.metadata.common.FlushStrategy;
 import org.jboss.jca.common.api.metadata.common.Recovery;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
@@ -89,6 +91,7 @@ import org.jboss.jca.common.metadata.common.CommonPoolImpl;
 import org.jboss.jca.common.metadata.common.CommonSecurityImpl;
 import org.jboss.jca.common.metadata.common.CommonTimeOutImpl;
 import org.jboss.jca.common.metadata.common.CommonValidationImpl;
+import org.jboss.jca.common.metadata.common.CommonXaPoolImpl;
 import org.jboss.jca.common.metadata.common.CredentialImpl;
 import org.jboss.jca.common.metadata.common.v10.CommonConnDefImpl;
 import org.jboss.jca.common.metadata.ironjacamar.v10.IronJacamarImpl;
@@ -302,8 +305,9 @@ public class PooledConnectionFactoryService implements Service<Void> {
                 jndiAliases = jndiNames.subList(1, jndiNames.size());
             }
 
-            CommonConnDef common = createConnDef(jndiName, minPoolSize, maxPoolSize);
-            IronJacamar ijmd = createIron(common, txSupport);
+            TransactionSupportEnum transactionSupport = getTransactionSupport(txSupport);
+            CommonConnDef common = createConnDef(transactionSupport, jndiName, minPoolSize, maxPoolSize);
+            IronJacamar ijmd = createIron(common, transactionSupport);
 
             ResourceAdapterActivatorService activator = new ResourceAdapterActivatorService(cmd, ijmd,
                     PooledConnectionFactoryService.class.getClassLoader(), name);
@@ -358,27 +362,38 @@ public class PooledConnectionFactoryService implements Service<Void> {
             return serviceNames;
     }
 
-
-    private static IronJacamarImpl createIron(CommonConnDef common, String txSupport) {
-        TransactionSupportEnum transactionSupport;
-
+    private static TransactionSupportEnum getTransactionSupport(String txSupport) {
         try {
-            transactionSupport = TransactionSupportEnum.valueOf(txSupport);
+            return TransactionSupportEnum.valueOf(txSupport);
         } catch (RuntimeException e) {
-            transactionSupport = TransactionSupportEnum.LocalTransaction;
+            return TransactionSupportEnum.LocalTransaction;
         }
+    }
 
+    private static IronJacamarImpl createIron(CommonConnDef common, TransactionSupportEnum transactionSupport) {
         List<CommonConnDef> definitions = Collections.singletonList(common);
         return new IronJacamarImpl(transactionSupport, Collections.<String, String>emptyMap(), Collections.<CommonAdminObject>emptyList(), definitions, Collections.<String>emptyList(), null);
     }
 
-    private static CommonConnDef createConnDef(String jndiName, int minPoolSize, int maxPoolSize) throws ValidateException {
+
+    private static CommonConnDef createConnDef(TransactionSupportEnum transactionSupport, String jndiName, int minPoolSize, int maxPoolSize) throws ValidateException {
         Integer minSize = (minPoolSize == -1) ? null : minPoolSize;
         Integer maxSize = (maxPoolSize == -1) ? null : maxPoolSize;
-        CommonPoolImpl pool = new CommonPoolImpl(minSize, maxSize, false, false, FlushStrategy.FAILING_CONNECTION_ONLY);
+        boolean prefill = false;
+        boolean useStrictMin = false;
+        FlushStrategy flushStrategy = FlushStrategy.FAILING_CONNECTION_ONLY;
+        final CommonPool pool;
+        if (transactionSupport == TransactionSupportEnum.XATransaction) {
+            pool = new CommonXaPoolImpl(minSize, maxSize, prefill, useStrictMin, flushStrategy,
+                    Defaults.IS_SAME_RM_OVERRIDE, Defaults.INTERLEAVING, Defaults.PAD_XID, Defaults.WRAP_XA_RESOURCE, Defaults.NO_TX_SEPARATE_POOL);
+        } else {
+            pool = new CommonPoolImpl(minSize, maxSize, prefill, useStrictMin, flushStrategy);
+        }
         CommonTimeOutImpl timeOut = new CommonTimeOutImpl(null, null, null, null, null);
         CommonSecurityImpl security = null;
-        Recovery recovery = new Recovery(new CredentialImpl(null, null, null), null, Boolean.FALSE);
+        // register the XA Connection *without* recovery. HornetQ already takes care of the registration with the correct credentials
+        // when its ResourceAdapter is started
+        Recovery recovery = new Recovery(new CredentialImpl(null, null, null), null, Boolean.TRUE);
         CommonValidationImpl validation = new CommonValidationImpl(null, null, false);
         return new CommonConnDefImpl(Collections.<String, String>emptyMap(), RAMANAGED_CONN_FACTORY, jndiName, HQ_CONN_DEF, true, true, true, pool, timeOut, validation, security, recovery);
     }
