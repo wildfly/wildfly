@@ -134,6 +134,7 @@ public interface CommonAttributes {
             .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD))
             .setAllowNull(true)
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition CLUSTER_USER = create("cluster-user", ModelType.STRING)
