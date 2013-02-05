@@ -23,6 +23,8 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -53,6 +55,8 @@ public class ConfigurationFile {
 
     private static final int CURRENT_HISTORY_LENGTH = 100;
     private static final int HISTORY_DAYS = 30;
+    private static final String CURRENT_HISTORY_LENGTH_PROPERTY = "jboss.config.current-history-length";
+    private static final String HISTORY_DAYS_PROPERTY = "jboss.config.history-days";
     private static final String TIMESTAMP_STRING = "\\d\\d\\d\\d\\d\\d\\d\\d-\\d\\d\\d\\d\\d\\d\\d\\d\\d";
     private static final Pattern TIMESTAMP_PATTERN = Pattern.compile(TIMESTAMP_STRING);
     private static final String TIMESTAMP_FORMAT = "yyyyMMdd-HHmmssSSS";
@@ -341,9 +345,14 @@ public class ConfigurationFile {
                 moveFile(lastFile, getVersionedFile(mainFile));
             }
             int seq = sequence.get();
-            if (seq > CURRENT_HISTORY_LENGTH) {
-                File delete = getVersionedFile(mainFile, seq - CURRENT_HISTORY_LENGTH);
-                if (delete.exists()) {
+            // delete unwanted backup files
+            int currentHistoryLength = getInteger(CURRENT_HISTORY_LENGTH_PROPERTY, CURRENT_HISTORY_LENGTH, 0);
+            if (seq > currentHistoryLength) {
+                for (int k = seq - currentHistoryLength; k > 0; k--) {
+                    File delete = getVersionedFile(mainFile, k);
+                    if (! delete.exists()) {
+                        break;
+                    }
                     delete.delete();
                 }
             }
@@ -468,7 +477,8 @@ public class ConfigurationFile {
             }
 
             //Delete any old history directories
-            final String cutoffFileName = getTimeStamp(subtractDays(date, HISTORY_DAYS));
+            int historyDays = getInteger(HISTORY_DAYS_PROPERTY, HISTORY_DAYS, 0);
+            final String cutoffFileName = getTimeStamp(subtractDays(date, historyDays));
             for (String name : historyRoot.list()) {
                 if (name.length() == cutoffFileName.length() && TIMESTAMP_PATTERN.matcher(name).matches() && name.compareTo(cutoffFileName) < 0) {
                     deleteRecursive(new File(historyRoot, name));
@@ -480,6 +490,25 @@ public class ConfigurationFile {
         currentHistory.mkdir();
         if (!currentHistory.exists()) {
             throw MESSAGES.cannotCreate(currentHistory.getAbsolutePath());
+        }
+    }
+
+    private int getInteger(final String name, final int defaultValue, final int minimalValue) {
+        int retVal = getInteger(name, defaultValue);
+        return (retVal < minimalValue) ? defaultValue : retVal;
+    }
+
+    private int getInteger(final String name, final int defaultValue) {
+        final SecurityManager sm = System.getSecurityManager();
+        if (sm == null) {
+            return Integer.getInteger(name, defaultValue);
+        } else {
+            return AccessController.doPrivileged(new PrivilegedAction<Integer>() {
+                @Override
+                public Integer run() {
+                    return Integer.getInteger(name, defaultValue);
+                }
+            });
         }
     }
 
