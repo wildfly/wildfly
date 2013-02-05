@@ -144,7 +144,7 @@
         <version.org.hibernate3.commons.annotations>3.2.0.Final</version.org.hibernate3.commons.annotations>
         <version.org.hornetq>2.3.0.CR1</version.org.hornetq>
         <version.org.infinispan>5.2.0.Final</version.org.infinispan>
-        <version.org.jacorb>2.3.2.jbossorg-0</version.org.jacorb>
+        <version.org.jacorb>2.3.2.jbossorg-4</version.org.jacorb>
         <version.org.javassist>3.15.0-GA</version.org.javassist>
         <version.org.jdom>1.1.2</version.org.jdom>
         <version.org.jboss.arquillian.core>1.0.0.Final</version.org.jboss.arquillian.core>
@@ -1522,6 +1522,20 @@
                 <groupId>org.jacorb</groupId>
                 <artifactId>jacorb</artifactId>
                 <version>${version.org.jacorb}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>antlr</groupId>
+                        <artifactId>antlr</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-jdk14</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
