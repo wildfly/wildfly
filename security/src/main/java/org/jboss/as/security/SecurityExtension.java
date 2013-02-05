@@ -28,6 +28,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
@@ -46,6 +48,7 @@ import org.jboss.as.controller.transform.CombinedTransformer;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.PathAddressTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
+import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -148,7 +151,7 @@ public class SecurityExtension implements Extension {
         securityDomain.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, SecurityDomainResourceDefinition.CACHE_TYPE).end();
 
 
-        final ModulesToAttributeTransformer loginModule = new ModulesToAttributeTransformer(Constants.LOGIN_MODULE, Constants.LOGIN_MODULES);
+        ModulesToAttributeTransformer loginModule = new ModulesToAttributeTransformer(Constants.LOGIN_MODULE, Constants.LOGIN_MODULES);
 
         registerModuleTransformer(securityDomain, PATH_CLASSIC_AUTHENTICATION, loginModule);
         final ModulesToAttributeTransformer policyModule = new ModulesToAttributeTransformer(Constants.POLICY_MODULE, Constants.POLICY_MODULES);
@@ -183,7 +186,10 @@ public class SecurityExtension implements Extension {
         ResourceTransformationDescriptionBuilder child = parent.addChildResource(childPath)
                 .setCustomResourceTransformer(transformer)
                 .discardOperations(ADD);
+        //child.discardChildResource(PathElement.pathElement(transformer.getResourceName()));
+
         child.addChildRedirection(PathElement.pathElement(transformer.getResourceName()), CURRENT_PATH_TRANSFORMER)
+                .setCustomResourceTransformer(ResourceTransformer.DISCARD)
                 .addOperationTransformationOverride(ADD)
                 .setCustomOperationTransformer(transformer)
                 .inheritResourceAttributeDefinitions().end()
@@ -208,6 +214,7 @@ public class SecurityExtension implements Extension {
     private static class ModulesToAttributeTransformer implements CombinedTransformer {
         protected final String resourceName;
         protected final String oldName;
+        private final Map<PathAddress, Boolean> addOps = new HashMap<PathAddress, Boolean>();
 
         private ModulesToAttributeTransformer(String resourceName, String oldName) {
             this.resourceName = resourceName;
@@ -216,6 +223,14 @@ public class SecurityExtension implements Extension {
 
         String getResourceName() {
             return resourceName;
+        }
+
+        private boolean isAddOpAdded(PathAddress address) {
+            if (addOps.containsKey(address)) {
+                return true;
+            }
+            addOps.put(address, true);
+            return false;
         }
 
         @Override
@@ -232,17 +247,18 @@ public class SecurityExtension implements Extension {
             transformModulesToAttributes(address, resourceName, oldName, context, model);
             ModelNode modules = model.get(oldName);
             int len = modules.asList().size();
+            boolean addOpAdded = isAddOpAdded(address);
             if (len == 0) { //remove
                 operation = new ModelNode();
                 operation.get(OP).set(REMOVE);
-            } else if (len == 1) {
+            } else if (!addOpAdded) {
                 operation = model.clone();
                 operation.get(OP).set(ADD);
             } else {
                 operation.clear();
                 operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
                 operation.get(ModelDescriptionConstants.NAME).set(oldName);
-                operation.get(ModelDescriptionConstants.VALUE).set(model.get(oldName));
+                operation.get(ModelDescriptionConstants.VALUE).set(modules);
             }
             operation.get(ModelDescriptionConstants.OP_ADDR).set(address.toModelNode());
             return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
