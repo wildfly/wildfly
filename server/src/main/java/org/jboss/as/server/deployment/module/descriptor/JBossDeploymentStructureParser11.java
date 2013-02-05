@@ -626,10 +626,13 @@ public class JBossDeploymentStructureParser11 implements XMLElementReader<ParseR
             case EXPORT: {
                 dependency.addImportFilter(PathFilters.getMetaInfSubdirectoriesFilter(), true);
                 dependency.addExportFilter(PathFilters.getMetaInfSubdirectoriesFilter(), true);
+                dependency.addImportFilter(PathFilters.getMetaInfFilter(), true);
+                dependency.addExportFilter(PathFilters.getMetaInfFilter(), true);
                 break;
             }
             case IMPORT: {
                 dependency.addImportFilter(PathFilters.getMetaInfSubdirectoriesFilter(), true);
+                dependency.addImportFilter(PathFilters.getMetaInfFilter(), true);
                 break;
             }
         }
