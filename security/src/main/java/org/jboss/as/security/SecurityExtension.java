@@ -23,6 +23,8 @@
 package org.jboss.as.security;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.util.Collections;
@@ -187,6 +189,9 @@ public class SecurityExtension implements Extension {
                 .inheritResourceAttributeDefinitions().end()
                 .addOperationTransformationOverride(WRITE_ATTRIBUTE_OPERATION)
                 .setCustomOperationTransformer(transformer)
+                .inheritResourceAttributeDefinitions().end()
+                .addOperationTransformationOverride(REMOVE)
+                .setCustomOperationTransformer(transformer)
                 .inheritResourceAttributeDefinitions().end();
         return child;
     }
@@ -226,13 +231,16 @@ public class SecurityExtension implements Extension {
             ModelNode model = new ModelNode();
             transformModulesToAttributes(address, resourceName, oldName, context, model);
             ModelNode modules = model.get(oldName);
-
-            if (modules.asList().size() == 1) {
+            int len = modules.asList().size();
+            if (len == 0) { //remove
+                operation = new ModelNode();
+                operation.get(OP).set(REMOVE);
+            } else if (len == 1) {
                 operation = model.clone();
-                operation.get(ModelDescriptionConstants.OP).set(ADD);
+                operation.get(OP).set(ADD);
             } else {
                 operation.clear();
-                operation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION);
+                operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
                 operation.get(ModelDescriptionConstants.NAME).set(oldName);
                 operation.get(ModelDescriptionConstants.VALUE).set(model.get(oldName));
             }
