@@ -143,14 +143,11 @@ public class EmbeddedServerFactory {
     private static ModuleLoader setupModuleLoader(String modulePath, String... systemPackages) {
         assert modulePath != null : "modulePath not null";
 
-        File modulesDir = new File(modulePath);
-        assert modulesDir.isDirectory() : "modulePath not a directory";
-
         final String classPath = SecurityActions.getSystemProperty(SYSPROP_KEY_CLASS_PATH);
         try {
             // Set up sysprop env
             SecurityActions.clearSystemProperty(SYSPROP_KEY_CLASS_PATH);
-            SecurityActions.setSystemProperty(SYSPROP_KEY_MODULE_PATH, modulesDir.getAbsolutePath());
+            SecurityActions.setSystemProperty(SYSPROP_KEY_MODULE_PATH, modulePath);
 
             StringBuffer packages = new StringBuffer("org.jboss.modules,org.jboss.msc,org.jboss.dmr,org.jboss.threads,org.jboss.as.controller.client");
             if (systemPackages != null) {
