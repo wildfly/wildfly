@@ -53,6 +53,7 @@ public class SarSubsystemAdd extends AbstractBoottimeAddStepHandler {
         context.addStep(new AbstractDeploymentChainStep() {
             public void execute(DeploymentProcessorTarget processorTarget) {
                 processorTarget.addDeploymentProcessor(SarExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_SAR_SUB_DEPLOY_CHECK, new SarSubDeploymentProcessor());
+                processorTarget.addDeploymentProcessor(SarExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_SAR, new SarStructureProcessor());
                 processorTarget.addDeploymentProcessor(SarExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_SAR_MODULE, new SarModuleDependencyProcessor());
                 processorTarget.addDeploymentProcessor(SarExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_SERVICE_DEPLOYMENT, new ServiceDeploymentParsingProcessor());
                 processorTarget.addDeploymentProcessor(SarExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_SAR_SERVICE_COMPONENT, new ServiceComponentProcessor());

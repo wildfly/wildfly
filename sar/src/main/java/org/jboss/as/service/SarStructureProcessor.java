@@ -21,23 +21,24 @@ import org.jboss.vfs.VisitorAttributes;
 import org.jboss.vfs.util.SuffixMatchFilter;
 
 public class SarStructureProcessor implements DeploymentUnitProcessor {
-    
+
     private static final String SAR_EXTENSION = ".sar";
     private static final String JAR_EXTENSION = ".jar";
-    
-    private static final SuffixMatchFilter CHILD_ARCHIVE_FILTER = new SuffixMatchFilter(JAR_EXTENSION, VisitorAttributes.RECURSE_LEAVES_ONLY);
+
+    private static final SuffixMatchFilter CHILD_ARCHIVE_FILTER = new SuffixMatchFilter(JAR_EXTENSION,
+            VisitorAttributes.RECURSE_LEAVES_ONLY);
 
     private static Closeable NO_OP_CLOSEABLE = new Closeable() {
-       public void close() throws IOException {
-           // NO-OP
-       }
-   };
+        public void close() throws IOException {
+            // NO-OP
+        }
+    };
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ResourceRoot resourceRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-        if(resourceRoot == null) {
+        if (resourceRoot == null) {
             return;
         }
         final VirtualFile deploymentRoot = resourceRoot.getRoot();
@@ -49,9 +50,9 @@ public class SarStructureProcessor implements DeploymentUnitProcessor {
         if (!deploymentRootName.endsWith(SAR_EXTENSION)) {
             return;
         }
-        
+
         ModuleRootMarker.mark(resourceRoot, true);
-        
+
         try {
             final List<VirtualFile> childArchives = deploymentRoot.getChildren(CHILD_ARCHIVE_FILTER);
 
@@ -67,14 +68,14 @@ public class SarStructureProcessor implements DeploymentUnitProcessor {
         } catch (IOException e) {
             SarMessages.MESSAGES.failedToProcessSarChild(e, deploymentRoot);
         }
-        
+
     }
 
     @Override
     public void undeploy(DeploymentUnit context) {
         final List<ResourceRoot> childRoots = context.removeAttachment(Attachments.RESOURCE_ROOTS);
-        if(childRoots != null) {
-            for(ResourceRoot childRoot : childRoots) {
+        if (childRoots != null) {
+            for (ResourceRoot childRoot : childRoots) {
                 VFSUtils.safeClose(childRoot.getMountHandle());
             }
         }
