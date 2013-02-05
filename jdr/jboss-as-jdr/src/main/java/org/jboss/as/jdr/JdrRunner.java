@@ -62,6 +62,7 @@ public class JdrRunner implements JdrReportCollector {
             this.env.setClient(ctx.getModelControllerClient());
         }
         catch (Exception e) {
+            ctx.terminateSession();
             // the server isn't available, carry on
         }
     }
@@ -120,6 +121,7 @@ public class JdrRunner implements JdrReportCollector {
                 PrintWriter pw = new PrintWriter(new StringWriter());
                 t.printStackTrace(pw);
                 skips.append(pw.toString());
+                pw.close();
             }
         }
 

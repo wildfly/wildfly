@@ -96,5 +96,6 @@ public class CommandLineMain {
         System.out.println("JDR started: " + response.getStartTime().toString());
         System.out.println("JDR ended: " + response.getEndTime().toString());
         System.out.println("JDR location: " + response.getLocation());
+        System.exit(0);
     }
 }
