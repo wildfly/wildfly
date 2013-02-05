@@ -23,17 +23,13 @@
 package org.jboss.as.test.integration.weld.multideployment;
 
 import javax.inject.Inject;
-import javax.persistence.NoResultException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.weld.jpa.CdiJpaInjectingBean;
-import org.jboss.as.test.integration.weld.jpa.Employee;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -63,7 +59,7 @@ public class WeldCrossDeploymentTestCase {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "d2.jar");
         jar.addClass(WeldCrossDeploymentTestCase.class);
         jar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
-        jar.addAsManifestResource(new StringAsset("Dependencies: deployment.d1.jar meta-inf\n"), "MANIFEST.MF");
+        jar.addAsManifestResource(WeldCrossDeploymentTestCase.class.getPackage(), "jboss-deployment-structure.xml", "jboss-deployment-structure.xml");
         return jar;
     }
 
