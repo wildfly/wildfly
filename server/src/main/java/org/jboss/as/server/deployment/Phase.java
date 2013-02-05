@@ -188,6 +188,8 @@ public enum Phase {
     public static final int STRUCTURE_MOUNT                             = 0x0200;
     public static final int STRUCTURE_MANIFEST                          = 0x0300;
     public static final int STRUCTURE_OSGI_MANIFEST                     = 0x0400;
+    public static final int STRUCTURE_OSGI_METADATA                     = 0x0420;
+    public static final int STRUCTURE_OSGI_WEBBUNDLE                    = 0x0430;
     public static final int STRUCTURE_REMOUNT_EXPLODED                  = 0x0450;
     public static final int STRUCTURE_EE_SPEC_DESC_PROPERTY_REPLACEMENT = 0x0500;
     public static final int STRUCTURE_EE_JBOSS_DESC_PROPERTY_REPLACEMENT= 0x0550;
@@ -293,6 +295,7 @@ public enum Phase {
     public static final int PARSE_DISTINCT_NAME                         = 0x3601;
     public static final int PARSE_OSGI_DEPLOYMENT                       = 0x3700;
     public static final int PARSE_OSGI_SUBSYSTEM_ACTIVATOR              = 0x3800;
+    public static final int PARSE_WAB_CONTEXT_FACTORY                   = 0x3900;
     // should be after all components are known
     public static final int PARSE_EJB_INJECTION_ANNOTATION              = 0x4000;
     public static final int PARSE_JACORB                                = 0x4100;
@@ -353,7 +356,7 @@ public enum Phase {
     // POST_MODULE
     public static final int POST_MODULE_INJECTION_ANNOTATION            = 0x0100;
     public static final int POST_MODULE_REFLECTION_INDEX                = 0x0200;
-
+    public static final int POST_MODULE_WAB_FRAGMENTS                   = 0x0250;
     public static final int POST_MODULE_JSF_MANAGED_BEANS               = 0x0300;
     public static final int POST_MODULE_INTERCEPTOR_ANNOTATIONS         = 0x0301;
     public static final int POST_MODULE_EJB_BUSINESS_VIEW_ANNOTATION    = 0x0400;

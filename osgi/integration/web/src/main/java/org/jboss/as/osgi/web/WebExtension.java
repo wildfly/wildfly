@@ -30,6 +30,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.osgi.AbstractSubsystemExtension;
 import org.jboss.as.osgi.parser.OSGiExtension;
+import org.jboss.as.osgi.parser.SubsystemState;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
@@ -38,7 +39,13 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StopContext;
+import org.jboss.osgi.framework.spi.FrameworkBuilder;
+import org.jboss.osgi.framework.spi.FrameworkBuilder.FrameworkPhase;
 import org.jboss.osgi.framework.spi.IntegrationServices;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
 
 /**
  * A WebApp extension to the OSGi subsystem
@@ -49,8 +56,12 @@ import org.jboss.osgi.framework.spi.IntegrationServices;
  */
 public class WebExtension extends AbstractSubsystemExtension {
 
-    static final String OSGI_BUNDLECONTEXT = "osgi-bundlecontext";
-    static final String WEB_CONTEXT_PATH = "Web-ContextPath";
+    public static final String OSGI_BUNDLECONTEXT = "osgi-bundlecontext";
+    public static final String WEB_CONTEXTPATH = "Web-ContextPath";
+    public static final String WEBBUNDLE_PROTOCOL = "webbundle";
+    public static final String WEBBUNDLE_PREFIX = WEBBUNDLE_PROTOCOL + ":";
+
+    private ServiceRegistration urlHandlerRegistration;
 
     @Override
     public void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model,
@@ -68,16 +79,37 @@ public class WebExtension extends AbstractSubsystemExtension {
         context.addStep(new AbstractDeploymentChainStep() {
             @Override
             protected void execute(DeploymentProcessorTarget processorTarget) {
+                processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_OSGI_WEBBUNDLE, new WebBundleStructureProcessor());
                 processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REMOUNT_EXPLODED, new RemountDeploymentRootProcessor());
+                processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_WAB_CONTEXT_FACTORY, new WebBundleContextProcessor());
+                processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_WAB_FRAGMENTS, new WebBundleFragmentProcessor());
                 processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_WAB_DEPLOYMENT, new WebContextActivationProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
     }
 
     @Override
+    public void registerIntegrationServices(FrameworkBuilder builder, SubsystemState subsystemState) {
+        builder.registerIntegrationService(FrameworkPhase.CREATE, new DeploymentProviderIntegration());
+    }
+
+    @Override
     public void configureServiceDependencies(ServiceName serviceName, ServiceBuilder<?> builder) {
         if (serviceName.equals(IntegrationServices.SYSTEM_SERVICES_PLUGIN)) {
             builder.addDependency(WebContextLifecycleInterceptor.SERVICE_NAME);
+        }
+    }
+
+    @Override
+    public void startSystemServices(StartContext startContext, BundleContext systemContext) {
+        urlHandlerRegistration = WebBundleURLStreamHandler.registerService(systemContext);
+    }
+
+    @Override
+    public void stopSystemServices(StopContext stopContext, BundleContext systemContext) {
+        if (urlHandlerRegistration != null) {
+            urlHandlerRegistration.unregister();
+            urlHandlerRegistration = null;
         }
     }
 }

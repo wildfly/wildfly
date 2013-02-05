@@ -48,8 +48,8 @@ public class OSGiBundleInfoParseProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
-        final DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        final String runtimeName = depUnit.getName();
+        DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
+        String runtimeName = depUnit.getName();
 
         // Check if we already have a bundle {@link Deployment}
         if (BundleLifecycleIntegration.getDeployment(runtimeName) != null)

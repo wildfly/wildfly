@@ -24,34 +24,34 @@ package org.jboss.as.test.integration.osgi.webapp.bundle;
 import java.io.IOException;
 import java.io.Writer;
 
-import javax.annotation.PostConstruct;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.jboss.as.test.integration.osgi.api.Echo;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleReference;
 
 @SuppressWarnings("serial")
-@WebServlet(name = "AnnotatedServlet", urlPatterns = { "/servlet" })
-public class AnnotatedServlet extends HttpServlet {
-
-    private volatile Echo echo;
-
-    @PostConstruct
-    public void messageSetup() {
-        echo = new Echo() {
-            @Override
-            public String echo(String msg) {
-                return "Simple Servlet called with input=" + msg;
-            }
-        };
-    }
+@WebServlet(name = "WebBundleServlet", urlPatterns = { "/servlet" })
+public class WebBundleServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+
+        String bundleSource = "";
+        ClassLoader classLoader = WebBundleServlet.class.getClassLoader();
+        try {
+            if (classLoader instanceof BundleReference) {
+                Bundle bundle = ((BundleReference)classLoader).getBundle();
+                bundleSource = " from " + bundle.getSymbolicName();
+            }
+        } catch (Throwable th) {
+            // ignore because the plain war does not see the OSGi API
+        }
+
         String msg = req.getParameter("input");
         Writer writer = resp.getWriter();
-        writer.write(echo.echo(msg));
+        writer.write(msg + bundleSource);
     }
 }
