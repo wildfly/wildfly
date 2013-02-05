@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<connector xmlns="http://java.sun.com/xml/ns/javaee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+           http://java.sun.com/xml/ns/j2ee/connector_1_6.xsd"
+	version="1.6" metadata-complete="true">
+
+	<vendor-name>Red Hat Middleware LLC</vendor-name>
+	<eis-type>Test RA</eis-type>
+	<resourceadapter-version>0.1</resourceadapter-version>
+
+	<resourceadapter>
+		<resourceadapter-class>org.jboss.as.test.integration.jca.annorar.AnnoResourceAdapter</resourceadapter-class>
+		<config-property>
+			<config-property-name>first</config-property-name>
+			<config-property-type>java.lang.String</config-property-type>
+			<config-property-value>G</config-property-value>
+			<config-property-ignore>false</config-property-ignore>
+			<config-property-confidential>true</config-property-confidential>
+			<config-property-supports-dynamic-updates>false</config-property-supports-dynamic-updates>
+		</config-property>
+		<config-property>
+			<config-property-name>second</config-property-name>
+			<config-property-type>java.lang.Integer</config-property-type>
+			<config-property-value>99</config-property-value>
+			<config-property-ignore>true</config-property-ignore>
+			<config-property-confidential>false</config-property-confidential>
+			<config-property-supports-dynamic-updates>true</config-property-supports-dynamic-updates>
+		</config-property>
+
+		<outbound-resourceadapter>
+			<connection-definition>
+				<managedconnectionfactory-class>org.jboss.as.test.integration.jca.annorar.AnnoManagedConnectionFactory</managedconnectionfactory-class>
+				<config-property>
+					<config-property-name>first</config-property-name>
+					<config-property-type>java.lang.Byte</config-property-type>
+					<config-property-value>23</config-property-value>
+					<config-property-ignore>false</config-property-ignore>
+					<config-property-confidential>true</config-property-confidential>
+					<config-property-supports-dynamic-updates>false</config-property-supports-dynamic-updates>
+				</config-property>
+				<config-property>
+					<config-property-name>second</config-property-name>
+					<config-property-type>java.lang.Short</config-property-type>
+					<config-property-value>55</config-property-value>
+					<config-property-ignore>true</config-property-ignore>
+					<config-property-confidential>false</config-property-confidential>
+					<config-property-supports-dynamic-updates>true</config-property-supports-dynamic-updates>
+				</config-property>
+
+				<connectionfactory-interface>org.jboss.as.test.integration.jca.annorar.AnnoConnectionFactory</connectionfactory-interface>
+				<connectionfactory-impl-class>org.jboss.as.test.integration.jca.annorar.AnnoConnectionFactoryImpl</connectionfactory-impl-class>
+				<connection-interface>org.jboss.as.test.integration.jca.annorar.AnnoConnection</connection-interface>
+				<connection-impl-class>org.jboss.as.test.integration.jca.annorar.AnnoConnectionImpl</connection-impl-class>
+			</connection-definition>
+			<transaction-support>NoTransaction</transaction-support>
+			<reauthentication-support>false</reauthentication-support>
+		</outbound-resourceadapter>
+		<inbound-resourceadapter>
+			<messageadapter>
+				<messagelistener>
+					<messagelistener-type>org.jboss.as.test.integration.jca.annorar.AnnoMessageListener</messagelistener-type>
+					<activationspec>
+						<activationspec-class>org.jboss.as.test.integration.jca.annorar.AnnoActivationSpec</activationspec-class>
+						<config-property>
+						<config-property-name>first</config-property-name>
+						<config-property-type>java.lang.Character</config-property-type>
+						<config-property-value>U</config-property-value>
+						<config-property-ignore>false</config-property-ignore>
+						<config-property-confidential>true</config-property-confidential>
+						<config-property-supports-dynamic-updates>false</config-property-supports-dynamic-updates>
+					</config-property>
+						<config-property>
+							<config-property-name>second</config-property-name>
+							<config-property-type>java.lang.Double</config-property-type>
+							<config-property-value>4.4</config-property-value>
+							<config-property-ignore>true</config-property-ignore>
+							<config-property-confidential>false</config-property-confidential>
+							<config-property-supports-dynamic-updates>true</config-property-supports-dynamic-updates>
+						</config-property>
+
+					</activationspec>
+				</messagelistener>
+			</messageadapter>
+		</inbound-resourceadapter>
+		<adminobject>
+			<adminobject-interface>org.jboss.as.test.integration.jca.annorar.AnnoAdminObject</adminobject-interface>
+			<adminobject-class>org.jboss.as.test.integration.jca.annorar.AnnoAdminObjectImpl</adminobject-class>
+			<config-property>
+				<config-property-name>first</config-property-name>
+				<config-property-type>java.lang.Long</config-property-type>
+				<config-property-value>54321</config-property-value>
+				<config-property-ignore>false</config-property-ignore>
+				<config-property-confidential>true</config-property-confidential>
+				<config-property-supports-dynamic-updates>false</config-property-supports-dynamic-updates>
+			</config-property>
+			<config-property>
+				<config-property-name>second</config-property-name>
+				<config-property-type>java.lang.Boolean</config-property-type>
+				<config-property-value>true</config-property-value>
+				<config-property-ignore>true</config-property-ignore>
+				<config-property-confidential>false</config-property-confidential>
+				<config-property-supports-dynamic-updates>true</config-property-supports-dynamic-updates>
+			</config-property>
+
+		</adminobject>
+	</resourceadapter>
+</connector>

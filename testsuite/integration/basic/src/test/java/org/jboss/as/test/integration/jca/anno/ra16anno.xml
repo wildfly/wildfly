@@ -1,0 +1,18 @@
+<subsystem xmlns="urn:jboss:domain:resource-adapters:1.0">
+	<resource-adapters>
+		<resource-adapter>
+			<archive>ra16anno.rar</archive>
+			<transaction-support>NoTransaction</transaction-support>
+			<connection-definitions>
+				<connection-definition
+					class-name="org.jboss.as.test.integration.jca.annorar.AnnoManagedConnectionFactory"
+					jndi-name="java:/eis/ra16anno" pool-name="Pool1">
+				</connection-definition>
+			</connection-definitions>
+			<admin-object
+				class-name="org.jboss.as.test.integration.jca.annorar.AnnoAdminObjectImpl"
+				jndi-name="java:/eis/ao/ra16anno" pool-name="Pool2">
+			</admin-object>
+		</resource-adapter>
+	</resource-adapters>
+</subsystem>
