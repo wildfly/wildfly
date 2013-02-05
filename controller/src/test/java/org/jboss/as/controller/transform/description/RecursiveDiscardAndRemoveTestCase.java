@@ -180,30 +180,22 @@ public class RecursiveDiscardAndRemoveTestCase {
         //Check that the op gets rejected for the wildcard entry
         op = Util.createAddOperation(PathAddress.pathAddress(PATH, DISCARDED_WILDCARD_ENTRY));
         transformed = transformOperation(op);
-        Assert.assertNull(transformed.getTransformedOperation());
-        Assert.assertTrue(transformed.rejectOperation(success()));
-        Assert.assertNotNull(transformed.getFailureDescription());
+        assertTransformed(op, transformed);
 
         //Check that the op gets rejected for the specific entry
         op = Util.createAddOperation(PathAddress.pathAddress(PATH, DISCARDED_SPECIFIC));
         transformed = transformOperation(op);
-        Assert.assertNull(transformed.getTransformedOperation());
-        Assert.assertTrue(transformed.rejectOperation(success()));
-        Assert.assertNotNull(transformed.getFailureDescription());
+        assertTransformed(op, transformed);
 
         //Check that the op gets rejected for the wildcard entry child
         op = Util.createAddOperation(PathAddress.pathAddress(PATH, DISCARDED_WILDCARD_ENTRY, DISCARDED_CHILD));
         transformed = transformOperation(op);
-        Assert.assertNull(transformed.getTransformedOperation());
-        Assert.assertTrue(transformed.rejectOperation(success()));
-        Assert.assertNotNull(transformed.getFailureDescription());
+        assertTransformed(op, transformed);
 
         //Check that the op gets rejected for the specific entry child
         op = Util.createAddOperation(PathAddress.pathAddress(PATH, DISCARDED_SPECIFIC, DISCARDED_CHILD));
         transformed = transformOperation(op);
-        Assert.assertNull(transformed.getTransformedOperation());
-        Assert.assertTrue(transformed.rejectOperation(success()));
-        Assert.assertNotNull(transformed.getFailureDescription());
+        assertTransformed(op, transformed);
     }
 
     private Resource transformResource() throws OperationFailedException {
@@ -242,6 +234,16 @@ public class RecursiveDiscardAndRemoveTestCase {
     };
 
     private static final ResourceDefinition ROOT = new SimpleResourceDefinition(PathElement.pathElement("test"), NOOP_PROVIDER);
+
+    protected void assertTransformed(final ModelNode original, final TransformedOperation transformed) {
+        Assert.assertNotNull(transformed);
+        final ModelNode operation = transformed.getTransformedOperation();
+        Assert.assertNotNull(operation);
+        Assert.assertEquals(operation.get(ModelDescriptionConstants.OP).asString(), ModelDescriptionConstants.READ_RESOURCE_OPERATION);
+        Assert.assertTrue(original.get(ModelDescriptionConstants.OP_ADDR).equals(operation.get(ModelDescriptionConstants.OP_ADDR)));
+        Assert.assertTrue(transformed.rejectOperation(success()));
+        Assert.assertNotNull(transformed.getFailureDescription());
+    }
 
     private static final ModelNode success() {
         final ModelNode result = new ModelNode();

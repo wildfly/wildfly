@@ -71,15 +71,16 @@ public class OperationSlaveStepHandler {
 
         final PathAddress originalAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
         final ImmutableManagementResourceRegistration originalRegistration = context.getResourceRegistration();
-        if (originalRegistration == null) {
-            throw new OperationFailedException(new ModelNode(ControllerMessages.MESSAGES.noSuchResourceType(originalAddress)));
-        }
 
         HostControllerExecutionSupport hostControllerExecutionSupport =
                 HostControllerExecutionSupport.Factory.create(operation, localHostControllerInfo.getLocalHostName(),
                         new LazyDomainModelProvider(context), ignoredDomainResourceRegistry);
         ModelNode domainOp = hostControllerExecutionSupport.getDomainOperation();
         if (domainOp != null) {
+            // Only require an existing registration if the domain op is not ignored
+            if (originalRegistration == null) {
+                throw new OperationFailedException(new ModelNode(ControllerMessages.MESSAGES.noSuchResourceType(originalAddress)));
+            }
             addBasicStep(context, domainOp);
         }
 

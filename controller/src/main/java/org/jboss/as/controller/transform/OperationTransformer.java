@@ -98,15 +98,17 @@ public interface OperationTransformer {
 
         @Override
         public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
-            return new TransformedOperation(null, new OperationResultTransformer() {
-                @Override
-                public ModelNode transformResult(ModelNode ignored) {
-                    final ModelNode result = new ModelNode();
-                    result.get(ModelDescriptionConstants.OUTCOME).set(ModelDescriptionConstants.SUCCESS); // TODO outcome => ignored
-                    result.get(ModelDescriptionConstants.RESULT);
-                    return result;
-                }
-            });
+            return new TransformedOperation(null, DEFAULT_REJECTION_POLICY, SUCCESSFUL_RESULT);
+        }
+    };
+
+    OperationResultTransformer SUCCESSFUL_RESULT = new OperationResultTransformer() {
+        @Override
+        public ModelNode transformResult(ModelNode ignored) {
+            final ModelNode result = new ModelNode();
+            result.get(ModelDescriptionConstants.OUTCOME).set(ModelDescriptionConstants.SUCCESS);
+            result.get(ModelDescriptionConstants.RESULT);
+            return result;
         }
     };
 

@@ -30,12 +30,18 @@ import org.jboss.as.controller.transform.PathAddressTransformer;
  */
 abstract class AbstractDescription implements TransformationDescription {
 
+    private final boolean inherited;
     private final PathAddressTransformer pathAddressTransformer;
     protected final PathElement pathElement;
 
     AbstractDescription(final PathElement pathElement, final PathAddressTransformer transformation) {
+        this(pathElement, transformation, false);
+    }
+
+    AbstractDescription(final PathElement pathElement, final PathAddressTransformer transformation, final boolean inherited) {
         this.pathElement = pathElement;
         this.pathAddressTransformer = transformation;
+        this.inherited = inherited;
     }
 
     @Override
@@ -48,4 +54,8 @@ abstract class AbstractDescription implements TransformationDescription {
         return pathAddressTransformer;
     }
 
+    @Override
+    public boolean isInherited() {
+        return inherited;
+    }
 }

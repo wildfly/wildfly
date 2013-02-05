@@ -40,7 +40,8 @@ public final class DiscardTransformationDescriptionBuilder extends AbstractTrans
 
     @Override
     public TransformationDescription build() {
-        return new DiscardDefinition(pathElement);
+        final AttributeTransformationDescriptionBuilderImpl.AttributeTransformationDescriptionBuilderRegistry empty = new AttributeTransformationDescriptionBuilderImpl.AttributeTransformationDescriptionBuilderRegistry();
+        return buildDefault(DiscardPolicy.SILENT, true, empty);
     }
 
 }

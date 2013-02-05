@@ -41,6 +41,7 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
+import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
@@ -154,7 +155,7 @@ public class LoggingExtension implements Extension {
         final ResourceTransformationDescriptionBuilder subsystemBuilder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
         // Add reject before add the logging-profile child resource builder
         subsystemBuilder.rejectChildResource(LOGGING_PROFILE_PATH);
-        ResourceTransformationDescriptionBuilder loggingProfileBuilder = subsystemBuilder.addChildResource(LOGGING_PROFILE_PATH);
+        ResourceTransformationDescriptionBuilder loggingProfileBuilder = TransformationDescriptionBuilder.Factory.createInstance(LOGGING_PROFILE_PATH);
 
         // Add resource transformers to the subsystem
         RootLoggerResourceDefinition.addTransformers(subsystemBuilder, loggingProfileBuilder);

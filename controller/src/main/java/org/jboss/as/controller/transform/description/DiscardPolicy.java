@@ -31,7 +31,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Emanuel Muckenhuber
  */
-public interface DiscardPolicy {
+interface DiscardPolicy {
 
     /**
      * Determine whether to discard the current model or operation.
@@ -46,7 +46,14 @@ public interface DiscardPolicy {
     DiscardPolicy ALWAYS = new DiscardPolicy() {
         @Override
         public DiscardType discard(final ModelNode node, final PathAddress address, final TransformationContext context) {
-            return DiscardType.REJECT_AND_FAIL;
+            return DiscardType.DISCARD_AND_WARN;
+        }
+    };
+
+    DiscardPolicy REJECT = new DiscardPolicy() {
+        @Override
+        public DiscardType discard(ModelNode node, PathAddress address, TransformationContext context) {
+            return DiscardType.REJECT_AND_WARN;
         }
     };
 
@@ -57,19 +64,26 @@ public interface DiscardPolicy {
         }
     };
 
+    DiscardPolicy SILENT = new DiscardPolicy() {
+        @Override
+        public DiscardType discard(ModelNode node, PathAddress address, TransformationContext context) {
+            return DiscardType.SILENT;
+        }
+    };
+
     public enum DiscardType {
         /**
          * Don't discard the resource or operation.
          */
         NEVER,
         /**
-         * Reject operations and fail for resource transformations.
-         */
-        REJECT_AND_FAIL,
-        /**
          * Reject operations and only warn for resource transformations.
          */
         REJECT_AND_WARN,
+        /**
+         * Discard operations silently, but warn for resource transformations.
+         */
+        DISCARD_AND_WARN,
         /**
          * Discard silently.
          */
