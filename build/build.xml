@@ -515,8 +515,6 @@
             <maven-resource group="org.jboss.spec.javax.xml.bind" artifact="jboss-jaxb-api_2.2_spec"/>
         </module-def>
 
-        <module-def name="javax.xml.jaxp-provider"/>
-
         <module-def name="javax.xml.registry.api">
             <maven-resource group="org.jboss.spec.javax.xml.registry" artifact="jboss-jaxr-api_1.0_spec"/>
         </module-def>

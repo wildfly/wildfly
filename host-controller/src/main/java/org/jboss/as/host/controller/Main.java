@@ -71,6 +71,7 @@ public final class Main {
     public static void main(String[] args) throws IOException {
         MDC.put("process", "host controller");
 
+
         // Grab copies of our streams.
         final InputStream in = System.in;
         //final PrintStream out = System.out;
