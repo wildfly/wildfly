@@ -25,6 +25,7 @@ package org.jboss.as.controller.transform.description;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -40,6 +41,8 @@ import org.jboss.as.controller.transform.ResourceTransformer;
  * @author Emanuel Muckenhuber
  */
 public final class ExplicitTransformationDescriptionBuilder extends AbstractTransformationDescriptionBuilder implements TransformationDescriptionBuilder {
+
+    private final List<String> discardedOperations = new LinkedList<String>();
 
     // TODO operation and children
 

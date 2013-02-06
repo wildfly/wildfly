@@ -203,14 +203,6 @@ public class SecurityExtension implements Extension {
     }
 
 
-    private static void transformModulesToAttributes(final PathAddress address, final String newName, final String oldName, final TransformationContext context, final ModelNode model) {
-        ModelNode modules = model.get(oldName).setEmptyList();
-        for (Resource.ResourceEntry entry : context.readResourceFromRoot(address).getChildren(newName)) {
-            Resource moduleResource = context.readResourceFromRoot(address.append(entry.getPathElement()));
-            modules.add(moduleResource.getModel());
-        }
-    }
-
     private static class ModulesToAttributeTransformer implements CombinedTransformer {
         protected final String resourceName;
         protected final String oldName;
@@ -262,6 +254,14 @@ public class SecurityExtension implements Extension {
             }
             operation.get(ModelDescriptionConstants.OP_ADDR).set(address.toModelNode());
             return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
+        }
+
+        private void transformModulesToAttributes(final PathAddress address, final String newName, final String oldName, final TransformationContext context, final ModelNode model) {
+            ModelNode modules = model.get(oldName).setEmptyList();
+            for (Resource.ResourceEntry entry : context.readResourceFromRoot(address).getChildren(newName)) {
+                Resource moduleResource = context.readResourceFromRoot(address.append(entry.getPathElement()));
+                modules.add(moduleResource.getModel());
+            }
         }
     }
 

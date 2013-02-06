@@ -22,16 +22,15 @@
 
 package org.jboss.as.controller.transform.description;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.PathAddressTransformer;
 import org.jboss.as.controller.transform.ResourceTransformer;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author Emanuel Muckenhuber
@@ -45,7 +44,6 @@ abstract class AbstractTransformationDescriptionBuilder implements Transformatio
     protected OperationTransformer operationTransformer;
 
     protected final Map<String, OperationTransformationEntry> operationTransformers = new HashMap<String, OperationTransformationEntry>();
-    protected final List<String> discardedOperations = new LinkedList<String>();
     protected final List<TransformationDescriptionBuilder> children = new ArrayList<TransformationDescriptionBuilder>();
 
     protected AbstractTransformationDescriptionBuilder(PathElement pathElement, PathAddressTransformer pathAddressTransformer,
