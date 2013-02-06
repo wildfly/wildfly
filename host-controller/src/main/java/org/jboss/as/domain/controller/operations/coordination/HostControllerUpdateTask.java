@@ -160,10 +160,10 @@ class HostControllerUpdateTask {
         }
 
         @Override
-        public boolean rejectOperation(ModelNode preparedResult) {
-            // Check the host result and see if we have to reject it
-            if(preparedResult.get(RESULT).has(DOMAIN_RESULTS)) {
-                final ModelNode domainResults = preparedResult.get(RESULT, DOMAIN_RESULTS);
+        public boolean rejectOperation(ModelNode result) {
+            // Check the host result for successful operations and see if we have to reject it
+            if(result.get(RESULT).has(DOMAIN_RESULTS)) {
+                final ModelNode domainResults = result.get(RESULT, DOMAIN_RESULTS);
                 // Don't reject ignored operations
                 if(domainResults.getType() == ModelType.STRING && IGNORED.equals(domainResults.asString())) {
                     return false;
@@ -175,7 +175,8 @@ class HostControllerUpdateTask {
                 userOp.get(RESULT).set(domainResults);
                 return rejectPolicy.rejectOperation(userOp);
             } else {
-                return rejectPolicy.rejectOperation(preparedResult);
+                // This should only handle failed host operations
+                return rejectPolicy.rejectOperation(result);
             }
         }
 
@@ -186,7 +187,11 @@ class HostControllerUpdateTask {
 
         @Override
         public ModelNode transformResult(ModelNode result) {
-
+            final boolean reject = rejectOperation(result);
+            System.out.println(reject + " transforming " + result);
+            if(reject) {
+                result.get(FAILURE_DESCRIPTION).set(getFailureDescription());
+            }
             if(result.get(RESULT).has(DOMAIN_RESULTS)) {
                 final ModelNode domainResults = result.get(RESULT, DOMAIN_RESULTS);
                 if(domainResults.getType() == ModelType.STRING && IGNORED.equals(domainResults.asString())) {
