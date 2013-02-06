@@ -152,12 +152,15 @@ public class EmbeddedServerFactory {
         return new StandaloneServerIndirection(standaloneServerClass, standaloneServerImpl);
     }
 
+    private static String trimPathToModulesDir(String modulePath) {
+        int index = modulePath.indexOf(File.pathSeparator);
+        return index == -1 ? modulePath : modulePath.substring(0, index);
+    }
+
     private static ModuleLoader setupModuleLoader(String modulePath, String... systemPackages) {
         assert modulePath != null : "modulePath not null";
 
-        File modulesDir = new File(modulePath);
-
-        SecurityActions.setSystemProperty(SYSPROP_KEY_JBOSS_MODULES_DIR, new File(modulePath).getAbsolutePath());
+        SecurityActions.setSystemProperty(SYSPROP_KEY_JBOSS_MODULES_DIR, trimPathToModulesDir(modulePath));
 
         final String classPath = SecurityActions.getSystemProperty(SYSPROP_KEY_CLASS_PATH);
         try {
