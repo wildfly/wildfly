@@ -89,16 +89,6 @@ public final class Attachments {
     public static final AttachmentKey<VirtualFile> DEPLOYMENT_CONTENTS = AttachmentKey.create(VirtualFile.class);
 
     /**
-     * The deployment hash
-     */
-    //public static final AttachmentKey<byte[]> DEPLOYMENT_HASH = AttachmentKey.create(byte[].class);
-
-    /**
-     * The special status listener attachment.
-     */
-    public static final AttachmentKey<AbstractDeploymentUnitService.DeploymentServiceListener> STATUS_LISTENER = AttachmentKey.create(AbstractDeploymentUnitService.DeploymentServiceListener.class);
-
-    /**
      * This should be added as a listener to all non child services
      */
     public static final AttachmentKey<ServiceVerificationHandler> SERVICE_VERIFICATION_HANDLER = AttachmentKey.create(ServiceVerificationHandler.class);

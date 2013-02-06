@@ -125,7 +125,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         CurrentServiceContainer.setServiceContainer(context.getController().getServiceContainer());
 
         final BootstrapListener bootstrapListener = new BootstrapListener(container, startTime, serviceTarget, futureContainer, prettyVersion);
-        serviceTarget.addListener(ServiceListener.Inheritance.ALL, bootstrapListener);
+        serviceTarget.addListener(bootstrapListener);
         myController.addListener(bootstrapListener);
         // Install either a local or remote content repository
         if(standalone) {

@@ -30,12 +30,13 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentHelper;
@@ -53,9 +54,9 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceController.State;
-import org.jboss.msc.service.ServiceListener.Inheritance;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.StabilityMonitor;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.value.InjectedValue;
@@ -67,7 +68,6 @@ import org.jboss.osgi.framework.spi.BundleLifecyclePlugin;
 import org.jboss.osgi.framework.spi.BundleManager;
 import org.jboss.osgi.framework.spi.FutureServiceValue;
 import org.jboss.osgi.framework.spi.IntegrationService;
-import org.jboss.osgi.framework.spi.ServiceTracker;
 import org.jboss.osgi.resolver.XBundle;
 import org.jboss.osgi.resolver.XEnvironment;
 import org.jboss.osgi.resolver.XResolveContext;
@@ -81,6 +81,7 @@ import org.osgi.service.startlevel.StartLevel;
  * An {@link IntegrationService} that that handles the bundle lifecycle.
  *
  * @author thomas.diesler@jboss.com
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  * @since 24-Nov-2010
  */
 public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
@@ -263,31 +264,6 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
 
             LOGGER.infoActivateDeferredModulePhase(bundle);
 
-            ServiceTracker<Object> serviceTracker = new ServiceTracker<Object>("DeferredActivation") {
-                private final AtomicInteger count = new AtomicInteger();
-
-                @Override
-                public void serviceListenerAdded(ServiceController<? extends Object> controller) {
-                    LOGGER.debugf("Added: [%d] %s ", count.incrementAndGet(), controller.getName());
-                }
-
-                @Override
-                protected void serviceStarted(ServiceController<?> controller) {
-                    LOGGER.debugf("Started: [%d] %s ", count.decrementAndGet(), controller.getName());
-                }
-
-                @Override
-                protected void serviceStartFailed(ServiceController<?> controller) {
-                    LOGGER.debugf("Failed: [%d] %s ", count.decrementAndGet(), controller.getName());
-                }
-
-                @Override
-                protected void complete() {
-                    LOGGER.debugf("Complete: [%d]", count.get());
-                }
-            };
-            phaseService.addListener(Inheritance.ALL, serviceTracker);
-
             if (!bundle.isResolved()) {
                 XEnvironment env = injectedEnvironment.getValue();
                 XResolver resolver = injectedResolver.getValue();
@@ -295,26 +271,29 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
                 try {
                     resolver.resolveAndApply(context);
                 } catch (ResolutionException ex) {
-                    phaseService.removeListener(serviceTracker);
                     throw FrameworkMessages.MESSAGES.cannotResolveBundle(ex, bundle);
                 }
             }
 
             depUnit.getAttachment(Attachments.DEFERRED_ACTIVATION_COUNT).incrementAndGet();
             phaseService.setMode(Mode.ACTIVE);
-
+            final StabilityMonitor monitor = new StabilityMonitor();
+            monitor.addController(phaseService);
+            final Set<ServiceController<?>> failed = new HashSet<ServiceController<?>>();
             try {
-                serviceTracker.awaitCompletion();
-            } catch (InterruptedException ex) {
+                monitor.awaitStability(failed, null);
+            } catch (final InterruptedException ex) {
                 // ignore
+            } finally {
+                monitor.removeController(phaseService);
             }
 
             // In case of failure we go back to NEVER
-            if (serviceTracker.hasFailedServices()) {
+            if (failed.size() > 0) {
 
                 // Collect the first start exception
                 StartException startex = null;
-                for (ServiceController<?> aux : serviceTracker.getFailedServices()) {
+                for (ServiceController<?> aux : failed) {
                     if (aux.getStartException() != null) {
                         startex = aux.getStartException();
                         break;

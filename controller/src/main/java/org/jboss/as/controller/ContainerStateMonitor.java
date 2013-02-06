@@ -25,36 +25,32 @@ package org.jboss.as.controller;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.StabilityMonitor;
 
 import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public final class ContainerStateMonitor extends AbstractServiceListener<Object> {
 
     private final ServiceRegistry serviceRegistry;
     private final ServiceController<?> controllerController;
-    private final AtomicInteger busyServiceCount = new AtomicInteger();
+    private final StabilityMonitor monitor = new StabilityMonitor();
+    final Set<ServiceController<?>> failed = new HashSet<ServiceController<?>>();
+    final Set<ServiceController<?>> problems = new HashSet<ServiceController<?>>();
 
-    // protected by "this"
-    /** Failed controllers pending tick reaching zero */
-    private final Map<ServiceController<?>, String> failedControllers = new IdentityHashMap<ServiceController<?>, String>();
-    /** Services with missing deps */
-    private final Set<ServiceController<?>> servicesWithMissingDeps = identitySet();
-    /** Services with missing deps as of the last time tick reached zero */
     private Set<ServiceName> previousMissingDepSet = new HashSet<ServiceName>();
 
     ContainerStateMonitor(final ServiceRegistry registry, final ServiceController<?> controller) {
@@ -63,125 +59,49 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
     }
 
     void acquire() {
-        untick();
+        // does nothing
     }
 
     void release() {
-        tick();
+        ContainerStateChangeReport changeReport = createContainerStateChangeReport(true);
+
+        if (changeReport != null) {
+            final String msg = createChangeReportLogMessage(changeReport);
+            ROOT_LOGGER.info(msg);
+        }
     }
 
     @Override
     public void listenerAdded(final ServiceController<?> controller) {
-        if (controller == controllerController) {
-            controller.removeListener(this);
-        } else {
-            untick();
-        }
+        monitor.addController(controller);
+        controller.removeListener(this);
     }
 
-    @Override
-    public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
-        switch (transition) {
-            case STARTING_to_START_FAILED: {
-                synchronized (this) {
-                    failedControllers.put(controller, controller.getStartException().toString());
-                }
-                break;
-            }
-            case REMOVING_to_REMOVED: {
-                synchronized (this) {
-                    failedControllers.remove(controller);
-                    servicesWithMissingDeps.remove(controller);
-                }
-                break;
-            }
-            case START_FAILED_to_DOWN:
-            case START_FAILED_to_STARTING: {
-                synchronized (this) {
-                    failedControllers.remove(controller);
-                }
-                break;
-            }
-            case START_REQUESTED_to_PROBLEM: {
-                synchronized (this) {
-                    servicesWithMissingDeps.add(controller);
-                }
-                break;
-            }
-            case PROBLEM_to_START_REQUESTED: {
-                synchronized (this) {
-                    servicesWithMissingDeps.remove(controller);
-                }
-                break;
-            }
-        }
-        final ServiceController.Substate before = transition.getBefore();
-        final ServiceController.Substate after = transition.getAfter();
-
-        if (before.isRestState() && ! after.isRestState()) {
-            untick();
-        } else if (! before.isRestState() && after.isRestState()) {
-            tick();
-        }
-    }
-
-    void awaitUninterruptibly(int count) {
-        boolean intr = false;
+    void awaitUninterruptibly() {
+        boolean interruped = false;
         try {
-            synchronized (this) {
-                while (busyServiceCount.get() > count) {
-                    try {
-                        wait();
-                    } catch (InterruptedException e) {
-                        intr = true;
-                    }
+            while (true) {
+                try {
+                    monitor.awaitStability(failed, problems);
+                    break;
+                } catch (InterruptedException e) {
+                    interruped = true;
                 }
             }
         } finally {
-            if (intr) {
+            if (interruped) {
                 Thread.currentThread().interrupt();
             }
         }
     }
 
-    void await(int count) throws InterruptedException {
-        synchronized (this) {
-            while (busyServiceCount.get() > count) {
-                wait();
-            }
-        }
+    void await() throws InterruptedException {
+        monitor.awaitStability(failed, problems);
     }
 
-    ContainerStateChangeReport awaitContainerStateChangeReport(int count) throws InterruptedException {
-        synchronized (this) {
-            while (busyServiceCount.get() > count) {
-                wait();
-            }
-            return createContainerStateChangeReport(false);
-        }
-    }
-
-    /**
-     * Tick down the count, triggering a deployment status report when the count is zero.
-     */
-    private void tick() {
-        int tick = busyServiceCount.decrementAndGet();
-
-        synchronized (this) {
-            notifyAll();
-            if (tick == 0) {
-                ContainerStateChangeReport changeReport = createContainerStateChangeReport(true);
-
-                if (changeReport != null) {
-                    final String msg = createChangeReportLogMessage(changeReport);
-                    ROOT_LOGGER.info(msg);
-                }
-            }
-        }
-    }
-
-    private void untick() {
-        busyServiceCount.incrementAndGet();
+    ContainerStateChangeReport awaitContainerStateChangeReport() throws InterruptedException {
+        monitor.awaitStability(failed, problems);
+        return createContainerStateChangeReport(false);
     }
 
     /**
@@ -198,7 +118,7 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
     private synchronized ContainerStateChangeReport createContainerStateChangeReport(boolean resetHistory) {
 
         final Map<ServiceName, Set<ServiceName>> missingDeps = new HashMap<ServiceName, Set<ServiceName>>();
-        for (ServiceController<?> controller : servicesWithMissingDeps) {
+        for (ServiceController<?> controller : problems) {
             for (ServiceName missing : controller.getImmediateUnavailableDependencies()) {
                 Set<ServiceName> dependents = missingDeps.get(missing);
                 if (dependents == null) {
@@ -231,12 +151,11 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
             }
         }
 
-        final Map<ServiceController<?>, String> currentFailedControllers = new HashMap<ServiceController<?>, String>(failedControllers);
+        final Set<ServiceController<?>> currentFailedControllers = new HashSet<ServiceController<?>>(failed);
 
         if (resetHistory)  {
             previousMissingDepSet = new HashSet<ServiceName>(missingDeps.keySet());
-
-            failedControllers.clear();
+            failed.clear();
         }
 
         boolean needReport = !missingServices.isEmpty() || !currentFailedControllers.isEmpty() || !noLongerMissingServices.isEmpty();
@@ -269,10 +188,9 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
         }
         if (!changeReport.getFailedControllers().isEmpty()) {
             msg.append(MESSAGES.serviceStatusReportFailed());
-            for (Map.Entry<ServiceController<?>, String> entry : changeReport.getFailedControllers().entrySet()) {
-                msg.append("      ").append(entry.getKey().getName()).append(": ").append(entry.getValue()).append('\n');
+            for (ServiceController<?> controller : changeReport.getFailedControllers()) {
+                msg.append("      ").append(controller.getName()).append('\n');
             }
-
         }
         return msg.toString();
     }
@@ -280,18 +198,18 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
     public static class ContainerStateChangeReport {
 
         private final Map<ServiceName, MissingDependencyInfo> missingServices;
-        private final Map<ServiceController<?>, String> failedControllers;
+        private final Set<ServiceController<?>> failedControllers;
         private final Map<ServiceName, Boolean> noLongerMissingServices;
 
         private ContainerStateChangeReport(final Map<ServiceName, MissingDependencyInfo> missingServices,
-                                           final Map<ServiceController<?>, String> failedControllers,
+                                           final Set<ServiceController<?>> failedControllers,
                                            final Map<ServiceName, Boolean> noLongerMissingServices) {
             this.missingServices = missingServices;
             this.failedControllers = failedControllers;
             this.noLongerMissingServices = noLongerMissingServices;
         }
 
-        public final Map<ServiceController<?>, String> getFailedControllers() {
+        public final Set<ServiceController<?>> getFailedControllers() {
             return failedControllers;
         }
 
@@ -351,9 +269,5 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
         public Set<ServiceName> getDependents() {
             return Collections.unmodifiableSet(dependents);
         }
-    }
-
-    private static <T> Set<T> identitySet() {
-        return Collections.newSetFromMap(new IdentityHashMap<T, Boolean>());
     }
 }

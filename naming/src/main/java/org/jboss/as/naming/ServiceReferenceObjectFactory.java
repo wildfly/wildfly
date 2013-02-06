@@ -30,12 +30,12 @@ import javax.naming.Reference;
 import javax.naming.spi.ObjectFactory;
 
 import org.jboss.as.naming.context.ModularReference;
-import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceNotFoundException;
 import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.StabilityMonitor;
 
 import static org.jboss.as.naming.NamingMessages.MESSAGES;
 /**
@@ -46,6 +46,7 @@ import static org.jboss.as.naming.NamingMessages.MESSAGES;
  * {@link State#REMOVED} (or the state transactions to one of these states while blocking) an exception is thrown.
  *
  * @author Stuart Douglas
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class ServiceReferenceObjectFactory implements ServiceAwareObjectFactory {
 
@@ -79,28 +80,25 @@ public class ServiceReferenceObjectFactory implements ServiceAwareObjectFactory 
             throw MESSAGES.cannotResolveService(serviceName);
         }
 
-        ServiceReferenceListener listener = new ServiceReferenceListener();
-        controller.addListener(listener);
-        synchronized (listener) {
-            // if we are interrupted just let the exception propagate for now
-            while (!listener.finished) {
-                try {
-                    listener.wait();
-                } catch (InterruptedException e) {
-                    throw MESSAGES.threadInterrupt(serviceName);
-                }
-            }
+        final StabilityMonitor monitor = new StabilityMonitor();
+        monitor.addController(controller);
+        try {
+            monitor.awaitStability();
+        } catch (InterruptedException e) {
+            throw MESSAGES.threadInterrupt(serviceName);
+        } finally {
+            monitor.removeController(controller);
         }
-        switch (listener.getState()) {
+        switch (controller.getState()) {
             case UP:
-                return getObjectInstance(listener.getValue(), obj, name, nameCtx, environment);
+                return getObjectInstance(controller.getValue(), obj, name, nameCtx, environment);
             case START_FAILED:
                 throw MESSAGES.cannotResolveService(serviceName, getClass().getName(), "START_FAILED");
             case REMOVED:
                 throw MESSAGES.cannotResolveService(serviceName, getClass().getName(), "START_FAILED");
         }
         // we should never get here, as the listener should not notify unless the state was one of the above
-        throw MESSAGES.cannotResolveServiceBug(serviceName, getClass().getName(), listener.getState().toString());
+        throw MESSAGES.cannotResolveServiceBug(serviceName, getClass().getName(), controller.getState().toString());
     }
 
     /**
@@ -111,63 +109,6 @@ public class ServiceReferenceObjectFactory implements ServiceAwareObjectFactory 
     public Object getObjectInstance(Object serviceValue, Object obj, Name name, Context nameCtx,
                                              Hashtable<?, ?> environment) throws Exception {
         return serviceValue;
-    }
-
-    /**
-     * listener that notifies when the service changes state
-     */
-    @SuppressWarnings("unchecked")
-    private class ServiceReferenceListener extends AbstractServiceListener {
-
-        private State state;
-        private boolean finished = false;
-        private Object value;
-
-        @Override
-        public synchronized void listenerAdded(ServiceController controller) {
-            handleStateChange(controller);
-        }
-
-        @Override
-        public synchronized void dependencyFailed(ServiceController controller) {
-            handleStateChange(controller);
-        }
-
-        @Override
-        public synchronized void transition(final ServiceController controller, final ServiceController.Transition transition) {
-            switch (transition) {
-                case STARTING_to_START_FAILED:
-                case STARTING_to_UP:
-                case REMOVING_to_REMOVED: {
-                    handleStateChange(controller);
-                    break;
-                }
-            }
-        }
-
-        private void handleStateChange(ServiceController controller) {
-            state = controller.getState();
-            if (state == State.UP) {
-                value = controller.getValue();
-            }
-            if (state == State.UP || state == State.START_FAILED || state == State.REMOVED) {
-                controller.removeListener(this);
-                finished = true;
-                notifyAll();
-            }
-        }
-
-        public State getState() {
-            return state;
-        }
-
-        public Object getValue() {
-            return value;
-        }
-
-        public boolean isFinished() {
-            return finished;
-        }
     }
 
     private static final class ServiceNameRefAdr extends RefAddr {

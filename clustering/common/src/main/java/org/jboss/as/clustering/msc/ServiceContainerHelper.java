@@ -24,30 +24,23 @@ package org.jboss.as.clustering.msc;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.jboss.as.server.CurrentServiceContainer;
-import org.jboss.logging.Logger;
-import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.StabilityMonitor;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceController.State;
-import org.jboss.msc.service.ServiceController.Transition;
-import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.StartException;
 
 /**
  * Helper methods for interacting with a modular service container.
  * @author Paul Ferraro
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class ServiceContainerHelper {
-    private static Logger log = Logger.getLogger(ServiceContainerHelper.class);
-
     // Mapping of service controller mode changes that appropriate for toggling to a given controller state
     private static final Map<State, Map<Mode, Mode>> modeToggle = new EnumMap<State, Map<Mode, Mode>>(State.class);
     static {
@@ -145,25 +138,7 @@ public class ServiceContainerHelper {
         // Short-circuit if the service is already at the target state
         if (targetController.getState() == targetState) return;
 
-        // Track any services installed by the target service
-        final Queue<ServiceController<?>> controllers = new ConcurrentLinkedQueue<ServiceController<?>>(Collections.singleton(targetController));
-        final ServiceListener<Object> listener = new AbstractServiceListener<Object>() {
-            @Override
-            public void transition(ServiceController<? extends Object> controller, Transition transition) {
-                log.tracef("%s transitioned from %s", controller.getName(), transition);
-                if (transition.leavesRestState()) {
-                    // Target controller is already in queue
-                    if (controller != targetController) {
-                        controllers.add(controller);
-                    }
-                } else if (transition.entersRestState()) {
-                    synchronized (controller) {
-                        controller.notify();
-                    }
-                }
-            }
-        };
-        targetController.addListener(ServiceListener.Inheritance.ALL, listener);
+        final StabilityMonitor monitor = new StabilityMonitor();
         try {
             if (targetController.getSubstate().isRestState()) {
                 // Force service to transition to desired state
@@ -172,25 +147,18 @@ public class ServiceContainerHelper {
                     targetController.setMode(targetMode);
                 }
             }
-            while (!controllers.isEmpty()) {
-                ServiceController<?> controller = controllers.remove();
-                synchronized (controller) {
-                    if (!controller.getSubstate().isRestState()) {
-                        // Listener will notify us when we enter rest state
-                        controller.wait();
-                    }
-                }
-                if (targetState == State.UP) {
-                    StartException exception = controller.getStartException();
-                    if (exception != null) {
-                        throw exception;
-                    }
+            monitor.addController(targetController);
+            monitor.awaitStability();
+            if (targetState == State.UP) {
+                StartException exception = targetController.getStartException();
+                if (exception != null) {
+                    throw exception;
                 }
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } finally {
-            targetController.removeListener(listener);
+            monitor.removeController(targetController);
         }
     }
 

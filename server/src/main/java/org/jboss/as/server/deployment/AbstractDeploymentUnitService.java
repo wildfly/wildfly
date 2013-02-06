@@ -22,21 +22,18 @@
 
 package org.jboss.as.server.deployment;
 
-import java.util.Collections;
-import java.util.IdentityHashMap;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.jboss.as.server.ServerLogger;
-import org.jboss.as.server.ServerMessages;
 import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StabilityMonitor;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -46,6 +43,7 @@ import org.jboss.msc.value.InjectedValue;
  * Abstract service responsible for managing the life-cycle of a {@link DeploymentUnit}.
  *
  * @author John Bailey
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public abstract class AbstractDeploymentUnitService implements Service<DeploymentUnit> {
 
@@ -53,7 +51,7 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
     private final InjectedValue<DeployerChains> deployerChainsInjector = new InjectedValue<DeployerChains>();
 
     private DeploymentUnit deploymentUnit;
-    private volatile DeploymentServiceListener listener;
+    private volatile StabilityMonitor monitor;
 
     protected AbstractDeploymentUnitService() {
     }
@@ -61,12 +59,10 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
     public synchronized void start(final StartContext context) throws StartException {
         ServiceTarget target = context.getChildTarget();
         final String deploymentName = context.getController().getName().getSimpleName();
-        final DeploymentServiceListener listener = new DeploymentServiceListener(deploymentName);
-        this.listener = listener;
+        monitor = new StabilityMonitor();
+        monitor.addController(context.getController());
         // Create the first phase deployer
-        target.addListener(ServiceListener.Inheritance.ALL, listener);
         deploymentUnit = createAndInitializeDeploymentUnit(context.getController().getServiceContainer());
-        deploymentUnit.putAttachment(Attachments.STATUS_LISTENER, listener);
 
         final String managementName = deploymentUnit.getAttachment(Attachments.MANAGEMENT_NAME);
         ServerLogger.DEPLOYMENT_LOGGER.startingDeployment(managementName, deploymentName);
@@ -93,18 +89,22 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
         final String managementName = deploymentUnit.getAttachment(Attachments.MANAGEMENT_NAME);
         ServerLogger.DEPLOYMENT_LOGGER.stoppedDeployment(managementName, deploymentName, (int) (context.getElapsedTime() / 1000000L));
         deploymentUnit = null;
+        monitor.removeController(context.getController());
+        monitor = null;
     }
 
     public synchronized DeploymentUnit getValue() throws IllegalStateException, IllegalArgumentException {
         return deploymentUnit;
     }
 
-    public void reportStatus() {
-        listener.explainStatus();
-    }
-
     public DeploymentStatus getStatus() {
-        return listener.getStatus();
+        final Set<ServiceController<?>> problems = new HashSet<ServiceController<?>>();
+        try {
+            monitor.awaitStability(problems, problems);
+        } catch (final InterruptedException e) {
+            // ignore
+        }
+        return problems.isEmpty() ? DeploymentStatus.OK : DeploymentStatus.FAILED;
     }
 
     Injector<DeployerChains> getDeployerChainsInjector() {
@@ -116,91 +116,5 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
         OK,
         FAILED,
         STOPPED
-    }
-
-    public static final class DeploymentServiceListener extends AbstractServiceListener<Object> {
-        private final String deploymentName;
-
-        private final Set<ServiceController<?>> startFailedServices = Collections.newSetFromMap(new IdentityHashMap<ServiceController<?>, Boolean>());
-        private final Set<ServiceController<?>> servicesMissingDependencies = Collections.newSetFromMap(new IdentityHashMap<ServiceController<?>, Boolean>());
-        private DeploymentStatus previous = DeploymentStatus.NEW;
-
-        public DeploymentServiceListener(final String deploymentName) {
-            this.deploymentName = deploymentName;
-        }
-
-        public synchronized DeploymentStatus getStatus() {
-            return startFailedServices.isEmpty() && servicesMissingDependencies.isEmpty() ? DeploymentStatus.OK : DeploymentStatus.FAILED;
-        }
-
-        public synchronized void explainStatus() {
-            DeploymentStatus oldStatus = previous;
-            boolean hasFailed = !startFailedServices.isEmpty();
-            boolean hasMissing = !servicesMissingDependencies.isEmpty();
-            final DeploymentStatus newStatus = hasFailed || hasMissing ? DeploymentStatus.FAILED : DeploymentStatus.OK;
-            if (oldStatus != newStatus) {
-                previous = newStatus;
-                if (hasFailed || hasMissing) {
-                    // write out failure
-                    StringBuilder failures = null;
-                    if (hasFailed) {
-                        failures = new StringBuilder();
-                        for (ServiceController<?> service : startFailedServices) {
-                            final StartException cause = service.getStartException();
-                            if (cause != null) {
-                                failures.append("\n        ").append(service.getName()).append(": ").append(cause);
-                            }
-                        }
-                    }
-                    StringBuilder missingDependencies = null;
-                    if (hasMissing) {
-                        missingDependencies = new StringBuilder();
-                        for (ServiceController<?> service : servicesMissingDependencies) {
-                            StringBuilder dependencies = new StringBuilder();
-                            for (ServiceName name : service.getImmediateUnavailableDependencies()) {
-                                dependencies.append("\n            ").append(name);
-                            }
-                            missingDependencies.append(ServerMessages.MESSAGES.missingDependencies(service.getName(), dependencies.toString()));
-                        }
-                    }
-                    if (hasFailed && hasMissing) {
-                        ServerLogger.DEPLOYMENT_LOGGER.deploymentHasMissingAndFailedServices(deploymentName, failures.toString(), missingDependencies.toString());
-                    } else if (hasFailed) {
-                        ServerLogger.DEPLOYMENT_LOGGER.deploymentHasFailedServices(deploymentName, failures.toString());
-                    } else {
-                        ServerLogger.DEPLOYMENT_LOGGER.deploymentHasMissingDependencies(deploymentName, missingDependencies.toString());
-                    }
-
-                } else {
-                    ServerLogger.DEPLOYMENT_LOGGER.deploymentStarted(deploymentName);
-                }
-            }
-        }
-
-        public synchronized void immediateDependencyAvailable(final ServiceController<? extends Object> controller) {
-            servicesMissingDependencies.remove(controller);
-        }
-
-        public synchronized void immediateDependencyUnavailable(final ServiceController<? extends Object> controller) {
-            servicesMissingDependencies.add(controller);
-        }
-
-        public synchronized void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
-            switch (transition) {
-                case REMOVING_to_REMOVED: {
-                    servicesMissingDependencies.remove(controller);
-                    // fall through
-                }
-                case START_FAILED_to_DOWN:
-                case START_FAILED_to_STARTING: {
-                    startFailedServices.remove(controller);
-                    break;
-                }
-                case STARTING_to_START_FAILED: {
-                    startFailedServices.add(controller);
-                    break;
-                }
-            }
-        }
     }
 }
