@@ -25,6 +25,7 @@ package org.jboss.as.controller.transform.description;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -40,6 +41,7 @@ import org.jboss.as.controller.transform.ResourceTransformer;
  */
 class ResourceTransformationDescriptionBuilderImpl extends AbstractTransformationDescriptionBuilder implements ResourceTransformationDescriptionBuilder {
 
+    private final List<String> discardedOperations = new LinkedList<String>();
     private DiscardPolicy discardPolicy = DiscardPolicy.NEVER;
     private final AttributeTransformationDescriptionBuilderImpl.AttributeTransformationDescriptionBuilderRegistry registry = new AttributeTransformationDescriptionBuilderImpl.AttributeTransformationDescriptionBuilderRegistry();
 
