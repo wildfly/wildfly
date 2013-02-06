@@ -35,6 +35,7 @@ import org.jboss.as.cli.impl.CLIModelControllerClient;
 import org.jboss.as.cli.impl.CommaSeparatedCompleter;
 import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -99,21 +100,37 @@ public class ShutdownHandler extends BaseOperationCommand {
         final CLIModelControllerClient cliClient = (CLIModelControllerClient) client;
 
         final ModelNode op = this.buildRequestWithoutHeaders(ctx);
-        final ModelNode response;
         try {
-            response = cliClient.execute(op, true);
+            final ModelNode response = cliClient.execute(op, true);
+            if(!Util.isSuccess(response)) {
+                throw new CommandLineException(Util.getFailureDescription(response));
+            }
         } catch(IOException e) {
-            ctx.disconnectController();
-            throw new CommandLineException("Failed to execute :shutdown", e);
+            // if it's not connected, it's assumed the connection has already been shutdown
+            if(cliClient.isConnected()) {
+                StreamUtils.safeClose(cliClient);
+                throw new CommandLineException("Failed to execute :shutdown", e);
+            }
         }
 
-        if(Util.isSuccess(response)) {
-            final String restartValue = restart.getValue(ctx.getParsedCommandLine());
-            if(restartValue == null || !Util.TRUE.equals(restartValue)) {
-                ctx.disconnectController();
-            }
+        final String restartValue = restart.getValue(ctx.getParsedCommandLine());
+        if (restartValue == null || !Util.TRUE.equals(restartValue)) {
+            ctx.disconnectController();
         } else {
-            throw new CommandLineException(Util.getFailureDescription(response));
+            // if I try to reconnect immediately, it'll hang for 5 sec
+            // which the default connection timeout for model controller client
+            // waiting half a sec on my machine works perfectly
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                throw new CommandLineException("Interrupted while pausing before re-connecting.", e);
+            }
+            try {
+                cliClient.ensureConnected(6000);
+            } catch(CommandLineException e) {
+                ctx.disconnectController();
+                throw e;
+            }
         }
     }
 
