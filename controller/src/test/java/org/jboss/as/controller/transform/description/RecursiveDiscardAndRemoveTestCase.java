@@ -21,6 +21,8 @@
  */
 
 package org.jboss.as.controller.transform.description;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+
 import java.util.Collections;
 import java.util.Locale;
 
@@ -120,39 +122,19 @@ public class RecursiveDiscardAndRemoveTestCase {
         Assert.assertEquals("test", model.get("subs").asString());
 
         //Sanity check that the subsystem works
-        ModelNode op = Util.createAddOperation(PathAddress.pathAddress(PATH));
-        TransformedOperation transformed = transformOperation(op);
-        Assert.assertEquals(op, transformed.getTransformedOperation());
-        Assert.assertFalse(transformed.rejectOperation(success()));
-        Assert.assertNull(transformed.getFailureDescription());
+        sanityTestNonDiscardedResource();
 
         //Check that the op gets discarded for the wildcard entry
-        op = Util.createAddOperation(PathAddress.pathAddress(PATH, DISCARDED_WILDCARD_ENTRY));
-        transformed = transformOperation(op);
-        Assert.assertNull(transformed.getTransformedOperation());
-        Assert.assertFalse(transformed.rejectOperation(success()));
-        Assert.assertNull(transformed.getFailureDescription());
+        discardResourceOperationsTest(PathAddress.pathAddress(PATH, DISCARDED_WILDCARD_ENTRY));
 
         //Check that the op gets discarded for the specific entry
-        op = Util.createAddOperation(PathAddress.pathAddress(PATH, DISCARDED_SPECIFIC));
-        transformed = transformOperation(op);
-        Assert.assertNull(transformed.getTransformedOperation());
-        Assert.assertFalse(transformed.rejectOperation(success()));
-        Assert.assertNull(transformed.getFailureDescription());
+        discardResourceOperationsTest(PathAddress.pathAddress(PATH, DISCARDED_SPECIFIC));
 
         //Check that the op gets discarded for the wildcard entry child
-        op = Util.createAddOperation(PathAddress.pathAddress(PATH, DISCARDED_WILDCARD_ENTRY, DISCARDED_CHILD));
-        transformed = transformOperation(op);
-        Assert.assertNull(transformed.getTransformedOperation());
-        Assert.assertFalse(transformed.rejectOperation(success()));
-        Assert.assertNull(transformed.getFailureDescription());
+        discardResourceOperationsTest(PathAddress.pathAddress(PATH, DISCARDED_WILDCARD_ENTRY, DISCARDED_CHILD));
 
         //Check that the op gets discarded for the specific entry child
-        op = Util.createAddOperation(PathAddress.pathAddress(PATH, DISCARDED_SPECIFIC, DISCARDED_CHILD));
-        transformed = transformOperation(op);
-        Assert.assertNull(transformed.getTransformedOperation());
-        Assert.assertFalse(transformed.rejectOperation(success()));
-        Assert.assertNull(transformed.getFailureDescription());
+        discardResourceOperationsTest(PathAddress.pathAddress(PATH, DISCARDED_SPECIFIC, DISCARDED_CHILD));
     }
 
     @Test
@@ -172,30 +154,67 @@ public class RecursiveDiscardAndRemoveTestCase {
         Assert.assertEquals("test", model.get("subs").asString());
 
         //Sanity check that the subsystem works
+        sanityTestNonDiscardedResource();
+
+        //Check that the op gets rejected for the wildcard entry
+        rejectResourceOperationsTest(PathAddress.pathAddress(PATH, DISCARDED_WILDCARD_ENTRY));
+
+        //Check that the op gets rejected for the specific entry
+        rejectResourceOperationsTest(PathAddress.pathAddress(PATH, DISCARDED_SPECIFIC));
+
+        //Check that the op gets rejected for the wildcard entry child
+        rejectResourceOperationsTest(PathAddress.pathAddress(PATH, DISCARDED_WILDCARD_ENTRY, DISCARDED_CHILD));
+
+        //Check that the op gets rejected for the specific entry child
+        rejectResourceOperationsTest(PathAddress.pathAddress(PATH, DISCARDED_SPECIFIC, DISCARDED_CHILD));
+    }
+
+    private void sanityTestNonDiscardedResource() throws Exception {
         ModelNode op = Util.createAddOperation(PathAddress.pathAddress(PATH));
         TransformedOperation transformed = transformOperation(op);
         Assert.assertEquals(op, transformed.getTransformedOperation());
         Assert.assertFalse(transformed.rejectOperation(success()));
+        Assert.assertNull(transformed.getFailureDescription());
 
-        //Check that the op gets rejected for the wildcard entry
-        op = Util.createAddOperation(PathAddress.pathAddress(PATH, DISCARDED_WILDCARD_ENTRY));
+        op = Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "test", new ModelNode("a"));
         transformed = transformOperation(op);
-        assertTransformed(op, transformed);
+        Assert.assertEquals(op, transformed.getTransformedOperation());
+        Assert.assertFalse(transformed.rejectOperation(success()));
+        Assert.assertNull(transformed.getFailureDescription());
 
-        //Check that the op gets rejected for the specific entry
-        op = Util.createAddOperation(PathAddress.pathAddress(PATH, DISCARDED_SPECIFIC));
+        op = Util.getUndefineAttributeOperation(PathAddress.pathAddress(PATH), "test");
         transformed = transformOperation(op);
-        assertTransformed(op, transformed);
+        Assert.assertEquals(op, transformed.getTransformedOperation());
+        Assert.assertFalse(transformed.rejectOperation(success()));
+        Assert.assertNull(transformed.getFailureDescription());
+    }
 
-        //Check that the op gets rejected for the wildcard entry child
-        op = Util.createAddOperation(PathAddress.pathAddress(PATH, DISCARDED_WILDCARD_ENTRY, DISCARDED_CHILD));
-        transformed = transformOperation(op);
-        assertTransformed(op, transformed);
+    private void discardResourceOperationsTest(PathAddress pathAddress) throws Exception {
+        ModelNode op = Util.createAddOperation(pathAddress);
+        TransformedOperation transformed = transformOperation(op);
+        assertDiscarded(transformed);
 
-        //Check that the op gets rejected for the specific entry child
-        op = Util.createAddOperation(PathAddress.pathAddress(PATH, DISCARDED_SPECIFIC, DISCARDED_CHILD));
+        op = Util.getWriteAttributeOperation(pathAddress, "test", new ModelNode("a"));
         transformed = transformOperation(op);
-        assertTransformed(op, transformed);
+        assertDiscarded(transformed);
+
+        op = Util.getUndefineAttributeOperation(pathAddress, "test");
+        transformed = transformOperation(op);
+        assertDiscarded(transformed);
+    }
+
+    private void rejectResourceOperationsTest(PathAddress pathAddress) throws Exception {
+        ModelNode op = Util.createAddOperation(pathAddress);
+        TransformedOperation transformed = transformOperation(op);
+        assertRejected(op, transformed);
+
+        op = Util.getWriteAttributeOperation(pathAddress, "test", new ModelNode("a"));
+        transformed = transformOperation(op);
+        assertRejected(op, transformed);
+
+        op = Util.getUndefineAttributeOperation(pathAddress, "test");
+        transformed = transformOperation(op);
+        assertRejected(op, transformed);
     }
 
     private Resource transformResource() throws OperationFailedException {
@@ -235,14 +254,20 @@ public class RecursiveDiscardAndRemoveTestCase {
 
     private static final ResourceDefinition ROOT = new SimpleResourceDefinition(PathElement.pathElement("test"), NOOP_PROVIDER);
 
-    protected void assertTransformed(final ModelNode original, final TransformedOperation transformed) {
+    protected void assertRejected(final ModelNode original, final TransformedOperation transformed) {
         Assert.assertNotNull(transformed);
         final ModelNode operation = transformed.getTransformedOperation();
         Assert.assertNotNull(operation);
-        Assert.assertEquals(operation.get(ModelDescriptionConstants.OP).asString(), ModelDescriptionConstants.READ_RESOURCE_OPERATION);
+        Assert.assertEquals(READ_RESOURCE_OPERATION, ModelDescriptionConstants.READ_RESOURCE_OPERATION);
         Assert.assertTrue(original.get(ModelDescriptionConstants.OP_ADDR).equals(operation.get(ModelDescriptionConstants.OP_ADDR)));
         Assert.assertTrue(transformed.rejectOperation(success()));
         Assert.assertNotNull(transformed.getFailureDescription());
+    }
+
+    private void assertDiscarded(final TransformedOperation transformed) {
+        Assert.assertNull(transformed.getTransformedOperation());
+        Assert.assertFalse(transformed.rejectOperation(success()));
+        Assert.assertNull(transformed.getFailureDescription());
     }
 
     private static final ModelNode success() {

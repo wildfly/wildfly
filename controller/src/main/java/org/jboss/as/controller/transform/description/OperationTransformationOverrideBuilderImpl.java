@@ -93,8 +93,7 @@ class OperationTransformationOverrideBuilderImpl extends AttributeTransformation
             @Override
             public TransformedOperation transformOperation(final TransformationContext ctx, final PathAddress address, final ModelNode operation) throws OperationFailedException {
 
-                final DiscardPolicy.DiscardType type = discardPolicy.discard(operation, address, ctx);
-                if(type == DiscardPolicy.DiscardType.SILENT) {
+                if(discardPolicy == DiscardPolicy.SILENT) {
                     return OperationTransformer.DISCARD.transformOperation(ctx, address, operation);
                 } // TODO handle other cases
 

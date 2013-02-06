@@ -32,7 +32,6 @@ import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.OperationRejectionPolicy;
 import org.jboss.as.controller.transform.OperationResultTransformer;
@@ -95,8 +94,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
     @Override
     public OperationTransformer.TransformedOperation transformOperation(final TransformationContext ctx, final PathAddress address, final ModelNode operation) throws OperationFailedException {
         // See whether the operation should be rejected or not
-        final DiscardPolicy.DiscardType type = discardPolicy.discard(operation, address, ctx);
-        switch (type) {
+        switch (discardPolicy) {
             case REJECT_AND_WARN:
                 // Execute a read-resource operation to determine whether this operation should be rejected
                 return new TransformedOperation(operation, new OperationRejectionPolicy() {
@@ -138,8 +136,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
     public void transformResource(final ResourceTransformationContext ctx, final PathAddress address, final Resource original) throws OperationFailedException {
         final ModelNode originalModel = TransformationRule.cloneAndProtect(original.getModel());
         // See whether the model can be discarded
-        final DiscardPolicy.DiscardType type = discardPolicy.discard(originalModel, address, ctx);
-        switch (type) {
+        switch (discardPolicy) {
             case DISCARD_AND_WARN:
             case REJECT_AND_WARN:
                 ctx.getLogger().logRejectedResourceWarning(address, null);
