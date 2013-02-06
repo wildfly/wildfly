@@ -32,7 +32,9 @@ import org.jboss.dmr.ModelNode;
 import java.util.HashSet;
 import java.util.List;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 import static org.junit.Assert.assertFalse;
@@ -113,11 +115,13 @@ public class ServerManager extends AbstractMgmtTestBase {
 
     private ModelNode getRemoveSocketBindingOp(Connector conn) {
         ModelNode op = createOpNode("socket-binding-group=standard-sockets/socket-binding=test-" + conn.getName(), "remove");
+        op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         return op;
     }
 
     private ModelNode getRemoveConnectorOp(Connector conn) {
         ModelNode op = createOpNode("subsystem=web/connector=test-" + conn.getName() + "-connector", "remove");
+        op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         return op;
     }
 

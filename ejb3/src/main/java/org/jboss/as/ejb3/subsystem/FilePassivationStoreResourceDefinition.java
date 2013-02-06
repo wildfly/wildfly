@@ -72,7 +72,7 @@ public class FilePassivationStoreResourceDefinition extends PassivationStoreReso
     private static final AttributeDefinition[] ATTRIBUTES = {IDLE_TIMEOUT, IDLE_TIMEOUT_UNIT, MAX_SIZE, RELATIVE_TO, GROUPS_PATH, SESSIONS_PATH, SUBDIRECTORY_COUNT};
 
     private static final FilePassivationStoreAdd ADD = new FilePassivationStoreAdd(ATTRIBUTES);
-    private static final FilePassivationStoreRemove REMOVE = new FilePassivationStoreRemove(ADD);
+    private static final PassivationStoreRemove REMOVE = new PassivationStoreRemove(ADD);
     private static final FilePassivationStoreWriteHandler WRITE_HANDLER = new FilePassivationStoreWriteHandler(ATTRIBUTES);
 
     public static final FilePassivationStoreResourceDefinition INSTANCE = new FilePassivationStoreResourceDefinition();

@@ -24,6 +24,7 @@ package org.jboss.as.web;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -184,7 +185,7 @@ public class WebConnectorDefinition extends SimpleResourceDefinition {
         super(WebExtension.CONNECTOR_PATH,
                 WebExtension.getResourceDescriptionResolver(Constants.CONNECTOR),
                 WebConnectorAdd.INSTANCE,
-                WebConnectorRemove.INSTANCE);
+                new ServiceRemoveStepHandler(WebSubsystemServices.JBOSS_WEB_CONNECTOR, WebConnectorAdd.INSTANCE));
     }
 
 
