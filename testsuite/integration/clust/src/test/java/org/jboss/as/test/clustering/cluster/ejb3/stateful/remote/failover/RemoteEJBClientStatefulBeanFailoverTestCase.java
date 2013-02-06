@@ -167,6 +167,11 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
                 }
                 container2Stopped = true;
             }
+
+            // Sometimes the test ends up with "javax.ejb.EJBException: java.io.IOException: Channel Channel ID ed419c76 (outbound) of Remoting connection 00052744 to /127.0.0.1:4447 has been closed"
+            // TODO Get rid of this wait
+            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
+
             // invoke again
             CounterResult resultAfterShuttingDownANode = remoteCounter.increment();
             Assert.assertNotNull("Result from remote stateful counter, after shutting down a node was null", resultAfterShuttingDownANode);
