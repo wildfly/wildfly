@@ -29,6 +29,7 @@ import java.util.Map;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -40,6 +41,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.ejb3.component.pool.PoolConfigService;
 import org.jboss.as.ejb3.component.pool.StrictMaxPoolConfig;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -91,7 +93,7 @@ public class StrictMaxPoolResourceDefinition extends SimpleResourceDefinition {
     private StrictMaxPoolResourceDefinition() {
         super(PathElement.pathElement(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL),
                 EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL),
-                StrictMaxPoolAdd.INSTANCE, StrictMaxPoolRemove.INSTANCE,
+                StrictMaxPoolAdd.INSTANCE, new ServiceRemoveStepHandler(PoolConfigService.EJB_POOL_CONFIG_BASE_SERVICE_NAME, StrictMaxPoolAdd.INSTANCE),
                 OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
     }
 

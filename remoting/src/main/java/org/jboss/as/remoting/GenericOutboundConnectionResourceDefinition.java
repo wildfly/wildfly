@@ -25,6 +25,7 @@ package org.jboss.as.remoting;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -48,7 +49,8 @@ class GenericOutboundConnectionResourceDefinition extends AbstractOutboundConnec
 
     private GenericOutboundConnectionResourceDefinition() {
         super(ADDRESS, RemotingExtension.getResourceDescriptionResolver(CommonAttributes.OUTBOUND_CONNECTION),
-                GenericOutboundConnectionAdd.INSTANCE, GenericOutboundConnectionRemoveHandler.INSTANCE);
+                GenericOutboundConnectionAdd.INSTANCE,
+                new ServiceRemoveStepHandler(AbstractOutboundConnectionService.OUTBOUND_CONNECTION_BASE_SERVICE_NAME,  GenericOutboundConnectionAdd.INSTANCE));
     }
 
     @Override

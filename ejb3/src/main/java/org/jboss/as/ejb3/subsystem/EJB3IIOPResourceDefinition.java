@@ -31,6 +31,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -78,7 +79,7 @@ public class EJB3IIOPResourceDefinition extends SimpleResourceDefinition {
     private EJB3IIOPResourceDefinition() {
         super(EJB3SubsystemModel.IIOP_PATH,
                 EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.IIOP),
-                EJB3IIOPAdd.INSTANCE, EJB3IIOPRemove.INSTANCE);
+                EJB3IIOPAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override

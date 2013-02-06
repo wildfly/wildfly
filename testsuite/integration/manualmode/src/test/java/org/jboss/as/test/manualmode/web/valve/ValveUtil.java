@@ -22,9 +22,6 @@
 
 package org.jboss.as.test.manualmode.web.valve;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-import static org.junit.Assert.assertEquals;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -47,6 +44,18 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Jean-Frederic Clere
@@ -71,7 +80,7 @@ public class ValveUtil {
             file = new File(path + baseModulePath + "/module.xml");
             if (file.exists()) {
                 file.delete();
-            }              
+            }
             FileWriter fstream = new FileWriter(path + baseModulePath + "/module.xml");
             BufferedWriter out = new BufferedWriter(fstream);
             out.write("<module xmlns=\"urn:jboss:module:1.1\" name=\"" + modulename + "\">\n");
@@ -93,14 +102,14 @@ public class ValveUtil {
             out.close();
         }
     }
-    
+
     private static void createJar(File file, Class valveClass) {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "temporary-name.jar")
-                              .addClass(valveClass);       
+                              .addClass(valveClass);
         log.info(archive.toString(true));
         archive.as(ZipExporter.class).exportTo(file);
     }
-    
+
     /**
      * Adding valve via DMR operation for jboss config file (standalone.xml)
      */
@@ -115,7 +124,7 @@ public class ValveUtil {
         op.get("class-name").set(classname);
         op.get("module").set(modulename);
         updates.add(op);
-        
+
         if(params != null) {
             for (String paramName: params.keySet()) {
                 op = new ModelNode();
@@ -129,9 +138,9 @@ public class ValveUtil {
 
         applyUpdates(managementClient.getControllerClient(), updates);
     }
-    
-   
-    
+
+
+
     public static void activateValve(final ManagementClient managementClient, String valveName, boolean isActive) throws Exception {
         ModelNode op = new ModelNode();
         op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
@@ -140,19 +149,20 @@ public class ValveUtil {
         op.get(VALUE).set(Boolean.toString(isActive));
         applyUpdate(managementClient, op);
     }
-    
+
     private static ModelNode getValveAddr(String valveName) {
         ModelNode address = new ModelNode();
         address.add(SUBSYSTEM, "web");
         address.add("valve", valveName);
         address.protect();
         return address;
-    }    
+    }
 
     public static void removeValve(final ManagementClient managementClient, String valveName) throws Exception {
         ModelNode op = new ModelNode();
         op.get(OP).set(REMOVE);
         op.get(OP_ADDR).set(getValveAddr(valveName));
+        op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
 
         applyUpdate(managementClient, op);
     }
@@ -162,7 +172,7 @@ public class ValveUtil {
         updates.add(update);
         applyUpdates(client.getControllerClient(), updates);
     }
-    
+
     public static void applyUpdates(final ModelControllerClient client, final List<ModelNode> updates) throws Exception {
         for (ModelNode update : updates) {
             log.info("+++ Update on " + client + ":\n" + update.toString());
@@ -229,7 +239,7 @@ public class ValveUtil {
         }
         return null;
     }
-    
+
      /**
      * Access http://localhost/
      * @return "valve" headers
@@ -245,12 +255,12 @@ public class ValveUtil {
         Header[] errorHeaders = response.getHeaders("X-Exception");
         assertEquals("Wrong response code: " + statusCode + " On " + url, expectedResponseCode, statusCode);
         assertEquals("X-Exception(" + Arrays.toString(errorHeaders) + ") is null", 0, errorHeaders.length);
-        
+
         return response.getHeaders("valve");
     }
-    
+
      public static Header[] hitValve(URL url) throws Exception {
          return hitValve(url, HttpURLConnection.HTTP_OK);
-         
+
      }
 }

@@ -31,6 +31,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.util.HttpMgmtProxy;
 import org.jboss.dmr.ModelNode;
@@ -41,6 +42,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -256,7 +259,9 @@ public class HttpPostMgmtOpsTestCase {
 
 
         // remove connector
-        ret = httpMgmt.sendPostCommand("subsystem=web/connector=test-connector", "remove");
+        ModelNode operation = HttpMgmtProxy.getOpNode("subsystem=web/connector=test-connector", "remove");
+        operation.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+        ret = httpMgmt.sendPostCommand(operation);
         assertTrue("success".equals(ret.get("outcome").asString()));
 
         ret = httpMgmt.sendPostCommand("socket-binding-group=standard-sockets/socket-binding=test", "remove");

@@ -22,38 +22,23 @@
 
 package org.jboss.as.naming.subsystem;
 
-import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.naming.remote.RemoteNamingServerService;
-import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Handles removing a JNDI binding
  */
-public class RemoteNamingRemove extends AbstractRemoveStepHandler {
+public class RemoteNamingRemove extends ServiceRemoveStepHandler {
 
     public static final RemoteNamingRemove INSTANCE = new RemoteNamingRemove();
 
-    @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        if (context.isResourceServiceRestartAllowed()) {
-            removeRuntimeService(context);
-        } else {
-            context.reloadRequired();
-        }
+    private RemoteNamingRemove() {
+        super(RemoteNamingAdd.INSTANCE);
     }
 
     @Override
-    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        if (context.isResourceServiceRestartAllowed()) {
-            RemoteNamingAdd.INSTANCE.installRuntimeServices(context, null, null);
-        } else {
-            context.revertReloadRequired();
-        }
-    }
-
-    void removeRuntimeService(OperationContext context) {
-        context.removeService(RemoteNamingServerService.SERVICE_NAME);
+    protected ServiceName serviceName(final String name) {
+        return RemoteNamingServerService.SERVICE_NAME;
     }
 }

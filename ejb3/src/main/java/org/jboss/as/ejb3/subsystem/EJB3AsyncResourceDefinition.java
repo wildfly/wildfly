@@ -27,6 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -64,7 +65,7 @@ public class EJB3AsyncResourceDefinition extends SimpleResourceDefinition {
     private EJB3AsyncResourceDefinition() {
         super(EJB3SubsystemModel.ASYNC_SERVICE_PATH,
                 EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.ASYNC),
-                EJB3AsyncServiceAdd.INSTANCE, EJB3AsyncServiceRemove.INSTANCE);
+                EJB3AsyncServiceAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override

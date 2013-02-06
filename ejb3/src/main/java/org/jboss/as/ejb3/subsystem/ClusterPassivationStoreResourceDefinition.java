@@ -71,7 +71,7 @@ public class ClusterPassivationStoreResourceDefinition extends PassivationStoreR
     static final AttributeDefinition[] ATTRIBUTES = {IDLE_TIMEOUT, IDLE_TIMEOUT_UNIT, MAX_SIZE, CACHE_CONTAINER, BEAN_CACHE, CLIENT_MAPPINGS_CACHE, PASSIVATE_EVENTS_ON_REPLICATE };
 
     static final ClusterPassivationStoreAdd ADD_HANDLER = new ClusterPassivationStoreAdd(ATTRIBUTES);
-    static final ClusterPassivationStoreRemove REMOVE_HANDLER = new ClusterPassivationStoreRemove(ADD_HANDLER);
+    static final PassivationStoreRemove REMOVE_HANDLER = new PassivationStoreRemove(ADD_HANDLER);
     static final ClusterPassivationStoreWriteHandler WRITE_HANDLER = new ClusterPassivationStoreWriteHandler(ATTRIBUTES);
 
     static final ClusterPassivationStoreResourceDefinition INSTANCE = new ClusterPassivationStoreResourceDefinition();

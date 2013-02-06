@@ -22,44 +22,24 @@
 
 package org.jboss.as.naming.subsystem;
 
-import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
 /**
  * Handles removing a JNDI binding
  */
-public class NamingBindingRemove extends AbstractRemoveStepHandler {
+public class NamingBindingRemove extends ServiceRemoveStepHandler {
 
     public static final NamingBindingRemove INSTANCE = new NamingBindingRemove();
 
-    @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        if (context.isResourceServiceRestartAllowed()) {
-            removeRuntimeService(context, operation);
-        } else {
-            context.reloadRequired();
-        }
+    private NamingBindingRemove() {
+        super(NamingBindingAdd.INSTANCE);
     }
 
     @Override
-    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        if (context.isResourceServiceRestartAllowed()) {
-            final String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
-            NamingBindingAdd.INSTANCE.installRuntimeServices(context, name, model, null, null);
-        } else {
-            context.revertReloadRequired();
-        }
+    protected ServiceName serviceName(final String name) {
+        return ContextNames.bindInfoFor(name).getBinderServiceName();
     }
 
-    void removeRuntimeService(OperationContext context, ModelNode operation) {
-        final String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
-        final ServiceName serviceName = ContextNames.bindInfoFor(name).getBinderServiceName();
-        context.removeService(serviceName);
-    }
 }

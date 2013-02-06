@@ -21,47 +21,21 @@
  */
 package org.jboss.as.ejb3.subsystem;
 
-import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.ejb3.cache.CacheFactoryService;
-import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
 /**
  * @author Paul Ferraro
  */
-public class CacheFactoryRemove extends AbstractRemoveStepHandler {
-
-    private final CacheFactoryAdd addHandler;
+public class CacheFactoryRemove extends ServiceRemoveStepHandler {
 
     CacheFactoryRemove(CacheFactoryAdd addHandler) {
-        this.addHandler = addHandler;
+        super(null, addHandler);
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        if (context.isResourceServiceRestartAllowed()) {
-            removeRuntimeService(context, operation);
-        } else {
-            context.reloadRequired();
-        }
-    }
-
-    @Override
-    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        if (context.isResourceServiceRestartAllowed()) {
-            this.addHandler.installRuntimeServices(context, operation, model, null);
-        } else {
-            context.revertReloadRequired();
-        }
-    }
-
-    void removeRuntimeService(OperationContext context, ModelNode operation) {
-        final String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
-        final ServiceName serviceName = CacheFactoryService.getServiceName(name);
-        context.removeService(serviceName);
+    protected ServiceName serviceName(final String name) {
+        return CacheFactoryService.getServiceName(name);
     }
 }

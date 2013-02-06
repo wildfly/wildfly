@@ -36,6 +36,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -60,7 +61,6 @@ import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -108,7 +108,7 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
     public TimerServiceResourceDefinition(final PathManager pathManager) {
         super(EJB3SubsystemModel.TIMER_SERVICE_PATH,
                 EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.TIMER_SERVICE),
-                TimerServiceAdd.INSTANCE, TimerServiceRemove.INSTANCE,
+                TimerServiceAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE,
                 OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
         this.pathManager = pathManager;
     }
