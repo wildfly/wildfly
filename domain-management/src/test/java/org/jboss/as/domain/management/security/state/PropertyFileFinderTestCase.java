@@ -49,7 +49,7 @@ public class PropertyFileFinderTestCase extends PropertyTestHelper {
     @Before
     public void setup() throws IOException {
         values.setManagement(true);
-        values.setJbossHome(getProperty("java.io.tmpdir"));
+        values.setJBossHome(getProperty("java.io.tmpdir"));
     }
 
     private File createPropertyFile(String filename, String mode) throws IOException {
@@ -80,7 +80,7 @@ public class PropertyFileFinderTestCase extends PropertyTestHelper {
         System.setProperty("jboss.domain.config.user.dir", domainMgmtUserFile.getParent());
         State propertyFileFinder = new PropertyFileFinder(consoleMock, values);
         State nextState = propertyFileFinder.execute();
-        assertTrue(nextState instanceof PromptNewUserState);
+        assertTrue(nextState instanceof PromptRealmState);
         assertTrue("Expected to find the "+USER_NAME+" in the list of known users",values.getKnownUsers().contains(USER_NAME));
         assertTrue("Expected the values.getPropertiesFiles() contained the "+standaloneMgmtUserFile,values.getPropertiesFiles().contains(standaloneMgmtUserFile));
         assertTrue("Expected the values.getPropertiesFiles() contained the "+domainMgmtUserFile,values.getPropertiesFiles().contains(domainMgmtUserFile));
@@ -101,7 +101,7 @@ public class PropertyFileFinderTestCase extends PropertyTestHelper {
         System.setProperty("jboss.domain.config.user.dir", standaloneUserFile.getParent());
         State propertyFileFinder = new PropertyFileFinder(consoleMock, values);
         State nextState = propertyFileFinder.execute();
-        assertTrue(nextState instanceof PromptNewUserState);
+        assertTrue(nextState instanceof PromptRealmState);
 
         File locatedDomainPropertyFile = values.getPropertiesFiles().get(values.getPropertiesFiles().indexOf(domainUserFile));
         File locatedStandalonePropertyFile = values.getPropertiesFiles().get(values.getPropertiesFiles().indexOf(standaloneUserFile));

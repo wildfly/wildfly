@@ -26,15 +26,15 @@ import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import org.jboss.as.domain.management.security.ConsoleWrapper;
 
 /**
- * State to check that the user is not already defined in any of the resolved
- * properties files.
+ * State to branch between adding and updating the user and outputting summary information if not running in silent mode.
+ *
  */
-public class DuplicateUserCheckState implements State {
+public class PreModificationState implements State {
 
     private final ConsoleWrapper theConsole;
     private StateValues stateValues;
 
-    public DuplicateUserCheckState(final ConsoleWrapper theConsole,final StateValues stateValues) {
+    public PreModificationState(final ConsoleWrapper theConsole, final StateValues stateValues) {
         this.theConsole = theConsole;
         this.stateValues = stateValues;
         if (stateValues.isSilent() == false && theConsole.getConsole() == null) {
@@ -56,13 +56,12 @@ public class DuplicateUserCheckState implements State {
                 String message = MESSAGES.aboutToAddUser(stateValues.getUserName(), stateValues.getRealm());
                 String prompt = MESSAGES.isCorrectPrompt() + " " + MESSAGES.yes() + "/" + MESSAGES.no() + "?";
 
-                continuingState = new ConfirmationChoice(theConsole,message, prompt, addState, new PromptNewUserState(theConsole, stateValues));
+                continuingState = new ConfirmationChoice(theConsole, message, prompt, addState, new PromptNewUserState(
+                        theConsole, stateValues));
             }
         }
 
         return continuingState;
     }
 
-
 }
-

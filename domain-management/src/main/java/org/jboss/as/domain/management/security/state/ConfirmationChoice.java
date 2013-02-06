@@ -40,7 +40,7 @@ import org.jboss.as.domain.management.security.ConsoleWrapper;
 public class ConfirmationChoice implements State {
 
     private ConsoleWrapper theConsole;
-    private final String message;
+    private final String[] messageLines;
     private final String prompt;
     private final State yesState;
     private final State noState;
@@ -49,9 +49,9 @@ public class ConfirmationChoice implements State {
     private static final int NO = 1;
     private static final int INVALID = 2;
 
-    public ConfirmationChoice(ConsoleWrapper theConsole,final String message, final String prompt, final State yesState, final State noState) {
+    public ConfirmationChoice(ConsoleWrapper theConsole,final String[] messageLines, final String prompt, final State yesState, final State noState) {
         this.theConsole = theConsole;
-        this.message = message;
+        this.messageLines = messageLines;
         this.prompt = prompt;
         this.yesState = yesState;
         this.noState = noState;
@@ -60,11 +60,18 @@ public class ConfirmationChoice implements State {
         }
     }
 
+    public ConfirmationChoice(ConsoleWrapper theConsole, final String message, final String prompt, final State yesState,
+            final State noState) {
+        this(theConsole, new String[] { message }, prompt, yesState, noState);
+    }
+
     @Override
     public State execute() {
-        if (message != null) {
-            theConsole.printf(message);
-            theConsole.printf(NEW_LINE);
+        if (messageLines != null) {
+            for (String message : messageLines) {
+                theConsole.printf(message);
+                theConsole.printf(NEW_LINE);
+            }
         }
 
         theConsole.printf(prompt);

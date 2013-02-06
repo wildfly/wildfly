@@ -99,7 +99,9 @@ public class PropertyFileFinder implements State {
         }
         stateValues.setKnownUsers(foundUsers);
 
-        return new PromptNewUserState(theConsole, stateValues);
+        // TODO - Should we go straight to user validation instead of prompting?
+        return stateValues.isInteractive() ? new PromptRealmState(theConsole, stateValues) : new PromptNewUserState(theConsole,
+                stateValues);
     }
 
     private Map<String, String> loadAllRoles(List<File> foundRoleFiles) throws StartException, IOException {

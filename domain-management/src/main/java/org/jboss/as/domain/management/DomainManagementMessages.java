@@ -790,6 +790,22 @@ public interface DomainManagementMessages {
     @Message(id = Message.NONE, value = "n")
     String shortNo();
 
+    /**
+     * Message to check if an alternative realm is really desired.
+     *
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "The realm name supplied must match the name used by the server configuration which by default would be '%s'")
+    String alternativeRealm(final String defaultRealm);
+
+    /**
+     * Confirmation of realm choice.
+     *
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Are you sure you want to set the realm to '%s'")
+    String realmConfirmation(final String chosenRealm);
+
     /*
      * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementLogger also contains messages in
      * this range commencing 15200.

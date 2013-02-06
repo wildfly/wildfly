@@ -31,18 +31,19 @@ import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 /**
  * State to prompt the user for a password
  * <p/>
- * This state handles password validation by let the user re-enter the password
- * in case of the password mismatch the user will be present for an error
- * and will re-enter the PromptPasswordState again
+ * This state handles password validation by let the user re-enter the password in case of the password mismatch the user will
+ * be present for an error and will re-enter the PromptPasswordState again
  */
 public class PromptPasswordState implements State {
 
-    private ConsoleWrapper theConsole;
-    private StateValues stateValues;
+    private final ConsoleWrapper theConsole;
+    private final StateValues stateValues;
+    private final boolean rePrompt;
 
-    public PromptPasswordState(ConsoleWrapper theConsole, StateValues stateValues) {
+    public PromptPasswordState(ConsoleWrapper theConsole, StateValues stateValues, boolean rePrompt) {
         this.theConsole = theConsole;
         this.stateValues = stateValues;
+        this.rePrompt = rePrompt;
         if ((stateValues != null && stateValues.isSilent() == false) && theConsole.getConsole() == null) {
             throw MESSAGES.noConsoleAvailable();
         }
@@ -50,37 +51,38 @@ public class PromptPasswordState implements State {
 
     @Override
     public State execute() {
-        State continuingState = new WeakCheckState(theConsole, stateValues);
         if (stateValues.isSilentOrNonInteractive() == false) {
-            /*
-            * Prompt for password.
-            */
-            theConsole.printf(MESSAGES.passwordPrompt());
-            char[] tempChar = theConsole.readPassword(" : ");
-            if (tempChar == null || tempChar.length == 0) {
-                return new ErrorState(theConsole,MESSAGES.noPasswordExiting());
-            }
+            if (rePrompt == false) {
+                /*
+                 * Prompt for password.
+                 */
+                theConsole.printf(MESSAGES.passwordPrompt());
+                char[] tempChar = theConsole.readPassword(" : ");
+                if (tempChar == null || tempChar.length == 0) {
+                    return new ErrorState(theConsole, MESSAGES.noPasswordExiting());
+                }
+                stateValues.setPassword(tempChar);
 
-            theConsole.printf(MESSAGES.passwordConfirmationPrompt());
-            char[] secondTempChar = theConsole.readPassword(" : ");
-            if (secondTempChar == null) {
-                secondTempChar = new char[0]; // If re-entry missed allow fall through to comparison.
-            }
+                return new ValidatePasswordState(theConsole, stateValues);
+            } else {
 
-            if (Arrays.equals(tempChar, secondTempChar) == false) {
-                return new ErrorState(theConsole, MESSAGES.passwordMisMatch(), this);
-            }
-            stateValues.setPassword(tempChar);
+                theConsole.printf(MESSAGES.passwordConfirmationPrompt());
+                char[] secondTempChar = theConsole.readPassword(" : ");
+                if (secondTempChar == null) {
+                    secondTempChar = new char[0]; // If re-entry missed allow fall through to comparison.
+                }
 
-            if (!stateValues.isManagement()) {
-                theConsole.printf(MESSAGES.rolesPrompt());
-                String userRoles = stateValues.getKnownRoles().get(stateValues.getUserName());
-                stateValues.setRoles(theConsole.readLine("[%1$2s]: ", (userRoles == null?"":userRoles)));
+                if (Arrays.equals(stateValues.getPassword(), secondTempChar) == false) {
+                    // Start again at the first password.
+                    return new ErrorState(theConsole, MESSAGES.passwordMisMatch(), new PromptPasswordState(theConsole, stateValues, false));
+                }
+
+                // As long as it matches the actual value has already been validated.
+                return stateValues.isManagement() ? new PreModificationState(theConsole, stateValues) : new PromptRolesState(
+                        theConsole, stateValues);
             }
         }
 
-        return continuingState;
-
+        return new ValidatePasswordState(theConsole, stateValues);
     }
 }
-

@@ -70,7 +70,7 @@ public class AddPropertiesUser {
     protected AddPropertiesUser(ConsoleWrapper console) {
         theConsole = console;
         StateValues stateValues = new StateValues();
-        stateValues.setJbossHome(System.getenv("JBOSS_HOME"));
+        stateValues.setJBossHome(System.getenv("JBOSS_HOME"));
 
         if (theConsole.getConsole() == null) {
             throw MESSAGES.noConsoleAvailable();
@@ -80,7 +80,7 @@ public class AddPropertiesUser {
 
     private AddPropertiesUser(ConsoleWrapper console, final boolean management, final String user, final String password, final String realm) {
         StateValues stateValues = new StateValues();
-        stateValues.setJbossHome(System.getenv("JBOSS_HOME"));
+        stateValues.setJBossHome(System.getenv("JBOSS_HOME"));
 
         final Interactiveness howInteractive;
         boolean silent = Boolean.valueOf(argsCliProps.getProperty(CommandLineArgument.SILENT.key()));
