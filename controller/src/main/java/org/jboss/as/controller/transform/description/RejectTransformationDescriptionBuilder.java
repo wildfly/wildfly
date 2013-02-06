@@ -39,7 +39,7 @@ public class RejectTransformationDescriptionBuilder extends AbstractTransformati
     @Override
     public TransformationDescription build() {
         final AttributeTransformationDescriptionBuilderImpl.AttributeTransformationDescriptionBuilderRegistry empty = new AttributeTransformationDescriptionBuilderImpl.AttributeTransformationDescriptionBuilderRegistry();
-        return buildDefault(DiscardPolicy.REJECT, true, empty);
+        return buildDefault(DiscardPolicy.REJECT_AND_WARN, true, empty);
     }
 
 }

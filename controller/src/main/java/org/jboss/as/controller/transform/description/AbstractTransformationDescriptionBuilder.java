@@ -22,17 +22,17 @@
 
 package org.jboss.as.controller.transform.description;
 
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.transform.OperationTransformer;
-import org.jboss.as.controller.transform.PathAddressTransformer;
-import org.jboss.as.controller.transform.ResourceTransformer;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.PathAddressTransformer;
+import org.jboss.as.controller.transform.ResourceTransformer;
 
 /**
  * @author Emanuel Muckenhuber
@@ -86,12 +86,14 @@ abstract class AbstractTransformationDescriptionBuilder implements Transformatio
         // Process children
         final List<TransformationDescription> children = buildChildren();
 
-        // TODO override more global operations?
-        if(! operations.containsKey(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION)) {
-            operations.put(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, OperationTransformationRules.createWriteOperation(attributes));
-        }
-        if(! operations.containsKey(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION)) {
-            operations.put(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION, OperationTransformationRules.createUndefinedOperation(attributes));
+        if (discardPolicy == DiscardPolicy.NEVER) {
+            // TODO override more global operations?
+            if(! operations.containsKey(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION)) {
+                operations.put(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, OperationTransformationRules.createWriteOperation(attributes));
+            }
+            if(! operations.containsKey(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION)) {
+                operations.put(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION, OperationTransformationRules.createUndefinedOperation(attributes));
+            }
         }
         // Create the description
         return new TransformingDescription(pathElement, pathAddressTransformer, discardPolicy, inherited, resourceTransformer, attributes, operations, children, discardedOperations);

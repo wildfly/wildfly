@@ -22,56 +22,13 @@
 
 package org.jboss.as.controller.transform.description;
 
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.dmr.ModelNode;
 
 /**
  * Policy defining whether resource or operation transformations should be rejected.
  *
  * @author Emanuel Muckenhuber
  */
-interface DiscardPolicy {
-
-    /**
-     * Determine whether to discard the current model or operation.
-     *
-     * @param node the model or operation
-     * @param address the current address
-     * @param context the transformation context
-     * @return the discard type
-     */
-    DiscardType discard(ModelNode node, PathAddress address, TransformationContext context);
-
-    DiscardPolicy ALWAYS = new DiscardPolicy() {
-        @Override
-        public DiscardType discard(final ModelNode node, final PathAddress address, final TransformationContext context) {
-            return DiscardType.DISCARD_AND_WARN;
-        }
-    };
-
-    DiscardPolicy REJECT = new DiscardPolicy() {
-        @Override
-        public DiscardType discard(ModelNode node, PathAddress address, TransformationContext context) {
-            return DiscardType.REJECT_AND_WARN;
-        }
-    };
-
-    DiscardPolicy NEVER = new DiscardPolicy() {
-        @Override
-        public DiscardType discard(final ModelNode node, final PathAddress address, final TransformationContext context) {
-            return DiscardType.NEVER;
-        }
-    };
-
-    DiscardPolicy SILENT = new DiscardPolicy() {
-        @Override
-        public DiscardType discard(ModelNode node, PathAddress address, TransformationContext context) {
-            return DiscardType.SILENT;
-        }
-    };
-
-    public enum DiscardType {
+enum DiscardPolicy {
         /**
          * Don't discard the resource or operation.
          */
@@ -87,8 +44,6 @@ interface DiscardPolicy {
         /**
          * Discard silently.
          */
-        SILENT,
-        ;
-    }
+        SILENT;
 
 }
