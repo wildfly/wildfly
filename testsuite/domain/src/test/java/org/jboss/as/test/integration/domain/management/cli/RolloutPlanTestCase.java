@@ -363,7 +363,7 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
 
     private CLIOpResult testRemoveConnector(String rolloutPlanId) throws Exception {
         cli.sendLine("/profile=default/subsystem=web/connector=test-http:remove" +
-                "{rollout id=" + rolloutPlanId + "}");
+                "{rollout id=" + rolloutPlanId + "; allow-resource-service-restart=true}");
         return cli.readAllAsOpResult();
     }
 

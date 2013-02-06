@@ -223,7 +223,7 @@ public class GlobalOpsTestCase extends AbstractCliTestBase {
 
 
         // remove connector
-        cli.sendLine("/subsystem=web/connector=test-connector:remove");
+        cli.sendLine("/subsystem=web/connector=test-connector:remove{allow-resource-service-restart=true}");
         result = cli.readAllAsOpResult();
         assertTrue(result.isIsOutcomeSuccess());
 

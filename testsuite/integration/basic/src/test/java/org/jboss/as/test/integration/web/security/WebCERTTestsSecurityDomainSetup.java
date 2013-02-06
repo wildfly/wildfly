@@ -22,6 +22,20 @@
 
 package org.jboss.as.test.integration.web.security;
 
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.security.Constants;
+import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
@@ -42,20 +56,6 @@ import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.security.Constants.TRUSTSTORE;
 import static org.jboss.as.security.Constants.URL;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
-
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.jboss.as.arquillian.api.ServerSetupTask;
-import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.security.Constants;
-import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 
 /**
  * {@code ServerSetupTask} for the Web CERT tests.
@@ -178,6 +178,7 @@ public class WebCERTTestsSecurityDomainSetup implements ServerSetupTask {
         op.get(OP_ADDR).add(Constants.SECURITY_DOMAIN, APP_SECURITY_DOMAIN);
         // Don't rollback when the AS detects the war needs the module
         op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+        op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         updates.add(op);
 
         op = new ModelNode();
@@ -186,6 +187,7 @@ public class WebCERTTestsSecurityDomainSetup implements ServerSetupTask {
         op.get(OP_ADDR).add(Constants.SECURITY_DOMAIN, JSSE_SECURITY_DOMAIN);
         // Don't rollback when the AS detects the war needs the module
         op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+        op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         updates.add(op);
 
         // remove the HTTPS connector and the socket binding.
@@ -193,12 +195,14 @@ public class WebCERTTestsSecurityDomainSetup implements ServerSetupTask {
         op.get(OP).set(REMOVE);
         op.get(OP_ADDR).add(SUBSYSTEM, "web");
         op.get(OP_ADDR).add("connector", "testConnector");
+        op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         updates.add(op);
 
         op = new ModelNode();
         op.get(OP).set(REMOVE);
         op.get(OP_ADDR).add("socket-binding-group", "standard-sockets");
         op.get(OP_ADDR).add("socket-binding", "https-test");
+        op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         updates.add(op);
 
         applyUpdates(managementClient.getControllerClient(), updates);

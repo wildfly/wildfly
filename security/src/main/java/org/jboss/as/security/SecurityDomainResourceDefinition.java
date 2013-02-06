@@ -21,8 +21,6 @@
  */
 package org.jboss.as.security;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import java.security.Principal;
 import java.util.EnumSet;
 import java.util.Set;
@@ -31,6 +29,7 @@ import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinition;
@@ -49,6 +48,8 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.security.CacheableManager;
 import org.jboss.security.SimplePrincipal;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 /**
  * @author Jason T. Greene
  */
@@ -62,7 +63,8 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
 
     SecurityDomainResourceDefinition(boolean registerRuntimeOnly) {
         super(SecurityExtension.SECURITY_DOMAIN_PATH,
-                SecurityExtension.getResourceDescriptionResolver(Constants.SECURITY_DOMAIN), SecurityDomainAdd.INSTANCE, SecurityDomainRemove.INSTANCE);
+                SecurityExtension.getResourceDescriptionResolver(Constants.SECURITY_DOMAIN), SecurityDomainAdd.INSTANCE,
+                new ServiceRemoveStepHandler(SecurityDomainService.SERVICE_NAME, SecurityDomainAdd.INSTANCE));
         this.registerRuntimeOnly = registerRuntimeOnly;
     }
 

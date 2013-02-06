@@ -28,6 +28,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
@@ -98,7 +99,7 @@ public class WebValveDefinition extends SimpleResourceDefinition {
         super(WebExtension.VALVE_PATH,
                 WebExtension.getResourceDescriptionResolver(Constants.VALVE),
                 WebValveAdd.INSTANCE,
-                WebValveRemove.INSTANCE);
+                new ServiceRemoveStepHandler(WebSubsystemServices.JBOSS_WEB_VALVE, WebValveAdd.INSTANCE));
     }
 
     /**
