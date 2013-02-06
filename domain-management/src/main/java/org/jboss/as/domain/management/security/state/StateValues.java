@@ -150,7 +150,7 @@ public class StateValues {
         return this.jbossHome;
     }
 
-    public void setJbossHome(String path) {
+    public void setJBossHome(String path) {
         this.jbossHome = path;
     }
 }

@@ -31,15 +31,11 @@ import org.jboss.as.domain.management.security.AddPropertiesUser;
 import org.jboss.as.domain.management.security.ConsoleWrapper;
 
 /**
-* Describe the purpose
-*
-* @author <a href="mailto:flemming.harms@gmail.com">Flemming Harms</a>
-*/
+ * State responsible for asking the user if they are adding a management user or an application user.
+ *
+ * @author <a href="mailto:flemming.harms@gmail.com">Flemming Harms</a>
+ */
 public class PropertyFilePrompt implements State {
-
-    private static final int MANAGEMENT = 0;
-    private static final int APPLICATION = 1;
-    private static final int INVALID = 2;
 
     private ConsoleWrapper theConsole;
     private StateValues stateValues;
@@ -69,37 +65,35 @@ public class PropertyFilePrompt implements State {
             return null;
         }
 
-        if (temp.length() > 0) {
-            switch (convertResponse(temp)) {
-                case MANAGEMENT:
-                    stateValues.setManagement(true);
-                    stateValues.setRealm(DEFAULT_MANAGEMENT_REALM);
-                    return new PropertyFileFinder(theConsole, stateValues);
-                case APPLICATION:
-                    stateValues.setManagement(false);
-                    stateValues.setRealm(DEFAULT_APPLICATION_REALM);
-                    return new PropertyFileFinder(theConsole, stateValues);
-                default:
-                    return new ErrorState(theConsole, MESSAGES.invalidChoiceResponse(), this);
-            }
-        } else {
-            stateValues.setManagement(true);
-            stateValues.setRealm(DEFAULT_MANAGEMENT_REALM);
-            return new PropertyFileFinder(theConsole, stateValues);
+        switch (convertResponse(temp)) {
+            case MANAGEMENT:
+                stateValues.setManagement(true);
+                stateValues.setRealm(DEFAULT_MANAGEMENT_REALM);
+                return new PropertyFileFinder(theConsole, stateValues);
+            case APPLICATION:
+                stateValues.setManagement(false);
+                stateValues.setRealm(DEFAULT_APPLICATION_REALM);
+                return new PropertyFileFinder(theConsole, stateValues);
+            default:
+                return new ErrorState(theConsole, MESSAGES.invalidChoiceResponse(), this);
         }
     }
 
-    private int convertResponse(final String response) {
+    private Option convertResponse(final String response) {
         String temp = response.toLowerCase(Locale.ENGLISH);
-        if ("A".equals(temp) || "a".equals(temp)) {
-            return MANAGEMENT;
+        if ("".equals(temp) || "a".equals(temp)) {
+            return Option.MANAGEMENT;
         }
 
-        if ("B".equals(temp) || "b".equals(temp)) {
-            return APPLICATION;
+        if ("b".equals(temp)) {
+            return Option.APPLICATION;
         }
 
-        return INVALID;
+        return Option.INVALID;
+    }
+
+    private enum Option {
+        MANAGEMENT, APPLICATION, INVALID;
     }
 
 }

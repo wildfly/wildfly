@@ -23,8 +23,6 @@
 package org.jboss.as.domain.management.security.state;
 
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
-import static org.jboss.as.domain.management.security.AddPropertiesUser.DEFAULT_MANAGEMENT_REALM;
-import static org.jboss.as.domain.management.security.AddPropertiesUser.NEW_LINE;
 
 import org.jboss.as.domain.management.security.ConsoleWrapper;
 
@@ -36,12 +34,6 @@ public class PromptNewUserState implements State {
     private final StateValues stateValues;
     private ConsoleWrapper theConsole;
 
-    public PromptNewUserState(ConsoleWrapper theConsole) {
-        this.theConsole = theConsole;
-        stateValues = new StateValues();
-        stateValues.setRealm(DEFAULT_MANAGEMENT_REALM);
-    }
-
     public PromptNewUserState(ConsoleWrapper theConsole, final StateValues stateValues) {
         this.theConsole = theConsole;
         this.stateValues = stateValues;
@@ -52,29 +44,9 @@ public class PromptNewUserState implements State {
 
     @Override
     public State execute() {
-        State continuingState = new PromptPasswordState(theConsole, stateValues);
+        State continuingState = new ValidateUserState(theConsole, stateValues);
         if (stateValues.isSilentOrNonInteractive() == false) {
-            theConsole.printf(NEW_LINE);
-            theConsole.printf(MESSAGES.enterNewUserDetails());
-            theConsole.printf(NEW_LINE);
             stateValues.setPassword(null); // If interactive we want to be sure to capture this.
-
-            /*
-            * Prompt for realm.
-            */
-            theConsole.printf(MESSAGES.realmPrompt(stateValues.getRealm()));
-            String temp = theConsole.readLine(" : ");
-            if (temp == null) {
-                /*
-                * This will return user to the command prompt so add a new line to
-                * ensure the command prompt is on the next line.
-                */
-                theConsole.printf(NEW_LINE);
-                return null;
-            }
-            if (temp.length() > 0) {
-                stateValues.setRealm(temp);
-            }
 
             /*
             * Prompt for username.
@@ -83,7 +55,7 @@ public class PromptNewUserState implements State {
             String usernamePrompt = existingUsername == null ? MESSAGES.usernamePrompt() :
                     MESSAGES.usernamePrompt(existingUsername);
             theConsole.printf(usernamePrompt);
-            temp = theConsole.readLine(" : ");
+            String temp = theConsole.readLine(" : ");
             if (temp != null && temp.length() > 0) {
                 existingUsername = temp;
             }
@@ -92,19 +64,6 @@ public class PromptNewUserState implements State {
                 return new ErrorState(theConsole,MESSAGES.noUsernameExiting());
             }
             stateValues.setUserName(existingUsername);
-
-            if (stateValues.getKnownUsers().contains(stateValues.getUserName())) {
-                State duplicateContinuing = stateValues.isSilentOrNonInteractive() ? null : new PromptNewUserState(theConsole, stateValues);
-                if (stateValues.isSilentOrNonInteractive()) {
-                    continuingState = new ErrorState(theConsole, MESSAGES.duplicateUser(stateValues.getUserName()), duplicateContinuing, stateValues);
-                } else {
-                    String message = MESSAGES.aboutToUpdateUser(stateValues.getUserName());
-                    String prompt = MESSAGES.isCorrectPrompt() + " " + MESSAGES.yes() + "/" + MESSAGES.no() + "?";
-
-                    stateValues.setExistingUser(true);
-                    continuingState = new ConfirmationChoice(theConsole,message, prompt, continuingState, duplicateContinuing);
-                }
-            }
         }
 
         return continuingState;

@@ -43,7 +43,7 @@ public class DuplicateUserCheckStateTestCase extends PropertyTestHelper {
     public void newUser() throws IOException {
         values.setExistingUser(false);
         values.setRoles(ROLES);
-        DuplicateUserCheckState userCheckState = new DuplicateUserCheckState(consoleMock, values);
+        PreModificationState userCheckState = new PreModificationState(consoleMock, values);
 
         AssertConsoleBuilder consoleBuilder = new AssertConsoleBuilder().
                 expectedDisplayText(MESSAGES.aboutToAddUser(values.getUserName(), values.getRealm())).
@@ -69,7 +69,7 @@ public class DuplicateUserCheckStateTestCase extends PropertyTestHelper {
     public void existingUSer() throws IOException {
         values.setExistingUser(true);
         values.setRoles(ROLES);
-        DuplicateUserCheckState userCheckState = new DuplicateUserCheckState(consoleMock, values);
+        PreModificationState userCheckState = new PreModificationState(consoleMock, values);
 
         AssertConsoleBuilder consoleBuilder = new AssertConsoleBuilder().
                 expectedDisplayText(MESSAGES.updateUser(values.getUserName(), values.getPropertiesFiles().get(0).getCanonicalPath())).
