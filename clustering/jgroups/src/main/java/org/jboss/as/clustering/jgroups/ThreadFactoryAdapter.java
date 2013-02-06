@@ -22,6 +22,7 @@
 package org.jboss.as.clustering.jgroups;
 
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -30,8 +31,20 @@ import java.util.concurrent.ThreadFactory;
  */
 public class ThreadFactoryAdapter implements org.jgroups.util.ThreadFactory {
     private final ThreadFactory factory;
+    private final String baseName;
+    private final AtomicInteger counter = new AtomicInteger();
+    private volatile boolean includeClusterName = false;
+    private volatile boolean includeAddress = false;
+    private volatile String clusterName;
+    private volatile String address;
+
     public ThreadFactoryAdapter(ThreadFactory factory) {
+        this(factory, null);
+    }
+
+    public ThreadFactoryAdapter(ThreadFactory factory, String baseName) {
         this.factory = factory;
+        this.baseName = baseName;
     }
 
     /**
@@ -39,7 +52,7 @@ public class ThreadFactoryAdapter implements org.jgroups.util.ThreadFactory {
      */
     @Override
     public Thread newThread(Runnable r) {
-        return this.factory.newThread(r);
+        return this.newThread(r, this.baseName);
     }
 
     /**
@@ -47,7 +60,7 @@ public class ThreadFactoryAdapter implements org.jgroups.util.ThreadFactory {
      */
     @Override
     public Thread newThread(Runnable r, String name) {
-        return this.factory.newThread(r);
+        return this.renameThread(this.factory.newThread(r), name);
     }
 
     /**
@@ -55,7 +68,7 @@ public class ThreadFactoryAdapter implements org.jgroups.util.ThreadFactory {
      */
     @Override
     public Thread newThread(ThreadGroup group, Runnable r, String name) {
-        return this.factory.newThread(r);
+        return this.newThread(r, name);
     }
 
     /**
@@ -63,7 +76,10 @@ public class ThreadFactoryAdapter implements org.jgroups.util.ThreadFactory {
      */
     @Override
     public void setPattern(String pattern) {
-        // no-op
+        if (pattern != null) {
+            this.includeClusterName = pattern.contains("c");
+            this.includeAddress = pattern.contains("l");
+        }
     }
 
     /**
@@ -71,15 +87,15 @@ public class ThreadFactoryAdapter implements org.jgroups.util.ThreadFactory {
      */
     @Override
     public void setIncludeClusterName(boolean includeClusterName) {
-        // no-op
+        this.includeClusterName = includeClusterName;
     }
 
     /**
      * @see org.jgroups.util.ThreadFactory#setClusterName(java.lang.String)
      */
     @Override
-    public void setClusterName(String channelName) {
-        // no-op
+    public void setClusterName(String clusterName) {
+        this.clusterName = clusterName;
     }
 
     /**
@@ -87,14 +103,31 @@ public class ThreadFactoryAdapter implements org.jgroups.util.ThreadFactory {
      */
     @Override
     public void setAddress(String address) {
-        // no-op
+        this.address = address;
     }
 
     /**
      * @see org.jgroups.util.ThreadFactory#renameThread(java.lang.String, java.lang.Thread)
      */
     @Override
-    public void renameThread(String base_name, Thread thread) {
-        // no-op
+    public void renameThread(String baseName, Thread thread) {
+        if (thread == null) return;
+
+        StringBuilder builder = new StringBuilder((baseName != null) ? baseName : thread.getName()).append('-').append(this.counter.incrementAndGet());
+
+        if (this.includeClusterName && (this.clusterName != null)) {
+            builder.append(',').append(this.clusterName);
+        }
+
+        if (this.includeAddress && (this.address != null)) {
+            builder.append(',').append(this.address);
+        }
+
+        thread.setName(builder.toString());
+    }
+
+    private Thread renameThread(Thread thread, String name) {
+        this.renameThread(name, thread);
+        return thread;
     }
 }
