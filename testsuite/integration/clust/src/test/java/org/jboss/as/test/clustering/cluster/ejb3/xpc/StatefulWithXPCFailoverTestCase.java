@@ -27,6 +27,7 @@ import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_2;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.GRACE_TIME;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.GRACE_TIME_TO_MEMBERSHIP_CHANGE;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -338,6 +339,11 @@ public class StatefulWithXPCFailoverTestCase {
             deployer.undeploy(deployment);
             controller.stop(container);
             System.out.println(new Date() + "stopped deployment="+deployment+", container="+container);
+
+            // On stopping, we issue a request immediately and the request fails due to SuspectedException
+            // TODO: replace with view listener
+            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
+
         } catch (Throwable e) {
             e.printStackTrace(System.err);
         }
