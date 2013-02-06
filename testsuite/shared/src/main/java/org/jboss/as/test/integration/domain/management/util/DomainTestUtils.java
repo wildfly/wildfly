@@ -151,7 +151,7 @@ public class DomainTestUtils {
      */
     public static ModelNode executeForResult(final ModelNode op, final ModelControllerClient modelControllerClient) throws IOException, MgmtOperationException {
        final ModelNode ret = modelControllerClient.execute(op);
-
+       System.out.println(ret);
        if (! SUCCESS.equals(ret.get(OUTCOME).asString())) {
            System.out.println(ret);
            throw new MgmtOperationException("Management operation failed.", op, ret);
@@ -170,7 +170,7 @@ public class DomainTestUtils {
      */
     public static ModelNode executeForFailure(final ModelNode op, final ModelControllerClient modelControllerClient) throws IOException, MgmtOperationException {
         final ModelNode ret = modelControllerClient.execute(op);
-
+        System.out.println(ret);
         if (! FAILED.equals(ret.get(OUTCOME).asString())) {
             System.out.println(ret);
             throw new MgmtOperationException("Management operation succeeded.", op, ret);

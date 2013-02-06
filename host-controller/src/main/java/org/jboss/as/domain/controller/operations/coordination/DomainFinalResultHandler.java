@@ -102,6 +102,7 @@ public class DomainFinalResultHandler implements OperationStepHandler {
             domainFailure = coordinator.hasDefined(FAILURE_DESCRIPTION) ? coordinator.get(FAILURE_DESCRIPTION) : new ModelNode(MESSAGES.unexplainedFailure());
         }
         if (domainFailure != null) {
+            System.out.println("domain failure " + domainFailure);
             context.getFailureDescription().get(DOMAIN_FAILURE_DESCRIPTION).set(domainFailure);
             return false;
         }

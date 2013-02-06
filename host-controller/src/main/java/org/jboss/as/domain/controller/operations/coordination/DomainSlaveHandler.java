@@ -113,7 +113,7 @@ public class DomainSlaveHandler implements OperationStepHandler {
                     }
                     // See if we have to reject the result
                     final HostControllerUpdateTask.ExecutedHostRequest request = finalResults.get(hostName);
-                    boolean reject = prepared.isFailed() ? false : request.rejectOperation(preparedResult);
+                    boolean reject = request.rejectOperation(preparedResult);
                     if(reject) {
                         if (HOST_CONTROLLER_LOGGER.isDebugEnabled()) {
                             HOST_CONTROLLER_LOGGER.debugf("Rejecting result for remote host %s is %s", hostName, preparedResult);
@@ -124,13 +124,11 @@ public class DomainSlaveHandler implements OperationStepHandler {
 
                         // Record the failed result
                         domainOperationContext.addHostControllerResult(hostName, failedResult);
-                        results.add(prepared);
-
                     } else {
                         // Record the prepared result
                         domainOperationContext.addHostControllerResult(hostName, preparedResult);
-                        results.add(prepared);
                     }
+                    results.add(prepared);
                 }
             } catch (InterruptedException ie) {
                 interrupted = true;
@@ -204,6 +202,7 @@ public class DomainSlaveHandler implements OperationStepHandler {
                     final HostControllerUpdateTask.ExecutedHostRequest request = finalResults.get(hostName);
                     final ModelNode finalResult = prepared.getFinalResult().get();
                     final ModelNode transformedResult = request.transformResult(finalResult);
+                    System.out.println(" final result " + transformedResult);
                     domainOperationContext.addHostControllerResult(hostName, transformedResult);
 
                     if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {

@@ -136,12 +136,12 @@ public class OperationTransformationTestCase {
         executeForFailure(addOtherNew, client);
 
         // Same if wrapped in a composite
-
+        final ModelNode cpa = createCompositeOperation(addOtherNew);
+        executeForFailure(cpa, client);
 
         // This should work
         final ModelNode addOtherNewIgnored = createAdd(ignored.append(otherNewElementPath));
         executeForResult(addOtherNewIgnored, client);
-
 
         // Check the renamed element
         final PathAddress renamedAddress = address.append(PathElement.pathElement("renamed", "element"));

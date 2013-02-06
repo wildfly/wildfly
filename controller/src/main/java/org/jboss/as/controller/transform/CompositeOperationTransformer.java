@@ -25,6 +25,8 @@ package org.jboss.as.controller.transform;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+
 import org.jboss.dmr.ModelNode;
 
 import java.util.ArrayList;
@@ -37,6 +39,13 @@ import java.util.List;
  */
 class CompositeOperationTransformer implements OperationTransformer {
 
+    private static final ModelNode SUCCESSFUL = new ModelNode();
+    static {
+        SUCCESSFUL.get(OUTCOME).set(SUCCESS);
+        SUCCESSFUL.get(RESULT);
+        SUCCESSFUL.protect();
+    }
+
     @Override
     public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation) throws OperationFailedException {
         return transformOperation(context, address, operation, false);
@@ -48,9 +57,9 @@ class CompositeOperationTransformer implements OperationTransformer {
         composite.get(STEPS).setEmptyList();
         final TransformationTarget target = context.getTarget();
         final List<Step> steps = new ArrayList<Step>();
-        int i = 0;
+        int stepIdx = 0, resultIdx  = 0;
         for(final ModelNode step : operation.require(STEPS).asList()) {
-            i++;
+            stepIdx++;
             final String operationName = step.require(OP).asString();
             final PathAddress stepAddress = step.hasDefined(OP_ADDR) ? PathAddress.pathAddress(step.require(OP_ADDR)) : PathAddress.EMPTY_ADDRESS;
             final TransformedOperation result;
@@ -64,18 +73,51 @@ class CompositeOperationTransformer implements OperationTransformer {
             final ModelNode transformedOperation = result.getTransformedOperation();
             if (transformedOperation != null) {
                 composite.get(STEPS).add(transformedOperation);
-                steps.add(new Step(i, result));
+                resultIdx++;
             }
+            steps.add(new Step(stepIdx, resultIdx, result));
         }
-        final OperationResultTransformer resultTransformer = new CompositeResultTransformer(steps);
-        return new TransformedOperation(composite, resultTransformer);
+        final CompositeResultTransformer resultHandler = new CompositeResultTransformer(steps);
+        return new TransformedOperation(composite, resultHandler, resultHandler);
     }
 
-    private static class CompositeResultTransformer implements OperationResultTransformer {
+    private static class CompositeResultTransformer implements OperationResultTransformer, OperationRejectionPolicy {
 
         private final List<Step> steps;
+        private volatile Step failedStep;
+
         private CompositeResultTransformer(final List<Step> steps) {
             this.steps = steps;
+        }
+
+        @Override
+        public boolean rejectOperation(final ModelNode preparedResult) {
+            for(final Step step : steps) {
+                if(step.isDiscarded()) {
+                    continue;
+                }
+                final String resultIdx = "step-" + step.getResultingIdx();
+                final ModelNode stepResult = preparedResult.get(RESULT, resultIdx);
+                // ignored operations have no effect
+                if(IGNORED.equals(stepResult.get(OUTCOME).asString())) {
+                    continue;
+                }
+                final TransformedOperation stepPolicy = step.getResult();
+                if(stepPolicy.rejectOperation(stepResult)) {
+                    // Only report the first failing step
+                    failedStep = step;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public String getFailureDescription() {
+            if(failedStep != null) {
+                return failedStep.getResult().getFailureDescription();
+            }
+            return "";
         }
 
         @Override
@@ -83,14 +125,27 @@ class CompositeOperationTransformer implements OperationTransformer {
             final ModelNode response = original.clone();
             final ModelNode result = response.get(RESULT).setEmptyObject();
             for(final Step step : steps) {
-                final String id = "step-" + step.getStepCount();
-                final ModelNode stepResult = original.get(RESULT, id);
-                // Skip ignored steps
+                final String stepIdx = "step-" + step.getStepCount();
+                // Set a successful result for discarded steps
+                if(step.isDiscarded()) {
+                    result.get(stepIdx).set(SUCCESSFUL);
+                    continue;
+                }
+
+                final String resultIdx = "step-" + step.getResultingIdx();
+                final ModelNode stepResult = original.get(RESULT, resultIdx);
+                // Skip ignored steps - this should not happen anyway
                 if(IGNORED.equals(stepResult.get(OUTCOME).asString())) {
-                    result.get(id).set(stepResult);
+                    result.get(stepIdx).set(SUCCESSFUL);
                 } else {
                     final OperationResultTransformer transformer = step.getResult();
-                    result.get(id).set(transformer.transformResult(stepResult));
+                    // In case this is the failed step
+                    if(step.getResult().rejectOperation(stepResult)) {
+                        // Replace the response of the failed step
+                        stepResult.get(OUTCOME).set(FAILED);
+                        stepResult.get(FAILURE_DESCRIPTION).set(step.getResult().getFailureDescription());
+                    }
+                    result.get(stepIdx).set(transformer.transformResult(stepResult));
                 }
             }
             return response;
@@ -100,18 +155,28 @@ class CompositeOperationTransformer implements OperationTransformer {
     private static class Step {
 
         private final int stepCount;
+        private final int resultingIdx;
         private final TransformedOperation result;
 
-        private Step(int step, TransformedOperation result) {
+        private Step(int step, int resultingIdx, TransformedOperation result) {
             this.stepCount = step;
+            this.resultingIdx = resultingIdx;
             this.result = result;
         }
 
-        public int getStepCount() {
+        boolean isDiscarded() {
+            return result.getTransformedOperation() == null;
+        }
+
+        int getResultingIdx() {
+            return resultingIdx;
+        }
+
+        int getStepCount() {
             return stepCount;
         }
 
-        public TransformedOperation getResult() {
+        TransformedOperation getResult() {
             return result;
         }
 
