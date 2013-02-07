@@ -35,6 +35,7 @@ import javax.naming.spi.DirObjectFactory;
 import javax.naming.spi.ObjectFactory;
 
 import org.jboss.as.naming.ServiceAwareObjectFactory;
+import org.jboss.as.naming.UrlReferenceObjectFactory;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceContainer;
@@ -150,6 +151,12 @@ public class ObjectFactoryBuilder implements javax.naming.spi.ObjectFactoryBuild
         if (reference instanceof ModularReference) {
             return factoryFromModularReference(ModularReference.class.cast(reference), environment);
         }
+        if (reference != null && reference.get("URL") != null) {
+            ObjectFactory referralObjectFactory = factoryFromUrlReference(reference, environment);
+            if (referralObjectFactory != null) {
+                return referralObjectFactory;
+            }
+        }
         return factoryFromReference(reference, SecurityActions.getContextClassLoader(), environment);
     }
 
@@ -172,6 +179,9 @@ public class ObjectFactoryBuilder implements javax.naming.spi.ObjectFactoryBuild
         }
     }
 
+    private ObjectFactory factoryFromUrlReference(final Reference reference, final Hashtable<?, ?> environment) throws Exception {
+        return new UrlReferenceObjectFactory();
+    }
 
     private static ServiceContainer currentServiceContainer() {
         return AccessController.doPrivileged(new PrivilegedAction<ServiceContainer>() {

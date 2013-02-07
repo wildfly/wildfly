@@ -43,5 +43,6 @@
         <module name="org.jboss.remote-naming"/>
         <module name="org.jboss.remoting3"/>
         <module name="org.jboss.threads"/>
+        <module name="sun.jdk"/>
     </dependencies>
 </module>
