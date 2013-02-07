@@ -4,7 +4,6 @@
    <subsystems>
       <subsystem>configuration/subsystems/logging.xml</subsystem>
       <subsystem>configuration/subsystems/cmp.xml</subsystem>
-      <subsystem>configuration/subsystems/configadmin.xml</subsystem>
       <subsystem>configuration/subsystems/datasources.xml</subsystem>
       <subsystem>configuration/subsystems/deployment-scanner.xml</subsystem>
       <subsystem>configuration/subsystems/ee.xml</subsystem>
@@ -24,7 +23,6 @@
       <subsystem supplement="ha">configuration/subsystems/messaging.xml</subsystem>
       <subsystem>configuration/subsystems/modcluster.xml</subsystem>
       <subsystem>configuration/subsystems/naming.xml</subsystem>
-      <subsystem>configuration/subsystems/osgi.xml</subsystem>
       <subsystem>configuration/subsystems/pojo.xml</subsystem>
       <subsystem>configuration/subsystems/remoting.xml</subsystem>
       <subsystem>configuration/subsystems/resource-adapters.xml</subsystem>
