@@ -695,6 +695,7 @@ public class FailedOperationTransformationConfig {
 
         @Override
         public boolean expectDiscarded(ModelNode operation) {
+            //The reject simply forwards on the original operation to make it fail
             return false;
         }
 

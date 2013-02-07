@@ -580,6 +580,8 @@ final class SubsystemTestDelegate {
                         //we check the reject policy simulating a reject before adding it to the list of boot operations
                         if (!transformedOp.rejectOperation(SUCCESS)) {
                             transformedBootOperations.add(transformedOp.getTransformedOperation());
+                        } else {
+                            System.out.println(transformedOp.getFailureDescription());
                         }
                     }
                 }
