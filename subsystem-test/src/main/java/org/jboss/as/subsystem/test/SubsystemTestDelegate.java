@@ -66,6 +66,7 @@ import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.extension.SubsystemInformation;
@@ -80,6 +81,7 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.controller.transform.SubsystemDescriptionDump;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.model.test.ChildFirstClassLoaderBuilder;
@@ -101,6 +103,15 @@ import org.xnio.IoUtils;
 final class SubsystemTestDelegate {
 
     private final String TEST_NAMESPACE = "urn.org.jboss.test:1.0";
+
+    private static final ModelNode SUCCESS;
+    static
+    {
+        SUCCESS = new ModelNode();
+        SUCCESS.get(ModelDescriptionConstants.OUTCOME).set(ModelDescriptionConstants.SUCCESS);
+        SUCCESS.get(ModelDescriptionConstants.RESULT);
+        SUCCESS.protect();
+    }
 
     private final Class<?> testClass;
     private final List<KernelServices> kernelServices = new ArrayList<KernelServices>();
@@ -563,9 +574,13 @@ final class SubsystemTestDelegate {
                 List<ModelNode> transformedBootOperations = new ArrayList<ModelNode>();
                 for (ModelNode op : bootOperations) {
 
-                    ModelNode transformed = kernelServices.transformOperation(entry.getKey(), op).getTransformedOperation();
-                    if (transformed != null) {
-                        transformedBootOperations.add(transformed);
+                    TransformedOperation transformedOp = kernelServices.transformOperation(entry.getKey(), op);
+                    if (transformedOp.getTransformedOperation() != null) {
+                        //Since rejected operations now execute on the slave to determine if it has been ignored or not
+                        //we check the reject policy simulating a reject before adding it to the list of boot operations
+                        if (!transformedOp.rejectOperation(SUCCESS)) {
+                            transformedBootOperations.add(transformedOp.getTransformedOperation());
+                        }
                     }
                 }
 

@@ -96,7 +96,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
         // See whether the operation should be rejected or not
         switch (discardPolicy) {
             case REJECT_AND_WARN:
-                // Execute a read-resource operation to determine whether this operation should be rejected
+                // Just execute the original operation to see that it failed
                 return new TransformedOperation(operation, new OperationRejectionPolicy() {
                     @Override
                     public boolean rejectOperation(ModelNode preparedResult) {
