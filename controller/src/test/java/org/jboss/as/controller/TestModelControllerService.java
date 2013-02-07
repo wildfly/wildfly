@@ -62,7 +62,7 @@ public abstract class TestModelControllerService extends AbstractControllerServi
         super(processType, new RunningModeControl(RunningMode.NORMAL), configurationPersister, processState, rootDescriptionProvider, null, ExpressionResolver.TEST_RESOLVER);
         this.processState = processState;
     }
-
+    @SuppressWarnings("deprecation")
     protected TestModelControllerService(final ProcessType processType, final ConfigurationPersister configurationPersister, final ControlledProcessState processState,
                                          final DescriptionProvider rootDescriptionProvider) {
         super(processType, new RunningModeControl(RunningMode.NORMAL), configurationPersister, processState, rootDescriptionProvider, null, ExpressionResolver.TEST_RESOLVER);

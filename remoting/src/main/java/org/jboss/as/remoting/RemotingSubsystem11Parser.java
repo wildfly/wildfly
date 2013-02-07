@@ -438,7 +438,7 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
                     break;
                 }
                 case USERNAME: {
-                    username = RemoteOutboundConnectionResourceDefinition.USERNAME.parse(value, reader.getLocation());
+                    username = RemoteOutboundConnectionResourceDefinition.USERNAME.parse(value, reader);
                     break;
                 }
                 case SECURITY_REALM: {

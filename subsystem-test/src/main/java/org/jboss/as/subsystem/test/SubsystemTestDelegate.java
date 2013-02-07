@@ -154,6 +154,7 @@ final class SubsystemTestDelegate {
             try {
                 kernelServices.shutdown();
             } catch (Exception e) {
+                //we don't care
             }
         }
         kernelServices.clear();
@@ -313,7 +314,7 @@ final class SubsystemTestDelegate {
     void assertRemoveSubsystemResources(KernelServices kernelServices, Set<PathAddress> ignoredChildAddresses) {
 
         if (ignoredChildAddresses == null) {
-            ignoredChildAddresses = Collections.<PathAddress>emptySet();
+            ignoredChildAddresses = Collections.emptySet();
         } else {
             PathAddress subsystem = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, mainSubsystemName));
             Assert.assertFalse("Cannot exclude removal of subsystem itself", ignoredChildAddresses.contains(subsystem));
@@ -671,7 +672,7 @@ final class SubsystemTestDelegate {
             return this;
         }
     }
-
+    @SuppressWarnings("deprecation")
     private final ManagementResourceRegistration MOCK_RESOURCE_REG = new ManagementResourceRegistration() {
 
         @Override

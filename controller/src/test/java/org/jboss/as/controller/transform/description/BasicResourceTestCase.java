@@ -30,10 +30,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 
 import java.util.Collections;
-import java.util.Locale;
 
 import junit.framework.Assert;
-
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
@@ -43,8 +41,8 @@ import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.OperationResultTransformer;
@@ -88,9 +86,9 @@ public class BasicResourceTestCase {
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
 
         builder.getAttributeBuilder()
-            .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, "test")
-            .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode(true)), "othertest")
-            .end();
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, "test")
+                .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode(true)), "othertest")
+                .end();
 
         // Create a child resource based on an attribute
         final ResourceTransformationDescriptionBuilder attrResourceBuilder = builder.addChildResource(PathElement.pathElement("attribute-resource"))
@@ -113,11 +111,11 @@ public class BasicResourceTestCase {
                 });
 
         attrResourceBuilder.addChildRedirection(PathElement.pathElement("resource-attribute"), new PathAddressTransformer() {
-                        @Override
-                        public PathAddress transform(PathElement current, Builder builder) {
-                            return builder.next(); // skip the current element
-                        }
-                    })
+            @Override
+            public PathAddress transform(PathElement current, Builder builder) {
+                return builder.next(); // skip the current element
+            }
+        })
                 .getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, "test-attribute").end()
                 .setCustomResourceTransformer(new ResourceTransformer() {
                     @Override
@@ -134,36 +132,37 @@ public class BasicResourceTestCase {
 
 
         builder.addOperationTransformationOverride("test-operation")
-        .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode(true)), "operation-test")
-        .inheritResourceAttributeDefinitions()
-        .end();
+                .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode(true)), "operation-test")
+                .inheritResourceAttributeDefinitions()
+                .end();
 
         builder.addOperationTransformationOverride("rename-operation")
-        .rename("new-name-op")
-        .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode(true)), "operation-test")
-        .end();
+                .rename("new-name-op")
+                .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode(true)), "operation-test")
+                .end();
 
         builder.addOperationTransformationOverride("operation-with-transformer")
-            .setCustomOperationTransformer(new OperationTransformer() {
-                @Override
-                public TransformedOperation transformOperation(TransformationContext context, PathAddress address,
-                        ModelNode operation) throws OperationFailedException {
-                    ModelNode remove = operation.clone();
-                    remove.get(OP).set(REMOVE);
-                    remove.remove("test");
+                .setCustomOperationTransformer(new OperationTransformer() {
+                    @Override
+                    public TransformedOperation transformOperation(TransformationContext context, PathAddress address,
+                                                                   ModelNode operation) throws OperationFailedException {
+                        ModelNode remove = operation.clone();
+                        remove.get(OP).set(REMOVE);
+                        remove.remove("test");
 
-                    ModelNode add = operation.clone();
-                    add.get(OP).set(ADD);
-                    add.get("new").set("shiny");
+                        ModelNode add = operation.clone();
+                        add.get(OP).set(ADD);
+                        add.get("new").set("shiny");
 
-                    ModelNode composite = new ModelNode();
-                    composite.get(OP).set(COMPOSITE);
-                    composite.get(OP_ADDR).setEmptyList();
-                    composite.get(STEPS).add(remove);
-                    composite.get(STEPS).add(add);
+                        ModelNode composite = new ModelNode();
+                        composite.get(OP).set(COMPOSITE);
+                        composite.get(OP_ADDR).setEmptyList();
+                        composite.get(STEPS).add(remove);
+                        composite.get(STEPS).add(add);
 
-                    return new TransformedOperation(composite, OperationResultTransformer.ORIGINAL_RESULT);                }
-            });
+                        return new TransformedOperation(composite, OperationResultTransformer.ORIGINAL_RESULT);
+                    }
+                });
 
         // Discard all
         builder.discardChildResource(DISCARD);
@@ -399,7 +398,7 @@ public class BasicResourceTestCase {
     }
 
     private ResourceTransformationContext createContext(final TransformationTarget target) {
-        return Transformers.Factory.create(target, resourceRoot, resourceRegistration, ExpressionResolver.DEFAULT, RunningMode.NORMAL, ProcessType.STANDALONE_SERVER);
+        return Transformers.Factory.create(target, resourceRoot, resourceRegistration, ExpressionResolver.TEST_RESOLVER, RunningMode.NORMAL, ProcessType.STANDALONE_SERVER);
     }
 
     private Transformers getTransfomers(final TransformationTarget target) {
@@ -414,26 +413,11 @@ public class BasicResourceTestCase {
         return TransformationTargetImpl.create(registry, version, Collections.<PathAddress, ModelVersion>emptyMap(), null, type);
     }
 
-    private static final DescriptionProvider NOOP_PROVIDER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return new ModelNode();
-        }
-    };
+    private static final ResourceDefinition ROOT = new SimpleResourceDefinition(PathElement.pathElement("test"), new NonResolvingResourceDescriptionResolver());
 
-    private static final ResourceDefinition ROOT = new SimpleResourceDefinition(PathElement.pathElement("test"), NOOP_PROVIDER);
-
-    private static final ModelNode success() {
+    private static ModelNode success() {
         final ModelNode result = new ModelNode();
         result.get(ModelDescriptionConstants.OUTCOME).set(ModelDescriptionConstants.SUCCESS);
-        result.get(ModelDescriptionConstants.RESULT);
-        return result;
-    }
-
-    private static final ModelNode failed() {
-        final ModelNode result = new ModelNode();
-        result.get(ModelDescriptionConstants.OUTCOME).set(ModelDescriptionConstants.FAILED);
-        result.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).set("failed");
         result.get(ModelDescriptionConstants.RESULT);
         return result;
     }

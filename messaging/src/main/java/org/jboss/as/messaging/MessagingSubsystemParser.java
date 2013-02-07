@@ -1239,7 +1239,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     relativeTo = value;
                     break;
                 case PATH:
-                    path = MessagingPathHandlers.PATHS.get(name).parse(value, reader.getLocation());
+                    path = MessagingPathHandlers.PATHS.get(name).parse(value, reader);
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
