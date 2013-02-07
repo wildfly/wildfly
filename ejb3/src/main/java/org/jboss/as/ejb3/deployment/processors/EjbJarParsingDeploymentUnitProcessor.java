@@ -48,6 +48,7 @@ import org.jboss.as.ejb3.interceptor.ContainerInterceptorsParser;
 import org.jboss.as.ejb3.pool.EJBBoundPoolParser;
 import org.jboss.as.ejb3.resourceadapterbinding.parser.EJBBoundResourceAdapterBindingMetaDataParser;
 import org.jboss.as.ejb3.security.parser.EJBBoundSecurityMetaDataParser;
+import org.jboss.as.ejb3.security.parser.EJBBoundSecurityMetaDataParser11;
 import org.jboss.as.ejb3.security.parser.SecurityRoleMetaDataParser;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -291,7 +292,8 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
         Map<String, AbstractMetaDataParser<?>> parsers = new HashMap<String, AbstractMetaDataParser<?>>();
         parsers.put(EJBBoundClusteringMetaDataParser.NAMESPACE_URI, new EJBBoundClusteringMetaDataParser());
         parsers.put(EJBBoundSecurityMetaDataParser.LEGACY_NAMESPACE_URI, EJBBoundSecurityMetaDataParser.INSTANCE);
-        parsers.put(EJBBoundSecurityMetaDataParser.NAMESPACE_URI, EJBBoundSecurityMetaDataParser.INSTANCE);
+        parsers.put(EJBBoundSecurityMetaDataParser.NAMESPACE_URI_1_0, EJBBoundSecurityMetaDataParser.INSTANCE);
+        parsers.put(EJBBoundSecurityMetaDataParser11.NAMESPACE_URI_1_1, EJBBoundSecurityMetaDataParser11.INSTANCE);
         parsers.put(SecurityRoleMetaDataParser.LEGACY_NAMESPACE_URI, SecurityRoleMetaDataParser.INSTANCE);
         parsers.put(SecurityRoleMetaDataParser.NAMESPACE_URI, SecurityRoleMetaDataParser.INSTANCE);
         parsers.put(EJBBoundResourceAdapterBindingMetaDataParser.LEGACY_NAMESPACE_URI, EJBBoundResourceAdapterBindingMetaDataParser.INSTANCE);
