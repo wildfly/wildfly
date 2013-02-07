@@ -170,13 +170,14 @@ public class SecurityExtension implements Extension {
 
         //reject expressions
         builder.addChildResource(VAULT_PATH).getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, VaultResourceDefinition.CODE, VaultResourceDefinition.OPTIONS)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, VaultResourceDefinition.OPTIONS)
                 .end();
-        builder.addChildResource(JSSE_PATH).getAttributeBuilder()
-                .addRejectCheck(new RejectAttributeChecker.ObjectFieldsRejectAttributeChecker(
+        securityDomain.addChildResource(JSSE_PATH).getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, JSSEResourceDefinition.ADDITIONAL_PROPERTIES)
+                /*.addRejectCheck(new RejectAttributeChecker.ObjectFieldsRejectAttributeChecker(
                         Collections.singletonMap(JSSEResourceDefinition.ADDITIONAL_PROPERTIES.getName(), RejectAttributeChecker.SIMPLE_EXPRESSIONS))
-                        , JSSEResourceDefinition.ADDITIONAL_PROPERTIES
-                ).end();
+                        , JSSEResourceDefinition.ADDITIONAL_PROPERTIES)*/
+                .end();
 
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, ModelVersion.create(1, 1, 0));
     }
@@ -186,8 +187,6 @@ public class SecurityExtension implements Extension {
         ResourceTransformationDescriptionBuilder child = parent.addChildResource(childPath)
                 .setCustomResourceTransformer(transformer)
                 .discardOperations(ADD);
-        //child.discardChildResource(PathElement.pathElement(transformer.getResourceName()));
-
         child.addChildRedirection(PathElement.pathElement(transformer.getResourceName()), CURRENT_PATH_TRANSFORMER)
                 .setCustomResourceTransformer(ResourceTransformer.DISCARD)
                 .addOperationTransformationOverride(ADD)
