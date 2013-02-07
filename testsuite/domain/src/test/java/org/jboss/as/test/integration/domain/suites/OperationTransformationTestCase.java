@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_FAILURE_DESCRIPTIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
@@ -36,6 +37,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
@@ -124,6 +126,12 @@ public class OperationTransformationTestCase {
         executeForResult(addNew, client);
         Assert.assertTrue(exists(newElement, client));
 
+        // And remove it again
+        final ModelNode remove = addNew.clone();
+        remove.get(OP).set(REMOVE);
+        executeForResult(remove, client);
+        Assert.assertFalse(exists(newElement, client));
+
         // The add operation on the slave should have been discarded
         final ModelNode newElementOnSlave = serverAddress.clone();
         newElementOnSlave.add("new-element", "new1");
@@ -133,22 +141,39 @@ public class OperationTransformationTestCase {
         final PathElement otherNewElementPath = PathElement.pathElement("other-new-element", "new1");
         // This needs to get rejected
         final ModelNode addOtherNew = createAdd(address.append(otherNewElementPath));
-        executeForFailure(addOtherNew, client);
+        final ModelNode otherFailure = executeForFailure(addOtherNew, client);
 
-        // Same if wrapped in a composite
-        final ModelNode cpa = createCompositeOperation(addOtherNew);
-        executeForFailure(cpa, client);
+        Assert.assertTrue(otherFailure.hasDefined(HOST_FAILURE_DESCRIPTIONS));
+        Assert.assertTrue(otherFailure.get(HOST_FAILURE_DESCRIPTIONS).hasDefined("slave"));
+        // Check that the host-failure contains JBAS014897 rejected
+        Assert.assertTrue(otherFailure.get(HOST_FAILURE_DESCRIPTIONS, "slave").asString().contains("14897"));
 
         // This should work
         final ModelNode addOtherNewIgnored = createAdd(ignored.append(otherNewElementPath));
         executeForResult(addOtherNewIgnored, client);
+
+        // Same if wrapped in a composite
+        final ModelNode cpa = createCompositeOperation(
+                createAdd(address.append(PathElement.pathElement("new-element", "new2"))), // discard
+                createAdd(ignored.append(PathElement.pathElement("other-new-element", "new2"))), // ignored
+                createAdd(address.append(PathElement.pathElement("other-new-element", "new2")))); // fail
+        final ModelNode compositeFailure = executeForFailure(cpa, client);
+        Assert.assertTrue(compositeFailure.hasDefined(HOST_FAILURE_DESCRIPTIONS));
+        Assert.assertTrue(compositeFailure.get(HOST_FAILURE_DESCRIPTIONS).hasDefined("slave"));
+        // Check that the host-failure contains JBAS014897 rejected
+        Assert.assertTrue(compositeFailure.get(HOST_FAILURE_DESCRIPTIONS, "slave").asString().contains("14897"));
+
+        // Successful composite
+        executeForResult(createCompositeOperation(
+                createAdd(address.append(PathElement.pathElement("new-element", "new3"))), // discard
+                createAdd(ignored.append(PathElement.pathElement("other-new-element", "new3"))) // ignored
+        ), client);
 
         // Check the renamed element
         final PathAddress renamedAddress = address.append(PathElement.pathElement("renamed", "element"));
         final ModelNode renamedAdd = createAdd(renamedAddress);
         executeForResult(renamedAdd, client);
         Assert.assertTrue(exists(renamedAddress, client));
-
 
         // renamed > element
         final ModelNode renamedElementOnSlave = serverAddress.clone();

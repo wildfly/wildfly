@@ -73,7 +73,6 @@ class HostControllerUpdateTask {
     private final String name;
     private final ModelNode operation;
     private final OperationContext context;
-    private final PathAddress address;
     private final TransformingProxyController proxyController;
 
     public HostControllerUpdateTask(final String name, final ModelNode operation, final OperationContext context,
@@ -82,7 +81,6 @@ class HostControllerUpdateTask {
         this.context = context;
         this.operation = operation;
         this.proxyController = proxyController;
-        this.address = proxyController.getProxyNodeAddress();
     }
 
     public ExecutedHostRequest execute(final ProxyOperationListener listener) {
@@ -188,7 +186,6 @@ class HostControllerUpdateTask {
         @Override
         public ModelNode transformResult(ModelNode result) {
             final boolean reject = rejectOperation(result);
-            System.out.println(reject + " transforming " + result);
             if(reject) {
                 result.get(FAILURE_DESCRIPTION).set(getFailureDescription());
             }

@@ -22,6 +22,7 @@
 
 package org.jboss.as.domain.controller.operations.coordination;
 
+import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.TransformingProxyController;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
@@ -106,6 +107,9 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
             context.stepCompleted();
             return;
         }
+
+        // Temporary hack to prevent CompositeOperationHandler throwing away domain failure data
+        context.attachIfAbsent(CompositeOperationHandler.DOMAIN_EXECUTION_KEY, Boolean.TRUE);
 
         // Confirm no host failures
         boolean pushToServers = !domainOperationContext.hasHostLevelFailures();

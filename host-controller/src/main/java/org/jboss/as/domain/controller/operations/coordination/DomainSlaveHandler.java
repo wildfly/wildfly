@@ -22,6 +22,7 @@
 
 package org.jboss.as.domain.controller.operations.coordination;
 
+import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.TransformingProxyController;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
@@ -73,6 +74,9 @@ public class DomainSlaveHandler implements OperationStepHandler {
             context.stepCompleted();
             return;
         }
+
+        // Temporary hack to prevent CompositeOperationHandler throwing away domain failure data
+        context.attachIfAbsent(CompositeOperationHandler.DOMAIN_EXECUTION_KEY, Boolean.TRUE);
 
         final Set<String> outstanding = new HashSet<String>(hostProxies.keySet());
         final List<TransactionalProtocolClient.PreparedOperation<HostControllerUpdateTask.ProxyOperation>> results = new ArrayList<TransactionalProtocolClient.PreparedOperation<HostControllerUpdateTask.ProxyOperation>>();
@@ -202,7 +206,6 @@ public class DomainSlaveHandler implements OperationStepHandler {
                     final HostControllerUpdateTask.ExecutedHostRequest request = finalResults.get(hostName);
                     final ModelNode finalResult = prepared.getFinalResult().get();
                     final ModelNode transformedResult = request.transformResult(finalResult);
-                    System.out.println(" final result " + transformedResult);
                     domainOperationContext.addHostControllerResult(hostName, transformedResult);
 
                     if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {
