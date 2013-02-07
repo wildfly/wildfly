@@ -21,9 +21,14 @@
 */
 package org.jboss.as.logging;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -251,15 +256,15 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
         compositeOperationBuilder.addStep(op);
 
         compositeOperationBuilder.addStep(SubsystemOperations.createAddOperation(createAddress(CommonAttributes.LOGGING_PROFILE, "composite-profile").toModelNode()));
-
+        final ModelNode composite = compositeOperationBuilder.build().getOperation();
         // Transform the operation
-        final TransformedOperation transformedOp = mainServices.transformOperation(modelVersion, compositeOperationBuilder.build().getOperation());
+        final TransformedOperation transformedOp = mainServices.transformOperation(modelVersion, composite);
         op = transformedOp.getTransformedOperation();
         // Iterate the steps and look for specific changes in the operation
         final List<ModelNode> steps = op.get(ClientConstants.STEPS).asList();
 
-        // There should only be 3 steps as the logging-profile should have been removed
-        Assert.assertEquals("Logging profile step should have been removed", 3, steps.size());
+        // There should only be 3 steps as the logging-profile should not have been removed
+        Assert.assertEquals("Logging profile step should not have been removed", 4, steps.size());
 
         // First step should be the logger
         ModelNode stepOp = steps.get(0);
@@ -271,8 +276,20 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
         // Verify the enabled attribute was removed
         Assert.assertFalse("enabled attribute should have been removed", stepOp.hasDefined(CommonAttributes.ENABLED.getName()));
 
-        executeTransformOperation(mainServices, modelVersion, transformedOp);
+        ModelTestUtils.checkFailed(mainServices.executeOperation(modelVersion, transformedOp));
 
+        //Check that the rejected step was the one that got rejected
+        final ModelNode success = new ModelNode();
+        success.get(OUTCOME).set(SUCCESS);
+        Assert.assertTrue(transformedOp.rejectOperation(success));
+
+        final List<ModelNode> newSteps = new ArrayList<ModelNode>(steps);
+        newSteps.remove(3);
+        final ModelNode newComposite = composite.clone();
+        newComposite.get(STEPS).set(newSteps);
+        final TransformedOperation newTransformedOperation = mainServices.transformOperation(modelVersion, newComposite);
+
+        Assert.assertFalse(newTransformedOperation.rejectOperation(success));
     }
 
     private static ModelNode executeTransformOperation(final KernelServices kernelServices, final ModelVersion modelVersion, final ModelNode op) throws OperationFailedException {
