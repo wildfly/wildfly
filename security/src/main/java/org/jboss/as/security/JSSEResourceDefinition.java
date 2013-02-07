@@ -75,6 +75,7 @@ public class JSSEResourceDefinition extends SimpleResourceDefinition {
     static final PropertiesAttributeDefinition ADDITIONAL_PROPERTIES = new PropertiesAttributeDefinition.Builder(Constants.ADDITIONAL_PROPERTIES, true)
             .setXmlName(Constants.PROPERTY)
             .setAllowExpression(true)
+            .setWrapXmlElement(false)
             .build();
 
     private static final AttributeDefinition[] ATTRIBUTES = {KEYSTORE, TRUSTSTORE, KEYMANAGER, TRUSTMANAGER, CLIENT_ALIAS, SERVER_ALIAS, SERVICE_AUTH_TOKEN,
