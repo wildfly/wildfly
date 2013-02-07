@@ -24,6 +24,7 @@ package org.jboss.as.controller;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_FAILURE_DESCRIPTIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -99,6 +100,11 @@ public final class CompositeOperationHandler implements OperationStepHandler {
         context.completeStep(new OperationContext.RollbackHandler() {
             @Override
             public void handleRollback(OperationContext context, ModelNode operation) {
+                if(context.getFailureDescription().isDefined()) {
+                    if(context.getFailureDescription().hasDefined(HOST_FAILURE_DESCRIPTIONS)) {
+                        return; // don't override useful information in the domain
+                    }
+                }
                 final ModelNode failureMsg = new ModelNode();
                 for (int i = 0; i < size; i++) {
                     String stepName = "step-" + (i+1);
