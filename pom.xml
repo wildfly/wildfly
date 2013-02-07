@@ -76,7 +76,7 @@
         <version.asm>3.3.1</version.asm>
         <version.ch.qos.cal10n>0.7.3</version.ch.qos.cal10n>
         <version.com.github.relaxng>2011.1</version.com.github.relaxng>
-        <version.com.google.guava>11.0.2</version.com.google.guava>
+        <version.com.google.guava>13.0.1</version.com.google.guava>
         <version.com.h2database>1.3.168</version.com.h2database>
         <version.com.sun.codemodel>2.6</version.com.sun.codemodel>
         <version.com.sun.faces>2.1.18-jbossorg-1</version.com.sun.faces>
