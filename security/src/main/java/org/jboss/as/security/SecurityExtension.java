@@ -205,7 +205,7 @@ public class SecurityExtension implements Extension {
     private static class ModulesToAttributeTransformer implements CombinedTransformer {
         protected final String resourceName;
         protected final String oldName;
-        private final Map<PathAddress, Boolean> addOps = new HashMap<PathAddress, Boolean>();
+        private final Map<PathAddress, Boolean> addOps = Collections.synchronizedMap(new HashMap<PathAddress, Boolean>());
 
         private ModulesToAttributeTransformer(String resourceName, String oldName) {
             this.resourceName = resourceName;

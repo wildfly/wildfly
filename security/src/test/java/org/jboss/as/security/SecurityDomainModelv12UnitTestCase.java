@@ -23,16 +23,20 @@
  */
 package org.jboss.as.security;
 
-import static org.jboss.as.model.test.FailedOperationTransformationConfig.RejectExpressionsConfig;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.FailedOperationTransformationConfig.RejectExpressionsConfig;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -99,14 +103,23 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
 
     @Test
     public void testTransformers712() throws Exception {
-        testOperationTransformers_1_1_0("7.1.2.Final");
         testResourceTransformers_1_1_0("7.1.2.Final");
     }
 
     @Test
     public void testTransformers713() throws Exception {
-        testOperationTransformers_1_1_0("7.1.3.Final");
         testResourceTransformers_1_1_0("7.1.3.Final");
+    }
+
+
+    @Test
+    public void testRejectedTransformers712() throws Exception {
+        testOperationTransformers_1_1_0("7.1.2.Final");
+    }
+
+    @Test
+    public void testRejectedTransformers713() throws Exception {
+        testOperationTransformers_1_1_0("7.1.3.Final");
     }
 
 
@@ -148,8 +161,120 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
-        //Assert.assertTrue(mainServices.getLegacyServices(modelVersion).isSuccessfulBoot());
+        Assert.assertTrue(mainServices.getLegacyServices(modelVersion).isSuccessfulBoot());
         checkSubsystemModelTransformation(mainServices, modelVersion);
+
+        testAddAndRemove_1_1_0(mainServices, modelVersion);
+    }
+
+    private void testAddAndRemove_1_1_0(KernelServices mainServices, ModelVersion version) throws Exception {
+        final ModelNode mainModel = mainServices.readWholeModel();
+        final ModelNode securityDomainParent = mainModel.get(SUBSYSTEM, getMainSubsystemName(), Constants.SECURITY_DOMAIN);
+
+        for (String domainName : securityDomainParent.keys()) {
+            ModelNode securityDomain = securityDomainParent.get(domainName);
+
+            if (securityDomain.hasDefined(Constants.AUDIT)) {
+                securityDomain.get(Constants.AUDIT).require(Constants.CLASSIC);
+                testAddAndRemove_1_1_0(mainServices, version, mainModel, getSecurityDomainAddress(domainName).append(PathElement.pathElement(Constants.AUDIT, Constants.CLASSIC)), Constants.PROVIDER_MODULES, Constants.PROVIDER_MODULE);
+            }
+            if (securityDomain.hasDefined(Constants.AUTHENTICATION))
+            {
+                if (securityDomain.get(Constants.AUTHENTICATION).hasDefined(Constants.CLASSIC)) {
+                    securityDomain.get(Constants.AUTHENTICATION).require(Constants.CLASSIC);
+                    testAddAndRemove_1_1_0(mainServices, version, mainModel, getSecurityDomainAddress(domainName).append(PathElement.pathElement(Constants.AUTHENTICATION, Constants.CLASSIC)), Constants.LOGIN_MODULES, Constants.LOGIN_MODULE);
+                }
+                if (securityDomain.get(Constants.AUTHENTICATION).hasDefined(Constants.JASPI)) {
+                    securityDomain.get(Constants.AUTHENTICATION).require(Constants.JASPI);
+                    testAddAndRemove_1_1_0(mainServices, version, mainModel, getSecurityDomainAddress(domainName).append(PathElement.pathElement(Constants.AUTHENTICATION, Constants.JASPI)), Constants.AUTH_MODULES, Constants.AUTH_MODULE);
+
+                    //TODO jaspi=>*
+                }
+            }
+            if (securityDomain.hasDefined(Constants.AUTHORIZATION)) {
+                securityDomain.get(Constants.AUTHORIZATION).require(Constants.CLASSIC);
+                testAddAndRemove_1_1_0(mainServices, version, mainModel, getSecurityDomainAddress(domainName).append(PathElement.pathElement(Constants.AUTHORIZATION, Constants.CLASSIC)), Constants.POLICY_MODULES, Constants.POLICY_MODULE);
+            }
+            if (securityDomain.hasDefined(Constants.IDENTITY_TRUST)) {
+                securityDomain.get(Constants.IDENTITY_TRUST).require(Constants.CLASSIC);
+                testAddAndRemove_1_1_0(mainServices, version, mainModel, getSecurityDomainAddress(domainName).append(PathElement.pathElement(Constants.IDENTITY_TRUST, Constants.CLASSIC)), Constants.TRUST_MODULES, Constants.TRUST_MODULE);
+            }
+            if (securityDomain.hasDefined(Constants.MAPPING)) {
+                securityDomain.get(Constants.MAPPING).require(Constants.CLASSIC);
+                testAddAndRemove_1_1_0(mainServices, version, mainModel, getSecurityDomainAddress(domainName).append(PathElement.pathElement(Constants.MAPPING, Constants.CLASSIC)), Constants.MAPPING_MODULES, Constants.MAPPING_MODULE);
+            }
+        }
+    }
+
+
+    private void testAddAndRemove_1_1_0(KernelServices mainServices, ModelVersion modelVersion, ModelNode subsystemModel, PathAddress parentAddress, String attributeName, String resourceType) throws Exception {
+        final ModelNode parentModel = ModelTestUtils.getSubModel(subsystemModel, parentAddress);
+        Set<String> originalKeys = new HashSet<String>(parentModel.get(resourceType).keys());
+
+
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        final List<ModelNode> originalAttribute = getLegacyAttribute(legacyServices, parentAddress, attributeName);
+        Assert.assertEquals(originalKeys.size(), originalAttribute.size());
+
+        // TODO Check that the attributes are similar
+        checkSimilarEntries(originalAttribute, parentModel.get(resourceType));
+
+        ModelNode add = Util.createAddOperation(parentAddress.append(PathElement.pathElement(resourceType, "new-added-by-test")));
+        add.get(Constants.CODE).set("new-added-by-test");
+        add.get(Constants.FLAG).set("required");
+        if (resourceType.equals(Constants.MAPPING_MODULE)) {
+            add.get(Constants.TYPE).set("role");
+        }
+        add.get("module-options", "password-stacking").set("useFirstPass");
+
+        //We need to execute on the main server since its child resources will get used for the legacy service
+        ModelTestUtils.checkOutcome(mainServices.executeOperation(add));
+        ModelTestUtils.checkOutcome(mainServices.executeOperation(modelVersion, mainServices.transformOperation(modelVersion, add)));
+
+        List<ModelNode> attributes = getLegacyAttribute(legacyServices, parentAddress, attributeName);
+        Assert.assertEquals(originalKeys.size() + 1, attributes.size());
+
+        //Remove the added attribute
+        final ModelNode removeAdded = Util.createRemoveOperation(parentAddress.append(PathElement.pathElement(resourceType, "new-added-by-test")));
+        ModelTestUtils.checkOutcome(mainServices.executeOperation(removeAdded));
+        ModelTestUtils.checkOutcome(mainServices.executeOperation(modelVersion, mainServices.transformOperation(modelVersion, removeAdded)));
+        attributes = getLegacyAttribute(legacyServices, parentAddress, attributeName);
+        Assert.assertEquals(originalKeys.size(), attributes.size());
+        checkSimilarEntries(attributes, parentModel.get(resourceType));
+
+        //Now try to remove all the other attributes
+        int i = originalKeys.size();
+        for (String childName : originalKeys) {
+
+            if (i-- == 1) {
+                //TODO Without this break there, a remove of the last xxx-module resource becomes a remove of the parent so we get failures
+                //when calling getLegacyAttribute() since the resource has been removed.
+                break;
+            }
+
+            final ModelNode remove = Util.createRemoveOperation(parentAddress.append(PathElement.pathElement(resourceType, childName)));
+            ModelTestUtils.checkOutcome(mainServices.executeOperation(remove));
+            ModelTestUtils.checkOutcome(mainServices.executeOperation(modelVersion, mainServices.transformOperation(modelVersion, remove)));
+            attributes = getLegacyAttribute(legacyServices, parentAddress, attributeName);
+            Assert.assertEquals(i, attributes.size());
+        }
+    }
+
+    private void checkSimilarEntries(List<ModelNode> attributes, ModelNode parentResource) {
+        Assert.assertEquals(attributes.size(), parentResource.keys().size());
+        for (ModelNode attr : attributes) {
+            String code = attr.get(Constants.CODE).asString();
+            ModelNode resource = parentResource.get(code);
+            Assert.assertEquals(attr, resource);
+        }
+    }
+
+    private List<ModelNode> getLegacyAttribute(KernelServices legacyServices, PathAddress parentAddress, String attributeName) throws Exception {
+        return legacyServices.executeForResult(Util.getReadAttributeOperation(parentAddress, attributeName)).asList();
+    }
+
+    private PathAddress getSecurityDomainAddress(String securityDomainName) {
+        return PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()), PathElement.pathElement(Constants.SECURITY_DOMAIN, securityDomainName));
     }
 
     private FailedOperationTransformationConfig getConfig() {
