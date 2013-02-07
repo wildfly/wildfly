@@ -169,6 +169,38 @@
                     </plugin>
 
                     <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>keytool-maven-plugin</artifactId>
+                        <version>1.2</version>
+                        <executions>
+                            <execution>
+                                <phase>generate-test-resources</phase>
+                                <id>clean-jcetest-keystore</id>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <phase>generate-test-resources</phase>
+                                <id>genkey-jcetest-keystore</id>
+                                <goals>
+                                    <goal>genkey</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <keystore>${basedir}/target/jcetest.keystore</keystore>
+                            <dname>cn=commonName, ou=organizationUnit, o=organizationName, c=countryCode</dname>
+                            <keypass>password</keypass>
+                            <storepass>password</storepass>
+                            <alias>test</alias>
+                            <keyalg>RSA</keyalg>
+                            <keysize>2048</keysize>
+                            <validity>365</validity>
+                        </configuration>
+                    </plugin>
+
+                    <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <executions combine.children="append">
