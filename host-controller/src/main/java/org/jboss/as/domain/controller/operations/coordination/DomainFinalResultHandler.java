@@ -40,6 +40,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -102,7 +103,6 @@ public class DomainFinalResultHandler implements OperationStepHandler {
             domainFailure = coordinator.hasDefined(FAILURE_DESCRIPTION) ? coordinator.get(FAILURE_DESCRIPTION) : new ModelNode(MESSAGES.unexplainedFailure());
         }
         if (domainFailure != null) {
-            System.out.println("domain failure " + domainFailure);
             context.getFailureDescription().get(DOMAIN_FAILURE_DESCRIPTION).set(domainFailure);
             return false;
         }
@@ -129,7 +129,6 @@ public class DomainFinalResultHandler implements OperationStepHandler {
 
                 formattedFailure.get(HOST_FAILURE_DESCRIPTIONS).set(hostFailureProperty);
             }
-
             context.getFailureDescription().set(formattedFailure);
 
             return false;
@@ -146,7 +145,7 @@ public class DomainFinalResultHandler implements OperationStepHandler {
                     hostFailureResults = new ModelNode();
                 }
                 final ModelNode desc = hostResult.hasDefined(FAILURE_DESCRIPTION) ? hostResult.get(FAILURE_DESCRIPTION) : new ModelNode().set(MESSAGES.unexplainedFailure());
-                hostFailureResults.add(entry.getKey(), desc);
+                hostFailureResults.get(entry.getKey()).set(desc);
             }
         }
 
@@ -156,7 +155,7 @@ public class DomainFinalResultHandler implements OperationStepHandler {
                 hostFailureResults = new ModelNode();
             }
             final ModelNode desc = coordinator.hasDefined(FAILURE_DESCRIPTION) ? coordinator.get(FAILURE_DESCRIPTION) : new ModelNode().set(MESSAGES.unexplainedFailure());
-            hostFailureResults.add(domainOperationContext.getLocalHostInfo().getLocalHostName(), desc);
+            hostFailureResults.get(domainOperationContext.getLocalHostInfo().getLocalHostName()).set(desc);
         }
 
         if (hostFailureResults != null) {
@@ -183,6 +182,7 @@ public class DomainFinalResultHandler implements OperationStepHandler {
             String[] nextStepLabels = new String[stepLabels.length + 1];
             System.arraycopy(stepLabels, 0, nextStepLabels, 0, stepLabels.length);
             int i = 1;
+
             for (ModelNode step : provider.getChildren()) {
                 String childStepLabel = "step-" + i++;
                 nextStepLabels[stepLabels.length] = childStepLabel;
