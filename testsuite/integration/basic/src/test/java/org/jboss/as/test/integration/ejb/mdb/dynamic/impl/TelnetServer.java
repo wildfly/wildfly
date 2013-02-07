@@ -37,6 +37,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
 public class TelnetServer implements TtyCodes {
+    private static final Logger logger = Logger.getLogger(TelnetServer.class.getName());
 
     private final TelnetListener listener;
 
@@ -47,12 +48,15 @@ public class TelnetServer implements TtyCodes {
     private final Map<String, Cmd> cmds = new TreeMap<String, Cmd>();
 
     private final AtomicBoolean running = new AtomicBoolean();
-    private ServerSocket serverSocket;
+    private final ServerSocket serverSocket;
 
-    public TelnetServer(TelnetActivationSpec spec, TelnetListener listener, int port) {
+    public TelnetServer(TelnetActivationSpec spec, TelnetListener listener, int port) throws IOException {
         this.port = port;
         this.spec = spec;
         this.listener = listener;
+        // make sure the socket is open right away
+        this.serverSocket = new ServerSocket(port);
+        logger.info("Listening on " + serverSocket.getLocalPort());
 
         for (Cmd cmd : spec.getCmds()) {
             this.cmds.put(cmd.getName(), cmd);
@@ -72,9 +76,6 @@ public class TelnetServer implements TtyCodes {
 
     public void activate() throws IOException {
         if (running.compareAndSet(false, true)) {
-            serverSocket = new ServerSocket(port);
-            final Logger logger = Logger.getLogger(TelnetServer.class.getName());
-            logger.info("Listening on " + serverSocket.getLocalPort());
             while (running.get()) {
                 final Socket accept = serverSocket.accept();
                 final Thread thread = new Thread() {

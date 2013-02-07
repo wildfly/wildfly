@@ -24,6 +24,8 @@ import javax.resource.spi.BootstrapContext;
 import javax.resource.spi.ResourceAdapterInternalException;
 import javax.resource.spi.endpoint.MessageEndpoint;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
+import javax.resource.spi.work.Work;
+import javax.resource.spi.work.WorkManager;
 import javax.transaction.xa.XAResource;
 import java.io.IOException;
 import java.util.HashMap;
@@ -35,6 +37,7 @@ import java.util.Map;
 public class TelnetResourceAdapter implements javax.resource.spi.ResourceAdapter {
 
     private final Map<Integer, TelnetServer> activated = new HashMap<Integer, TelnetServer>();
+    private WorkManager workManager;
 
     /**
      * Corresponds to the ra.xml <config-property>
@@ -50,6 +53,7 @@ public class TelnetResourceAdapter implements javax.resource.spi.ResourceAdapter
     }
 
     public void start(BootstrapContext bootstrapContext) throws ResourceAdapterInternalException {
+        this.workManager = bootstrapContext.getWorkManager();
     }
 
     public void stop() {
@@ -63,10 +67,28 @@ public class TelnetResourceAdapter implements javax.resource.spi.ResourceAdapter
         // This messageEndpoint instance is also castable to the ejbClass of the MDB
         final TelnetListener telnetListener = (TelnetListener) messageEndpoint;
 
-        final TelnetServer telnetServer = new TelnetServer(telnetActivationSpec, telnetListener, port);
-
         try {
-            telnetServer.activate();
+            final TelnetServer telnetServer = new TelnetServer(telnetActivationSpec, telnetListener, port);
+
+            workManager.scheduleWork(new Work() {
+                @Override
+                public void release() {
+                    try {
+                        telnetServer.deactivate();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+
+                @Override
+                public void run() {
+                    try {
+                        telnetServer.activate();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }, 0, null, null);
             activated.put(port, telnetServer);
         } catch (IOException e) {
             throw new ResourceException(e);
