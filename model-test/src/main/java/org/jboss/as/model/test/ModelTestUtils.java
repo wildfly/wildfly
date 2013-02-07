@@ -342,7 +342,7 @@ public class ModelTestUtils {
                 //Just to make debugging easier
                 System.out.print("");
             }
-            Assert.assertEquals(node1 + "\n" + node2, keys1.toString(), keys2.toString());
+            Assert.assertEquals(getCompareStackAsString(stack) + ": " + node1 + "\n" + node2, keys1.toString(), keys2.toString());
             Assert.assertTrue(keys1.containsAll(keys2));
 
             for (String key : keys1) {
