@@ -23,7 +23,6 @@ package org.jboss.as.configadmin.parser;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
@@ -33,12 +32,10 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class ConfigAdminRootResource extends SimpleResourceDefinition {
-
-    static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, ConfigAdminExtension.SUBSYSTEM_NAME);
+class ConfigAdminRootResource extends SimpleResourceDefinition {
 
     public ConfigAdminRootResource() {
-        super(SUBSYSTEM_PATH, ConfigAdminExtension.getResourceDescriptionResolver(SUBSYSTEM), ConfigAdminAdd.INSTANCE, new ReloadRequiredRemoveStepHandler());
+        super(ConfigAdminExtension.SUBSYSTEM_PATH, ConfigAdminExtension.getResourceDescriptionResolver(SUBSYSTEM), ConfigAdminAdd.INSTANCE, new ReloadRequiredRemoveStepHandler());
     }
 
     @Override

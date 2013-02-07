@@ -203,7 +203,7 @@ public class ConfigAdminSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_0_0, xmlOps,
                 new FailedOperationTransformationConfig()
-                        .addFailedAttribute(PathAddress.pathAddress(ConfigAdminRootResource.SUBSYSTEM_PATH, ConfigurationResource.PATH_ELEMENT),
+                        .addFailedAttribute(PathAddress.pathAddress(ConfigAdminExtension.SUBSYSTEM_PATH, ConfigurationResource.PATH_ELEMENT),
                                 new FailedOperationTransformationConfig.RejectExpressionsConfig(ConfigurationResource.ENTRIES)
                                         .setReadOnly(ConfigurationResource.ENTRIES))
         );

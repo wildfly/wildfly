@@ -36,9 +36,7 @@ interface Namespace10 {
 
     enum Attribute {
         UNKNOWN(null),
-        NAME("name"),
         PID("pid"),
-        VALUE("value"),
         ;
         private final String name;
 
