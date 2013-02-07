@@ -21,8 +21,6 @@
  */
 
 package org.jboss.as.controller.transform.description;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
-
 import java.util.Collections;
 import java.util.Locale;
 
@@ -258,7 +256,7 @@ public class RecursiveDiscardAndRemoveTestCase {
         Assert.assertNotNull(transformed);
         final ModelNode operation = transformed.getTransformedOperation();
         Assert.assertNotNull(operation);
-        Assert.assertEquals(READ_RESOURCE_OPERATION, ModelDescriptionConstants.READ_RESOURCE_OPERATION);
+        Assert.assertEquals(original, operation);
         Assert.assertTrue(original.get(ModelDescriptionConstants.OP_ADDR).equals(operation.get(ModelDescriptionConstants.OP_ADDR)));
         Assert.assertTrue(transformed.rejectOperation(success()));
         Assert.assertNotNull(transformed.getFailureDescription());

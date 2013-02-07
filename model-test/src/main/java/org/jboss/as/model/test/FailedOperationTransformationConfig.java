@@ -695,7 +695,7 @@ public class FailedOperationTransformationConfig {
 
         @Override
         public boolean expectDiscarded(ModelNode operation) {
-            return true;
+            return false;
         }
 
         @Override

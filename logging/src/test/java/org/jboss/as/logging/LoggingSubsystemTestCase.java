@@ -157,15 +157,15 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(SyslogHandlerResourceDefinition.SYSLOG_HANDLER_PATH),
                                 FailedOperationTransformationConfig.DISCARDED_RESOURCE)
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(CommonAttributes.LOGGING_PROFILE),
-                                FailedOperationTransformationConfig.DISCARDED_RESOURCE)
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(CommonAttributes.LOGGING_PROFILE).append(ConsoleHandlerResourceDefinition.CONSOLE_HANDLER_PATH),
-                                FailedOperationTransformationConfig.DISCARDED_RESOURCE)
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(CommonAttributes.LOGGING_PROFILE).append(RootLoggerResourceDefinition.ROOT_LOGGER_PATH),
-                                FailedOperationTransformationConfig.DISCARDED_RESOURCE)
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(CommonAttributes.LOGGING_PROFILE).append(LoggerResourceDefinition.LOGGER_PATH),
-                                FailedOperationTransformationConfig.DISCARDED_RESOURCE)
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(CommonAttributes.LOGGING_PROFILE).append(SyslogHandlerResourceDefinition.SYSLOG_HANDLER_PATH),
-                                FailedOperationTransformationConfig.DISCARDED_RESOURCE)
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
         );
     }
 
