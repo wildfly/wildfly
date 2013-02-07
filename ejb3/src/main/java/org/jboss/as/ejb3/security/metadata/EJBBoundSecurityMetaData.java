@@ -37,6 +37,8 @@ public class EJBBoundSecurityMetaData extends AbstractEJBBoundMetaData {
 
     private String runAsPrincipal;
 
+    private Boolean missingMethodPermissionsDenyAccess;
+
     public String getSecurityDomain() {
         return securityDomain;
     }
@@ -51,5 +53,13 @@ public class EJBBoundSecurityMetaData extends AbstractEJBBoundMetaData {
 
     public void setRunAsPrincipal(String runAsPrincipal) {
         this.runAsPrincipal = runAsPrincipal;
+    }
+
+    public Boolean getMissingMethodPermissionsDenyAccess() {
+        return this.missingMethodPermissionsDenyAccess;
+    }
+
+    public void setMissingMethodPermissionsDenyAccess(Boolean missingMethodPermissionsDenyAccess) {
+        this.missingMethodPermissionsDenyAccess = missingMethodPermissionsDenyAccess;
     }
 }
