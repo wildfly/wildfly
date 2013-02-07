@@ -21,6 +21,12 @@
 */
 package org.jboss.as.domain.http.server;
 
+import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
 import org.jboss.as.domain.management.AuthenticationMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.com.sun.net.httpserver.HttpContext;
@@ -39,8 +45,8 @@ public enum ConsoleMode {
      */
     CONSOLE {
         @Override
-        ResourceHandler createConsoleHandler(String slot) throws ModuleLoadException {
-            return new ConsoleHandler(slot);
+        ResourceHandler createConsoleHandler(String skin) throws ModuleLoadException {
+            return new ConsoleHandler(skin);
         }
         @Override
         public boolean hasConsole() {
@@ -52,8 +58,8 @@ public enum ConsoleMode {
      */
     SLAVE_HC {
         @Override
-        ResourceHandler createConsoleHandler(String slot) throws ModuleLoadException {
-            return DisabledConsoleHandler.createNoConsoleForSlave(slot);
+        ResourceHandler createConsoleHandler(String skin) throws ModuleLoadException {
+            return DisabledConsoleHandler.createNoConsoleForSlave(skin);
         }
         @Override
         public boolean hasConsole() {
@@ -65,8 +71,8 @@ public enum ConsoleMode {
      */
     ADMIN_ONLY{
         @Override
-        ResourceHandler createConsoleHandler(String slot) throws ModuleLoadException {
-            return DisabledConsoleHandler.createNoConsoleForAdminMode(slot);
+        ResourceHandler createConsoleHandler(String skin) throws ModuleLoadException {
+            return DisabledConsoleHandler.createNoConsoleForAdminMode(skin);
         }
         @Override
         public boolean hasConsole() {
@@ -78,7 +84,7 @@ public enum ConsoleMode {
      */
     NO_CONSOLE{
         @Override
-        ResourceHandler createConsoleHandler(String slot) throws ModuleLoadException {
+        ResourceHandler createConsoleHandler(String skin) throws ModuleLoadException {
             return null;
         }
         @Override
@@ -90,9 +96,11 @@ public enum ConsoleMode {
     /**
      * Returns a console handler for the mode
      *
+     * @param skin the console look and feel to use
+     *
      * @return the console handler, may be {@code null}
      */
-    ResourceHandler createConsoleHandler(String slot) throws ModuleLoadException {
+    ResourceHandler createConsoleHandler(String skin) throws ModuleLoadException {
         throw new IllegalStateException("Not overridden for " + this);
     }
 
@@ -118,8 +126,8 @@ public enum ConsoleMode {
         private static final String CONTEXT = "/console";
         private static final String DEFAULT_RESOURCE = "/" + INDEX_HTML;
 
-        ConsoleHandler(String slot) throws ModuleLoadException {
-            super(CONTEXT, DEFAULT_RESOURCE, getClassLoader(CONSOLE_MODULE, slot));
+        ConsoleHandler(String skin) throws ModuleLoadException {
+            super(CONTEXT, DEFAULT_RESOURCE, findConsoleClassLoader(skin));
         }
 
         @Override
@@ -139,6 +147,29 @@ public enum ConsoleMode {
                     && securityRealm.getSupportedAuthenticationMechanisms().contains(AuthenticationMechanism.CLIENT_CERT) == false) {
                 httpContext.getFilters().add(new RedirectReadinessFilter(securityRealm, ErrorHandler.getRealmRedirect()));
             }
+        }
+
+        private static ClassLoader findConsoleClassLoader(String consoleSkin) throws ModuleLoadException {
+            final String moduleName = CONSOLE_MODULE + "." + (consoleSkin == null ? "main" : consoleSkin);
+
+            // Find all console versions on the filesystem, sorted by version
+            SortedSet<ConsoleVersion> consoleVersions = findConsoleVersions(moduleName);
+            for (ConsoleVersion consoleVersion : consoleVersions) {
+                try {
+                    return getClassLoader(moduleName, consoleVersion.getName());
+                } catch (ModuleLoadException mle) {
+                    // ignore
+                }
+            }
+
+            // No joy. Fall back to the AS 7.1 approach where the module id is org.jboss.as.console:<sking>
+            try {
+                return getClassLoader(CONSOLE_MODULE, consoleSkin);
+            } catch (ModuleLoadException mle) {
+                // ignore
+            }
+
+            throw HttpServerMessages.MESSAGES.consoleModuleNotFound(moduleName);
         }
     }
 
@@ -173,5 +204,62 @@ public enum ConsoleMode {
              */
             return true;
         }
+    }
+
+    /**
+     * Scan filesystem looking for the slot versions of all modules with the given name.
+     * Package protected to allow unit testing.
+     *
+     * @param moduleName the name portion of the target module's {@code ModuleIdentifier}
+     *
+     * @return set of console versions, sorted from highest version to lowest
+     */
+    static SortedSet<ConsoleVersion> findConsoleVersions(String moduleName) {
+        String path = moduleName.replace('.', '/') ;
+
+        final String modulePath = SecurityActions.getProperty("module.path");
+        File[] moduleRoots = getFiles(modulePath, 0, 0);
+        SortedSet<ConsoleVersion> consoleVersions = new TreeSet<ConsoleVersion>();
+        for (File root : moduleRoots) {
+            findConsoleModules(root, path, consoleVersions);
+            File layers = new File(root, "system" + File.separator + "layers");
+            File[] children = layers.listFiles();
+            if (children != null) {
+                for (File child : children) {
+                    findConsoleModules(child, path, consoleVersions);
+                }
+            }
+            File addOns = new File(root, "system" + File.separator + "add-ons");
+            children = addOns.listFiles();
+            if (children != null) {
+                for (File child : children) {
+                    findConsoleModules(child, path, consoleVersions);
+                }
+            }
+        }
+        return consoleVersions;
+    }
+
+    private static void findConsoleModules(File root, String path, Set<ConsoleVersion> consoleVersions) {
+        File module = new File(root, path);
+        File[] children = module.listFiles();
+        if (children != null) {
+            for (File child : children) {
+                consoleVersions.add(new ConsoleVersion(child.getName()));
+            }
+        }
+    }
+
+    private static File[] getFiles(final String modulePath, final int stringIdx, final int arrayIdx) {
+        final int i = modulePath.indexOf(File.pathSeparatorChar, stringIdx);
+        final File[] files;
+        if (i == -1) {
+            files = new File[arrayIdx + 1];
+            files[arrayIdx] = new File(modulePath.substring(stringIdx)).getAbsoluteFile();
+        } else {
+            files = getFiles(modulePath, i + 1, arrayIdx + 1);
+            files[arrayIdx] = new File(modulePath.substring(stringIdx, i)).getAbsoluteFile();
+        }
+        return files;
     }
 }
