@@ -90,6 +90,7 @@ public class MailSessionService implements Service<Session> {
             setServerProps(props, config.getSmtpServer(), "smtp");
         }
         if (config.getImapServer() != null) {
+            props.setProperty("mail.store.protocol", "imap");
             setServerProps(props, config.getImapServer(), "imap");
         }
         if (config.getPop3Server() != null) {
