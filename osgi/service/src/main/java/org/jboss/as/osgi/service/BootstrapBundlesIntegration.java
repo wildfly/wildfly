@@ -109,7 +109,7 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
     private final InjectedValue<XEnvironment> injectedEnvironment = new InjectedValue<XEnvironment>();
     private final InjectedValue<XRepository> injectedRepository = new InjectedValue<XRepository>();
     private List<OSGiCapability> modulecaps;
-    private File bundlesDir;
+    private List<File> bundlesPath;
 
     BootstrapBundlesIntegration() {
         super(IntegrationServices.BOOTSTRAP_BUNDLES);
@@ -134,9 +134,7 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
         List<Deployment> deployments = new ArrayList<Deployment>();
         try {
             ServerEnvironment serverEnvironment = injectedServerEnvironment.getValue();
-            bundlesDir = serverEnvironment.getBundlesDir();
-            if (bundlesDir.isDirectory() == false)
-                throw MESSAGES.illegalStateCannotFindBundleDir(bundlesDir);
+            bundlesPath = LayeredBundlePathFactory.resolveLayeredBundlePath(serverEnvironment);
 
             modulecaps = new ArrayList<OSGiCapability>();
 
@@ -177,7 +175,7 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
             ModuleIdentifier moduleId = ModuleIdentifier.fromString(identifier);
 
             // Find the module in the bundles hierarchy
-            File bundleFile = ModuleIdentityRepository.getRepositoryEntry(bundlesDir, moduleId);
+            File bundleFile = ModuleIdentityRepository.getRepositoryEntry(bundlesPath, moduleId);
             if (bundleFile == null) {
 
                 LOGGER.tracef("Installing initial module capability: %s", identifier);
@@ -236,7 +234,7 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
             ModuleIdentifier moduleId = ModuleIdentifier.fromString(identifier);
 
             // Attempt to install the bundle from the bundles hierarchy
-            File bundleFile = ModuleIdentityRepository.getRepositoryEntry(bundlesDir, moduleId);
+            File bundleFile = ModuleIdentityRepository.getRepositoryEntry(bundlesPath, moduleId);
             if (bundleFile != null) {
                 LOGGER.tracef("Installing initial bundle capability: %s", identifier);
                 URL bundleURL = bundleFile.toURI().toURL();
@@ -311,6 +309,13 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
                 input.close();
             }
         }
+
+        // Check for a jbosgi-xservice.properties in the root of a module directory under $JBOSS_HOME/modules
+        // Following https://issues.jboss.org/browse/AS7-6344 this will no longer find any standard module shipped
+        // with the AS or by a layered distribution or add-on based upon it.  It may, however, find user provided
+        // modules, since $JBOSS_HOME/modules is a valid root for user modules. Layered distributions/add-ons should
+        // not be using this mechanism to provide bundles anyway. Any bundles they ship in the modules repo should
+        // be discoverable via the module.getClassLoader().getResource(JarFile.MANIFEST_NAME) mechanism used above
         File homeDir = injectedServerEnvironment.getValue().getHomeDir();
         final File modulesDir = new File(homeDir + File.separator + "modules");
         final ModuleIdentifier identifier = module.getIdentifier();

@@ -22,6 +22,7 @@
 
 package org.jboss.as.version;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileReader;
 import java.io.InputStream;
@@ -52,8 +53,9 @@ public class ProductConfig implements Serializable {
         String productVersion = null;
         String consoleSlot = null;
 
+        FileReader reader = null;
         try {
-            FileReader reader = new FileReader(getProductConf(home));
+            reader = new FileReader(getProductConf(home));
             Properties props = new Properties();
             props.load(reader);
 
@@ -77,6 +79,8 @@ public class ProductConfig implements Serializable {
             setSystemProperties(props, providedProperties);
         } catch (Exception e) {
             // Don't care
+        } finally {
+            safeClose(reader);
         }
 
         name = productName;
@@ -162,4 +166,11 @@ public class ProductConfig implements Serializable {
             AccessController.doPrivileged(action);
         }
     }
+
+    private static void safeClose(Closeable c) {
+        if (c != null) try {
+            c.close();
+        } catch (Throwable ignored) {}
+    }
+
 }

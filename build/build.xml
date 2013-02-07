@@ -90,8 +90,8 @@
     </target>
 
     <target name="create-ext-content">
-        <mkdir dir="${output.dir}/modules/org/jboss/integration/ext-content/main/bundled"/>
-        <copy file="${org.jboss.seam.integration:jboss-seam-int-jbossas:jar}" tofile="${output.dir}/modules/org/jboss/integration/ext-content/main/bundled/jboss-seam-int.jar"/>
+        <mkdir dir="${output.dir}/modules/system/layers/base/org/jboss/integration/ext-content/main/bundled"/>
+        <copy file="${org.jboss.seam.integration:jboss-seam-int-jbossas:jar}" tofile="${output.dir}/modules/system/layers/base/org/jboss/integration/ext-content/main/bundled/jboss-seam-int.jar"/>
 
         <!-- Copy the EJB specific schemas to the JBOSS_HOME/docs/schema folder -->
         <unzip src="${org.jboss.metadata:jboss-metadata-ejb:jar}" dest="${output.dir}/docs/schema/">
