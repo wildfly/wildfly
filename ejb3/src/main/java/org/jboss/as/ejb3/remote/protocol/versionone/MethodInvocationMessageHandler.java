@@ -216,8 +216,8 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
                             if (!(ioe instanceof ObjectStreamException)) {
                                 IoUtils.safeClose(channelAssociation.getChannel());
                             }
-                            return;
                         }
+                        return;
                     } finally {
                         SecurityActions.remotingContextClear();
                     }
