@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.smoke.jms;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -121,7 +122,7 @@ public class JMSBridgeTest {
             // ASSERTIONS
             assertNotNull("did not receive expected message", receivedMessage);
             assertTrue(receivedMessage instanceof TextMessage);
-            assertTrue(((TextMessage) receivedMessage).getText().equals(text));
+            assertEquals(text, ((TextMessage) receivedMessage).getText());
             assertNotNull("did not get header set by the JMS bridge", receivedMessage.getStringProperty(HornetQJMSConstants.JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST));
         } catch (Exception e) {
             e.printStackTrace();
