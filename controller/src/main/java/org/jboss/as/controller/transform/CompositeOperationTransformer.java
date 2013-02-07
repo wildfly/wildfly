@@ -134,7 +134,7 @@ class CompositeOperationTransformer implements OperationTransformer {
 
                 final String resultIdx = "step-" + step.getResultingIdx();
                 final ModelNode stepResult = original.get(RESULT, resultIdx);
-                // Skip ignored steps - this should not happen anyway
+                // Mark ignored steps as successful
                 if(IGNORED.equals(stepResult.get(OUTCOME).asString())) {
                     result.get(stepIdx).set(SUCCESSFUL);
                 } else {

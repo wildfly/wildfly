@@ -160,7 +160,7 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(CustomHandlerResourceDefinition.CUSTOM_HANDLE_PATH),
                                 new RejectExpressionsConfig(CustomHandlerResourceDefinition.WRITABLE_ATTRIBUTES))
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(SyslogHandlerResourceDefinition.SYSLOG_HANDLER_PATH),
-                                FailedOperationTransformationConfig.DISCARDED_RESOURCE)
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(CommonAttributes.LOGGING_PROFILE),
                                 FailedOperationTransformationConfig.REJECTED_RESOURCE)
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(CommonAttributes.LOGGING_PROFILE).append(ConsoleHandlerResourceDefinition.CONSOLE_HANDLER_PATH),

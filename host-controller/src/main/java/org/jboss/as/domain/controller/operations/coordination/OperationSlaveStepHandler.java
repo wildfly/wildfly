@@ -25,7 +25,6 @@ package org.jboss.as.domain.controller.operations.coordination;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.util.Map;
 
@@ -63,16 +62,26 @@ public class OperationSlaveStepHandler {
 
         operation.get(OPERATION_HEADERS).remove(PrepareStepHandler.EXECUTE_FOR_COORDINATOR);
 
-        addSteps(context, operation, null, true);
-        context.stepCompleted();
+        //
+        final HostControllerExecutionSupport hostControllerExecutionSupport = addSteps(context, operation, null, true);
+
+        // In case the actual operation fails make sure the result still gets formatted
+        context.completeStep(new OperationContext.RollbackHandler() {
+            @Override
+            public void handleRollback(OperationContext context, ModelNode operation) {
+                if (hostControllerExecutionSupport.getDomainOperation() != null) {
+                    final ModelNode domainResult = hostControllerExecutionSupport.getFormattedDomainResult(context.getResult());
+                    context.getResult().set(domainResult);
+                }
+            }
+        });
     }
 
-    void addSteps(final OperationContext context, final ModelNode operation, final ModelNode response, final boolean recordResponse) throws OperationFailedException {
-
+    HostControllerExecutionSupport addSteps(final OperationContext context, final ModelNode operation, final ModelNode response, final boolean recordResponse) throws OperationFailedException {
         final PathAddress originalAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
         final ImmutableManagementResourceRegistration originalRegistration = context.getResourceRegistration();
 
-        HostControllerExecutionSupport hostControllerExecutionSupport =
+        final HostControllerExecutionSupport hostControllerExecutionSupport =
                 HostControllerExecutionSupport.Factory.create(operation, localHostControllerInfo.getLocalHostName(),
                         new LazyDomainModelProvider(context), ignoredDomainResourceRegistry);
         ModelNode domainOp = hostControllerExecutionSupport.getDomainOperation();
@@ -88,6 +97,8 @@ public class OperationSlaveStepHandler {
         ServerOperationsResolverHandler sorh = new ServerOperationsResolverHandler(
                 resolver, hostControllerExecutionSupport, originalAddress, originalRegistration, response);
         context.addStep(sorh, OperationContext.Stage.DOMAIN);
+
+        return hostControllerExecutionSupport;
     }
 
     /**

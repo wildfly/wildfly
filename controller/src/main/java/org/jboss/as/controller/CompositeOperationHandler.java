@@ -46,6 +46,10 @@ import org.jboss.dmr.ModelType;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public final class CompositeOperationHandler implements OperationStepHandler {
+
+    @Deprecated
+    public static final OperationContext.AttachmentKey<Boolean> DOMAIN_EXECUTION_KEY = OperationContext.AttachmentKey.create(Boolean.class);
+
     public static final CompositeOperationHandler INSTANCE = new CompositeOperationHandler();
     public static final String NAME = ModelDescriptionConstants.COMPOSITE;
 
@@ -100,11 +104,11 @@ public final class CompositeOperationHandler implements OperationStepHandler {
         context.completeStep(new OperationContext.RollbackHandler() {
             @Override
             public void handleRollback(OperationContext context, ModelNode operation) {
-                if(context.getFailureDescription().isDefined()) {
-                    if(context.getFailureDescription().hasDefined(HOST_FAILURE_DESCRIPTIONS)) {
-                        return; // don't override useful information in the domain
-                    }
+                // don't override useful failure information in the domain
+                if (context.getAttachment(DOMAIN_EXECUTION_KEY) != null) {
+                    return;
                 }
+
                 final ModelNode failureMsg = new ModelNode();
                 for (int i = 0; i < size; i++) {
                     String stepName = "step-" + (i+1);
