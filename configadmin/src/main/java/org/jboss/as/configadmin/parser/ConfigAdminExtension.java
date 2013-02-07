@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import org.jboss.as.configadmin.ConfigAdmin;
 import org.jboss.as.configadmin.service.ConfigAdminInternal;
@@ -61,6 +62,7 @@ import org.jboss.msc.service.ServiceController;
 public class ConfigAdminExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "configadmin";
+    static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
     private static final int MANAGEMENT_API_MINOR_VERSION = 1;
@@ -94,7 +96,7 @@ public class ConfigAdminExtension implements Extension {
             registerTransformers_1_0_0(subsystem);
         }
 
-        subsystem.registerXMLElementWriter(ConfigAdminWriter.INSTANCE);
+        subsystem.registerXMLElementWriter(ConfigAdminParser.INSTANCE);
     }
 
     private void registerTransformers_1_0_0(final SubsystemRegistration subsystemRegistration) {

@@ -21,60 +21,70 @@
  */
 package org.jboss.as.configadmin.parser;
 
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
+import static org.jboss.as.controller.parsing.ParseUtils.requireAttributes;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
+import java.util.List;
+import java.util.TreeSet;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * Parse subsystem configuration for namespace {@link Namespace#VERSION_1_0}.
  *
  * @author Thomas.Diesler@jboss.com
  */
-class ConfigAdminParser implements Namespace10, XMLStreamConstants, XMLElementReader<List<ModelNode>> {
+class ConfigAdminParser implements Namespace10, XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
-    static XMLElementReader<List<ModelNode>> INSTANCE = new ConfigAdminParser();
+    static ConfigAdminParser INSTANCE = new ConfigAdminParser();
 
     // hide ctor
     private ConfigAdminParser() {
     }
 
     @Override
-    public void readElement(XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+    public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
+        context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
+        ModelNode model = context.getModelNode();
 
-        final ModelNode address = new ModelNode();
-        address.add(SUBSYSTEM, ConfigAdminExtension.SUBSYSTEM_NAME);
-        address.protect();
+        if (model.hasDefined(ModelConstants.CONFIGURATION)) {
+            ModelNode configuration = model.get(ModelConstants.CONFIGURATION);
+            for (String pid : new TreeSet<String>(configuration.keys())) {
+                writer.writeStartElement(Element.CONFIGURATION.getLocalName());
+                writer.writeAttribute(Attribute.PID.getLocalName(), pid);
+                ConfigurationResource.ENTRIES.marshallAsElement(configuration.get(pid), writer);
+                writer.writeEndElement();
+            }
+        }
+        writer.writeEndElement();
+    }
+
+
+    @Override
+    public void readElement(XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+        final PathAddress address = PathAddress.pathAddress(ConfigAdminExtension.SUBSYSTEM_PATH);
+
+        operations.add(Util.createAddOperation(address));
 
         requireNoAttributes(reader);
-
-        final ModelNode subsystem = ConfigAdminAdd.createAddSubsystemOperation();
-        operations.add(subsystem);
-
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case VERSION_1_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case CONFIGURATION: {
-                            List<ModelNode> result = parseConfigurations(reader, address);
-                            operations.addAll(result);
+                            parseConfigurations(reader, address, operations);
                             break;
                         }
                         default:
@@ -85,74 +95,22 @@ class ConfigAdminParser implements Namespace10, XMLStreamConstants, XMLElementRe
         }
     }
 
-    private List<ModelNode> parseConfigurations(XMLExtendedStreamReader reader, ModelNode address) throws XMLStreamException {
+    private void parseConfigurations(XMLExtendedStreamReader reader, PathAddress parent, List<ModelNode> operations) throws XMLStreamException {
 
         // Handle attributes
-        String pid = null;
-        int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i++) {
-            requireNoNamespaceAttribute(reader, i);
-            final String attrValue = reader.getAttributeValue(i);
-            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-            switch (attribute) {
-                case PID: {
-                    pid = attrValue;
-                    break;
-                }
-                default:
-                    throw unexpectedAttribute(reader, i);
-            }
-        }
+        String pid = ParseUtils.requireAttributes(reader, Attribute.PID.getLocalName())[0];
 
-        if (pid == null)
-            throw missingRequired(reader, Collections.singleton(Attribute.PID));
-
-        ModelNode configuration = new ModelNode();
-        configuration.get(OP).set(ADD);
-        configuration.get(OP_ADDR).set(address).add(ModelConstants.CONFIGURATION, pid);
-
-        List<ModelNode> result = new ArrayList<ModelNode>();
-        result.add(configuration);
-
-        ModelNode propNode = configuration.get(ModelConstants.ENTRIES);
-
+        ModelNode operation = Util.createAddOperation(parent.append(ModelConstants.CONFIGURATION, pid));
+        operations.add(operation);
         // Handle elements
-        while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
+        while (reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case VERSION_1_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     if (element == Element.PROPERTY) {
-                        // Handle attributes
-                        String name = null;
-                        String value = null;
-                        count = reader.getAttributeCount();
-                        for (int i = 0; i < count; i++) {
-                            requireNoNamespaceAttribute(reader, i);
-                            final String attrValue = reader.getAttributeValue(i);
-
-                            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                            switch (attribute) {
-                                case NAME: {
-                                    name = attrValue;
-                                    break;
-                                }
-                                case VALUE: {
-                                    value = attrValue;
-                                    break;
-                                }
-                                default:
-                                    throw unexpectedAttribute(reader, i);
-                            }
-                        }
-                        if (name == null)
-                            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
-                        if (value == null)
-                            throw missingRequired(reader, Collections.singleton(Attribute.VALUE));
-
-                        requireNoContent(reader);
-
-                        propNode.get(name).set(value);
-
+                        final String[] array = requireAttributes(reader, org.jboss.as.controller.parsing.Attribute.NAME.getLocalName(), org.jboss.as.controller.parsing.Attribute.VALUE.getLocalName());
+                        ConfigurationResource.ENTRIES.parseAndAddParameterElement(array[0], array[1], operation, reader);
+                        ParseUtils.requireNoContent(reader);
                         break;
                     } else {
                         throw unexpectedElement(reader);
@@ -162,7 +120,5 @@ class ConfigAdminParser implements Namespace10, XMLStreamConstants, XMLElementRe
                     throw unexpectedElement(reader);
             }
         }
-
-        return result;
     }
 }
