@@ -77,15 +77,12 @@ public class MDBRoleTestCase {
    public static Archive<?> deployment() {
       final JavaArchive deployment = ShrinkWrap.create(JavaArchive.class, "ejb3mdb.jar")
          .addClass(MDBRole.class)
-
          .addClass(CreateQueueSetupTask.class)
          .addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class)
-
          .addClass(Simple.class)
          .addClass(SimpleSLSB.class)
-
          .addClass(TimeoutUtil.class);
-
+        deployment.addAsManifestResource(MDBRoleTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
       deployment.addPackage(CommonCriteria.class.getPackage());
       return deployment;
    }
