@@ -29,6 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
@@ -54,9 +55,22 @@ public class DefaultJsfProfileCompletionHandler implements ProfileParsingComplet
     @Override
     public void handleProfileParsingCompletion(Map<String, List<ModelNode>> profileBootOperations, List<ModelNode> otherBootOperations) {
 
-        List<ModelNode> legacyWebOps = profileBootOperations.get(Namespace.WEB_1_0.getUriString());
-        if (legacyWebOps == null) {
-            legacyWebOps = profileBootOperations.get(Namespace.WEB_1_1.getUriString());
+        List<ModelNode> legacyWebOps = null;
+
+        // Check all namespace versions less than 1.4 (the first in a release where the JSF subsystem was added)
+        for (Namespace namespace : EnumSet.allOf(Namespace.class)) {
+            String namespaceName = namespace.getUriString();
+            if (namespaceName != null && namespaceName.startsWith("urn:jboss:domain:web:1.")) {
+                String sub = namespaceName.substring("urn:jboss:domain:web:1.".length());
+                if (sub.length() > 0
+                        && ('0' == sub.charAt(0) || '1' == sub.charAt(0) || '2' == sub.charAt(0) || '3' == sub.charAt(0))
+                        && (sub.length() == 1 || '.' == sub.charAt(1))) {
+                    legacyWebOps = profileBootOperations.get(namespace.getUriString());
+                    if (legacyWebOps != null) {
+                        break;
+                    }
+                }
+            }
         }
 
         if (legacyWebOps != null) {
