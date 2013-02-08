@@ -26,18 +26,23 @@ import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_2;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.GRACE_TIME;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.GRACE_TIME_TO_MEMBERSHIP_CHANGE;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_1;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_2;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Date;
 import java.util.Properties;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -48,18 +53,22 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.clustering.AbstractEJBDirectory;
+import org.jboss.as.test.clustering.ClusterHttpClientUtil;
 import org.jboss.as.test.clustering.EJBDirectory;
+import org.jboss.as.test.clustering.LocalEJBDirectory;
+import org.jboss.as.test.clustering.ViewChangeListener;
+import org.jboss.as.test.clustering.ViewChangeListenerBean;
+import org.jboss.as.test.clustering.ViewChangeListenerServlet;
 import org.jboss.as.test.clustering.cluster.ejb3.xpc.bean.StatefulBean;
-import org.jboss.as.test.http.util.HttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-
 
 /**
  * @author Paul Ferraro
@@ -114,9 +123,11 @@ public class StatefulWithXPCFailoverTestCase {
     private static Archive<?> createDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "stateful.war");
         war.addPackage(StatefulBean.class.getPackage());
-        war.addPackage(EJBDirectory.class.getPackage());
+        war.addClasses(EJBDirectory.class, AbstractEJBDirectory.class, LocalEJBDirectory.class);
         war.setWebXML(StatefulBean.class.getPackage(), "web.xml");
         war.addAsResource(new StringAsset(persistence_xml), "META-INF/persistence.xml");
+        war.addClasses(ViewChangeListener.class, ViewChangeListenerBean.class, ViewChangeListenerServlet.class);
+        war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
         System.out.println(war.toString(true));
         return war;
     }
@@ -137,13 +148,13 @@ public class StatefulWithXPCFailoverTestCase {
     public void testBasicXPC(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
-            throws IOException, InterruptedException {
+            throws IOException, InterruptedException, URISyntaxException {
 
         // TODO: This is nasty. I need to start it to be able to inject it later and then stop it again!
         // https://community.jboss.org/thread/176096
         stop(DEPLOYMENT_2, CONTAINER_2);
 
-        DefaultHttpClient client = HttpClientUtils.relaxedCookieHttpClient();
+        DefaultHttpClient client = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
 
         String xpc1_create_url = baseURL1 + "count?command=createEmployee";
         String xpc1_get_url = baseURL1 + "count?command=getEmployee";
@@ -153,6 +164,7 @@ public class StatefulWithXPCFailoverTestCase {
         String xpc2_getdestroy_url = baseURL2 + "count?command=destroy";
 
         try {
+            this.establishView(client, baseURL1, NODE_1);
             // extended persistence context is available on node1
 
             System.out.println(new Date() + "create employee entity ");
@@ -168,6 +180,8 @@ public class StatefulWithXPCFailoverTestCase {
 
             start(DEPLOYMENT_2, CONTAINER_2);
 
+            this.establishView(client, baseURL1, NODE_1, NODE_2);
+            
             System.out.println(new Date() + "2. started node2 + deployed, about to read entity on node1");
 
             employeeName = executeUrlWithAnswer(client, xpc2_get_url, "2. started node2, xpc on node1, node1 should be able to read entity on node1");
@@ -178,6 +192,8 @@ public class StatefulWithXPCFailoverTestCase {
             // failover to deployment2
             stop(DEPLOYMENT_1, CONTAINER_1); // failover #1 to node 2
 
+            this.establishView(client, baseURL2, NODE_2);
+            
             System.out.println(new Date() + "3. stopped node1 to force failover, about to read entity on node2");
 
             employeeName = executeUrlWithAnswer(client, xpc2_get_url, "3. stopped deployment on node1, xpc should failover to node2, node2 should be able to read entity from xpc");
@@ -190,7 +206,7 @@ public class StatefulWithXPCFailoverTestCase {
             System.out.println(new Date() + "4. test is done");
 
         } finally {
-            client.getConnectionManager().shutdown();
+            HttpClientUtils.closeQuietly(client);
 
             stop(DEPLOYMENT_1, CONTAINER_1);
             stop(DEPLOYMENT_2, CONTAINER_2);
@@ -209,13 +225,14 @@ public class StatefulWithXPCFailoverTestCase {
      * @param baseURL2
      * @throws IOException
      * @throws InterruptedException
+     * @throws URISyntaxException 
      */
     @Test
     @InSequence(3)
     public void testSecondLevelCache(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
-            throws IOException, InterruptedException {
+            throws IOException, InterruptedException, URISyntaxException {
         start(DEPLOYMENT_1, CONTAINER_1);
         start(DEPLOYMENT_2, CONTAINER_2);
 
@@ -238,6 +255,8 @@ public class StatefulWithXPCFailoverTestCase {
         String xpc2_secondLevelCacheEntries_url = baseURL2 + "count?command=getEmployeesInSecondLevelCache";
 
         try {
+            this.establishView(client, baseURL1, NODE_1, NODE_2);
+            
             assertExecuteUrl(client, xpc1_echo_url + "StartingTestSecondLevelCache");  // echo message to server.log
             assertExecuteUrl(client,xpc2_echo_url + "StartingTestSecondLevelCache"); // echo message to server.log
 
@@ -285,52 +304,32 @@ public class StatefulWithXPCFailoverTestCase {
             assertEquals(destroyed, "destroy");
 
         } finally {
-            client.getConnectionManager().shutdown();
+            HttpClientUtils.closeQuietly(client);
 
             stop(DEPLOYMENT_1, CONTAINER_1);
             stop(DEPLOYMENT_2, CONTAINER_2);
         }
     }
 
-    private String executeUrlWithAnswer(DefaultHttpClient client, String url, String message) throws IOException, InterruptedException {
-        int maxWait = GRACE_TIME;
-        while (maxWait > 0) {
-            HttpResponse response = client.execute(new HttpGet(url));
-            try {
-                if (response.getStatusLine().getStatusCode() < 400 || response.getStatusLine().getStatusCode() > 500) {
-                    assertEquals(200, response.getStatusLine().getStatusCode());
-                    Header header = response.getFirstHeader("answer");
-                    if (header != null) {
-                        return header.getValue();
-                    }
-                    throw new AssertionError("assertExecuteUrlWithResult didn't get expected answer from executed url=" + url + ", " + message);
-                }
-            } finally {
-                response.getEntity().getContent().close();
-            }
-            maxWait -= 100;
-            Thread.sleep(100);
+    private String executeUrlWithAnswer(HttpClient client, String url, String message) throws IOException, InterruptedException {
+        HttpResponse response = client.execute(new HttpGet(url));
+        try {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            Header header = response.getFirstHeader("answer");
+            Assert.assertNotNull(message, header);
+            return header.getValue();
+        } finally {
+            HttpClientUtils.closeQuietly(response);
         }
-        throw new AssertionError("assertExecuteUrlWithResult Timed out trying to execute url=" + url +", " + message);
-
     }
 
-    private void assertExecuteUrl(DefaultHttpClient client, String url) throws IOException, InterruptedException {
-        int maxWait = GRACE_TIME;
-        while (maxWait > 0) {
-            HttpResponse response = client.execute(new HttpGet(url));
-            try {
-                if (response.getStatusLine().getStatusCode() < 400 || response.getStatusLine().getStatusCode() > 500) {
-                    assertEquals(200, response.getStatusLine().getStatusCode());
-                    return;
-                }
-            } finally {
-                response.getEntity().getContent().close();
-            }
-            maxWait -= 100;
-            Thread.sleep(100);
+    private void assertExecuteUrl(HttpClient client, String url) throws IOException {
+        HttpResponse response = client.execute(new HttpGet(url));
+        try {
+            assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+        } finally {
+            HttpClientUtils.closeQuietly(response);
         }
-        throw new AssertionError("assertExecuteUrl Timed out trying to execute url=" + url);
     }
 
     private void stop(String deployment, String container) {
@@ -339,10 +338,6 @@ public class StatefulWithXPCFailoverTestCase {
             deployer.undeploy(deployment);
             controller.stop(container);
             System.out.println(new Date() + "stopped deployment="+deployment+", container="+container);
-
-            // On stopping, we issue a request immediately and the request fails due to SuspectedException
-            // TODO: replace with view listener
-            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
 
         } catch (Throwable e) {
             e.printStackTrace(System.err);
@@ -360,4 +355,7 @@ public class StatefulWithXPCFailoverTestCase {
         }
     }
 
+    private void establishView(HttpClient client, URL baseURL, String... members) throws URISyntaxException, IOException {
+        ClusterHttpClientUtil.establishView(client, baseURL, "ejb", members);
+    }
 }

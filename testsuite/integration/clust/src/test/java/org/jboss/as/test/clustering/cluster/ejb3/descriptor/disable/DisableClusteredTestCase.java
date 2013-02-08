@@ -22,12 +22,15 @@
 
 package org.jboss.as.test.clustering.cluster.ejb3.descriptor.disable;
 
-import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_2;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_1;
 
 import java.util.Properties;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -40,13 +43,16 @@ import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.clustering.EJBClientContextSelector;
+import org.jboss.as.test.clustering.EJBDirectory;
 import org.jboss.as.test.clustering.NodeNameGetter;
+import org.jboss.as.test.clustering.RemoteEJBDirectory;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -67,7 +73,7 @@ public class DisableClusteredTestCase {
     private static boolean node1Running = false;
     private static boolean node2Running = false;
 
-    private static InitialContext context;
+    private static EJBDirectory directory;
     private static ContextSelector<EJBClientContext> previousSelector;
     
     private static final String PROPERTIES_FILENAME = "cluster/ejb3/stateful/failover/sfsb-failover-jboss-ejb-client.properties";
@@ -100,9 +106,12 @@ public class DisableClusteredTestCase {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        Properties env = new Properties();
-        env.setProperty(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
-        context = new InitialContext(env);
+        directory = new RemoteEJBDirectory(ARCHIVE_NAME);
+    }
+
+    @AfterClass
+    public static void destroy() throws NamingException {
+        directory.close();
     }
 
     @Test
@@ -124,8 +133,7 @@ public class DisableClusteredTestCase {
     public void testStatefulBean() throws Exception {
         previousSelector = EJBClientContextSelector
                 .setup(PROPERTIES_FILENAME);
-        DisableClusteredRemote stateful = (DisableClusteredRemote) context.lookup("ejb:/" + ARCHIVE_NAME +
-                "//DisableClusteredAnnotationStateful!" + DisableClusteredRemote.class.getName() + "?stateful");
+        DisableClusteredRemote stateful = directory.lookupStateful("DisableClusteredAnnotationStateful", DisableClusteredRemote.class);
 
         String node1 = stateful.getNodeState();
         log.info("Called node name: " + node1);
@@ -163,8 +171,7 @@ public class DisableClusteredTestCase {
         property.setProperty("remote.connection.default.port", Integer.toString(port));
         EJBClientContextSelector.setup(PROPERTIES_FILENAME, property);
         
-        DisableClusteredRemote stateless = (DisableClusteredRemote) context.lookup("ejb:/" + ARCHIVE_NAME +
-                "//DisableClusteredAnnotationStateless!" + DisableClusteredRemote.class.getName());
+        DisableClusteredRemote stateless = directory.lookupStateless("DisableClusteredAnnotationStateless", DisableClusteredRemote.class);
 
         if (!node1Running) {
             container.start(CONTAINER_1);

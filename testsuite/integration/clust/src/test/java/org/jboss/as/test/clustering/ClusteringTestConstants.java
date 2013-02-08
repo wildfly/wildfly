@@ -66,8 +66,6 @@ public class ClusteringTestConstants {
     /**
      * Timeouts.
      */
-    public static final long GRACE_TIME_TO_MEMBERSHIP_CHANGE = 5000;
-    public static final int GRACE_TIME = 20000;
     public static final int GRACE_TIME_TO_REPLICATE = 3000;
 
     public static final int CLUSTER_ESTABLISHMENT_WAIT_MS = TimeoutUtil.adjust(100);

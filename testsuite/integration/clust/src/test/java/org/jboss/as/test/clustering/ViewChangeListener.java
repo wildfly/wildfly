@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,26 +19,9 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.test.clustering;
 
-import java.util.Properties;
 
-import javax.naming.NamingException;
-
-/**
- * @author Paul Ferraro
- *
- */
-public class LocalEJBDirectory extends AbstractEJBDirectory {
-    private final String module;
-    
-    public LocalEJBDirectory(String module) throws NamingException {
-        super(new Properties());
-        this.module = module;
-    }
-
-    protected <T> String createJndiName(String beanName, Class<T> beanInterface, Type type) {
-        return String.format("java:app/%s/%s!%s", this.module, beanName, beanInterface.getName());
-    }
+public interface ViewChangeListener {
+    void establishView(String cluster, String... members) throws InterruptedException;
 }

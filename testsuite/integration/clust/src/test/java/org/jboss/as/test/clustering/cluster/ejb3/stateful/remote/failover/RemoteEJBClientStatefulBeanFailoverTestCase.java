@@ -22,14 +22,28 @@
 
 package org.jboss.as.test.clustering.cluster.ejb3.stateful.remote.failover;
 
-import org.jboss.arquillian.container.test.api.*;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_2;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_1;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_2;
+
+import javax.naming.NamingException;
+
+import org.jboss.arquillian.container.test.api.ContainerController;
+import org.jboss.arquillian.container.test.api.Deployer;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
 import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.EJBDirectory;
 import org.jboss.as.test.clustering.NodeNameGetter;
 import org.jboss.as.test.clustering.RemoteEJBDirectory;
+import org.jboss.as.test.clustering.ViewChangeListener;
+import org.jboss.as.test.clustering.ViewChangeListenerBean;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
@@ -37,6 +51,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -83,16 +98,22 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
     private static Archive<?> createDeployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         ejbJar.addPackage(CounterBean.class.getPackage());
-        ejbJar.addClass(NodeNameGetter.class);
+        ejbJar.addClasses(NodeNameGetter.class, ViewChangeListener.class, ViewChangeListenerBean.class);
         ejbJar.addAsManifestResource(new StringAsset("<beans>" +
                 "<decorators><class>" + CDIDecorator.class.getName() + "</class></decorators>" +
                 "</beans>"), "beans.xml");
+        ejbJar.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
         return ejbJar;
     }
 
     @BeforeClass
-    public static void beforeClass() throws Exception {
+    public static void beforeClass() throws NamingException {
         context = new RemoteEJBDirectory(MODULE_NAME);
+    }
+
+    @AfterClass
+    public static void destroy() throws NamingException {
+        context.close();
     }
 
     /**
@@ -134,6 +155,10 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
         boolean container1Stopped = false;
         boolean container2Stopped = false;
         try {
+            final ViewChangeListener listener = context.lookupStateless(ViewChangeListenerBean.class, ViewChangeListener.class);
+            
+            this.establishView(listener, NODE_1, NODE_2);
+            
             final RemoteCounter remoteCounter = context.lookupStateful(CounterBean.class, RemoteCounter.class);
             final DestructionCounterRemote destructionCounter = context.lookupSingleton(DestructionCounterSingleton.class, DestructionCounterRemote.class);
             // invoke on the bean a few times
@@ -153,24 +178,22 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
             final String previousInvocationNodeName = result.getNodeName();
             // the value is configured in arquillian.xml of the project
             if (previousInvocationNodeName.equals(NODE_1)) {
-                if (undeployOnly) {
-                    this.deployer.undeploy(DEPLOYMENT_1);
-                } else {
+                this.deployer.undeploy(DEPLOYMENT_1);
+                if (!undeployOnly) {
                     this.container.stop(CONTAINER_1);
+                    container1Stopped = true;
                 }
-                container1Stopped = true;
-            } else {
-                if (undeployOnly) {
-                    this.deployer.undeploy(DEPLOYMENT_2);
-                } else {
-                    this.container.stop(CONTAINER_2);
-                }
-                container2Stopped = true;
-            }
 
-            // Sometimes the test ends up with "javax.ejb.EJBException: java.io.IOException: Channel Channel ID ed419c76 (outbound) of Remoting connection 00052744 to /127.0.0.1:4447 has been closed"
-            // TODO Get rid of this wait
-            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
+                this.establishView(listener, NODE_2);
+            } else {
+                this.deployer.undeploy(DEPLOYMENT_2);
+                if (!undeployOnly) {
+                    this.container.stop(CONTAINER_2);
+                    container2Stopped = true;
+                }
+                
+                this.establishView(listener, NODE_1);
+            }
 
             // invoke again
             CounterResult resultAfterShuttingDownANode = remoteCounter.increment();
@@ -200,8 +223,6 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
             remoteCounter.remove();
             Assert.assertEquals("CDI bean was not destroyed", 1, destructionCounter.getCDIDestructionCount());
             Assert.assertEquals("SFSB was not destroyed", 1, destructionCounter.getSFSBDestructionCount());
-
-
         } finally {
             // reset the selector
             if (previousSelector != null) {
@@ -218,5 +239,9 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
                 this.container.stop(CONTAINER_2);
             }
         }
+    }
+
+    private void establishView(ViewChangeListener listener, String... members) throws InterruptedException {
+        listener.establishView("ejb", members);
     }
 }

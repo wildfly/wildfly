@@ -44,7 +44,7 @@ public class RemoteEJBDirectory extends AbstractEJBDirectory {
         this.module = module;
     }
 
-    protected <T> String createJndiName(Class<? extends T> beanClass, Class<T> beanInterface, Type type) {
-        return String.format("ejb:/%s/%s!%s%s", this.module, beanClass.getSimpleName(), beanInterface.getName(), (type == Type.STATEFUL) ? "?stateful" : "");
+    protected <T> String createJndiName(String beanName, Class<T> beanInterface, Type type) {
+        return String.format("ejb:/%s/%s!%s%s", this.module, beanName, beanInterface.getName(), (type == Type.STATEFUL) ? "?stateful" : "");
     }
 }

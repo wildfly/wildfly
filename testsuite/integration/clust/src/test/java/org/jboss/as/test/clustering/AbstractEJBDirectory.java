@@ -24,6 +24,8 @@ package org.jboss.as.test.clustering;
 
 import java.util.Properties;
 
+import javax.ejb.EJBHome;
+import javax.ejb.SessionBean;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -37,30 +39,60 @@ public abstract class AbstractEJBDirectory implements EJBDirectory {
     private final Context context;
 
     protected enum Type {
-        STATEFUL, STATELESS, SINGLETON
+        STATEFUL, STATELESS, SINGLETON, HOME
     };
     
     protected AbstractEJBDirectory(Properties env) throws NamingException {
         this.context = new InitialContext(env);
     }
 
+    @Override
+    public void close() throws NamingException {
+        this.context.close();
+    }
+
     public <T> T lookupStateful(Class<? extends T> beanClass, Class<T> beanInterface) throws NamingException {
-        return this.lookup(beanClass, beanInterface, Type.STATEFUL);
+        return this.lookupStateful(beanClass.getSimpleName(), beanInterface);
+    }
+
+    @Override
+    public <T> T lookupStateful(String beanName, Class<T> beanInterface) throws NamingException {
+        return this.lookup(beanName, beanInterface, Type.STATEFUL);
     }
     
     public <T> T lookupStateless(Class<? extends T> beanClass, Class<T> beanInterface) throws NamingException {
-        return this.lookup(beanClass, beanInterface, Type.STATELESS);
+        return this.lookupStateless(beanClass.getSimpleName(), beanInterface);
+    }
+
+    @Override
+    public <T> T lookupStateless(String beanName, Class<T> beanInterface) throws NamingException {
+        return this.lookup(beanName, beanInterface, Type.STATELESS);
     }
     
     public <T> T lookupSingleton(Class<? extends T> beanClass, Class<T> beanInterface) throws NamingException {
-        return this.lookup(beanClass, beanInterface, Type.SINGLETON);
+        return this.lookupSingleton(beanClass.getSimpleName(), beanInterface);
     }
 
-    protected <T> T lookup(Class<? extends T> beanClass, Class<T> beanInterface, Type type) throws NamingException {
-        return this.lookup(this.createJndiName(beanClass, beanInterface, type), beanInterface);
+    @Override
+    public <T> T lookupSingleton(String beanName, Class<T> beanInterface) throws NamingException {
+        return this.lookup(beanName, beanInterface, Type.SINGLETON);
     }
 
-    protected abstract <T> String createJndiName(Class<? extends T> beanClass, Class<T> beanInterface, Type type);
+    @Override
+    public <T extends EJBHome> T lookupHome(Class<? extends SessionBean> beanClass, Class<T> homeInterface) throws NamingException {
+        return this.lookupHome(beanClass.getSimpleName(), homeInterface);
+    }
+
+    @Override
+    public <T extends EJBHome> T lookupHome(String beanName, Class<T> homeInterface) throws NamingException {
+        return this.lookup(beanName, homeInterface, Type.HOME);
+    }
+
+    protected <T> T lookup(String beanName, Class<T> beanInterface, Type type) throws NamingException {
+        return this.lookup(this.createJndiName(beanName, beanInterface, type), beanInterface);
+    }
+
+    protected abstract <T> String createJndiName(String beanName, Class<T> beanInterface, Type type);
 
     protected <T> T lookup(String name, Class<T> beanInterface) throws NamingException {
         return beanInterface.cast(this.context.lookup(name));

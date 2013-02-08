@@ -22,18 +22,32 @@
 
 package org.jboss.as.test.clustering.cluster.ejb3.stateful.passivation;
 
+import static org.jboss.as.test.clustering.ClusteringTestConstants.CLUSTER_ESTABLISHMENT_LOOP_COUNT;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.CLUSTER_ESTABLISHMENT_WAIT_MS;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.CLUSTER_NAME;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_2;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.HTTP_REQUEST_WAIT_TIME_S;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.WAIT_FOR_PASSIVATION_MS;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import javax.naming.NamingException;
 
 import junit.framework.Assert;
 
-import org.jboss.arquillian.container.test.api.*;
+import org.jboss.arquillian.container.test.api.ContainerController;
+import org.jboss.arquillian.container.test.api.Deployer;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -54,12 +68,11 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
 
 /**
  * Clustering ejb passivation simple test.
@@ -81,6 +94,11 @@ public class ClusterPassivationTestCase {
     @BeforeClass
     public static void beforeClass() throws Exception {
         context = new RemoteEJBDirectory(ARCHIVE_NAME);
+    }
+
+    @AfterClass
+    public static void destroy() throws NamingException {
+        context.close();
     }
 
     @ArquillianResource

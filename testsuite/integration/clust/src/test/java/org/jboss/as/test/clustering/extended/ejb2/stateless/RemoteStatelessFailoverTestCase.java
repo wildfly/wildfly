@@ -22,14 +22,20 @@
 
 package org.jboss.as.test.clustering.extended.ejb2.stateless;
 
+import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_2;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.NODES;
+import static org.junit.Assert.assertEquals;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -39,21 +45,23 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.EJBClientContextSelector;
+import org.jboss.as.test.clustering.EJBDirectory;
 import org.jboss.as.test.clustering.NodeNameGetter;
+import org.jboss.as.test.clustering.RemoteEJBDirectory;
+import org.jboss.as.test.clustering.ViewChangeListener;
+import org.jboss.as.test.clustering.ViewChangeListenerBean;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
-import static org.junit.Assert.assertEquals;
 
 /**
  * EJB2 stateless bean - basic cluster tests - failover and load balancing.
@@ -67,12 +75,11 @@ import static org.junit.Assert.assertEquals;
 public class RemoteStatelessFailoverTestCase {
     private static final Logger log = Logger.getLogger(RemoteStatelessFailoverTestCase.class);
     private static final String CLIENT_PROPERTIES = "cluster/ejb3/stateless/jboss-ejb-client.properties";
-    private static InitialContext context;
+    private static EJBDirectory directoryAnnotation;
+    private static EJBDirectory directoryDD;
 
     private static final String ARCHIVE_NAME = "stateless-ejb2-failover-test";
     private static final String ARCHIVE_NAME_DD = "stateless-ejb2-failover-dd-test";
-    private static String jndiAnnotation;
-    private static String jndiDD;
 
     private static final Integer PORT_2 = 4547;
     private static final String HOST_2 = System.getProperty("node1");
@@ -86,9 +93,10 @@ public class RemoteStatelessFailoverTestCase {
     private static final Map<String, Boolean> started = new HashMap<String, Boolean>();
     private static final Map<String, List<String>> container2deployment = new HashMap<String, List<String>>();
     
-    static {
-        jndiAnnotation = "ejb:/" + ARCHIVE_NAME + "//" + StatelessBean.class.getSimpleName() + "!" + StatelessRemoteHome.class.getName();
-        jndiDD = "ejb:/" + ARCHIVE_NAME_DD + "//" + StatelessBean.class.getSimpleName() + "!" + StatelessRemoteHome.class.getName();
+    @BeforeClass
+    public static void init() throws NamingException {
+        directoryAnnotation = new RemoteEJBDirectory(ARCHIVE_NAME);
+        directoryDD = new RemoteEJBDirectory(ARCHIVE_NAME_DD);
 
         deployed.put(DEPLOYMENT_1, false);
         deployed.put(DEPLOYMENT_2, false);
@@ -105,6 +113,12 @@ public class RemoteStatelessFailoverTestCase {
         deployments2.add(DEPLOYMENT_2);
         deployments2.add(DEPLOYMENT_2_DD);
         container2deployment.put(CONTAINER_2, deployments2);
+    }
+
+    @AfterClass
+    public static void destroy() throws NamingException {
+        directoryAnnotation.close();
+        directoryDD.close();
     }
 
     @ArquillianResource
@@ -140,6 +154,8 @@ public class RemoteStatelessFailoverTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addClasses(StatelessBeanBase.class, StatelessBean.class, StatelessRemote.class, StatelessRemoteHome.class);
         jar.addClass(NodeNameGetter.class);
+        jar.addClasses(ViewChangeListener.class, ViewChangeListenerBean.class);
+        jar.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
         log.info(jar.toString(true));
         return jar;
     }
@@ -150,66 +166,61 @@ public class RemoteStatelessFailoverTestCase {
         jar.addClass(NodeNameGetter.class);
         jar.addAsManifestResource(RemoteStatelessFailoverTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
         jar.addAsManifestResource(RemoteStatelessFailoverTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
+        jar.addClasses(ViewChangeListener.class, ViewChangeListenerBean.class);
+        jar.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
         log.info(jar.toString(true));
         return jar;
     }
 
-    @BeforeClass
-    public static void beforeClass() throws Exception {
-        Properties env = new Properties();
-        env.setProperty(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
-        context = new InitialContext(env);
-    }
-    
-    @AfterClass
-    public static void tearDown() throws Exception {
-        context.close();
-    }
-
     @Test
     public void testFailoverOnStopAnnotatedBean() throws Exception {        
-        doFailover(true, jndiAnnotation, DEPLOYMENT_1, DEPLOYMENT_2);
+        doFailover(true, directoryAnnotation, DEPLOYMENT_1, DEPLOYMENT_2);
     }
 
     @Test
     public void testFailoverOnStopBeanSpecifiedByDescriptor() throws Exception {
-        doFailover(true, jndiDD, DEPLOYMENT_1_DD, DEPLOYMENT_2_DD);
+        doFailover(true, directoryDD, DEPLOYMENT_1_DD, DEPLOYMENT_2_DD);
     }
 
     @Test
     public void testFailoverOnUndeployAnnotatedBean() throws Exception {
-        doFailover(false, jndiAnnotation, DEPLOYMENT_1, DEPLOYMENT_2);     
+        doFailover(false, directoryAnnotation, DEPLOYMENT_1, DEPLOYMENT_2);     
     }
     
     @Test
     public void testFailoverOnUndeploySpecifiedByDescriptor() throws Exception {
-        doFailover(false, jndiDD, DEPLOYMENT_1_DD, DEPLOYMENT_2_DD);
+        doFailover(false, directoryDD, DEPLOYMENT_1_DD, DEPLOYMENT_2_DD);
     }
     
-    private void doFailover(boolean isStop, String jndi, String deployment1, String deployment2) throws Exception {
+    private void doFailover(boolean isStop, EJBDirectory directory, String deployment1, String deployment2) throws Exception {
         this.start(CONTAINER_1);
         this.deploy(CONTAINER_1, deployment1);
         
         final ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
 
         try {
-            StatelessRemoteHome home = (StatelessRemoteHome) context.lookup(jndi);
+            ViewChangeListener listener = directory.lookupStateless(ViewChangeListenerBean.class, ViewChangeListener.class);
+            
+            this.establishView(listener, NODES[0]);
+            
+            StatelessRemoteHome home = directory.lookupHome(StatelessBean.class, StatelessRemoteHome.class);
             StatelessRemote bean = home.create();
 
             assertEquals("The only " + NODES[0] + " is active. Bean had to be invoked on it but it wasn't.", NODES[0], bean.getNodeName());
 
             this.start(CONTAINER_2);
             this.deploy(CONTAINER_2, deployment2);
-
-            // Allow ample time for topology change to propagate to client
-            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
-
+            
+            this.establishView(listener, NODES);
+            
             if(isStop) {
                 this.stop(CONTAINER_1);
             } else {
                 this.undeploy(CONTAINER_1, deployment1);
             }
-
+            
+            this.establishView(listener, NODES[1]);
+            
             assertEquals("Only " + NODES[1] + " is active. The bean had to be invoked on it but it wasn't.", NODES[1], bean.getNodeName());
         } finally {
             // reset the selector
@@ -226,18 +237,18 @@ public class RemoteStatelessFailoverTestCase {
 
     @Test
     public void testLoadbalanceAnnotatedBean() throws Exception {
-        loadbalance(jndiAnnotation, DEPLOYMENT_1, DEPLOYMENT_2);
+        loadbalance(directoryAnnotation, DEPLOYMENT_1, DEPLOYMENT_2);
     }
 
     @Test
     public void testLoadbalanceSpecifiedByDescriptor() throws Exception {
-        loadbalance(jndiDD, DEPLOYMENT_1_DD, DEPLOYMENT_2_DD);
+        loadbalance(directoryDD, DEPLOYMENT_1_DD, DEPLOYMENT_2_DD);
     }
     
     /**
      * Basic load balance testing. A random distribution is used amongst nodes for client now.
      */
-    private void loadbalance(String jndi, String deployment1, String deployment2) throws Exception {
+    private void loadbalance(EJBDirectory directory, String deployment1, String deployment2) throws Exception {
         this.start(CONTAINER_1);
         this.deploy(CONTAINER_1, deployment1);
         this.start(CONTAINER_2);
@@ -251,7 +262,7 @@ public class RemoteStatelessFailoverTestCase {
         double serversProccessedAtLeast = 0.2;
 
         try {
-            StatelessRemoteHome home = (StatelessRemoteHome) context.lookup(jndi);
+            StatelessRemoteHome home = directory.lookupHome(StatelessBean.class, StatelessRemoteHome.class);
             StatelessRemote bean = home.create();
 
             String node = bean.getNodeName();
@@ -348,5 +359,9 @@ public class RemoteStatelessFailoverTestCase {
             this.container.stop(container);
             started.put(container, false);
         }
+    }
+
+    private void establishView(ViewChangeListener listener, String... members) throws InterruptedException {
+        listener.establishView("ejb", members);
     }
 }

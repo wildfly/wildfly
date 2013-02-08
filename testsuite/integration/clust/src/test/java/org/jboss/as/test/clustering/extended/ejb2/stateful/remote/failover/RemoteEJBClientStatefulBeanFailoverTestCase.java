@@ -22,23 +22,26 @@
 
 package org.jboss.as.test.clustering.extended.ejb2.stateful.remote.failover;
 
-import java.util.Properties;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_2;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-
-import org.jboss.arquillian.container.test.api.*;
+import org.jboss.arquillian.container.test.api.ContainerController;
+import org.jboss.arquillian.container.test.api.Deployer;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
-
 import org.jboss.as.test.clustering.NodeNameGetter;
+import org.jboss.as.test.clustering.ViewChangeListener;
+import org.jboss.as.test.clustering.ViewChangeListenerBean;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -89,14 +92,9 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase extends RemoteEJBClient
         jar.addClasses(CounterBaseBean.class, CounterBean.class, CounterRemote.class, CounterRemoteHome.class, CounterResult.class);
         jar.addClass(NodeNameGetter.class);
         jar.addAsManifestResource(new StringAsset("Dependencies: deployment." + ARCHIVE_NAME_SINGLE + ".jar\n"), "MANIFEST.MF");
+        jar.addClasses(ViewChangeListener.class, ViewChangeListenerBean.class);
+        jar.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
         return jar;
-    }
-
-    @BeforeClass
-    public static void beforeClass() throws Exception {
-        Properties env = new Properties();
-        env.setProperty(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
-        context = new InitialContext(env);
     }
     
     @Override

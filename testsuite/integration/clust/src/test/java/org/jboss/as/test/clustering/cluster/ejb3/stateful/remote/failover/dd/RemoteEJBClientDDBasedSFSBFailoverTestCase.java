@@ -22,12 +22,21 @@
 
 package org.jboss.as.test.clustering.cluster.ejb3.stateful.remote.failover.dd;
 
-import org.jboss.arquillian.container.test.api.*;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_2;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_1;
+
+import javax.naming.NamingException;
+
+import org.jboss.arquillian.container.test.api.ContainerController;
+import org.jboss.arquillian.container.test.api.Deployer;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-
-import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
-
 import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.EJBDirectory;
 import org.jboss.as.test.clustering.NodeNameGetter;
@@ -40,6 +49,7 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -91,6 +101,11 @@ public class RemoteEJBClientDDBasedSFSBFailoverTestCase {
     @BeforeClass
     public static void beforeClass() throws Exception {
         context = new RemoteEJBDirectory(MODULE_NAME);
+    }
+
+    @AfterClass
+    public static void destroy() throws NamingException {
+        context.close();
     }
 
     /**
