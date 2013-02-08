@@ -119,8 +119,13 @@ public class RunAsMergingProcessor extends AbstractMergingProcessor<EJBComponent
                     componentConfiguration.setRunAsPrincipal(principal);
                 else if (globalRunAsPrincipal != null)
                     componentConfiguration.setRunAsPrincipal(globalRunAsPrincipal);
-                else
-                    componentConfiguration.setRunAsPrincipal(DEFAULT_RUN_AS_PRINCIPAL);
+                else {
+                    // we only set the run-as-principal to default, if it's not already set (via annotation) on the component
+                    if (componentConfiguration.getRunAsPrincipal() == null) {
+                        componentConfiguration.setRunAsPrincipal(DEFAULT_RUN_AS_PRINCIPAL);
+                    }
+                }
+
             }
         }
     }
