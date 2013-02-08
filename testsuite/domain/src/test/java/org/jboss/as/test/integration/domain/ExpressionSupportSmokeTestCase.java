@@ -368,18 +368,7 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
         }
 
         // Special cases
-        if ("formatter".equals(attrName)) {
-            for (PathElement pe : address) {
-                if ("subsystem".equals(pe.getKey())) {
-                    if ("logging".equals(pe.getValue())) {
-                        // TODO remove when https://issues.jboss.org/browse/DMR-1 is fixed
-                        return true;
-                    } else {
-                        break;
-                    }
-                }
-            }
-        } else if ("default-web-module".equals(attrName)) {
+        if ("default-web-module".equals(attrName)) {
             if (address.size() > 1) {
                 PathElement subPe = address.getElement(address.size() - 2);
                 if ("subsystem".equals(subPe.getKey()) && "web".equals(subPe.getValue())
