@@ -69,6 +69,7 @@ public class RunAsPrincipalTestCase  {
                 .addClass(RunAsPrincipalTestCase.class)
                 .addClass(Base64.class)
                 .addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class)
+                .addAsWebInfResource(RunAsPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr\n"),"MANIFEST.MF");
         war.addPackage(CommonCriteria.class.getPackage());
         log.info(war.toString(true));

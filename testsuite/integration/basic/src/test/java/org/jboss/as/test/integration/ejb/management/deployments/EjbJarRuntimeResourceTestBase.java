@@ -91,6 +91,7 @@ public class EjbJarRuntimeResourceTestBase {
     public static Archive<?> getEJBJar() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, JAR_NAME);
         jar.addPackage(EjbJarRuntimeResourcesTestCase.class.getPackage());
+        jar.addAsManifestResource(EjbJarRuntimeResourcesTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         return jar;
     }
 
