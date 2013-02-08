@@ -47,6 +47,7 @@ import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.BundleActivator;
@@ -71,6 +72,7 @@ import org.projectodd.stilts.stomplet.Stomplet;
 @RunAsClient
 @RunWith(Arquillian.class)
 @ServerSetup(StompletTestCase.StompletTestCaseServerSetup.class)
+@Ignore("AS7-6490 Stomplet hangs due to the way it uses Netty")
 public class StompletTestCase {
 
     static final String STOMPLET_NAME = "simple-stomplet";
