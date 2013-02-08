@@ -66,6 +66,7 @@ import org.jboss.com.sun.net.httpserver.HttpServer;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
+import org.jboss.modules.ModuleLoader;
 
 /**
  * A generic handler to server up resources requested using a GET request.
@@ -321,9 +322,9 @@ class ResourceHandler implements ManagementHttpHandler {
         httpServer.removeContext(context);
     }
 
-    protected static ClassLoader getClassLoader(final String module, final String slot) throws ModuleLoadException {
+    protected static ClassLoader getClassLoader(final ModuleLoader moduleLoader, final String module, final String slot) throws ModuleLoadException {
         ModuleIdentifier id = ModuleIdentifier.create(module, slot);
-        ClassLoader cl = Module.getCallerModuleLoader().loadModule(id).getClassLoader();
+        ClassLoader cl = moduleLoader.loadModule(id).getClassLoader();
 
         return cl;
     }

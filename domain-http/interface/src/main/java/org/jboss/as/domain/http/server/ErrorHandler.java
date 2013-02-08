@@ -24,6 +24,7 @@ package org.jboss.as.domain.http.server;
 
 import java.util.Locale;
 
+import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
 
 /**
@@ -50,7 +51,7 @@ class ErrorHandler extends ResourceHandler {
     }
 
     ErrorHandler(String slot) throws ModuleLoadException {
-        super(ERROR_CONTEXT, DEFAULT_RESOURCE, getClassLoader(ERROR_MODULE, slot));
+        super(ERROR_CONTEXT, DEFAULT_RESOURCE, getClassLoader(Module.getCallerModuleLoader(), ERROR_MODULE, slot));
     }
 
     @Override

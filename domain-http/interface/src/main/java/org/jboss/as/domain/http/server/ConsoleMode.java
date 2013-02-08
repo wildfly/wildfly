@@ -22,7 +22,6 @@
 package org.jboss.as.domain.http.server;
 
 import java.io.File;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -31,7 +30,9 @@ import org.jboss.as.domain.management.AuthenticationMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.com.sun.net.httpserver.HttpContext;
 import org.jboss.com.sun.net.httpserver.HttpServer;
+import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
+import org.jboss.modules.ModuleLoader;
 
 /**
  * Different modes for showing the admin console
@@ -116,7 +117,7 @@ public enum ConsoleMode {
      *
      * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
      */
-    private static class ConsoleHandler extends ResourceHandler {
+    static class ConsoleHandler extends ResourceHandler {
 
         private static final String NOCACHE_JS = ".nocache.js";
         private static final String INDEX_HTML = "index.html";
@@ -127,7 +128,7 @@ public enum ConsoleMode {
         private static final String DEFAULT_RESOURCE = "/" + INDEX_HTML;
 
         ConsoleHandler(String skin) throws ModuleLoadException {
-            super(CONTEXT, DEFAULT_RESOURCE, findConsoleClassLoader(skin));
+            super(CONTEXT, DEFAULT_RESOURCE, findConsoleClassLoader(Module.getCallerModuleLoader(), skin));
         }
 
         @Override
@@ -149,14 +150,14 @@ public enum ConsoleMode {
             }
         }
 
-        private static ClassLoader findConsoleClassLoader(String consoleSkin) throws ModuleLoadException {
+        static ClassLoader findConsoleClassLoader(ModuleLoader moduleLoader, String consoleSkin) throws ModuleLoadException {
             final String moduleName = CONSOLE_MODULE + "." + (consoleSkin == null ? "main" : consoleSkin);
 
             // Find all console versions on the filesystem, sorted by version
             SortedSet<ConsoleVersion> consoleVersions = findConsoleVersions(moduleName);
             for (ConsoleVersion consoleVersion : consoleVersions) {
                 try {
-                    return getClassLoader(moduleName, consoleVersion.getName());
+                    return getClassLoader(moduleLoader, moduleName, consoleVersion.getName());
                 } catch (ModuleLoadException mle) {
                     // ignore
                 }
@@ -164,7 +165,7 @@ public enum ConsoleMode {
 
             // No joy. Fall back to the AS 7.1 approach where the module id is org.jboss.as.console:<sking>
             try {
-                return getClassLoader(CONSOLE_MODULE, consoleSkin);
+                return getClassLoader(moduleLoader, CONSOLE_MODULE, consoleSkin);
             } catch (ModuleLoadException mle) {
                 // ignore
             }
@@ -184,7 +185,7 @@ public enum ConsoleMode {
         private static final String NO_CONSOLE_FOR_ADMIN_MODE = "/noConsoleForAdminModeError.html";
 
         private DisabledConsoleHandler(String slot, String resource) throws ModuleLoadException {
-            super(CONTEXT, resource, getClassLoader(ERROR_MODULE, slot));
+            super(CONTEXT, resource, getClassLoader(Module.getCallerModuleLoader(), ERROR_MODULE, slot));
         }
 
         static DisabledConsoleHandler createNoConsoleForSlave(String slot) throws ModuleLoadException {
