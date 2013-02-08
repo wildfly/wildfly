@@ -95,6 +95,12 @@ public class MissingMethodPermissionsTestCase {
         this.loginContext = null;
     }
 
+    /**
+     * Tests that methods without any explicit security permissions on an EJB marked
+     * with <missing-method-permissions-deny-access>false</missing-method-permissions-deny-access> are allowed access
+     *
+     * @throws Exception
+     */
     @Test
     public void testAllowAccessForMethodsMissingPermissions() throws Exception {
         final SecurityTestRemoteView allowAccessBean = InitialContext.doLookup("java:global/" + APP_NAME + "/" + MODULE_ONE_NAME + "/" + SecuredBeanOne.class.getSimpleName() + "!" + SecurityTestRemoteView.class.getName());
@@ -108,6 +114,12 @@ public class MissingMethodPermissionsTestCase {
         Assert.assertEquals("Unexpected caller prinicpal when invoking method with no role", "user1", callerPrincipalForMethodWithNoRole);
     }
 
+    /**
+     * Tests that methods without any explicit security permissions on an EJB marked
+     * with <missing-method-permissions-deny-access>true</missing-method-permissions-deny-access> are denied access
+     *
+     * @throws Exception
+     */
     @Test
     public void testDenyAccessForMethodsMissingPermissions() throws Exception {
         final SecurityTestRemoteView denyAccessBean = InitialContext.doLookup("java:global/" + APP_NAME + "/" + MODULE_TWO_NAME + "/" + SecuredBeanTwo.class.getSimpleName() + "!" + SecurityTestRemoteView.class.getName());
