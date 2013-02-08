@@ -135,6 +135,7 @@ public class GetCallerPrincipalTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "single.jar")
                 .addClass(TestResultsSingleton.class)
                 .addClass(ITestResultsSingleton.class)
+                .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-single", "MANIFEST.MF");
         jar.addPackage(CommonCriteria.class.getPackage());
         log.info(jar.toString(true));
@@ -148,7 +149,8 @@ public class GetCallerPrincipalTestCase {
                 .addClass(IBeanLifecycleCallback.class)
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "users.properties", "users.properties")
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "roles.properties", "roles.properties")
-                .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-bean", "MANIFEST.MF")                ;
+                .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
+                .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-bean", "MANIFEST.MF");
         jar.addPackage(CommonCriteria.class.getPackage());
         log.info(jar.toString(true));
         return jar;
@@ -161,6 +163,7 @@ public class GetCallerPrincipalTestCase {
                 .addClass(IBeanLifecycleCallback.class)
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "users.properties", "users.properties")
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "roles.properties", "roles.properties")
+                .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-bean", "MANIFEST.MF");
         jar.addPackage(CommonCriteria.class.getPackage());
         log.info(jar.toString(true));
@@ -173,6 +176,7 @@ public class GetCallerPrincipalTestCase {
                 .addClass(MDBLifecycleCallback.class)
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "users.properties", "users.properties")
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "roles.properties", "roles.properties")
+                .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-bean", "MANIFEST.MF")                ;
         jar.addPackage(CommonCriteria.class.getPackage());
         log.info(jar.toString(true));
@@ -186,6 +190,7 @@ public class GetCallerPrincipalTestCase {
                 .addClass(EntityBeanHome.class)
                 .addClass(EntityBean.class)
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-bean", "MANIFEST.MF")
+                .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
         jar.addPackage(CommonCriteria.class.getPackage());
         log.info(jar.toString(true));
@@ -205,6 +210,7 @@ public class GetCallerPrincipalTestCase {
                 .addPackage(AbstractMgmtTestBase.class.getPackage()).addClasses(MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class)
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "users.properties", "users.properties")
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "roles.properties", "roles.properties")
+                .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-test", "MANIFEST.MF");
         jar.addPackage(CommonCriteria.class.getPackage());
         log.info(jar.toString(true));

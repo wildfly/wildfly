@@ -65,6 +65,7 @@ public class EJBSecurityTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ejb-security-test.jar");
         jar.addPackage(AnnotatedSLSB.class.getPackage());
         jar.addAsManifestResource("ejb/security/ejb-jar.xml", "ejb-jar.xml");
+        jar.addAsManifestResource(EJBSecurityTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         jar.addPackage(CommonCriteria.class.getPackage());
         return jar;
     }

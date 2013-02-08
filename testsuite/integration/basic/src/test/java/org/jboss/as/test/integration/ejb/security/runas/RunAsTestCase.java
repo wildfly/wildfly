@@ -96,6 +96,7 @@ public class RunAsTestCase {
                 .addAsResource("ejb3/security/roles.properties", "roles.properties")
                 .addAsWebInfResource("ejb3/security/web.xml", "web.xml")
                 .addAsWebInfResource("ejb3/security/jboss-web.xml", "jboss-web.xml")
+                .addAsWebInfResource(RunAsTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF");
         war.addPackage(CommonCriteria.class.getPackage());
         log.info(war.toString(true));

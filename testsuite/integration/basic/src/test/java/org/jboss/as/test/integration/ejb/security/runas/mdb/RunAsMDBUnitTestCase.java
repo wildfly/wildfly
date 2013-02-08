@@ -98,6 +98,7 @@ public class RunAsMDBUnitTestCase {
                 .addClass(JmsQueueSetup.class)
                 .addAsResource(RunAsMDBUnitTestCase.class.getPackage(), "users.properties", "users.properties")
                 .addAsResource(RunAsMDBUnitTestCase.class.getPackage(), "roles.properties", "roles.properties");
+        jar.addAsManifestResource(RunAsMDBUnitTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr \n"), "MANIFEST.MF");
         jar.addPackage(CommonCriteria.class.getPackage());
         log.info(jar.toString(true));
