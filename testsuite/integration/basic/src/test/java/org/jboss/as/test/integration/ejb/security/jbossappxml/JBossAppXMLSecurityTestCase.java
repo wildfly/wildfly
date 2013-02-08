@@ -84,6 +84,7 @@ public class JBossAppXMLSecurityTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         jar.addClasses(BeanInterface.class,FirstBean.class, SecondBean.class);
         jar.addPackage(CommonCriteria.class.getPackage());
+        jar.addAsManifestResource(JBossAppXMLSecurityTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
 
         logger.info(jar.toString(true));
 

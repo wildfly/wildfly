@@ -241,6 +241,11 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     private Set<InterceptorDescription> allContainerInterceptors;
 
     /**
+     * missing-method-permissions-deny-access that's used for secured EJBs
+     */
+    private Boolean missingMethodPermissionsDenyAccess = null;
+
+    /**
      * Construct a new instance.
      *
      * @param componentName             the component name
@@ -602,6 +607,14 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      */
     public boolean isExplicitSecurityDomainConfigured() {
         return this.securityDomain != null;
+    }
+
+    public void setMissingMethodPermissionsDenyAccess(Boolean missingMethodPermissionsDenyAccess) {
+        this.missingMethodPermissionsDenyAccess = missingMethodPermissionsDenyAccess;
+    }
+
+    public Boolean isMissingMethodPermissionsDeniedAccess() {
+        return this.missingMethodPermissionsDenyAccess;
     }
 
     public SecurityRolesMetaData getSecurityRoles() {

@@ -85,6 +85,7 @@ public abstract class AnnSBTest {
               //.addClass(Util.class)
               //.addClass(SecurityTest.class)
            .addAsManifestResource("ejb3/security/EMPTY_MANIFEST.MF", "MANIFEST.MF");
+        jar.addAsManifestResource(AnnSBTest.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         jar.addPackage(CommonCriteria.class.getPackage());
         LOG.info(jar.toString(true));
         return jar;

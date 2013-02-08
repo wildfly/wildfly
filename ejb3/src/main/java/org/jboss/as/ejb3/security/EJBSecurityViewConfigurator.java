@@ -89,6 +89,7 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
         // setup the method specific security interceptor(s)
         boolean beanHasMethodLevelSecurityMetadata = false;
         final List<Method> viewMethods = viewConfiguration.getProxyFactory().getCachedMethods();
+        final List<Method> methodsWithoutExplicitSecurityConfiguration = new ArrayList<Method>();
         for (final Method viewMethod : viewMethods) {
             // TODO: proxy factory exposes non-public methods, is this a bug in the no-interface view?
             if (!Modifier.isPublic(viewMethod.getModifiers())) {
@@ -107,6 +108,9 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
             // if any method has security metadata then the bean has method level security metadata
             if (methodHasSecurityMetadata) {
                 beanHasMethodLevelSecurityMetadata = true;
+            } else {
+                // make a note that this method didn't have any explicit method permissions configured
+                methodsWithoutExplicitSecurityConfiguration.add(viewMethod);
             }
         }
 
@@ -114,6 +118,18 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
         if (beanHasMethodLevelSecurityMetadata || this.hasSecurityMetaData(ejbComponentDescription)) {
             // setup the security context interceptor
             viewConfiguration.addViewInterceptor(new SecurityContextInterceptorFactory(), InterceptorOrder.View.SECURITY_CONTEXT);
+            // also check the missing-method-permissions-deny-access configuration and add the authorization interceptor
+            // to methods which don't have explicit method permissions.
+            // (@see http://anil-identity.blogspot.in/2010/02/tip-interpretation-of-missing-ejb.html for details)
+            final Boolean denyAccessToMethodsMissingPermissions = ((EJBComponentDescription) componentConfiguration.getComponentDescription()).isMissingMethodPermissionsDeniedAccess();
+            // default to "deny access"
+            if (denyAccessToMethodsMissingPermissions == null || denyAccessToMethodsMissingPermissions == true) {
+                for (final Method viewMethod : methodsWithoutExplicitSecurityConfiguration) {
+                    // "deny access" implies we need the authorization interceptor to be added so that it can nuke the invocation
+                    final Interceptor authorizationInterceptor = new AuthorizationInterceptor(EJBMethodSecurityAttribute.denyAll(), viewClassName, viewMethod, contextID);
+                    viewConfiguration.addViewInterceptor(viewMethod, new ImmediateInterceptorFactory(authorizationInterceptor), InterceptorOrder.View.EJB_SECURITY_AUTHORIZATION_INTERCEPTOR);
+                }
+            }
         } else {
             // if security is not applicable for the EJB, then do *not* add the security related interceptors
             ROOT_LOGGER.debug("Security is *not* enabled on EJB: " + ejbComponentDescription.getEJBName() + ", no security interceptors will apply");
