@@ -23,11 +23,7 @@
 package org.jboss.as.test.clustering.extended.ejb2.stateful.passivation.dd;
 
 import java.net.URL;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.*;
 import org.jboss.arquillian.junit.Arquillian;
@@ -46,7 +42,6 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -62,13 +57,6 @@ import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
 @RunAsClient
 public class ClusterPassivationDDTestCase extends ClusterPassivationTestBase {
     private static Logger log = Logger.getLogger(ClusterPassivationDDTestCase.class);
-
-    @BeforeClass
-    public static void beforeClass() throws Exception {
-        Properties env = new Properties();
-        env.setProperty(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
-        context = new InitialContext(env);
-    }
 
     @ArquillianResource
     private ContainerController controller;
@@ -150,8 +138,7 @@ public class ClusterPassivationDDTestCase extends ClusterPassivationTestBase {
         // Setting context from .properties file to get ejb:/ remote context
         setupEJBClientContextSelector();
         
-        StatefulRemoteHome home = (StatefulRemoteHome) context.lookup("ejb:/" + ARCHIVE_NAME + "//" + StatefulBeanDD.class.getSimpleName() + "!"
-                + StatefulRemoteHome.class.getName());
+        StatefulRemoteHome home = directory.lookupHome(StatefulBeanDD.class, StatefulRemoteHome.class);
         StatefulRemote statefulBean = home.create();
 
         runPassivation(statefulBean, controller, deployer);

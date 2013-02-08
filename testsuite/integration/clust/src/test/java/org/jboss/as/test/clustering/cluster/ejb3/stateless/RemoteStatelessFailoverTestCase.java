@@ -28,18 +28,17 @@ import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENTS;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_2;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.GRACE_TIME_TO_MEMBERSHIP_CHANGE;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.NODES;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+
+import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -52,6 +51,8 @@ import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.EJBDirectory;
 import org.jboss.as.test.clustering.NodeNameGetter;
 import org.jboss.as.test.clustering.RemoteEJBDirectory;
+import org.jboss.as.test.clustering.ViewChangeListener;
+import org.jboss.as.test.clustering.ViewChangeListenerBean;
 import org.jboss.as.test.clustering.cluster.ejb3.stateless.bean.Stateless;
 import org.jboss.as.test.clustering.cluster.ejb3.stateless.bean.StatelessBean;
 import org.jboss.ejb.client.ContextSelector;
@@ -59,10 +60,11 @@ import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -72,7 +74,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore // AS7-5211 unstable test
+//@Ignore // AS7-5211 unstable test
 public class RemoteStatelessFailoverTestCase {
     private static final Logger log = Logger.getLogger(RemoteStatelessFailoverTestCase.class);
     private static final String MODULE_NAME = "remote-ejb-client-stateless-bean-failover-test";
@@ -108,14 +110,20 @@ public class RemoteStatelessFailoverTestCase {
     private static Archive<?> createDeployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         ejbJar.addPackage(StatelessBean.class.getPackage());
-        ejbJar.addClass(NodeNameGetter.class);
+        ejbJar.addClasses(NodeNameGetter.class, ViewChangeListener.class, ViewChangeListenerBean.class);
+        ejbJar.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
         log.info(ejbJar.toString(true));
         return ejbJar;
     }
 
     @BeforeClass
-    public static void beforeClass() throws Exception {
+    public static void beforeClass() throws NamingException {
         context = new RemoteEJBDirectory(MODULE_NAME);
+    }
+
+    @AfterClass
+    public static void destroy() throws NamingException {
+        context.close();
     }
 
     @Test
@@ -126,6 +134,10 @@ public class RemoteStatelessFailoverTestCase {
         final ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
 
         try {
+            ViewChangeListener listener = context.lookupStateless(ViewChangeListenerBean.class, ViewChangeListener.class);
+            
+            this.establishView(listener, NODES[0]);
+            
             Stateless bean = context.lookupStateless(StatelessBean.class, Stateless.class);
 
             assertEquals(NODES[0], bean.getNodeName());
@@ -133,9 +145,8 @@ public class RemoteStatelessFailoverTestCase {
             this.start(1);
             this.deploy(1);
 
-            // Allow ample time for topology change to propagate to client
-            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
-
+            this.establishView(listener, NODES);
+            
             List<String> results = new ArrayList<String>(10);
             for (int i = 0; i < 10; ++i) {
                 results.add(bean.getNodeName());
@@ -147,6 +158,8 @@ public class RemoteStatelessFailoverTestCase {
             }
 
             this.stop(0);
+
+            this.establishView(listener, NODES[1]);
 
             assertEquals(NODES[1], bean.getNodeName());
         } finally {
@@ -171,6 +184,10 @@ public class RemoteStatelessFailoverTestCase {
         final ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
 
         try {
+            ViewChangeListener listener = context.lookupStateless(ViewChangeListenerBean.class, ViewChangeListener.class);
+            
+            this.establishView(listener, NODES[0]);
+            
             Stateless bean = context.lookupStateless(StatelessBean.class, Stateless.class);
 
             assertEquals(NODES[0], bean.getNodeName());
@@ -178,8 +195,7 @@ public class RemoteStatelessFailoverTestCase {
             this.start(1);
             this.deploy(1);
 
-            // Allow ample time for topology change to propagate to client
-            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
+            this.establishView(listener, NODES);
 
             List<String> results = new ArrayList<String>(10);
             for (int i = 0; i < 10; ++i) {
@@ -193,6 +209,8 @@ public class RemoteStatelessFailoverTestCase {
 
             this.undeploy(0);
 
+            this.establishView(listener, NODES[1]);
+            
             assertEquals(NODES[1], bean.getNodeName());
         } finally {
             // reset the selector
@@ -225,6 +243,10 @@ public class RemoteStatelessFailoverTestCase {
         double serversProccessedAtLeast = 0.2;
 
         try {
+            ViewChangeListener listener = context.lookupStateless(ViewChangeListenerBean.class, ViewChangeListener.class);
+            
+            this.establishView(listener, NODES);
+            
             Stateless bean = context.lookupStateless(StatelessBean.class, Stateless.class);
 
             String node = bean.getNodeName();
@@ -244,10 +266,16 @@ public class RemoteStatelessFailoverTestCase {
             validateBalancing(bean, numberOfCalls, numberOfServers, serversProccessedAtLeast);
 
             this.stop(0);
+            
+            this.establishView(listener, NODES[1]);
+            
             node = bean.getNodeName();
             log.info("Node called : " + node);
 
             this.start(0);
+            
+            this.establishView(listener, NODES);
+            
             node = bean.getNodeName();
             log.info("Node called : " + node);
 
@@ -314,5 +342,9 @@ public class RemoteStatelessFailoverTestCase {
             this.container.stop(CONTAINERS[index]);
             this.started[index] = false;
         }
+    }
+
+    private void establishView(ViewChangeListener listener, String... members) throws InterruptedException {
+        listener.establishView("ejb", members);
     }
 }

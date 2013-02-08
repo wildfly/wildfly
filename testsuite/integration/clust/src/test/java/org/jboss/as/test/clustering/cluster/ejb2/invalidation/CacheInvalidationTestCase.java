@@ -30,16 +30,22 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.EJBClientContextSelector;
+import org.jboss.as.test.clustering.EJBDirectory;
 import org.jboss.as.test.clustering.NodeInfoServlet;
 import org.jboss.as.test.clustering.NodeNameGetter;
+import org.jboss.as.test.clustering.RemoteEJBDirectory;
+import org.jboss.as.test.clustering.ViewChangeListener;
+import org.jboss.as.test.clustering.ViewChangeListenerBean;
 import org.jboss.as.test.clustering.cluster.ejb2.StatefulBean;
 import org.jboss.as.test.clustering.cluster.ejb2.StatefulBeanBase;
 import org.jboss.as.test.clustering.cluster.ejb2.StatefulRemote;
 import org.jboss.as.test.clustering.cluster.ejb2.StatefulRemoteHome;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
+import org.jboss.msc.service.StartException;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -48,11 +54,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.ejb.CreateException;
-import javax.naming.Context;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
+
 import java.io.IOException;
-import java.util.Properties;
 
 import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
 
@@ -65,7 +69,8 @@ import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
 @RunAsClient
 public class CacheInvalidationTestCase {
 
-    private static InitialContext context;
+    private static final String ARCHIVE_NAME = "cache-invalidation-test";
+    private static EJBDirectory directory;
     private static ContextSelector<EJBClientContext> previousSelector;
 
     @ArquillianResource
@@ -88,20 +93,19 @@ public class CacheInvalidationTestCase {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        Properties env = new Properties();
-        env.setProperty(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
-        context = new InitialContext(env);
+        directory = new RemoteEJBDirectory(ARCHIVE_NAME);
     }
 
     public static Archive<?> createDeployment() {
-        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "cache-invalidation-test.jar");
+        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         archive.addClasses(CacheInvalidationTestCase.class, StatefulBean.class, StatefulBeanBase.class, StatefulRemote.class, StatefulRemoteHome.class);
-        archive.addClasses(NodeNameGetter.class, NodeInfoServlet.class);
+        archive.addClasses(NodeNameGetter.class, NodeInfoServlet.class, ViewChangeListener.class, ViewChangeListenerBean.class);
+        archive.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
         return archive;
     }
 
     @AfterClass
-    public static void after() {
+    public static void after() throws NamingException {
         if (previousSelector != null) {
             EJBClientContext.setSelector(previousSelector);
         }
@@ -109,35 +113,51 @@ public class CacheInvalidationTestCase {
             controller.stop(CONTAINER_1);
         if(controller.isStarted(CONTAINER_2))
             controller.stop(CONTAINER_2);
+        directory.close();
     }
 
-
     @Test
-    public void testCacheInvalidation() throws NamingException, IOException, CreateException {
+    public void testCacheInvalidation() throws NamingException, IOException, CreateException, StartException, InterruptedException {
         controller.start(CONTAINER_1);
         deployer.deploy(DEPLOYMENT_1);
         controller.start(CONTAINER_2);
         deployer.deploy(DEPLOYMENT_2);
+
         previousSelector = EJBClientContextSelector.setup("cluster/ejb3/stateless/jboss-ejb-client.properties");
-        StatefulRemoteHome home = (StatefulRemoteHome) context.lookup("ejb:/" + "cache-invalidation-test" + "//" + StatefulBean.class.getSimpleName() + "!"
-                + StatefulRemoteHome.class.getName());
+
+        ViewChangeListener listener = directory.lookupStateless(ViewChangeListenerBean.class, ViewChangeListener.class);
+        this.establishView(listener, NODE_1, NODE_2);
+
+        StatefulRemoteHome home = directory.lookupHome(StatefulBean.class, StatefulRemoteHome.class);
         StatefulRemote remote = home.create();
         for(int i=0; i<25; i++) {
             remote.incrementNumber();
         }
         controller.stop(CONTAINER_1);
+
+        this.establishView(listener, NODE_2);
+
         int x = remote.getNumber();
         controller.start(CONTAINER_1);
+
+        this.establishView(listener, NODE_1, NODE_2);
+
         int y = remote.getNumber();
         deployer.undeploy(DEPLOYMENT_2);
         controller.stop(CONTAINER_2);
+
+        this.establishView(listener, NODE_1);
+
         int z = remote.getNumber();
         deployer.undeploy(DEPLOYMENT_1);
         controller.stop(CONTAINER_1);
+
         Assert.assertEquals(25, x);
         Assert.assertEquals(25, y);
         Assert.assertEquals(25, z);
-
     }
 
+    private void establishView(ViewChangeListener listener, String... members) throws InterruptedException {
+        listener.establishView("ejb", members);
+    }
 }

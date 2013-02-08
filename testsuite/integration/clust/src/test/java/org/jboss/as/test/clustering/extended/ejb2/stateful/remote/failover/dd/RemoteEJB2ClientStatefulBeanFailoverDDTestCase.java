@@ -24,11 +24,6 @@ package org.jboss.as.test.clustering.extended.ejb2.stateful.remote.failover.dd;
 
 import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
 
-import java.util.Properties;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -48,7 +43,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -100,13 +94,6 @@ public class RemoteEJB2ClientStatefulBeanFailoverDDTestCase extends RemoteEJBCli
         log.info(jar.toString(true));
         return jar;
     }   
-
-    @BeforeClass
-    public static void beforeClass() throws Exception {
-        Properties env = new Properties();
-        env.setProperty(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
-        context = new InitialContext(env);
-    }
     
     @Ignore("JBPAPP-8726")
     @Override

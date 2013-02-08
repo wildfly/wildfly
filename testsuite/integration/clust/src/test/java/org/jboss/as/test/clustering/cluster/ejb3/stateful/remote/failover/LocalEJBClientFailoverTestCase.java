@@ -24,13 +24,10 @@ package org.jboss.as.test.clustering.cluster.ejb3.stateful.remote.failover;
 
 import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_1;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_2;
 
-import java.util.Properties;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-
-import junit.framework.Assert;
+import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -40,15 +37,21 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.ClusteringTestConstants;
 import org.jboss.as.test.clustering.EJBClientContextSelector;
+import org.jboss.as.test.clustering.EJBDirectory;
+import org.jboss.as.test.clustering.RemoteEJBDirectory;
+import org.jboss.as.test.clustering.ViewChangeListener;
+import org.jboss.as.test.clustering.ViewChangeListenerBean;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -61,7 +64,6 @@ import org.junit.runner.RunWith;
  * @see https://issues.jboss.org/browse/AS7-3492
  */
 @RunWith(Arquillian.class)
-@Ignore("AS7-5318")
 public class LocalEJBClientFailoverTestCase {
 
     private static final Logger logger = Logger.getLogger(LocalEJBClientFailoverTestCase.class);
@@ -79,7 +81,8 @@ public class LocalEJBClientFailoverTestCase {
     @ArquillianResource
     private Deployer deployer;
 
-    private Context jndiContext;
+    private static EJBDirectory directory;
+    private static EJBDirectory clientDirectory;
 
     private boolean containerOneStarted;
     private boolean containerTwoStarted;
@@ -89,37 +92,42 @@ public class LocalEJBClientFailoverTestCase {
 
     @Deployment(name = CLIENT_ARQ_DEPLOYMENT, testable = false, managed = false)
     @TargetsContainer(ClusteringTestConstants.CONTAINER_2)
-    public static Archive createClientApplication() {
+    public static Archive<?> createClientApplication() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, CLIENT_APP_MODULE_NAME + ".jar");
         jar.addClasses(ClientSFSB.class, ClientSFSBRemote.class, NodeNameRetriever.class);
         jar.addAsManifestResource(LocalEJBClientFailoverTestCase.class.getPackage(), "local-ejb-client-failover-jboss-ejb-client.xml", "jboss-ejb-client.xml");
-
         return jar;
     }
 
     @Deployment(name = NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_1, testable = false, managed = false)
     @TargetsContainer(ClusteringTestConstants.CONTAINER_1)
-    public static Archive createNodeNameApplicationForContainer1() {
+    public static Archive<?> createNodeNameApplicationForContainer1() {
         return createNodeNameApplication();
     }
 
     @Deployment(name = NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_2, testable = false, managed = false)
     @TargetsContainer(ClusteringTestConstants.CONTAINER_2)
-    public static Archive createNodeNameApplicationForContainer2() {
+    public static Archive<?> createNodeNameApplicationForContainer2() {
         return createNodeNameApplication();
     }
 
-    private static Archive createNodeNameApplication() {
+    private static Archive<?> createNodeNameApplication() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, NODE_NAME_APP_MODULE_NAME + ".jar");
-        jar.addClasses(NodeNameRetriever.class, NodeNameSFSB.class);
+        jar.addClasses(NodeNameRetriever.class, NodeNameSFSB.class, ViewChangeListener.class, ViewChangeListenerBean.class);
+        jar.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
         return jar;
     }
 
-    @Before
-    public void beforeTest() throws Exception {
-        final Properties props = new Properties();
-        props.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
-        jndiContext = new InitialContext(props);
+    @BeforeClass
+    public static void beforeTest() throws NamingException {
+        clientDirectory = new RemoteEJBDirectory(CLIENT_APP_MODULE_NAME);
+        directory = new RemoteEJBDirectory(NODE_NAME_APP_MODULE_NAME);
+    }
+
+    @AfterClass
+    public static void destroy() throws NamingException {
+        clientDirectory.close();
+        directory.close();
     }
 
     @After
@@ -196,7 +204,11 @@ public class LocalEJBClientFailoverTestCase {
 
         final ContextSelector<EJBClientContext> previousSelector = EJBClientContextSelector.setup("cluster/ejb3/stateful/failover/local-ejb-sfsb-failover-jboss-ejb-client.properties");
         try {
-            final ClientSFSBRemote clientSFSB = (ClientSFSBRemote) jndiContext.lookup("ejb:/" + CLIENT_APP_MODULE_NAME + "//" + ClientSFSB.class.getSimpleName() + "!" + ClientSFSBRemote.class.getName() + "?stateful");
+            final ViewChangeListener listener = directory.lookupStateless(ViewChangeListenerBean.class, ViewChangeListener.class);
+            
+            this.establishView(listener, NODE_1, NODE_2);
+            
+            final ClientSFSBRemote clientSFSB = clientDirectory.lookupStateful(ClientSFSB.class, ClientSFSBRemote.class);
             // invoke on non-clustered SFSB which invokes/delegates to clustered SFSB on same node
             final String sfsbNodeName = clientSFSB.invokeAndFetchNodeNameFromClusteredSFSBRemoteBean();
             // the clustered sfsb should be invoked on the same instance as the non-clustered slsb, since the clustered sfsb deployment
@@ -206,6 +218,8 @@ public class LocalEJBClientFailoverTestCase {
             // now undeploy the clustered sfsb app on the node which has the client application
             this.deployer.undeploy(NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_2);
             nodeNameAppDeployedOnContainerTwo = false;
+            
+            this.establishView(listener, NODE_1);
 
             // now invoke again on the same non-clustered sfsb
             final String sfsbNodeNameAfterUndeployment = clientSFSB.invokeAndFetchNodeNameFromClusteredSFSBRemoteBean();
@@ -218,6 +232,9 @@ public class LocalEJBClientFailoverTestCase {
                 EJBClientContext.setSelector(previousSelector);
             }
         }
+    }
 
+    private void establishView(ViewChangeListener listener, String... members) throws InterruptedException {
+        listener.establishView("ejb", members);
     }
 }

@@ -1,19 +1,30 @@
 package org.jboss.as.test.clustering.extended.ejb2.stateful.remote.failover;
 
-import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_2;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_1;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_2;
 
-import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.as.test.clustering.EJBClientContextSelector;
+import org.jboss.as.test.clustering.EJBDirectory;
+import org.jboss.as.test.clustering.RemoteEJBDirectory;
+import org.jboss.as.test.clustering.ViewChangeListener;
+import org.jboss.as.test.clustering.ViewChangeListenerBean;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 
 /**
  * @author Ondrej Chaloupka
@@ -27,14 +38,27 @@ public abstract class RemoteEJBClientStatefulFaliloverTestBase {
     protected static final String DEPLOYMENT_1_SINGLE = DEPLOYMENT_1 + "-single";
     protected static final String DEPLOYMENT_2_SINGLE = DEPLOYMENT_2 + "-single";
     
-    protected static InitialContext context;
+    protected static EJBDirectory singletonDirectory;
+    protected static EJBDirectory directory;
     
     protected static Archive<?> createDeploymentSingleton() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME_SINGLE + ".jar");
         jar.addClasses(CounterSingleton.class, CounterSingletonRemote.class);
         return jar;
     }
-    
+
+    @BeforeClass
+    public static void beforeClass() throws NamingException {
+        directory = new RemoteEJBDirectory(ARCHIVE_NAME);
+        singletonDirectory = new RemoteEJBDirectory(ARCHIVE_NAME_SINGLE);
+    }
+
+    @AfterClass
+    public static void destroy() throws NamingException {
+        directory.close();
+        singletonDirectory.close();
+    }
+
     /**
      * Starts 2 nodes with the clustered beans deployed on each node. Invokes a clustered SFSB a few times.
      * Then stops a node from among the cluster (the one which received the last invocation) and continues invoking
@@ -71,13 +95,15 @@ public abstract class RemoteEJBClientStatefulFaliloverTestBase {
         boolean container1Stopped = false;
         boolean container2Stopped = false;
         try {
-            CounterRemoteHome home = (CounterRemoteHome) context.lookup("ejb:/" + ARCHIVE_NAME + "//" + CounterBean.class.getSimpleName() + "!"
-                    + CounterRemoteHome.class.getName());
+            ViewChangeListener listener = directory.lookupStateless(ViewChangeListenerBean.class, ViewChangeListener.class);
+            
+            this.establishView(listener, NODE_1, NODE_2);
+            
+            CounterRemoteHome home = directory.lookupHome(CounterBean.class, CounterRemoteHome.class);
             CounterRemote remoteCounter = home.create();
             Assert.assertNotNull(remoteCounter);
             
-            final CounterSingletonRemote destructionCounter = (CounterSingletonRemote) context.lookup("ejb:/" + ARCHIVE_NAME_SINGLE + "//" 
-                    + CounterSingleton.class.getSimpleName()+ "!" + CounterSingletonRemote.class.getName());
+            final CounterSingletonRemote destructionCounter = singletonDirectory.lookupSingleton(CounterSingleton.class, CounterSingletonRemote.class);
             destructionCounter.resetDestroyCount();
             
             // invoke on the bean a few times
@@ -102,6 +128,9 @@ public abstract class RemoteEJBClientStatefulFaliloverTestBase {
                 } else {
                     container.stop(CONTAINER_1);
                 }
+                
+                this.establishView(listener, NODE_2);
+                
                 container1Stopped = true;
             } else {
                 if (undeployOnly) {
@@ -110,6 +139,9 @@ public abstract class RemoteEJBClientStatefulFaliloverTestBase {
                 } else {
                     container.stop(CONTAINER_2);
                 }
+                
+                this.establishView(listener, NODE_1);
+                
                 container2Stopped = true;
             }
             // invoke again
@@ -156,5 +188,9 @@ public abstract class RemoteEJBClientStatefulFaliloverTestBase {
                 container.stop(CONTAINER_2);
             }
         }
+    }
+
+    private void establishView(ViewChangeListener listener, String... members) throws InterruptedException {
+        listener.establishView("ejb", members);
     }
 }

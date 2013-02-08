@@ -22,7 +22,12 @@
 
 package org.jboss.as.test.clustering.cluster.ejb3.security;
 
-import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_2;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_1;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_2;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -38,11 +43,14 @@ import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.NodeInfoServlet;
 import org.jboss.as.test.clustering.NodeNameGetter;
 import org.jboss.as.test.clustering.RemoteEJBDirectory;
+import org.jboss.as.test.clustering.ViewChangeListener;
+import org.jboss.as.test.clustering.ViewChangeListenerBean;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -85,7 +93,8 @@ public class FailoverWithSecurityTestCase {
     private static Archive<?> createDeployment() {
         JavaArchive war = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         war.addPackage(FailoverWithSecurityTestCase.class.getPackage());
-        war.addClasses(NodeNameGetter.class, NodeInfoServlet.class);
+        war.addClasses(NodeNameGetter.class, NodeInfoServlet.class, ViewChangeListener.class, ViewChangeListenerBean.class);
+        war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
         log.info(war.toString(true));
         return war;
     }
@@ -109,11 +118,15 @@ public class FailoverWithSecurityTestCase {
     @Test
     @InSequence(1)
     public void testDomainSecurityAnnotation(@ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
-            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2) throws Exception {
+                                             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2)
+                    throws Exception {
         
         final ContextSelector<EJBClientContext> previousSelector = EJBClientContextSelector.setup(PROPERTIES_FILE);
         
         try {
+            ViewChangeListener listener = context.lookupStateless(ViewChangeListenerBean.class, ViewChangeListener.class);
+            this.establishView(listener, NODE_1, NODE_2);
+            
             BeanRemote statelessBean = context.lookupStateless(StatelessBean.class, BeanRemote.class);
             BeanRemote statefulBean = context.lookupStateful(StatefulBean.class, BeanRemote.class);
 
@@ -132,7 +145,9 @@ public class FailoverWithSecurityTestCase {
                 runningNode = NODE_1;
             }
             controller.stop(stoppedContainer);
-            
+
+            this.establishView(listener, runningNode);
+
             statelessNodeName = statelessBean.getNodeName();
             statefulNodeName = statefulBean.getNodeName();
             Assert.assertEquals("SLSB has to return the only running node " + runningNode, runningNode, statelessNodeName);
@@ -140,15 +155,23 @@ public class FailoverWithSecurityTestCase {
             
             if(CONTAINER_1.equals(stoppedContainer)) {
                 controller.start(CONTAINER_1);
+                
+                this.establishView(listener, NODE_1, NODE_2);
+
                 deployer.undeploy(DEPLOYMENT_2);
                 controller.stop(CONTAINER_2);
                 runningNode = NODE_1;
             } else {
                 controller.start(CONTAINER_2);
+                
+                this.establishView(listener, NODE_1, NODE_2);
+
                 deployer.undeploy(DEPLOYMENT_1);
                 controller.stop(CONTAINER_1);
                 runningNode = NODE_2;
             }
+            
+            this.establishView(listener, runningNode);
             
             statelessNodeName = statelessBean.getNodeName();
             statefulNodeName = statefulBean.getNodeName();
@@ -175,5 +198,9 @@ public class FailoverWithSecurityTestCase {
             deployer.undeploy(DEPLOYMENT_2);
             controller.stop(CONTAINER_2);
         }
+    }
+
+    private void establishView(ViewChangeListener listener, String... members) throws InterruptedException {
+        listener.establishView("ejb", members);
     }
 }

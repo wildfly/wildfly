@@ -22,6 +22,9 @@
 package org.jboss.as.test.clustering.cluster.singleton.service;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -31,9 +34,15 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.jboss.as.server.CurrentServiceContainer;
 
-@WebServlet(urlPatterns = { "/service" })
+@WebServlet(urlPatterns = { MyServiceServlet.SERVLET_PATH })
 public class MyServiceServlet extends HttpServlet {
     private static final long serialVersionUID = -592774116315946908L;
+    private static final String SERVLET_NAME = "service";
+    static final String SERVLET_PATH = "/" + SERVLET_NAME;
+    
+    public static URI createURI(URL baseURL) throws URISyntaxException {
+        return baseURL.toURI().resolve(SERVLET_NAME);
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
