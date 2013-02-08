@@ -1276,6 +1276,10 @@
             <maven-resource group="joda-time" artifact="joda-time"/>
         </module-def>
 
+        <module-def name="org.jsoup">
+            <maven-resource group="org.jsoup" artifact="jsoup"/>
+        </module-def>
+
         <module-def name="org.kohsuke.rngom">
             <maven-resource group="org.kohsuke.rngom" artifact="rngom"/>
         </module-def>

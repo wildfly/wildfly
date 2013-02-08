@@ -21,9 +21,12 @@
  */
 package org.jboss.as.test.integration.beanvalidation.hibernate.validator;
 
+import java.lang.String;
+
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Email;
+import org.hibernate.validator.constraints.SafeHtml;
 
 /**
  * 
@@ -41,9 +44,13 @@ public class Employee {
     @Email
     private String email;
 
+    @SafeHtml
+    private String website;
+
     public String getEmpId() {
         return empId;
     }
+
 
     public void setEmpId(String empId) {
         this.empId = empId;
@@ -73,4 +80,11 @@ public class Employee {
         this.email = email;
     }
 
+    public String getWebsite() {
+        return website;
+    }
+
+    public void setWebsite(String website) {
+        this.website = website;
+    }
 }

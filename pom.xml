@@ -107,6 +107,7 @@
         <version.jansi>1.8</version.jansi>
         <version.joda-time>1.6.2</version.joda-time>
         <version.junit>4.10</version.junit>
+        <version.jsoup>1.6.1</version.jsoup>
         <version.log4j>1.2.16</version.log4j>
         <version.net.jcip>1.0</version.net.jcip>
         <version.org.apache.ant>1.8.2</version.org.apache.ant>
@@ -1688,6 +1689,12 @@
                 <artifactId>junit</artifactId>
                 <version>${version.junit}</version>
                 <scope>test</scope>
+            </dependency>
+
+            <dependency>
+	        <groupId>org.jsoup</groupId>
+                <artifactId>jsoup</artifactId>
+                <version>${version.jsoup}</version>
             </dependency>
 
             <dependency>
