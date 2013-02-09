@@ -122,6 +122,7 @@ public class ServletUnitTestCase {
                 StatelessBean.class,
                 StatelessLocal.class,
                 TestObject.class);
+        jar.addAsManifestResource(ServletUnitTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         return jar;
     }
 

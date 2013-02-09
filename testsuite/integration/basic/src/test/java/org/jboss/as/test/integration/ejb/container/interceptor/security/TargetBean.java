@@ -22,6 +22,7 @@
 package org.jboss.as.test.integration.ejb.container.interceptor.security;
 
 import javax.annotation.security.DeclareRoles;
+import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
@@ -63,6 +64,7 @@ public class TargetBean implements Manage {
      * 
      * @return
      */
+    @PermitAll
     public String allRoles() {
         return RESULT;
     }
