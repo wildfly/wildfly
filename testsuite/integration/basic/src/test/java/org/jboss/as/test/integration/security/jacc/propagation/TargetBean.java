@@ -22,6 +22,7 @@
 package org.jboss.as.test.integration.security.jacc.propagation;
 
 import javax.annotation.security.DeclareRoles;
+import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.Stateless;
 
@@ -61,6 +62,7 @@ public class TargetBean implements Manage {
      * 
      * @return
      */
+    @PermitAll
     public String work() {
         return RESULT;
     }

@@ -25,6 +25,7 @@ package org.jboss.as.test.integration.ejb.mapbased;
 import org.jboss.ejb3.annotation.SecurityDomain;
 
 import javax.annotation.Resource;
+import javax.annotation.security.PermitAll;
 import javax.ejb.EJBContext;
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
@@ -35,6 +36,7 @@ import javax.ejb.Stateless;
 @Stateless
 @Remote(StatelessIface.class)
 @SecurityDomain("other")
+@PermitAll
 public class StatelessBean implements StatelessIface {
 
     @Resource
