@@ -20,6 +20,10 @@ import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VisitorAttributes;
 import org.jboss.vfs.util.SuffixMatchFilter;
 
+/** 
+ * @author Tomasz Adamski
+ */
+
 public class SarStructureProcessor implements DeploymentUnitProcessor {
 
     private static final String SAR_EXTENSION = ".sar";
