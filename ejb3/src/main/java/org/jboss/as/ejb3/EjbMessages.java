@@ -2448,4 +2448,7 @@ public interface EjbMessages {
     @Message(id = 14235, value = "default-security-domain was defined")
     String rejectTransformationDefinedDefaultSecurityDomain();
 
+    @Message(id = 14236, value = "default-missing-method-permissions-deny-access was set to true")
+    String rejectTransformationDefinedDefaultMissingMethodPermissionsDenyAccess();
+
 }

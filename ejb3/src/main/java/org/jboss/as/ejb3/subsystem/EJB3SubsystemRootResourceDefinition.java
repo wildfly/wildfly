@@ -48,6 +48,7 @@ import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.deployment.processors.EJBDefaultSecurityDomainProcessor;
+import org.jboss.as.ejb3.deployment.processors.merging.MissingMethodPermissionsDenyAccessMergingProcessor;
 import org.jboss.as.threads.ThreadFactoryResolver;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.as.threads.UnboundedQueueThreadPoolResourceDefinition;
@@ -124,11 +125,19 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
     public static final SimpleAttributeDefinition PASS_BY_VALUE =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.IN_VM_REMOTE_INTERFACE_INVOCATION_PASS_BY_VALUE, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode().set("true"))
+                    .setDefaultValue(new ModelNode(true))
                     .build();
 
 
+    public static final SimpleAttributeDefinition DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS =
+            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS, ModelType.BOOLEAN, true)
+                    .setAllowExpression(true)
+                    .setDefaultValue(new ModelNode(false))
+                    .build();
+
     private static final EJBDefaultSecurityDomainProcessor defaultSecurityDomainDeploymentProcessor = new EJBDefaultSecurityDomainProcessor(null);
+    private static final MissingMethodPermissionsDenyAccessMergingProcessor missingMethodPermissionsDenyAccessMergingProcessor = new MissingMethodPermissionsDenyAccessMergingProcessor();
+
 
     private final boolean registerRuntimeOnly;
     private final PathManager pathManager;
@@ -136,7 +145,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
     EJB3SubsystemRootResourceDefinition(boolean registerRuntimeOnly, PathManager pathManager) {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME),
                 EJB3Extension.getResourceDescriptionResolver(EJB3Extension.SUBSYSTEM_NAME),
-                new EJB3SubsystemAdd(defaultSecurityDomainDeploymentProcessor), EJB3SubsystemRemove.INSTANCE,
+                new EJB3SubsystemAdd(defaultSecurityDomainDeploymentProcessor, missingMethodPermissionsDenyAccessMergingProcessor), EJB3SubsystemRemove.INSTANCE,
                 OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
         this.registerRuntimeOnly = registerRuntimeOnly;
         this.pathManager = pathManager;
@@ -155,7 +164,8 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
             ENABLE_STATISTICS,
             PASS_BY_VALUE,
             DEFAULT_DISTINCT_NAME,
-            DEFAULT_SECURITY_DOMAIN
+            DEFAULT_SECURITY_DOMAIN,
+            DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS,
     };
 
     @Override
@@ -175,6 +185,9 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
 
         final EJBDefaultSecurityDomainWriteHandler defaultSecurityDomainWriteHandler = new EJBDefaultSecurityDomainWriteHandler(DEFAULT_SECURITY_DOMAIN, defaultSecurityDomainDeploymentProcessor);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_SECURITY_DOMAIN, null, defaultSecurityDomainWriteHandler);
+
+        final EJBDefaultMissingMethodPermissionsWriteHandler defaultMissingMethodPermissionsWriteHandler = new EJBDefaultMissingMethodPermissionsWriteHandler(DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS, missingMethodPermissionsDenyAccessMergingProcessor);
+        resourceRegistration.registerReadWriteAttribute(DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS, null, defaultMissingMethodPermissionsWriteHandler);
     }
 
     @Override
@@ -234,7 +247,21 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
                             return attributeValue.isDefined();
                         }
                     }, EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN)
+                    .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
+
+                        @Override
+                        public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+                            return EjbMessages.MESSAGES.rejectTransformationDefinedDefaultMissingMethodPermissionsDenyAccess();
+                        }
+
+                        @Override
+                        protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
+                                                          TransformationContext context) {
+                            return attributeValue.isDefined() && attributeValue.asBoolean();
+                        }
+                    }, EJB3SubsystemRootResourceDefinition.DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS)
                     .setDiscard(DiscardAttributeChecker.UNDEFINED, EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN)
+                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), EJB3SubsystemRootResourceDefinition.DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS)
                     .end();
         EJB3RemoteResourceDefinition.registerTransformers_1_1_0(builder);
         UnboundedQueueThreadPoolResourceDefinition.registerTransformers1_0(builder, EJB3SubsystemModel.THREAD_POOL);

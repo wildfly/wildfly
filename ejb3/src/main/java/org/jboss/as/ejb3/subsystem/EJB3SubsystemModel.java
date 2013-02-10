@@ -45,6 +45,7 @@ public interface EJB3SubsystemModel {
     String DEFAULT_DISTINCT_NAME = "default-distinct-name";
     String DEFAULT_SECURITY_DOMAIN = "default-security-domain";
     String DEFAULT_MDB_INSTANCE_POOL = "default-mdb-instance-pool";
+    String DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS = "default-missing-method-permissions-deny-access";
     String DEFAULT_RESOURCE_ADAPTER_NAME = "default-resource-adapter-name";
     String DEFAULT_SFSB_CACHE = "default-sfsb-cache";
     String DEFAULT_CLUSTERED_SFSB_CACHE = "default-clustered-sfsb-cache";
