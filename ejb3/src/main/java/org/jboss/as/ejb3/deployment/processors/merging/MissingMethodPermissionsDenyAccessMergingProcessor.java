@@ -42,6 +42,9 @@ import java.util.List;
  */
 public class MissingMethodPermissionsDenyAccessMergingProcessor extends AbstractMergingProcessor<EJBComponentDescription> {
 
+    private volatile boolean denyAccessByDefault = false;
+
+
     public MissingMethodPermissionsDenyAccessMergingProcessor() {
         super(EJBComponentDescription.class);
     }
@@ -79,7 +82,17 @@ public class MissingMethodPermissionsDenyAccessMergingProcessor extends Abstract
             description.setMissingMethodPermissionsDenyAccess(missingMethodPermissionsDenyAccess);
         } else if (missingMethodPermissionsDenyAccessApplicableForAllBeans != null) {
             description.setMissingMethodPermissionsDenyAccess(missingMethodPermissionsDenyAccessApplicableForAllBeans);
+        } else {
+            description.setMissingMethodPermissionsDenyAccess(denyAccessByDefault);
         }
 
+    }
+
+    public boolean isDenyAccessByDefault() {
+        return denyAccessByDefault;
+    }
+
+    public void setDenyAccessByDefault(final boolean denyAccessByDefault) {
+        this.denyAccessByDefault = denyAccessByDefault;
     }
 }

@@ -10,7 +10,6 @@
            <?STATEFUL-BEAN?>
            <singleton default-access-timeout="5000"/>
        </session-bean>
-       <default-security-domain value="other"/>
        <?MDB?>
        <pools>
            <bean-instance-pools>
@@ -39,6 +38,8 @@
            </thread-pool>
        </thread-pools>
        <?IIOP?>
+       <default-security-domain value="other"/>
+       <default-missing-method-permissions-deny-access value="true" />
    </subsystem>
    <supplement name="default">
       <replacement placeholder="STATEFUL-BEAN">

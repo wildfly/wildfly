@@ -48,7 +48,8 @@
     <iiop use-qualified-name="true" enable-by-default="true"/>
     <!-- Disable pass-by-value for in-vm remote interface invocations on EJBs -->
     <in-vm-remote-interface-invocation pass-by-value="false"/>
-    <statistics enabled="${ejb.enable-statistics:true}" />
     <default-distinct-name value="myname"/>
     <default-security-domain value="domain"/>
+    <default-missing-method-permissions-deny-access value="false" />
+    <statistics enabled="${ejb.enable-statistics:true}" />
 </subsystem>

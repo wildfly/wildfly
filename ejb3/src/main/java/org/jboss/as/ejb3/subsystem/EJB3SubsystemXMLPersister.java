@@ -208,13 +208,6 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             writer.writeEndElement();
         }
 
-        // statistics element
-        if (model.hasDefined(ENABLE_STATISTICS)) {
-            writer.writeStartElement(EJB3SubsystemXMLElement.STATISTICS.getLocalName());
-            writer.writeAttribute(EJB3SubsystemXMLAttribute.ENABLED.getLocalName(), model.get(EJB3SubsystemModel.ENABLE_STATISTICS).asString());
-            writer.writeEndElement();
-        }
-
         // default-distinct-name element
         if (model.hasDefined(DEFAULT_DISTINCT_NAME)) {
             writer.writeStartElement(EJB3SubsystemXMLElement.DEFAULT_DISTINCT_NAME.getLocalName());
@@ -228,6 +221,21 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             writer.writeAttribute(EJB3SubsystemXMLAttribute.VALUE.getLocalName(), model.get(DEFAULT_SECURITY_DOMAIN).asString());
             writer.writeEndElement();
         }
+
+        // default-missing-method-permissions-deny-access element
+        if (model.hasDefined(DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS)) {
+            writer.writeStartElement(EJB3SubsystemXMLElement.DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS.getLocalName());
+            writer.writeAttribute(EJB3SubsystemXMLAttribute.VALUE.getLocalName(), model.get(DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS).asString());
+            writer.writeEndElement();
+        }
+
+        // statistics element
+        if (model.hasDefined(ENABLE_STATISTICS)) {
+            writer.writeStartElement(EJB3SubsystemXMLElement.STATISTICS.getLocalName());
+            writer.writeAttribute(EJB3SubsystemXMLAttribute.ENABLED.getLocalName(), model.get(EJB3SubsystemModel.ENABLE_STATISTICS).asString());
+            writer.writeEndElement();
+        }
+
     }
 
     private void writeIIOP(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {

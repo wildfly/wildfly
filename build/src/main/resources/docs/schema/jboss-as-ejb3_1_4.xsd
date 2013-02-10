@@ -57,6 +57,7 @@
                         minOccurs="0" maxOccurs="1"/>
             <xs:element name="default-distinct-name" type="default-distinct-nameType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="default-security-domain" type="default-security-domainType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="default-missing-method-permissions-deny-access" type="default-missing-method-permissions-deny-accessType" minOccurs="0" maxOccurs="1" />
             <xs:element name="statistics" type="statisticsType" minOccurs="0" maxOccurs="1"/>
         </xs:all>
     </xs:complexType>
@@ -341,4 +342,15 @@
         <xs:attribute name="type" type="xs:string" use="required"/>
     </xs:complexType>
 
+    <xs:complexType name="default-missing-method-permissions-deny-accessType">
+        <xs:annotation>
+                   <xs:documentation>
+                       <![CDATA[
+                       If this is enabled then lack of any security metadata for an EJB method is an
+                       implicit deny.
+                   ]]>
+                   </xs:documentation>
+               </xs:annotation>
+        <xs:attribute name="enabled" type="xs:boolean"/>
+    </xs:complexType>
 </xs:schema>

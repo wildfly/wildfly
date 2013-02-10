@@ -52,11 +52,16 @@ public class EJB3Subsystem14Parser extends EJB3Subsystem13Parser {
                 parseDefaultSecurityDomain(reader, ejb3SubsystemAddOperation);
                 break;
             }
+            case DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS: {
+                parseDefaultMissingMethodPermissionsDenyAccess(reader, ejb3SubsystemAddOperation);
+                break;
+            }
             default: {
                 super.readElement(reader, element, operations, ejb3SubsystemAddOperation);
             }
         }
     }
+
 
     @Override
     protected EJB3SubsystemNamespace getExpectedNamespace() {
@@ -73,6 +78,29 @@ public class EJB3Subsystem14Parser extends EJB3Subsystem13Parser {
             switch (attribute) {
                 case VALUE:
                     EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN.parseAndSetParameter(value, ejb3SubsystemAddOperation, reader);
+                    // found the mandatory attribute
+                    missingRequiredAttributes.remove(EJB3SubsystemXMLAttribute.VALUE);
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+        requireNoContent(reader);
+        if (!missingRequiredAttributes.isEmpty()) {
+            throw missingRequired(reader, missingRequiredAttributes);
+        }
+    }
+
+    private void parseDefaultMissingMethodPermissionsDenyAccess(final XMLExtendedStreamReader reader, final ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        final EnumSet<EJB3SubsystemXMLAttribute> missingRequiredAttributes = EnumSet.of(EJB3SubsystemXMLAttribute.VALUE);
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case VALUE:
+                    EJB3SubsystemRootResourceDefinition.DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS.parseAndSetParameter(value, ejb3SubsystemAddOperation, reader);
                     // found the mandatory attribute
                     missingRequiredAttributes.remove(EJB3SubsystemXMLAttribute.VALUE);
                     break;
