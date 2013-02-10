@@ -109,7 +109,7 @@ public class ManagementHttpServer {
 
     public static ManagementHttpServer create(InetSocketAddress bindAddress, InetSocketAddress secureBindAddress, int backlog,
             ModelControllerClient modelControllerClient, Executor executor, SecurityRealm securityRealm, ControlledProcessStateService controlledProcessStateService,
-            ConsoleMode consoleMode, String consoleSlot)
+            ConsoleMode consoleMode, String consoleSkin)
             throws IOException {
         Map<String, String> configuration = Collections.emptyMap();
 
@@ -196,9 +196,9 @@ public class ManagementHttpServer {
         ManagementHttpServer managementHttpServer = new ManagementHttpServer(httpServer, secureHttpServer, securityRealm);
         ResourceHandler consoleHandler = null;
         try {
-            consoleHandler = consoleMode.createConsoleHandler(consoleSlot);
+            consoleHandler = consoleMode.createConsoleHandler(consoleSkin);
         } catch (ModuleLoadException e) {
-            HttpServerLogger.ROOT_LOGGER.consoleModuleNotFound(consoleSlot == null ? "main" : consoleSlot);
+            HttpServerLogger.ROOT_LOGGER.consoleModuleNotFound(consoleSkin == null ? "main" : consoleSkin);
         }
         managementHttpServer.addHandler(new RootHandler(consoleHandler));
         managementHttpServer.addHandler(new DomainApiHandler(modelControllerClient, auth, controlledProcessStateService));
@@ -207,7 +207,7 @@ public class ManagementHttpServer {
         }
 
         try {
-            managementHttpServer.addHandler(new ErrorHandler(consoleSlot));
+            managementHttpServer.addHandler(new ErrorHandler(consoleSkin));
         } catch (ModuleLoadException e) {
             throw new IOException("Unable to load resource handler", e);
         }

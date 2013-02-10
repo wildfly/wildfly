@@ -26,6 +26,7 @@ import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.Messages;
+import org.jboss.modules.ModuleNotFoundException;
 
 /**
  * Date: 05.11.2011
@@ -179,6 +180,10 @@ public interface HttpServerMessages {
      */
     @Message(id = 15135, value = "The security realm is not ready to process requests, see %s")
     String realmNotReadyMessage(final String url);
+
+
+    @Message(id = 15136, value = "No console module available with module name %s")
+    ModuleNotFoundException consoleModuleNotFound(final String moduleName);
 
     /*
      * Message IDs 15100 to 15199 Reserved for the HTTP management interface, HttpServerLogger also contains messages in this
