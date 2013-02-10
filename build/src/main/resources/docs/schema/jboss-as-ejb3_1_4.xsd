@@ -351,6 +351,6 @@
                    ]]>
                    </xs:documentation>
                </xs:annotation>
-        <xs:attribute name="enabled" type="xs:boolean"/>
+        <xs:attribute name="value" type="xs:boolean"/>
     </xs:complexType>
 </xs:schema>
