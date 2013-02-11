@@ -984,8 +984,10 @@
         <module-def name="org.jboss.as.transactions">
             <maven-resource group="org.jboss.as" artifact="jboss-as-transactions"/>
         </module-def>
-
-        <module-def name="org.jboss.as.version">
+    	
+    	<module-def name="org.jboss.as.vault-tool" />
+        
+    	<module-def name="org.jboss.as.version">
             <maven-resource group="org.jboss.as" artifact="jboss-as-version"/>
         </module-def>
 

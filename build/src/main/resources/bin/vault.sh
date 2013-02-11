@@ -82,14 +82,6 @@ fi
 # Setup the JBoss Vault Tool classpath
 ###
 
-# Shared libs
-JBOSS_VAULT_CLASSPATH="$JBOSS_MODULEPATH/org/picketbox/main/*"
-JBOSS_VAULT_CLASSPATH="$JBOSS_VAULT_CLASSPATH:$JBOSS_MODULEPATH/org/jboss/logging/main/*"
-JBOSS_VAULT_CLASSPATH="$JBOSS_VAULT_CLASSPATH:$JBOSS_MODULEPATH/org/jboss/common-core/main/*"
-JBOSS_VAULT_CLASSPATH="$JBOSS_VAULT_CLASSPATH:$JBOSS_MODULEPATH/org/jboss/as/security/main/*"
-JBOSS_VAULT_CLASSPATH="$JBOSS_VAULT_CLASSPATH:$JBOSS_MODULEPATH/org/apache/commons/cli/main/*"
-
-export JBOSS_VAULT_CLASSPATH
 
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
@@ -98,7 +90,6 @@ if $cygwin; then
     JBOSS_CLASSPATH=`cygpath --path --windows "$JBOSS_CLASSPATH"`
     JBOSS_ENDORSED_DIRS=`cygpath --path --windows "$JBOSS_ENDORSED_DIRS"`
     JBOSS_MODULEPATH=`cygpath --path --windows "$JBOSS_MODULEPATH"`
-    JBOSS_VAULT_CLASSPATH=`cygpath --path --windows "$JBOSS_VAULT_CLASSPATH"`
 fi
 
 # Display our environment
@@ -110,9 +101,12 @@ echo "  JBOSS_HOME: $JBOSS_HOME"
 echo ""
 echo "  JAVA: $JAVA"
 echo ""
-echo "  VAULT Classpath: $JBOSS_VAULT_CLASSPATH"
 echo "========================================================================="
 echo ""
 
-"$JAVA" -classpath "$JBOSS_VAULT_CLASSPATH" \
-   org.jboss.as.security.vault.VaultTool $*
+eval \"$JAVA\" $JAVA_OPTS \
+         -jar \"$JBOSS_HOME/jboss-modules.jar\" \
+         -mp \"${JBOSS_MODULEPATH}\" \
+         org.jboss.as.vault-tool \
+         '"$@"'
+
