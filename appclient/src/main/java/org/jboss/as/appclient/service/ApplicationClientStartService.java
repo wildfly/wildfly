@@ -41,6 +41,7 @@ import org.jboss.ejb.client.EJBClientConfiguration;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.remoting.ConfigBasedEJBClientContextSelector;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -153,7 +154,10 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
-                CurrentServiceContainer.getServiceContainer().shutdown();
+                final ServiceContainer serviceContainer = CurrentServiceContainer.getServiceContainer();
+                if(serviceContainer != null) {
+                    serviceContainer.shutdown();
+                }
             }
         }));
 
