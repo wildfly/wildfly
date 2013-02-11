@@ -384,5 +384,30 @@
         </profile>
 
 
+        <!-- Enable using -Dts.noClustering. -->
+        <profile>
+            <id>ts.clust.do-nothing.profile</id>
+            <activation><property><name>ts.noClustering</name></property></activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions combine.children="append">
+                            <!-- Disable default-test surefire execution which would fail otherwise. -->
+                            <execution>
+                                <id>default-test</id>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+
     </profiles>
 </project>
