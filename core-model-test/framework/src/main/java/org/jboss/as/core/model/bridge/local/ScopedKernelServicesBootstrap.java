@@ -30,6 +30,7 @@ import org.jboss.as.core.model.bridge.impl.ChildFirstClassLoaderKernelServicesFa
 import org.jboss.as.core.model.bridge.impl.ClassLoaderObjectConverterImpl;
 import org.jboss.as.core.model.bridge.impl.LegacyControllerKernelServicesProxy;
 import org.jboss.as.core.model.test.LegacyModelInitializerEntry;
+import org.jboss.as.model.test.ModelTestOperationValidatorFilter;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -46,17 +47,21 @@ public class ScopedKernelServicesBootstrap {
     }
 
 
-    public LegacyControllerKernelServicesProxy createKernelServices(List<ModelNode> bootOperations, boolean validateOperations, ModelVersion legacyModelVersion, List<LegacyModelInitializerEntry> modelInitializerEntries) throws Exception {
+    public LegacyControllerKernelServicesProxy createKernelServices(List<ModelNode> bootOperations, ModelTestOperationValidatorFilter validateOpsFilter, ModelVersion legacyModelVersion, List<LegacyModelInitializerEntry> modelInitializerEntries) throws Exception {
 
-        Object childClassLoaderKernelServices = createChildClassLoaderKernelServices(bootOperations, validateOperations, legacyModelVersion, modelInitializerEntries);
+        Object childClassLoaderKernelServices = createChildClassLoaderKernelServices(bootOperations, validateOpsFilter, legacyModelVersion, modelInitializerEntries);
         return new LegacyControllerKernelServicesProxy(legacyChildFirstClassLoader, childClassLoaderKernelServices, objectConverter);
     }
 
-    private Object createChildClassLoaderKernelServices(List<ModelNode> bootOperations, boolean validateOperations, ModelVersion legacyModelVersion, List<LegacyModelInitializerEntry> modelInitializerEntries){
+    private Object createChildClassLoaderKernelServices(List<ModelNode> bootOperations, ModelTestOperationValidatorFilter validateOpsFilter, ModelVersion legacyModelVersion, List<LegacyModelInitializerEntry> modelInitializerEntries){
         try {
             Class<?> clazz = legacyChildFirstClassLoader.loadClass(ChildFirstClassLoaderKernelServicesFactory.class.getName());
 
-            Method m = clazz.getMethod("create", List.class, Boolean.TYPE, legacyChildFirstClassLoader.loadClass(ModelVersion.class.getName()), List.class);
+            Method m = clazz.getMethod("create",
+                    List.class,
+                    legacyChildFirstClassLoader.loadClass(ModelTestOperationValidatorFilter.class.getName()),
+                    legacyChildFirstClassLoader.loadClass(ModelVersion.class.getName()),
+                    List.class);
 
             List<Object> convertedBootOps = new ArrayList<Object>();
             for (int i = 0 ; i < bootOperations.size() ; i++) {
@@ -74,7 +79,7 @@ public class ScopedKernelServicesBootstrap {
                 }
             }
 
-            return m.invoke(null, convertedBootOps, validateOperations, objectConverter.convertModelVersionToChildCl(legacyModelVersion), convertedModelInitializerEntries);
+            return m.invoke(null, convertedBootOps, objectConverter.convertValidateOperationsFilterToChildCl(validateOpsFilter), objectConverter.convertModelVersionToChildCl(legacyModelVersion), convertedModelInitializerEntries);
 
         } catch (Exception e) {
             throw new RuntimeException(e);

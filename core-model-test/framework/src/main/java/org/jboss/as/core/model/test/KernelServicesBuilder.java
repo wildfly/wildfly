@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.core.model.test.LegacyKernelServicesInitializer.TestControllerVersion;
+import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -107,7 +107,7 @@ public interface KernelServicesBuilder {
      * @return the legacy kernel services initializer
      * @throws IllegalStateException if {@link #build()} has already been called
      */
-     LegacyKernelServicesInitializer createLegacyKernelServicesBuilder(ModelVersion modelVersion, TestControllerVersion testControllerVersion);
+     LegacyKernelServicesInitializer createLegacyKernelServicesBuilder(ModelVersion modelVersion, ModelTestControllerVersion testControllerVersion);
 
     /**
      * Creates the controller and initializes it with the passed in configuration options.

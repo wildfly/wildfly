@@ -24,6 +24,7 @@ package org.jboss.as.core.model.bridge.local;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.core.model.test.LegacyModelInitializerEntry;
 import org.jboss.as.host.controller.ignored.IgnoreDomainResourceTypeResource;
+import org.jboss.as.model.test.ModelTestOperationValidatorFilter;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -37,4 +38,5 @@ public interface ClassLoaderObjectConverter {
     Object convertModelVersionToChildCl(ModelVersion modelVersion);
     Object convertLegacyModelInitializerEntryToChildCl(LegacyModelInitializerEntry initializer);
     Object convertIgnoreDomainTypeResourceToChildCl(IgnoreDomainResourceTypeResource resource);
+    Object convertValidateOperationsFilterToChildCl(ModelTestOperationValidatorFilter validateOpsFilter);
 }

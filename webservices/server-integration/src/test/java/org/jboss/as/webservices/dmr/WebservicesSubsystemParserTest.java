@@ -36,6 +36,7 @@ import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -166,13 +167,13 @@ public class WebservicesSubsystemParserTest extends AbstractSubsystemBaseTest {
     }
 
 
-   private void testRejectExpressions_1_1_0(String version) throws Exception {
+   private void testRejectExpressions_1_1_0(String version, ModelTestControllerVersion controllerVersion) throws Exception {
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
         // create builder for legacy subsystem version
         ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
-        builder.createLegacyKernelServicesBuilder(null, version_1_1_0)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_1_0)
                 .addMavenResourceURL("org.jboss.as:jboss-as-webservices-server-integration:"+version);
 
         KernelServices mainServices = builder.build();
@@ -188,12 +189,12 @@ public class WebservicesSubsystemParserTest extends AbstractSubsystemBaseTest {
     }
 
     @Test
-        public void testTransformersAS712() throws Exception {
-        testRejectExpressions_1_1_0("7.1.2.Final");
-        }
+    public void testTransformersAS712() throws Exception {
+    testRejectExpressions_1_1_0("7.1.2.Final", ModelTestControllerVersion.V7_1_2_FINAL);
+    }
 
-        @Test
-        public void testTransformersAS713() throws Exception {
-            testRejectExpressions_1_1_0("7.1.3.Final");
-        }
+    @Test
+    public void testTransformersAS713() throws Exception {
+        testRejectExpressions_1_1_0("7.1.3.Final", ModelTestControllerVersion.V7_1_3_FINAL);
+    }
 }
