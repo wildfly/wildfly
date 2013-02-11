@@ -63,7 +63,7 @@
         </profile>
         <!-- Define ts.integration uber-group. -->
         <profile>
-            <id>ts.integ.allGroups2</id>
+            <id>ts.integ.allGroupsNoOSGi</id>
             <activation><property><name>ts.integration</name></property></activation>
             <modules>
                 <module>smoke</module>
