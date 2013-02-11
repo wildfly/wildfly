@@ -38,6 +38,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.WeldLogger;
@@ -50,6 +51,7 @@ import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.deployment.WeldDeploymentMetadata;
 import org.jboss.as.weld.services.bootstrap.WeldJpaInjectionServices;
 import org.jboss.modules.Module;
+import org.jboss.vfs.VirtualFile;
 import org.jboss.weld.bootstrap.spi.BeansXml;
 import org.jboss.weld.injection.spi.JpaInjectionServices;
 
@@ -102,6 +104,16 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
                         URL file = md.getBeansXmlFile().toURL();
                         existing.add(file);
                     }
+                    if(deployment.getName().endsWith(".war")) {
+                        //war's can also have a META-INF/beans.xml that does not show up as an
+                        //existing beans.xml, as they already have a WEB-INF/beans.xml
+                        ResourceRoot deploymentRoot = deployment.getAttachment(Attachments.DEPLOYMENT_ROOT);
+                        VirtualFile beans = deploymentRoot.getRoot().getChild(META_INF_BEANS_XML);
+                        if(beans.exists()) {
+                            existing.add(beans.toURL());
+                        }
+                    }
+
                 }
             } catch (MalformedURLException e) {
                 throw new DeploymentUnitProcessingException(e);
