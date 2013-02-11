@@ -47,6 +47,7 @@ import org.jboss.as.core.model.test.KernelServicesBuilder;
 import org.jboss.as.core.model.test.LegacyKernelServicesInitializer;
 import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.core.model.test.util.TransformersTestParameters;
+import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
@@ -66,7 +67,7 @@ public class SocketBindingTransformersTestCase extends AbstractCoreModelTest {
     private static final String CLIENT_MAPPING_DESTINATION_PORT = AbstractSocketBindingResourceDefinition.CLIENT_MAPPING_DESTINATION_PORT.getName();
 
     private final ModelVersion modelVersion;
-    private final LegacyKernelServicesInitializer.TestControllerVersion testControllerVersion;
+    private final ModelTestControllerVersion testControllerVersion;
 
     @Parameterized.Parameters
     public static List<Object[]> parameters(){

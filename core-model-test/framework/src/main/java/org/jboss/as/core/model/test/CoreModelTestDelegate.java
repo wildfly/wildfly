@@ -86,12 +86,12 @@ import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.core.model.bridge.impl.LegacyControllerKernelServicesProxy;
 import org.jboss.as.core.model.bridge.local.ScopedKernelServicesBootstrap;
-import org.jboss.as.core.model.test.LegacyKernelServicesInitializer.TestControllerVersion;
 import org.jboss.as.host.controller.HostRunningModeControl;
 import org.jboss.as.host.controller.RestartMode;
 import org.jboss.as.model.test.ChildFirstClassLoaderBuilder;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestBootOperationsBuilder;
+import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestModelDescriptionValidator;
 import org.jboss.as.model.test.ModelTestModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.as.model.test.ModelTestModelDescriptionValidator.ValidationFailure;
@@ -506,7 +506,7 @@ public class CoreModelTestDelegate {
         }
 
         @Override
-        public LegacyKernelServicesInitializer createLegacyKernelServicesBuilder(ModelVersion modelVersion, TestControllerVersion testControllerVersion) {
+        public LegacyKernelServicesInitializer createLegacyKernelServicesBuilder(ModelVersion modelVersion, ModelTestControllerVersion testControllerVersion) {
             if (type != TestModelType.DOMAIN) {
                 throw new IllegalStateException("Can only create legacy kernel services for DOMAIN.");
             }
@@ -527,11 +527,11 @@ public class CoreModelTestDelegate {
         private final ChildFirstClassLoaderBuilder classLoaderBuilder = new ChildFirstClassLoaderBuilder();
         private final ModelVersion modelVersion;
         private final List<LegacyModelInitializerEntry> modelInitializerEntries = new ArrayList<LegacyModelInitializerEntry>();
-        private final TestControllerVersion testControllerVersion;
+        private final ModelTestControllerVersion testControllerVersion;
         private boolean validateOperations = true;
         private boolean dontUseBootOperations = false;
 
-        public LegacyKernelServicesInitializerImpl(ModelVersion modelVersion, TestControllerVersion version) {
+        public LegacyKernelServicesInitializerImpl(ModelVersion modelVersion, ModelTestControllerVersion version) {
             this.modelVersion = modelVersion;
             this.testControllerVersion = version;
         }
@@ -550,11 +550,11 @@ public class CoreModelTestDelegate {
                 classLoaderBuilder.createFromFile(file);
                 legacyCl = classLoaderBuilder.build();
             } else {
-                String version = LegacyKernelServicesInitializer.VersionLocator.getCurrentVersion();
+                String version = ModelTestControllerVersion.CurrentVersion.VERSION;
                 classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-core-model-test-framework:"+version);
                 classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-model-test:"+version);
 
-                if (testControllerVersion != TestControllerVersion.MASTER) {
+                if (testControllerVersion != ModelTestControllerVersion.MASTER) {
                     classLoaderBuilder.addRecursiveMavenResourceURL(testControllerVersion.getLegacyControllerMavenGav());
                     classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-core-model-test-controller-" + testControllerVersion.getTestControllerVersion() + ":" +version);
                 }

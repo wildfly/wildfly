@@ -28,9 +28,9 @@ import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
 import org.jboss.as.core.model.test.LegacyKernelServicesInitializer;
-import org.jboss.as.core.model.test.LegacyKernelServicesInitializer.TestControllerVersion;
 import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.core.model.test.util.TransformersTestParameters;
+import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,7 +45,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class SocketBindingGroupTransformersTestCase extends AbstractCoreModelTest {
 
     private final ModelVersion modelVersion;
-    private final TestControllerVersion testControllerVersion;
+    private final ModelTestControllerVersion testControllerVersion;
 
     @Parameters
     public static List<Object[]> parameters(){

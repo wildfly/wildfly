@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.core.model.test.LegacyKernelServicesInitializer.TestControllerVersion;
+import org.jboss.as.model.test.ModelTestControllerVersion;
 
 /**
  *
@@ -34,9 +34,9 @@ import org.jboss.as.core.model.test.LegacyKernelServicesInitializer.TestControll
 public class TransformersTestParameters {
 
     private final ModelVersion modelVersion;
-    private final TestControllerVersion testControllerVersion;
+    private final ModelTestControllerVersion testControllerVersion;
 
-    public TransformersTestParameters(ModelVersion modelVersion, TestControllerVersion testControllerVersion) {
+    public TransformersTestParameters(ModelVersion modelVersion, ModelTestControllerVersion testControllerVersion) {
         this.modelVersion = modelVersion;
         this.testControllerVersion = testControllerVersion;
     }
@@ -49,15 +49,15 @@ public class TransformersTestParameters {
         return modelVersion;
     }
 
-    public TestControllerVersion getTestControllerVersion() {
+    public ModelTestControllerVersion getTestControllerVersion() {
         return testControllerVersion;
     }
 
     public static List<Object[]> setupVersions(){
         List<Object[]> data = new ArrayList<Object[]>();
-        data.add(new Object[] {new TransformersTestParameters(ModelVersion.create(1, 2, 0), TestControllerVersion.V7_1_2_FINAL)});
-        data.add(new Object[] {new TransformersTestParameters(ModelVersion.create(1, 3, 0), TestControllerVersion.V7_1_2_FINAL)});
-        data.add(new Object[] {new TransformersTestParameters(ModelVersion.create(1, 4, 0), TestControllerVersion.MASTER)});
+        data.add(new Object[] {new TransformersTestParameters(ModelVersion.create(1, 2, 0), ModelTestControllerVersion.V7_1_2_FINAL)});
+        data.add(new Object[] {new TransformersTestParameters(ModelVersion.create(1, 3, 0), ModelTestControllerVersion.V7_1_2_FINAL)});
+        data.add(new Object[] {new TransformersTestParameters(ModelVersion.create(1, 4, 0), ModelTestControllerVersion.MASTER)});
         for (int i = 0 ; i < data.size() ; i++) {
             Object[] entry = data.get(i);
             System.out.println("Parameter " + i + ": " + entry[0]);

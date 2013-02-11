@@ -44,41 +44,4 @@ public interface LegacyKernelServicesInitializer {
      */
     LegacyKernelServicesInitializer setDontValidateOperations();
 
-
-    public enum TestControllerVersion {
-        MASTER("org.jboss.as:jboss-as-host-controller:" + VersionLocator.getCurrentVersion(), null),
-        V7_1_2_FINAL("org.jboss.as:jboss-as-host-controller:7.1.2.Final", "7.1.2"),
-        V7_1_3_FINAL("org.jboss.as:jboss-as-host-controller:7.1.3.Final", "7.1.3");
-
-        String mavenGav;
-        String testControllerVersion;
-
-        private TestControllerVersion(String mavenGav, String testControllerVersion) {
-            this.mavenGav = mavenGav;
-            this.testControllerVersion = testControllerVersion;
-        }
-
-        String getLegacyControllerMavenGav() {
-            return mavenGav;
-        }
-
-        String getTestControllerVersion() {
-            return testControllerVersion;
-        }
-
-    }
-
-    static final class VersionLocator {
-        private static String VERSION = "${project.version}"; //is going to be replaced by maven during build
-
-        static {
-            if (VERSION.contains("${")) {
-                VERSION = "8.0.0.Alpha1-SNAPSHOT"; //to make it work from IDE
-            }
-        }
-
-        static String getCurrentVersion() {
-            return VERSION;
-        }
-    }
 }
