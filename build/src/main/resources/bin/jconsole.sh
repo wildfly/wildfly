@@ -78,9 +78,9 @@ MODULES="org/jboss/remoting-jmx org/jboss/remoting3 org/jboss/logging org/jboss/
 
 for MODULE in $MODULES
 do
-    for JAR in `cd "$JBOSS_MODULEPATH/$MODULE/main/" && ls -1 *.jar`
+    for JAR in `cd "$JBOSS_MODULEPATH/system/layers/base/$MODULE/main/" && ls -1 *.jar`
     do
-        CLASSPATH="$CLASSPATH:$JBOSS_MODULEPATH/$MODULE/main/$JAR"
+        CLASSPATH="$CLASSPATH:$JBOSS_MODULEPATH/system/layers/base/$MODULE/main/$JAR"
     done
 done
 
