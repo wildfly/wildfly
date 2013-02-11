@@ -30,6 +30,7 @@ import java.net.MalformedURLException;
 import junit.framework.Assert;
 
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
@@ -76,7 +77,7 @@ public class TransformerSubsystemTestCase extends AbstractSubsystemBaseTest {
         ModelVersion oldVersion = ModelVersion.create(1, 0, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(null)
                 .setSubsystemXml(getSubsystemXml());
-        builder.createLegacyKernelServicesBuilder(null, oldVersion)
+        builder.createLegacyKernelServicesBuilder(null, ModelTestControllerVersion.MASTER, oldVersion)
                 .setExtensionClassName(VersionedExtension1.class.getName())
                 .addSimpleResourceURL("target/legacy-archive.jar");
         KernelServices mainServices = builder.build();

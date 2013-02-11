@@ -43,21 +43,17 @@ public enum ModelTestControllerVersion {
         return testControllerVersion;
     }
 
-    public static class CurrentVersion {
-        public static String VERSION = VersionLocator.VERSION;
+    public interface CurrentVersion {
+        String VERSION = VersionLocator.VERSION;
     }
 
     private static final class VersionLocator {
-        private static String VERSION = "${project.version}"; //is going to be replaced by maven during build
+        static String VERSION = "${project.version}"; //is going to be replaced by maven during build
 
         static {
             if (VERSION.contains("${")) {
                 VERSION = "8.0.0.Alpha1-SNAPSHOT"; //to make it work from IDE
             }
-        }
-
-        static String getCurrentVersion() {
-            return VERSION;
         }
     }
 }

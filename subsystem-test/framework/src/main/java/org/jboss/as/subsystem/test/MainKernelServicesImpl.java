@@ -1,3 +1,24 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2013, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.as.subsystem.test;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
@@ -12,14 +33,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
@@ -28,96 +45,34 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.validation.OperationValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationTransformerRegistry;
-import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.TransformationTargetImpl;
-import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.controller.transform.Transformers;
-import org.jboss.as.model.test.ModelTestKernelServicesImpl;
 import org.jboss.as.model.test.ModelTestModelControllerService;
-import org.jboss.as.model.test.ModelTestParser;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.model.test.StringConfigurationPersister;
-import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceTarget;
 import org.xnio.IoUtils;
 
-
 /**
- * Allows access to the service container and the model controller
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class KernelServicesImpl extends ModelTestKernelServicesImpl<KernelServices> implements KernelServices {
+class MainKernelServicesImpl extends AbstractKernelServicesImpl {
 
-    private final String mainSubsystemName;
-    private final ExtensionRegistry extensionRegistry;
-    private final boolean registerTransformers;
-
-
-    private static final AtomicInteger counter = new AtomicInteger();
-
-
-    private KernelServicesImpl(ServiceContainer container, ModelTestModelControllerService controllerService, StringConfigurationPersister persister, ManagementResourceRegistration rootRegistration,
-            OperationValidator operationValidator, String mainSubsystemName, ExtensionRegistry extensionRegistry, ModelVersion legacyModelVersion, boolean successfulBoot, Throwable bootError, boolean registerTransformers) {
-        super(container, controllerService, persister, rootRegistration, operationValidator, legacyModelVersion, successfulBoot, bootError);
-
-        this.mainSubsystemName = mainSubsystemName;
-        this.extensionRegistry = extensionRegistry;
-        this.registerTransformers = registerTransformers;
+    protected MainKernelServicesImpl(ServiceContainer container, ModelTestModelControllerService controllerService,
+            StringConfigurationPersister persister, ManagementResourceRegistration rootRegistration,
+            OperationValidator operationValidator, String mainSubsystemName, ExtensionRegistry extensionRegistry,
+            ModelVersion legacyModelVersion, boolean successfulBoot, Throwable bootError, boolean registerTransformers) {
+        // FIXME MainKernelServicesImpl constructor
+        super(container, controllerService, persister, rootRegistration, operationValidator, mainSubsystemName, extensionRegistry,
+                legacyModelVersion, successfulBoot, bootError, registerTransformers);
     }
-
-    static KernelServicesImpl create(String mainSubsystemName, AdditionalInitialization additionalInit,
-            ExtensionRegistry controllerExtensionRegistry, List<ModelNode> bootOperations, ModelTestParser testParser, Extension mainExtension, ModelVersion legacyModelVersion,
-            boolean registerTransformers, boolean persistXml) throws Exception {
-        ControllerInitializer controllerInitializer = additionalInit.createControllerInitializer();
-
-        PathManagerService pathManager = new PathManagerService() {
-        };
-
-        controllerInitializer.setPathManger(pathManager);
-
-        additionalInit.setupController(controllerInitializer);
-
-        //Initialize the controller
-        ServiceContainer container = ServiceContainer.Factory.create("test" + counter.incrementAndGet());
-        ServiceTarget target = container.subTarget();
-        List<ModelNode> extraOps = controllerInitializer.initializeBootOperations();
-        List<ModelNode> allOps = new ArrayList<ModelNode>();
-        if (extraOps != null) {
-            allOps.addAll(extraOps);
-        }
-        allOps.addAll(bootOperations);
-        StringConfigurationPersister persister = new StringConfigurationPersister(allOps, testParser, persistXml);
-        controllerExtensionRegistry.setWriterRegistry(persister);
-        controllerExtensionRegistry.setPathManager(pathManager);
-        ModelTestModelControllerService svc = TestModelControllerService.create(mainExtension, controllerInitializer, additionalInit, controllerExtensionRegistry,
-                persister, additionalInit.isValidateOperations(), registerTransformers);
-        ServiceBuilder<ModelController> builder = target.addService(Services.JBOSS_SERVER_CONTROLLER, svc);
-        builder.addDependency(PathManagerService.SERVICE_NAME); // ensure this is up before the ModelControllerService, as it would be in a real server
-        builder.install();
-        target.addService(PathManagerService.SERVICE_NAME, pathManager).install();
-
-        additionalInit.addExtraServices(target);
-
-        //sharedState = svc.state;
-        svc.waitForSetup();
-        //processState.setRunning();
-
-        KernelServicesImpl kernelServices = new KernelServicesImpl(container, svc, persister, svc.getRootRegistration(),
-                new OperationValidator(svc.getRootRegistration()), mainSubsystemName, controllerExtensionRegistry, legacyModelVersion, svc.isSuccessfulBoot(), svc.getBootError(), registerTransformers);
-
-        return kernelServices;
-    }
-
 
     /**
      * Transforms an operation in the main controller to the format expected by the model controller containing
@@ -200,21 +155,6 @@ public class KernelServicesImpl extends ModelTestKernelServicesImpl<KernelServic
             result = resultTransformer.transformResult(result);
         }
         return result;
-    }
-
-
-    ExtensionRegistry getExtensionRegistry() {
-        return extensionRegistry;
-    }
-
-    protected void addLegacyKernelService(ModelVersion modelVersion, KernelServicesImpl legacyServices) {
-        super.addLegacyKernelService(modelVersion, legacyServices);
-    }
-
-    private ModelNode createSubsystemVersionRegistry(ModelVersion modelVersion) {
-        ModelNode subsystems = new ModelNode();
-        subsystems.get(mainSubsystemName).set(modelVersion.toString());
-        return subsystems;
     }
 
     private ModelVersion getCoreModelVersionByLegacyModelVersion(ModelVersion legacyModelVersion) {

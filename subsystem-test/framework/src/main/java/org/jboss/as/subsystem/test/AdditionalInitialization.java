@@ -1,5 +1,7 @@
 package org.jboss.as.subsystem.test;
 
+import java.io.Serializable;
+
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ProcessType;
@@ -17,7 +19,9 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class AdditionalInitialization extends AdditionalParsers {
-    public static final AdditionalInitialization MANAGEMENT = new AdditionalInitialization() {
+    public static final AdditionalInitialization MANAGEMENT = new ManagementAdditionalInitialization();
+
+    private static class ManagementAdditionalInitialization extends AdditionalInitialization implements Serializable {
         @Override
         protected RunningMode getRunningMode() {
             return RunningMode.ADMIN_ONLY;

@@ -50,12 +50,12 @@ import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
-final class TestParser implements  ModelTestParser {
+public final class TestParser implements  ModelTestParser {
 
     final ExtensionRegistry extensionRegistry;
     final String mainSubsystemName;
 
-    TestParser(String mainSubsystemName, ExtensionRegistry extensionRegistry) {
+    public TestParser(String mainSubsystemName, ExtensionRegistry extensionRegistry) {
         this.mainSubsystemName = mainSubsystemName;
         this.extensionRegistry = extensionRegistry;
     }

@@ -28,32 +28,26 @@
 
     <parent>
         <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-parent</artifactId>
-        <version>8.0.0.Alpha1-SNAPSHOT</version>
+        <artifactId>jboss-as-subsystem-test-parent</artifactId>
+        <version>7.2.0.Alpha1-SNAPSHOT</version>
     </parent>
-
-    <artifactId>jboss-as-subsystem-test-parent</artifactId>
-    <packaging>pom</packaging>
-    <name>JBoss Application Server: Core Model Test Parent</name>
-
-    <modules>
-        <module>framework</module>
-       	<module>test-controller-7.1.2</module>
-       	<module>test-controller-optional</module>
-       	<module>tests</module>        
-    </modules>
-
+    <!--
+      Just here for the tests module to include as an optional dependency to avoid picking up
+			the test-controller-xxx modules on the classpath while making sure that the test-controller-xxx
+			modules get compiled before the the test module. We only want the test-controller-xxx modules on
+			the classpath when setting up the legacy controller classloaders, and want to be able to choose
+			which one to use. 
+		-->
+    <groupId>org.jboss.as</groupId>
+    <artifactId>jboss-as-subsystem-test-controller-optional</artifactId>
+    <name>JBoss Application Server: Subsystem Test Controller Optional</name>
+    <version>7.2.0.Alpha1-SNAPSHOT</version>
 
     <dependencies>
         <dependency>
-           <groupId>org.jboss.as</groupId>
-           <artifactId>jboss-as-model-test</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.marshalling</groupId>
-            <artifactId>jboss-marshalling-river</artifactId>
-            <scope>test</scope>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-subsystem-test-controller-7.1.2</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
-
 </project>

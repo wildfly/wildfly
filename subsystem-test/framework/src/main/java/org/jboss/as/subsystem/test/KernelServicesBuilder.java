@@ -31,6 +31,7 @@ import junit.framework.AssertionFailedError;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -81,14 +82,16 @@ public interface KernelServicesBuilder {
      * Creates a new legacy kernel services initializer used to configure a new controller containing an older version of the subsystem being tested.
      * When {@link #build()} is called any legacy controllers will be created as well.
      *
-     * @param additionalInit Additional initialization that should be done to the parsers, controller and service container before initializing our extension
+     * @param additionalInit Additional initialization that should be done to the parsers, controller and service container before initializing our extension. May be {@code null}, and if not must be serializable
+     * so it can be loaded up in the classloader loading up the scoped controller
+     * @param version the version of AS and controller to load up
      * @param modelVersion The model version of the legacy subsystem
      * @return the legacy kernel services initializer
      * @throws IllegalArgumentException if {@code additionalInit} does not have a running mode of {@link RunningMode#ADMIN_ONLY}
      * @throws IllegalStateException if {@link #build()} has already been called
      * @throws AssertionFailedError if the extension class name was not found in the {@code resources}
      */
-     LegacyKernelServicesInitializer createLegacyKernelServicesBuilder(AdditionalInitialization additionalInit, ModelVersion modelVersion);
+     LegacyKernelServicesInitializer createLegacyKernelServicesBuilder(AdditionalInitialization additionalInit, ModelTestControllerVersion version, ModelVersion modelVersion);
 
     /**
      * Creates the controller and initializes it with the passed in configuration options.

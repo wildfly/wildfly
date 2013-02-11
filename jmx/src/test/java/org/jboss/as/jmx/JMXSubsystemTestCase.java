@@ -49,12 +49,13 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.extension.ExtensionRegistry;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.remoting.EndpointService;
@@ -467,15 +468,15 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
 
     @Test
     public void testTransformationAS712() throws Exception {
-        testTransformation_1_0_0("org.jboss.as:jboss-as-jmx:7.1.2.Final");
+        testTransformation_1_0_0(ModelTestControllerVersion.V7_1_2_FINAL, "org.jboss.as:jboss-as-jmx:7.1.2.Final");
     }
 
     @Test
     public void testTransformationAS713() throws Exception {
-        testTransformation_1_0_0("org.jboss.as:jboss-as-jmx:7.1.3.Final");
+        testTransformation_1_0_0(ModelTestControllerVersion.V7_1_3_FINAL, "org.jboss.as:jboss-as-jmx:7.1.3.Final");
     }
 
-    private void testTransformation_1_0_0(String mavenGAV) throws Exception {
+    private void testTransformation_1_0_0(ModelTestControllerVersion controllerVersion, String mavenGAV) throws Exception {
         String subsystemXml =
                 "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
                 "   <expose-resolved-model domain-name=\"jboss.RESOLVED\"/>" +
@@ -486,7 +487,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         ModelVersion oldVersion = ModelVersion.create(1, 0, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(new BaseAdditionalInitalization())
                 .setSubsystemXml(subsystemXml);
-        builder.createLegacyKernelServicesBuilder(null, oldVersion)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, oldVersion)
                 .setExtensionClassName(JMXExtension.class.getName())
                 .addMavenResourceURL(mavenGAV);
         KernelServices mainServices = builder.build();
@@ -550,12 +551,12 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
 
     @Test
     public void testRejectExpressionsAS712() throws Exception {
-        testRejectExpressions_1_0_0("org.jboss.as:jboss-as-jmx:7.1.2.Final");
+        testRejectExpressions_1_0_0(ModelTestControllerVersion.V7_1_2_FINAL, "org.jboss.as:jboss-as-jmx:7.1.2.Final");
     }
 
     @Test
     public void testRejectExpressionsAS713() throws Exception {
-        testRejectExpressions_1_0_0("org.jboss.as:jboss-as-jmx:7.1.3.Final");
+        testRejectExpressions_1_0_0(ModelTestControllerVersion.V7_1_3_FINAL, "org.jboss.as:jboss-as-jmx:7.1.3.Final");
     }
 
     /**
@@ -563,7 +564,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
      *
      * @throws Exception
      */
-    private void testRejectExpressions_1_0_0(String mavenGAV) throws Exception {
+    private void testRejectExpressions_1_0_0(ModelTestControllerVersion controllerVersion, String mavenGAV) throws Exception {
         String subsystemXml =
             "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
                     "   <remoting-connector use-management-endpoint=\"${test.exp:false}\"/>" +
@@ -574,7 +575,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
 
         // create builder for legacy subsystem version
         ModelVersion version_1_0_0 = ModelVersion.create(1, 0, 0);
-        builder.createLegacyKernelServicesBuilder(null, version_1_0_0)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_0_0)
                 .addMavenResourceURL(mavenGAV);
 
         KernelServices mainServices = builder.build();

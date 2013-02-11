@@ -1198,6 +1198,18 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-subsystem-test-controller-optional</artifactId>
+                <version>${project.version}</version>
+             </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-subsystem-test-controller-7.1.2</artifactId>
+                <version>${project.version}</version>
+	          </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-system-jmx</artifactId>
                 <version>${project.version}</version>
             </dependency>

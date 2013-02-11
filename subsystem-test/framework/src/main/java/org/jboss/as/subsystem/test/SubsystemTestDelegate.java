@@ -82,15 +82,17 @@ import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
-import org.jboss.as.controller.transform.SubsystemDescriptionDump;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.model.test.ChildFirstClassLoaderBuilder;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestBootOperationsBuilder;
+import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestModelControllerService;
 import org.jboss.as.model.test.ModelTestParser;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.model.test.StringConfigurationPersister;
+import org.jboss.as.subsystem.bridge.impl.LegacyControllerKernelServicesProxy;
+import org.jboss.as.subsystem.bridge.local.ScopedKernelServicesBootstrap;
 import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLMapper;
@@ -400,8 +402,8 @@ final class SubsystemTestDelegate {
 
         //Generate the org.jboss.as.controller.transform.subsystem-version.dmr file - just use the format used by TransformerRegistry for now
         PathAddress pathAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, mainSubsystemName));
-        ModelNode desc = SubsystemDescriptionDump.readFullModelDescription(pathAddress, legacy.getRootRegistration().getSubModel(pathAddress));
-        File file = new File("target/classes").getAbsoluteFile();
+        ModelNode desc = ((KernelServicesInternal)legacy).readFullModelDescription(pathAddress.toModelNode());
+        File file = new File("target/test-classes").getAbsoluteFile();
         Assert.assertTrue(file.exists());
         for (String part : TransformerRegistry.class.getPackage().getName().split("\\.")) {
             file = new File(file, part);
@@ -541,7 +543,7 @@ final class SubsystemTestDelegate {
             return this;
         }
 
-        public LegacyKernelServicesInitializer createLegacyKernelServicesBuilder(AdditionalInitialization additionalInit, ModelVersion modelVersion) {
+        public LegacyKernelServicesInitializer createLegacyKernelServicesBuilder(AdditionalInitialization additionalInit, ModelTestControllerVersion version, ModelVersion modelVersion) {
             bootOperationBuilder.validateNotAlreadyBuilt();
             if (legacyControllerInitializers.containsKey(modelVersion)) {
                 throw new IllegalArgumentException("There is already a legacy controller for " + modelVersion);
@@ -552,7 +554,7 @@ final class SubsystemTestDelegate {
                 }
             }
 
-            LegacyKernelServiceInitializerImpl initializer = new LegacyKernelServiceInitializerImpl(additionalInit, modelVersion);
+            LegacyKernelServiceInitializerImpl initializer = new LegacyKernelServiceInitializerImpl(additionalInit, version, modelVersion);
             legacyControllerInitializers.put(modelVersion, initializer);
             return initializer;
         }
@@ -560,7 +562,7 @@ final class SubsystemTestDelegate {
         public KernelServices build() throws Exception {
             bootOperationBuilder.validateNotAlreadyBuilt();
             List<ModelNode> bootOperations = bootOperationBuilder.build();
-            KernelServicesImpl kernelServices = KernelServicesImpl.create(mainSubsystemName, additionalInit, cloneExtensionRegistry(additionalInit), bootOperations,
+            AbstractKernelServicesImpl kernelServices = AbstractKernelServicesImpl.create(mainSubsystemName, additionalInit, cloneExtensionRegistry(additionalInit), bootOperations,
                     testParser, mainExtension, null, legacyControllerInitializers.size() > 0, true);
             SubsystemTestDelegate.this.kernelServices.add(kernelServices);
 
@@ -586,7 +588,7 @@ final class SubsystemTestDelegate {
                     }
                 }
 
-                KernelServicesImpl legacyServices = legacyInitializer.install(transformedBootOperations);
+                LegacyControllerKernelServicesProxy legacyServices = legacyInitializer.install(transformedBootOperations);
                 kernelServices.addLegacyKernelService(entry.getKey(), legacyServices);
             }
 
@@ -617,13 +619,15 @@ final class SubsystemTestDelegate {
     private class LegacyKernelServiceInitializerImpl implements LegacyKernelServicesInitializer {
 
         private final AdditionalInitialization additionalInit;
+        private final ModelTestControllerVersion testControllerVersion;
         private String extensionClassName;
         private ModelVersion modelVersion;
         ChildFirstClassLoaderBuilder classLoaderBuilder = new ChildFirstClassLoaderBuilder();
         private boolean persistXml = true;
 
-        public LegacyKernelServiceInitializerImpl(AdditionalInitialization additionalInit, ModelVersion modelVersion) {
+        public LegacyKernelServiceInitializerImpl(AdditionalInitialization additionalInit, ModelTestControllerVersion version, ModelVersion modelVersion) {
             this.additionalInit = additionalInit == null ? AdditionalInitialization.MANAGEMENT : additionalInit;
+            this.testControllerVersion = version;
             this.modelVersion = modelVersion;
         }
 
@@ -664,23 +668,47 @@ final class SubsystemTestDelegate {
             return this;
         }
 
-        private KernelServicesImpl install(List<ModelNode> bootOperations) throws Exception {
-            ClassLoader legacyCl = classLoaderBuilder.build();
+        private LegacyControllerKernelServicesProxy install(List<ModelNode> bootOperations) throws Exception {
 
-            Class<?> clazz = legacyCl.loadClass(extensionClassName != null ? extensionClassName : mainExtension.getClass().getName());
-            Assert.assertEquals(legacyCl, clazz.getClassLoader());
-            Assert.assertTrue(Extension.class.isAssignableFrom(clazz));
-            Extension extension = (Extension) clazz.newInstance();
+            classLoaderBuilder.addParentFirstClassPattern("org.jboss.as.subsystem.bridge.shared.*");
 
-            //Initialize the parsers for the legacy subsystem (copied from the @Before method)
-            XMLMapper xmlMapper = XMLMapper.Factory.create();
-            ModelTestParser testParser = new TestParser(mainSubsystemName, extensionParsingRegistry);
-            ExtensionRegistry extensionParsingRegistry = new ExtensionRegistry(additionalInit.getProcessType(), new RunningModeControl(additionalInit.getExtensionRegistryRunningMode()));
-            xmlMapper.registerRootElement(new QName(TEST_NAMESPACE, "test"), testParser);
-            extension.initializeParsers(extensionParsingRegistry.getExtensionParsingContext("Test", xmlMapper));
+            File file = new File("target", "cached-classloader" + modelVersion + "_" + testControllerVersion);
+            boolean cached = file.exists();
+            ClassLoader legacyCl;
+            if (cached) {
+                classLoaderBuilder.createFromFile(file);
+                legacyCl = classLoaderBuilder.build();
+            } else {
+                classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-subsystem-test:" + ModelTestControllerVersion.CurrentVersion.VERSION);
+                classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-model-test:" + ModelTestControllerVersion.CurrentVersion.VERSION);
 
-            //TODO extra parsers from additionalInit
-            return KernelServicesImpl.create(mainSubsystemName, additionalInit, cloneExtensionRegistry(additionalInit), bootOperations, testParser, extension, modelVersion, false, persistXml);
+                if (testControllerVersion != ModelTestControllerVersion.MASTER) {
+                    //TODO use server rather than host-controller
+                    classLoaderBuilder.addRecursiveMavenResourceURL(testControllerVersion.getLegacyControllerMavenGav());
+                    //TODO add this?
+
+                    classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-subsystem-test-controller-" + testControllerVersion.getTestControllerVersion() + ":" + ModelTestControllerVersion.CurrentVersion.VERSION);
+                }
+                legacyCl = classLoaderBuilder.build(file);
+            }
+
+            ScopedKernelServicesBootstrap scopedBootstrap = new ScopedKernelServicesBootstrap(legacyCl);
+            return scopedBootstrap.createKernelServices(mainSubsystemName, extensionClassName != null ? extensionClassName : mainExtension.getClass().getName(), additionalInit, bootOperations, modelVersion, persistXml);
+//
+//            Class<?> clazz = legacyCl.loadClass(extensionClassName != null ? extensionClassName : mainExtension.getClass().getName());
+//            Assert.assertEquals(legacyCl, clazz.getClassLoader());
+//            Assert.assertTrue(Extension.class.isAssignableFrom(clazz));
+//            Extension extension = (Extension) clazz.newInstance();
+//
+//            //Initialize the parsers for the legacy subsystem (copied from the @Before method)
+//            XMLMapper xmlMapper = XMLMapper.Factory.create();
+//            ModelTestParser testParser = new TestParser(mainSubsystemName, extensionParsingRegistry);
+//            ExtensionRegistry extensionParsingRegistry = new ExtensionRegistry(additionalInit.getProcessType(), new RunningModeControl(additionalInit.getExtensionRegistryRunningMode()));
+//            xmlMapper.registerRootElement(new QName(TEST_NAMESPACE, "test"), testParser);
+//            extension.initializeParsers(extensionParsingRegistry.getExtensionParsingContext("Test", xmlMapper));
+//
+//            //TODO extra parsers from additionalInit
+//            return KernelServicesImpl.create(mainSubsystemName, additionalInit, cloneExtensionRegistry(additionalInit), bootOperations, testParser, extension, modelVersion, false, persistXml);
         }
 
         @Override

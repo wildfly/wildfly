@@ -531,7 +531,7 @@ public class CoreModelTestDelegate {
         private boolean validateOperations = true;
         private boolean dontUseBootOperations = false;
 
-        public LegacyKernelServicesInitializerImpl(ModelVersion modelVersion, ModelTestControllerVersion version) {
+        LegacyKernelServicesInitializerImpl(ModelVersion modelVersion, ModelTestControllerVersion version) {
             this.modelVersion = modelVersion;
             this.testControllerVersion = version;
         }
@@ -550,13 +550,12 @@ public class CoreModelTestDelegate {
                 classLoaderBuilder.createFromFile(file);
                 legacyCl = classLoaderBuilder.build();
             } else {
-                String version = ModelTestControllerVersion.CurrentVersion.VERSION;
-                classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-core-model-test-framework:"+version);
-                classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-model-test:"+version);
+                classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-core-model-test-framework:" + ModelTestControllerVersion.CurrentVersion.VERSION);
+                classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-model-test:" + ModelTestControllerVersion.CurrentVersion.VERSION);
 
                 if (testControllerVersion != ModelTestControllerVersion.MASTER) {
                     classLoaderBuilder.addRecursiveMavenResourceURL(testControllerVersion.getLegacyControllerMavenGav());
-                    classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-core-model-test-controller-" + testControllerVersion.getTestControllerVersion() + ":" +version);
+                    classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-core-model-test-controller-" + testControllerVersion.getTestControllerVersion() + ":" + ModelTestControllerVersion.CurrentVersion.VERSION);
                 }
                 legacyCl = classLoaderBuilder.build(file);
             }
