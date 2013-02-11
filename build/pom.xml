@@ -404,6 +404,11 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.jsoup</groupId>
+                    <artifactId>jsoup</artifactId>
+                </dependency>
+                
+                <dependency>
                     <groupId>net.jcip</groupId>
                     <artifactId>jcip-annotations</artifactId>
                 </dependency>
@@ -1909,6 +1914,7 @@
                                         <include>javax.validation:validation-api</include>
                                         <include>jboss.jaxbintros:jboss-jaxb-intros</include>
                                         <include>joda-time:joda-time</include>
+                                        <include>org.jsoup:jsoup</include>
                                         <include>org.apache.cxf:*</include>
                                         <include>org.apache.juddi:juddi-client</include>
                                         <include>org.apache.juddi.scout:scout</include>
@@ -2882,6 +2888,11 @@
                                             <title>Module org.joda.time</title>
                                             <packages>org.joda.time:org.joda.time.base:org.joda.time.chrono:org.joda.time.convert:org.joda.time.field:org.joda.time.format:org.joda.time.tz</packages>
                                         </group>
+                                        <group>
+                                            <title>Module org.jsoup</title>
+                                            <packages>org.jsoup:org.jsoup.examples:org.jsoup.helper:org.jsoup.nodes:org.jsoup.parser:org.jsoup.safety:org.jsoup.select</packages>
+                                        </group>
+                                        
                                         <!--
                                         <group>
                                             <title>Module org.kohsuke.rngom</title>
