@@ -37,7 +37,6 @@ import static org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition.RESUME;
 
 import org.hornetq.jms.bridge.JMSBridge;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
-import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;

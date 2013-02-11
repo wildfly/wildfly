@@ -22,9 +22,6 @@
 
 package org.jboss.as.naming.subsystem;
 
-import java.util.EnumSet;
-
-import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;

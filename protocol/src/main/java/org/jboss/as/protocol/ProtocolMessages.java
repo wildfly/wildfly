@@ -22,13 +22,10 @@
 
 package org.jboss.as.protocol;
 
-import java.io.EOFException;
 import java.io.IOException;
-import java.io.UTFDataFormatException;
 import java.net.ConnectException;
 import java.net.URI;
 
-import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;

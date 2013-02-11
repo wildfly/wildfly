@@ -25,10 +25,6 @@ package org.jboss.as.host.controller;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.as.controller.ExpressionResolver;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.host.controller.model.host.HostResourceDefinition;
 import org.jboss.dmr.ModelNode;
 
 /**

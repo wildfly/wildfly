@@ -22,6 +22,13 @@
 
 package org.jboss.as.connector.deployers.ds.processors;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
+
 import org.jboss.as.connector.deployers.Util;
 import org.jboss.as.connector.deployers.ds.DsXmlParser;
 import org.jboss.as.server.deployment.AttachmentKey;
@@ -35,13 +42,6 @@ import org.jboss.jca.common.api.metadata.ds.DataSources;
 import org.jboss.metadata.property.PropertyResolver;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
-
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
 
 /**
  * Picks up -ds.xml deployments

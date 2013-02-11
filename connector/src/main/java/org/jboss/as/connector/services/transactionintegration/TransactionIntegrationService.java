@@ -22,6 +22,11 @@
 
 package org.jboss.as.connector.services.transactionintegration;
 
+import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
+
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
+
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.jca.core.tx.jbossts.TransactionIntegrationImpl;
@@ -34,11 +39,6 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.tm.JBossXATerminator;
 import org.jboss.tm.XAResourceRecoveryRegistry;
 import org.jboss.tm.usertx.UserTransactionRegistry;
-
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-
-import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
 
 /**
  * A WorkManager Service.

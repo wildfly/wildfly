@@ -23,7 +23,6 @@
 package org.jboss.as.connector.subsystems.jca;
 
 import org.jboss.jca.core.connectionmanager.pool.idle.IdleRemover;
-
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;

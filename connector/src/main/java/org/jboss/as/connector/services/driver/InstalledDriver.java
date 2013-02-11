@@ -21,8 +21,6 @@
  */
 package org.jboss.as.connector.services.driver;
 
-import javax.sql.XADataSource;
-
 import org.jboss.modules.ModuleIdentifier;
 
 /**
@@ -51,7 +49,7 @@ public final class InstalledDriver {
      *        implementation class
      * @param dataSourceClassName the name of the {@link javax.sql.DataSource}
      *        implementation class
-     * @param xaDataSourceClassName the name of the {@link XADataSource}
+     * @param xaDataSourceClassName the name of the {@link javax.sql.XADataSource}
      *        implementation class
      * @param majorVersion the driver major version
      * @param minorVersion the driver minor version
@@ -80,7 +78,7 @@ public final class InstalledDriver {
      *        implementation class
      * @param dataSourceClassName the name of the {@link javax.sql.DataSource}
      *        implementation class
-     * @param xaDataSourceClassName the name of the {@link XADataSource}
+     * @param xaDataSourceClassName the name of the {@link javax.sql.XADataSource}
      *        implementation class
      * @param majorVersion the driver major version
      * @param minorVersion the driver minor version

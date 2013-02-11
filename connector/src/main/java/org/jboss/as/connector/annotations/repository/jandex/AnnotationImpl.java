@@ -21,7 +21,7 @@
  */
 package org.jboss.as.connector.annotations.repository.jandex;
 
-import org.jboss.jca.common.spi.annotations.repository.Annotation;
+import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
+import org.jboss.jca.common.spi.annotations.repository.Annotation;
 
 /**
  *

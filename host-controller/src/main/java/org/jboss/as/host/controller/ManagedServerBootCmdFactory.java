@@ -39,7 +39,6 @@ import java.util.Map.Entry;
 
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.domain.controller.resources.ServerGroupResourceDefinition;
 import org.jboss.as.host.controller.ManagedServer.ManagedServerBootConfiguration;
 import org.jboss.as.host.controller.model.host.HostResourceDefinition;
@@ -151,7 +150,7 @@ class ManagedServerBootCmdFactory implements ManagedServerBootConfiguration {
      *
      * @return the directory grouping found in the model.
      *
-     * @throws IllegalArgumentException if the {@link ModelDescriptionConstants#DIRECTORY_GROUPING directory grouping}
+     * @throws IllegalArgumentException if the {@link org.jboss.as.controller.descriptions.ModelDescriptionConstants#DIRECTORY_GROUPING directory grouping}
      *                                  was not found in the model.
      */
     private static DirectoryGrouping resolveDirectoryGrouping(final ModelNode model, final ExpressionResolver expressionResolver) {

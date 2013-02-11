@@ -22,8 +22,8 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
-import org.jboss.dmr.ModelNode;
+import static org.jboss.as.connector.subsystems.datasources.Constants.STATISTICS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,8 +31,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-import static org.jboss.as.connector.subsystems.datasources.Constants.STATISTICS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
+import org.jboss.dmr.ModelNode;
 
 /**
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano

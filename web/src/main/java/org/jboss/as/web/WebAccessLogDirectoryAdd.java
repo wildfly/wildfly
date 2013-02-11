@@ -22,12 +22,12 @@
 
 package org.jboss.as.web;
 
+import static org.jboss.as.web.WebAccessLogDirectoryDefinition.PATH;
+import static org.jboss.as.web.WebAccessLogDirectoryDefinition.RELATIVE_TO;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
-
-import static org.jboss.as.web.WebAccessLogDirectoryDefinition.PATH;
-import static org.jboss.as.web.WebAccessLogDirectoryDefinition.RELATIVE_TO;
 
 /**
  * @author Tomaz Cerar

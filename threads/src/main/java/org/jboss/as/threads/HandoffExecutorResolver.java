@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.concurrent.ThreadFactory;
 
 import org.jboss.as.controller.OperationContext;
-import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
@@ -50,7 +49,7 @@ public interface HandoffExecutorResolver {
      *                          the thread pool resource's configuration. Can be {@code null} in which case a
      *                          default handoff executor may be returned.
      * @param threadPoolName the name of the thread pool
-     * @param threadPoolServiceName the full name of the {@link Service} that provides the thread pool
+     * @param threadPoolServiceName the full name of the {@link org.jboss.msc.service.Service} that provides the thread pool
      * @param serviceTarget service target that is installing the thread pool service; can be used to install
      *                      a {@link ThreadFactoryService}
      * @param newControllers a list of {@link ServiceController}s that the {@code serviceTarget} is installing. If
@@ -73,7 +72,7 @@ public interface HandoffExecutorResolver {
      *                          the thread pool resource's configuration. Can be {@code null} in which case a
      *                          default thread factory should be released.
      * @param threadPoolName the name of the thread pool
-     * @param threadPoolServiceName the full name of the {@link Service} that provides the thread pool
+     * @param threadPoolServiceName the full name of the {@link org.jboss.msc.service.Service} that provides the thread pool
      * @param context the context of the current operation; can be used to perform any necessary
      *                {@link OperationContext#removeService(ServiceName) service removals}
      */
@@ -149,7 +148,7 @@ public interface HandoffExecutorResolver {
          * {@code null}, meaning there is no default.
          *
          * @param threadPoolName the name of the thread pool
-         * @param threadPoolServiceName the full name of the {@link Service} that provides the thread pool
+         * @param threadPoolServiceName the full name of the {@link org.jboss.msc.service.Service} that provides the thread pool
          * @param serviceTarget service target that is installing the thread pool service; can be used to install
          *                      a {@link ThreadFactoryService}
          * @param newControllers a list of {@link ServiceController}s that the {@code serviceTarget} is installing. If
@@ -171,7 +170,7 @@ public interface HandoffExecutorResolver {
          * This default implementation does nothing, but any subclass that installs a default service should override this
          * method to remove it.
          *
-         * @param threadPoolServiceName the full name of the {@link Service} that provides the thread pool
+         * @param threadPoolServiceName the full name of the {@link org.jboss.msc.service.Service} that provides the thread pool
          * @param context the context of the current operation; can be used to perform any necessary
          *                {@link OperationContext#removeService(ServiceName) service removals}
          */

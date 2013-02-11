@@ -22,9 +22,9 @@
 
 package org.jboss.as.connector.services.resourceadapters.deployment.registry;
 
-import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
-
 import java.util.Set;
+
+import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
 
 /**
  * The interface for the resource adapter deployment registry

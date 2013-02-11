@@ -24,12 +24,8 @@ package org.jboss.as.jaxr.extension;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.jaxr.JAXRConfiguration;
-import org.jboss.as.jaxr.ModelConstants;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * Handler responsible for adding JAXR attributes to the model

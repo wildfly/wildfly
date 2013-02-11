@@ -22,6 +22,8 @@
 
 package org.jboss.as.connector.services.rarepository;
 
+import static org.jboss.as.connector.logging.ConnectorLogger.MDR_LOGGER;
+
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.jca.core.rar.SimpleResourceAdapterRepository;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
@@ -32,8 +34,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import static org.jboss.as.connector.logging.ConnectorLogger.MDR_LOGGER;
 
 /**
  * A MdrService. it provide access to IronJacamar's metadata repository

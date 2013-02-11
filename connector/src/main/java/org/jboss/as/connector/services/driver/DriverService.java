@@ -25,6 +25,10 @@
  */
 package org.jboss.as.connector.services.driver;
 
+import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
+
+import java.sql.Driver;
+
 import org.jboss.as.connector.services.driver.registry.DriverRegistry;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -32,10 +36,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import java.sql.Driver;
-
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 
 /**
  * Service wrapper for a {@link java.sql.Driver}.

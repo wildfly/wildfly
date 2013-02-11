@@ -30,8 +30,6 @@ import org.jboss.logging.Messages;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.UTFDataFormatException;
-import java.net.ConnectException;
-import java.net.URI;
 
 /**
  * This module is using message IDs in the range 16600-16699.

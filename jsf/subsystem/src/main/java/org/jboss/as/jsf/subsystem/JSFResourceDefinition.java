@@ -18,21 +18,14 @@
  */
 package org.jboss.as.jsf.subsystem;
 
-import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.jsf.JSFMessages;
-import org.jboss.as.jsf.deployment.JSFModuleIdFactory;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -45,7 +38,6 @@ public class JSFResourceDefinition extends SimpleResourceDefinition {
 
     public static final String DEFAULT_SLOT_ATTR_NAME = "default-jsf-impl-slot";
     public static final String DEFAULT_SLOT = "main";
-//    public static final String JSF_IMPLS_ATTR_NAME = "active-jsf-impls";
 
     protected static final SimpleAttributeDefinition DEFAULT_JSF_IMPL_SLOT =
             new SimpleAttributeDefinitionBuilder(DEFAULT_SLOT_ATTR_NAME, ModelType.STRING, true)
@@ -55,19 +47,6 @@ public class JSFResourceDefinition extends SimpleResourceDefinition {
             .setDefaultValue(new ModelNode(DEFAULT_SLOT))
             .build();
 
-      // BES 11/25/2012 Just use the list-active-jsf-impls operation
-//    protected static final SimpleAttributeDefinition ACTIVE_JSF_IMPLS =
-//            new SimpleAttributeDefinitionBuilder(JSF_IMPLS_ATTR_NAME, ModelType.STRING, true)
-//            .setStorageRuntime()
-//            .build();
-//
-//    protected static final OperationStepHandler activeJSFImplsHandler = new AbstractRuntimeOnlyHandler() {
-//        @Override
-//        protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
-//            context.getResult().set(JSFModuleIdFactory.getInstance().getActiveJSFVersions().toString());
-//            context.stepCompleted();
-//        }
-//    };
 
     public JSFResourceDefinition() {
         super(JSFExtension.PATH_SUBSYSTEM,

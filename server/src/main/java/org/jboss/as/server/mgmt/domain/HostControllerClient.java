@@ -22,7 +22,6 @@
 
 package org.jboss.as.server.mgmt.domain;
 
-import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;

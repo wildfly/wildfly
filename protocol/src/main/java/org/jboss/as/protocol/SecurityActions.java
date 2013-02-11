@@ -24,8 +24,6 @@ package org.jboss.as.protocol;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.Map;
-import java.util.Properties;
 
 /**
  * Security actions to access system environment information.  No methods in

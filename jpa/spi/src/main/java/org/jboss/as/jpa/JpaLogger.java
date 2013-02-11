@@ -27,7 +27,6 @@ import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
@@ -132,7 +131,7 @@ public interface JpaLogger extends BasicLogger {
      * {@code deploymentUnit} parameter.
      *
      * @param deploymentUnit the deployment unit that failed.
-     * @return a {@link DeploymentUnitProcessingException} for the error.
+     * @return a {@link org.jboss.as.server.deployment.DeploymentUnitProcessingException} for the error.
      */
     @LogMessage(level = WARN)
     @Message(id = 11407, value = "Failed to get module attachment for %s")

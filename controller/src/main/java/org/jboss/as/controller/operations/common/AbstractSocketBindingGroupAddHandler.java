@@ -24,7 +24,6 @@ import org.jboss.as.controller.OperationFailedException;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
@@ -46,13 +45,10 @@ public abstract class AbstractSocketBindingGroupAddHandler extends AbstractAddSt
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         String name = address.getLastElement().getValue();
         model.get(NAME).set(name);
 
         SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.validateAndSet(operation, model);
-
-
     }
 }

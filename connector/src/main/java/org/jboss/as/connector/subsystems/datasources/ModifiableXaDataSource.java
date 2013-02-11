@@ -28,7 +28,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.jboss.jca.common.CommonBundle;
-import org.jboss.jca.common.api.metadata.common.CommonXaPool;
 import org.jboss.jca.common.api.metadata.common.Recovery;
 import org.jboss.jca.common.api.metadata.ds.DsSecurity;
 import org.jboss.jca.common.api.metadata.ds.Statement;

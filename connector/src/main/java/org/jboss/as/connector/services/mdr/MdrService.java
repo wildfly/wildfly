@@ -22,14 +22,13 @@
 
 package org.jboss.as.connector.services.mdr;
 
-import org.jboss.as.connector.util.ConnectorServices;
+import static org.jboss.as.connector.logging.ConnectorLogger.MDR_LOGGER;
 
+import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import static org.jboss.as.connector.logging.ConnectorLogger.MDR_LOGGER;
 
 /**
  * A MdrService. it provide access to IronJacamar's metadata repository

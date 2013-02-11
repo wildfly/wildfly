@@ -27,7 +27,6 @@ import java.util.Set;
 
 import org.jboss.as.ejb3.cache.AffinitySupport;
 import org.jboss.as.ejb3.cache.Cacheable;
-import org.jboss.as.ejb3.cache.Identifiable;
 import org.jboss.as.ejb3.cache.IdentifierFactory;
 import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
 
@@ -49,7 +48,7 @@ public interface BackingCacheEntryStore<K extends Serializable, V extends Cachea
      * @param entry the object to store. Cannot be <code>null</code>.
      * @return A set of keys that need to be passivated, to keep the store below the max size
      *
-     * @throws IllegalStateException if the store is already managing an entry with the same {@link Identifiable#getId() id}. It
+     * @throws IllegalStateException if the store is already managing an entry with the same {@link org.jboss.as.ejb3.cache.Identifiable#getId() id}. It
      *         is not a requirement that the store throw this exception in this case, but it is permissible. This basically puts
      *         the onus on callers to ensure this operation is only performed once per entry.
      */
@@ -58,7 +57,7 @@ public interface BackingCacheEntryStore<K extends Serializable, V extends Cachea
     /**
      * Gets the entry with the given id from the store.
      *
-     * @param key {@link Identifiable#getId() id} of the entry. Cannot be <code>null</code>.
+     * @param key {@link org.jboss.as.ejb3.cache.Identifiable#getId() id} of the entry. Cannot be <code>null</code>.
      * @return the object store under <code>id</code>. May return <code>null</code>.
      */
     E get(K key, boolean lock);
@@ -69,7 +68,7 @@ public interface BackingCacheEntryStore<K extends Serializable, V extends Cachea
      * @param entry the entry to update
      * @param modified was the entry modified since {@link #get(java.io.Serializable, boolean)} was called?
      *
-     * @throws IllegalStateException if the store isn't already managing an entry with the same {@link Identifiable#getId() id}.
+     * @throws IllegalStateException if the store isn't already managing an entry with the same {@link org.jboss.as.ejb3.cache.Identifiable#getId() id}.
      *         It is not a requirement that the store throw this exception in this case, but it is permissible. This basically
      *         puts the onus on callers to ensure {@link #insert(E)} is invoked before the first replication.
      */
@@ -78,7 +77,7 @@ public interface BackingCacheEntryStore<K extends Serializable, V extends Cachea
     /**
      * Remove the object with the given key from the store.
      *
-     * @param key {@link Identifiable#getId() id} of the entry. Cannot be <code>null</code>.
+     * @param key {@link org.jboss.as.ejb3.cache.Identifiable#getId() id} of the entry. Cannot be <code>null</code>.
      *
      * @return the object that was cached under <code>key</code>
      */

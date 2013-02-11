@@ -21,7 +21,8 @@
  */
 package org.jboss.as.connector.services.driver.registry;
 
-import org.jboss.as.connector.services.driver.InstalledDriver;
+import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTOR_REGISTRY_LOGGER;
+import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -29,8 +30,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTOR_REGISTRY_LOGGER;
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
+import org.jboss.as.connector.services.driver.InstalledDriver;
 
 /**
  * Standard {@link DriverRegistry} implementation.

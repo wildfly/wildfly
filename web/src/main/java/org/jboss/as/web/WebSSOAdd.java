@@ -22,12 +22,12 @@
 
 package org.jboss.as.web;
 
+import static org.jboss.as.web.WebSSODefinition.SSO_ATTRIBUTES;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.dmr.ModelNode;
-
-import static org.jboss.as.web.WebSSODefinition.SSO_ATTRIBUTES;
 
 /**
  * {@code OperationHandler} responsible for defining the accesslog entry.

@@ -38,7 +38,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
@@ -48,7 +47,7 @@ import org.jboss.dmr.Property;
 
 /**
  * Sets up how to handle failed transformation for use with
- * {@link ModelTestUtils#checkFailedTransformedAddOperation(ModelTestKernelServices, ModelVersion, ModelNode, FailedOperationTransformationConfig)}
+ * {@link ModelTestUtils#checkFailedTransformedAddOperation(ModelTestKernelServices, org.jboss.as.controller.ModelVersion, ModelNode, FailedOperationTransformationConfig)}
  *
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>

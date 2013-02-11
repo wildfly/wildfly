@@ -25,8 +25,6 @@ package org.jboss.as.controller.transform;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.logging.Logger;
 
 import java.util.LinkedList;
 import java.util.List;

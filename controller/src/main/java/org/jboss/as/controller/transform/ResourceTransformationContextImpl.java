@@ -29,7 +29,6 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.jboss.as.controller.ExpressionResolver;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;

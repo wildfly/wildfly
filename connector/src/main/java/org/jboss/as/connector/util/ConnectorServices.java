@@ -22,7 +22,8 @@
 
 package org.jboss.as.connector.util;
 
-import org.jboss.msc.service.ServiceName;
+import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
+import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,8 +31,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * ConnectorServices contains some utility methods used internally and

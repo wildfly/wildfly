@@ -35,7 +35,6 @@ import javax.management.ReflectionException;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * Utilities for working with platform mbeans.

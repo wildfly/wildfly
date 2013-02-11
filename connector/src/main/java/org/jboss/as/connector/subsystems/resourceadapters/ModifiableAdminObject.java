@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.jca.common.CommonBundle;
-import org.jboss.jca.common.api.metadata.ValidatableMetadata;
 import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.logging.Messages;

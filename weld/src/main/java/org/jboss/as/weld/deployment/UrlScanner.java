@@ -25,11 +25,9 @@ package org.jboss.as.weld.deployment;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -39,8 +37,6 @@ import java.util.zip.ZipFile;
 import org.jboss.as.weld.WeldLogger;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class UrlScanner {
 

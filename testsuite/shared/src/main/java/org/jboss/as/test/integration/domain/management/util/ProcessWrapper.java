@@ -24,12 +24,9 @@ package org.jboss.as.test.integration.domain.management.util;
 
 import org.jboss.as.process.protocol.StreamUtils;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.security.AccessController;
 import java.security.PrivilegedAction;

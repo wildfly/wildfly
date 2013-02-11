@@ -22,13 +22,11 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
+import static org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION;
+
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jboss.as.ee.component.BindingConfiguration;
-import org.jboss.as.ee.component.ComponentConfiguration;
-import org.jboss.as.ee.component.ComponentConfigurator;
-import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -39,7 +37,6 @@ import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
-import org.jboss.as.ejb3.remote.RemoteViewInjectionSource;
 import org.jboss.as.ejb3.remote.RemoteViewManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.Attachments;
@@ -51,11 +48,7 @@ import org.jboss.modules.Module;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
-import org.jboss.msc.value.Values;
-
-import static org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION;
 
 /**
  * Implementation of {@link InjectionSource} responsible for finding a specific bean instance with a bean name and interface.
@@ -159,7 +152,7 @@ public class EjbInjectionSource extends InjectionSource {
                                     return module != null ? module.getClassLoader() : null;
                                 }
                             };
-                            remoteFactory = new RemoteViewManagedReferenceFactory(earApplicationName, moduleDescription.getModuleName(), moduleDescription.getDistinctName(), componentDescription.getComponentName(), description.getViewClassName(), componentDescription.isStateful(),viewClassLoader);
+                            remoteFactory = new RemoteViewManagedReferenceFactory(earApplicationName, moduleDescription.getModuleName(), moduleDescription.getDistinctName(), componentDescription.getComponentName(), description.getViewClassName(), componentDescription.isStateful(), viewClassLoader);
                         }
                         final ServiceName serviceName = description.getServiceName();
                         resolvedViewName = serviceName;
@@ -183,11 +176,9 @@ public class EjbInjectionSource extends InjectionSource {
     }
 
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
+        if (this == o) { return true; }
 
-        if (!(o instanceof EjbInjectionSource))
-            return false;
+        if (!(o instanceof EjbInjectionSource)) { return false; }
 
         resolve();
 

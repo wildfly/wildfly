@@ -21,8 +21,7 @@
  */
 package org.jboss.as.connector.annotations.repository.jandex;
 
-import org.jboss.jca.common.spi.annotations.repository.Annotation;
-import org.jboss.jca.common.spi.annotations.repository.AnnotationRepository;
+import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,8 +36,8 @@ import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.Index;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.Type;
-
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
+import org.jboss.jca.common.spi.annotations.repository.Annotation;
+import org.jboss.jca.common.spi.annotations.repository.AnnotationRepository;
 
 /**
  *

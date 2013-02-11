@@ -36,7 +36,6 @@ import java.util.Map;
 import javax.ejb.EJBException;
 import javax.ejb.RemoveException;
 import javax.sql.DataSource;
-import org.jboss.as.cmp.CmpMessages;
 import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.bridge.FieldBridge;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
