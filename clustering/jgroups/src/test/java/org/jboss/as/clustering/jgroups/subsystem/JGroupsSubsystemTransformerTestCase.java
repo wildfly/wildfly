@@ -33,6 +33,7 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -61,12 +62,12 @@ public class JGroupsSubsystemTransformerTestCase extends OperationTestCaseBase {
 
     @Test
     public void testTransformerAS712() throws Exception {
-        testTransformer_1_1_0("7.1.2.Final");
+        testTransformer_1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
     public void testTransformerAS713() throws Exception {
-        testTransformer_1_1_0("7.1.3.Final");
+        testTransformer_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
     /**
@@ -80,14 +81,12 @@ public class JGroupsSubsystemTransformerTestCase extends OperationTestCaseBase {
      *
      * @throws Exception
      */
-    private void testTransformer_1_1_0(String mavenVersion) throws Exception {
+    private void testTransformer_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
         ModelVersion version = ModelVersion.create(1, 1, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXmlResource(getSubsystemXml());
-        builder.createLegacyKernelServicesBuilder(null, version)
-                .addMavenResourceURL("org.jboss.as:jboss-as-clustering-jgroups:" + mavenVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-controller:" + mavenVersion)
-                .addParentFirstClassPattern("org.jboss.as.controller.*");
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version)
+                .addMavenResourceURL("org.jboss.as:jboss-as-clustering-jgroups:" + controllerVersion.getMavenGavVersion());
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
@@ -133,12 +132,12 @@ public class JGroupsSubsystemTransformerTestCase extends OperationTestCaseBase {
 
     @Test
     public void testRejectExpressionsAS712() throws Exception {
-        testRejectExpressions_1_1_0("org.jboss.as:jboss-as-clustering-jgroups:7.1.2.Final");
+        testRejectExpressions_1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
     public void testRejectExpressionsAS713() throws Exception {
-        testRejectExpressions_1_1_0("org.jboss.as:jboss-as-clustering-jgroups:7.1.3.Final");
+        testRejectExpressions_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
     /**
@@ -146,14 +145,18 @@ public class JGroupsSubsystemTransformerTestCase extends OperationTestCaseBase {
      *
      * @throws Exception
      */
-    private void testRejectExpressions_1_1_0(String mavenGAV) throws Exception {
+    private void testRejectExpressions_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
         // create builder for legacy subsystem version
         ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
-        builder.createLegacyKernelServicesBuilder(null, version_1_1_0)
-            .addMavenResourceURL(mavenGAV);
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_1_0)
+            .addMavenResourceURL("org.jboss.as:jboss-as-clustering-jgroups:" + controllerVersion.getMavenGavVersion())
+            //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
+            //which is strange since it should be loading it all from the current jboss modules
+            //Also this works in several other tests
+            .dontPersistXml();
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());

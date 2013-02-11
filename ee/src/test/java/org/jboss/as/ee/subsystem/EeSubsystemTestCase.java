@@ -32,6 +32,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.AttributesPathAddressConfig;
 import org.jboss.as.model.test.ModelFixer;
+import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -70,7 +71,7 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
             KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
             // Add legacy subsystems
-            builder.createLegacyKernelServicesBuilder(null, modelVersion)
+            builder.createLegacyKernelServicesBuilder(null, ModelTestControllerVersion.V7_1_2_FINAL, modelVersion)
                     .addMavenResourceURL("org.jboss.as:jboss-as-ee:7.1.2.Final");
 
             KernelServices mainServices = builder.build();
@@ -114,7 +115,7 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
                 .setSubsystemXml(subsystemXml);
 
         // Add legacy subsystems
-        builder.createLegacyKernelServicesBuilder(null, modelVersion)
+        builder.createLegacyKernelServicesBuilder(null, ModelTestControllerVersion.V7_1_3_FINAL, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-ee:7.1.3.Final");
 
         KernelServices mainServices = builder.build();

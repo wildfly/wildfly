@@ -50,6 +50,10 @@ public interface ObjectSerializer {
 
     Object deserializeIgnoreDomainTypeResource(byte[] object) throws IOException;
 
+    byte[] serializeModelTestOperationValidatorFilter(Object object) throws IOException;
+
+    Object deserializeModelTestOperationValidatorFilter(byte[] object) throws IOException, ClassNotFoundException;
+
     public static class FACTORY {
         public static ObjectSerializer createSerializer(ClassLoader classLoader) {
             try {
