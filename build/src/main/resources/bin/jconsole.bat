@@ -65,20 +65,20 @@ rem Setup The Classpath
 set CLASSPATH=%JAVA_HOME%\lib\jconsole.jar
 set CLASSPATH=%CLASSPATH%;%JAVA_HOME%\lib\tools.jar
 
-call :SearchForJars "%JBOSS_MODULEPATH%\org\jboss\remoting-jmx\main"
-call :SearchForJars "%JBOSS_MODULEPATH%\org\jboss\remoting3\main"
-call :SearchForJars "%JBOSS_MODULEPATH%\org\jboss\logging\main"
-call :SearchForJars "%JBOSS_MODULEPATH%\org\jboss\xnio\main"
-call :SearchForJars "%JBOSS_MODULEPATH%\org\jboss\xnio\nio\main"
-call :SearchForJars "%JBOSS_MODULEPATH%\org\jboss\sasl\main"
-call :SearchForJars "%JBOSS_MODULEPATH%\org\jboss\marshalling\main"
-call :SearchForJars "%JBOSS_MODULEPATH%\org\jboss\marshalling\river\main"
-call :SearchForJars "%JBOSS_MODULEPATH%\org\jboss\as\cli\main"
-call :SearchForJars "%JBOSS_MODULEPATH%\org\jboss\staxmapper\main"
-call :SearchForJars "%JBOSS_MODULEPATH%\org\jboss\as\protocol\main"
-call :SearchForJars "%JBOSS_MODULEPATH%\org\jboss\dmr\main"
-call :SearchForJars "%JBOSS_MODULEPATH%\org\jboss\as\controller-client\main"
-call :SearchForJars "%JBOSS_MODULEPATH%\org\jboss\threads\main"
+call :SearchForJars "%JBOSS_MODULEPATH%\system\layers\base\org\jboss\remoting-jmx\main"
+call :SearchForJars "%JBOSS_MODULEPATH%\system\layers\base\org\jboss\remoting3\main"
+call :SearchForJars "%JBOSS_MODULEPATH%\system\layers\base\org\jboss\logging\main"
+call :SearchForJars "%JBOSS_MODULEPATH%\system\layers\base\org\jboss\xnio\main"
+call :SearchForJars "%JBOSS_MODULEPATH%\system\layers\base\org\jboss\xnio\nio\main"
+call :SearchForJars "%JBOSS_MODULEPATH%\system\layers\base\org\jboss\sasl\main"
+call :SearchForJars "%JBOSS_MODULEPATH%\system\layers\base\org\jboss\marshalling\main"
+call :SearchForJars "%JBOSS_MODULEPATH%\system\layers\base\org\jboss\marshalling\river\main"
+call :SearchForJars "%JBOSS_MODULEPATH%\system\layers\base\org\jboss\as\cli\main"
+call :SearchForJars "%JBOSS_MODULEPATH%\system\layers\base\org\jboss\staxmapper\main"
+call :SearchForJars "%JBOSS_MODULEPATH%\system\layers\base\org\jboss\as\protocol\main"
+call :SearchForJars "%JBOSS_MODULEPATH%\system\layers\base\org\jboss\dmr\main"
+call :SearchForJars "%JBOSS_MODULEPATH%\system\layers\base\org\jboss\as\controller-client\main"
+call :SearchForJars "%JBOSS_MODULEPATH%\system\layers\base\org\jboss\threads\main"
 
 rem echo %CLASSPATH%
 
