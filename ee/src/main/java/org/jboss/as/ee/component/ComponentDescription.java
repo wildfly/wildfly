@@ -614,7 +614,7 @@ public class ComponentDescription implements ResourceInjectionTarget {
             new ClassDescriptionTraversal(configuration.getComponentClass(), applicationClasses) {
                 @Override
                 public void handle(Class<?> clazz, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
-                    mergeInjectionsForClass(clazz, classDescription, moduleDescription, description, configuration, context, injectors, instanceKey, uninjectors, metadataComplete);
+                    mergeInjectionsForClass(clazz, configuration.getComponentClass(), classDescription, moduleDescription, deploymentReflectionIndex, description, configuration, context, injectors, instanceKey, uninjectors, metadataComplete);
                 }
             }.run();
 
@@ -663,7 +663,7 @@ public class ComponentDescription implements ResourceInjectionTarget {
                 new ClassDescriptionTraversal(interceptorClass.getModuleClass(), applicationClasses) {
                     @Override
                     public void handle(final Class<?> clazz, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
-                        mergeInjectionsForClass(clazz, classDescription, moduleDescription, description, configuration, context, injectors, contextKey, uninjectors, metadataComplete);
+                        mergeInjectionsForClass(clazz, interceptorClass.getModuleClass(), classDescription, moduleDescription, deploymentReflectionIndex, description, configuration, context, injectors, contextKey, uninjectors, metadataComplete);
                         final InterceptorClassDescription interceptorConfig;
                         if (classDescription != null && !metadataComplete) {
                             interceptorConfig = InterceptorClassDescription.merge(classDescription.getInterceptorClassDescription(), moduleDescription.getInterceptorClassOverride(clazz.getName()));
@@ -947,7 +947,8 @@ public class ComponentDescription implements ResourceInjectionTarget {
          * <p/>
          * Note that this does not take superclasses into consideration, only injections on the current class
          *
-         * @param clazz             The class to perform injection for
+         * @param clazz             The class or superclass to perform injection for
+         * @param actualClass       The actual component or interceptor class
          * @param classDescription  The class description, may be null
          * @param moduleDescription The module description
          * @param description       The component description
@@ -959,7 +960,7 @@ public class ComponentDescription implements ResourceInjectionTarget {
          * @throws DeploymentUnitProcessingException
          *
          */
-        private void mergeInjectionsForClass(final Class<?> clazz, final EEModuleClassDescription classDescription, final EEModuleDescription moduleDescription, final ComponentDescription description, final ComponentConfiguration configuration, final DeploymentPhaseContext context, final Deque<InterceptorFactory> injectors, final Object instanceKey, final Deque<InterceptorFactory> uninjectors, boolean metadataComplete) throws DeploymentUnitProcessingException {
+        private void mergeInjectionsForClass(final Class<?> clazz, final Class<?> actualClass, final EEModuleClassDescription classDescription, final EEModuleDescription moduleDescription, final DeploymentReflectionIndex deploymentReflectionIndex, final ComponentDescription description, final ComponentConfiguration configuration, final DeploymentPhaseContext context, final Deque<InterceptorFactory> injectors, final Object instanceKey, final Deque<InterceptorFactory> uninjectors, boolean metadataComplete) throws DeploymentUnitProcessingException {
             final Map<InjectionTarget, ResourceInjectionConfiguration> mergedInjections = new HashMap<InjectionTarget, ResourceInjectionConfiguration>();
             if (classDescription != null && !metadataComplete) {
                 mergedInjections.putAll(classDescription.getInjectionConfigurations());
@@ -972,6 +973,15 @@ public class ComponentDescription implements ResourceInjectionTarget {
                     SERVER_DEPLOYMENT_LOGGER.ignoringStaticInjectionTarget(injectionConfiguration.getTarget());
                     continue;
                 }
+                if(injectionConfiguration.getTarget() instanceof MethodInjectionTarget) {
+                    //we need to make sure that if this is a method injection it has not been overriden
+                    final MethodInjectionTarget mt = (MethodInjectionTarget)injectionConfiguration.getTarget();
+                    Method method = mt.getMethod(deploymentReflectionIndex, clazz);
+                    if(!isNotOverriden(clazz, method, actualClass, deploymentReflectionIndex)) {
+                        continue;
+                    }
+                }
+
                 final Object valueContextKey = new Object();
                 final InjectedValue<ManagedReferenceFactory> managedReferenceFactoryValue = new InjectedValue<ManagedReferenceFactory>();
                 configuration.getStartDependencies().add(new InjectedConfigurator(injectionConfiguration, configuration, context, managedReferenceFactoryValue));

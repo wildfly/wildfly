@@ -31,8 +31,18 @@ public class SuperBean {
     /**
      * This should create a binding for java:module/env/org.jboss.as.test.integration.injection.resource.superclass.SuperBean/simpleManagedBean
      */
-    @Resource(lookup="java:module/simpleManagedBean")
+    @Resource(lookup = "java:module/simpleManagedBean")
     protected SimpleManagedBean simpleManagedBean;
 
 
+    private String simpleString;
+
+    public String getSimpleString() {
+        return simpleString;
+    }
+
+    @Resource(lookup = "java:module/string1")
+    public void setSimpleString(final String simpleString) {
+        this.simpleString = simpleString;
+    }
 }
