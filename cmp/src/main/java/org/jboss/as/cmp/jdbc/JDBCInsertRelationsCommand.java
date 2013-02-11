@@ -24,7 +24,6 @@ package org.jboss.as.cmp.jdbc;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.Iterator;
-import javax.ejb.EJBException;
 import javax.sql.DataSource;
 import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.jdbc.bridge.JDBCCMPFieldBridge;

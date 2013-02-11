@@ -30,7 +30,6 @@ import static org.jboss.as.messaging.CommonAttributes.BINDINGS_DIRECTORY;
 import static org.jboss.as.messaging.CommonAttributes.JOURNAL_DIRECTORY;
 import static org.jboss.as.messaging.CommonAttributes.LARGE_MESSAGES_DIRECTORY;
 import static org.jboss.as.messaging.CommonAttributes.PAGING_DIRECTORY;
-import static org.jboss.dmr.ModelType.STRING;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -48,7 +47,6 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 

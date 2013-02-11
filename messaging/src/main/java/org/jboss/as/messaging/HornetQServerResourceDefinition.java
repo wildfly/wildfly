@@ -63,7 +63,6 @@ import static org.jboss.as.messaging.CommonAttributes.PERSISTENCE_ENABLED;
 import static org.jboss.as.messaging.CommonAttributes.PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY;
 import static org.jboss.as.messaging.CommonAttributes.PERSIST_ID_CACHE;
 import static org.jboss.as.messaging.CommonAttributes.REMOTING_INCOMING_INTERCEPTORS;
-import static org.jboss.as.messaging.CommonAttributes.REMOTING_INTERCEPTORS;
 import static org.jboss.as.messaging.CommonAttributes.REPLICATION_CLUSTERNAME;
 import static org.jboss.as.messaging.CommonAttributes.REMOTING_OUTGOING_INTERCEPTORS;
 import static org.jboss.as.messaging.CommonAttributes.RUN_SYNC_SPEED_TEST;

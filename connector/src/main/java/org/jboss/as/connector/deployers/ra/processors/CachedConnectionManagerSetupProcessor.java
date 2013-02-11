@@ -26,7 +26,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
 import javax.resource.ResourceException;
 
 import org.jboss.as.connector.util.ConnectorServices;

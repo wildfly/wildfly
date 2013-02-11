@@ -18,12 +18,9 @@
  */
 package org.jboss.as.server.services.net;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.resource.AbstractSocketBindingResourceDefinition;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * Handler for changing the fixed-port setting on a socket binding.

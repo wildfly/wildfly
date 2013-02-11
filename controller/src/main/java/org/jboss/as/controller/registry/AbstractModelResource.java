@@ -28,7 +28,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.dmr.ModelNode;
 
 import java.util.Collections;
-import java.util.ConcurrentModificationException;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;

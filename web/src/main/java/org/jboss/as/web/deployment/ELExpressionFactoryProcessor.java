@@ -24,7 +24,6 @@ package org.jboss.as.web.deployment;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Properties;
@@ -48,7 +47,7 @@ import org.jboss.modules.Module;
  * This resolves a performance issue.
  *
  * @author Stuart Douglas
- * @see https://issues.jboss.org/browse/AS7-5026
+ * @see <a href="https://issues.jboss.org/browse/AS7-5026">jira</a>
  */
 public class ELExpressionFactoryProcessor implements DeploymentUnitProcessor {
 

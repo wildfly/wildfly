@@ -22,7 +22,12 @@
 
 package org.jboss.as.connector.deployers.ds;
 
-import org.jboss.as.security.vault.RuntimeVaultReader;
+import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
 import org.jboss.jca.common.api.metadata.common.Credential;
 import org.jboss.jca.common.api.metadata.common.Extension;
 import org.jboss.jca.common.api.metadata.common.Recovery;
@@ -33,14 +38,7 @@ import org.jboss.jca.common.metadata.ParserException;
 import org.jboss.jca.common.metadata.common.CredentialImpl;
 import org.jboss.jca.common.metadata.ds.DsSecurityImpl;
 import org.jboss.jca.common.metadata.ds.v11.DsParser;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.property.PropertyResolver;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-
-import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
-import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 
 /**
  * TODO class javadoc.

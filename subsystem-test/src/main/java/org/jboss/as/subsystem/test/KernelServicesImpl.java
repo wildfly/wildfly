@@ -28,7 +28,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.validation.OperationValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationTransformerRegistry;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
@@ -36,7 +35,6 @@ import org.jboss.as.controller.transform.OperationTransformer.TransformedOperati
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.TransformationTargetImpl;
-import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.controller.transform.Transformers;
 import org.jboss.as.model.test.ModelTestKernelServicesImpl;
 import org.jboss.as.model.test.ModelTestModelControllerService;

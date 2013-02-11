@@ -22,6 +22,8 @@
 
 package org.jboss.as.connector.subsystems.jca;
 
+import static org.jboss.as.connector.subsystems.jca.Constants.CACHED_CONNECTION_MANAGER;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
@@ -33,8 +35,6 @@ import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import static org.jboss.as.connector.subsystems.jca.Constants.CACHED_CONNECTION_MANAGER;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.

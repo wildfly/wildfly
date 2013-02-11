@@ -22,10 +22,11 @@
 
 package org.jboss.as.connector.deployers.datasource;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
 import javax.annotation.sql.DataSourceDefinition;
 import javax.annotation.sql.DataSourceDefinitions;
 
@@ -44,8 +45,6 @@ import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
-
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * Deployment processor responsible for processing {@link DataSourceDefinition} and {@link DataSourceDefinitions}

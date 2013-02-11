@@ -21,9 +21,7 @@ package org.jboss.as.server.services.net;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.operations.validation.InetAddressValidator;
 import org.jboss.as.controller.resource.AbstractSocketBindingResourceDefinition;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.ServerMessages;

@@ -26,8 +26,6 @@ import org.jboss.as.controller.client.impl.AbstractModelControllerClient;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.Connection;
 
-import java.io.IOException;
-
 /**
  * Internal test client helper.
  *

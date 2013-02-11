@@ -21,7 +21,6 @@ package org.jboss.as.server.services.net;
 import java.util.List;
 
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.as.controller.operations.common.InterfaceAddHandler;

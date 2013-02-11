@@ -22,6 +22,9 @@
 
 package org.jboss.as.connector.deployers.ds;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 import org.jboss.as.connector.deployers.datasource.DataSourceDefinitionAnnotationParser;
 import org.jboss.as.connector.deployers.datasource.DataSourceDefinitionDeploymentDescriptorParser;
 import org.jboss.as.connector.deployers.ds.processors.DsXmlDeploymentInstallProcessor;
@@ -32,9 +35,6 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceTarget;
-
-import java.util.ArrayList;
-import java.util.Collection;
 
 /**
  * Service activator which installs the various service required for datasource

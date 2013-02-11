@@ -29,7 +29,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.threads.AsyncFuture;
 
 import java.io.IOException;
-import java.util.concurrent.Future;
 
 /**
  * A transactional protocol client.

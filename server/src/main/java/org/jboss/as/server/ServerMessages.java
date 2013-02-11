@@ -24,7 +24,6 @@ package org.jboss.as.server;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InvalidObjectException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -227,7 +226,7 @@ public interface ServerMessages {
     String malformedCommandLineURL(String urlSpec, String option);
 
     /**
-     * Creates an error message indicating {@link java.util.Properties#load(InputStream) properties could not be loaded}
+     * Creates an error message indicating {@link java.util.Properties#load(java.io.InputStream) properties could not be loaded}
      * from a given url.
      *
      * @param url the provided url

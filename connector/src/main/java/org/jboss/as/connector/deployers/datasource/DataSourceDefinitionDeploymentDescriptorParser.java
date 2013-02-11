@@ -22,6 +22,8 @@
 
 package org.jboss.as.connector.deployers.datasource;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -39,8 +41,6 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.javaee.spec.DataSourceMetaData;
 import org.jboss.metadata.javaee.spec.DataSourcesMetaData;
 import org.jboss.metadata.javaee.spec.PropertyMetaData;
-
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * Deployment processor responsible for processing data-source deployment descriptor elements

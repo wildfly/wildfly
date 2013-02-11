@@ -22,6 +22,10 @@
 
 package org.jboss.as.web;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.RequestGroupInfo;
 import org.jboss.as.controller.OperationContext;
@@ -33,10 +37,6 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.web.WebMessages.MESSAGES;
 
 /**
  * @author Emanuel Muckenhuber

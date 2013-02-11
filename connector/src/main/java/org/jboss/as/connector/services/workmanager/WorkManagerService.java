@@ -22,6 +22,12 @@
 
 package org.jboss.as.connector.services.workmanager;
 
+import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
+
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.concurrent.Executor;
+
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.jca.core.api.workmanager.WorkManager;
 import org.jboss.jca.core.security.DefaultCallback;
@@ -35,12 +41,6 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.BlockingExecutor;
 import org.jboss.tm.JBossXATerminator;
-
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.concurrent.Executor;
-
-import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
 
 /**
  * A WorkManager Service.

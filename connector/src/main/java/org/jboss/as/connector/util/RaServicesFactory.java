@@ -23,9 +23,9 @@
 package org.jboss.as.connector.util;
 
 import org.jboss.as.connector.deployers.ra.processors.AbstractResourceAdapterDeploymentServiceListener;
+import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
 import org.jboss.as.connector.services.resourceadapters.deployment.ResourceAdapterXmlDeploymentService;
-import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.as.controller.ServiceVerificationHandler;

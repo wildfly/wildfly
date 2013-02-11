@@ -38,7 +38,6 @@ import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
-import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jboss.as.server.AbstractDeploymentChainStep;
@@ -195,8 +194,6 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(TransactionExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_TRANSACTION_BINDINGS, new TransactionJndiBindingProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
-
-        final ServiceTarget target = context.getServiceTarget();
 
         //bind the TransactionManger and the TSR into JNDI
         final BinderService tmBinderService = new BinderService("TransactionManager");

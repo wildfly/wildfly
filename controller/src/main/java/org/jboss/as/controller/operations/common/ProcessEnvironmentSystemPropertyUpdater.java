@@ -21,7 +21,6 @@
 */
 package org.jboss.as.controller.operations.common;
 
-import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.OperationFailedException;
 
 /**
@@ -38,7 +37,7 @@ public interface ProcessEnvironmentSystemPropertyUpdater {
      *
      * @return {@code true} if the update can be applied to the runtime system properties; {@code} false if it
      *         should just be stored in the persistent configuration and the process should be put into
-     *         {@link ControlledProcessState.State#RELOAD_REQUIRED reload-required state}.
+     *         {@link org.jboss.as.controller.ControlledProcessState.State#RELOAD_REQUIRED reload-required state}.
      *
      * @throws OperationFailedException if a change to the given property is not allowed at all; e.g. changing
      *                                  {@code jboss.server.base.dir} after primordial boot is not allowed; the

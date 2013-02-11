@@ -49,8 +49,6 @@ import org.jboss.as.connector.services.resourceadapters.deployment.registry.Reso
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.messaging.JGroupsChannelLocator;
-import org.jboss.as.messaging.MessagingLogger;
-import org.jboss.as.messaging.MessagingServices;
 import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
 import org.jboss.as.naming.ContextListManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
@@ -122,7 +120,6 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.SubjectFactory;
-import org.jgroups.JChannel;
 
 /**
  * A service which translates a pooled connection factory into a resource adapter driven connection pool

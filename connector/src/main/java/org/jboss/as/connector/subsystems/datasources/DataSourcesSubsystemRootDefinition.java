@@ -32,7 +32,6 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOU
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapterResourceDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
@@ -43,16 +42,10 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.DiscardUndefinedAttributesTransformer;
-import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-
-import java.util.Set;
 
 /**
  * @author Stefano Maestri

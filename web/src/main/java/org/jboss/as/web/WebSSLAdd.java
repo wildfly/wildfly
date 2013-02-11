@@ -22,14 +22,12 @@
 
 package org.jboss.as.web;
 
+import static org.jboss.as.web.WebSSLDefinition.SSL_ATTRIBUTES;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.web.WebSSLDefinition.SSL_ATTRIBUTES;
 
 /**
  * {@code OperationHandler} responsible for defining the accesslog entry.

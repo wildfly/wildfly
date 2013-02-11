@@ -24,7 +24,6 @@ package org.jboss.as.web;
 import static org.jboss.as.web.WebMessages.MESSAGES;
 
 import java.lang.reflect.InvocationTargetException;
-
 import javax.naming.NamingException;
 
 import org.apache.catalina.Context;

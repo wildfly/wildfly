@@ -24,9 +24,7 @@ package org.jboss.as.controller.operations.global;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
-import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -45,13 +43,13 @@ import org.jboss.dmr.ModelType;
  * Deprecated {@link OperationStepHandler} handlers for handling {@code write-attribute} operations.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @deprecated use {@link AbstractWriteAttributeHandler}
+ * @deprecated use {@link org.jboss.as.controller.AbstractWriteAttributeHandler}
 */
 @SuppressWarnings("deprecation")
 @Deprecated
 public class WriteAttributeHandlers {
 
-    /** @deprecated use {@link AbstractWriteAttributeHandler} */
+    /** @deprecated use {@link org.jboss.as.controller.AbstractWriteAttributeHandler} */
     @Deprecated
     @SuppressWarnings("deprecation")
     public static class WriteAttributeOperationHandler implements OperationStepHandler {
@@ -133,7 +131,7 @@ public class WriteAttributeHandlers {
      * WriteAttributeOperationHandler that uses a ModelTypeValidator to validate the operation's
      * value attribute. The parameters in the constructors are passed to the equivalent
      * constructor in {@link ModelTypeValidator}.
-     * @deprecated use {@link AbstractWriteAttributeHandler}
+     * @deprecated use {@link org.jboss.as.controller.AbstractWriteAttributeHandler}
      */
     @Deprecated
     public static class ModelTypeValidatingHandler extends WriteAttributeOperationHandler {
@@ -159,7 +157,7 @@ public class WriteAttributeHandlers {
         }
     }
 
-    /** @deprecated use {@link AbstractWriteAttributeHandler} */
+    /** @deprecated use {@link org.jboss.as.controller.AbstractWriteAttributeHandler} */
     @Deprecated
     public static class StringLengthValidatingHandler extends WriteAttributeOperationHandler {
 
@@ -180,7 +178,7 @@ public class WriteAttributeHandlers {
         }
     }
 
-    /** @deprecated use {@link AbstractWriteAttributeHandler} */
+    /** @deprecated use {@link org.jboss.as.controller.AbstractWriteAttributeHandler} */
     @Deprecated
     public static class IntRangeValidatingHandler extends WriteAttributeOperationHandler {
 
@@ -197,7 +195,7 @@ public class WriteAttributeHandlers {
         }
     }
 
-    /** @deprecated use {@link AbstractWriteAttributeHandler} */
+    /** @deprecated use {@link org.jboss.as.controller.AbstractWriteAttributeHandler} */
     @Deprecated
     public static class InetAddressValidatingHandler extends WriteAttributeOperationHandler {
         public InetAddressValidatingHandler(final boolean nullable, final boolean allowExpressions) {
@@ -205,7 +203,7 @@ public class WriteAttributeHandlers {
         }
     }
 
-    /** @deprecated use {@link AbstractWriteAttributeHandler} */
+    /** @deprecated use {@link org.jboss.as.controller.AbstractWriteAttributeHandler} */
     @Deprecated
     public static class ListValidatingHandler extends WriteAttributeOperationHandler {
 
@@ -222,7 +220,7 @@ public class WriteAttributeHandlers {
         }
     }
 
-    /** @deprecated use {@link ModelOnlyWriteAttributeHandler} */
+    /** @deprecated use {@link org.jboss.as.controller.ModelOnlyWriteAttributeHandler} */
     @Deprecated
     public static class AttributeDefinitionValidatingHandler extends WriteAttributeOperationHandler {
 

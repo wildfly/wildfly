@@ -34,10 +34,6 @@ import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
-import static org.jboss.as.connector.subsystems.datasources.Constants.DATA_SOURCE;
-import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE;
-
 
 /**
  * Handler for adding the datasource subsystem.

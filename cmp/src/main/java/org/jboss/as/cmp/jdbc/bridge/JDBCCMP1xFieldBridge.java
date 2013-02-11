@@ -23,8 +23,6 @@ package org.jboss.as.cmp.jdbc.bridge;
 
 import java.lang.reflect.Field;
 
-import javax.ejb.EJBException;
-
 import org.jboss.as.cmp.CmpMessages;
 import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;

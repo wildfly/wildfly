@@ -22,12 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem.deployment;
 
-import java.util.Locale;
-import java.util.ResourceBundle;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -38,8 +32,6 @@ import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -48,7 +40,6 @@ import org.jboss.as.ejb3.subsystem.EJB3Extension;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Base class for {@link ResourceDefinition}s describing runtime {@link EJBComponent}s.
  *

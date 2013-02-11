@@ -22,6 +22,18 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
+import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_DATASOURCE_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJOR_VERSION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MINOR_VERSION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE_SLOT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import java.lang.reflect.Constructor;
 import java.sql.Driver;
 import java.util.List;
@@ -46,18 +58,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-
-import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_DATASOURCE_CLASS_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJOR_VERSION;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MINOR_VERSION;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE_SLOT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * Operation handler responsible for adding a jdbc driver.

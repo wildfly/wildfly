@@ -43,7 +43,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.RemotingOptions;
 import org.xnio.OptionMap;
-import org.xnio.Options;
 
 /**
  * Utility class to add remoting services

@@ -22,7 +22,6 @@
 package org.jboss.as.connector.subsystems.jca;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
-import static org.jboss.as.connector.subsystems.jca.JcaArchiveValidationDefinition.ArchiveValidationParameters;
 import static org.jboss.as.connector.subsystems.jca.Constants.ARCHIVE_VALIDATION;
 import static org.jboss.as.connector.subsystems.jca.Constants.BEAN_VALIDATION;
 import static org.jboss.as.connector.subsystems.jca.Constants.BOOTSTRAP_CONTEXT;
@@ -32,6 +31,7 @@ import static org.jboss.as.connector.subsystems.jca.Constants.JCA;
 import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER;
 import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_LONG_RUNNING;
 import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_SHORT_RUNNING;
+import static org.jboss.as.connector.subsystems.jca.JcaArchiveValidationDefinition.ArchiveValidationParameters;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;

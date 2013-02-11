@@ -47,7 +47,6 @@ import org.jboss.jca.common.api.metadata.ra.ra10.ResourceAdapter10;
 import org.jboss.jca.deployers.DeployersLogger;
 import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.logging.Logger;
-import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;

@@ -39,7 +39,6 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.SimpleInterceptorFactoryContext;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.ImmediateValue;
 
 import static org.jboss.as.ee.EeMessages.MESSAGES;

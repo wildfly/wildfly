@@ -24,7 +24,6 @@ package org.jboss.as.cmp.component;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import javax.ejb.EJBException;
 import org.jboss.as.cmp.CmpMessages;
 
 /**

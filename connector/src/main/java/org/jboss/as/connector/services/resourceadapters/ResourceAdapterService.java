@@ -22,16 +22,15 @@
 
 package org.jboss.as.connector.services.resourceadapters;
 
+import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
+
 import javax.resource.spi.ResourceAdapter;
 
-import org.jboss.as.connector.util.ConnectorServices;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
-
-import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
 
 public class ResourceAdapterService implements Service<ResourceAdapter> {
 

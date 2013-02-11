@@ -21,7 +21,6 @@
  */
 package org.jboss.as.threads;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.List;

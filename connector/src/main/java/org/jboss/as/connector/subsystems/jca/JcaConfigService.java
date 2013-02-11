@@ -22,14 +22,14 @@
 
 package org.jboss.as.connector.subsystems.jca;
 
+import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
+
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.jca.Version;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
 
 /**
  * A ConnectorConfigService.

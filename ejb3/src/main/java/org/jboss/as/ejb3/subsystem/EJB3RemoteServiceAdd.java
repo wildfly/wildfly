@@ -21,10 +21,6 @@
  */
 package org.jboss.as.ejb3.subsystem;
 
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CONNECTOR_REF;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.THREAD_POOL_NAME;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TYPE;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

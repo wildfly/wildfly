@@ -28,9 +28,7 @@ import javax.xml.stream.XMLStreamException;
 
 import junit.framework.AssertionFailedError;
 
-import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.RunningMode;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -84,7 +82,7 @@ public interface KernelServicesBuilder {
      * @param additionalInit Additional initialization that should be done to the parsers, controller and service container before initializing our extension
      * @param modelVersion The model version of the legacy subsystem
      * @return the legacy kernel services initializer
-     * @throws IllegalArgumentException if {@code additionalInit} does not have a running mode of {@link RunningMode#ADMIN_ONLY}
+     * @throws IllegalArgumentException if {@code additionalInit} does not have a running mode of {@link org.jboss.as.controller.RunningMode#ADMIN_ONLY}
      * @throws IllegalStateException if {@link #build()} has already been called
      * @throws AssertionFailedError if the extension class name was not found in the {@code resources}
      */
@@ -96,7 +94,7 @@ public interface KernelServicesBuilder {
      * controllers as well, accessible from {@link KernelServices#getLegacyServices(ModelVersion)} on the created {@link KernelServices}
      * @throws IllegalStateException if {@link #build()} has already been called
      * @return the kernel services wrapping the controller
-     * @throws AssertionFailedError if the extension class does not implement {@link Extension}}
+     * @throws AssertionFailedError if the extension class does not implement {@link org.jboss.as.controller.Extension}}
      * @throws IllegalArgumentException if any of the {@code resources} could not be found
      */
     KernelServices build() throws Exception;

@@ -22,13 +22,12 @@
 
 package org.jboss.as.connector.metadata.xmldescriptors;
 
-import org.jboss.jca.common.api.metadata.ra.Connector;
-
 import java.io.File;
 import java.io.Serializable;
 import java.net.URL;
 
 import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.jca.common.api.metadata.ra.Connector;
 
 /**
  * A ConnectorXmlDescriptor.

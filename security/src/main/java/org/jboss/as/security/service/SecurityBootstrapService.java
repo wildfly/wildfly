@@ -27,7 +27,6 @@ import java.security.Policy;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.security.auth.login.Configuration;
 import javax.security.jacc.PolicyContext;
 
 import org.jboss.as.security.SecurityExtension;

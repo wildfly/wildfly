@@ -27,7 +27,6 @@ import java.util.Properties;
 
 import org.infinispan.configuration.cache.CacheMode;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
@@ -58,7 +57,7 @@ public interface InfinispanMessages {
      * @param cause the cause of the error.
      * @param binding the outbound socket binding.
      *
-     * @return a {@link ConfigurationPersistenceException} for the error.
+     * @return a {@link org.jboss.as.controller.persistence.ConfigurationPersistenceException} for the error.
      */
     @Message(id = 10290, value = "Could not resolve destination address for outbound socket binding named '%s'")
     InjectionException failedToInjectSocketBinding(@Cause UnknownHostException cause, OutboundSocketBinding binding);

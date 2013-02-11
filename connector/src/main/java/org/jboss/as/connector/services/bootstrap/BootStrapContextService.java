@@ -22,8 +22,10 @@
 
 package org.jboss.as.connector.services.bootstrap;
 
-import org.jboss.as.connector.util.ConnectorServices;
+import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
+
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
+import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.jca.core.api.bootstrap.CloneableBootstrapContext;
 import org.jboss.jca.core.api.workmanager.WorkManager;
 import org.jboss.msc.inject.Injector;
@@ -34,8 +36,6 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 import org.jboss.tm.JBossXATerminator;
-
-import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
 
 /**
  * A DefaultBootStrapContextService Service

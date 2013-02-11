@@ -30,7 +30,6 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.controller.resources.VaultResourceDefinition;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
 
 /**

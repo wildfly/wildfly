@@ -27,8 +27,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import javax.ejb.EJBException;
-import org.jboss.as.cmp.CmpMessages;
 import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.as.cmp.jdbc.JDBCIdentityColumnCreateCommand;

@@ -25,7 +25,6 @@ package org.jboss.as.controller.client.impl;
 import org.jboss.as.controller.client.ControllerClientLogger;
 import org.jboss.as.protocol.StreamUtils;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.DataOutput;

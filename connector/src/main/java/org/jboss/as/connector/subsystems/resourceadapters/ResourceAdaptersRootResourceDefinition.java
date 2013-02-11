@@ -20,18 +20,15 @@
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
 package org.jboss.as.connector.subsystems.resourceadapters;
+
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension.SUBSYSTEM_NAME;
 
-import org.jboss.as.connector.subsystems.datasources.JdbcDriverDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.TransformersSubRegistration;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;

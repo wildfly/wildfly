@@ -21,10 +21,6 @@
  */
 package org.jboss.as.jdr.plugins;
 
-import org.jboss.util.Strings;
-
-import java.util.Comparator;
-
 /**
  * @author csams@redhat.com
  *         Date: 11/9/12
@@ -46,7 +42,7 @@ public final class PluginId implements Comparable<PluginId> {
         StringBuffer sb = new StringBuffer(name).append(": ")
                 .append(major).append('.')
                 .append(minor);
-        if(null != release){
+        if (null != release) {
             sb.append('-').append(release);
         }
         idString = sb.toString();
@@ -70,19 +66,19 @@ public final class PluginId implements Comparable<PluginId> {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return idString;
     }
 
     @Override
     public int compareTo(PluginId o) {
         int result = name.compareTo(o.name);
-        if(result != 0) return result;
+        if (result != 0) { return result; }
         result = major - o.major;
-        if(result != 0) return result;
+        if (result != 0) { return result; }
         result = minor - o.minor;
-        if(result != 0) return result;
-        if(null != release){
+        if (result != 0) { return result; }
+        if (null != release) {
             return release.compareTo(o.release);
         }
         return result;

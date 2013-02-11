@@ -28,16 +28,11 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHI
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BEANVALIDATIONGROUP;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BEANVALIDATION_GROUPS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BOOTSTRAP_CONTEXT;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CLASS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFIG_PROPERTIES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTIONDEFINITIONS_NAME;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDINAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTION_SUPPORT;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_CCM;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -45,7 +40,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.connector.util.ConnectorServices;
@@ -53,12 +47,9 @@ import org.jboss.as.connector.util.ParserException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.CommonBundle;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
-import org.jboss.jca.common.api.metadata.common.v10.CommonConnDef;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
-import org.jboss.jca.common.api.metadata.resourceadapter.v10.ResourceAdapter;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.logging.Messages;
-import org.jboss.logging.processor.validation.StringFormatValidator;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**

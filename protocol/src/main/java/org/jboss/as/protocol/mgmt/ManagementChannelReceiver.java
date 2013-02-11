@@ -24,8 +24,6 @@ package org.jboss.as.protocol.mgmt;
 
 import static org.jboss.as.protocol.ProtocolLogger.ROOT_LOGGER;
 import org.jboss.as.protocol.StreamUtils;
-import org.jboss.marshalling.Marshalling;
-import org.jboss.marshalling.SimpleDataInput;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.MessageInputStream;
 import org.jboss.remoting3.MessageOutputStream;

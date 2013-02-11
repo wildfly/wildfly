@@ -74,7 +74,6 @@ import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLMapper;
@@ -346,7 +345,7 @@ public class ExtensionRegistry {
      * a string composed of the subsystem major version dot appended to its minor version.
      *
      * @param moduleName the name of the extension module
-     * @param subsystems a model node of type {@link ModelType#UNDEFINED} or type {@link ModelType#OBJECT}
+     * @param subsystems a model node of type {@link org.jboss.dmr.ModelType#UNDEFINED} or type {@link org.jboss.dmr.ModelType#OBJECT}
      */
     public void recordSubsystemVersions(String moduleName, ModelNode subsystems) {
         final Map<String, SubsystemInformation> subsystemsInfo = getAvailableSubsystems(moduleName);

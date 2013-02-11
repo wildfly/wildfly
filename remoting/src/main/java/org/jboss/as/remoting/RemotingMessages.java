@@ -22,7 +22,6 @@
 
 package org.jboss.as.remoting;
 
-import java.io.IOException;
 import java.net.BindException;
 import java.net.URISyntaxException;
 

@@ -36,7 +36,6 @@ import static org.jboss.dmr.ModelType.BOOLEAN;
 import org.hornetq.api.core.management.HornetQComponentControl;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
-import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;

@@ -31,7 +31,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.ejb.EJBException;
 import org.jboss.as.cmp.CmpMessages;
 import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.jdbc.metadata.JDBCCMPFieldMetaData;

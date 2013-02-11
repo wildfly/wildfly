@@ -23,10 +23,8 @@ package org.jboss.as.ejb3.component.stateful;
 
 import java.io.ObjectStreamException;
 import java.lang.reflect.Method;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.ejb.EJBException;

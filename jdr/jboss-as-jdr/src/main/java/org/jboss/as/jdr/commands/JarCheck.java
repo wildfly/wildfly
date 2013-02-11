@@ -27,7 +27,6 @@ import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.util.automount.Automounter;
 
-import java.io.InputStream;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

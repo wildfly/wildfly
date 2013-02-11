@@ -38,7 +38,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
@@ -48,7 +47,7 @@ import org.jboss.dmr.Property;
 
 /**
  * Sets up how to handle failed transformation for use with
- * {@link ModelTestUtils#checkFailedTransformedAddOperation(ModelTestKernelServices, ModelVersion, ModelNode, FailedOperationTransformationConfig)}
+ * {@link ModelTestUtils#checkFailedTransformedAddOperation(ModelTestKernelServices, org.jboss.as.controller.ModelVersion, ModelNode, FailedOperationTransformationConfig)}
  *
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -211,7 +210,7 @@ public class FailedOperationTransformationConfig {
          * Whether something can be corrected in the operation to make it pass.
          * It is preferable to correct one attribute at a time.
          *
-         * @param the operation to check
+         * @param operation the operation to check
          * @return {@code true} if expected to fail, {@code false} otherwise
          */
         boolean canCorrectMore(ModelNode operation);
@@ -233,7 +232,7 @@ public class FailedOperationTransformationConfig {
         /**
          * Whether it is expected that the following write attribute operation should fail
          *
-         * @param the 'add' operation to correct
+         * @param operation the 'add' operation to correct
          * @return {@code true} if expected to fail
          */
         boolean expectFailedWriteAttributeOperation(ModelNode operation);
@@ -243,7 +242,7 @@ public class FailedOperationTransformationConfig {
          * the framework will only call this once if it failed and {@link #correctWriteAttributeOperation(ModelNode)}
          * returned {@code true}, so make sure to do everything to correct the {@code value} attribute.
          *
-         * @param the 'write-attribute' operation to correct
+         * @param operation 'write-attribute' operation to correct
          * @return the corrected operation
          */
         ModelNode correctWriteAttributeOperation(ModelNode operation);

@@ -23,10 +23,7 @@
 package org.jboss.as.ejb3.subsystem;
 
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.threads.ThreadsServices;
-import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
 
 /**

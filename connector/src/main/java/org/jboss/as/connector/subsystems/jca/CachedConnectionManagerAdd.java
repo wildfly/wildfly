@@ -23,9 +23,9 @@ package org.jboss.as.connector.subsystems.jca;
 
 import java.util.List;
 
-import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.connector.deployers.ra.processors.CachedConnectionManagerSetupProcessor;
 import org.jboss.as.connector.services.jca.CachedConnectionManagerService;
+import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;

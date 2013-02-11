@@ -22,7 +22,6 @@
 
 package org.jboss.as.connector.services.workmanager;
 
-import org.jboss.jca.core.api.workmanager.WorkManager;
 import org.jboss.jca.core.workmanager.WorkManagerImpl;
 
 /**

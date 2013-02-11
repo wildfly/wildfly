@@ -22,12 +22,12 @@
 
 package org.jboss.as.web;
 
+import static org.jboss.as.web.WebJSPDefinition.JSP_ATTRIBUTES;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.dmr.ModelNode;
-
-import static org.jboss.as.web.WebJSPDefinition.JSP_ATTRIBUTES;
 
 /**
  * @author Tomaz Cerar

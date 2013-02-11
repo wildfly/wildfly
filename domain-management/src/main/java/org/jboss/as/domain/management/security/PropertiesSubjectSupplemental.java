@@ -22,8 +22,6 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-
 import java.io.IOException;
 import java.security.Principal;
 import java.util.Collections;
@@ -34,7 +32,6 @@ import java.util.Set;
 
 import javax.security.auth.Subject;
 
-import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;

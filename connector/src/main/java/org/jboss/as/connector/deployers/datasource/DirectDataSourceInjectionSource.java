@@ -22,12 +22,13 @@
 
 package org.jboss.as.connector.deployers.datasource;
 
+import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
+
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
 import javax.sql.XADataSource;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
@@ -70,8 +71,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.SubjectFactory;
-
-import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
 
 /**
  * A binding description for DataSourceDefinition annotations.

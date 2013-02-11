@@ -44,7 +44,6 @@ import org.jboss.as.controller.security.SubjectUserInfo;
 import org.jboss.as.controller.security.UniqueIdUserInfo;
 import org.jboss.as.domain.management.security.PasswordCredential;
 import org.jboss.as.security.SecurityMessages;
-import org.jboss.as.security.remoting.RemotingContext;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 import org.jboss.remoting3.security.UserInfo;
 import org.jboss.security.AuthenticationManager;

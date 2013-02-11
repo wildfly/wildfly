@@ -48,7 +48,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.web.VirtualHost;
 import org.jboss.as.web.WebDeploymentDefinition;
-import org.jboss.as.web.WebServer;
 import org.jboss.as.web.WebServerService;
 import org.jboss.as.web.WebSubsystemServices;
 import org.jboss.as.web.deployment.WebDeploymentService.ContextActivator;

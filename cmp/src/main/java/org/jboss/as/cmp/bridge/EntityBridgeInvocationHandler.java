@@ -23,7 +23,6 @@ package org.jboss.as.cmp.bridge;
 
 import java.lang.reflect.Method;
 import java.util.Map;
-import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.component.CmpEntityBeanComponentInstance;

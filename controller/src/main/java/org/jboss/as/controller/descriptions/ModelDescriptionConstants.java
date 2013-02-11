@@ -21,7 +21,7 @@
  */
 package org.jboss.as.controller.descriptions;
 
-import org.jboss.as.controller.registry.AttributeAccess;
+
 
 /**
  * String constants frequently used in model descriptions.
@@ -32,7 +32,7 @@ public class ModelDescriptionConstants {
 
     // KEEP THESE IN ALPHABETICAL ORDER!
 
-    /** The key for {@link AttributeAccess.AccessType} fields. */
+    /** The key for {@link org.jboss.as.controller.registry.AttributeAccess.AccessType} fields. */
     public static final String ACCESS_TYPE = "access-type";
     public static final String ADD = "add";
     public static final String ADDRESS = "address";
@@ -276,7 +276,7 @@ public class ModelDescriptionConstants {
     public static final String STEPS = "steps";
     public static final String STOP = "stop";
     public static final String STOP_SERVERS = "stop-servers";
-    /** The key for {@link AttributeAccess.Storage} fields. */
+    /** The key for {@link org.jboss.as.controller.registry.AttributeAccess.Storage} fields. */
     public static final String STORAGE = "storage";
     public static final String SUBDEPLOYMENT = "subdeployment";
     public static final String SUBSYSTEM = "subsystem";
