@@ -61,6 +61,7 @@ import org.osgi.framework.ServiceReference;
  * @since 14-Oct-2010
  */
 @RunWith(Arquillian.class)
+@org.junit.Ignore("AS7-6511")
 public class BundleAccessesModuleServiceTestCase extends AbstractXServiceTestCase {
 
     private static final String TARGET_MODULE_NAME = "example-xservice-bam-target-module";
