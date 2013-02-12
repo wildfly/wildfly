@@ -30,6 +30,7 @@ import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
+import org.jboss.as.cli.util.HelpFormatter;
 import org.jboss.as.protocol.StreamUtils;
 
 /**
@@ -91,11 +92,13 @@ public abstract class CommandHandlerWithHelp extends CommandHandlerWithArguments
         if(helpInput != null) {
             BufferedReader reader = new BufferedReader(new InputStreamReader(helpInput));
             try {
-                String helpLine = reader.readLine();
+/*                String helpLine = reader.readLine();
                 while(helpLine != null) {
                     ctx.printLine(helpLine);
                     helpLine = reader.readLine();
                 }
+*/
+                HelpFormatter.format(ctx, reader);
             } catch(java.io.IOException e) {
                 throw new CommandFormatException ("Failed to read help/help.txt: " + e.getLocalizedMessage());
             } finally {
