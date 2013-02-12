@@ -53,6 +53,9 @@ import org.junit.Assert;
  */
 public class DomainTestSupport {
 
+
+    private static final Configuration DEFAULT_CONFIG;
+
     private static final Logger log = Logger.getLogger("org.jboss.as.test.integration.domain");
 
     public static final String masterAddress = System.getProperty("jboss.test.host.master.address", "127.0.0.1");
@@ -63,6 +66,27 @@ public class DomainTestSupport {
     public static final String slaveJvmHome = System.getProperty("jboss.test.host.slave.jvmhome");
     public static final String masterControllerJvmHome = System.getProperty("jboss.test.host.master.controller.jvmhome");
     public static final String slaveControllerJvmHome = System.getProperty("jboss.test.host.slave.controller.jvmhome");
+
+    static {
+        DEFAULT_CONFIG = DomainTestSupport.Configuration.create("domain-configs/domain-standard.xml", "host-configs/host-master.xml", "host-configs/host-slave.xml", JBossAsManagedConfigurationParameters.STANDARD, JBossAsManagedConfigurationParameters.STANDARD);
+    }
+
+    /**
+     * Create and start a default configuration for the domain tests.
+     *
+     * @param testName the test name
+     * @return a started domain test support
+     */
+    public static DomainTestSupport createAndStartDefaultSupport(final String testName) {
+        try {
+            final DomainTestSupport testSupport = DomainTestSupport.create(testName, DEFAULT_CONFIG);
+            // Start!
+            testSupport.start();
+            return testSupport;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public static JBossAsManagedConfiguration getMasterConfiguration(String domainConfigPath, String hostConfigPath, String testName, JBossAsManagedConfigurationParameters params) throws URISyntaxException {
         final String hostName = "master";
