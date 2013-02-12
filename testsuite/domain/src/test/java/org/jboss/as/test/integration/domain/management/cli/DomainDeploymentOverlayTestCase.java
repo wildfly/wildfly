@@ -122,14 +122,14 @@ public class DomainDeploymentOverlayTestCase {
         }
 
         // Launch the domain
-        testSupport = DomainTestSuite.createSupport(DomainDeploymentOverlayTestCase.class.getSimpleName());
+        testSupport = DomainTestSupport.createAndStartDefaultSupport(DomainDeploymentOverlayTestCase.class.getSimpleName());
     }
 
     @AfterClass
     public static void after() throws Exception {
         try {
+            testSupport.stop();
             testSupport = null;
-            DomainTestSuite.stopSupport();
         } finally {
             war1.delete();
             war2.delete();
