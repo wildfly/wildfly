@@ -4,7 +4,7 @@
   Set these VM properties in your IDE debugger 
 
   -Djava.util.logging.manager=org.jboss.logmanager.LogManager
-  -Djboss.home=${workspace_loc:jboss-as-build}/target/jboss-as-7.2.0.Alpha1-SNAPSHOT 
+  -Djboss.home=${workspace_loc:jboss-as-build}/target/jboss-as-7.2.0.Final 
   -DallowConnectingToRunningServer=true
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -15,7 +15,7 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-ts-integ</artifactId>
-        <version>7.2.0.Alpha1-SNAPSHOT</version>
+        <version>7.2.0.Final</version>
     </parent>
 
     <!-- ********************************************************************************** -->

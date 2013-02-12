@@ -36,7 +36,7 @@
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-core-model-test-controller-7.1.2</artifactId>
     <name>JBoss Application Server: Core Model Test Controller 7.1.2</name>
-    <version>7.2.0.Alpha1-SNAPSHOT</version>
+    <version>7.2.0.Final</version>
 
     <properties>
         <property.old.as.version>7.1.2.Final</property.old.as.version>
