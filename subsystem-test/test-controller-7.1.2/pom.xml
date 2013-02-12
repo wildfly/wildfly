@@ -58,7 +58,7 @@
         </dependency>
         <dependency>
            <groupId>org.jboss.as</groupId>
-           <artifactId>jboss-as-subsystem-test</artifactId>
+           <artifactId>jboss-as-subsystem-test-framework</artifactId>
            <version>${project.version}</version>
 	        <scope>provided</scope>
            <exclusions>

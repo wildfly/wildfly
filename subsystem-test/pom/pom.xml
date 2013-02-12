@@ -28,33 +28,25 @@
 
     <parent>
         <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-parent</artifactId>
-        <version>8.0.0.Alpha1-SNAPSHOT</version>
+        <artifactId>jboss-as-subsystem-test-parent</artifactId>
+        <version>7.2.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jboss-as-subsystem-test-parent</artifactId>
-    <packaging>pom</packaging>
-    <name>JBoss Application Server: Core Model Test Parent</name>
+    <groupId>org.jboss.as</groupId>
+    <artifactId>jboss-as-subsystem-test</artifactId>
+		<packaging>pom</packaging>
 
-    <modules>
-        <module>framework</module>
-				<module>pom</module>
-       	<module>test-controller-7.1.2</module>
-       	<module>test-controller-optional</module>
-       	<module>tests</module>        
-    </modules>
-
+    <name>JBoss Application Server: Subsystem Test Harness Include</name>
 
     <dependencies>
         <dependency>
-           <groupId>org.jboss.as</groupId>
-           <artifactId>jboss-as-model-test</artifactId>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-subsystem-test-framework</artifactId>
         </dependency>
+
         <dependency>
-            <groupId>org.jboss.marshalling</groupId>
-            <artifactId>jboss-marshalling-river</artifactId>
-            <scope>test</scope>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-subsystem-test-controller-optional</artifactId>
         </dependency>
     </dependencies>
-
 </project>
