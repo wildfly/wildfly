@@ -24,23 +24,23 @@ package org.jboss.as.test.clustering.cluster.singleton.service;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.server.ServerEnvironment;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Value;
 
 public class MyService implements Service<Environment> {
 
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("test", "myservice");
+    public static final ServiceName DEFAULT_SERVICE_NAME = ServiceName.JBOSS.append("test", "myservice", "default");
+    public static final ServiceName QUORUM_SERVICE_NAME = ServiceName.JBOSS.append("test", "myservice", "quorum");
 
-    private final InjectedValue<ServerEnvironment> env = new InjectedValue<ServerEnvironment>();
+    private final Value<ServerEnvironment> env;
     private final AtomicBoolean started = new AtomicBoolean(false);
 
-    public Injector<ServerEnvironment> getEnvInjector() {
-        return this.env;
+    public MyService(Value<ServerEnvironment> env) {
+        this.env = env;
     }
 
     @Override

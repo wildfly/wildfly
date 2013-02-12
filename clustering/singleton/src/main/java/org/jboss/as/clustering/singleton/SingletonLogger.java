@@ -67,4 +67,12 @@ public interface SingletonLogger {
     @LogMessage(level = ERROR)
     @Message(id = 10344, value = "Failed to start %s service")
     void serviceStartFailed(@Cause StartException e, String service);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 10345, value = "Failed to reach quorum of %2$d for %1$s service. No singleton master will be elected.")
+    void quorumNotReached(String service, int quorum);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 10346, value = "Just reached required quorum of %2$d for %1$s service. If this cluster loses another member, no node will be chosen to provide this service.")
+    void quorumJustReached(String service, int quorum);
 }
