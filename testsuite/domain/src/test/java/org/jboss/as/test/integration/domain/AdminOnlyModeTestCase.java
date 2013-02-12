@@ -78,7 +78,7 @@ public class AdminOnlyModeTestCase {
 
     @BeforeClass
     public static void setupDomain() throws Exception {
-        testSupport = DomainTestSuite.createSupport(AdminOnlyModeTestCase.class.getSimpleName());
+        testSupport = DomainTestSupport.createAndStartDefaultSupport(AdminOnlyModeTestCase.class.getSimpleName());
 
         domainMasterLifecycleUtil = testSupport.getDomainMasterLifecycleUtil();
         domainSlaveLifecycleUtil = testSupport.getDomainSlaveLifecycleUtil();
@@ -86,7 +86,8 @@ public class AdminOnlyModeTestCase {
 
     @AfterClass
     public static void tearDownDomain() throws Exception {
-        DomainTestSuite.stopSupport();
+        testSupport.stop();
+
         testSupport = null;
         domainMasterLifecycleUtil = null;
         domainSlaveLifecycleUtil = null;

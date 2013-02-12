@@ -22,9 +22,7 @@
 
 package org.jboss.as.test.integration.domain.suites;
 
-import org.jboss.as.test.integration.domain.AdminOnlyModeTestCase;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
-import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfigurationParameters;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
@@ -59,22 +57,19 @@ import org.junit.runners.Suite;
 })
 public class DomainTestSuite {
 
-    private static final DomainTestSupport.Configuration CONFIGURATION;
     private static boolean initializedLocally = false;
     private static volatile DomainTestSupport support;
 
-    static {
-        CONFIGURATION = DomainTestSupport.Configuration.create("domain-configs/domain-standard.xml", "host-configs/host-master.xml", "host-configs/host-slave.xml", JBossAsManagedConfigurationParameters.STANDARD, JBossAsManagedConfigurationParameters.STANDARD);
-    }
-
-    public static synchronized DomainTestSupport createSupport(final String testName) {
+    // This can only be called from tests as part of this suite
+    static synchronized DomainTestSupport createSupport(final String testName) {
         if(support == null) {
             start(testName);
         }
         return support;
     }
 
-    public static synchronized void stopSupport() {
+    // This can only be called from tests as part of this suite
+    static synchronized void stopSupport() {
         if(! initializedLocally) {
             stop();
         }
@@ -82,10 +77,7 @@ public class DomainTestSuite {
 
     private synchronized static void start(final String name) {
         try {
-            final DomainTestSupport testSupport = DomainTestSupport.create(name, CONFIGURATION);
-            // Start!
-            testSupport.start();
-            support = testSupport;
+            support = DomainTestSupport.createAndStartDefaultSupport(name);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
