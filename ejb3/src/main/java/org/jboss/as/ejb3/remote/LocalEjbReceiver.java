@@ -57,6 +57,7 @@ import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.as.ejb3.util.ServiceLookupValue;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.as.network.SocketBinding;
+import org.jboss.ejb.client.AttachmentKeys;
 import org.jboss.ejb.client.ClusterContext;
 import org.jboss.ejb.client.ClusterNodeManager;
 import org.jboss.ejb.client.EJBClientConfiguration;
@@ -171,21 +172,47 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
             }
         }
 
-        final InterceptorContext context = new InterceptorContext();
-        context.setParameters(parameters);
-        context.setMethod(method);
-        context.setTarget(invocation.getInvokedProxy());
-        context.setContextData(new HashMap<String, Object>());
-        context.putPrivateData(Component.class, ejbComponent);
-        context.putPrivateData(ComponentView.class, view);
+        final InterceptorContext interceptorContext = new InterceptorContext();
+        interceptorContext.setParameters(parameters);
+        interceptorContext.setMethod(method);
+        interceptorContext.setTarget(invocation.getInvokedProxy());
+        // setup the context data in the InterceptorContext
+        final Map<Object, Object> privateAttachments = invocation.getAttachments();
+        final Map<String, Object> invocationContextData = invocation.getContextData();
+        if (invocationContextData == null && privateAttachments.isEmpty()) {
+            // no private or public data
+            interceptorContext.setContextData(new HashMap<String, Object>());
+        } else {
+            final Map<String, Object> data = new HashMap<String, Object>();
+            interceptorContext.setContextData(data);
 
+            // write out public (application specific) context data
+            for (Map.Entry<String, Object> entry : invocationContextData.entrySet()) {
+                data.put(entry.getKey(), entry.getValue());
+            }
+            if (!privateAttachments.isEmpty()) {
+                // now write out the JBoss specific attachments under a single key and the value will be the
+                // entire map of JBoss specific attachments
+                data.put(EJBClientInvocationContext.PRIVATE_ATTACHMENTS_KEY, privateAttachments);
+            }
+            // Note: The code here is just for backward compatibility of 1.0.x version of EJB client project
+            // against AS7 7.1.x releases. Discussion here https://github.com/jbossas/jboss-ejb-client/pull/11#issuecomment-6573863
+            final boolean txIdAttachmentPresent = privateAttachments.containsKey(AttachmentKeys.TRANSACTION_ID_KEY);
+            if (txIdAttachmentPresent) {
+                // we additionally add/duplicate the transaction id under a different attachment key
+                // to preserve backward compatibility. This is here just for 1.0.x backward compatibility
+                data.put(TransactionID.PRIVATE_DATA_KEY, privateAttachments.get(AttachmentKeys.TRANSACTION_ID_KEY));
+            }
+        }
+        interceptorContext.putPrivateData(Component.class, ejbComponent);
+        interceptorContext.putPrivateData(ComponentView.class, view);
 
         if (locator instanceof StatefulEJBLocator) {
             final SessionID sessionID = ((StatefulEJBLocator) locator).getSessionId();
-            context.putPrivateData(SessionID.class, sessionID);
+            interceptorContext.putPrivateData(SessionID.class, sessionID);
         } else if (locator instanceof EntityEJBLocator) {
             final Object primaryKey = ((EntityEJBLocator) locator).getPrimaryKey();
-            context.putPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY, primaryKey);
+            interceptorContext.putPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY, primaryKey);
         }
 
         final ClonerConfiguration config = new ClonerConfiguration();
@@ -202,13 +229,13 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
                     protected Object runInvocation() throws Exception {
                         setSecurityContextOnAssociation(securityContext);
                         try {
-                            return view.invoke(context);
+                            return view.invoke(interceptorContext);
                         } finally {
                             clearSecurityContextOnAssociation();
                         }
                     }
                 };
-                context.putPrivateData(CancellationFlag.class, flag);
+                interceptorContext.putPrivateData(CancellationFlag.class, flag);
                 component.getAsynchronousExecutor().submit(task);
                 //TODO: we do not clone the result of an async task
                 //TODO: we do not clone the exception of an async task
@@ -219,7 +246,7 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
         } else {
             final Object result;
             try {
-                result = view.invoke(context);
+                result = view.invoke(interceptorContext);
             } catch (Exception e) {
                 //we even have to clone the exception type
                 //to make sure it matches
