@@ -21,7 +21,9 @@
 */
 package org.jboss.as.logging;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,6 +39,7 @@ import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
+import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
@@ -130,7 +133,7 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
 
         // Note this is running in ADMIN_ONLY meaning runtime changes won't take effect. Can't confirm the
         // handlers actually get disabled.
-        builder.createLegacyKernelServicesBuilder(LoggingTestEnvironment.getManagementInstance(), modelVersion)
+        builder.createLegacyKernelServicesBuilder(LoggingTestEnvironment.getManagementInstance(), ModelTestControllerVersion.V7_1_2_FINAL, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-logging:7.1.2.Final");
 
         final KernelServices kernelServices = builder.build();

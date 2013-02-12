@@ -46,6 +46,10 @@ public interface ObjectSerializer {
 
     Object deserializeAdditionalInitialization(byte[] object) throws IOException, ClassNotFoundException;
 
+    byte[] serializeModelTestOperationValidatorFilter(Object object) throws IOException;
+
+    Object deserializeModelTestOperationValidatorFilter(byte[] object) throws IOException, ClassNotFoundException;
+
     public static class FACTORY {
         public static ObjectSerializer createSerializer(ClassLoader classLoader) {
             try {

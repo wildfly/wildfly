@@ -69,31 +69,31 @@ public abstract class ModelTestModelControllerService extends AbstractController
     private final CountDownLatch latch = new CountDownLatch(1);
     private final StringConfigurationPersister persister;
     private final TransformerRegistry transformerRegistry;
-    private final boolean validateOps;
+    private final ModelTestOperationValidatorFilter validateOpsFilter;
     private final RunningModeControl runningModeControl;
     private volatile ManagementResourceRegistration rootRegistration;
     private volatile Exception error;
     private volatile boolean bootSuccess;
 
     protected ModelTestModelControllerService(final ProcessType processType, final RunningModeControl runningModeControl, final TransformerRegistry transformerRegistry,
-                           final StringConfigurationPersister persister, boolean validateOps, final DescriptionProvider rootDescriptionProvider, ControlledProcessState processState) {
+                           final StringConfigurationPersister persister, final ModelTestOperationValidatorFilter validateOpsFilter, final DescriptionProvider rootDescriptionProvider, ControlledProcessState processState) {
         // Fails in core-model-test transformation testing if ExpressionResolver.TEST_RESOLVER is used because not present in 7.1.x
         super(processType, runningModeControl, persister,
                 processState == null ? new ControlledProcessState(true) : processState, rootDescriptionProvider, null, ExpressionResolver.DEFAULT);
         this.persister = persister;
         this.transformerRegistry = transformerRegistry;
-        this.validateOps = validateOps;
+        this.validateOpsFilter = validateOpsFilter;
         this.runningModeControl = runningModeControl;
     }
 
     protected ModelTestModelControllerService(final ProcessType processType, final RunningModeControl runningModeControl, final TransformerRegistry transformerRegistry,
-            final StringConfigurationPersister persister, final boolean validateOps, final DelegatingResourceDefinition rootResourceDefinition, ControlledProcessState processState) {
+            final StringConfigurationPersister persister, final ModelTestOperationValidatorFilter validateOpsFilter, final DelegatingResourceDefinition rootResourceDefinition, ControlledProcessState processState) {
         super(processType, runningModeControl, persister,
                 processState == null ? new ControlledProcessState(true) : processState, rootResourceDefinition, null,
                 ExpressionResolver.TEST_RESOLVER);
         this.persister = persister;
         this.transformerRegistry = transformerRegistry;
-        this.validateOps = validateOps;
+        this.validateOpsFilter = validateOpsFilter;
         this.runningModeControl = runningModeControl;
     }
 
@@ -137,8 +137,12 @@ public abstract class ModelTestModelControllerService extends AbstractController
     protected boolean boot(List<ModelNode> bootOperations, boolean rollbackOnRuntimeFailure) throws ConfigurationPersistenceException {
         try {
             preBoot(bootOperations, rollbackOnRuntimeFailure);
-            if (validateOps) {
-                new OperationValidator(rootRegistration).validateOperations(bootOperations);
+            OperationValidator validator = new OperationValidator(rootRegistration);
+            for (ModelNode op : bootOperations) {
+                ModelNode toValidate = validateOpsFilter.adjustForValidation(op);
+                if (toValidate != null) {
+                    validator.validateOperation(toValidate);
+                }
             }
             bootSuccess = super.boot(persister.getBootOperations(), rollbackOnRuntimeFailure);
             return bootSuccess;

@@ -95,6 +95,8 @@ import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestModelDescriptionValidator;
 import org.jboss.as.model.test.ModelTestModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.as.model.test.ModelTestModelDescriptionValidator.ValidationFailure;
+import org.jboss.as.model.test.ModelTestOperationValidatorFilter;
+import org.jboss.as.model.test.ModelTestOperationValidatorFilter.Action;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -462,7 +464,7 @@ public class CoreModelTestDelegate {
         public KernelServices build() throws Exception {
             bootOperationBuilder.validateNotAlreadyBuilt();
             List<ModelNode> bootOperations = bootOperationBuilder.build();
-            AbstractKernelServicesImpl kernelServices = AbstractKernelServicesImpl.create(processType, runningModeControl, validateOperations, bootOperations, testParser, null, type, modelInitializer, extensionRegistry, contentRepositoryContents);
+            AbstractKernelServicesImpl kernelServices = AbstractKernelServicesImpl.create(processType, runningModeControl, ModelTestOperationValidatorFilter.createValidateAll(), bootOperations, testParser, null, type, modelInitializer, extensionRegistry, contentRepositoryContents);
             CoreModelTestDelegate.this.kernelServices.add(kernelServices);
 
             if (validateDescription) {
@@ -530,6 +532,7 @@ public class CoreModelTestDelegate {
         private final ModelTestControllerVersion testControllerVersion;
         private boolean validateOperations = true;
         private boolean dontUseBootOperations = false;
+        private ModelTestOperationValidatorFilter.Builder operationValidationExcludeFilterBuilder;
 
         LegacyKernelServicesInitializerImpl(ModelVersion modelVersion, ModelTestControllerVersion version) {
             this.modelVersion = modelVersion;
@@ -562,7 +565,7 @@ public class CoreModelTestDelegate {
 
 
             ScopedKernelServicesBootstrap scopedBootstrap = new ScopedKernelServicesBootstrap(legacyCl);
-            LegacyControllerKernelServicesProxy legacyServices = scopedBootstrap.createKernelServices(bootOperations, validateOperations, modelVersion, modelInitializerEntries);
+            LegacyControllerKernelServicesProxy legacyServices = scopedBootstrap.createKernelServices(bootOperations, getOperationValidationFilter(), modelVersion, modelInitializerEntries);
 
             return legacyServices;
         }
@@ -575,8 +578,33 @@ public class CoreModelTestDelegate {
 
         @Override
         public LegacyKernelServicesInitializer setDontValidateOperations() {
+            if (operationValidationExcludeFilterBuilder != null) {
+                throw new IllegalStateException("Can't call this method when addOperationValidationExclude() has already been called");
+            }
             validateOperations = false;
             return this;
+        }
+
+        @Override
+        public LegacyKernelServicesInitializer addOperationValidationExclude(String name, PathAddress pathAddress) {
+            addOperationValidationConfig(name, pathAddress, Action.NOCHECK);
+            return this;
+        }
+
+        @Override
+        public LegacyKernelServicesInitializer addOperationValidationResolve(String name, PathAddress pathAddress) {
+            addOperationValidationConfig(name, pathAddress, Action.RESOLVE);
+            return this;
+        }
+
+        private void addOperationValidationConfig(String name, PathAddress pathAddress, Action action) {
+            if (!validateOperations) {
+                throw new IllegalStateException("Can't call this method when setDontValidateOperations() has already been called");
+            }
+            if (operationValidationExcludeFilterBuilder == null) {
+                operationValidationExcludeFilterBuilder = ModelTestOperationValidatorFilter.createBuilder();
+            }
+            operationValidationExcludeFilterBuilder.addOperation(pathAddress, name, action);
         }
 
         @Override
@@ -589,5 +617,15 @@ public class CoreModelTestDelegate {
             return dontUseBootOperations;
         }
 
+        private ModelTestOperationValidatorFilter getOperationValidationFilter() {
+            if (operationValidationExcludeFilterBuilder != null) {
+                return operationValidationExcludeFilterBuilder.build();
+            }
+            if (validateOperations) {
+                return ModelTestOperationValidatorFilter.createValidateAll();
+            } else {
+                return ModelTestOperationValidatorFilter.createValidateNone();
+            }
+        }
     }
 }

@@ -25,6 +25,7 @@ import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.model.test.ModelTestModelControllerService;
+import org.jboss.as.model.test.ModelTestOperationValidatorFilter;
 import org.jboss.as.model.test.StringConfigurationPersister;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.AdditionalInitializationUtil;
@@ -38,7 +39,8 @@ import org.jboss.as.subsystem.test.TestModelControllerFactory;
 public class TestModelControllerFactory7_1_2 implements TestModelControllerFactory {
     public ModelTestModelControllerService create(final Extension mainExtension, final ControllerInitializer controllerInitializer,
             final AdditionalInitialization additionalInit, final ExtensionRegistry extensionRegistry,
-            final StringConfigurationPersister persister, final boolean validateOps, final boolean registerTransformers) {
-        return new TestModelControllerService7_1_2(mainExtension, controllerInitializer, additionalInit, new RunningModeControl(AdditionalInitializationUtil.getRunningMode(additionalInit)), extensionRegistry, persister, validateOps, registerTransformers);
+            final StringConfigurationPersister persister, final ModelTestOperationValidatorFilter validateOpsFilter, final boolean registerTransformers) {
+        return new TestModelControllerService7_1_2(mainExtension, controllerInitializer, additionalInit,
+                new RunningModeControl(AdditionalInitializationUtil.getRunningMode(additionalInit)), extensionRegistry, persister, validateOpsFilter, registerTransformers);
     }
 }

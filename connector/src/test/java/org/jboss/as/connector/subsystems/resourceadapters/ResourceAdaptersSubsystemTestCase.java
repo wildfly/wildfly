@@ -28,6 +28,7 @@ import junit.framework.Assert;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -73,26 +74,26 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
 
     @Test
     public void testTransformerAS712() throws Exception {
-        testTransformer1_1_0("7.1.2.Final", "resource-adapters-xapool.xml");
+        testTransformer1_1_0("7.1.2.Final", "resource-adapters-xapool.xml", ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
     public void testTransformerAS713() throws Exception {
-        testTransformer1_1_0("7.1.3.Final", "resource-adapters-xapool.xml");
+        testTransformer1_1_0("7.1.3.Final", "resource-adapters-xapool.xml", ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
     @Test
     public void tesExpressionsAS712() throws Exception {
         //this file contain expression for all supported fields except bean-validation-groups and recovery-plugin-properties
         // for a limitation in test suite not permitting to have expression in type LIST or OBJECT for legacyServices
-        testTransformer1_1_0("7.1.2.Final", "resource-adapters-xapool-expression2.xml");
+        testTransformer1_1_0("7.1.2.Final", "resource-adapters-xapool-expression2.xml", ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
     public void testExpressionsAS713() throws Exception {
         //this file contain expression for all supported fields except bean-validation-groups and recovery-plugin-properties
         // for a limitation in test suite not permitting to have expression in type LIST or OBJECT for legacyServices
-        testTransformer1_1_0("7.1.3.Final", "resource-adapters-xapool-expression2.xml");
+        testTransformer1_1_0("7.1.3.Final", "resource-adapters-xapool-expression2.xml", ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
 
@@ -101,7 +102,7 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
      *
      * @throws Exception
      */
-    private void testTransformer1_1_0(String mavenVersion, String subsystemXml) throws Exception {
+    private void testTransformer1_1_0(String mavenVersion, String subsystemXml, ModelTestControllerVersion controllerVersion) throws Exception {
         System.setProperty("jboss.as.test.transformation.hack", "true");
         try {
             ModelVersion modelVersion = ModelVersion.create(1, 1, 0); //The old model version
@@ -110,7 +111,7 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
                     .setSubsystemXmlResource(subsystemXml);
 
             // Add legacy subsystems
-            builder.createLegacyKernelServicesBuilder(null, modelVersion)
+            builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                     .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + mavenVersion)
                     .setExtensionClassName("org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension");
 

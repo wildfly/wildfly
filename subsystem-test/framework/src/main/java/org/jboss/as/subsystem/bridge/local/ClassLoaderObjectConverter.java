@@ -22,6 +22,7 @@
 package org.jboss.as.subsystem.bridge.local;
 
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.model.test.ModelTestOperationValidatorFilter;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.dmr.ModelNode;
 
@@ -35,4 +36,6 @@ public interface ClassLoaderObjectConverter {
     ModelNode convertModelNodeFromChildCl(Object object);
     Object convertModelVersionToChildCl(ModelVersion modelVersion);
     Object convertAdditionalInitializationToChildCl(AdditionalInitialization additionalInit);
+    Object convertValidateOperationsFilterToChildCl(ModelTestOperationValidatorFilter validateOpsFilter);
+
 }

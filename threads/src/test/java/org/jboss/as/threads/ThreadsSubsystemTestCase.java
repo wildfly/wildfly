@@ -24,6 +24,8 @@
 
 package org.jboss.as.threads;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -81,8 +83,11 @@ public class ThreadsSubsystemTestCase extends AbstractSubsystemBaseTest {
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXmlResource(subsystemXml);
 
+        final PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, mainSubsystemName));
+
         // Add legacy subsystems
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addOperationValidationResolve("add", subsystemAddress.append(PathElement.pathElement("thread-factory")))
                 .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + mavenVersion);
 
         KernelServices mainServices = builder.build();

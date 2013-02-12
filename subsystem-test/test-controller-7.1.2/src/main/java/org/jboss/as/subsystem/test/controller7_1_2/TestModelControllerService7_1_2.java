@@ -50,6 +50,7 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.model.test.ModelTestModelControllerService;
+import org.jboss.as.model.test.ModelTestOperationValidatorFilter;
 import org.jboss.as.model.test.StringConfigurationPersister;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
 import org.jboss.as.server.operations.RootResourceHack;
@@ -71,8 +72,8 @@ class TestModelControllerService7_1_2 extends ModelTestModelControllerService {
 
     TestModelControllerService7_1_2(final Extension mainExtension, final ControllerInitializer controllerInitializer,
             final AdditionalInitialization additionalInit, final RunningModeControl runningModeControl, final ExtensionRegistry extensionRegistry,
-            final StringConfigurationPersister persister, final boolean validateOps, final boolean registerTransformers) {
-        super(AdditionalInitializationUtil.getProcessType(additionalInit), runningModeControl, extensionRegistry.getTransformerRegistry(), persister, validateOps, ModelTestModelControllerService.DESC_PROVIDER, new ControlledProcessState(true));
+            final StringConfigurationPersister persister, final ModelTestOperationValidatorFilter validateOpsFilter, final boolean registerTransformers) {
+        super(AdditionalInitializationUtil.getProcessType(additionalInit), runningModeControl, extensionRegistry.getTransformerRegistry(), persister, validateOpsFilter, ModelTestModelControllerService.DESC_PROVIDER, new ControlledProcessState(true));
         this.extensionRegistry = extensionRegistry;
         this.additionalInit = additionalInit;
         this.controllerInitializer = controllerInitializer;

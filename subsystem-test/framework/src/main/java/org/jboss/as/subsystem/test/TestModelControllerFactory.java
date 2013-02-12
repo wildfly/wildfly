@@ -24,6 +24,7 @@ package org.jboss.as.subsystem.test;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.model.test.ModelTestModelControllerService;
+import org.jboss.as.model.test.ModelTestOperationValidatorFilter;
 import org.jboss.as.model.test.StringConfigurationPersister;
 
 
@@ -34,5 +35,5 @@ import org.jboss.as.model.test.StringConfigurationPersister;
 public interface TestModelControllerFactory {
     ModelTestModelControllerService create(final Extension mainExtension, final ControllerInitializer controllerInitializer,
             final AdditionalInitialization additionalInit, final ExtensionRegistry extensionRegistry,
-            final StringConfigurationPersister persister, final boolean validateOps, final boolean registerTransformers);
+            final StringConfigurationPersister persister, final ModelTestOperationValidatorFilter validateOpsFilter, final boolean registerTransformers);
 }

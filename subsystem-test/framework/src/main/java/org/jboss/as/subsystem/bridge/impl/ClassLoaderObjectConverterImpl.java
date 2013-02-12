@@ -24,6 +24,7 @@ package org.jboss.as.subsystem.bridge.impl;
 import java.io.IOException;
 
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.model.test.ModelTestOperationValidatorFilter;
 import org.jboss.as.subsystem.bridge.local.ClassLoaderObjectConverter;
 import org.jboss.as.subsystem.bridge.shared.ObjectSerializer;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -84,6 +85,17 @@ public class ClassLoaderObjectConverterImpl implements ClassLoaderObjectConverte
         try {
             return remote.deserializeAdditionalInitialization(local.serializeAdditionalInitialization(additionalInit));
         } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public Object convertValidateOperationsFilterToChildCl(ModelTestOperationValidatorFilter validateOpsFilter) {
+        try {
+            return remote.deserializeModelTestOperationValidatorFilter(local.serializeModelTestOperationValidatorFilter(validateOpsFilter));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }

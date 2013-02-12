@@ -25,6 +25,10 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.operations.validation.OperationValidator;
+
 
 /**
  * Contains the initialization of a controller containing a legacy version of a subsystem.
@@ -109,4 +113,25 @@ public interface LegacyKernelServicesInitializer {
      * @return this initializer
      */
     LegacyKernelServicesInitializer dontPersistXml();
+
+    /**
+     * By default all operations sent into the model controller will be validated on boot. Operations matching what is
+     * set up here will not be validated. This is mainly because the {@link OperationValidator} used in 7.1.x did not handle expressions very well
+     * when checking ranges. If there is a problem you should try to call {@link #addOperationValidationResolve(String, PathAddress)}
+     * first.
+     *
+     * @param name the name of the operation, or {@code *} as a wildcard capturing all names
+     * @param pathAddress the address of the operation, the pathAddress may use {@code *} as a wildcard for both the key and the value of {@link PathElement}s
+     */
+    LegacyKernelServicesInitializer addOperationValidationExclude(String name, PathAddress pathAddress);
+
+    /**
+     * By default all operations sent into the model controller will be validated on boot. Operations matching what is
+     * set up here will not be validated. This is mainly because the {@link OperationValidator} used in 7.1.x did not handle expressions very well
+     * when checking ranges.
+     *
+     * @param name the name of the operation, or {@code *} as a wildcard capturing all names
+     * @param pathAddress the address of the operation, the pathAddress may use {@code *} as a wildcard for both the key and the value of {@link PathElement}s
+     */
+    LegacyKernelServicesInitializer addOperationValidationResolve(String name, PathAddress pathAddress);
 }

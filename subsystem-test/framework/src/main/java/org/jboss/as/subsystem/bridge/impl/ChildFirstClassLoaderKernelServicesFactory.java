@@ -29,6 +29,7 @@ import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.model.test.ModelTestOperationValidatorFilter;
 import org.jboss.as.model.test.ModelTestParser;
 import org.jboss.as.subsystem.test.AbstractKernelServicesImpl;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -42,7 +43,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class ChildFirstClassLoaderKernelServicesFactory {
 
-    public static KernelServices create(String mainSubsystemName, String extensionClassName, AdditionalInitialization additionalInit,
+    public static KernelServices create(String mainSubsystemName, String extensionClassName, AdditionalInitialization additionalInit, ModelTestOperationValidatorFilter validateOpsFilter,
             List<ModelNode> bootOperations, ModelVersion legacyModelVersion, boolean persistXml) throws Exception {
         Extension extension = (Extension) Class.forName(extensionClassName).newInstance();
 
@@ -53,6 +54,6 @@ public class ChildFirstClassLoaderKernelServicesFactory {
         if (additionalInit == null) {
             additionalInit = AdditionalInitialization.MANAGEMENT;
         }
-        return AbstractKernelServicesImpl.create(mainSubsystemName, additionalInit, extensionRegistry, bootOperations, testParser, extension, legacyModelVersion, false, persistXml);
+        return AbstractKernelServicesImpl.create(mainSubsystemName, additionalInit, validateOpsFilter, extensionRegistry, bootOperations, testParser, extension, legacyModelVersion, false, persistXml);
     }
 }

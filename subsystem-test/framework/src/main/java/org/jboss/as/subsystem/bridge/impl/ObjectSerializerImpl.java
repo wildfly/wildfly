@@ -108,4 +108,31 @@ public class ObjectSerializerImpl implements ObjectSerializer {
         }
         return read;
     }
+
+    @Override
+    public byte[] serializeModelTestOperationValidatorFilter(Object object) throws IOException {
+        ByteArrayOutputStream bout = new ByteArrayOutputStream();
+        ObjectOutputStream out = new ObjectOutputStream(bout);
+        try {
+            out.writeObject(object);
+        } finally {
+            IoUtils.safeClose(out);
+            IoUtils.safeClose(bout);
+        }
+        return bout.toByteArray();
+    }
+
+    @Override
+    public Object deserializeModelTestOperationValidatorFilter(byte[] object) throws IOException, ClassNotFoundException {
+        ByteArrayInputStream bin = new ByteArrayInputStream(object);
+        ObjectInputStream in = new ObjectInputStream(bin);
+        Object o = null;
+        try {
+            o = in.readObject();
+        } finally {
+            IoUtils.safeClose(in);
+            IoUtils.safeClose(bin);
+        }
+        return o;
+    }
 }

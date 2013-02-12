@@ -16,6 +16,7 @@ import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.transform.SubsystemDescriptionDump;
 import org.jboss.as.model.test.ModelTestKernelServicesImpl;
 import org.jboss.as.model.test.ModelTestModelControllerService;
+import org.jboss.as.model.test.ModelTestOperationValidatorFilter;
 import org.jboss.as.model.test.ModelTestParser;
 import org.jboss.as.model.test.StringConfigurationPersister;
 import org.jboss.as.server.Services;
@@ -49,7 +50,7 @@ public abstract class AbstractKernelServicesImpl extends ModelTestKernelServices
         this.registerTransformers = registerTransformers;
     }
 
-    public static AbstractKernelServicesImpl create(String mainSubsystemName, AdditionalInitialization additionalInit,
+    public static AbstractKernelServicesImpl create(String mainSubsystemName, AdditionalInitialization additionalInit, ModelTestOperationValidatorFilter validateOpsFilter,
             ExtensionRegistry controllerExtensionRegistry, List<ModelNode> bootOperations, ModelTestParser testParser, Extension mainExtension, ModelVersion legacyModelVersion,
             boolean registerTransformers, boolean persistXml) throws Exception {
         ControllerInitializer controllerInitializer = additionalInit.createControllerInitializer();
@@ -84,7 +85,7 @@ public abstract class AbstractKernelServicesImpl extends ModelTestKernelServices
             }
         }
 
-        ModelTestModelControllerService svc = testModelControllerFactory.create(mainExtension, controllerInitializer, additionalInit, controllerExtensionRegistry, persister, additionalInit.isValidateOperations(), registerTransformers);
+        ModelTestModelControllerService svc = testModelControllerFactory.create(mainExtension, controllerInitializer, additionalInit, controllerExtensionRegistry, persister, validateOpsFilter, registerTransformers);
         ServiceBuilder<ModelController> builder = target.addService(Services.JBOSS_SERVER_CONTROLLER, svc);
         builder.addDependency(PathManagerService.SERVICE_NAME); // ensure this is up before the ModelControllerService, as it would be in a real server
         builder.install();
@@ -123,9 +124,9 @@ public abstract class AbstractKernelServicesImpl extends ModelTestKernelServices
 
         @Override
         public ModelTestModelControllerService create(Extension mainExtension, ControllerInitializer controllerInitializer,
-                AdditionalInitialization additionalInit, ExtensionRegistry extensionRegistry, StringConfigurationPersister persister, boolean validateOps,
+                AdditionalInitialization additionalInit, ExtensionRegistry extensionRegistry, StringConfigurationPersister persister, ModelTestOperationValidatorFilter validateOpsFilter,
                 boolean registerTransformers) {
-            return TestModelControllerService.create(mainExtension, controllerInitializer, additionalInit, extensionRegistry, persister, validateOps, registerTransformers);
+            return TestModelControllerService.create(mainExtension, controllerInitializer, additionalInit, extensionRegistry, persister, validateOpsFilter, registerTransformers);
         }
 
     }

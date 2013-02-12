@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.model.test.ModelTestOperationValidatorFilter;
 import org.jboss.as.subsystem.bridge.impl.ChildFirstClassLoaderKernelServicesFactory;
 import org.jboss.as.subsystem.bridge.impl.ClassLoaderObjectConverterImpl;
 import org.jboss.as.subsystem.bridge.impl.LegacyControllerKernelServicesProxy;
@@ -47,13 +48,13 @@ public class ScopedKernelServicesBootstrap {
 
 
     public LegacyControllerKernelServicesProxy createKernelServices(String mainSubsystemName, String extensionClassName, AdditionalInitialization additionalInit,
-            List<ModelNode> bootOperations, ModelVersion legacyModelVersion, boolean persistXml) throws Exception {
+            ModelTestOperationValidatorFilter validateOpsFilter, List<ModelNode> bootOperations, ModelVersion legacyModelVersion, boolean persistXml) throws Exception {
 
-        Object childClassLoaderKernelServices = createChildClassLoaderKernelServices(mainSubsystemName, extensionClassName, additionalInit, bootOperations, legacyModelVersion, persistXml);
+        Object childClassLoaderKernelServices = createChildClassLoaderKernelServices(mainSubsystemName, extensionClassName, additionalInit, validateOpsFilter, bootOperations, legacyModelVersion, persistXml);
         return new LegacyControllerKernelServicesProxy(legacyChildFirstClassLoader, childClassLoaderKernelServices, objectConverter);
     }
 
-    private Object createChildClassLoaderKernelServices(String mainSubsystemName, String extensionClassName, AdditionalInitialization additionalInit,
+    private Object createChildClassLoaderKernelServices(String mainSubsystemName, String extensionClassName, AdditionalInitialization additionalInit, ModelTestOperationValidatorFilter validateOpsFilter,
             List<ModelNode> bootOperations, ModelVersion legacyModelVersion, boolean persistXml){
         try {
             Class<?> clazz = legacyChildFirstClassLoader.loadClass(ChildFirstClassLoaderKernelServicesFactory.class.getName());
@@ -62,6 +63,7 @@ public class ScopedKernelServicesBootstrap {
                     String.class,
                     String.class,
                     legacyChildFirstClassLoader.loadClass(AdditionalInitialization.class.getName()),
+                    legacyChildFirstClassLoader.loadClass(ModelTestOperationValidatorFilter.class.getName()),
                     List.class,
                     legacyChildFirstClassLoader.loadClass(ModelVersion.class.getName()),
                     Boolean.TYPE);
@@ -77,9 +79,10 @@ public class ScopedKernelServicesBootstrap {
             //Convert additional Init
             Object convertedAdditionalInit = null;//TODO objectConverter.convertAdditionalInitializationToChildCl(additionalInit);
             Object convertedModelVersion = objectConverter.convertModelVersionToChildCl(legacyModelVersion);
+            Object convertedValidateOpsFilter = objectConverter.convertValidateOperationsFilterToChildCl(validateOpsFilter);
 
 
-            return m.invoke(null, mainSubsystemName, extensionClassName, convertedAdditionalInit, convertedBootOps, convertedModelVersion, persistXml);
+            return m.invoke(null, mainSubsystemName, extensionClassName, convertedAdditionalInit, convertedValidateOpsFilter, convertedBootOps, convertedModelVersion, persistXml);
 
         } catch (Exception e) {
             throw new RuntimeException(e);

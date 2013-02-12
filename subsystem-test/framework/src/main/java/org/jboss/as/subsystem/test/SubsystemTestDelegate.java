@@ -88,6 +88,8 @@ import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestBootOperationsBuilder;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestModelControllerService;
+import org.jboss.as.model.test.ModelTestOperationValidatorFilter;
+import org.jboss.as.model.test.ModelTestOperationValidatorFilter.Action;
 import org.jboss.as.model.test.ModelTestParser;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.model.test.StringConfigurationPersister;
@@ -562,7 +564,7 @@ final class SubsystemTestDelegate {
         public KernelServices build() throws Exception {
             bootOperationBuilder.validateNotAlreadyBuilt();
             List<ModelNode> bootOperations = bootOperationBuilder.build();
-            AbstractKernelServicesImpl kernelServices = AbstractKernelServicesImpl.create(mainSubsystemName, additionalInit, cloneExtensionRegistry(additionalInit), bootOperations,
+            AbstractKernelServicesImpl kernelServices = AbstractKernelServicesImpl.create(mainSubsystemName, additionalInit, ModelTestOperationValidatorFilter.createValidateAll(), cloneExtensionRegistry(additionalInit), bootOperations,
                     testParser, mainExtension, null, legacyControllerInitializers.size() > 0, true);
             SubsystemTestDelegate.this.kernelServices.add(kernelServices);
 
@@ -622,13 +624,38 @@ final class SubsystemTestDelegate {
         private final ModelTestControllerVersion testControllerVersion;
         private String extensionClassName;
         private ModelVersion modelVersion;
-        ChildFirstClassLoaderBuilder classLoaderBuilder = new ChildFirstClassLoaderBuilder();
+        private ChildFirstClassLoaderBuilder classLoaderBuilder = new ChildFirstClassLoaderBuilder();
+        private ModelTestOperationValidatorFilter.Builder operationValidationExcludeBuilder;
         private boolean persistXml = true;
 
         public LegacyKernelServiceInitializerImpl(AdditionalInitialization additionalInit, ModelTestControllerVersion version, ModelVersion modelVersion) {
             this.additionalInit = additionalInit == null ? AdditionalInitialization.MANAGEMENT : additionalInit;
             this.testControllerVersion = version;
             this.modelVersion = modelVersion;
+        }
+
+
+        @Override
+        public LegacyKernelServicesInitializer addOperationValidationExclude(String name, PathAddress pathAddress) {
+            addOperationValidationConfig(name, pathAddress, Action.NOCHECK);
+            return this;
+        }
+
+
+        @Override
+        public LegacyKernelServicesInitializer addOperationValidationResolve(String name, PathAddress pathAddress) {
+            addOperationValidationConfig(name, pathAddress, Action.RESOLVE);
+            return this;
+        }
+
+        private void addOperationValidationConfig(String name, PathAddress pathAddress, Action action) {
+            if (!additionalInit.isValidateOperations()) {
+                throw new IllegalStateException("The additional initialization used to create this builder has turned off operation validation. That is not compatible with calling this method");
+            }
+            if (operationValidationExcludeBuilder == null) {
+                operationValidationExcludeBuilder = ModelTestOperationValidatorFilter.createBuilder();
+            }
+            operationValidationExcludeBuilder.addOperation(pathAddress, name, action);
         }
 
         @Override
@@ -679,12 +706,18 @@ final class SubsystemTestDelegate {
                 classLoaderBuilder.createFromFile(file);
                 legacyCl = classLoaderBuilder.build();
             } else {
-                classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-subsystem-test:" + ModelTestControllerVersion.CurrentVersion.VERSION);
+                classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-subsystem-test-framework:" + ModelTestControllerVersion.CurrentVersion.VERSION);
                 classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-model-test:" + ModelTestControllerVersion.CurrentVersion.VERSION);
 
                 if (testControllerVersion != ModelTestControllerVersion.MASTER) {
                     //TODO use server rather than host-controller
                     classLoaderBuilder.addRecursiveMavenResourceURL(testControllerVersion.getLegacyControllerMavenGav());
+
+                    //Don't load modules from the scoped classloader to avoid some funky stuff going on when initializing the JAXP redirect
+                    //The mentioned funky stuff works fine when running in Eclipse but fails when running the tests on the command-line
+                    classLoaderBuilder.addParentFirstClassPattern("__redirected.*");
+                    classLoaderBuilder.addParentFirstClassPattern("org.jboss.modules.*");
+
                     //TODO add this?
 
                     classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-subsystem-test-controller-" + testControllerVersion.getTestControllerVersion() + ":" + ModelTestControllerVersion.CurrentVersion.VERSION);
@@ -693,22 +726,8 @@ final class SubsystemTestDelegate {
             }
 
             ScopedKernelServicesBootstrap scopedBootstrap = new ScopedKernelServicesBootstrap(legacyCl);
-            return scopedBootstrap.createKernelServices(mainSubsystemName, extensionClassName != null ? extensionClassName : mainExtension.getClass().getName(), additionalInit, bootOperations, modelVersion, persistXml);
-//
-//            Class<?> clazz = legacyCl.loadClass(extensionClassName != null ? extensionClassName : mainExtension.getClass().getName());
-//            Assert.assertEquals(legacyCl, clazz.getClassLoader());
-//            Assert.assertTrue(Extension.class.isAssignableFrom(clazz));
-//            Extension extension = (Extension) clazz.newInstance();
-//
-//            //Initialize the parsers for the legacy subsystem (copied from the @Before method)
-//            XMLMapper xmlMapper = XMLMapper.Factory.create();
-//            ModelTestParser testParser = new TestParser(mainSubsystemName, extensionParsingRegistry);
-//            ExtensionRegistry extensionParsingRegistry = new ExtensionRegistry(additionalInit.getProcessType(), new RunningModeControl(additionalInit.getExtensionRegistryRunningMode()));
-//            xmlMapper.registerRootElement(new QName(TEST_NAMESPACE, "test"), testParser);
-//            extension.initializeParsers(extensionParsingRegistry.getExtensionParsingContext("Test", xmlMapper));
-//
-//            //TODO extra parsers from additionalInit
-//            return KernelServicesImpl.create(mainSubsystemName, additionalInit, cloneExtensionRegistry(additionalInit), bootOperations, testParser, extension, modelVersion, false, persistXml);
+            return scopedBootstrap.createKernelServices(mainSubsystemName, extensionClassName != null ? extensionClassName : mainExtension.getClass().getName(), additionalInit,
+                    getOperationValidationFilter(), bootOperations, modelVersion, persistXml);
         }
 
         @Override
@@ -716,7 +735,19 @@ final class SubsystemTestDelegate {
             persistXml = false;
             return this;
         }
+
+        private ModelTestOperationValidatorFilter getOperationValidationFilter() {
+            if (operationValidationExcludeBuilder != null) {
+                return operationValidationExcludeBuilder.build();
+            }
+            if (additionalInit.isValidateOperations()) {
+                return ModelTestOperationValidatorFilter.createValidateAll();
+            } else {
+                return ModelTestOperationValidatorFilter.createValidateNone();
+            }
+        }
     }
+
     @SuppressWarnings("deprecation")
     private final ManagementResourceRegistration MOCK_RESOURCE_REG = new ManagementResourceRegistration() {
 

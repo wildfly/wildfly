@@ -37,6 +37,7 @@ import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.model.test.ModelTestModelControllerService;
+import org.jboss.as.model.test.ModelTestOperationValidatorFilter;
 import org.jboss.as.model.test.StringConfigurationPersister;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.DeployerChainAddHandler;
@@ -61,8 +62,8 @@ class TestModelControllerService extends ModelTestModelControllerService {
 
     protected TestModelControllerService(final Extension mainExtension, final ControllerInitializer controllerInitializer,
                                          final AdditionalInitialization additionalInit, final RunningModeControl runningModeControl, final ExtensionRegistry extensionRegistry,
-                                         final StringConfigurationPersister persister, final boolean validateOps, final boolean registerTransformers) {
-        super(additionalInit.getProcessType(), runningModeControl, extensionRegistry.getTransformerRegistry(), persister, validateOps, ModelTestModelControllerService.DESC_PROVIDER, new ControlledProcessState(true));
+                                         final StringConfigurationPersister persister, final ModelTestOperationValidatorFilter validateOpsFilter, final boolean registerTransformers) {
+        super(additionalInit.getProcessType(), runningModeControl, extensionRegistry.getTransformerRegistry(), persister, validateOpsFilter, ModelTestModelControllerService.DESC_PROVIDER, new ControlledProcessState(true));
         this.mainExtension = mainExtension;
         this.additionalInit = additionalInit;
         this.controllerInitializer = controllerInitializer;
@@ -73,8 +74,8 @@ class TestModelControllerService extends ModelTestModelControllerService {
 
     static TestModelControllerService create(final Extension mainExtension, final ControllerInitializer controllerInitializer,
                                              final AdditionalInitialization additionalInit, final ExtensionRegistry extensionRegistry,
-                                             final StringConfigurationPersister persister, final boolean validateOps, final boolean registerTransformers) {
-        return new TestModelControllerService(mainExtension, controllerInitializer, additionalInit, new RunningModeControl(additionalInit.getRunningMode()), extensionRegistry, persister, validateOps, registerTransformers);
+                                             final StringConfigurationPersister persister, final ModelTestOperationValidatorFilter validateOpsFilter, final boolean registerTransformers) {
+        return new TestModelControllerService(mainExtension, controllerInitializer, additionalInit, new RunningModeControl(additionalInit.getRunningMode()), extensionRegistry, persister, validateOpsFilter, registerTransformers);
     }
 
     @Override

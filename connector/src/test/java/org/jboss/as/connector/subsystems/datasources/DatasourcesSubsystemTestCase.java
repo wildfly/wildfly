@@ -30,6 +30,7 @@ import java.util.List;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -72,12 +73,12 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testTransformerAS712() throws Exception {
-        testTransformer1_1_0("7.1.2.Final", "datasources-full110.xml");
+        testTransformer1_1_0("7.1.2.Final", "datasources-full110.xml", ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
     public void testTransformerAS713() throws Exception {
-        testTransformer1_1_0("7.1.3.Final", "datasources-full110.xml");
+        testTransformer1_1_0("7.1.3.Final", "datasources-full110.xml", ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
     @Test
@@ -85,7 +86,7 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         //this file contain expression for all supported fields except reauth-plugin-properties, exception-sorter-properties,
         // stale-connection-checker-properties, valid-connection-checker-properties, recovery-plugin-properties
         // for a limitation in test suite not permitting to have expression in type LIST or OBJECT for legacyServices
-        testRejectTransformers1_1_0("7.1.2.Final", "datasources-full-expression110.xml");
+        testRejectTransformers1_1_0("7.1.2.Final", "datasources-full-expression110.xml", ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
@@ -93,7 +94,7 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         //this file contain expression for all supported fields except reauth-plugin-properties, exception-sorter-properties,
         // stale-connection-checker-properties, valid-connection-checker-properties, recovery-plugin-properties
         // for a limitation in test suite not permitting to have expression in type LIST or OBJECT for legacyServices
-        testRejectTransformers1_1_0("7.1.3.Final", "datasources-full-expression110.xml");
+        testRejectTransformers1_1_0("7.1.3.Final", "datasources-full-expression110.xml", ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
 
@@ -102,7 +103,7 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
      *
      * @throws Exception
      */
-    private void testTransformer1_1_0(String mavenVersion, String subsystemXml) throws Exception {
+    private void testTransformer1_1_0(String mavenVersion, String subsystemXml, ModelTestControllerVersion controllerVersion) throws Exception {
         System.setProperty("jboss.as.test.transformation.hack", "true");
         try {
             ModelVersion modelVersion = ModelVersion.create(1, 1, 0); //The old model version
@@ -111,9 +112,9 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
                     .setSubsystemXmlResource(subsystemXml);
 
             // Add legacy subsystems
-            builder.createLegacyKernelServicesBuilder(null, modelVersion)
-                    .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + mavenVersion)
-                    .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension");
+            builder.createLegacyKernelServicesBuilder(null,controllerVersion,  modelVersion)
+                                  .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + mavenVersion)
+                                  .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension");
 
             KernelServices mainServices = builder.build();
             Assert.assertTrue(mainServices.isSuccessfulBoot());
@@ -128,7 +129,7 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
 
-    public void testRejectTransformers1_1_0(String mavenVersion, String subsystemXml) throws Exception {
+    public void testRejectTransformers1_1_0(String mavenVersion, String subsystemXml, ModelTestControllerVersion controllerVersion) throws Exception {
         System.setProperty("jboss.as.test.transformation.hack", "true");
         try {
             ModelVersion modelVersion = ModelVersion.create(1, 1, 0); //The old model version
@@ -136,7 +137,7 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
             KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
             // Add legacy subsystems
-            builder.createLegacyKernelServicesBuilder(null, modelVersion)
+            builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                     .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + mavenVersion)
                     .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension");
 

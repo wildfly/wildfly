@@ -34,6 +34,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -58,20 +59,20 @@ public class JPA11SubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testTransformers7_1_2() throws Exception {
-        testTransformers_1_1_0("org.jboss.as:jboss-as-jpa:7.1.2.Final");
+        testTransformers_1_1_0("org.jboss.as:jboss-as-jpa:7.1.2.Final", ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
     public void testTransformers7_1_3() throws Exception {
-        testTransformers_1_1_0("org.jboss.as:jboss-as-jpa:7.1.3.Final");
+        testTransformers_1_1_0("org.jboss.as:jboss-as-jpa:7.1.3.Final", ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
-    private void testTransformers_1_1_0(String mavenGav) throws Exception {
+    private void testTransformers_1_1_0(String mavenGav, ModelTestControllerVersion controllerVersion) throws Exception {
         ModelVersion oldVersion = ModelVersion.create(1, 1, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(null)
                 .setSubsystemXmlResource("subsystem-1.1-no-expressions.xml");
 
-        builder.createLegacyKernelServicesBuilder(null, oldVersion)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, oldVersion)
                 .setExtensionClassName(JPAExtension.class.getName())
                 .addMavenResourceURL(mavenGav);
 
@@ -86,19 +87,19 @@ public class JPA11SubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testTransformersRejectExpressions7_1_2() throws Exception {
-        testTransformers_1_1_0_RejectExpressions("org.jboss.as:jboss-as-jpa:7.1.2.Final");
+        testTransformers_1_1_0_RejectExpressions("org.jboss.as:jboss-as-jpa:7.1.2.Final", ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
     public void testTransformersRejectExpressions7_1_3() throws Exception {
-        testTransformers_1_1_0_RejectExpressions("org.jboss.as:jboss-as-jpa:7.1.3.Final");
+        testTransformers_1_1_0_RejectExpressions("org.jboss.as:jboss-as-jpa:7.1.3.Final", ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
-    private void testTransformers_1_1_0_RejectExpressions(String mavenGav) throws Exception {
+    private void testTransformers_1_1_0_RejectExpressions(String mavenGav, ModelTestControllerVersion controllerVersion) throws Exception {
         ModelVersion oldVersion = ModelVersion.create(1, 1, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(null);
 
-        builder.createLegacyKernelServicesBuilder(null, oldVersion)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, oldVersion)
                 .setExtensionClassName(JPAExtension.class.getName())
                 .addMavenResourceURL(mavenGav);
 
