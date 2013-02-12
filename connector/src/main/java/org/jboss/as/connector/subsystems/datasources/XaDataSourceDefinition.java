@@ -26,6 +26,7 @@ package org.jboss.as.connector.subsystems.datasources;
 
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DISABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_ENABLE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_PROPERTIES_ATTRIBUTES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_ALL_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_IDLE_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.READONLY_XA_DATASOURCE_ATTRIBUTE;
@@ -43,18 +44,20 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
  * @author Stefano Maestri
  */
 public class XaDataSourceDefinition extends SimpleResourceDefinition {
-    protected static final PathElement PATH_SUBSYSTEM = PathElement.pathElement(XA_DATASOURCE);
+    protected static final PathElement PATH_XA_DATASOURCE = PathElement.pathElement(XA_DATASOURCE);
     private final boolean registerRuntimeOnly;
     private final boolean deployed;
 
 
     private XaDataSourceDefinition(final boolean registerRuntimeOnly, final boolean deployed) {
-        super(PATH_SUBSYSTEM,
+        super(PATH_XA_DATASOURCE,
                 DataSourcesExtension.getResourceDescriptionResolver(XA_DATASOURCE),
                 deployed ? null : XaDataSourceAdd.INSTANCE,
                 deployed ? null : XaDataSourceRemove.INSTANCE);
@@ -122,6 +125,11 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
         } else {
             resourceRegistration.registerSubModel(XaDataSourcePropertyDefinition.INSTANCE);
         }
-
     }
+
+    static void registerTransformers110(ResourceTransformationDescriptionBuilder parentBuilder) {
+            parentBuilder.addChildResource(PATH_XA_DATASOURCE).getAttributeBuilder()
+                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, DATASOURCE_PROPERTIES_ATTRIBUTES)
+                    .end();
+        }
 }

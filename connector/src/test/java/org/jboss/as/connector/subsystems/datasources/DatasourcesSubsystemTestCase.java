@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
@@ -40,7 +41,6 @@ import org.junit.Test;
 
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author <a href="stefano.maestri@redhat.com>Stefano Maestri</a>
  */
@@ -97,7 +97,6 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
 
-
     /**
      * Tests transformation of model from 1.1.1 version into 1.1.0 version.
      *
@@ -113,8 +112,8 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
 
             // Add legacy subsystems
             builder.createLegacyKernelServicesBuilder(null, modelVersion)
-                                  .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + mavenVersion)
-                                  .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension");
+                    .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + mavenVersion)
+                    .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension");
 
             KernelServices mainServices = builder.build();
             Assert.assertTrue(mainServices.isSuccessfulBoot());
@@ -148,7 +147,20 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
             assertTrue(legacyServices.isSuccessfulBoot());
 
             List<ModelNode> ops = builder.parseXmlResource(subsystemXml);
-            ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops, new FailedOperationTransformationConfig());
+            PathAddress subsystemAddress = PathAddress.pathAddress(DataSourcesSubsystemRootDefinition.PATH_SUBSYSTEM);
+            ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops, new FailedOperationTransformationConfig()
+                    .addFailedAttribute(subsystemAddress.append(JdbcDriverDefinition.PATH_DRIVER),
+                            new FailedOperationTransformationConfig.RejectExpressionsConfig(Constants.DRIVER_MINOR_VERSION, Constants.DRIVER_MAJOR_VERSION) {
+                                @Override
+                                protected boolean isAttributeWritable(String attributeName) {
+                                    return false;
+                                }
+                            })
+                    .addFailedAttribute(subsystemAddress.append(DataSourceDefinition.PATH_DATASOURCE),
+                            new FailedOperationTransformationConfig.RejectExpressionsConfig(Constants.DATASOURCE_PROPERTIES_ATTRIBUTES))
+                    .addFailedAttribute(subsystemAddress.append(XaDataSourceDefinition.PATH_XA_DATASOURCE),
+                            new FailedOperationTransformationConfig.RejectExpressionsConfig(Constants.DATASOURCE_PROPERTIES_ATTRIBUTES))
+            );
         } finally {
             System.clearProperty("jboss.as.test.transformation.hack");
         }
