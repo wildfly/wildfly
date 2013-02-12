@@ -55,7 +55,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -137,7 +136,7 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler implement
                 .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, resourceAdapterService.getTransactionManager())
                 .addDependency(hqServiceName, HornetQServer.class, resourceAdapterService.getHornetQService())
                 .addDependency(JMSServices.getJmsManagerBaseServiceName(hqServiceName))
-                .addListener(ServiceListener.Inheritance.ALL, verificationHandler);
+                .addListener(verificationHandler);
 
 
         newControllers.add(serviceBuilder.setInitialMode(Mode.ACTIVE).install());
