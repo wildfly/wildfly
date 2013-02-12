@@ -226,7 +226,7 @@
         <version.org.jboss.staxmapper>1.1.0.Final</version.org.jboss.staxmapper>
         <version.org.jboss.stdio>1.0.1.GA</version.org.jboss.stdio>
         <version.org.jboss.threads>2.1.0.Final</version.org.jboss.threads>
-        <version.org.jboss.web>8.0.0.Alpha1-SNAPSHOT</version.org.jboss.web>
+        <version.org.jboss.web>7.2.0.Final</version.org.jboss.web>
         <version.org.jboss.weld.weld>1.1.10.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>1.1.Final</version.org.jboss.weld.weld-api>
         <version.org.jboss.ws.api>1.0.1.Final</version.org.jboss.ws.api>
