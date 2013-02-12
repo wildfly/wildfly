@@ -60,7 +60,7 @@ public class ResolveExpressionHandler implements OperationStepHandler {
 
     private ResolveExpressionHandler() {
     }
-                                                                   Phase
+
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
