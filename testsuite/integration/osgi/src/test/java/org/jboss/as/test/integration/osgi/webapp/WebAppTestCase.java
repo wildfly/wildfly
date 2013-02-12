@@ -243,6 +243,7 @@ public class WebAppTestCase {
     }
 
     @Test
+    @org.junit.Ignore("AS7-6511")
     public void testDeferredBundleWithWabExtension() throws Exception {
         InputStream input = deployer.getDeployment(BUNDLE_C_WAB);
         Bundle bundle = context.installBundle(BUNDLE_C_WAB, input);
