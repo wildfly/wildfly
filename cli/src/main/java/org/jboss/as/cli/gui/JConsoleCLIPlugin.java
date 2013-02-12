@@ -161,7 +161,6 @@ public class JConsoleCLIPlugin extends JConsolePlugin {
             if (component instanceof JInternalFrame) {
                 JInternalFrame frame = (JInternalFrame)component;
                 frame.setFrameIcon(icon);
-                frame.setTitle(getJBossServerName());
                 return;
             }
         }
