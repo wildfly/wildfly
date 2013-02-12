@@ -164,4 +164,16 @@ public interface SarMessages {
      */
     @Message(id = 17229, value = "Unexpected content of type '%s' named '%s', text is: %s")
     String unexpectedContent(String kind, QName name, String text);
+
+    /**
+     * Creates an exception indicating a failure to process the resource adapter child archives for the deployment root
+     * represented by the {@code deploymentRoot} parameter.
+     *
+     * @param cause          the cause of the error.
+     * @param deploymentRoot the deployment root.
+     *
+     * @return a {@link DeploymentUnitProcessingException} for the error.
+     */
+    @Message(id = 17230, value = "Failed to process SAR child archives for [%s]")
+    DeploymentUnitProcessingException failedToProcessSarChild(@Cause Throwable cause, VirtualFile deploymentRoot);
 }
