@@ -33,21 +33,29 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.msc.service.ServiceName;
 
 @WebServlet(urlPatterns = { MyServiceServlet.SERVLET_PATH })
 public class MyServiceServlet extends HttpServlet {
     private static final long serialVersionUID = -592774116315946908L;
     private static final String SERVLET_NAME = "service";
     static final String SERVLET_PATH = "/" + SERVLET_NAME;
+    private static final String SERVICE = "service";
     
-    public static URI createURI(URL baseURL) throws URISyntaxException {
-        return baseURL.toURI().resolve(SERVLET_NAME);
+    public static URI createURI(URL baseURL, ServiceName serviceName) throws URISyntaxException {
+        return baseURL.toURI().resolve(new StringBuilder(SERVLET_NAME).append('?').append(SERVICE).append('=').append(serviceName.getCanonicalName()).toString());
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        Environment env = (Environment) CurrentServiceContainer.getServiceContainer().getService(MyService.SERVICE_NAME).getValue();
-        resp.setHeader("node", env.getNodeName());
+        String service = req.getParameter(SERVICE);
+        if (service == null) {
+            throw new ServletException(String.format("No %s specified", SERVICE));
+        }
+        Environment env = (Environment) CurrentServiceContainer.getServiceContainer().getService(ServiceName.parse(service)).getValue();
+        if (env != null) {
+            resp.setHeader("node", env.getNodeName());
+        }
         resp.getWriter().write("Success");
     }
 }
