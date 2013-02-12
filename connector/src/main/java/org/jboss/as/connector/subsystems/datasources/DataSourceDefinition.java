@@ -43,18 +43,20 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
  * @author Stefano Maestri
  */
 public class DataSourceDefinition extends SimpleResourceDefinition {
-    protected static final PathElement PATH_SUBSYSTEM = PathElement.pathElement(DATA_SOURCE);
+    protected static final PathElement PATH_DATASOURCE = PathElement.pathElement(DATA_SOURCE);
     private final boolean registerRuntimeOnly;
     private final boolean deployed;
 
 
     private DataSourceDefinition(final boolean registerRuntimeOnly, final boolean deployed) {
-        super(PATH_SUBSYSTEM,
+        super(PATH_DATASOURCE,
                 DataSourcesExtension.getResourceDescriptionResolver(DATA_SOURCE),
                 deployed ? null : DataSourceAdd.INSTANCE,
                 deployed ? null : DataSourceRemove.INSTANCE);
@@ -125,4 +127,11 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
             resourceRegistration.registerSubModel(ConnectionPropertyDefinition.INSTANCE);
         }
     }
+
+    static void registerTransformers110(ResourceTransformationDescriptionBuilder parentBuilder) {
+        parentBuilder.addChildResource(PATH_DATASOURCE).getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, DATASOURCE_PROPERTIES_ATTRIBUTES)
+                .end();
+    }
+
 }
