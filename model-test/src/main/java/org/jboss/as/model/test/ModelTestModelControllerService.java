@@ -177,12 +177,18 @@ public abstract class ModelTestModelControllerService extends AbstractController
             super.start(context);
         } catch (StartException e) {
             error = e;
+            e.printStackTrace();
             latch.countDown();
             throw e;
         } catch (Exception e) {
             error = e;
+            e.printStackTrace();
             latch.countDown();
             throw new StartException(e);
+        } catch (Throwable t) {
+            t.printStackTrace();
+            latch.countDown();
+            throw new StartException(t);
         }
     }
 
