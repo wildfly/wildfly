@@ -46,6 +46,7 @@ import org.osgi.util.tracker.ServiceTracker;
  * @since 07-Jun-2011
  */
 @RunWith(Arquillian.class)
+@org.junit.Ignore("AS7-6511")
 public class StartLevelTestCase {
 
     private static final String BUNDLE_A = "osgi-startlevel-a";
