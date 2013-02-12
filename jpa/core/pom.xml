@@ -30,12 +30,12 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-jpa-parent</artifactId>
-        <version>7.2.0.Final</version>
+        <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-jpa</artifactId>
-    <version>7.2.0.Final</version>
+    <version>8.0.0.Alpha1-SNAPSHOT</version>
 
     <name>JBoss Application Server: JPA Subsystem</name>
 

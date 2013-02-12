@@ -7,13 +7,13 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-testsuite</artifactId>
-        <version>7.2.0.Final</version>
+        <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-ts-integ</artifactId>
     <packaging>pom</packaging>
-    <version>7.2.0.Final</version>
+    <version>8.0.0.Alpha1-SNAPSHOT</version>
 
     <name>JBoss Application Server Test Suite: Integration</name>
 

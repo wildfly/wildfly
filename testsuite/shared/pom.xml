@@ -7,14 +7,14 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-parent</artifactId>
-        <version>7.2.0.Final</version>
+        <version>8.0.0.Alpha1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-testsuite-shared</artifactId>
     <packaging>jar</packaging>
-    <version>7.2.0.Final</version>
+    <version>8.0.0.Alpha1-SNAPSHOT</version>
 
     <name>JBoss Application Server Test Suite: Shared</name>
     

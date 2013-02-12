@@ -29,7 +29,7 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-core-model-test</artifactId>
-        <version>7.2.0.Final</version>
+        <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
     <artifactId>jboss-as-core-model-test-tests</artifactId>

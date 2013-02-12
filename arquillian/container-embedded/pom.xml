@@ -25,7 +25,7 @@
   Set these VM properties in your IDE debugger 
 
   -Djava.util.logging.manager=org.jboss.logmanager.LogManager
-  -Djboss.home=${workspace_loc:jboss-as-build}/target/jboss-as-7.2.0.Final 
+  -Djboss.home=${workspace_loc:jboss-as-build}/target/jboss-as-8.0.0.Alpha1-SNAPSHOT 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -34,7 +34,7 @@
 	<parent>
 		<groupId>org.jboss.as</groupId>
 		<artifactId>jboss-as-arquillian</artifactId>
-		<version>7.2.0.Final</version>
+		<version>8.0.0.Alpha1-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>jboss-as-arquillian-container-embedded</artifactId>
