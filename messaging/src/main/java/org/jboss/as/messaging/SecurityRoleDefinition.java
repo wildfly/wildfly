@@ -62,6 +62,7 @@ public class SecurityRoleDefinition extends SimpleResourceDefinition {
     private static SimpleAttributeDefinition create(final String name, final String xmlName) {
         return SimpleAttributeDefinitionBuilder.create(name, BOOLEAN)
                 .setXmlName(xmlName)
+                .setDefaultValue(new ModelNode(false))
                 .setFlags(RESTART_NONE)
                 .build();
     }
