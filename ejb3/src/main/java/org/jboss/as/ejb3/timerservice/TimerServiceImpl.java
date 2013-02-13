@@ -29,6 +29,7 @@ import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.singleton.SingletonComponent;
 import org.jboss.as.ejb3.component.stateful.CurrentSynchronizationCallback;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
+import org.jboss.as.ejb3.subsystem.deployment.TimerServiceResource;
 import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
 import org.jboss.as.ejb3.timerservice.spi.ScheduleTimer;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
@@ -136,6 +137,10 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     private TransactionSynchronizationRegistry tsr;
     private final TimerServiceRegistry timerServiceRegistry;
 
+    /**
+    * Dynamic resource. Exposed under service=timer-service.
+    */
+    private TimerServiceResource resource = new TimerServiceResource();
 
     private volatile boolean started = false;
 
@@ -619,6 +624,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             } else {
                 // cancel any scheduled Future for this timer
                 this.cancelTimeout(timer);
+                this.unregisterTimerResource(timer.getId());
                 this.timers.remove(timer.getId());
             }
             // persist changes
@@ -631,9 +637,10 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     }
 
     public void expireTimer(final TimerImpl timer) {
-        cancelTimeout(timer);
+        this.cancelTimeout(timer);
         timer.setTimerState(TimerState.EXPIRED);
-        timers.remove(timer.getId());
+        this.unregisterTimerResource(timer.getId());
+        this.timers.remove(timer.getId());
     }
 
     /**
@@ -739,6 +746,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             this.timers.put(timer.getId(), timer);
             timer.setTimerState(TimerState.ACTIVE);
             // create and schedule a timer task
+            this.registerTimerResource(timer.getId());
             timer.scheduleTimeout(true);
         } else {
             addWaitingOnTxCompletionTimer(timer);
@@ -880,6 +888,18 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                 timerTask.cancel();
             }
         }
+    }
+
+    public void invokeTimeout(final TimerImpl timer) {
+        synchronized (this.scheduledTimerFutures) {
+            if (this.scheduledTimerFutures.containsKey(timer.getId())) {
+                timer.getTimerTask().run();
+            }
+        }
+    }
+
+    public boolean isScheduled(final String tid){
+        return this.scheduledTimerFutures.containsKey(tid);
     }
 
     /**
@@ -1062,6 +1082,18 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         return timedObjectInvoker;
     }
 
+    public TimerServiceResource getResource() {
+        return resource;
+    }
+
+    private void registerTimerResource(final String timerId) {
+        this.resource.timerCreated(timerId);
+    }
+
+    private void unregisterTimerResource(final String timerId) {
+        this.resource.timerRemoved(timerId);
+    }
+
     private class TimerCreationTransactionSynchronization implements Synchronization {
         /**
          * The timer being managed in the transaction
@@ -1087,6 +1119,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             if (status == Status.STATUS_COMMITTED) {
                 ROOT_LOGGER.debug("commit timer creation: " + this.timer);
 
+                registerTimerResource(timer.getId());
                 TimerState timerState = this.timer.getState();
                 switch (timerState) {
                     case CREATED:
@@ -1124,6 +1157,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             try {
                 if (status == Status.STATUS_COMMITTED) {
                     cancelTimeout(timer);
+                    unregisterTimerResource(timer.getId());
                     timers.remove(timer.getId());
                 } else {
                     timer.setTimerState(TimerState.ACTIVE);

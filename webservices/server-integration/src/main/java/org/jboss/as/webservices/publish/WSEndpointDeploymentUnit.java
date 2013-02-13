@@ -24,7 +24,9 @@ package org.jboss.as.webservices.publish;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.SimpleAttachable;
 import org.jboss.as.webservices.metadata.model.JAXWSDeployment;
@@ -131,4 +133,13 @@ public class WSEndpointDeploymentUnit extends SimpleAttachable implements Deploy
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public ModelNode createDeploymentSubModel(String subsystemName, PathAddress address) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ModelNode createDeploymentSubModel(String subsystemName, PathAddress address, Resource resource) {
+        throw new UnsupportedOperationException();
+    }
 }

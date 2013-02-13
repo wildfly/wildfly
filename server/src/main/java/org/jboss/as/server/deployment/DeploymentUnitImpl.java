@@ -22,7 +22,9 @@
 
 package org.jboss.as.server.deployment;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -92,4 +94,13 @@ class DeploymentUnitImpl extends SimpleAttachable implements DeploymentUnit {
         return DeploymentModelUtils.createDeploymentSubModel(subsystemName, address, this);
     }
 
+    @Override
+    public ModelNode createDeploymentSubModel(String subsystemName, PathAddress address) {
+        return this.createDeploymentSubModel(subsystemName, address, null);
+    }
+
+    @Override
+    public ModelNode createDeploymentSubModel(String subsystemName, PathAddress address, Resource resource) {
+        return DeploymentModelUtils.createDeploymentSubModel(subsystemName, address, resource,this);
+    }
 }
