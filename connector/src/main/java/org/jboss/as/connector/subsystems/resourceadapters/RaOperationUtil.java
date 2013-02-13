@@ -21,14 +21,7 @@
  */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
-import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
 
 import org.jboss.as.connector.deployers.ra.processors.IronJacamarDeploymentParsingProcessor;
 import org.jboss.as.connector.deployers.ra.processors.ParsedRaDeploymentProcessor;
@@ -38,19 +31,18 @@ import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.metadata.xmldescriptors.IronJacamarXmlDescriptor;
 import org.jboss.as.connector.services.resourceadapters.deployment.InactiveResourceAdapterDeploymentService;
+import org.jboss.as.connector.services.resourceadapters.deployment.ResourceAdapterXmlDeploymentService;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.connector.util.ModelNodeUtil;
 import org.jboss.as.connector.util.RaServicesFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.annotation.ResourceRootIndexer;
 import org.jboss.as.server.deployment.module.MountHandle;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.as.server.deployment.module.TempFileProviderService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jandex.Index;
 import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
@@ -75,6 +67,7 @@ import org.jboss.jca.common.metadata.common.CredentialImpl;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
+import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -82,6 +75,19 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
+
+import java.io.Closeable;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION;
@@ -232,7 +238,31 @@ public class RaOperationUtil {
     }
 
 
-    public static boolean deactivateIfActive(OperationContext context, String raName) throws OperationFailedException {
+    public static ServiceName stopIfActive(OperationContext context, String raName) throws OperationFailedException {
+        final ServiceName raDeploymentServiceName = ConnectorServices.getDeploymentServiceName(raName);
+        if (raDeploymentServiceName != null) {
+            ServiceController raServiceController = context.getServiceRegistry(false).getService(raDeploymentServiceName);
+            if (raServiceController != null) {
+
+                raServiceController.setMode(ServiceController.Mode.NEVER);
+
+                // Wait for the phase service to come down
+                try {
+                    FutureServiceValue<Phase> future = new FutureServiceValue<Phase>(raServiceController, ServiceController.State.DOWN);
+                    future.get(30, TimeUnit.SECONDS);
+                } catch (ExecutionException ex) {
+                    throw MESSAGES.cannotDeactivateDeferredModulePhase(ex, raDeploymentServiceName);
+                } catch (TimeoutException ex) {
+                    throw MESSAGES.cannotDeactivateDeferredModulePhase(ex, raDeploymentServiceName);
+                }
+            }
+        }
+
+        return raDeploymentServiceName;
+
+    }
+
+    public static boolean removeIfActive(OperationContext context, String raName) throws OperationFailedException {
         boolean wasActive = false;
         final ServiceName raDeploymentServiceName = ConnectorServices.getDeploymentServiceName(raName);
         Integer identifier = 0;
@@ -251,20 +281,33 @@ public class RaOperationUtil {
 
     }
 
-    public static void activate(OperationContext context, String raName, String rarName, final ServiceVerificationHandler serviceVerificationHandler) throws OperationFailedException {
+    public static void activate(OperationContext context, String raName, final ServiceVerificationHandler serviceVerificationHandler, ServiceName stoppedServiceName) throws OperationFailedException {
         ServiceRegistry registry = context.getServiceRegistry(true);
-        if (rarName.contains(ConnectorServices.RA_SERVICE_NAME_SEPARATOR)) {
-            rarName = rarName.substring(0, rarName.indexOf(ConnectorServices.RA_SERVICE_NAME_SEPARATOR));
-        }
-        final ServiceController<?> inactiveRaController = registry.getService(ConnectorServices.INACTIVE_RESOURCE_ADAPTER_SERVICE.append(raName));
-        if (inactiveRaController == null) {
-            throw new OperationFailedException("rar not yet deployed");
-        }
-        InactiveResourceAdapterDeploymentService.InactiveResourceAdapterDeployment inactive = (InactiveResourceAdapterDeploymentService.InactiveResourceAdapterDeployment) inactiveRaController.getValue();
-        final ServiceController<?> RaxmlController = registry.getService(ServiceName.of(ConnectorServices.RA_SERVICE, raName));
 
-        ResourceAdapter raxml = (ResourceAdapter) RaxmlController.getValue();
-        RaServicesFactory.createDeploymentService(inactive.getRegistration(), inactive.getConnectorXmlDescriptor(), inactive.getModule(), inactive.getServiceTarget(), raName, inactive.getDeploymentUnitServiceName(), inactive.getDeployment(), raxml, inactive.getResource(), serviceVerificationHandler);
+        if (stoppedServiceName != null) {
+            ServiceController raServiceController = registry.getService(stoppedServiceName);
+            if (raServiceController != null) {
+                final ServiceController<?> RaxmlController = registry.getService(ServiceName.of(ConnectorServices.RA_SERVICE, raName));
+
+                ResourceAdapter raxml = (ResourceAdapter) RaxmlController.getValue();
+                ((ResourceAdapterXmlDeploymentService) raServiceController.getService()).setRaxml(raxml);
+                raServiceController.setMode(ServiceController.Mode.ACTIVE);
+            }
+
+        } else {
+
+
+            final ServiceController<?> inactiveRaController = registry.getService(ConnectorServices.INACTIVE_RESOURCE_ADAPTER_SERVICE.append(raName));
+            if (inactiveRaController == null) {
+                throw new OperationFailedException("rar not yet deployed");
+            }
+            InactiveResourceAdapterDeploymentService.InactiveResourceAdapterDeployment inactive = (InactiveResourceAdapterDeploymentService.InactiveResourceAdapterDeployment) inactiveRaController.getValue();
+            final ServiceController<?> RaxmlController = registry.getService(ServiceName.of(ConnectorServices.RA_SERVICE, raName));
+
+            ResourceAdapter raxml = (ResourceAdapter) RaxmlController.getValue();
+            RaServicesFactory.createDeploymentService(inactive.getRegistration(), inactive.getConnectorXmlDescriptor(), inactive.getModule(), inactive.getServiceTarget(), raName, inactive.getDeploymentUnitServiceName(), inactive.getDeployment(), raxml, inactive.getResource(), serviceVerificationHandler);
+
+        }
     }
 
     public static ServiceName installRaServices(OperationContext context, ServiceVerificationHandler verificationHandler, String name, ModifiableResourceAdapter resourceAdapter, final List<ServiceController<?>> newControllers) {
