@@ -111,7 +111,11 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
         // create builder for legacy subsystem version
         ModelVersion version_1_3_0 = ModelVersion.create(1, 3, 0);
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_3_0)
-            .addMavenResourceURL("org.jboss.as:jboss-as-clustering-infinispan:" + asVersion);
+            .addMavenResourceURL("org.jboss.as:jboss-as-clustering-infinispan:" + asVersion)
+            //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
+            //which is strange since it should be loading it all from the current jboss modules
+            //Also this works in several other tests
+            .dontPersistXml();
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(version_1_3_0);

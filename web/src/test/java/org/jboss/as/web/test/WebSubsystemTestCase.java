@@ -152,10 +152,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         //This legacy subsystem references classes in the removed org.jboss.as.controller.alias package,
         //which is why we need to include the jboss-as-controller artifact.
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-web:" + mavenVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-controller:" + mavenVersion)
-                .addParentFirstClassPattern("org.jboss.as.controller.*")
-                .addChildFirstClassPattern("org.jboss.as.controller.alias.*");
+                .addMavenResourceURL("org.jboss.as:jboss-as-web:" + mavenVersion);
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
@@ -233,10 +230,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         //This legacy subsystem references classes in the removed org.jboss.as.controller.alias package,
         //which is why we need to include the jboss-as-controller artifact.
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
-            .addMavenResourceURL("org.jboss.as:jboss-as-web:" + mavenVersion)
-            .addMavenResourceURL("org.jboss.as:jboss-as-controller:" + mavenVersion)
-            .addParentFirstClassPattern("org.jboss.as.controller.*")
-            .addChildFirstClassPattern("org.jboss.as.controller.alias.*");
+            .addMavenResourceURL("org.jboss.as:jboss-as-web:" + mavenVersion);
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);

@@ -712,12 +712,11 @@ final class SubsystemTestDelegate {
                 if (testControllerVersion != ModelTestControllerVersion.MASTER) {
                     classLoaderBuilder.addRecursiveMavenResourceURL("org.jboss.as:jboss-as-server:" + testControllerVersion.getMavenGavVersion());
 
+                    //TODO Even with this there are some workarounds needed in JGroupsSubsystemTransformerTestCase, InfinispanSubsystemTransformersTestCase and LoggingSubsystemTestCase
                     //Don't load modules from the scoped classloader to avoid some funky stuff going on when initializing the JAXP redirect
                     //The mentioned funky stuff works fine when running in Eclipse but fails when running the tests on the command-line
                     classLoaderBuilder.addParentFirstClassPattern("__redirected.*");
                     classLoaderBuilder.addParentFirstClassPattern("org.jboss.modules.*");
-
-                    //TODO add this?
 
                     classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-subsystem-test-controller-" + testControllerVersion.getTestControllerVersion() + ":" + ModelTestControllerVersion.CurrentVersion.VERSION);
                 }

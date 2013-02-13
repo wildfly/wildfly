@@ -55,6 +55,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.network.SocketBinding;
@@ -494,8 +495,21 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         KernelServices legacyServices = mainServices.getLegacyServices(oldVersion);
         Assert.assertNotNull(legacyServices);
 
+        ModelFixer modelFixer7_1_x = new ModelFixer() {
+            public ModelNode fixModel(ModelNode modelNode) {
+                if (modelNode.hasDefined("remoting-connector")) {
+                    if (modelNode.get("remoting-connector").hasDefined("jmx")) {
+                        if (modelNode.get("remoting-connector", "jmx").keys().size() == 0) {
+                            //The default is true, 7.1.x does not include the default for this value
+                            modelNode.get("remoting-connector", "jmx", "use-management-endpoint").set(true);
+                        }
+                    }
+                }
+                return modelNode;
+            }
+        };
 
-        ModelNode legacyModel = checkSubsystemModelTransformation(mainServices, oldVersion);
+        ModelNode legacyModel = checkSubsystemModelTransformation(mainServices, oldVersion, modelFixer7_1_x);
         check_1_0_0_Model(legacyModel.get(SUBSYSTEM, JMXExtension.SUBSYSTEM_NAME), true, true);
 
         //Test that show-model=>expression is ignored
@@ -536,7 +550,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         transformedOp = mainServices.transformOperation(oldVersion, op);
         checkOutcome(mainServices.executeOperation(op));
         checkOutcome(mainServices.executeOperation(oldVersion, transformedOp));
-        legacyModel = checkSubsystemModelTransformation(mainServices, oldVersion);
+        legacyModel = checkSubsystemModelTransformation(mainServices, oldVersion, modelFixer7_1_x);
         check_1_0_0_Model(legacyModel.get(SUBSYSTEM, getMainSubsystemName()), true, false);
 
 
@@ -544,10 +558,22 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         transformedOp = mainServices.transformOperation(oldVersion, op);
         checkOutcome(mainServices.executeOperation(op));
         checkOutcome(mainServices.executeOperation(oldVersion, transformedOp));
-        legacyModel = checkSubsystemModelTransformation(mainServices, oldVersion);
+        legacyModel = checkSubsystemModelTransformation(mainServices, oldVersion, modelFixer7_1_x);
         check_1_0_0_Model(legacyModel.get(SUBSYSTEM, getMainSubsystemName()), true, true);
 
+        op = Util.getWriteAttributeOperation(PathAddress.pathAddress(
+                    PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()),
+                    PathElement.pathElement(CommonAttributes.REMOTING_CONNECTOR, CommonAttributes.JMX)),
+                CommonAttributes.USE_MANAGEMENT_ENDPOINT, false);
+        ModelTestUtils.checkOutcome(mainServices.executeOperation(oldVersion, mainServices.transformOperation(oldVersion, op)));
+        transformedOp = mainServices.transformOperation(oldVersion, op);
+        checkOutcome(mainServices.executeOperation(op));
+        checkOutcome(mainServices.executeOperation(oldVersion, transformedOp));
+        legacyModel = checkSubsystemModelTransformation(mainServices, oldVersion, modelFixer7_1_x);
+        check_1_0_0_Model(legacyModel.get(SUBSYSTEM, getMainSubsystemName()), true, true);
+        Assert.assertFalse(legacyModel.get(SUBSYSTEM, getMainSubsystemName(), CommonAttributes.REMOTING_CONNECTOR, CommonAttributes.JMX, CommonAttributes.USE_MANAGEMENT_ENDPOINT).asBoolean());
     }
+
 
     @Test
     public void testRejectExpressionsAS712() throws Exception {

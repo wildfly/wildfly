@@ -34,12 +34,15 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefinition {
 
+    private static final PathElement PATH = PathElement.pathElement(CONNECTIONDEFINITIONS_NAME);
     private static final ResourceDescriptionResolver RESOLVER = ResourceAdaptersExtension.getResourceDescriptionResolver(CONNECTIONDEFINITIONS_NAME);
     private static final OperationDefinition FLUSH__IDLE_DEFINITION = new SimpleOperationDefinitionBuilder(Constants.FLUSH_IDLE_CONNECTION_IN_POOL, RESOLVER)
             .withFlag(Flag.RUNTIME_ONLY)
@@ -55,7 +58,7 @@ public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefini
     private final boolean runtimeOnlyRegistrationValid;
 
     public ConnectionDefinitionResourceDefinition(final boolean readOnly, final boolean runtimeOnlyRegistrationValid) {
-        super(PathElement.pathElement(CONNECTIONDEFINITIONS_NAME), ResourceAdaptersExtension.getResourceDescriptionResolver(CONNECTIONDEFINITIONS_NAME),
+        super(PATH, ResourceAdaptersExtension.getResourceDescriptionResolver(CONNECTIONDEFINITIONS_NAME),
                 readOnly ? null : ConnectionDefinitionAdd.INSTANCE, readOnly ? null : ReloadRequiredRemoveStepHandler.INSTANCE);
         this.readOnly = readOnly;
         this.runtimeOnlyRegistrationValid = runtimeOnlyRegistrationValid;
@@ -85,5 +88,10 @@ public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefini
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerSubModel(new ConfigPropertyResourceDefinition(readOnly ? null : CDConfigPropertyAdd.INSTANCE, readOnly ? null : ReloadRequiredRemoveStepHandler.INSTANCE));
+    }
+
+    static void registerTransformers(ResourceTransformationDescriptionBuilder parentBuilder) {
+        parentBuilder.addChildResource(PATH)
+            .getAttributeBuilder().setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.SECURITY_DOMAIN, Constants.SECURITY_DOMAIN_AND_APPLICATION, Constants.APPLICATION);
     }
 }

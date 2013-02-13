@@ -153,7 +153,11 @@ public class JGroupsSubsystemTransformerTestCase extends OperationTestCaseBase {
         // create builder for legacy subsystem version
         ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_1_0)
-            .addMavenResourceURL(mavenGAV);
+            .addMavenResourceURL(mavenGAV)
+            //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
+            //which is strange since it should be loading it all from the current jboss modules
+            //Also this works in several other tests
+            .dontPersistXml();
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());

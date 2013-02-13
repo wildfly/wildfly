@@ -133,9 +133,7 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
                 .addMavenResourceURL("org.hornetq:hornetq-core:2.2.16.Final")
                 .addMavenResourceURL("org.hornetq:hornetq-jms:2.2.16.Final")
                 .addMavenResourceURL("org.hornetq:hornetq-ra:2.2.16.Final")
-                .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.1.2.Final")
-                .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.2.Final")
-                .addParentFirstClassPattern("org.jboss.as.controller.*");
+                .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.1.2.Final");
 
         doTestRejectExpressions_1_1_0(builder);
     }
@@ -152,9 +150,7 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
                 .addMavenResourceURL("org.hornetq:hornetq-core:2.2.21.Final")
                 .addMavenResourceURL("org.hornetq:hornetq-jms:2.2.21.Final")
                 .addMavenResourceURL("org.hornetq:hornetq-ra:2.2.21.Final")
-                .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.1.3.Final")
-                .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.3.Final")
-                .addParentFirstClassPattern("org.jboss.as.controller.*");
+                .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.1.3.Final");
 
         doTestRejectExpressions_1_1_0(builder);
     }

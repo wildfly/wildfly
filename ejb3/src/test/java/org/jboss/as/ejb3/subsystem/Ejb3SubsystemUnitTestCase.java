@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -82,7 +84,9 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
         // Add legacy subsystems
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-ejb3:" + mavenVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + mavenVersion);
+                .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + mavenVersion)
+                .addOperationValidationResolve("add", PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, mainSubsystemName)))
+                .addOperationValidationResolve("add", PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, mainSubsystemName), PathElement.pathElement("strict-max-bean-instance-pool")));
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);

@@ -21,12 +21,16 @@
 */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
 import java.io.IOException;
 import java.util.List;
 
 import junit.framework.Assert;
 
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
@@ -113,7 +117,11 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
             // Add legacy subsystems
             builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                     .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + mavenVersion)
-                    .setExtensionClassName("org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension");
+                    .setExtensionClassName("org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension")
+                    .addOperationValidationResolve("add", PathAddress.pathAddress(
+                            PathElement.pathElement(SUBSYSTEM, mainSubsystemName),
+                            PathElement.pathElement("resource-adapter", "*"),
+                            PathElement.pathElement("connection-definitions", "*")));
 
             KernelServices mainServices = builder.build();
             org.junit.Assert.assertTrue(mainServices.isSuccessfulBoot());
