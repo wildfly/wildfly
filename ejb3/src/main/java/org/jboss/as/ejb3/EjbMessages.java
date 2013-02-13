@@ -2432,6 +2432,14 @@ public interface EjbMessages {
     @Message(id = 14590, value = "Unexpected Error")
     String convertUnexpectedError();
 
+    /**
+     * Creates an exception indicating that timer is active.
+     *
+     * @return an {@link IllegalStateException} for the error.
+     */
+    @Message(id = 14584, value = "The timer '%s' is already active.")
+    IllegalStateException timerIsActive(String timerId);
+
     // STOP!!! Don't add message ids greater that 14599!!! If you need more first check what EjbLogger is
     // using and take more (lower) numbers from the available range for this module. If the range for the module is
     // all used, go to https://community.jboss.org/docs/DOC-16810 and allocate another block for this subsystem

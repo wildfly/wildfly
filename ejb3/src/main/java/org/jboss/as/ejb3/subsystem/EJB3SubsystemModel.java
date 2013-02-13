@@ -75,6 +75,7 @@ public interface EJB3SubsystemModel {
 
     String REMOTE = "remote";
     String SERVICE = "service";
+    String TIMER = "timer";
     String TIMER_SERVICE = "timer-service";
     String THREAD_POOL = "thread-pool";
     String THREAD_POOL_NAME = "thread-pool-name";
@@ -110,6 +111,7 @@ public interface EJB3SubsystemModel {
 
     PathElement REMOTE_SERVICE_PATH = PathElement.pathElement(SERVICE, REMOTE);
     PathElement ASYNC_SERVICE_PATH = PathElement.pathElement(SERVICE, ASYNC);
+    PathElement TIMER_PATH = PathElement.pathElement(TIMER);
     PathElement TIMER_SERVICE_PATH = PathElement.pathElement(SERVICE, TIMER_SERVICE);
     PathElement THREAD_POOL_PATH = PathElement.pathElement(THREAD_POOL);
     PathElement IIOP_PATH = PathElement.pathElement(SERVICE, IIOP);

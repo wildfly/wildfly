@@ -22,6 +22,9 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
+import static org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,17 +38,18 @@ import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.subsystem.EJB3Extension;
+import org.jboss.as.ejb3.subsystem.EJB3SubsystemModel;
 import org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentRuntimeHandler;
 import org.jboss.as.ejb3.subsystem.deployment.EJBComponentType;
 import org.jboss.as.ejb3.subsystem.deployment.InstalledComponent;
+import org.jboss.as.ejb3.subsystem.deployment.TimerServiceResource;
+import org.jboss.as.ejb3.timerservice.TimerServiceImpl;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
 
-import static org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * {@link Phase#INSTALL} processor that adds management resources describing EJB components.
@@ -105,6 +109,14 @@ public class EjbManagementDeploymentUnitProcessor implements DeploymentUnitProce
         handler.registerComponent(addr, configuration.getComponentDescription().getStartServiceName());
         deploymentUnit.addToAttachmentList(EjbDeploymentAttachmentKeys.MANAGED_COMPONENTS, new InstalledComponent(type, addr));
         deploymentUnit.createDeploymentSubModel(EJB3Extension.SUBSYSTEM_NAME, addr.getLastElement());
+
+        final EJBComponentDescription description = (EJBComponentDescription) configuration.getComponentDescription();
+        if (description.isTimerServiceRequired()) {
+            final PathAddress timerServiceAddress = PathAddress.pathAddress(addr.getLastElement(),
+                    EJB3SubsystemModel.TIMER_SERVICE_PATH);
+            final TimerServiceResource timerServiceResource = ((TimerServiceImpl) description.getTimerService()).getResource();
+            deploymentUnit.createDeploymentSubModel(EJB3Extension.SUBSYSTEM_NAME, timerServiceAddress, timerServiceResource);
+        }
     }
 
     private void uninstallManagementResource(final InstalledComponent component) {
@@ -124,3 +136,4 @@ public class EjbManagementDeploymentUnitProcessor implements DeploymentUnitProce
         return PathAddress.pathAddress(elements);
     }
 }
+

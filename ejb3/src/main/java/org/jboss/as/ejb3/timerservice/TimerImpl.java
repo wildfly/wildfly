@@ -387,6 +387,7 @@ public class TimerImpl implements Timer {
      * <ul>
      * <li>{@link TimerState#CANCELED}</li>
      * <li>{@link TimerState#EXPIRED}</li>
+     * <li>has not been suspended</li>
      * </ul>
      * <p/>
      * And if the corresponding timer service is still up
@@ -396,7 +397,7 @@ public class TimerImpl implements Timer {
      * @return
      */
     public boolean isActive() {
-        return timerService.isStarted() && !isCanceled() && !isExpired();
+        return timerService.isStarted() && !isCanceled() && !isExpired() && timerService.isScheduled(getId());
     }
 
     /**
@@ -496,6 +497,12 @@ public class TimerImpl implements Timer {
         this.cancelTimeout();
     }
 
+    /**
+     * Triggers timer.
+     */
+    public void invoke() {
+        this.timerService.invokeTimeout(this);
+    }
     /**
      * Creates and schedules a {@link TimerTask} for the next timeout of this timer
      *

@@ -22,7 +22,9 @@
 
 package org.jboss.as.server.deployment;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -79,5 +81,28 @@ public interface DeploymentUnit extends Attachable {
      * @return the model node
      */
     ModelNode createDeploymentSubModel(final String subsystemName, final PathElement address);
+
+    /**
+     *
+     * This method is extension of {@link #createDeploymentSubModel(String, PathElement)}, the difference is that this method traverses recursively till last
+     * element in {@link PathAddress}.
+     *
+     * @param subsystemName the subsystem name the model was registered
+     * @param address the path address this sub-model should be created in
+     * @return the model node
+     */
+    ModelNode createDeploymentSubModel(final String subsystemName, final PathAddress address);
+
+    /**
+     *
+     * This method is extension of {@link #createDeploymentSubModel(String, PathAddress)}, the difference is that it accepts resource that should be registered
+     * at specified path.
+     *
+     * @param subsystemName the subsystem name the model was registered
+     * @param address the path address this sub-model should be created in
+     * @param resource the resource that needs to be registered as submodule
+     * @return the model node
+     */
+    ModelNode createDeploymentSubModel(final String subsystemName, final PathAddress address, final Resource resource);
 
 }

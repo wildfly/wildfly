@@ -226,4 +226,15 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
             }
         });
     }
+
+    /* (non-Javadoc)
+     * @see org.jboss.as.controller.SimpleResourceDefinition#registerChildren(org.jboss.as.controller.registry.ManagementResourceRegistration)
+     */
+    @Override
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        super.registerChildren(resourceRegistration);
+        // /deployment=DU/**/subsystem=ejb3/*=EJBName/service=timer-service
+        final AbstractEJBComponentRuntimeHandler<?> handler = componentType.getRuntimeHandler();
+        resourceRegistration.registerSubModel(new TimerServiceResourceDefinition(handler));
+    }
 }

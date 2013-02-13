@@ -35,6 +35,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.ejb3.EjbLogger;
+import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.pool.Pool;
 import org.jboss.as.ejb3.security.EJBSecurityMetaData;
@@ -215,10 +217,18 @@ public abstract class AbstractEJBComponentRuntimeHandler<T extends EJBComponent>
     private ServiceName getComponentConfiguration(final OperationContext context, final PathAddress operationAddress) throws OperationFailedException {
 
         final List<PathElement> relativeAddress = new ArrayList<PathElement>();
+        final String typeKey = this.componentType.getResourceType();
+        boolean skip=true;
         for (int i = operationAddress.size() - 1; i >= 0; i--) {
             PathElement pe = operationAddress.getElement(i);
+            if(skip && !pe.getKey().equals(typeKey)){
+                continue;
+            } else {
+                skip = false;
+            }
+
             if (ModelDescriptionConstants.DEPLOYMENT.equals(pe.getKey())) {
-                final String runtimName = resolveRuntimeName(context, pe);
+                final String runtimName = resolveRuntimeName(context,pe);
                 PathElement realPe = PathElement.pathElement(pe.getKey(), runtimName);
                 relativeAddress.add(0, realPe);
                 break;
@@ -230,12 +240,12 @@ public abstract class AbstractEJBComponentRuntimeHandler<T extends EJBComponent>
         final PathAddress pa = PathAddress.pathAddress(relativeAddress);
         final ServiceName config = componentConfigs.get(pa);
         if (config == null) {
-            String exceptionMessage = MESSAGES.noComponentRegisteredForAddress(operationAddress);
+            String exceptionMessage = EjbMessages.MESSAGES.noComponentRegisteredForAddress(operationAddress);
             throw new OperationFailedException(new ModelNode().set(exceptionMessage));
         }
 
         return config;
-    }
+  }
 
     private T getComponent(final ServiceName serviceName, final PathAddress operationAddress,
                            final OperationContext context, final boolean forWrite) throws OperationFailedException {
@@ -265,5 +275,12 @@ public abstract class AbstractEJBComponentRuntimeHandler<T extends EJBComponent>
         final ModelNode runtimeName = context.readResourceFromRoot(PathAddress.pathAddress(address), false).getModel()
                 .get(ModelDescriptionConstants.RUNTIME_NAME);
         return runtimeName.asString();
+    }
+
+    T getComponent(OperationContext context, ModelNode operation) throws OperationFailedException{
+        PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
+        final ServiceName serviceName = getComponentConfiguration(context, address);
+        T component = getComponent(serviceName, address, context, false);
+        return component;
     }
 }

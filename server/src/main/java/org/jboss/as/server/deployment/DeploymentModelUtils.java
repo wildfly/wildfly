@@ -64,19 +64,48 @@ public class DeploymentModelUtils {
         }
     }
 
+    static ModelNode createDeploymentSubModel(final String subsystemName, final PathAddress address, final Resource resource,final DeploymentUnit unit) {
+        final Resource root = unit.getAttachment(DEPLOYMENT_RESOURCE);
+        synchronized (root) {
+            final ImmutableManagementResourceRegistration registration = unit.getAttachment(REGISTRATION_ATTACHMENT);
+            final Resource subsystem = getOrCreate(root, PathElement.pathElement(SUBSYSTEM, subsystemName));
+            Resource parent = subsystem;
+            int count = address.size()-1;
+            for(int index = 0; index<count;index++){
+                parent = getOrCreate(parent, address.getElement(index));
+            }
+            final ImmutableManagementResourceRegistration subModel = registration.getSubModel(getExtensionAddress(subsystemName, address));
+            if(subModel == null) {
+                throw new IllegalStateException(address.toString());
+            }
+            return getOrCreate(parent, address.getLastElement(),resource).getModel();
+        }
+    }
+
     static Resource createSubDeployment(final String deploymentName, DeploymentUnit parent) {
         final Resource root = parent.getAttachment(DEPLOYMENT_RESOURCE);
         return getOrCreate(root, PathElement.pathElement(SUB_DEPLOYMENT, deploymentName));
     }
 
     static Resource getOrCreate(final Resource parent, final PathElement element) {
+       return getOrCreate(parent, element, null);
+    }
+
+    static Resource getOrCreate(final Resource parent, final PathElement element, final Resource desired) {
         synchronized(parent) {
             if(parent.hasChild(element)) {
-                return parent.requireChild(element);
+                if(desired==null){
+                    return parent.requireChild(element);
+                } else {
+                    throw new IllegalStateException();
+                }
             } else {
-                final Resource resource = Resource.Factory.create();
-                parent.registerChild(element, resource);
-                return resource;
+                Resource toRegister = desired;
+                if(toRegister == null){
+                    toRegister = Resource.Factory.create();
+                }
+                parent.registerChild(element, toRegister);
+                return toRegister;
             }
         }
     }
@@ -96,4 +125,9 @@ public class DeploymentModelUtils {
         return PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, subsystemName), element);
     }
 
+    static PathAddress getExtensionAddress(final String subsystemName, final PathAddress elements) {
+        PathAddress address = PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, subsystemName));
+        address = address.append(elements);
+        return address;
+    }
 }
