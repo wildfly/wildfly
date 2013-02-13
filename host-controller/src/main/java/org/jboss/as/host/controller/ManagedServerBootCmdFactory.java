@@ -220,10 +220,13 @@ class ManagedServerBootCmdFactory implements ManagedServerBootConfiguration {
         if (loggingConfig.exists()) {
             path = "file:" + loggingConfig.getAbsolutePath();
         } else {
-            command.add("-Dorg.jboss.boot.log.file=" + getAbsolutePath(new File(logDir), "boot.log"));
+            // Sets the initial log file to use
+            command.add("-Dorg.jboss.boot.log.file=" + getAbsolutePath(new File(logDir), "server.log"));
             final String fileName = SecurityActions.getSystemProperty("logging.configuration");
             if (fileName == null) {
-                path = "file:" + getAbsolutePath(environment.getDomainConfigurationDir(), "logging.properties");
+                // If nothing else is defined use a default logging configuration that matches the default from the
+                // standalone server. This allows a single log file to be used.
+                path = "file:" + getAbsolutePath(environment.getDomainConfigurationDir(), "default-server-logging.properties");
             } else {
                 path = fileName;
             }
