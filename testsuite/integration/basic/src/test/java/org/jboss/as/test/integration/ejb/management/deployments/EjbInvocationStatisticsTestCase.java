@@ -23,6 +23,7 @@ package org.jboss.as.test.integration.ejb.management.deployments;
 
 import java.io.IOException;
 import java.util.Hashtable;
+import java.util.List;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -38,6 +39,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.ejb3.subsystem.EJB3Extension;
 import org.jboss.as.ejb3.subsystem.deployment.EJBComponentType;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.After;
 import org.junit.Before;
@@ -143,6 +145,7 @@ public class EjbInvocationStatisticsTestCase {
             assertEquals(0L, result.get("invocations").asLong());
             assertEquals(0L, result.get("peak-concurrent-invocations").asLong());
             assertEquals(0L, result.get("wait-time").asLong());
+            assertEquals(0L, result.get("methods").asInt());
         }
         final BusinessInterface bean = (BusinessInterface) context.lookup("ejb:/" + MODULE_NAME + "//" + name + "!" + BusinessInterface.class.getName() + (type == EJBComponentType.STATEFUL ? "?stateful" : ""));
         bean.doIt();
@@ -152,6 +155,13 @@ public class EjbInvocationStatisticsTestCase {
             assertEquals(1L, result.get("invocations").asLong());
             assertEquals(1L, result.get("peak-concurrent-invocations").asLong());
             assertTrue(result.get("wait-time").asLong() >= 0L);
+            assertEquals(1L, result.get("methods").asInt());
+            final List<Property> methods = result.get("methods").asPropertyList();
+            assertEquals("doIt", methods.get(0).getName());
+            final ModelNode invocationValues = methods.get(0).getValue();
+            assertTrue(invocationValues.get("execution-time").asLong() >= 50L);
+            assertEquals(1L, invocationValues.get("invocations").asLong());
+            assertTrue(invocationValues.get("wait-time").asLong() >= 0L);
         }        
     }
 
