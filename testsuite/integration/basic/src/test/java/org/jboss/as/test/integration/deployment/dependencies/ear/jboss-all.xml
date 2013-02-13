@@ -1,0 +1,6 @@
+<jboss umlns="urn:jboss:1.0">
+    <jboss-deployment-dependencies xmlns="urn:jboss:deployment-dependencies:1.0">
+        <dependency name="app1.ear" />
+    </jboss-deployment-dependencies>
+</jboss>
+
