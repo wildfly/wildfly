@@ -49,7 +49,7 @@ public class ExecutionTimeInterceptor extends AbstractEJBInterceptor {
             return context.proceed();
         } finally {
             final long executionTime = System.currentTimeMillis() - start;
-            component.getInvocationMetrics().finishInvocation(waitTime, executionTime);
+            component.getInvocationMetrics().finishInvocation(context.getMethod(), waitTime, executionTime);
         }
     }
 }
