@@ -36,6 +36,7 @@ import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.aesh.complete.CompleteOperation;
 import org.jboss.aesh.complete.Completion;
 import org.jboss.aesh.console.Config;
+import org.jboss.aesh.console.Prompt;
 import org.jboss.aesh.console.settings.Settings;
 
 /**
@@ -145,7 +146,8 @@ public interface Console {
                     try {
                         console.pushToStdOut(
                                 org.jboss.aesh.util.Parser.formatDisplayList(newList,
-                                        console.getTerminalHeight(), console.getTerminalWidth()));
+                                        console.getTerminalSize().getHeight(),
+                                        console.getTerminalSize().getWidth()));
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -182,7 +184,7 @@ public interface Console {
                 @Override
                 public String readLine(String prompt, Character mask) {
                     try {
-                        return console.read(prompt, mask).getBuffer();
+                        return console.read(new Prompt(prompt), mask).getBuffer();
                     } catch (IOException e) {
                         e.printStackTrace();
                         return null;
@@ -191,12 +193,12 @@ public interface Console {
 
                 @Override
                 public int getTerminalWidth() {
-                    return console.getTerminalWidth();
+                    return console.getTerminalSize().getWidth();
                 }
 
                 @Override
                 public int getTerminalHeight() {
-                    return console.getTerminalHeight();
+                    return console.getTerminalSize().getHeight();
                 }
 
             class HistoryImpl implements CommandHistory {
