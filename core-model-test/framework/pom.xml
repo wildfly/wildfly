@@ -34,7 +34,16 @@
 
     <artifactId>jboss-as-core-model-test-framework</artifactId>
     <name>JBoss Application Server: Core Model Test Framework</name>
-
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main</directory>
+                <filtering>true</filtering>
+                <targetPath>../filtered-sources</targetPath>
+            </resource>
+        </resources>
+        <sourceDirectory>target/filtered-sources</sourceDirectory>
+    </build>
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
