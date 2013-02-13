@@ -61,7 +61,8 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
 
     private final Module module;
     private final ConnectorXmlDescriptor connectorXmlDescriptor;
-    private final ResourceAdapter raxml;
+
+    private ResourceAdapter raxml;
     private final String deployment;
 
     private String raName;
@@ -75,9 +76,9 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
         this.raxml = raxml;
         this.module = module;
         this.deployment = deployment;
-        if (raxml != null && raxml.getArchive() != null && raxml.getArchive().indexOf(".rar") != -1)    {
-             this.raName = raxml.getArchive().substring(0, raxml.getArchive().indexOf(".rar"));
-        }   else {
+        if (raxml != null && raxml.getArchive() != null && raxml.getArchive().indexOf(".rar") != -1) {
+            this.raName = raxml.getArchive().substring(0, raxml.getArchive().indexOf(".rar"));
+        } else {
             this.raName = deployment;
         }
         this.deploymentServiceName = deploymentServiceName;
@@ -93,10 +94,11 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
             Connector cmd = mdr.getValue().getResourceAdapter(deployment);
             File root = mdr.getValue().getRoot(deployment);
 
-            cmd = (new Merger()).mergeConnectorWithCommonIronJacamar(raxml, cmd);
+            ResourceAdapter localRaXml = getRaxml();
+            cmd = (new Merger()).mergeConnectorWithCommonIronJacamar(localRaXml, cmd);
 
             final AS7RaXmlDeployer raDeployer = new AS7RaXmlDeployer(context.getChildTarget(), connectorXmlDescriptor.getUrl(),
-                raName, root, module.getClassLoader(), cmd, raxml, null, deploymentServiceName);
+                raName, root, module.getClassLoader(), cmd, localRaXml, null, deploymentServiceName);
 
             raDeployer.setConfiguration(config.getValue());
 
@@ -159,6 +161,15 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
     public CommonDeployment getRaxmlDeployment() {
         return raxmlDeployment;
     }
+
+    public synchronized void setRaxml(ResourceAdapter raxml) {
+            this.raxml = raxml;
+    }
+
+    public synchronized ResourceAdapter getRaxml() {
+            return raxml;
+    }
+
 
     private class AS7RaXmlDeployer extends AbstractAS7RaDeployer {
 
