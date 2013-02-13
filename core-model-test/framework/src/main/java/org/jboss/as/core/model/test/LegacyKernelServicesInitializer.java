@@ -26,12 +26,9 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.dmr.ModelNode;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public interface LegacyKernelServicesInitializer {
-
-    String VERSION = "7.2.0.Alpha1-SNAPSHOT";
 
     LegacyKernelServicesInitializer initializerCreateModelResource(PathAddress parentAddress, PathElement relativeResourceAddress, ModelNode model);
 
@@ -49,12 +46,13 @@ public interface LegacyKernelServicesInitializer {
 
 
     public enum TestControllerVersion {
-        MASTER ("org.jboss.as:jboss-as-host-controller:" + VERSION, null),
-        V7_1_2_FINAL ("org.jboss.as:jboss-as-host-controller:7.1.2.Final", "7.1.2"),
-        V7_1_3_FINAL ("org.jboss.as:jboss-as-host-controller:7.1.3.Final", "7.1.3");
+        MASTER("org.jboss.as:jboss-as-host-controller:" + VersionLocator.getCurrentVersion(), null),
+        V7_1_2_FINAL("org.jboss.as:jboss-as-host-controller:7.1.2.Final", "7.1.2"),
+        V7_1_3_FINAL("org.jboss.as:jboss-as-host-controller:7.1.3.Final", "7.1.3");
 
         String mavenGav;
         String testControllerVersion;
+
         private TestControllerVersion(String mavenGav, String testControllerVersion) {
             this.mavenGav = mavenGav;
             this.testControllerVersion = testControllerVersion;
@@ -66,6 +64,21 @@ public interface LegacyKernelServicesInitializer {
 
         String getTestControllerVersion() {
             return testControllerVersion;
+        }
+
+    }
+
+    static final class VersionLocator {
+        private static String VERSION = "${project.version}"; //is going to be replaced by maven during build
+
+        static {
+            if (VERSION.contains("${")) {
+                VERSION = "8.0.0.Alpha1-SNAPSHOT"; //to make it work from IDE
+            }
+        }
+
+        static String getCurrentVersion() {
+            return VERSION;
         }
     }
 }
