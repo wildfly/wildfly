@@ -30,7 +30,7 @@
       <groupId>org.jboss</groupId>
       <artifactId>jboss-parent</artifactId>
       <version>10</version>
-      <relativePath></relativePath>
+      <relativePath>../..</relativePath>
     </parent>
 
     <groupId>org.jboss.as</groupId>

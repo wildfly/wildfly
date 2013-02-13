@@ -1193,12 +1193,7 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-subsystem-test</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-subsystem-test-framework</artifactId>
+								<type>pom</type>
                 <version>${project.version}</version>
             </dependency>
 
@@ -1213,6 +1208,12 @@
                 <artifactId>jboss-as-subsystem-test-controller-7.1.2</artifactId>
                 <version>${project.version}</version>
 	          </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-subsystem-test-framework</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.jboss.as</groupId>

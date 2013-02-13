@@ -39,8 +39,8 @@
 			which one to use. 
 		-->
     <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-subsystem-test-controller-optional</artifactId>
-    <name>JBoss Application Server: Subsystem Test Controller Optional</name>
+    <artifactId>jboss-as-subsystem-test</artifactId>
+    <name>JBoss Application Server: Subsystem Test POM</name>
     <version>7.2.0.Alpha1-SNAPSHOT</version>
 
     <dependencies>
@@ -48,6 +48,10 @@
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-subsystem-test-controller-7.1.2</artifactId>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-subsystem-test-framework</artifactId>
         </dependency>
     </dependencies>
 </project>

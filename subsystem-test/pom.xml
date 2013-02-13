@@ -38,7 +38,6 @@
 
     <modules>
         <module>framework</module>
-				<module>pom</module>
        	<module>test-controller-7.1.2</module>
        	<module>test-controller-optional</module>
        	<module>tests</module>        
