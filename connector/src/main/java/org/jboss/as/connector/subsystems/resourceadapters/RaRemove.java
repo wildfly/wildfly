@@ -77,7 +77,7 @@ public class RaRemove implements OperationStepHandler {
         context.addStep(new OperationStepHandler() {
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-                final boolean wasActive = RaOperationUtil.deactivateIfActive(context, name);
+                final boolean wasActive = RaOperationUtil.removeIfActive(context, name);
                 ServiceName raServiceName = ServiceName.of(ConnectorServices.RA_SERVICE, name);
                 ServiceController<?> serviceController =  context.getServiceRegistry(false).getService(raServiceName);
                 final ModifiableResourceAdapter resourceAdapter;
@@ -120,7 +120,7 @@ public class RaRemove implements OperationStepHandler {
                             }
                             try {
                                 if (wasActive)
-                                    RaOperationUtil.activate(context, archiveOrModuleName, archiveOrModuleName, null);
+                                    RaOperationUtil.activate(context, archiveOrModuleName, null);
                             } catch (OperationFailedException e) {
 
                             }

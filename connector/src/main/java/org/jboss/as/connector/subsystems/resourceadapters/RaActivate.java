@@ -31,6 +31,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Operation handler responsible for disabling an existing data-source.
@@ -48,18 +49,19 @@ public class RaActivate implements OperationStepHandler {
         if (context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {
                 public void execute(final OperationContext context, ModelNode operation) throws OperationFailedException {
-
-                    RaOperationUtil.deactivateIfActive(context, raName);
-
-                    final String archiveName = model.get(ARCHIVE.getName()).asString();
                     final ServiceVerificationHandler svh = new ServiceVerificationHandler();
-                    RaOperationUtil.activate(context, raName, archiveName, svh);
+
+                    ServiceName restartedServiceName = RaOperationUtil.restartIfPresent(context, raName, svh);
+
+                    if (restartedServiceName == null) {
+                        RaOperationUtil.activate(context, raName, svh);
+                    }
                     context.addStep(svh, OperationContext.Stage.VERIFY);
                     context.completeStep(new OperationContext.RollbackHandler() {
                         @Override
                         public void handleRollback(OperationContext context, ModelNode operation) {
                             try {
-                                RaOperationUtil.deactivateIfActive(context, raName);
+                                RaOperationUtil.removeIfActive(context, raName);
                             } catch (OperationFailedException e) {
 
                             }

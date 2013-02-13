@@ -21,6 +21,68 @@
  */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import org.jboss.as.connector.deployers.ra.processors.IronJacamarDeploymentParsingProcessor;
+import org.jboss.as.connector.deployers.ra.processors.ParsedRaDeploymentProcessor;
+import org.jboss.as.connector.deployers.ra.processors.RaDeploymentParsingProcessor;
+import org.jboss.as.connector.deployers.ra.processors.RaNativeProcessor;
+import org.jboss.as.connector.logging.ConnectorLogger;
+import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
+import org.jboss.as.connector.metadata.xmldescriptors.IronJacamarXmlDescriptor;
+import org.jboss.as.connector.services.resourceadapters.deployment.InactiveResourceAdapterDeploymentService;
+import org.jboss.as.connector.services.resourceadapters.deployment.ResourceAdapterXmlDeploymentService;
+import org.jboss.as.connector.util.ConnectorServices;
+import org.jboss.as.connector.util.ModelNodeUtil;
+import org.jboss.as.connector.util.RaServicesFactory;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.annotation.ResourceRootIndexer;
+import org.jboss.as.server.deployment.module.MountHandle;
+import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.dmr.ModelNode;
+import org.jboss.jandex.Index;
+import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
+import org.jboss.jca.common.api.metadata.common.CommonPool;
+import org.jboss.jca.common.api.metadata.common.CommonSecurity;
+import org.jboss.jca.common.api.metadata.common.CommonTimeOut;
+import org.jboss.jca.common.api.metadata.common.CommonValidation;
+import org.jboss.jca.common.api.metadata.common.Credential;
+import org.jboss.jca.common.api.metadata.common.Extension;
+import org.jboss.jca.common.api.metadata.common.FlushStrategy;
+import org.jboss.jca.common.api.metadata.common.Recovery;
+import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
+import org.jboss.jca.common.api.metadata.common.v10.CommonConnDef;
+import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
+import org.jboss.jca.common.api.validator.ValidateException;
+import org.jboss.jca.common.metadata.common.CommonPoolImpl;
+import org.jboss.jca.common.metadata.common.CommonSecurityImpl;
+import org.jboss.jca.common.metadata.common.CommonTimeOutImpl;
+import org.jboss.jca.common.metadata.common.CommonValidationImpl;
+import org.jboss.jca.common.metadata.common.CommonXaPoolImpl;
+import org.jboss.jca.common.metadata.common.CredentialImpl;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
+import org.jboss.msc.service.AbstractServiceListener;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceListener;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.vfs.VFS;
+import org.jboss.vfs.VirtualFile;
+
+import java.io.Closeable;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
@@ -59,64 +121,6 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_J
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WRAP_XA_RESOURCE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
 
-import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.jboss.as.connector.deployers.ra.processors.IronJacamarDeploymentParsingProcessor;
-import org.jboss.as.connector.deployers.ra.processors.ParsedRaDeploymentProcessor;
-import org.jboss.as.connector.deployers.ra.processors.RaDeploymentParsingProcessor;
-import org.jboss.as.connector.deployers.ra.processors.RaNativeProcessor;
-import org.jboss.as.connector.logging.ConnectorLogger;
-import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
-import org.jboss.as.connector.metadata.xmldescriptors.IronJacamarXmlDescriptor;
-import org.jboss.as.connector.services.resourceadapters.deployment.InactiveResourceAdapterDeploymentService;
-import org.jboss.as.connector.util.ConnectorServices;
-import org.jboss.as.connector.util.ModelNodeUtil;
-import org.jboss.as.connector.util.RaServicesFactory;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.server.deployment.Attachments;
-import org.jboss.as.server.deployment.annotation.ResourceRootIndexer;
-import org.jboss.as.server.deployment.module.MountHandle;
-import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.dmr.ModelNode;
-import org.jboss.jandex.Index;
-import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
-import org.jboss.jca.common.api.metadata.common.CommonPool;
-import org.jboss.jca.common.api.metadata.common.CommonSecurity;
-import org.jboss.jca.common.api.metadata.common.CommonTimeOut;
-import org.jboss.jca.common.api.metadata.common.CommonValidation;
-import org.jboss.jca.common.api.metadata.common.Credential;
-import org.jboss.jca.common.api.metadata.common.Extension;
-import org.jboss.jca.common.api.metadata.common.FlushStrategy;
-import org.jboss.jca.common.api.metadata.common.Recovery;
-import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
-import org.jboss.jca.common.api.metadata.common.v10.CommonConnDef;
-import org.jboss.jca.common.api.metadata.resourceadapter.v10.ResourceAdapter;
-import org.jboss.jca.common.api.validator.ValidateException;
-import org.jboss.jca.common.metadata.common.CommonPoolImpl;
-import org.jboss.jca.common.metadata.common.CommonSecurityImpl;
-import org.jboss.jca.common.metadata.common.CommonTimeOutImpl;
-import org.jboss.jca.common.metadata.common.CommonValidationImpl;
-import org.jboss.jca.common.metadata.common.CommonXaPoolImpl;
-import org.jboss.jca.common.metadata.common.CredentialImpl;
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoadException;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.vfs.VFS;
-import org.jboss.vfs.VirtualFile;
 
 public class RaOperationUtil {
     private static final String RAR_EXTENSION = ".rar";
@@ -229,7 +233,50 @@ public class RaOperationUtil {
     }
 
 
-    public static boolean deactivateIfActive(OperationContext context, String raName) throws OperationFailedException {
+    public static ServiceName restartIfPresent(OperationContext context, final String raName, ServiceVerificationHandler svh) throws OperationFailedException {
+        final ServiceName raDeploymentServiceName = ConnectorServices.getDeploymentServiceName(raName);
+        if (raDeploymentServiceName != null) {
+            final ServiceRegistry registry = context.getServiceRegistry(true);
+            ServiceController raServiceController = registry.getService(raDeploymentServiceName);
+            final org.jboss.msc.service.ServiceController.Mode originalMode = raServiceController.getMode();
+            if (raServiceController != null) {
+                if (svh != null) {
+                    raServiceController.addListener(ServiceListener.Inheritance.ALL, svh);
+                }
+                raServiceController.addListener(new AbstractServiceListener() {
+                    @Override
+                    public void transition(ServiceController controller, ServiceController.Transition transition) {
+                        switch (transition) {
+                            case STOPPING_to_DOWN:
+                                try {
+                                    final ServiceController<?> RaxmlController = registry.getService(ServiceName.of(ConnectorServices.RA_SERVICE, raName));
+                                    ResourceAdapter raxml = (ResourceAdapter) RaxmlController.getValue();
+                                    ((ResourceAdapterXmlDeploymentService) controller.getService()).setRaxml(raxml);
+                                    controller.compareAndSetMode(ServiceController.Mode.NEVER, originalMode);
+                                } finally {
+                                    controller.removeListener(this);
+                                }
+
+                        }
+                    }
+
+                    @Override
+                    public void listenerAdded(ServiceController controller) {
+                        controller.setMode(ServiceController.Mode.NEVER);
+                    }
+
+                });
+
+
+
+            }
+        }
+
+        return raDeploymentServiceName;
+
+    }
+
+    public static boolean removeIfActive(OperationContext context, String raName) throws OperationFailedException {
         boolean wasActive = false;
         final ServiceName raDeploymentServiceName = ConnectorServices.getDeploymentServiceName(raName);
         Integer identifier = 0;
@@ -248,11 +295,9 @@ public class RaOperationUtil {
 
     }
 
-    public static void activate(OperationContext context, String raName, String rarName, final ServiceVerificationHandler serviceVerificationHandler) throws OperationFailedException {
+    public static void activate(OperationContext context, String raName, final ServiceVerificationHandler serviceVerificationHandler) throws OperationFailedException {
         ServiceRegistry registry = context.getServiceRegistry(true);
-        if (rarName.contains(ConnectorServices.RA_SERVICE_NAME_SEPARATOR)) {
-            rarName = rarName.substring(0, rarName.indexOf(ConnectorServices.RA_SERVICE_NAME_SEPARATOR));
-        }
+
         final ServiceController<?> inactiveRaController = registry.getService(ConnectorServices.INACTIVE_RESOURCE_ADAPTER_SERVICE.append(raName));
         if (inactiveRaController == null) {
             throw new OperationFailedException("rar not yet deployed");
@@ -262,6 +307,8 @@ public class RaOperationUtil {
 
         ResourceAdapter raxml = (ResourceAdapter) RaxmlController.getValue();
         RaServicesFactory.createDeploymentService(inactive.getRegistration(), inactive.getConnectorXmlDescriptor(), inactive.getModule(), inactive.getServiceTarget(), raName, inactive.getDeploymentUnitServiceName(), inactive.getDeployment(), raxml, inactive.getResource(), serviceVerificationHandler);
+
+
     }
 
     public static ServiceName installRaServices(OperationContext context, ServiceVerificationHandler verificationHandler, String name, ModifiableResourceAdapter resourceAdapter, final List<ServiceController<?>> newControllers) {
