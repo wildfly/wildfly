@@ -24,19 +24,19 @@ package org.jboss.as.model.test;
 
 
 public enum ModelTestControllerVersion {
-    MASTER ("org.jboss.as:jboss-as-host-controller:" + CurrentVersion.VERSION, null),
-    V7_1_2_FINAL ("org.jboss.as:jboss-as-host-controller:7.1.2.Final", "7.1.2"),
-    V7_1_3_FINAL ("org.jboss.as:jboss-as-host-controller:7.1.3.Final", "7.1.2");
+    MASTER (CurrentVersion.VERSION, null),
+    V7_1_2_FINAL ("7.1.2.Final", "7.1.2"),
+    V7_1_3_FINAL ("7.1.3.Final", "7.1.2");
 
-    String mavenGav;
+    String mavenGavVersion;
     String testControllerVersion;
-    private ModelTestControllerVersion(String mavenGav, String testControllerVersion) {
-        this.mavenGav = mavenGav;
+    private ModelTestControllerVersion(String mavenGavVersion, String testControllerVersion) {
+        this.mavenGavVersion = mavenGavVersion;
         this.testControllerVersion = testControllerVersion;
     }
 
-    public String getLegacyControllerMavenGav() {
-        return mavenGav;
+    public String getMavenGavVersion() {
+        return mavenGavVersion;
     }
 
     public String getTestControllerVersion() {

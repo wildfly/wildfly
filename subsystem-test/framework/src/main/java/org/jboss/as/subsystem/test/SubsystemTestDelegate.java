@@ -710,8 +710,7 @@ final class SubsystemTestDelegate {
                 classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-model-test:" + ModelTestControllerVersion.CurrentVersion.VERSION);
 
                 if (testControllerVersion != ModelTestControllerVersion.MASTER) {
-                    //TODO use server rather than host-controller
-                    classLoaderBuilder.addRecursiveMavenResourceURL(testControllerVersion.getLegacyControllerMavenGav());
+                    classLoaderBuilder.addRecursiveMavenResourceURL("org.jboss.as:jboss-as-server:" + testControllerVersion.getMavenGavVersion());
 
                     //Don't load modules from the scoped classloader to avoid some funky stuff going on when initializing the JAXP redirect
                     //The mentioned funky stuff works fine when running in Eclipse but fails when running the tests on the command-line

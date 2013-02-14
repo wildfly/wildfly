@@ -557,7 +557,7 @@ public class CoreModelTestDelegate {
                 classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-model-test:" + ModelTestControllerVersion.CurrentVersion.VERSION);
 
                 if (testControllerVersion != ModelTestControllerVersion.MASTER) {
-                    classLoaderBuilder.addRecursiveMavenResourceURL(testControllerVersion.getLegacyControllerMavenGav());
+                    classLoaderBuilder.addRecursiveMavenResourceURL("org.jboss.as:jboss-as-host-controller:" + testControllerVersion.getMavenGavVersion());
                     classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-core-model-test-controller-" + testControllerVersion.getTestControllerVersion() + ":" + ModelTestControllerVersion.CurrentVersion.VERSION);
                 }
                 legacyCl = classLoaderBuilder.build(file);
