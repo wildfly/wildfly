@@ -39,16 +39,6 @@ public interface LegacyKernelServicesInitializer {
     LegacyKernelServicesInitializer setDontUseBootOperations();
 
     /**
-     * The default is to validate the operations sent in to the model controller on boot. Turn it off for all boot operations by callin this method
-     *
-     * @return this builder
-     * @deprecated Call {@link #addOperationValidationExclude(String, PathAddress)} or {@link #addOperationValidationResolve(String, PathAddress)}
-     * instrad to just
-     */
-    @Deprecated
-    LegacyKernelServicesInitializer setDontValidateOperations();
-
-    /**
      * By default all operations sent into the model controller will be validated on boot. Operations matching what is
      * set up here will not be validated. This is mainly because the {@link OperationValidator} used in 7.1.x did not handle expressions very well
      * when checking ranges. If there is a problem you should try to call {@link #addOperationValidationResolve(String, PathAddress)}

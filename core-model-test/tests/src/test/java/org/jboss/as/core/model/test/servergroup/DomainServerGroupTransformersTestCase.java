@@ -22,18 +22,14 @@
 
 package org.jboss.as.core.model.test.servergroup;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
 import junit.framework.Assert;
+
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -42,14 +38,14 @@ import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
 import org.jboss.as.core.model.test.LegacyKernelServicesInitializer;
 import org.jboss.as.core.model.test.TestModelType;
+import org.jboss.as.core.model.test.util.ExcludeCommonOperations;
 import org.jboss.as.core.model.test.util.StandardServerGroupInitializers;
 import org.jboss.as.core.model.test.util.TransformersTestParameters;
 import org.jboss.as.domain.controller.resources.ServerGroupResourceDefinition;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelFixer;
-import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.model.test.ModelTestControllerVersion;
-import org.jboss.as.server.controller.resources.DeploymentAttributes;
+import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -89,8 +85,7 @@ public class DomainServerGroupTransformersTestCase extends AbstractCoreModelTest
         LegacyKernelServicesInitializer legacyInitializer =
                 StandardServerGroupInitializers.addServerGroupInitializers(builder.createLegacyKernelServicesBuilder(modelVersion, testControllerVersion));
         if (is71x) {
-            // The 7.1.x descriptions are inaccurate so we can't validate the add ops against them
-            legacyInitializer.setDontValidateOperations();
+            ExcludeCommonOperations.excludeBadOps_7_1_x(legacyInitializer);
         }
 
         KernelServices mainServices = builder.build();
@@ -118,8 +113,6 @@ public class DomainServerGroupTransformersTestCase extends AbstractCoreModelTest
         // Add legacy subsystems
         LegacyKernelServicesInitializer legacyInitializer =
                 StandardServerGroupInitializers.addServerGroupInitializers(builder.createLegacyKernelServicesBuilder(modelVersion, testControllerVersion));
-        // The 7.1.x descriptions are inaccurate so we can't validate the add ops against them
-        legacyInitializer.setDontValidateOperations();
 
         KernelServices mainServices = builder.build();
 

@@ -37,8 +37,8 @@ import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.core.model.test.util.StandardServerGroupInitializers;
 import org.jboss.as.core.model.test.util.TransformersTestParameters;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
-import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.model.test.ModelTestControllerVersion;
+import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
@@ -93,8 +93,6 @@ public class PathsTransformersTestCase extends AbstractCoreModelTest {
         // Add legacy subsystems
         LegacyKernelServicesInitializer legacyInitializer =
                 StandardServerGroupInitializers.addServerGroupInitializers(builder.createLegacyKernelServicesBuilder(modelVersion, testControllerVersion));
-        // The 7.1.x descriptions are inaccurate so we can't validate the add ops against them
-        legacyInitializer.setDontValidateOperations();
 
         KernelServices mainServices = builder.build();
 

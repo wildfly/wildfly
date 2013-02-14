@@ -46,6 +46,7 @@ import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
 import org.jboss.as.core.model.test.LegacyKernelServicesInitializer;
 import org.jboss.as.core.model.test.TestModelType;
+import org.jboss.as.core.model.test.util.ExcludeCommonOperations;
 import org.jboss.as.core.model.test.util.TransformersTestParameters;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.dmr.ModelNode;
@@ -92,7 +93,7 @@ public class SocketBindingTransformersTestCase extends AbstractCoreModelTest {
         LegacyKernelServicesInitializer legacyInit = builder.createLegacyKernelServicesBuilder(modelVersion, testControllerVersion);
         if (modelVersion.getMajor() == 1 && modelVersion.getMinor() <= 3) {
             //The 7.1.2/3 operation validator does not like expressions very much
-            legacyInit.setDontValidateOperations();
+            ExcludeCommonOperations.excludeBadOps_7_1_x(legacyInit);
         }
 
         KernelServices mainServices = builder.build();

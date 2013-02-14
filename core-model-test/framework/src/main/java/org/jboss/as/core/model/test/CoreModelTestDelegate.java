@@ -530,7 +530,6 @@ public class CoreModelTestDelegate {
         private final ModelVersion modelVersion;
         private final List<LegacyModelInitializerEntry> modelInitializerEntries = new ArrayList<LegacyModelInitializerEntry>();
         private final ModelTestControllerVersion testControllerVersion;
-        private boolean validateOperations = true;
         private boolean dontUseBootOperations = false;
         private ModelTestOperationValidatorFilter.Builder operationValidationExcludeFilterBuilder;
 
@@ -577,15 +576,6 @@ public class CoreModelTestDelegate {
         }
 
         @Override
-        public LegacyKernelServicesInitializer setDontValidateOperations() {
-            if (operationValidationExcludeFilterBuilder != null) {
-                throw new IllegalStateException("Can't call this method when addOperationValidationExclude() has already been called");
-            }
-            validateOperations = false;
-            return this;
-        }
-
-        @Override
         public LegacyKernelServicesInitializer addOperationValidationExclude(String name, PathAddress pathAddress) {
             addOperationValidationConfig(name, pathAddress, Action.NOCHECK);
             return this;
@@ -598,9 +588,6 @@ public class CoreModelTestDelegate {
         }
 
         private void addOperationValidationConfig(String name, PathAddress pathAddress, Action action) {
-            if (!validateOperations) {
-                throw new IllegalStateException("Can't call this method when setDontValidateOperations() has already been called");
-            }
             if (operationValidationExcludeFilterBuilder == null) {
                 operationValidationExcludeFilterBuilder = ModelTestOperationValidatorFilter.createBuilder();
             }
@@ -621,11 +608,7 @@ public class CoreModelTestDelegate {
             if (operationValidationExcludeFilterBuilder != null) {
                 return operationValidationExcludeFilterBuilder.build();
             }
-            if (validateOperations) {
-                return ModelTestOperationValidatorFilter.createValidateAll();
-            } else {
-                return ModelTestOperationValidatorFilter.createValidateNone();
-            }
+            return ModelTestOperationValidatorFilter.createValidateAll();
         }
     }
 }

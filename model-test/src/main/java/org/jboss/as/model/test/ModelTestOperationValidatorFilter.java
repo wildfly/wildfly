@@ -153,12 +153,14 @@ public class ModelTestOperationValidatorFilter implements Serializable {
         public void writeExternal(ObjectOutput out) throws IOException {
             out.writeObject(name);
             out.writeObject(address.toModelNode());
+            out.writeObject(action);
         }
 
         @Override
         public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
             name = (String)in.readObject();
             address = PathAddress.pathAddress((ModelNode)in.readObject());
+            action = (Action)in.readObject();
         }
     }
 
