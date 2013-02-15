@@ -25,6 +25,8 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.jboss.as.model.test.ModelFixer;
+
 
 /**
  * Contains the initialization of a controller containing a legacy version of a subsystem.
@@ -109,4 +111,25 @@ public interface LegacyKernelServicesInitializer {
      * @return this initializer
      */
     LegacyKernelServicesInitializer dontPersistXml();
+
+    /**
+     * By default the {@link KernelServicesBuilder#build()} method will use the boot operations passed into the
+     * legacy controller and try to boot up the current controller with those. This is for checking that e.g. cli scripts written
+     * against the legacy controller still work with the current one. To turn this check off call this method.
+     *
+     * @return this initializer
+     */
+    LegacyKernelServicesInitializer skipReverseControllerCheck();
+
+    /**
+     * By default the {@link KernelServicesBuilder#build()} method will use the boot operations passed into the
+     * legacy controller and try to boot up the current controller with those. This is for checking that e.g. cli scripts written
+     * against the legacy controller still work with the current one. To turn this check off call this method.
+     *
+     * @param additionalInit the additional initialization to use
+     * @param modelFixer a model fixer to fix up the booted subsystem model
+     * @return this initializer
+     */
+    LegacyKernelServicesInitializer configureReverseControllerCheck(AdditionalInitialization additionalInit, ModelFixer modelFixer);
+
 }

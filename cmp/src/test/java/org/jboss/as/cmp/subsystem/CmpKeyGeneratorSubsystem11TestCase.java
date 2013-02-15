@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.List;
 
 import junit.framework.Assert;
+
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -54,6 +55,7 @@ import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.jboss.as.subsystem.test.LegacyKernelServicesInitializer;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 
@@ -119,13 +121,23 @@ public class CmpKeyGeneratorSubsystem11TestCase extends CmpKeyGeneratorSubsystem
     }
 
     @Test
-    public void testTransformers() throws Exception {
+    public void testTransformers7_1_2() throws Exception {
+        testTransformers_1_0_0("7.1.2.Final");
+    }
+
+    @Test
+    public void testTransformers7_1_3() throws Exception {
+        testTransformers_1_0_0("7.1.3.Final");
+    }
+
+
+    private void testTransformers_1_0_0(String asVersion) throws Exception {
         ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
-        builder.createLegacyKernelServicesBuilder(null, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-cmp:7.1.2.Final")
-                .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.2.Final")
+        LegacyKernelServicesInitializer legacyInitializer = builder.createLegacyKernelServicesBuilder(null, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-cmp:" + asVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-controller:" + asVersion)
                 .addParentFirstClassPattern("org.jboss.as.controller.*");
 
         KernelServices mainServices = builder.build();
