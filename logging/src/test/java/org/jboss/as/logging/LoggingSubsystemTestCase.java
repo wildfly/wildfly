@@ -115,7 +115,9 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
 
         // Create the legacy kernel
         builder.createLegacyKernelServicesBuilder(LoggingTestEnvironment.getManagementInstance(), modelVersion)
-                .addMavenResourceURL(gav);
+                .addMavenResourceURL(gav)
+                //TODO https://issues.jboss.org/browse/AS7-6538
+                .skipReverseControllerCheck();
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
