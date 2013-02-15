@@ -105,14 +105,13 @@ public class ValidateUserState extends AbstractValidationState {
                 if (stateValues.getKnownUsers().contains(stateValues.getUserName())) {
                     State duplicateContinuing = stateValues.isSilentOrNonInteractive() ? null : new PromptNewUserState(
                             theConsole, stateValues);
+                    stateValues.setExistingUser(true);
                     if (stateValues.isSilentOrNonInteractive()) {
-                        return new ErrorState(theConsole, MESSAGES.duplicateUser(stateValues.getUserName()),
-                                duplicateContinuing, stateValues);
+                        return ValidateUserState.this;
                     } else {
                         String message = MESSAGES.aboutToUpdateUser(stateValues.getUserName());
                         String prompt = MESSAGES.isCorrectPrompt() + " " + MESSAGES.yes() + "/" + MESSAGES.no() + "?";
 
-                        stateValues.setExistingUser(true);
                         return new ConfirmationChoice(theConsole, message, prompt, ValidateUserState.this, duplicateContinuing);
                     }
                 } else {

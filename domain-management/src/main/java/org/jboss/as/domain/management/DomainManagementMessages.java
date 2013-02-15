@@ -367,16 +367,6 @@ public interface DomainManagementMessages {
     String unableToLoadUsers(String file, String error);
 
     /**
-     * The error message if the user is already in at least one file.
-     *
-     * @param user - The name of the user.
-     *
-     * @return a {@link String} for the message.
-     */
-    @Message(id = 15243, value = "The user '%s' already exists in at least one properties file.")
-    String duplicateUser(String user);
-
-    /**
      * The error message header.
      *
      * @return a {@link String} for the message.
