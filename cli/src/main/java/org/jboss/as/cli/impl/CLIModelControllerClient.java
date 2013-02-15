@@ -34,6 +34,7 @@ import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLContext;
 import javax.security.auth.callback.CallbackHandler;
 
+import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.ModelControllerClientFactory.ConnectionCloseHandler;
 import org.jboss.as.controller.client.impl.AbstractModelControllerClient;
@@ -93,6 +94,8 @@ public class CLIModelControllerClient extends AbstractModelControllerClient {
         });
     }
 
+    private final Object lock = "lock";
+
     private final CallbackHandler handler;
     private final SSLContext sslContext;
     private final ConnectionCloseHandler closeHandler;
@@ -115,8 +118,7 @@ public class CLIModelControllerClient extends AbstractModelControllerClient {
             }
 
             @Override
-            public synchronized void close() throws IOException {
-                //
+            public void close() throws IOException {
             }
         }, executorService, this);
 
@@ -139,31 +141,28 @@ public class CLIModelControllerClient extends AbstractModelControllerClient {
         return channelAssociation;
     }
 
-    protected synchronized Channel getOrCreateChannel() throws IOException {
-        if (strategy == null) {
+    protected Channel getOrCreateChannel() throws IOException {
+        synchronized(lock) {
+            if (strategy == null) {
 
-            final ProtocolChannelClient setup = ProtocolChannelClient.create(channelConfig);
-            strategy = ManagementClientChannelStrategy.create(setup, channelAssociation, handler, null, sslContext,
-                    new CloseHandler<Channel>() {
-                @Override
-                public void handleClose(final Channel closed, final IOException exception) {
-                    channelAssociation.handleChannelClosed(closed, exception);
-                }
-            });
-            strategy.getChannel().getConnection().addCloseHandler(new CloseHandler<Connection>(){
-                @Override
-                public void handleClose(Connection closed, IOException exception) {
-                    closeHandler.handleClose();
-                    StreamUtils.safeClose(strategy);
-                    strategy = null;
-                }});
+                final ProtocolChannelClient setup = ProtocolChannelClient.create(channelConfig);
+                final ChannelCloseHandler channelCloseHandler = new ChannelCloseHandler();
+                strategy = ManagementClientChannelStrategy.create(setup, channelAssociation, handler, null, sslContext,
+                        channelCloseHandler);
+                channelCloseHandler.setOriginalStrategy(strategy);
+            }
+            lock.notifyAll();
+            return strategy.getChannel();
         }
-        return strategy.getChannel();
+    }
+
+    public boolean isConnected() {
+        return strategy != null;
     }
 
     @Override
     public void close() throws IOException {
-        synchronized (this) {
+        synchronized (lock) {
             if(closed) {
                 return;
             }
@@ -182,6 +181,7 @@ public class CLIModelControllerClient extends AbstractModelControllerClient {
             } catch (InterruptedException ignore) {
                 Thread.currentThread().interrupt();
             }
+            lock.notifyAll();
         }
     }
 
@@ -192,16 +192,57 @@ public class CLIModelControllerClient extends AbstractModelControllerClient {
         }
 
         if (awaitClose) {
-            synchronized(this) {
-                try {
-                    if (strategy == null) {
-                        throw new IOException("Connection has been closed.");
+            synchronized(lock) {
+                if(strategy != null) {
+                    try {
+                        lock.wait(5000);
+                    } catch (InterruptedException e) {
                     }
-                    strategy.getChannel().getConnection().awaitClosed();
-                } catch (InterruptedException e) {}
+                    StreamUtils.safeClose(strategy);
+                    strategy = null;
+                }
             }
         }
+
         return response;
+    }
+
+    public boolean isClosed() {
+        return closed;
+    }
+
+    public void ensureConnected(long timeoutMillis) throws CommandLineException {
+        boolean doTry = true;
+        final long start = System.currentTimeMillis();
+        IOException ioe = null;
+        while (doTry) {
+            synchronized (lock) {
+                try {
+                    getOrCreateChannel().getConnection();
+                    doTry = false;
+                } catch (IOException e) {
+                    ioe = e;
+                    if (strategy != null) {
+                        StreamUtils.safeClose(strategy);
+                        strategy = null;
+                    }
+                }
+                lock.notifyAll();
+            }
+
+            if (ioe != null) {
+                if (System.currentTimeMillis() - start > timeoutMillis) {
+                    throw new CommandLineException("Failed to establish connection in " + (System.currentTimeMillis() - start)
+                            + "ms", ioe);
+                }
+                ioe = null;
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        }
     }
 
     private static String formatPossibleIpv6Address(String address) {
@@ -215,5 +256,40 @@ public class CLIModelControllerClient extends AbstractModelControllerClient {
             return address;
         }
         return "[" + address + "]";
+    }
+
+    private final class ChannelCloseHandler implements CloseHandler<Channel> {
+
+        private ManagementClientChannelStrategy originalStrategy;
+
+        void setOriginalStrategy(ManagementClientChannelStrategy strategy) {
+            if(originalStrategy != null) {
+                throw new IllegalArgumentException("The strategy has already been initialized.");
+            }
+            originalStrategy = strategy;
+        }
+
+        @Override
+        public void handleClose(final Channel closed, final IOException exception) {
+            synchronized(lock) {
+                if (strategy != null) {
+                    if(strategy != originalStrategy) {
+                        new Exception("Channel close handler " + strategy + " " + originalStrategy).printStackTrace();
+                    }
+                    strategy = null;
+                    closeHandler.handleClose();
+                }
+                channelAssociation.handleChannelClosed(closed, exception);
+                lock.notifyAll();
+            }
+            // Closing the strategy in this handler may result in race conditions
+            // with connection closing and then deadlocks in remoting
+            // it's safer to close the strategy from the connection close handler
+            closed.getConnection().addCloseHandler(new CloseHandler<Connection>(){
+                @Override
+                public void handleClose(Connection closed, IOException exception) {
+                    StreamUtils.safeClose(originalStrategy);
+                }});
+        }
     }
 }
