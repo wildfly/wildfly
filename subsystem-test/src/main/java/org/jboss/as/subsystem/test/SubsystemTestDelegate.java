@@ -586,7 +586,7 @@ final class SubsystemTestDelegate {
                     }
                 }
 
-                KernelServicesImpl legacyServices = legacyInitializer.install(transformedBootOperations);
+                KernelServicesImpl legacyServices = legacyInitializer.install(kernelServices, transformedBootOperations);
                 kernelServices.addLegacyKernelService(entry.getKey(), legacyServices);
             }
 
@@ -618,9 +618,13 @@ final class SubsystemTestDelegate {
 
         private final AdditionalInitialization additionalInit;
         private String extensionClassName;
-        private ModelVersion modelVersion;
-        ChildFirstClassLoaderBuilder classLoaderBuilder = new ChildFirstClassLoaderBuilder();
+        private final ModelVersion modelVersion;
+        private final ChildFirstClassLoaderBuilder classLoaderBuilder = new ChildFirstClassLoaderBuilder();
         private boolean persistXml = true;
+        private List<ModelNode> bootOperations;
+        private boolean skipReverseCheck;
+        private AdditionalInitialization reverseCheckConfig;
+        private ModelFixer reverseCheckModelFixer;
 
         public LegacyKernelServiceInitializerImpl(AdditionalInitialization additionalInit, ModelVersion modelVersion) {
             this.additionalInit = additionalInit == null ? AdditionalInitialization.MANAGEMENT : additionalInit;
@@ -664,7 +668,13 @@ final class SubsystemTestDelegate {
             return this;
         }
 
-        private KernelServicesImpl install(List<ModelNode> bootOperations) throws Exception {
+        private KernelServicesImpl install(KernelServices mainServices, List<ModelNode> bootOperations) throws Exception {
+            this.bootOperations = bootOperations;
+
+            if (!skipReverseCheck) {
+                bootCurrentVersionWithLegacyBootOperations(mainServices);
+            }
+
             ClassLoader legacyCl = classLoaderBuilder.build();
 
             Class<?> clazz = legacyCl.loadClass(extensionClassName != null ? extensionClassName : mainExtension.getClass().getName());
@@ -688,7 +698,36 @@ final class SubsystemTestDelegate {
             persistXml = false;
             return this;
         }
+
+        @Override
+        public LegacyKernelServicesInitializer skipReverseControllerCheck() {
+            skipReverseCheck = true;
+            return this;
+        }
+
+        @Override
+        public LegacyKernelServicesInitializer configureReverseControllerCheck(AdditionalInitialization additionalInit,
+                ModelFixer modelFixer) {
+            this.reverseCheckConfig = additionalInit;
+            this.reverseCheckModelFixer = modelFixer;
+            return this;
+        }
+
+        private KernelServices bootCurrentVersionWithLegacyBootOperations(KernelServices mainServices) throws Exception {
+            KernelServices reverseServices = createKernelServicesBuilder(reverseCheckConfig)
+                .setBootOperations(bootOperations)
+                .build();
+            Assert.assertTrue(reverseServices.isSuccessfulBoot());
+
+            ModelNode reverseSubsystem = reverseServices.readWholeModel().get(SUBSYSTEM, getMainSubsystemName());
+            if (reverseCheckModelFixer != null) {
+                reverseCheckModelFixer.fixModel(reverseSubsystem);
+            }
+            ModelTestUtils.compare(mainServices.readWholeModel().get(SUBSYSTEM, getMainSubsystemName()), reverseSubsystem);
+            return reverseServices;
+        }
     }
+
     @SuppressWarnings("deprecation")
     private final ManagementResourceRegistration MOCK_RESOURCE_REG = new ManagementResourceRegistration() {
 
