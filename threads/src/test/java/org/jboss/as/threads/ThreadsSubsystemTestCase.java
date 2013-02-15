@@ -82,9 +82,7 @@ public class ThreadsSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         // Add legacy subsystems
         builder.createLegacyKernelServicesBuilder(null, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + mavenVersion)
-                //TODO get rid of this https://issues.jboss.org/browse/AS7-6528
-                .skipReverseControllerCheck();
+                .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + mavenVersion);
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
