@@ -37,12 +37,10 @@
     <build>
         <resources>
             <resource>
-                <directory>src/main</directory>
+                <directory>src/main/resources</directory>
                 <filtering>true</filtering>
-                <targetPath>../filtered-sources</targetPath>
             </resource>
         </resources>
-        <sourceDirectory>target/filtered-sources</sourceDirectory>
     </build>
     <dependencies>
         <dependency>

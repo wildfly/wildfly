@@ -21,6 +21,8 @@
 */
 package org.jboss.as.core.model.test;
 
+import java.util.Properties;
+
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.dmr.ModelNode;
@@ -69,11 +71,16 @@ public interface LegacyKernelServicesInitializer {
     }
 
     static final class VersionLocator {
-        private static String VERSION = "${project.version}"; //is going to be replaced by maven during build
+        private static String VERSION;
 
         static {
-            if (VERSION.contains("${")) {
-                VERSION = "8.0.0.Alpha1-SNAPSHOT"; //to make it work from IDE
+            try {
+                Properties props = new Properties();
+                props.load(LegacyKernelServicesInitializer.class.getResourceAsStream("version.properties"));
+                VERSION = props.getProperty("as.version");
+            } catch (Exception e) {
+                VERSION = "8.0.0.Alpha1-SNAPSHOT";
+                e.printStackTrace();
             }
         }
 
