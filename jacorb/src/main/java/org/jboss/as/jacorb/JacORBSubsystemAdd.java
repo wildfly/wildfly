@@ -91,6 +91,11 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
         for (AttributeDefinition attrDefinition : JacORBSubsystemDefinitions.SUBSYSTEM_ATTRIBUTES) {
             attrDefinition.validateAndSet(operation, model);
         }
+
+        if (model.hasDefined(JacORBSubsystemDefinitions.ORB_INIT_SECURITY.getName())
+                && "on".equals(model.get(JacORBSubsystemDefinitions.ORB_INIT_SECURITY.getName()).asString())) {
+            model.get(JacORBSubsystemDefinitions.ORB_INIT_SECURITY.getName()).set(JacORBSubsystemConstants.IDENTITY);
+        }
         // if generic properties have been specified, add them to the model as well.
        /* String properties = JacORBSubsystemConstants.PROPERTIES;
         if (operation.hasDefined(properties))
@@ -259,7 +264,8 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
         String installSecurity = (String) props.remove(JacORBSubsystemConstants.ORB_INIT_SECURITY);
         if (installSecurity.equalsIgnoreCase(JacORBSubsystemConstants.CLIENT)) {
             orbInitializers.addAll(Arrays.asList(ORBInitializer.SECURITY_CLIENT.getInitializerClasses()));
-        } else if (installSecurity.equalsIgnoreCase(JacORBSubsystemConstants.IDENTITY)) {
+        } else if (installSecurity.equalsIgnoreCase(JacORBSubsystemConstants.IDENTITY)
+                || installSecurity.equalsIgnoreCase("on")) {
             orbInitializers.addAll(Arrays.asList(ORBInitializer.SECURITY_IDENTITY.getInitializerClasses()));
         }
 
