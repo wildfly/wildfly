@@ -105,10 +105,7 @@ public class AS7BindingRegistry implements BindingRegistry {
         final StabilityMonitor monitor = new StabilityMonitor();
         monitor.addController(bindingService);
         try {
-            if (!monitor.awaitStability(5, SECONDS)) {
-                ROOT_LOGGER.failedToUnbindJndiName(name, 5, SECONDS.toString().toLowerCase(Locale.US));
-                return;
-            }
+            monitor.awaitStability();
             ROOT_LOGGER.unboundJndiName(bindInfo.getAbsoluteJndiName());
         } catch (InterruptedException e) {
             ROOT_LOGGER.failedToUnbindJndiName(name, 5, SECONDS.toString().toLowerCase(Locale.US));
