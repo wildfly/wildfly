@@ -65,6 +65,7 @@ import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.ChainedConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.NewAttributesConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.RejectExpressionsConfig;
+import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -95,7 +96,7 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
         //Boot up empty controllers with the resources needed for the ops coming from the xml to work
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXmlResource("subsystem_1_3.xml");
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), VERSION_1_1_0)
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), ModelTestControllerVersion.V7_1_2_FINAL, VERSION_1_1_0)
                 .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.1.2.Final")
                 .addMavenResourceURL("org.hornetq:hornetq-core:2.2.16.Final")
                 .addMavenResourceURL("org.hornetq:hornetq-jms:2.2.16.Final")
@@ -110,7 +111,7 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
         //Boot up empty controllers with the resources needed for the ops coming from the xml to work
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXmlResource("subsystem_1_3.xml");
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), VERSION_1_1_0)
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), ModelTestControllerVersion.V7_1_3_FINAL, VERSION_1_1_0)
                 .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.1.3.Final")
                 .addMavenResourceURL("org.hornetq:hornetq-core:2.2.21.Final")
                 .addMavenResourceURL("org.hornetq:hornetq-jms:2.2.21.Final")
@@ -128,13 +129,11 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
                 .setSubsystemXmlResource("empty_subsystem_1_3.xml");
 
         // create builder for legacy subsystem version
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), VERSION_1_1_0)
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), ModelTestControllerVersion.V7_1_2_FINAL, VERSION_1_1_0)
                 .addMavenResourceURL("org.hornetq:hornetq-core:2.2.16.Final")
                 .addMavenResourceURL("org.hornetq:hornetq-jms:2.2.16.Final")
                 .addMavenResourceURL("org.hornetq:hornetq-ra:2.2.16.Final")
-                .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.1.2.Final")
-                .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.2.Final")
-                .addParentFirstClassPattern("org.jboss.as.controller.*");
+                .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.1.2.Final");
 
         doTestRejectExpressions_1_1_0(builder);
     }
@@ -147,13 +146,11 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
                 .setSubsystemXmlResource("empty_subsystem_1_3.xml");
 
         // create builder for legacy subsystem version
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), VERSION_1_1_0)
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), ModelTestControllerVersion.V7_1_3_FINAL, VERSION_1_1_0)
                 .addMavenResourceURL("org.hornetq:hornetq-core:2.2.21.Final")
                 .addMavenResourceURL("org.hornetq:hornetq-jms:2.2.21.Final")
                 .addMavenResourceURL("org.hornetq:hornetq-ra:2.2.21.Final")
-                .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.1.3.Final")
-                .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.3.Final")
-                .addParentFirstClassPattern("org.jboss.as.controller.*");
+                .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.1.3.Final");
 
         doTestRejectExpressions_1_1_0(builder);
     }

@@ -43,6 +43,7 @@ import org.jboss.as.controller.transform.OperationTransformer.TransformedOperati
 import org.jboss.as.logging.logmanager.ConfigurationPersistence;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.RejectExpressionsConfig;
+import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
@@ -89,33 +90,38 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
 
     @Test
     public void testTransformers712() throws Exception {
-        testTransformer1_1_0("org.jboss.as:jboss-as-logging:7.1.2.Final");
+        testTransformer1_1_0("org.jboss.as:jboss-as-logging:7.1.2.Final", ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
     public void testTransformers713() throws Exception {
-        testTransformer1_1_0("org.jboss.as:jboss-as-logging:7.1.3.Final");
+        testTransformer1_1_0("org.jboss.as:jboss-as-logging:7.1.3.Final", ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
     @Test
     public void testRejectExpressions712() throws Exception {
-        testRejectExpressions1_1_0("org.jboss.as:jboss-as-logging:7.1.2.Final");
+        testRejectExpressions1_1_0("org.jboss.as:jboss-as-logging:7.1.2.Final", ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
     public void testRejectExpressions713() throws Exception {
-        testRejectExpressions1_1_0("org.jboss.as:jboss-as-logging:7.1.3.Final");
+        testRejectExpressions1_1_0("org.jboss.as:jboss-as-logging:7.1.3.Final", ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
-    private void testTransformer1_1_0(final String gav) throws Exception {
+    private void testTransformer1_1_0(final String gav, ModelTestControllerVersion controllerVersion) throws Exception {
         final String subsystemXml = getSubsystemXml();
         final ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
         final KernelServicesBuilder builder = createKernelServicesBuilder(LoggingTestEnvironment.getManagementInstance())
                 .setSubsystemXml(subsystemXml);
 
         // Create the legacy kernel
-        builder.createLegacyKernelServicesBuilder(LoggingTestEnvironment.getManagementInstance(), modelVersion)
-                .addMavenResourceURL(gav);
+        builder.createLegacyKernelServicesBuilder(LoggingTestEnvironment.getManagementInstance(), controllerVersion, modelVersion)
+                .addMavenResourceURL(gav)
+                //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
+                //which is strange since it should be loading it all from the current jboss modules
+                //Also this works in several other tests
+                .dontPersistXml();
+
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
@@ -125,13 +131,18 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
         testTransformOperations(mainServices, modelVersion, legacyModel);
     }
 
-    private void testRejectExpressions1_1_0(final String gav) throws Exception {
+    private void testRejectExpressions1_1_0(final String gav, ModelTestControllerVersion controllerVersion) throws Exception {
         final ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
         final KernelServicesBuilder builder = createKernelServicesBuilder(LoggingTestEnvironment.getManagementInstance());
 
         // Create the legacy kernel
-        builder.createLegacyKernelServicesBuilder(LoggingTestEnvironment.getManagementInstance(), modelVersion)
-                .addMavenResourceURL(gav);
+        builder.createLegacyKernelServicesBuilder(LoggingTestEnvironment.getManagementInstance(), controllerVersion, modelVersion)
+                .addMavenResourceURL(gav)
+                //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
+                //which is strange since it should be loading it all from the current jboss modules
+                //Also this works in several other tests
+                .dontPersistXml();
+
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);

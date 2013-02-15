@@ -24,6 +24,8 @@
 
 package org.jboss.as.threads;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -31,6 +33,7 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -60,12 +63,12 @@ public class ThreadsSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testTransformerAS712() throws Exception {
-        testTransformer_1_0("7.1.2.Final");
+        testTransformer_1_0(ModelTestControllerVersion.V7_1_2_FINAL, "7.1.2.Final");
     }
 
     @Test
     public void testTransformerAS713() throws Exception {
-        testTransformer_1_0("7.1.3.Final");
+        testTransformer_1_0(ModelTestControllerVersion.V7_1_2_FINAL, "7.1.3.Final");
     }
 
     /**
@@ -73,15 +76,18 @@ public class ThreadsSubsystemTestCase extends AbstractSubsystemBaseTest {
      *
      * @throws Exception
      */
-    private void testTransformer_1_0(String mavenVersion) throws Exception {
+    private void testTransformer_1_0(ModelTestControllerVersion controllerVersion, String mavenVersion) throws Exception {
         String subsystemXml = "threads-transform-1_0.xml";   //This has no expressions not understood by 1.0
         ModelVersion modelVersion = ModelVersion.create(1, 0, 0); //The old model version
         //Use the non-runtime version of the extension which will happen on the HC
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXmlResource(subsystemXml);
 
+        final PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, mainSubsystemName));
+
         // Add legacy subsystems
-        builder.createLegacyKernelServicesBuilder(null, modelVersion)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addOperationValidationResolve("add", subsystemAddress.append(PathElement.pathElement("thread-factory")))
                 .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + mavenVersion);
 
         KernelServices mainServices = builder.build();
@@ -92,21 +98,21 @@ public class ThreadsSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testRejectExpressionsAS712() throws Exception {
-        testRejectExpressions_1_0_0("7.1.2.Final");
+        testRejectExpressions_1_0_0(ModelTestControllerVersion.V7_1_2_FINAL, "7.1.2.Final");
     }
 
     @Test
     public void testRejectExpressionsAS713() throws Exception {
-        testRejectExpressions_1_0_0("7.1.3.Final");
+        testRejectExpressions_1_0_0(ModelTestControllerVersion.V7_1_3_FINAL, "7.1.3.Final");
     }
 
-    private void testRejectExpressions_1_0_0(String mavenVersion) throws Exception {
+    private void testRejectExpressions_1_0_0(ModelTestControllerVersion controllerVersion, String mavenVersion) throws Exception {
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
         // create builder for legacy subsystem version
         ModelVersion version_1_0_0 = ModelVersion.create(1, 0, 0);
-        builder.createLegacyKernelServicesBuilder(null, version_1_0_0)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_0_0)
                 .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + mavenVersion);
 
         KernelServices mainServices = builder.build();

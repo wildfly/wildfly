@@ -41,6 +41,7 @@ import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.AttributesPathAddressConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.ChainedConfig;
 import org.jboss.as.model.test.ModelFixer;
+import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -69,21 +70,21 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testTransformers712() throws Exception {
-        testTransformers_1_2_0("7.1.2.Final");
+        testTransformers_1_2_0("7.1.2.Final", ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
     public void testTransformers713() throws Exception {
-        testTransformers_1_2_0("7.1.3.Final");
+        testTransformers_1_2_0("7.1.3.Final", ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
-    private void testTransformers_1_2_0(String version) throws Exception {
+    private void testTransformers_1_2_0(String version, ModelTestControllerVersion controllerVersion) throws Exception {
         String subsystemXml = readResource("subsystem-transform-no-reject.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 2, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXml(subsystemXml);
 
-        builder.createLegacyKernelServicesBuilder(null, modelVersion)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-modcluster:" + version);
 
         KernelServices mainServices = builder.build();
@@ -123,20 +124,20 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testExpressionsAreRejected712() throws Exception {
-        testExpressionsAreRejectedByVersion_1_2("7.1.2.Final");
+        testExpressionsAreRejectedByVersion_1_2("7.1.2.Final", ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
     public void testExpressionsAreRejected713() throws Exception {
-        testExpressionsAreRejectedByVersion_1_2("7.1.2.Final");
+        testExpressionsAreRejectedByVersion_1_2("7.1.2.Final", ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
-    private void testExpressionsAreRejectedByVersion_1_2(String version) throws Exception {
+    private void testExpressionsAreRejectedByVersion_1_2(String version, ModelTestControllerVersion controllerVersion) throws Exception {
         String subsystemXml = readResource("subsystem-transform-reject.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 2, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
-        builder.createLegacyKernelServicesBuilder(null, modelVersion)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-modcluster:" + version);
 
         KernelServices mainServices = builder.build();

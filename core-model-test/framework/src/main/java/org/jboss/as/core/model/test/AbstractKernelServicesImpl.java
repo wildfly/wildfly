@@ -37,6 +37,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.model.test.ModelTestKernelServicesImpl;
 import org.jboss.as.model.test.ModelTestModelControllerService;
+import org.jboss.as.model.test.ModelTestOperationValidatorFilter;
 import org.jboss.as.model.test.ModelTestParser;
 import org.jboss.as.model.test.StringConfigurationPersister;
 import org.jboss.as.repository.ContentRepository;
@@ -61,7 +62,7 @@ public abstract class AbstractKernelServicesImpl extends ModelTestKernelServices
         super(container, controllerService, persister, rootRegistration, operationValidator, legacyModelVersion, successfulBoot, bootError);
     }
 
-    public static AbstractKernelServicesImpl create(ProcessType processType, RunningModeControl runningModeControl, boolean validateOperations,
+    public static AbstractKernelServicesImpl create(ProcessType processType, RunningModeControl runningModeControl, ModelTestOperationValidatorFilter validateOpsFilter,
             List<ModelNode> bootOperations, ModelTestParser testParser, ModelVersion legacyModelVersion, TestModelType type, ModelInitializer modelInitializer, ExtensionRegistry extensionRegistry, List<String> contentRepositoryHashes) throws Exception {
 
         //TODO initialize the path manager service like we do for subsystems?
@@ -99,7 +100,7 @@ public abstract class AbstractKernelServicesImpl extends ModelTestKernelServices
             }
         }
 
-        ModelTestModelControllerService svc = testModelControllerFactory.create(processType, runningModeControl, persister, validateOperations, type, modelInitializer, extensionRegistry);
+        ModelTestModelControllerService svc = testModelControllerFactory.create(processType, runningModeControl, persister, validateOpsFilter, type, modelInitializer, extensionRegistry);
         ServiceBuilder<ModelController> builder = target.addService(Services.JBOSS_SERVER_CONTROLLER, svc);
         builder.addDependency(ContentRepository.SERVICE_NAME, ContentRepository.class, testModelControllerFactory.getContentRepositoryInjector(svc));
         builder.install();
@@ -143,8 +144,8 @@ public abstract class AbstractKernelServicesImpl extends ModelTestKernelServices
         static final TestModelControllerFactory INSTANCE = new StandardTestModelControllerServiceFactory();
         @Override
         public ModelTestModelControllerService create(ProcessType processType, RunningModeControl runningModeControl,
-                StringConfigurationPersister persister, boolean validateOperations, TestModelType type, ModelInitializer modelInitializer, ExtensionRegistry extensionRegistry) {
-            return TestModelControllerService.create(processType, runningModeControl, persister, validateOperations, type, modelInitializer, extensionRegistry);
+                StringConfigurationPersister persister, ModelTestOperationValidatorFilter validateOpsFilter, TestModelType type, ModelInitializer modelInitializer, ExtensionRegistry extensionRegistry) {
+            return TestModelControllerService.create(processType, runningModeControl, persister, validateOpsFilter, type, modelInitializer, extensionRegistry);
         }
 
         @Override

@@ -50,6 +50,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -68,21 +69,21 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
 
     @Test
     public void testExpressionsAreRejectedAS712() throws Exception {
-        testExpressionsAreRejectedByVersion_1_1("org.jboss.as:jboss-as-remoting:7.1.2.Final");
+        testExpressionsAreRejectedByVersion_1_1("org.jboss.as:jboss-as-remoting:7.1.2.Final", ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
     public void testExpressionsAreRejectedAS713() throws Exception {
-        testExpressionsAreRejectedByVersion_1_1("org.jboss.as:jboss-as-remoting:7.1.3.Final");
+        testExpressionsAreRejectedByVersion_1_1("org.jboss.as:jboss-as-remoting:7.1.3.Final", ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
-    private void testExpressionsAreRejectedByVersion_1_1(String gav) throws Exception {
+    private void testExpressionsAreRejectedByVersion_1_1(String gav, ModelTestControllerVersion controllerVersion) throws Exception {
         String subsystemXml = readResource("remoting-with-expressions.xml");
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
         // Add legacy subsystems
         ModelVersion version_1_1 = ModelVersion.create(1, 1);
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), version_1_1)
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, version_1_1)
                 .addMavenResourceURL(gav);
 
         KernelServices mainServices = builder.build();
@@ -144,22 +145,22 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
 
     @Test
     public void testTransformersAS712() throws Exception {
-        testTransformers("org.jboss.as:jboss-as-remoting:7.1.2.Final");
+        testTransformers("org.jboss.as:jboss-as-remoting:7.1.2.Final", ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
     public void testTransformersAS713() throws Exception {
-        testTransformers("org.jboss.as:jboss-as-remoting:7.1.3.Final");
+        testTransformers("org.jboss.as:jboss-as-remoting:7.1.3.Final", ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
-    private void testTransformers(String gav) throws Exception {
+    private void testTransformers(String gav, ModelTestControllerVersion controllerVersion) throws Exception {
         String subsystemXml = readResource("remoting-without-expressions.xml");
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXml(subsystemXml);
 
         // Add legacy subsystems
         ModelVersion version_1_1 = ModelVersion.create(1, 1);
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), version_1_1)
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, version_1_1)
                 .addMavenResourceURL(gav);
 
         KernelServices mainServices = builder.build();

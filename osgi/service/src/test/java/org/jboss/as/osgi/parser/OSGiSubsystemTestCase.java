@@ -33,6 +33,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -257,20 +258,20 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
     @Test
     public void testTransformerAS712() throws Exception {
-        testTransformers1_0_0("org.jboss.as:jboss-as-osgi-service:7.1.2.Final");
+        testTransformers1_0_0(ModelTestControllerVersion.V7_1_2_FINAL, "org.jboss.as:jboss-as-osgi-service:7.1.2.Final");
     }
 
     @Test
     public void testTransformerAS713() throws Exception {
-        testTransformers1_0_0("org.jboss.as:jboss-as-osgi-service:7.1.3.Final", "org.jboss.osgi.framework:jbosgi-framework-core:1.3.1.CR1");
+        testTransformers1_0_0(ModelTestControllerVersion.V7_1_3_FINAL, "org.jboss.as:jboss-as-osgi-service:7.1.3.Final", "org.jboss.osgi.framework:jbosgi-framework-core:1.3.1.CR1");
     }
 
-    private void testTransformers1_0_0(String... mavenGAVs) throws Exception {
+    private void testTransformers1_0_0(ModelTestControllerVersion controllerVersion, String... mavenGAVs) throws Exception {
         ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXml(SUBSYSTEM_XML_1_2);
 
-        LegacyKernelServicesInitializer legacyInitializer = builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, modelVersion);
+        LegacyKernelServicesInitializer legacyInitializer = builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, controllerVersion, modelVersion);
         for (String mavenGAV : mavenGAVs) {
             legacyInitializer.addMavenResourceURL(mavenGAV);
         }
@@ -300,21 +301,21 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testRejectExpressionsAS712() throws Exception {
-        testRejectExpressions1_0_0("org.jboss.as:jboss-as-osgi-service:7.1.2.Final");
+        testRejectExpressions1_0_0("org.jboss.as:jboss-as-osgi-service:7.1.2.Final", ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
     public void testRejectExpressionsAS713() throws Exception {
-        testRejectExpressions1_0_0("org.jboss.as:jboss-as-osgi-service:7.1.3.Final");
+        testRejectExpressions1_0_0("org.jboss.as:jboss-as-osgi-service:7.1.3.Final", ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
-    private void testRejectExpressions1_0_0(String mavenGAV) throws Exception {
+    private void testRejectExpressions1_0_0(String mavenGAV, ModelTestControllerVersion controllerVersion) throws Exception {
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
         // create builder for legacy subsystem version
         ModelVersion version_1_0_0 = ModelVersion.create(1, 0, 0);
-        builder.createLegacyKernelServicesBuilder(null, version_1_0_0)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_0_0)
                 .addMavenResourceURL(mavenGAV);
 
         KernelServices mainServices = builder.build();

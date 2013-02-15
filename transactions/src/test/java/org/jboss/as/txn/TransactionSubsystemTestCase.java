@@ -21,7 +21,7 @@
 */
 package org.jboss.as.txn;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -45,16 +45,14 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.List;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.transform.OperationTransformer;
-import org.jboss.as.model.test.ChildFirstClassLoaderBuilder;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -63,8 +61,6 @@ import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.as.txn.subsystem.TransactionExtension;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -126,7 +122,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
                 .setSubsystemXml(subsystemXml);
 
         // Add legacy subsystems
-        builder.createLegacyKernelServicesBuilder(null, modelVersion)
+        builder.createLegacyKernelServicesBuilder(null, ModelTestControllerVersion.V7_1_2_FINAL, modelVersion)
             .addMavenResourceURL("org.jboss.as:jboss-as-transactions:7.1.2.Final");
 
         KernelServices mainServices = builder.build();
@@ -145,7 +141,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
                 .setSubsystemXml(subsystemXml);
 
         // Add legacy subsystems
-        builder.createLegacyKernelServicesBuilder(null, modelVersion)
+        builder.createLegacyKernelServicesBuilder(null, ModelTestControllerVersion.V7_1_3_FINAL, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-transactions:7.1.3.Final");
 
         KernelServices mainServices = builder.build();
@@ -165,7 +161,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
                 .setSubsystemXml(subsystemXml);
 
         // Add legacy subsystems
-        builder.createLegacyKernelServicesBuilder(null, modelVersion)
+        builder.createLegacyKernelServicesBuilder(null, ModelTestControllerVersion.V7_1_2_FINAL, modelVersion)
             .addMavenResourceURL("org.jboss.as:jboss-as-transactions:7.1.2.Final");
 
         KernelServices mainServices = builder.build();
@@ -195,9 +191,11 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXml(subsystemXml);
 
+        final PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, mainSubsystemName));
         // Add legacy subsystems
-        builder.createLegacyKernelServicesBuilder(null, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-transactions:7.1.3.Final");
+        builder.createLegacyKernelServicesBuilder(null, ModelTestControllerVersion.V7_1_3_FINAL, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-transactions:7.1.3.Final")
+                .addOperationValidationResolve(ADD, subsystemAddress);
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
@@ -213,7 +211,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         // Add legacy subsystems
         ModelVersion version_1_1 = ModelVersion.create(1, 1, 0);
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), version_1_1)
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), ModelTestControllerVersion.V7_1_2_FINAL, version_1_1)
             .addMavenResourceURL("org.jboss.as:jboss-as-transactions:7.1.2.Final");
 
         KernelServices mainServices = builder.build();
@@ -248,7 +246,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         // Add legacy subsystems
         ModelVersion version_1_1_1 = ModelVersion.create(1, 1, 1);
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), version_1_1_1)
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), ModelTestControllerVersion.V7_1_3_FINAL, version_1_1_1)
                 .addMavenResourceURL("org.jboss.as:jboss-as-transactions:7.1.3.Final");
 
         KernelServices mainServices = builder.build();

@@ -25,6 +25,7 @@ import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.model.test.ModelTestModelControllerService;
+import org.jboss.as.model.test.ModelTestOperationValidatorFilter;
 import org.jboss.as.model.test.StringConfigurationPersister;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.msc.value.InjectedValue;
@@ -35,7 +36,7 @@ import org.jboss.msc.value.InjectedValue;
  */
 public interface TestModelControllerFactory {
 
-    ModelTestModelControllerService create(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, boolean validateOperations,
+    ModelTestModelControllerService create(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, ModelTestOperationValidatorFilter validateOpsFilter,
             TestModelType type, ModelInitializer modelInitializer, ExtensionRegistry extensionRegistry);
     InjectedValue<ContentRepository> getContentRepositoryInjector(ModelTestModelControllerService service);
 }

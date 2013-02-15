@@ -25,6 +25,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
@@ -137,4 +139,30 @@ public class ObjectSerializerImpl implements ObjectSerializer {
         return new IgnoreDomainResourceTypeResource(type, names, wildcard);
     }
 
+    @Override
+    public byte[] serializeModelTestOperationValidatorFilter(Object object) throws IOException {
+        ByteArrayOutputStream bout = new ByteArrayOutputStream();
+        ObjectOutputStream out = new ObjectOutputStream(bout);
+        try {
+            out.writeObject(object);
+        } finally {
+            IoUtils.safeClose(out);
+            IoUtils.safeClose(bout);
+        }
+        return bout.toByteArray();
+    }
+
+    @Override
+    public Object deserializeModelTestOperationValidatorFilter(byte[] object) throws IOException, ClassNotFoundException {
+        ByteArrayInputStream bin = new ByteArrayInputStream(object);
+        ObjectInputStream in = new ObjectInputStream(bin);
+        Object o = null;
+        try {
+            o = in.readObject();
+        } finally {
+            IoUtils.safeClose(in);
+            IoUtils.safeClose(bin);
+        }
+        return o;
+    }
 }

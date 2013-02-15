@@ -29,7 +29,7 @@ import javax.xml.stream.XMLStreamException;
 import junit.framework.AssertionFailedError;
 
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.core.model.test.LegacyKernelServicesInitializer.TestControllerVersion;
+import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -115,7 +115,7 @@ public interface KernelServicesBuilder {
      * @throws IllegalStateException if {@link #build()} has already been called
      * @throws AssertionFailedError if the extension class name was not found in the {@code resources}
      */
-     LegacyKernelServicesInitializer createLegacyKernelServicesBuilder(ModelVersion modelVersion, TestControllerVersion testControllerVersion);
+     LegacyKernelServicesInitializer createLegacyKernelServicesBuilder(ModelVersion modelVersion, ModelTestControllerVersion testControllerVersion);
 
     /**
      * Creates the controller and initializes it with the passed in configuration options.

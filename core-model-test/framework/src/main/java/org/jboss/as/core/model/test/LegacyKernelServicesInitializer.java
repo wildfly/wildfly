@@ -23,6 +23,7 @@ package org.jboss.as.core.model.test;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.operations.validation.OperationValidator;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -38,47 +39,23 @@ public interface LegacyKernelServicesInitializer {
     LegacyKernelServicesInitializer setDontUseBootOperations();
 
     /**
-     * The default is to validate the operations sent in to the model controller. Turn it off call this method
+     * By default all operations sent into the model controller will be validated on boot. Operations matching what is
+     * set up here will not be validated. This is mainly because the {@link OperationValidator} used in 7.1.x did not handle expressions very well
+     * when checking ranges. If there is a problem you should try to call {@link #addOperationValidationResolve(String, PathAddress)}
+     * first.
      *
-     * @return this builder
+     * @param name the name of the operation, or {@code *} as a wildcard capturing all names
+     * @param pathAddress the address of the operation, the pathAddress may use {@code *} as a wildcard for both the key and the value of {@link PathElement}s
      */
-    LegacyKernelServicesInitializer setDontValidateOperations();
+    LegacyKernelServicesInitializer addOperationValidationExclude(String name, PathAddress pathAddress);
 
-
-    public enum TestControllerVersion {
-        MASTER("org.jboss.as:jboss-as-host-controller:" + VersionLocator.getCurrentVersion(), null),
-        V7_1_2_FINAL("org.jboss.as:jboss-as-host-controller:7.1.2.Final", "7.1.2"),
-        V7_1_3_FINAL("org.jboss.as:jboss-as-host-controller:7.1.3.Final", "7.1.3");
-
-        String mavenGav;
-        String testControllerVersion;
-
-        private TestControllerVersion(String mavenGav, String testControllerVersion) {
-            this.mavenGav = mavenGav;
-            this.testControllerVersion = testControllerVersion;
-        }
-
-        String getLegacyControllerMavenGav() {
-            return mavenGav;
-        }
-
-        String getTestControllerVersion() {
-            return testControllerVersion;
-        }
-
-    }
-
-    static final class VersionLocator {
-        private static String VERSION = "${project.version}"; //is going to be replaced by maven during build
-
-        static {
-            if (VERSION.contains("${")) {
-                VERSION = "8.0.0.Alpha1-SNAPSHOT"; //to make it work from IDE
-            }
-        }
-
-        static String getCurrentVersion() {
-            return VERSION;
-        }
-    }
+    /**
+     * By default all operations sent into the model controller will be validated on boot. Operations matching what is
+     * set up here will not be validated. This is mainly because the {@link OperationValidator} used in 7.1.x did not handle expressions very well
+     * when checking ranges.
+     *
+     * @param name the name of the operation, or {@code *} as a wildcard capturing all names
+     * @param pathAddress the address of the operation, the pathAddress may use {@code *} as a wildcard for both the key and the value of {@link PathElement}s
+     */
+    LegacyKernelServicesInitializer addOperationValidationResolve(String name, PathAddress pathAddress);
 }
