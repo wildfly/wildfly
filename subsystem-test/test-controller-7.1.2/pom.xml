@@ -36,7 +36,7 @@
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-subsystem-test-controller-7.1.2</artifactId>
     <name>JBoss Application Server: Subsystem Test Controller 7.1.2</name>
-    <version>7.2.0.Alpha1-SNAPSHOT</version>
+    <version>8.0.0.Alpha1-SNAPSHOT</version>
 
     <properties>
         <property.old.as.version>7.1.2.Final</property.old.as.version>

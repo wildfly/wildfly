@@ -29,7 +29,7 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-subsystem-test-parent</artifactId>
-        <version>7.2.0.Alpha1-SNAPSHOT</version>
+        <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
     <artifactId>jboss-as-subsystem-test-tests</artifactId>
@@ -62,12 +62,6 @@
            <groupId>org.jboss.as</groupId>
            <artifactId>jboss-as-subsystem-test</artifactId>
            <type>pom</type>
-        </dependency>
-        <dependency>
-           <groupId>org.jboss.as</groupId>
-	        <artifactId>jboss-as-subsystem-test-controller-optional</artifactId>
-           <scope>provided</scope>
-           <optional>true</optional>   
         </dependency>
         <dependency>
             <groupId>org.jboss.shrinkwrap</groupId>

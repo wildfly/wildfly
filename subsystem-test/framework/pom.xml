@@ -29,10 +29,9 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-subsystem-test-parent</artifactId>
-        <version>7.2.0.Alpha1-SNAPSHOT</version>
+        <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-subsystem-test-framework</artifactId>
 
     <name>JBoss Application Server: Subsystem Test Harness</name>

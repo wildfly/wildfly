@@ -29,7 +29,7 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-subsystem-test-parent</artifactId>
-        <version>7.2.0.Alpha1-SNAPSHOT</version>
+        <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
     <!--
       Just here for the tests module to include as an optional dependency to avoid picking up
@@ -38,11 +38,9 @@
 			the classpath when setting up the legacy controller classloaders, and want to be able to choose
 			which one to use. 
 		-->
-    <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-subsystem-test</artifactId>
     <name>JBoss Application Server: Subsystem Test POM</name>
-    <version>7.2.0.Alpha1-SNAPSHOT</version>
-
+    <packaging>pom</packaging>
     <dependencies>
         <dependency>
             <groupId>org.jboss.as</groupId>
