@@ -1332,7 +1332,7 @@
                 relative to the path specified by this attribute. The standard
                 paths provided by the system include:
 
-                jboss.home - the root directory of the JBoss AS distribution
+                jboss.home.dir - the root directory of the JBoss AS distribution
                 user.home - user's home directory
                 user.dir - user's current working directory
                 java.home - java installation directory
