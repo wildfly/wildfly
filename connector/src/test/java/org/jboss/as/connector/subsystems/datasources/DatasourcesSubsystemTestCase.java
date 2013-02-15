@@ -104,67 +104,57 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
      * @throws Exception
      */
     private void testTransformer1_1_0(String mavenVersion, String subsystemXml, ModelTestControllerVersion controllerVersion) throws Exception {
-        System.setProperty("jboss.as.test.transformation.hack", "true");
-        try {
-            ModelVersion modelVersion = ModelVersion.create(1, 1, 0); //The old model version
-            //Use the non-runtime version of the extension which will happen on the HC
-            KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                    .setSubsystemXmlResource(subsystemXml);
+        ModelVersion modelVersion = ModelVersion.create(1, 1, 0); //The old model version
+        //Use the non-runtime version of the extension which will happen on the HC
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXmlResource(subsystemXml);
 
-            // Add legacy subsystems
-            builder.createLegacyKernelServicesBuilder(null,controllerVersion,  modelVersion)
-                                  .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + mavenVersion)
-                                  .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension");
+        // Add legacy subsystems
+        builder.createLegacyKernelServicesBuilder(null,controllerVersion,  modelVersion)
+                              .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + mavenVersion)
+                              .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension");
 
-            KernelServices mainServices = builder.build();
-            Assert.assertTrue(mainServices.isSuccessfulBoot());
-            KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
-            Assert.assertTrue(legacyServices.isSuccessfulBoot());
-            Assert.assertNotNull(legacyServices);
+        KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+        Assert.assertNotNull(legacyServices);
 
-            checkSubsystemModelTransformation(mainServices, modelVersion);
-        } finally {
-            System.clearProperty("jboss.as.test.transformation.hack");
-        }
+        checkSubsystemModelTransformation(mainServices, modelVersion);
     }
 
 
     public void testRejectTransformers1_1_0(String mavenVersion, String subsystemXml, ModelTestControllerVersion controllerVersion) throws Exception {
-        System.setProperty("jboss.as.test.transformation.hack", "true");
-        try {
-            ModelVersion modelVersion = ModelVersion.create(1, 1, 0); //The old model version
-            //Use the non-runtime version of the extension which will happen on the HC
-            KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        ModelVersion modelVersion = ModelVersion.create(1, 1, 0); //The old model version
+        //Use the non-runtime version of the extension which will happen on the HC
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
-            // Add legacy subsystems
-            builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
-                    .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + mavenVersion)
-                    .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension");
+        // Add legacy subsystems
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + mavenVersion)
+                .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension");
 
-            KernelServices mainServices = builder.build();
-            assertTrue(mainServices.isSuccessfulBoot());
-            KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
-            assertNotNull(legacyServices);
-            assertTrue(legacyServices.isSuccessfulBoot());
+        KernelServices mainServices = builder.build();
+        assertTrue(mainServices.isSuccessfulBoot());
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        assertNotNull(legacyServices);
+        assertTrue(legacyServices.isSuccessfulBoot());
 
-            List<ModelNode> ops = builder.parseXmlResource(subsystemXml);
-            PathAddress subsystemAddress = PathAddress.pathAddress(DataSourcesSubsystemRootDefinition.PATH_SUBSYSTEM);
-            ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops, new FailedOperationTransformationConfig()
-                    .addFailedAttribute(subsystemAddress.append(JdbcDriverDefinition.PATH_DRIVER),
-                            new FailedOperationTransformationConfig.RejectExpressionsConfig(Constants.DRIVER_MINOR_VERSION, Constants.DRIVER_MAJOR_VERSION) {
-                                @Override
-                                protected boolean isAttributeWritable(String attributeName) {
-                                    return false;
-                                }
-                            })
-                    .addFailedAttribute(subsystemAddress.append(DataSourceDefinition.PATH_DATASOURCE),
-                            new FailedOperationTransformationConfig.RejectExpressionsConfig(Constants.DATASOURCE_PROPERTIES_ATTRIBUTES))
-                    .addFailedAttribute(subsystemAddress.append(XaDataSourceDefinition.PATH_XA_DATASOURCE),
-                            new FailedOperationTransformationConfig.RejectExpressionsConfig(Constants.DATASOURCE_PROPERTIES_ATTRIBUTES))
-            );
-        } finally {
-            System.clearProperty("jboss.as.test.transformation.hack");
-        }
+        List<ModelNode> ops = builder.parseXmlResource(subsystemXml);
+        PathAddress subsystemAddress = PathAddress.pathAddress(DataSourcesSubsystemRootDefinition.PATH_SUBSYSTEM);
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops, new FailedOperationTransformationConfig()
+                .addFailedAttribute(subsystemAddress.append(JdbcDriverDefinition.PATH_DRIVER),
+                        new FailedOperationTransformationConfig.RejectExpressionsConfig(Constants.DRIVER_MINOR_VERSION, Constants.DRIVER_MAJOR_VERSION) {
+                            @Override
+                            protected boolean isAttributeWritable(String attributeName) {
+                                return false;
+                            }
+                        })
+                .addFailedAttribute(subsystemAddress.append(DataSourceDefinition.PATH_DATASOURCE),
+                        new FailedOperationTransformationConfig.RejectExpressionsConfig(Constants.DATASOURCE_PROPERTIES_ATTRIBUTES))
+                .addFailedAttribute(subsystemAddress.append(XaDataSourceDefinition.PATH_XA_DATASOURCE),
+                        new FailedOperationTransformationConfig.RejectExpressionsConfig(Constants.DATASOURCE_PROPERTIES_ATTRIBUTES))
+        );
     }
 
 }

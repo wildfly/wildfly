@@ -555,9 +555,7 @@ public abstract class AttributeDefinition {
     protected ModelNode convertParameterExpressions(final ModelNode parameter) {
         if (isAllowExpression() && COMPLEX_TYPES.contains(type)) {
             // They need to subclass and override
-            if (!Boolean.getBoolean("jboss.as.test.transformation.hack")) {
-                throw new IllegalStateException();
-            }
+            throw new IllegalStateException();
         }
         return isAllowExpression() ? convertStringExpression(parameter) : parameter;
     }

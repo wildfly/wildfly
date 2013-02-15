@@ -107,32 +107,27 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
      * @throws Exception
      */
     private void testTransformer1_1_0(String mavenVersion, String subsystemXml, ModelTestControllerVersion controllerVersion) throws Exception {
-        System.setProperty("jboss.as.test.transformation.hack", "true");
-        try {
-            ModelVersion modelVersion = ModelVersion.create(1, 1, 0); //The old model version
-            //Use the non-runtime version of the extension which will happen on the HC
-            KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                    .setSubsystemXmlResource(subsystemXml);
+        ModelVersion modelVersion = ModelVersion.create(1, 1, 0); //The old model version
+        //Use the non-runtime version of the extension which will happen on the HC
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXmlResource(subsystemXml);
 
-            // Add legacy subsystems
-            builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
-                    .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + mavenVersion)
-                    .setExtensionClassName("org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension")
-                    .addOperationValidationResolve("add", PathAddress.pathAddress(
-                            PathElement.pathElement(SUBSYSTEM, mainSubsystemName),
-                            PathElement.pathElement("resource-adapter", "*"),
-                            PathElement.pathElement("connection-definitions", "*")));
+        // Add legacy subsystems
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + mavenVersion)
+                .setExtensionClassName("org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension")
+                .addOperationValidationResolve("add", PathAddress.pathAddress(
+                        PathElement.pathElement(SUBSYSTEM, mainSubsystemName),
+                        PathElement.pathElement("resource-adapter", "*"),
+                        PathElement.pathElement("connection-definitions", "*")));
 
-            KernelServices mainServices = builder.build();
-            org.junit.Assert.assertTrue(mainServices.isSuccessfulBoot());
-            KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
-            org.junit.Assert.assertTrue(legacyServices.isSuccessfulBoot());
-            org.junit.Assert.assertNotNull(legacyServices);
+        KernelServices mainServices = builder.build();
+        org.junit.Assert.assertTrue(mainServices.isSuccessfulBoot());
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        org.junit.Assert.assertTrue(legacyServices.isSuccessfulBoot());
+        org.junit.Assert.assertNotNull(legacyServices);
 
-            checkSubsystemModelTransformation(mainServices, modelVersion);
-        } finally {
-            System.clearProperty("jboss.as.test.transformation.hack");
-        }
+        checkSubsystemModelTransformation(mainServices, modelVersion);
     }
 
 
