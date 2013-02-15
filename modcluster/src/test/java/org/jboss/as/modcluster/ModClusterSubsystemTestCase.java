@@ -84,7 +84,9 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
                 .setSubsystemXml(subsystemXml);
 
         builder.createLegacyKernelServicesBuilder(null, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-modcluster:" + version);
+                .addMavenResourceURL("org.jboss.as:jboss-as-modcluster:" + version)
+                //TODO https://issues.jboss.org/browse/AS7-6540
+                .skipReverseControllerCheck();
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);

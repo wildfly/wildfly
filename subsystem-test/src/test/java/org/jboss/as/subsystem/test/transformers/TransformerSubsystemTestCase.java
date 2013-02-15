@@ -78,7 +78,8 @@ public class TransformerSubsystemTestCase extends AbstractSubsystemBaseTest {
                 .setSubsystemXml(getSubsystemXml());
         builder.createLegacyKernelServicesBuilder(null, oldVersion)
                 .setExtensionClassName(VersionedExtension1.class.getName())
-                .addSimpleResourceURL("target/legacy-archive.jar");
+                .addSimpleResourceURL("target/legacy-archive.jar")
+                .skipReverseControllerCheck();
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(oldVersion);
         Assert.assertNotNull(legacyServices);

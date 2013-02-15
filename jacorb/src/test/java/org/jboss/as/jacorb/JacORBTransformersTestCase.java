@@ -142,7 +142,9 @@ public class JacORBTransformersTestCase extends AbstractSubsystemTest {
         // Add legacy subsystems
         ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
         builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, version_1_1_0)
-                .addMavenResourceURL("org.jboss.as:jboss-as-jacorb:" + asVersion);
+                .addMavenResourceURL("org.jboss.as:jboss-as-jacorb:" + asVersion)
+                //TODO https://issues.jboss.org/browse/AS7-6532
+                .skipReverseControllerCheck();
 
         KernelServices mainServices = builder.build();
         assertTrue(mainServices.isSuccessfulBoot());

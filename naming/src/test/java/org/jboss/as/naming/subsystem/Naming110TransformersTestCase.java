@@ -30,7 +30,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.model.test.ModelTestUtils.checkFailedTransformedBootOperations;
 import static org.jboss.as.naming.subsystem.NamingExtension.SUBSYSTEM_NAME;
-import static org.jboss.as.naming.subsystem.NamingExtension.SUBSYSTEM_PATH;
 import static org.jboss.as.naming.subsystem.NamingExtension.VERSION_1_1_0;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.BINDING;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.BINDING_TYPE;
@@ -90,7 +89,9 @@ public class Naming110TransformersTestCase extends AbstractSubsystemBaseTest {
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), VERSION_1_1_0)
                 .addMavenResourceURL("org.jboss.as:jboss-as-naming:7.1.3.Final")
                 .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.3.Final")
-                .addParentFirstClassPattern("org.jboss.as.controller.*");
+                .addParentFirstClassPattern("org.jboss.as.controller.*")
+                //TODO get rid of this https://issues.jboss.org/browse/AS7-6528
+                .skipReverseControllerCheck();
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(VERSION_1_1_0);
@@ -114,7 +115,9 @@ public class Naming110TransformersTestCase extends AbstractSubsystemBaseTest {
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), VERSION_1_1_0)
                 .addMavenResourceURL("org.jboss.as:jboss-as-naming:7.1.2.Final")
                 .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.2.Final")
-                .addParentFirstClassPattern("org.jboss.as.controller.*");
+                .addParentFirstClassPattern("org.jboss.as.controller.*")
+                //TODO get rid of this https://issues.jboss.org/browse/AS7-6528
+                .skipReverseControllerCheck();
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(VERSION_1_1_0);
