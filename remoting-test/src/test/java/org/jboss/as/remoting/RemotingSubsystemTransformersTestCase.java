@@ -160,7 +160,9 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
         // Add legacy subsystems
         ModelVersion version_1_1 = ModelVersion.create(1, 1);
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), version_1_1)
-                .addMavenResourceURL(gav);
+                .addMavenResourceURL(gav)
+                //TODO https://issues.jboss.org/browse/AS7-6542
+                .skipReverseControllerCheck();
 
         KernelServices mainServices = builder.build();
         assertTrue(mainServices.isSuccessfulBoot());

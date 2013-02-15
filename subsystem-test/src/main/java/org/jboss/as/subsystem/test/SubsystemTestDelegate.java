@@ -717,6 +717,13 @@ final class SubsystemTestDelegate {
             KernelServices reverseServices = createKernelServicesBuilder(reverseCheckConfig)
                 .setBootOperations(bootOperations)
                 .build();
+            if (reverseServices.getBootError() != null) {
+                Throwable t = reverseServices.getBootError();
+                if (t instanceof Exception) {
+                    throw (Exception)t;
+                }
+                throw new Exception(t);
+            }
             Assert.assertTrue(reverseServices.isSuccessfulBoot());
 
             ModelNode reverseSubsystem = reverseServices.readWholeModel().get(SUBSYSTEM, getMainSubsystemName());

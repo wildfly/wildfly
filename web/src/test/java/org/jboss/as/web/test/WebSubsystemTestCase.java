@@ -129,7 +129,9 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
             .addMavenResourceURL("org.jboss.as:jboss-as-web:7.1.2.Final")
             .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.2.Final")
             .addParentFirstClassPattern("org.jboss.as.controller.*")
-            .addChildFirstClassPattern("org.jboss.as.controller.alias.*");
+            .addChildFirstClassPattern("org.jboss.as.controller.alias.*")
+            //TODO https://issues.jboss.org/browse/AS7-6537
+            .skipReverseControllerCheck();
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());

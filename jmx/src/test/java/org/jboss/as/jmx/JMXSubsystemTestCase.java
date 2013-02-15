@@ -49,8 +49,8 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.extension.ExtensionRegistry;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
@@ -488,7 +488,10 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
                 .setSubsystemXml(subsystemXml);
         builder.createLegacyKernelServicesBuilder(null, oldVersion)
                 .setExtensionClassName(JMXExtension.class.getName())
-                .addMavenResourceURL(mavenGAV);
+                .addMavenResourceURL(mavenGAV)
+                //TODO https://issues.jboss.org/browse/AS7-6530
+                .skipReverseControllerCheck();
+
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(oldVersion);
         Assert.assertNotNull(legacyServices);

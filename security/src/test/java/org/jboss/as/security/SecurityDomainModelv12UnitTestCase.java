@@ -133,7 +133,10 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
                 .addMavenResourceURL("org.jboss.as:jboss-as-security:" + version)
                 .addMavenResourceURL("org.jboss.as:jboss-as-controller:" + version)
                 .addParentFirstClassPattern("org.jboss.as.controller.*")
-                .dontPersistXml();
+                .dontPersistXml()
+                //TODO https://issues.jboss.org/browse/AS7-6534
+                .skipReverseControllerCheck();
+
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
@@ -157,7 +160,9 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
                 .addMavenResourceURL("org.jboss.as:jboss-as-security:" + version)
                 .addMavenResourceURL("org.jboss.as:jboss-as-controller:" + version)
                 .addParentFirstClassPattern("org.jboss.as.controller.*")
-                .dontPersistXml();
+                .dontPersistXml()
+                //TODO https://issues.jboss.org/browse/AS7-6534
+                .skipReverseControllerCheck();
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());

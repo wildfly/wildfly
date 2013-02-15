@@ -21,7 +21,9 @@
 */
 package org.jboss.as.logging;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -131,7 +133,9 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
         // Note this is running in ADMIN_ONLY meaning runtime changes won't take effect. Can't confirm the
         // handlers actually get disabled.
         builder.createLegacyKernelServicesBuilder(LoggingTestEnvironment.getManagementInstance(), modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-logging:7.1.2.Final");
+                .addMavenResourceURL("org.jboss.as:jboss-as-logging:7.1.2.Final")
+                //TODO https://issues.jboss.org/browse/AS7-6538
+                .skipReverseControllerCheck();
 
         final KernelServices kernelServices = builder.build();
         assertTrue(kernelServices.isSuccessfulBoot());
