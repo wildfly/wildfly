@@ -24,7 +24,6 @@
 
 package org.jboss.as.ejb3;
 
-import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
@@ -406,8 +405,8 @@ public interface EjbLogger extends BasicLogger {
      * Logs a waring message indicating an overlapped invoking timeout for timer
      */
     @LogMessage(level = WARN)
-    @Message(id = 14143, value = "Timer %s is still active, skipping overlapping scheduled execution at: %s")
-    void skipOverlappingInvokeTimeout(String id, Date scheduledTime);
+    @Message(id = 14143, value = "A previous execution of timer [%s %s] is still in progress, skipping this overlapping scheduled execution at: %s")
+    void skipOverlappingInvokeTimeout(String timedObjectId, String timerId, Date scheduledTime);
 
     // NOTE: messages 14144 to 14149 were moved to message bundle, do not reuse the ids
 
@@ -568,6 +567,14 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 14261, value = "Failed to reinstate timer '%s' (id=%s) from its persistent state")
     void timerReinstatementFailed(String timedObjectId, String timerId, @Cause Throwable cause);
+
+    /**
+     * Logs a waring message indicating an overlapped invoking timeout for timer
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 14262, value = "A previous execution of timer [%s %s] is being retried, skipping this scheduled execution at: %s")
+    void skipInvokeTimeoutDuringRetry(String timedObjectId, String timerId, Date scheduledTime);
+
 
     // Don't add message ids greater that 14299!!! If you need more first check what EjbMessages is
     // using and take more (lower) numbers from the available range for this module. If the range for the module is
