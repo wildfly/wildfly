@@ -621,7 +621,6 @@ final class SubsystemTestDelegate {
         private final ModelVersion modelVersion;
         private final ChildFirstClassLoaderBuilder classLoaderBuilder = new ChildFirstClassLoaderBuilder();
         private boolean persistXml = true;
-        private List<ModelNode> bootOperations;
         private boolean skipReverseCheck;
         private AdditionalInitialization reverseCheckConfig;
         private ModelFixer reverseCheckModelFixer;
@@ -669,10 +668,8 @@ final class SubsystemTestDelegate {
         }
 
         private KernelServicesImpl install(KernelServices mainServices, List<ModelNode> bootOperations) throws Exception {
-            this.bootOperations = bootOperations;
-
             if (!skipReverseCheck) {
-                bootCurrentVersionWithLegacyBootOperations(mainServices);
+                bootCurrentVersionWithLegacyBootOperations(bootOperations, mainServices);
             }
 
             ClassLoader legacyCl = classLoaderBuilder.build();
@@ -713,9 +710,15 @@ final class SubsystemTestDelegate {
             return this;
         }
 
-        private KernelServices bootCurrentVersionWithLegacyBootOperations(KernelServices mainServices) throws Exception {
+        private KernelServices bootCurrentVersionWithLegacyBootOperations(List<ModelNode> bootOperations, KernelServices mainServices) throws Exception {
+            //Clone the boot operations to avoid any pollution installing them in the main controller
+            List<ModelNode> clonedBootOperations = new ArrayList<ModelNode>();
+            for (ModelNode op : bootOperations) {
+                clonedBootOperations.add(op.clone());
+            }
+
             KernelServices reverseServices = createKernelServicesBuilder(reverseCheckConfig)
-                .setBootOperations(bootOperations)
+                .setBootOperations(clonedBootOperations)
                 .build();
             if (reverseServices.getBootError() != null) {
                 Throwable t = reverseServices.getBootError();

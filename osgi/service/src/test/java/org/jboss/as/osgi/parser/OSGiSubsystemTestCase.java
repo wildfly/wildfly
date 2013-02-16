@@ -274,8 +274,6 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
         for (String mavenGAV : mavenGAVs) {
             legacyInitializer.addMavenResourceURL(mavenGAV);
         }
-        //TODO https://issues.jboss.org/browse/AS7-6541
-        legacyInitializer.skipReverseControllerCheck();
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
