@@ -242,7 +242,6 @@ public class ModelTestUtils {
     /**
      * Validate the marshalled xml without adjusting the namespaces for the original and marshalled xml.
      *
-     * @param configId   the id of the xml configuration
      * @param original   the original subsystem xml
      * @param marshalled the marshalled subsystem xml
      * @throws Exception
@@ -254,7 +253,6 @@ public class ModelTestUtils {
     /**
      * Validate the marshalled xml without adjusting the namespaces for the original and marshalled xml.
      *
-     * @param configId        TODO
      * @param original        the original subsystem xml
      * @param marshalled      the marshalled subsystem xml
      * @param ignoreNamespace if {@code true} the subsystem's namespace is ignored, otherwise it is taken into account when comparing the normalized xml.
@@ -522,16 +520,7 @@ public class ModelTestUtils {
             checkFailedTransformedAddOperation(mainServices, modelVersion, op, config);
 
             for (ModelNode writeOp : writeOps) {
-                TransformedOperation transformedOperation = mainServices.transformOperation(modelVersion, writeOp.clone());
-                if (!config.expectFailedWriteAttributeOperation(writeOp)) {
-                    ModelNode result = mainServices.executeOperation(modelVersion, transformedOperation);
-                    Assert.assertEquals("Failed: " + writeOp + "\n" + result, SUCCESS, result.get(OUTCOME).asString());
-                } else {
-                    Assert.assertNotNull("Expected transformation to get rejected " + writeOp, transformedOperation.getFailureDescription());
-                    transformedOperation = mainServices.transformOperation(modelVersion, config.correctWriteAttributeOperation(writeOp));
-                    ModelNode result = mainServices.executeOperation(modelVersion, transformedOperation);
-                    Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString() + " for\n:" + transformedOperation.getTransformedOperation(), SUCCESS, result.get(OUTCOME).asString());
-                }
+                checkFailedTransformedWriteAttributeOperation(mainServices, modelVersion, writeOp, config);
             }
         }
     }
@@ -545,6 +534,19 @@ public class ModelTestUtils {
             }
         } else if (config.expectDiscarded(operation)) {
             Assert.assertNull("Expected null transformed operation for discarded " + operation, transformedOperation.getTransformedOperation());
+        } else {
+            ModelNode result = mainServices.executeOperation(modelVersion, transformedOperation);
+            Assert.assertEquals("Failed: " + operation + "\n: " + result, SUCCESS, result.get(OUTCOME).asString());
+        }
+    }
+
+    private static void checkFailedTransformedWriteAttributeOperation(ModelTestKernelServices<?> mainServices, ModelVersion modelVersion, ModelNode operation, FailedOperationTransformationConfig config) throws OperationFailedException {
+        TransformedOperation transformedOperation = mainServices.transformOperation(modelVersion, operation.clone());
+        if (config.expectFailedWriteAttributeOperation(operation)) {
+            Assert.assertNotNull("Expected transformation to get rejected " + operation, transformedOperation.getFailureDescription());
+            if (config.canCorrectMore(operation)) {
+                checkFailedTransformedWriteAttributeOperation(mainServices, modelVersion, config.correctWriteAttributeOperation(operation), config);
+            }
         } else {
             ModelNode result = mainServices.executeOperation(modelVersion, transformedOperation);
             Assert.assertEquals("Failed: " + operation + "\n: " + result, SUCCESS, result.get(OUTCOME).asString());
