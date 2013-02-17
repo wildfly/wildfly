@@ -39,6 +39,7 @@ import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.messaging.AddressSettingDefinition;
 import org.jboss.as.messaging.BridgeDefinition;
@@ -74,7 +75,6 @@ import org.junit.Test;
 
 /**
  *  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012 Red Hat inc
-
  */
 public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
 
@@ -100,8 +100,7 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
                 .addMavenResourceURL("org.hornetq:hornetq-core:2.2.16.Final")
                 .addMavenResourceURL("org.hornetq:hornetq-jms:2.2.16.Final")
                 .addMavenResourceURL("org.hornetq:hornetq-ra:2.2.16.Final")
-                //TODO https://issues.jboss.org/browse/AS7-6539
-                .skipReverseControllerCheck();
+                .configureReverseControllerCheck(NO_VALIDATION_INIT, null);
 
         KernelServices mainServices = builder.build();
         assertTrue(mainServices.isSuccessfulBoot());
@@ -118,8 +117,7 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
                 .addMavenResourceURL("org.hornetq:hornetq-core:2.2.21.Final")
                 .addMavenResourceURL("org.hornetq:hornetq-jms:2.2.21.Final")
                 .addMavenResourceURL("org.hornetq:hornetq-ra:2.2.21.Final")
-                //TODO https://issues.jboss.org/browse/AS7-6539
-                .skipReverseControllerCheck();
+                .configureReverseControllerCheck(NO_VALIDATION_INIT, null);
 
         KernelServices mainServices = builder.build();
         assertTrue(mainServices.isSuccessfulBoot());
@@ -141,8 +139,7 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
                 .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.1.2.Final")
                 .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.2.Final")
                 .addParentFirstClassPattern("org.jboss.as.controller.*")
-                //TODO https://issues.jboss.org/browse/AS7-6539 (perhaps not as important as for the testTransformersAS71x tests)
-                .skipReverseControllerCheck();
+                .configureReverseControllerCheck(NO_VALIDATION_INIT, null);
 
         doTestRejectExpressions_1_1_0(builder);
     }
@@ -162,8 +159,7 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
                 .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.1.3.Final")
                 .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.3.Final")
                 .addParentFirstClassPattern("org.jboss.as.controller.*")
-                //TODO https://issues.jboss.org/browse/AS7-6539 (perhaps not as important as for the testTransformersAS71x tests)
-                .skipReverseControllerCheck();
+                .configureReverseControllerCheck(NO_VALIDATION_INIT, null);
 
         doTestRejectExpressions_1_1_0(builder);
     }
@@ -181,7 +177,7 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
             }
             return super.isAttributeWritable(attributeName);
         }
-    };
+    }
 
     /**
      * Tests rejection of expressions in 1.1.0 model.
@@ -336,4 +332,17 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
             .addConfig(new RejectExpressionsConfig(rejectedExpression))
             .addConfig(new NewAttributesConfig(newAttributes)).build();
     }
+
+    // TODO AS7-6539 remove this and just use AdditionalInitialization.MANAGEMENT once "clustered" compatibility is fixed */
+    private static final AdditionalInitialization NO_VALIDATION_INIT = new AdditionalInitialization() {
+        @Override
+        protected boolean isValidateOperations() {
+            return false;
+        }
+
+        @Override
+        protected RunningMode getRunningMode() {
+            return RunningMode.ADMIN_ONLY;
+        }
+    };
 }

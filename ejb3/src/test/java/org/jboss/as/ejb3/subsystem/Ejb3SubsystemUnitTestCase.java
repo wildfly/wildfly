@@ -82,8 +82,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
         builder.createLegacyKernelServicesBuilder(null, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-ejb3:" + mavenVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + mavenVersion)
-                //TODO https://issues.jboss.org/browse/AS7-6536
-                .skipReverseControllerCheck();
+                .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, null);
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);

@@ -43,6 +43,7 @@ import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.PROTOCOL;
 
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamConstants;
 
@@ -166,8 +167,16 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 2, 0));
     }
 
-    private static class CapacityCheckerAndConverter extends DefaultCheckersAndConverter {
-        private static final CapacityCheckerAndConverter INSTANCE = new CapacityCheckerAndConverter();
+    /**
+     * Converts doubles to ints, rejects expressions or double values that are not equivalent to integers.
+     *
+     * Package protected solely to allow unit testing.
+     */
+    static class CapacityCheckerAndConverter extends DefaultCheckersAndConverter {
+
+        static final CapacityCheckerAndConverter INSTANCE = new CapacityCheckerAndConverter();
+        private static final Pattern EXPRESSION_PATTERN = Pattern.compile(".*\\$\\{.*\\}.*");
+
         @Override
         public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
             return ModClusterMessages.MESSAGES.capacityIsExpressionOrGreaterThanIntegerMaxValue(attributes.get(CAPACITY.getName()));
@@ -175,17 +184,18 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
 
         @Override
         protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-            if (attributeValue.getType() == ModelType.EXPRESSION) {
+            if (checkForExpression(attributeValue)
+                    || (attributeValue.isDefined() && !isIntegerValue(attributeValue.asDouble()))) {
                 return true;
             }
             Long converted = convert(attributeValue);
-            return (converted != null && converted > Integer.MAX_VALUE);
+            return (converted != null && (converted > Integer.MAX_VALUE || converted < Integer.MIN_VALUE));
         }
 
         @Override
         protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
             Long converted = convert(attributeValue);
-            if (converted != null) {
+            if (converted != null && converted <= Integer.MAX_VALUE && converted >= Integer.MIN_VALUE) {
                 attributeValue.set((int)converted.longValue());
             }
         }
@@ -197,11 +207,24 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         }
 
         private Long convert(ModelNode attributeValue) {
-            if (attributeValue.isDefined() && attributeValue.getType() != ModelType.EXPRESSION) {
-                return Math.round(attributeValue.asDouble());
+            if (attributeValue.isDefined() && !checkForExpression(attributeValue)) {
+                double raw = attributeValue.asDouble();
+                if (isIntegerValue(raw)) {
+                    return Math.round(raw);
+                }
             }
             return null;
         }
+
+        private boolean checkForExpression(final ModelNode node) {
+            return (node.getType() == ModelType.EXPRESSION || node.getType() == ModelType.STRING)
+                    && EXPRESSION_PATTERN.matcher(node.asString()).matches();
+        }
+
+        private boolean isIntegerValue(double raw) {
+            return raw == Double.valueOf(Math.round(raw)).doubleValue();
+        }
+
     }
 
     private static class PropertyCheckerAndConverter extends DefaultCheckersAndConverter {
