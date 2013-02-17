@@ -544,9 +544,8 @@ public class ModelTestUtils {
         TransformedOperation transformedOperation = mainServices.transformOperation(modelVersion, operation.clone());
         if (config.expectFailedWriteAttributeOperation(operation)) {
             Assert.assertNotNull("Expected transformation to get rejected " + operation, transformedOperation.getFailureDescription());
-            if (config.canCorrectMore(operation)) {
-                checkFailedTransformedWriteAttributeOperation(mainServices, modelVersion, config.correctWriteAttributeOperation(operation), config);
-            }
+            //For write-attribute we currently only correct once, all in one go
+            checkFailedTransformedWriteAttributeOperation(mainServices, modelVersion, config.correctWriteAttributeOperation(operation), config);
         } else {
             ModelNode result = mainServices.executeOperation(modelVersion, transformedOperation);
             Assert.assertEquals("Failed: " + operation + "\n: " + result, SUCCESS, result.get(OUTCOME).asString());
