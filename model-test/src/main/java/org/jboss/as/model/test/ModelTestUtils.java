@@ -356,7 +356,7 @@ public class ModelTestUtils {
                     compare(child1, child2, ignoreUndefined, ignoreType, stack);
                     stack.pop();
                 } else if (!ignoreUndefined) {
-                    Assert.assertFalse(child2.asString(), child2.isDefined());
+                    Assert.assertFalse("key=" + key + "\n with child1 undefined has child2 \n" + child2.asString(), child2.isDefined());
                 }
             }
         } else if (node1.getType() == ModelType.LIST) {

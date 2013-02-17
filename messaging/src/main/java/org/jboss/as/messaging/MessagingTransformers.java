@@ -35,13 +35,13 @@ import static org.jboss.as.messaging.CommonAttributes.RUNTIME_QUEUE;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_1_0;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.*;
 
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
@@ -78,14 +78,15 @@ public class MessagingTransformers {
                         .addRejectCheck(SIMPLE_EXPRESSIONS, HornetQServerResourceDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0)
                         .addRejectCheck(DEFINED, HornetQServerResourceDefinition.ATTRIBUTES_ADDED_IN_1_2_0)
                         .setDiscard(UNDEFINED, HornetQServerResourceDefinition.ATTRIBUTES_ADDED_IN_1_2_0)
+                        .setValueConverter(AttributeConverter.Factory.createHardCoded(ID_CACHE_SIZE.getDefaultValue(), true), ID_CACHE_SIZE)
                 .end()
                 .addOperationTransformationOverride(ADD)
                         .inheritResourceAttributeDefinitions()
-                        // add default value for id-cache-size & clustered
+                        // add default value for clustered
+                        // TODO AS7-6539 this is broken
                         .setCustomOperationTransformer(new OperationTransformer() {
                             @Override
                             public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
-                                operation.get(ID_CACHE_SIZE.getName()).set(ID_CACHE_SIZE.getDefaultValue());
                                 operation.get(CLUSTERED.getName()).set(CLUSTERED.getDefaultValue());
                                 return new TransformedOperation(operation, ORIGINAL_RESULT);
                             }
@@ -192,17 +193,7 @@ public class MessagingTransformers {
                         .setDiscard(UNDEFINED, PooledConnectionFactoryDefinition.ATTRIBUTES_ADDED_IN_1_2_0)
                         .addRejectCheck(DEFINED, PooledConnectionFactoryDefinition.ATTRIBUTES_ADDED_IN_1_2_0)
                         .addRejectCheck(SIMPLE_EXPRESSIONS, PooledConnectionFactoryDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0)
-                .end()
-                .addOperationTransformationOverride(ADD)
-                        .inheritResourceAttributeDefinitions()
-                        // add default value for reconnect-attempts
-                        .setCustomOperationTransformer(new OperationTransformer() {
-                            @Override
-                            public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
-                                operation.get(Pooled.RECONNECT_ATTEMPTS.getName()).set(Pooled.RECONNECT_ATTEMPTS.getDefaultValue());
-                                return new TransformedOperation(operation, ORIGINAL_RESULT);
-                            }
-                        })
+                        .setValueConverter(AttributeConverter.Factory.createHardCoded(Pooled.RECONNECT_ATTEMPTS.getDefaultValue(), true), Pooled.RECONNECT_ATTEMPTS)
                 .end();
 
         hornetqServer.addChildResource(JMSQueueDefinition.PATH)
@@ -216,16 +207,5 @@ public class MessagingTransformers {
                 .end();
 
         TransformationDescription.Tools.register(subsystemRoot.build(), subsystem, VERSION_1_1_0);
-    }
-
-    private static String[] concat(AttributeDefinition[] attrs1, String... attrs2) {
-        String[] newAttrs = new String[attrs1.length + attrs2.length];
-        for(int i = 0; i < attrs1.length; i++) {
-            newAttrs[i] = attrs1[i].getName();
-        }
-        for(int i = 0; i < attrs2.length; i++) {
-            newAttrs[attrs1.length + i] = attrs2[i];
-        }
-        return newAttrs;
     }
 }

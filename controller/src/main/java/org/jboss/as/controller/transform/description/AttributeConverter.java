@@ -51,7 +51,6 @@ public interface AttributeConverter {
      * @param address the address of the operation
      * @param attributeName the name of the attribute
      * @param attributeValue the value of the attribute to be converted
-     * @param operation the operation executed. This is unmodifiable.
      * @param context the context of the transformation
      */
     void convertResourceAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context);
@@ -83,8 +82,6 @@ public interface AttributeConverter {
          * @param attributeName the name of the attribute
          * @param attributeValue the value of the attribute
          * @param context the context of the transformation
-         *
-         * @return {@code true} if the attribute or parameter value is not understandable by the target process and so needs to be rejected, {@code false} otherwise.
          */
         protected abstract void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context);
     }
@@ -95,16 +92,39 @@ public interface AttributeConverter {
     public static class Factory {
 
         /**
-         * Creates an AttributeConverter where the conversion in a hard-coded value
+         * Creates an AttributeConverter where the conversion is to a hard-coded value
          *
          * @param hardCodedValue the value to set the attribute to
          * @return the created attribute converter
          */
         public static AttributeConverter createHardCoded(final ModelNode hardCodedValue) {
+            return createHardCoded(hardCodedValue, false);
+        }
+
+        /**
+         * Creates an AttributeConverter where the conversion is to a hard-coded value, with
+         * the ability to restrict the conversion to cases where the value being converted is
+         * {@link org.jboss.dmr.ModelType#UNDEFINED}.
+         * <p>
+         * The expected use case for setting the {@code undefinedOnly} param to {@code true} is to
+         * ensure a legacy slave sees the correct value following a change in a default between releases.
+         * If the attribute being converted is undefined, then the default value is relevant, and in order
+         * to function consistently with newer slaves, the legacy slave will need to be given the new
+         * default in place of "undefined".
+         * </p>
+         *
+         * @param hardCodedValue the value to set the attribute to
+         * @param undefinedOnly {@code true} if the conversion should only occur if the {@code attributeValue}
+         *                                  param is {@link org.jboss.dmr.ModelType#UNDEFINED}
+         * @return the created attribute converter
+         */
+        public static AttributeConverter createHardCoded(final ModelNode hardCodedValue, final boolean undefinedOnly) {
             return new DefaultAttributeConverter() {
                 @Override
                 public void convertAttribute(PathAddress address, String name, ModelNode attributeValue, TransformationContext context) {
-                    attributeValue.set(hardCodedValue);
+                    if (!undefinedOnly || !attributeValue.isDefined()) {
+                        attributeValue.set(hardCodedValue);
+                    }
                 }
             };
         }
