@@ -30,7 +30,6 @@
                     <module-option name="password-stacking" value="useFirstPass"/>
                 </login-module>
                 <login-module code="Duplicate" flag="optional"/>
-                <login-module name="duplicate-module" code="Duplicate" flag="optional"/>
                 <login-module code="Anon" flag="optional"/>
                 <login-module code="RealmUsersRoles" flag="required">
                     <module-option name="usersProperties" value="${jboss.server.config.dir}/application-users.properties"/>

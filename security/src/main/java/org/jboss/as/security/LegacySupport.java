@@ -52,6 +52,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.EnumValidator;
@@ -98,7 +99,7 @@ class LegacySupport {
 
 
         public JASPIAuthenticationModulesAttributeDefinition() {
-            super(Constants.AUTH_MODULES, Constants.AUTH_MODULE, true, false, 1, Integer.MAX_VALUE, validator, null, null, null, true, new DeprecationData(ModelVersion.create(1, 2)), AttributeAccess.Flag.RESTART_ALL_SERVICES);
+            super(Constants.AUTH_MODULES, Constants.AUTH_MODULE, true, false, 1, Integer.MAX_VALUE, validator, null, null, null, false, new DeprecationData(ModelVersion.create(1, 2)), AttributeAccess.Flag.RESTART_ALL_SERVICES);
         }
 
         @Override
@@ -183,7 +184,7 @@ class LegacySupport {
 
 
         public LoginModulesAttributeDefinition(String name, String xmlName) {
-            super(name, xmlName, true, false, 1, Integer.MAX_VALUE, validator, null, null, null, true, new DeprecationData(ModelVersion.create(1, 2)), AttributeAccess.Flag.RESTART_ALL_SERVICES);
+            super(name, xmlName, true, false, 1, Integer.MAX_VALUE, validator, null, null, null, false, new DeprecationData(ModelVersion.create(1, 2)), AttributeAccess.Flag.RESTART_ALL_SERVICES);
         }
 
         @Override
@@ -251,6 +252,7 @@ class LegacySupport {
      */
     public static class MappingModulesAttributeDefinition extends ListAttributeDefinition {
         private static final ParameterValidator validator;
+
         static {
             final ParametersValidator delegate = new ParametersValidator();
             delegate.registerValidator(CODE, new StringLengthValidator(1));
@@ -262,7 +264,7 @@ class LegacySupport {
 
 
         public MappingModulesAttributeDefinition() {
-            super(Constants.MAPPING_MODULES, Constants.MAPPING_MODULE, true, false, 1, Integer.MAX_VALUE, validator, null, null, null, true, new DeprecationData(ModelVersion.create(1, 2)), AttributeAccess.Flag.RESTART_ALL_SERVICES);
+            super(Constants.MAPPING_MODULES, Constants.MAPPING_MODULE, true, false, 1, Integer.MAX_VALUE, validator, null, null, null, false, new DeprecationData(ModelVersion.create(1, 2)), AttributeAccess.Flag.RESTART_ALL_SERVICES);
         }
 
         @Override
@@ -331,7 +333,7 @@ class LegacySupport {
 
 
         public ProviderModulesAttributeDefinition(String name, String xmlName) {
-            super(name, xmlName, true, false, 1, Integer.MAX_VALUE, validator, null, null, null, true, new DeprecationData(ModelVersion.create(1, 2)), AttributeAccess.Flag.RESTART_ALL_SERVICES);
+            super(name, xmlName, true, false, 1, Integer.MAX_VALUE, validator, null, null, null, false, new DeprecationData(ModelVersion.create(1, 2)), AttributeAccess.Flag.RESTART_ALL_SERVICES);
         }
 
         @Override
@@ -424,13 +426,53 @@ class LegacySupport {
                 PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR)).append(relativePath);
                 addModuleOp.get(OP_ADDR).set(address.toModelNode());
                 addModuleOp.get(OP).set(ADD);
-                context.addStep(addModuleOp, addHandler, OperationContext.Stage.IMMEDIATE);
+                context.addStep(new ModelNode(), addModuleOp, addHandler, OperationContext.Stage.MODEL, true);
             }
             //remove on the end to make sure it is executed first
             for (Resource.ResourceEntry entry : existing.getChildren(newKeyName)) {
                 PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR)).append(entry.getPathElement());
                 ModelNode removeModuleOp = Util.createRemoveOperation(address);
-                context.addStep(removeModuleOp, new SecurityDomainReloadRemoveHandler(), OperationContext.Stage.IMMEDIATE);
+                context.addStep(new ModelNode(), removeModuleOp, new SecurityDomainReloadRemoveHandler(), OperationContext.Stage.MODEL, true);
+            }
+            context.stepCompleted();
+        }
+    }
+
+    static class LegacyModulesConverter implements OperationStepHandler {
+        private String newKeyName;
+        private ListAttributeDefinition oldAttribute;
+
+        LegacyModulesConverter(String newKeyName, ListAttributeDefinition oldAttribute) {
+            this.newKeyName = newKeyName;
+            this.oldAttribute = oldAttribute;
+        }
+        /*public ModelNode convertOperationAddress(ModelNode op){
+            PathAddress address = PathAddress.pathAddress(op.get(ModelDescriptionConstants.OP_ADDR));
+            op.get(ModelDescriptionConstants.OP_ADDR).set()
+        }*/
+
+
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            Resource existing = context.readResource(PathAddress.EMPTY_ADDRESS);
+            OperationStepHandler addHandler = context.getResourceRegistration().getSubModel(PathAddress.EMPTY_ADDRESS.append(newKeyName)).getOperationHandler(PathAddress.EMPTY_ADDRESS, "add");
+            oldAttribute.validateOperation(operation);
+            List<ModelNode> modules = new ArrayList<ModelNode>(operation.get(oldAttribute.getName()).asList());
+            Collections.reverse(modules); //need to reverse it to make sure they are added in proper order
+            for (ModelNode module : modules) {
+                ModelNode addModuleOp = module.clone();
+                String code = addModuleOp.get(Constants.CODE).asString();
+                PathElement relativePath = PathElement.pathElement(newKeyName, code);
+                PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR)).append(relativePath);
+                addModuleOp.get(OP_ADDR).set(address.toModelNode());
+                addModuleOp.get(OP).set(ADD);
+                context.addStep(new ModelNode(), addModuleOp, addHandler, OperationContext.Stage.MODEL, true);
+            }
+            //remove on the end to make sure it is executed first
+            for (Resource.ResourceEntry entry : existing.getChildren(newKeyName)) {
+                PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR)).append(entry.getPathElement());
+                ModelNode removeModuleOp = Util.createRemoveOperation(address);
+                context.addStep(new ModelNode(), removeModuleOp, new SecurityDomainReloadRemoveHandler(), OperationContext.Stage.MODEL, true);
             }
             context.stepCompleted();
         }
