@@ -24,7 +24,9 @@ package org.jboss.as.security;
 import static org.jboss.as.security.Constants.AUTH_MODULE;
 
 import org.jboss.as.controller.ListAttributeDefinition;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
@@ -37,6 +39,7 @@ public class JASPIAuthenticationResourceDefinition extends SimpleResourceDefinit
     public static final JASPIAuthenticationResourceDefinition INSTANCE = new JASPIAuthenticationResourceDefinition();
 
     public static final ListAttributeDefinition AUTH_MODULES = new LegacySupport.JASPIAuthenticationModulesAttributeDefinition();
+    private static final OperationStepHandler LEGACY_ADD_HANDLER = new LegacySupport.LegacyModulesConverter(Constants.AUTH_MODULE, AUTH_MODULES);
 
     private JASPIAuthenticationResourceDefinition() {
         super(SecurityExtension.PATH_JASPI_AUTH,
@@ -60,6 +63,14 @@ public class JASPIAuthenticationResourceDefinition extends SimpleResourceDefinit
 
         @Override
         protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        }
+
+        @Override
+        protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
+            super.updateModel(context, operation);
+            if (operation.hasDefined(AUTH_MODULES.getName())) {
+                context.addStep(new ModelNode(), operation, LEGACY_ADD_HANDLER, OperationContext.Stage.MODEL, true);
+            }
         }
     }
 }
