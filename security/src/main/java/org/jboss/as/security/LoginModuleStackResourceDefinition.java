@@ -22,7 +22,9 @@
 package org.jboss.as.security;
 
 import org.jboss.as.controller.ListAttributeDefinition;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
@@ -32,14 +34,15 @@ import org.jboss.dmr.ModelNode;
  */
 public class LoginModuleStackResourceDefinition extends SimpleResourceDefinition {
 
-    public static final LoginModuleStackResourceDefinition INSTANCE = new LoginModuleStackResourceDefinition();
+    static final LoginModuleStackResourceDefinition INSTANCE = new LoginModuleStackResourceDefinition();
 
-    public static final ListAttributeDefinition LOGIN_MODULES = new LegacySupport.LoginModulesAttributeDefinition(Constants.LOGIN_MODULES, Constants.LOGIN_MODULE);
+    static final ListAttributeDefinition LOGIN_MODULES = new LegacySupport.LoginModulesAttributeDefinition(Constants.LOGIN_MODULES, Constants.LOGIN_MODULE);
+    private static final OperationStepHandler LEGACY_ADD_HANDLER = new LegacySupport.LegacyModulesConverter(Constants.LOGIN_MODULE, LOGIN_MODULES);
 
     private LoginModuleStackResourceDefinition() {
         super(SecurityExtension.PATH_LOGIN_MODULE_STACK,
-              SecurityExtension.getResourceDescriptionResolver(Constants.LOGIN_MODULE_STACK),
-              LoginModuleStackResourceDefinitionAdd.INSTANCE, new SecurityDomainReloadRemoveHandler());
+                SecurityExtension.getResourceDescriptionResolver(Constants.LOGIN_MODULE_STACK),
+                LoginModuleStackResourceDefinitionAdd.INSTANCE, new SecurityDomainReloadRemoveHandler());
     }
 
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
@@ -47,16 +50,25 @@ public class LoginModuleStackResourceDefinition extends SimpleResourceDefinition
     }
 
     @Override
-        public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-            super.registerChildren(resourceRegistration);
-            resourceRegistration.registerSubModel(new LoginModuleResourceDefinition(Constants.LOGIN_MODULE));
-        }
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        super.registerChildren(resourceRegistration);
+        resourceRegistration.registerSubModel(new LoginModuleResourceDefinition(Constants.LOGIN_MODULE));
+    }
 
     static class LoginModuleStackResourceDefinitionAdd extends SecurityDomainReloadAddHandler {
         static final LoginModuleStackResourceDefinitionAdd INSTANCE = new LoginModuleStackResourceDefinitionAdd();
 
         @Override
         protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+
+        }
+
+        @Override
+        protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
+            super.updateModel(context, operation);
+            if (operation.hasDefined(LOGIN_MODULES.getName())) {
+                context.addStep(new ModelNode(), operation, LEGACY_ADD_HANDLER, OperationContext.Stage.MODEL, true);
+            }
         }
     }
 }

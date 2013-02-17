@@ -22,7 +22,9 @@
 package org.jboss.as.security;
 
 import org.jboss.as.controller.ListAttributeDefinition;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -36,6 +38,7 @@ public class IdentityTrustResourceDefinition extends SimpleResourceDefinition {
     public static final IdentityTrustResourceDefinition INSTANCE = new IdentityTrustResourceDefinition();
 
     public static final ListAttributeDefinition TRUST_MODULES = new LegacySupport.LoginModulesAttributeDefinition(Constants.TRUST_MODULES, Constants.TRUST_MODULE);
+    private static final OperationStepHandler LEGACY_ADD_HANDLER = new LegacySupport.LegacyModulesConverter(Constants.TRUST_MODULE, TRUST_MODULES);
 
     private IdentityTrustResourceDefinition() {
         super(PathElement.pathElement(Constants.IDENTITY_TRUST, Constants.CLASSIC),
@@ -48,14 +51,22 @@ public class IdentityTrustResourceDefinition extends SimpleResourceDefinition {
     }
 
     @Override
-        public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-            super.registerChildren(resourceRegistration);
-            resourceRegistration.registerSubModel(new LoginModuleResourceDefinition(Constants.TRUST_MODULE));
-        }
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        super.registerChildren(resourceRegistration);
+        resourceRegistration.registerSubModel(new LoginModuleResourceDefinition(Constants.TRUST_MODULE));
+    }
 
     static class IdentityTrustResourceDefinitionAdd extends SecurityDomainReloadAddHandler {
         @Override
         protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        }
+
+        @Override
+        protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
+            super.updateModel(context, operation);
+            if (operation.hasDefined(TRUST_MODULES.getName())) {
+                context.addStep(new ModelNode(), operation, LEGACY_ADD_HANDLER, OperationContext.Stage.MODEL, true);
+            }
         }
     }
 }

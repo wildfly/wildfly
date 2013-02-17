@@ -21,7 +21,9 @@
  */
 package org.jboss.as.security;
 
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
@@ -34,6 +36,7 @@ public class ClassicAuthenticationResourceDefinition extends SimpleResourceDefin
     public static final ClassicAuthenticationResourceDefinition INSTANCE = new ClassicAuthenticationResourceDefinition();
 
     public static final LegacySupport.LoginModulesAttributeDefinition LOGIN_MODULES = new LegacySupport.LoginModulesAttributeDefinition(Constants.LOGIN_MODULES, Constants.LOGIN_MODULE);
+    private static final OperationStepHandler LEGACY_ADD_HANDLER = new LegacySupport.LegacyModulesConverter(Constants.LOGIN_MODULE, LOGIN_MODULES);
 
     private ClassicAuthenticationResourceDefinition() {
         super(SecurityExtension.PATH_CLASSIC_AUTHENTICATION,
@@ -44,16 +47,25 @@ public class ClassicAuthenticationResourceDefinition extends SimpleResourceDefin
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadWriteAttribute(LOGIN_MODULES, new LegacySupport.LegacyModulesAttributeReader(Constants.LOGIN_MODULE), new LegacySupport.LegacyModulesAttributeWriter(Constants.LOGIN_MODULE));
     }
+
     @Override
-        public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-            super.registerChildren(resourceRegistration);
-            resourceRegistration.registerSubModel(new LoginModuleResourceDefinition(Constants.LOGIN_MODULE));
-        }
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        super.registerChildren(resourceRegistration);
+        resourceRegistration.registerSubModel(new LoginModuleResourceDefinition(Constants.LOGIN_MODULE));
+    }
 
     static class ClassicAuthenticationResourceDefinitionAdd extends SecurityDomainReloadAddHandler {
         @Override
         protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-            //LOGIN_MODULES.validateAndSet(operation, model);
+
+        }
+
+        @Override
+        protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
+            super.updateModel(context, operation);
+            if (operation.hasDefined(LOGIN_MODULES.getName())) {
+                context.addStep(new ModelNode(), operation, LEGACY_ADD_HANDLER, OperationContext.Stage.MODEL, true);
+            }
         }
 
     }
