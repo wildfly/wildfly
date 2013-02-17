@@ -117,8 +117,8 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformation_1_1_0_JBPAPP_9134() throws Exception {
-        String subsystemXml = readResource("subsystem.xml");
+    public void testTransformation_1_1_0_JBPAPP_9314() throws Exception {
+        String subsystemXml = readResource("subsystem-1.1.0-JBPAPP-9314.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(null)
                 .setSubsystemXml(subsystemXml);
@@ -130,12 +130,22 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
             .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.2.Final")
             .addParentFirstClassPattern("org.jboss.as.controller.*")
             .addChildFirstClassPattern("org.jboss.as.controller.alias.*")
-            //TODO https://issues.jboss.org/browse/AS7-6537
+            // AS7-6537 the transformer is going to reject a connector add operation
+            // leading to a model difference, so we can't compare
             .skipReverseControllerCheck();
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
-        Assert.assertFalse(mainServices.getLegacyServices(modelVersion).isSuccessfulBoot());
+        // The legacy slave would fail due to the presence of virtual servers, but the
+        // test fixture checks that the op would be rejected and doesn't send it.
+        // So the legacy slave will boot successfully
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+        // But, the http-vs connector should not be there
+        ModelNode legacyModel = legacyServices.readWholeModel();
+        Assert.assertFalse(legacyModel.get("subsystem", "web", "connector").has("http-vs"));
+        // Sanity check
+        Assert.assertTrue(mainServices.readWholeModel().get("subsystem", "web", "connector").hasDefined("http-vs"));
     }
 
     @Test

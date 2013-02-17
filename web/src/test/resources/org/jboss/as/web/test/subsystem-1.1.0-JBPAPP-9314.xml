@@ -1,0 +1,69 @@
+<!--
+  ~ /*
+  ~ * JBoss, Home of Professional Open Source.
+  ~ * Copyright 2013, Red Hat, Inc., and individual contributors
+  ~ * as indicated by the @author tags. See the copyright.txt file in the
+  ~ * distribution for a full listing of individual contributors.
+  ~ *
+  ~ * This is free software; you can redistribute it and/or modify it
+  ~ * under the terms of the GNU Lesser General Public License as
+  ~ * published by the Free Software Foundation; either version 2.1 of
+  ~ * the License, or (at your option) any later version.
+  ~ *
+  ~ * This software is distributed in the hope that it will be useful,
+  ~ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ * Lesser General Public License for more details.
+  ~ *
+  ~ * You should have received a copy of the GNU Lesser General Public
+  ~ * License along with this software; if not, write to the Free
+  ~ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  ~ */
+  -->
+
+<!--
+   This file should be kept in sync with subsystem-1.1.0.xml. The only known difference is the commented stuff below - see https://issues.jboss.org/browse/JBPAPP-9314
+  -->
+<subsystem xmlns="urn:jboss:domain:web:1.4" default-virtual-server="default-host" native="true">
+    <configuration>
+        <static-resources max-depth="5"/>
+        <jsp-configuration development="true" />
+        <mime-mapping name="ogx" value="application/ogg" />
+        <mime-mapping name="ogg" value="audio/ogg" />
+        <welcome-file>toto</welcome-file>
+        <welcome-file>titi</welcome-file>
+    </configuration>
+    <connector name="http" scheme="http" protocol="HTTP/1.1" socket-binding="http"/>
+    <connector name="https" scheme="https" protocol="HTTP/1.1" secure="true" socket-binding="https">
+        <ssl password="changeit" key-alias="tomcat"
+             certificate-key-file="/keystore.p12"
+             verify-client="true"
+             ca-certificate-file="/truststore.jks"
+             ca-certificate-password="changeit"
+             keystore-type="PKCS12" truststore-type="JKS" />
+    </connector>
+    <!--
+      Version 1.1.0 does not support referencing virtual-server from connector
+      The point of this file is to generate an error by using this.
+    -->
+    <connector name="http-vs" scheme="http" protocol="HTTP/1.1" socket-binding="http" >
+        <virtual-server name="vs1" />
+        <virtual-server name="vs2" />
+    </connector>
+    <virtual-server name="default-host" enable-welcome-root="true">
+        <alias name="localhost" />
+        <alias name="example.com" />
+        <access-log resolve-hosts="true">
+            <directory relative-to="jboss.server.base.dir" path="toto" />
+        </access-log>
+        <rewrite name="myrewrite" pattern="^/helloworld(.*)" substitution="/helloworld/test.jsp" flags="L" />
+        <rewrite name="complex" pattern="^/hellomonde(.*)" substitution="/hellomonde/test.jsp" flags="L">
+            <condition name="https" test="%{HTTPS}" pattern="off" flags="NC"/>
+            <condition name="user" test="%{USER}" pattern="toto" flags="NC"/>
+        </rewrite>
+        <sso domain="mydomain" reauthenticate="true" />
+    </virtual-server>
+    <virtual-server name="vs1" />
+    <virtual-server name="vs2" />
+</subsystem>
