@@ -23,6 +23,8 @@
 package org.jboss.as.naming.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.BINDING_TYPE;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.OBJECT_FACTORY_ENV;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
@@ -34,8 +36,11 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.as.naming.management.JndiViewOperation;
 
 /**
@@ -88,8 +93,16 @@ public class NamingExtension implements Extension {
 
         if (context.isRegisterTransformers()) {
             // register 1.1.0 transformer
-            final TransformersSubRegistration transformersSubRegistration110 = subsystem.registerModelTransformers(VERSION_1_1_0, ResourceTransformer.DEFAULT);
-            transformersSubRegistration110.registerSubResource(NamingSubsystemModel.BINDING_PATH,new Naming11Transformer());
+            ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+            builder.addChildResource(NamingSubsystemModel.BINDING_PATH)
+                    .getAttributeBuilder()
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, OBJECT_FACTORY_ENV)
+                    .setDiscard(DiscardAttributeChecker.UNDEFINED, OBJECT_FACTORY_ENV)
+                    .addRejectCheck(new BindingTypeRejectChecker(), BINDING_TYPE)
+                    .end();
+            TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 1, 0));
+            /*final TransformersSubRegistration transformersSubRegistration110 = subsystem.registerModelTransformers(VERSION_1_1_0, ResourceTransformer.DEFAULT);
+            transformersSubRegistration110.registerSubResource(NamingSubsystemModel.BINDING_PATH,new Naming11Transformer());*/
         }
     }
 
