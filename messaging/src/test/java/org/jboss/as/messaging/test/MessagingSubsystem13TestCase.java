@@ -26,8 +26,10 @@ import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 import static org.jboss.as.controller.PathElement.pathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.messaging.CommonAttributes.CALL_FAILOVER_TIMEOUT;
+import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
 import static org.jboss.as.messaging.CommonAttributes.PARAM;
 import static org.jboss.as.messaging.HornetQServerResourceDefinition.HORNETQ_SERVER_PATH;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_1_0;
@@ -66,6 +68,7 @@ import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.ChainedConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.NewAttributesConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.RejectExpressionsConfig;
+import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -100,7 +103,7 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
                 .addMavenResourceURL("org.hornetq:hornetq-core:2.2.16.Final")
                 .addMavenResourceURL("org.hornetq:hornetq-jms:2.2.16.Final")
                 .addMavenResourceURL("org.hornetq:hornetq-ra:2.2.16.Final")
-                .configureReverseControllerCheck(NO_VALIDATION_INIT, null);
+                .configureReverseControllerCheck(null, DEFAULT_PATH_FIXER);
 
         KernelServices mainServices = builder.build();
         assertTrue(mainServices.isSuccessfulBoot());
@@ -117,7 +120,8 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
                 .addMavenResourceURL("org.hornetq:hornetq-core:2.2.21.Final")
                 .addMavenResourceURL("org.hornetq:hornetq-jms:2.2.21.Final")
                 .addMavenResourceURL("org.hornetq:hornetq-ra:2.2.21.Final")
-                .configureReverseControllerCheck(NO_VALIDATION_INIT, null);
+                .configureReverseControllerCheck(null, DEFAULT_PATH_FIXER);
+
 
         KernelServices mainServices = builder.build();
         assertTrue(mainServices.isSuccessfulBoot());
@@ -139,7 +143,7 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
                 .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.1.2.Final")
                 .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.2.Final")
                 .addParentFirstClassPattern("org.jboss.as.controller.*")
-                .configureReverseControllerCheck(NO_VALIDATION_INIT, null);
+                .configureReverseControllerCheck(null, DEFAULT_PATH_FIXER);
 
         doTestRejectExpressions_1_1_0(builder);
     }
@@ -159,7 +163,7 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
                 .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.1.3.Final")
                 .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.3.Final")
                 .addParentFirstClassPattern("org.jboss.as.controller.*")
-                .configureReverseControllerCheck(NO_VALIDATION_INIT, null);
+                .configureReverseControllerCheck(null, DEFAULT_PATH_FIXER);
 
         doTestRejectExpressions_1_1_0(builder);
     }
@@ -333,16 +337,19 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
             .addConfig(new NewAttributesConfig(newAttributes)).build();
     }
 
-    // TODO AS7-6539 remove this and just use AdditionalInitialization.MANAGEMENT once "clustered" compatibility is fixed */
-    private static final AdditionalInitialization NO_VALIDATION_INIT = new AdditionalInitialization() {
+    private static final ModelFixer DEFAULT_PATH_FIXER = new ModelFixer() {
         @Override
-        protected boolean isValidateOperations() {
-            return false;
-        }
-
-        @Override
-        protected RunningMode getRunningMode() {
-            return RunningMode.ADMIN_ONLY;
+        public ModelNode fixModel(ModelNode modelNode) {
+            // Since AS7-5417, messaging's paths resources are always created.
+            // however for legacy version, they were only created if the path attributes were different from the defaults.
+            // The 'empty' hornetq-server does not set any messaging's path so we discard them to "fix" the model and
+            // compare the current and legacy versions
+            for (String serverWithDefaultPath  : new String[] {"empty", "stuff"}) {
+                if (modelNode.get(HORNETQ_SERVER).has(serverWithDefaultPath)) {
+                    modelNode.get(HORNETQ_SERVER, serverWithDefaultPath, PATH).set(new ModelNode());
+                }
+            }
+            return modelNode;
         }
     };
 }

@@ -38,18 +38,12 @@ import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.LONG;
 
-import java.util.List;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.config.impl.FileConfiguration;
 import org.hornetq.core.server.JournalType;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.operations.validation.EnumValidator;
@@ -126,8 +120,7 @@ public interface CommonAttributes {
             .setAllowNull(true)
             .setDefaultValue(new ModelNode(false))
             .setDeprecated(VERSION_1_2_0)
-            .setAttributeMarshaller(NOOP_MARSHALLER)
-            .setStorageRuntime()
+            .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition CLUSTER_PASSWORD = create("cluster-password", ModelType.STRING)
@@ -826,7 +819,7 @@ public interface CommonAttributes {
     String XA = "xa";
     String XA_TX = "XATransaction";
 
-    AttributeDefinition[] SIMPLE_ROOT_RESOURCE_ATTRIBUTES = { PERSISTENCE_ENABLED, SCHEDULED_THREAD_POOL_MAX_SIZE,
+    AttributeDefinition[] SIMPLE_ROOT_RESOURCE_ATTRIBUTES = { CLUSTERED, PERSISTENCE_ENABLED, SCHEDULED_THREAD_POOL_MAX_SIZE,
             THREAD_POOL_MAX_SIZE, SECURITY_DOMAIN, SECURITY_ENABLED, SECURITY_INVALIDATION_INTERVAL, WILD_CARD_ROUTING_ENABLED,
             MANAGEMENT_ADDRESS, MANAGEMENT_NOTIFICATION_ADDRESS, CLUSTER_USER, CLUSTER_PASSWORD, JMX_MANAGEMENT_ENABLED,
             JMX_DOMAIN, MESSAGE_COUNTER_ENABLED, MESSAGE_COUNTER_SAMPLE_PERIOD, MESSAGE_COUNTER_MAX_DAY_HISTORY,

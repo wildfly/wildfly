@@ -296,9 +296,8 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     }
                     break;
                 case CLUSTERED:
+                    // log that the attribute is deprecated but handle it anyway
                     MessagingLogger.ROOT_LOGGER.deprecatedXMLElement(element.toString());
-                    skipElementText(reader);
-                    break;
                 default:
                     if (SIMPLE_ROOT_RESOURCE_ELEMENTS.contains(element)) {
                         AttributeDefinition attributeDefinition = element.getDefinition();

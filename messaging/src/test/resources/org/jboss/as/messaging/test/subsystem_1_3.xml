@@ -1,6 +1,7 @@
 
     <subsystem xmlns="urn:jboss:domain:messaging:1.3">
         <hornetq-server>
+            <clustered>true</clustered>
             <!-- disable messaging persistence -->
             <persistence-enabled>false</persistence-enabled>
             <scheduled-thread-pool-max-size>${messaging.scheduled.thread.pool.max.size:6}</scheduled-thread-pool-max-size>

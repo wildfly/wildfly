@@ -79,18 +79,6 @@ public class MessagingTransformers {
                         .addRejectCheck(DEFINED, HornetQServerResourceDefinition.ATTRIBUTES_ADDED_IN_1_2_0)
                         .setDiscard(UNDEFINED, HornetQServerResourceDefinition.ATTRIBUTES_ADDED_IN_1_2_0)
                         .setValueConverter(AttributeConverter.Factory.createHardCoded(ID_CACHE_SIZE.getDefaultValue(), true), ID_CACHE_SIZE)
-                .end()
-                .addOperationTransformationOverride(ADD)
-                        .inheritResourceAttributeDefinitions()
-                        // add default value for clustered
-                        // TODO AS7-6539 this is broken
-                        .setCustomOperationTransformer(new OperationTransformer() {
-                            @Override
-                            public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
-                                operation.get(CLUSTERED.getName()).set(CLUSTERED.getDefaultValue());
-                                return new TransformedOperation(operation, ORIGINAL_RESULT);
-                            }
-                        })
                 .end();
 
         for (String path : MessagingPathHandlers.PATHS.keySet()) {
