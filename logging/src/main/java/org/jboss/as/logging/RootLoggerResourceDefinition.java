@@ -43,6 +43,7 @@ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.logging.LoggingOperations.ReadFilterOperationStepHandler;
@@ -159,28 +160,35 @@ public class RootLoggerResourceDefinition extends SimpleResourceDefinition {
                                                                     final ResourceTransformationDescriptionBuilder loggingProfileBuilder) {
         // Register the root resource
         final ResourceTransformationDescriptionBuilder child = subsystemBuilder.addChildResource(ROOT_LOGGER_PATH)
+                // Add attributes that should reject expressions
+                .getAttributeBuilder()
+                    // discard level="ALL"
+                    .setDiscard(Transformers1_1_0.LEVEL_ALL_DISCARD_CHECKER, LEVEL)
+                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, EXPRESSION_ATTRIBUTES)
+                    // Discard undefined filter-spec, else convert the value and rename to "filter"
+                    .setDiscard(DiscardAttributeChecker.UNDEFINED, FILTER_SPEC)
+                    .setValueConverter(Transformers1_1_0.FILTER_SPEC_CONVERTER, FILTER_SPEC)
+                    .addRename(FILTER_SPEC, FILTER.getName())
+                    .end()
                 // Register operation transformers
                 .addOperationTransformationOverride(ADD)
-                .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
-                .inheritResourceAttributeDefinitions().end()
-                .addOperationTransformationOverride(WRITE_ATTRIBUTE_OPERATION)
-                .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
-                .inheritResourceAttributeDefinitions().end()
+                    .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
+                    .inheritResourceAttributeDefinitions()
+                    .end()
                 .addOperationTransformationOverride(ROOT_LOGGER_ADD_OPERATION_NAME)
-                .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
-                .inheritResourceAttributeDefinitions().end()
+                    .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
+                    .inheritResourceAttributeDefinitions()
+                    .end()
                 .addOperationTransformationOverride(ADD_HANDLER_OPERATION_NAME)
-                .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
-                .inheritResourceAttributeDefinitions().end()
+                    .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
+                    .inheritResourceAttributeDefinitions()
+                    .end()
                 .addOperationTransformationOverride(REMOVE_HANDLER_OPERATION_NAME)
-                .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
-                .inheritResourceAttributeDefinitions().end()
-                        // Add attributes that should reject expressions
-                .getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, EXPRESSION_ATTRIBUTES)
-                .end()
-                        // Set the custom resource transformer
-                .setCustomResourceTransformer(new LoggingResourceTransformer(NAME, FILTER_SPEC));
+                    .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
+                    .inheritResourceAttributeDefinitions()
+                    .end()
+                // Set the custom resource transformer
+                .setCustomResourceTransformer(new LoggingResourceTransformer(NAME));
 
         // Reject logging profile resources
         loggingProfileBuilder.rejectChildResource(ROOT_LOGGER_PATH);

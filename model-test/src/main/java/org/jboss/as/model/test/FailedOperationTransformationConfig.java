@@ -211,7 +211,7 @@ public class FailedOperationTransformationConfig {
          * Whether something can be corrected in the operation to make it pass.
          * It is preferable to correct one attribute at a time.
          *
-         * @param the operation to check
+         * @param operation the operation to check
          * @return {@code true} if expected to fail, {@code false} otherwise
          */
         boolean canCorrectMore(ModelNode operation);
@@ -233,7 +233,7 @@ public class FailedOperationTransformationConfig {
         /**
          * Whether it is expected that the following write attribute operation should fail
          *
-         * @param the 'add' operation to correct
+         * @param operation the 'add' operation to correct
          * @return {@code true} if expected to fail
          */
         boolean expectFailedWriteAttributeOperation(ModelNode operation);
@@ -243,7 +243,7 @@ public class FailedOperationTransformationConfig {
          * the framework will only call this once if it failed and {@link #correctWriteAttributeOperation(ModelNode)}
          * returned {@code true}, so make sure to do everything to correct the {@code value} attribute.
          *
-         * @param the 'write-attribute' operation to correct
+         * @param operation the 'write-attribute' operation to correct
          * @return the corrected operation
          */
         ModelNode correctWriteAttributeOperation(ModelNode operation);

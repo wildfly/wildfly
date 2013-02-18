@@ -43,6 +43,7 @@ import org.jboss.as.controller.transform.OperationTransformer.TransformedOperati
 import org.jboss.as.logging.logmanager.ConfigurationPersistence;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.RejectExpressionsConfig;
+import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
@@ -108,7 +109,7 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
     }
 
     private void testTransformer1_1_0(final String gav) throws Exception {
-        final String subsystemXml = getSubsystemXml();
+        final String subsystemXml = readResource("/logging_1_1.xml");
         final ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
         final KernelServicesBuilder builder = createKernelServicesBuilder(LoggingTestEnvironment.getManagementInstance())
                 .setSubsystemXml(subsystemXml);
@@ -116,8 +117,7 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
         // Create the legacy kernel
         builder.createLegacyKernelServicesBuilder(LoggingTestEnvironment.getManagementInstance(), modelVersion)
                 .addMavenResourceURL(gav)
-                //TODO https://issues.jboss.org/browse/AS7-6538
-                .skipReverseControllerCheck();
+                .configureReverseControllerCheck(LoggingTestEnvironment.getManagementInstance(), null);
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
@@ -155,6 +155,11 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
                                 new RejectExpressionsConfig(ConsoleHandlerResourceDefinition.ATTRIBUTES))
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(FileHandlerResourceDefinition.FILE_HANDLER_PATH),
                                 new RejectExpressionsConfig(FileHandlerResourceDefinition.ATTRIBUTES))
+                        .addFailedAttribute(SUBSYSTEM_ADDRESS.append(FileHandlerResourceDefinition.FILE_HANDLER_PATH),
+                                FailedOperationTransformationConfig.ChainedConfig.createBuilder(FileHandlerResourceDefinition.ATTRIBUTES)
+                                .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(CommonAttributes.ENABLED))
+                                .addConfig(new RejectExpressionsConfig(FileHandlerResourceDefinition.ATTRIBUTES))
+                                .build())
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(PeriodicHandlerResourceDefinition.PERIODIC_HANDLER_PATH),
                                 new RejectExpressionsConfig(PeriodicHandlerResourceDefinition.ATTRIBUTES))
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(SizeRotatingHandlerResourceDefinition.SIZE_ROTATING_HANDLER_PATH),

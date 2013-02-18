@@ -140,7 +140,7 @@
 
     <logger category="com.example.foo">
         <filter>
-            <replace pattern="\b(Name)|\b(name)" replacement="user" replace-all="true"/>
+            <replace pattern="\\b(Name)|\\b(name)" replacement="user" replace-all="true"/>
         </filter>
     </logger>
 </subsystem>

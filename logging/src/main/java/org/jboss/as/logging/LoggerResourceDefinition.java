@@ -23,7 +23,6 @@
 package org.jboss.as.logging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.logging.CommonAttributes.ADD_HANDLER_OPERATION_NAME;
 import static org.jboss.as.logging.CommonAttributes.FILTER;
 import static org.jboss.as.logging.CommonAttributes.FILTER_SPEC;
@@ -37,12 +36,14 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.logging.LoggingOperations.ReadFilterOperationStepHandler;
@@ -92,14 +93,10 @@ public class LoggerResourceDefinition extends SimpleResourceDefinition {
             .setPropertyName("useParentHandlers")
             .build();
 
+    // Be careful with this attribute. It needs to show up in the "add" operation param list so ops from legacy
+    // scripts will validate. It does because it's registered as an attribute but is not setResourceOnly(true)
+    // so DefaultResourceAddDescriptionProvider adds it to the param list
     public static final SimpleAttributeDefinition CATEGORY = SimpleAttributeDefinitionBuilder.create("category", ModelType.STRING, true).build();
-    static final AttributeDefinition[] ATTRIBUTES = {
-            CATEGORY,
-            FILTER_SPEC,
-            LEVEL,
-            HANDLERS,
-            USE_PARENT_HANDLERS
-    };
 
     static final AttributeDefinition[] WRITABLE_ATTRIBUTES = {
             FILTER_SPEC,
@@ -126,7 +123,8 @@ public class LoggerResourceDefinition extends SimpleResourceDefinition {
     public LoggerResourceDefinition(final boolean includeLegacy) {
         super(LOGGER_PATH,
                 LoggingExtension.getResourceDescriptionResolver(LOGGER),
-                (includeLegacy ? new LoggerOperations.LoggerAddOperationStepHandler(join(ATTRIBUTES, LEGACY_ATTRIBUTES)) : new LoggerOperations.LoggerAddOperationStepHandler(ATTRIBUTES)),
+                (includeLegacy ? new LoggerOperations.LoggerAddOperationStepHandler(join(WRITABLE_ATTRIBUTES, LEGACY_ATTRIBUTES))
+                               : new LoggerOperations.LoggerAddOperationStepHandler(WRITABLE_ATTRIBUTES)),
                 LoggerOperations.REMOVE_LOGGER);
         writableAttributes = (includeLegacy ? join(WRITABLE_ATTRIBUTES, LEGACY_ATTRIBUTES) : WRITABLE_ATTRIBUTES);
         this.writeHandler = new LoggerOperations.LoggerWriteAttributeHandler(writableAttributes);
@@ -142,7 +140,7 @@ public class LoggerResourceDefinition extends SimpleResourceDefinition {
                 resourceRegistration.registerReadWriteAttribute(def, null, writeHandler);
             }
         }
-        resourceRegistration.registerReadOnlyAttribute(CATEGORY, null);
+        resourceRegistration.registerReadOnlyAttribute(CATEGORY, ReadResourceNameOperationStepHandler.INSTANCE);
     }
 
     @Override
@@ -166,29 +164,34 @@ public class LoggerResourceDefinition extends SimpleResourceDefinition {
      */
     static ResourceTransformationDescriptionBuilder addTransformers(final ResourceTransformationDescriptionBuilder subsystemBuilder,
                                                                     final ResourceTransformationDescriptionBuilder loggingProfileBuilder) {
-        // Register the logger resource
-        final ResourceTransformationDescriptionBuilder child = subsystemBuilder.addChildResource(LOGGER_PATH)
-                // Register operation transformers
-                .addOperationTransformationOverride(ADD)
-                .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
-                .inheritResourceAttributeDefinitions().end()
-                .addOperationTransformationOverride(WRITE_ATTRIBUTE_OPERATION)
-                .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
-                .inheritResourceAttributeDefinitions().end()
-                .addOperationTransformationOverride(ADD_HANDLER_OPERATION_NAME)
-                .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
-                .inheritResourceAttributeDefinitions().end()
-                .addOperationTransformationOverride(REMOVE_HANDLER_OPERATION_NAME)
-                .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
-                .inheritResourceAttributeDefinitions().end()
-                        // Add attributes that should reject expressions
-                .getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, EXPRESSION_ATTRIBUTES).end()
-                        // Set the custom resource transformer
-                .setCustomResourceTransformer(new LoggingResourceTransformer(CATEGORY, FILTER_SPEC));
 
         // Reject logging profile resources
         loggingProfileBuilder.rejectChildResource(LOGGER_PATH);
 
-        return child;
+        // Register the logger resource
+        return subsystemBuilder.addChildResource(LOGGER_PATH)
+                .getAttributeBuilder()
+                    // discard level="ALL"
+                    .setDiscard(Transformers1_1_0.LEVEL_ALL_DISCARD_CHECKER, LEVEL)
+                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, EXPRESSION_ATTRIBUTES)
+                    // Discard undefined filter-spec, else convert the value and rename to "filter"
+                    .setDiscard(DiscardAttributeChecker.UNDEFINED, FILTER_SPEC)
+                    .setValueConverter(Transformers1_1_0.FILTER_SPEC_CONVERTER, FILTER_SPEC)
+                    .addRename(FILTER_SPEC, FILTER.getName())
+                    .end()
+                // Register operation transformers
+                .addOperationTransformationOverride(ADD)
+                    .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
+                    .inheritResourceAttributeDefinitions()
+                    .end()
+                .addOperationTransformationOverride(ADD_HANDLER_OPERATION_NAME)
+                    .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
+                    .inheritResourceAttributeDefinitions()
+                    .end()
+                .addOperationTransformationOverride(REMOVE_HANDLER_OPERATION_NAME)
+                    .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
+                    .inheritResourceAttributeDefinitions()
+                    .end()
+                .setCustomResourceTransformer(new LoggingResourceTransformer(CATEGORY));
     }
 }
