@@ -368,5 +368,12 @@ public interface JmxMessages {
     @Message(id = 11355, value = "ObjectName cannot be null")
     IllegalArgumentException objectNameCantBeNull();
 
+    @Message(id = 11356, value = "'domain-name' can only be 'jboss.as'")
+    String domainNameMustBeJBossAs();
+
+
+    @Message(id = 11357, value = "'false' is the only acceptable value for 'proper-property-format'")
+    String properPropertyFormatMustBeFalse();
+
 }
 

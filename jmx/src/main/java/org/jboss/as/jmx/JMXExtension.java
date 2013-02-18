@@ -32,13 +32,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.jmx.CommonAttributes.JMX;
 import static org.jboss.as.jmx.CommonAttributes.REMOTING_CONNECTOR;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -52,20 +53,23 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.registry.Resource.ResourceEntry;
-import org.jboss.as.controller.transform.AbstractOperationTransformer;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
-import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -136,23 +140,27 @@ public class JMXExtension implements Extension {
     }
 
     private void registerTransformers1_0_0(SubsystemRegistration registration) {
-        // Register the transformers
-        final TransformersSubRegistration transformers = registration.registerModelTransformers(ModelVersion.create(1, 0, 0), new ResourceTransformer() {
+
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        builder.setCustomResourceTransformer(new ResourceTransformer() {
             @Override
-            public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
+            public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource)
+                    throws OperationFailedException {
                 ModelNode model = resource.getModel();
 
-                //The existance of the expose-model=>resolved child is translated into the show-model=>true attribute
+                // The existance of the expose-model=>resolved child is
+                // translated into the show-model=>true attribute
                 Resource exposeResolvedResource = resource.getChild(PathElement.pathElement(CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED));
                 boolean showModel = false;
                 if (exposeResolvedResource != null) {
-                     showModel = model.isDefined();
+                    showModel = model.isDefined();
                 }
                 model.get(CommonAttributes.SHOW_MODEL).set(showModel);
                 ResourceTransformationContext childContext = context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
 
-                //Process all the child resources skipping the expose-model=>* children
-                for (String type :resource.getChildTypes()) {
+                // Process all the child resources skipping the expose-model=>*
+                // children
+                for (String type : resource.getChildTypes()) {
                     if (!type.equals(CommonAttributes.EXPOSE_MODEL)) {
                         for (ResourceEntry child : resource.getChildren(type)) {
                             childContext.processChild(child.getPathElement(), child);
@@ -161,42 +169,55 @@ public class JMXExtension implements Extension {
                 }
             }
         });
+        builder.rejectChildResource(PathElement.pathElement(CommonAttributes.EXPOSE_MODEL, CommonAttributes.EXPRESSION));
+        ResourceTransformationDescriptionBuilder resolvedBuilder = builder.addChildResource(PathElement.pathElement(CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED));
+        resolvedBuilder.getAttributeBuilder()
+            .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CommonAttributes.DOMAIN_NAME, CommonAttributes.PROPER_PROPERTY_FORMAT)
+            .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
+                @Override
+                public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+                    return JmxMessages.MESSAGES.domainNameMustBeJBossAs();
+                }
 
+                @Override
+                protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
+                        TransformationContext context) {
+                    return attributeValue.isDefined() && !attributeValue.asString().equals("jboss.as");
+                }
+            }, CommonAttributes.DOMAIN_NAME)
+            .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
+                @Override
+                public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+                    return JmxMessages.MESSAGES.properPropertyFormatMustBeFalse();
+                }
 
-        TransformersSubRegistration expressions = transformers.registerSubResource(ExposeModelResourceExpression.INSTANCE.getPathElement());
+                @Override
+                public boolean rejectOperationParameter(PathAddress address, String attributeName, ModelNode attributeValue,
+                        ModelNode operation, TransformationContext context) {
+                    if (operation.get(OP).asString().equals(REMOVE)) {
+                        return false;
+                    }
+                    return super.rejectOperationParameter(address, attributeName, attributeValue, operation, context);
+                }
 
-        expressions.discardOperations(ADD, REMOVE, WRITE_ATTRIBUTE_OPERATION, READ_ATTRIBUTE_OPERATION);
-
-        TransformersSubRegistration resolved = transformers.registerSubResource(ExposeModelResourceResolved.INSTANCE.getPathElement());
-        resolved.discardOperations(WRITE_ATTRIBUTE_OPERATION);
-        resolved.registerOperationTransformer(ADD, new AbstractOperationTransformer() {
+                @Override
+                protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
+                        TransformationContext context) {
+                    return !attributeValue.isDefined() || (attributeValue.getType() == ModelType.BOOLEAN && attributeValue.asBoolean());
+                }
+            }, CommonAttributes.PROPER_PROPERTY_FORMAT);
+        resolvedBuilder.setCustomResourceTransformer(ResourceTransformer.DISCARD);
+        resolvedBuilder.addOperationTransformationOverride(ADD).inheritResourceAttributeDefinitions().setCustomOperationTransformer(new ResolvedOperationTransformer(true));
+        resolvedBuilder.addOperationTransformationOverride(REMOVE).inheritResourceAttributeDefinitions().setCustomOperationTransformer(new ResolvedOperationTransformer(false));
+        //No need to do write-attribute and undefine-attribute, null becomes true and any other value than 'jboss.as' is rejected
+        resolvedBuilder.addOperationTransformationOverride(UNDEFINE_ATTRIBUTE_OPERATION).inheritResourceAttributeDefinitions().setCustomOperationTransformer(OperationTransformer.DISCARD);
+        resolvedBuilder.addOperationTransformationOverride(WRITE_ATTRIBUTE_OPERATION).inheritResourceAttributeDefinitions().setCustomOperationTransformer(OperationTransformer.DISCARD);
+        resolvedBuilder.addOperationTransformationOverride(READ_ATTRIBUTE_OPERATION).setCustomOperationTransformer(new OperationTransformer() {
             @Override
-            protected ModelNode transform(TransformationContext context, PathAddress address, ModelNode operation) {
-                ModelNode node = new ModelNode();
-                node.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-                node.get(OP_ADDR).set(address.subAddress(0, address.size() - 1).toModelNode());
-                node.get(NAME).set(CommonAttributes.SHOW_MODEL);
-                node.get(VALUE).set(true);
-                return node;
-            }
-        });
-
-        resolved.registerOperationTransformer(REMOVE, new AbstractOperationTransformer() {
-            @Override
-            protected ModelNode transform(TransformationContext context, PathAddress address, ModelNode operation) {
-                ModelNode node = new ModelNode();
-                node.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-                node.get(OP_ADDR).set(address.subAddress(0, address.size() - 1).toModelNode());
-                node.get(NAME).set(CommonAttributes.SHOW_MODEL);
-                node.get(VALUE).set(false);
-                return node;
-            }
-        });
-        resolved.registerOperationTransformer(READ_ATTRIBUTE_OPERATION, new OperationTransformer() {
-
-            @Override
-            public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation) {
+            public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation)
+                    throws OperationFailedException {
                 return new TransformedOperation(null, new OperationResultTransformer() {
+
                     @Override
                     public ModelNode transformResult(ModelNode result) {
                         if (operation.get(NAME).asString().equals(CommonAttributes.DOMAIN_NAME)) {
@@ -209,12 +230,29 @@ public class JMXExtension implements Extension {
                 });
             }
         });
+        builder.addChildResource(RemotingConnectorResource.REMOTE_CONNECTOR_CONFIG_PATH)
+            .getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, RemotingConnectorResource.USE_MANAGEMENT_ENDPOINT);
 
-        RejectExpressionValuesTransformer rejectTransformer = new RejectExpressionValuesTransformer(RemotingConnectorResource.USE_MANAGEMENT_ENDPOINT);
-        TransformersSubRegistration remoting = transformers.registerSubResource(RemotingConnectorResource.REMOTE_CONNECTOR_CONFIG_PATH,
-                (ResourceTransformer) rejectTransformer);
-        remoting.registerOperationTransformer(ADD, rejectTransformer);
-        remoting.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, rejectTransformer.getWriteAttributeTransformer());
+        TransformationDescription.Tools.register(builder.build(), registration, ModelVersion.create(1, 0, 0));
+    }
+
+
+    private static class ResolvedOperationTransformer implements OperationTransformer {
+        private final boolean showModel;
+
+        public ResolvedOperationTransformer(boolean showModel) {
+            this.showModel = showModel;
+        }
+
+        @Override
+        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation)
+                throws OperationFailedException {
+            PathAddress pathAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
+            pathAddress = pathAddress.subAddress(0, pathAddress.size() - 1);
+            ModelNode op = Util.getWriteAttributeOperation(pathAddress, CommonAttributes.SHOW_MODEL, new ModelNode(showModel));
+            return new TransformedOperation(op,OperationResultTransformer.ORIGINAL_RESULT);
+        }
     }
 
     private static class JMXSubsystemParser_1_0 implements XMLStreamConstants, XMLElementReader<List<ModelNode>> {
