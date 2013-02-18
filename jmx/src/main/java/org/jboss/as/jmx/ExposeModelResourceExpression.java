@@ -31,7 +31,7 @@ import org.jboss.dmr.ModelType;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class ExposeModelResourceExpression extends ExposeModelResource{
-    static final SimpleAttributeDefinition DOMAIN_NAME = SimpleAttributeDefinitionBuilder.create(CommonAttributes.DOMAIN_NAME, ModelType.STRING, true)
+    public static final SimpleAttributeDefinition DOMAIN_NAME = SimpleAttributeDefinitionBuilder.create(CommonAttributes.DOMAIN_NAME, ModelType.STRING, true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(CommonAttributes.DEFAULT_EXPRESSION_DOMAIN))
             .build();

@@ -35,7 +35,7 @@ import org.jboss.dmr.ModelType;
  */
 public class ExposeModelResourceResolved extends ExposeModelResource {
 
-    static final SimpleAttributeDefinition DOMAIN_NAME = SimpleAttributeDefinitionBuilder.create(CommonAttributes.DOMAIN_NAME, ModelType.STRING, true)
+    public static final SimpleAttributeDefinition DOMAIN_NAME = SimpleAttributeDefinitionBuilder.create(CommonAttributes.DOMAIN_NAME, ModelType.STRING, true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(CommonAttributes.DEFAULT_RESOLVED_DOMAIN))
             .build();
