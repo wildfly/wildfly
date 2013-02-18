@@ -542,6 +542,6 @@ public interface ConnectorMessages {
     @Message(id = 10481, value = "Cannot get service value for: %s")
     ExecutionException cannotGetServiceValue(@Cause Throwable cause, String serviceName);
 
-    @Message(id = 11970, value = "Cannot deactivate deferred module phase for: %s")
+    @Message(id = 10482, value = "Cannot deactivate deferred module phase for: %s")
     OperationFailedException cannotDeactivateDeferredModulePhase(@Cause Throwable cause, ServiceName serviceName);
 }

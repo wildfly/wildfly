@@ -79,11 +79,7 @@ public final class FutureServiceValue<T> implements Future<T> {
 
     @Override
     public T get() throws ExecutionException {
-        try {
-            return get(5, TimeUnit.SECONDS);
-        } catch (TimeoutException ex) {
-            throw new ExecutionException(ex);
-        }
+        return getValue();
     }
 
     @Override
@@ -97,44 +93,8 @@ public final class FutureServiceValue<T> implements Future<T> {
             return controller.getValue();
 
         final CountDownLatch latch = new CountDownLatch(1);
-        final FutureServiceValue<T> futureServiceValue = this;
         final String serviceName = controller.getName().getCanonicalName();
-        ServiceListener<T> listener = new AbstractServiceListener<T>() {
-
-            @Override
-            public void listenerAdded(ServiceController<? extends T> controller) {
-                ServiceController.State state = controller.getState();
-                if (state == expectedState || state == ServiceController.State.START_FAILED)
-                    listenerDone(controller);
-            }
-
-            @Override
-            public void transition(final ServiceController<? extends T> controller, final ServiceController.Transition transition) {
-                ROOT_LOGGER.tracef("transition %s %s => %s", futureServiceValue, serviceName, transition);
-                ServiceController.Substate targetState = transition.getAfter();
-                switch (expectedState) {
-                    case UP:
-                        if (targetState == ServiceController.Substate.UP || targetState == ServiceController.Substate.START_FAILED) {
-                            listenerDone(controller);
-                        }
-                        break;
-                    case DOWN:
-                        if (targetState == ServiceController.Substate.DOWN) {
-                            listenerDone(controller);
-                        }
-                        break;
-                    case REMOVED:
-                        if (targetState == ServiceController.Substate.REMOVED) {
-                            listenerDone(controller);
-                        }
-                        break;
-                }
-            }
-
-            private void listenerDone(ServiceController<? extends T> controller) {
-                latch.countDown();
-            }
-        };
+        ServiceListener<T> listener = getServiceListener(latch);
 
         controller.addListener(listener);
         try {
@@ -159,5 +119,79 @@ public final class FutureServiceValue<T> implements Future<T> {
             throw (RuntimeException) cause;
         }
         throw MESSAGES.cannotGetServiceValue(cause, serviceName);
+    }
+
+    private T getValue() throws ExecutionException {
+
+            if (controller.getState() == expectedState)
+                return controller.getValue();
+
+            final CountDownLatch latch = new CountDownLatch(1);
+            final String serviceName = controller.getName().getCanonicalName();
+            ServiceListener<T> listener = getServiceListener(latch);
+
+            controller.addListener(listener);
+            try {
+             latch.await();
+
+            } catch (InterruptedException e) {
+                // ignore
+            } finally {
+                controller.removeListener(listener);
+            }
+
+            if (controller.getState() == expectedState)
+                return expectedState == ServiceController.State.UP ? controller.getValue() : null;
+
+            Throwable cause = controller.getStartException();
+            while (cause instanceof StartException && cause.getCause() != null) {
+                cause = cause.getCause();
+            }
+            if (cause instanceof RuntimeException) {
+                throw (RuntimeException) cause;
+            }
+            throw MESSAGES.cannotGetServiceValue(cause, serviceName);
+        }
+
+    private ServiceListener<T> getServiceListener(final CountDownLatch latch) {
+        final FutureServiceValue<T> futureServiceValue = this;
+        final String serviceName = controller.getName().getCanonicalName();
+
+        return new AbstractServiceListener<T>() {
+
+                @Override
+                public void listenerAdded(ServiceController<? extends T> controller) {
+                    ServiceController.State state = controller.getState();
+                    if (state == expectedState || state == ServiceController.State.START_FAILED)
+                        listenerDone(controller);
+                }
+
+                @Override
+                public void transition(final ServiceController<? extends T> controller, final ServiceController.Transition transition) {
+                    ROOT_LOGGER.tracef("transition %s %s => %s", futureServiceValue, serviceName, transition);
+                    ServiceController.Substate targetState = transition.getAfter();
+                    switch (expectedState) {
+                        case UP:
+                            if (targetState == ServiceController.Substate.UP || targetState == ServiceController.Substate.START_FAILED) {
+                                listenerDone(controller);
+                            }
+                            break;
+                        case DOWN:
+                            if (targetState == ServiceController.Substate.DOWN) {
+                                listenerDone(controller);
+                            }
+                            break;
+                        case REMOVED:
+                            if (targetState == ServiceController.Substate.REMOVED) {
+                                listenerDone(controller);
+                            }
+                            break;
+                    }
+                }
+
+                private void listenerDone(ServiceController<? extends T> controller) {
+                    latch.countDown();
+                }
+            };
     }
 }
