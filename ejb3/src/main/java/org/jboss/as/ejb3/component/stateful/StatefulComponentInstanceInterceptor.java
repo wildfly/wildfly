@@ -25,7 +25,6 @@ import java.rmi.RemoteException;
 
 import javax.ejb.ConcurrentAccessException;
 import javax.ejb.ConcurrentAccessTimeoutException;
-import javax.ejb.NoSuchEJBException;
 import javax.ejb.RemoveException;
 
 import org.jboss.as.ee.component.ComponentInstance;
@@ -52,7 +51,7 @@ public class StatefulComponentInstanceInterceptor extends AbstractEJBInterceptor
     public Object processInvocation(InterceptorContext context) throws Exception {
         StatefulSessionComponent component = getComponent(context, StatefulSessionComponent.class);
         // TODO: this is a contract with the client interceptor
-        SessionID sessionId = (SessionID) context.getPrivateData(SessionID.class);
+        SessionID sessionId = context.getPrivateData(SessionID.class);
         if (sessionId == null) {
             throw MESSAGES.statefulSessionIdIsNull(component.getComponentName());
         }

@@ -22,17 +22,10 @@
 
 package org.jboss.as.web;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
-
-import static org.jboss.as.web.WebReWriteConditionDefinition.FLAGS;
-import static org.jboss.as.web.WebReWriteConditionDefinition.PATTERN;
-import static org.jboss.as.web.WebReWriteConditionDefinition.TEST;
 
 /**
  * {@code OperationHandler} responsible for defining the accesslog entry.

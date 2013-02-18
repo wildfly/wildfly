@@ -21,9 +21,9 @@
  */
 package org.jboss.as.connector.services.driver.registry;
 
-import org.jboss.as.connector.services.driver.InstalledDriver;
-
 import java.util.Set;
+
+import org.jboss.as.connector.services.driver.InstalledDriver;
 
 /**
  * A registry for JDBC drivers installed in the system.

@@ -32,7 +32,6 @@ import java.util.Map;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.TransformingProxyController;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;

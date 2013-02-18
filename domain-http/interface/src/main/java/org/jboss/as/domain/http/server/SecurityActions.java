@@ -25,10 +25,6 @@ package org.jboss.as.domain.http.server;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
-import javax.security.auth.Subject;
-
-import org.jboss.as.controller.security.SecurityContext;
-
 /**
  * Security Actions for classes in the org.jboss.as.domain.http.server package.
  *

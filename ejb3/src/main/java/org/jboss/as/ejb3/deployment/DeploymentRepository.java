@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.ejb3.EjbLogger;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;

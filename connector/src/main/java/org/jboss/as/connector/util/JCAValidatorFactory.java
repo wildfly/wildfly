@@ -23,7 +23,6 @@ package org.jboss.as.connector.util;
 
 import java.util.Collections;
 import java.util.List;
-
 import javax.validation.Configuration;
 import javax.validation.ConstraintValidatorFactory;
 import javax.validation.MessageInterpolator;

@@ -22,13 +22,13 @@
 
 package org.jboss.as.connector.services.resourceadapters.repository;
 
+import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
+
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
 
 public class ManagementRepositoryService implements Service<ManagementRepository> {
 

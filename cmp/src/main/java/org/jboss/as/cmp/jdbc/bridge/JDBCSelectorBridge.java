@@ -29,7 +29,6 @@ import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
-import org.jboss.as.cmp.CmpMessages;
 import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.bridge.SelectorBridge;
 import org.jboss.as.cmp.component.CmpEntityBeanComponent;

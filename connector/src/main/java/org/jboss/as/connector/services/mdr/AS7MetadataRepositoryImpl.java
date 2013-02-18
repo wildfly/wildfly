@@ -22,19 +22,19 @@
 
 package org.jboss.as.connector.services.mdr;
 
-import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
-import org.jboss.jca.common.api.metadata.ra.Connector;
-import org.jboss.jca.core.mdr.SimpleMetadataRepository;
-import org.jboss.jca.core.spi.mdr.AlreadyExistsException;
-import org.jboss.jca.core.spi.mdr.NotFoundException;
-import org.jboss.msc.service.ServiceName;
-
 import java.io.File;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
+import org.jboss.jca.common.api.metadata.ra.Connector;
+import org.jboss.jca.core.mdr.SimpleMetadataRepository;
+import org.jboss.jca.core.spi.mdr.AlreadyExistsException;
+import org.jboss.jca.core.spi.mdr.NotFoundException;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * An AS7' implementation of MetadataRepository

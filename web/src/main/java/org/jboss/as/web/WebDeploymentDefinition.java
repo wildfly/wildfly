@@ -22,6 +22,12 @@
 
 package org.jboss.as.web;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.catalina.Context;
 import org.apache.catalina.session.ManagerBase;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
@@ -39,12 +45,6 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
-
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 /**
  * @author Tomaz Cerar

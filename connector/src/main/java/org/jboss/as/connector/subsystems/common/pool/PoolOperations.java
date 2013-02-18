@@ -22,11 +22,14 @@
 
 package org.jboss.as.connector.subsystems.common.pool;
 
+import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.connector.subsystems.datasources.Util;
+import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -39,9 +42,6 @@ import org.jboss.jca.core.api.management.Connector;
 import org.jboss.jca.core.api.management.DataSource;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.msc.service.ServiceController;
-
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 public abstract class PoolOperations implements OperationStepHandler {
 

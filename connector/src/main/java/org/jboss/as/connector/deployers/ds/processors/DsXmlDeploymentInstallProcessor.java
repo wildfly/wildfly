@@ -22,6 +22,8 @@
 
 package org.jboss.as.connector.deployers.ds.processors;
 
+import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
+
 import java.sql.Driver;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,8 +31,6 @@ import java.util.Map;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.logging.ConnectorMessages;
-import org.jboss.as.connector.subsystems.datasources.Util;
-import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.connector.services.driver.registry.DriverRegistry;
 import org.jboss.as.connector.subsystems.datasources.AbstractDataSourceService;
 import org.jboss.as.connector.subsystems.datasources.DataSourceReferenceFactoryService;
@@ -39,9 +39,11 @@ import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension;
 import org.jboss.as.connector.subsystems.datasources.LocalDataSourceService;
 import org.jboss.as.connector.subsystems.datasources.ModifiableDataSource;
 import org.jboss.as.connector.subsystems.datasources.ModifiableXaDataSource;
+import org.jboss.as.connector.subsystems.datasources.Util;
 import org.jboss.as.connector.subsystems.datasources.XMLDataSourceRuntimeHandler;
 import org.jboss.as.connector.subsystems.datasources.XMLXaDataSourceRuntimeHandler;
 import org.jboss.as.connector.subsystems.datasources.XaDataSourceService;
+import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -74,8 +76,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.SubjectFactory;
-
-import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
 
 /**
  * Picks up -ds.xml deployments

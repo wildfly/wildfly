@@ -43,7 +43,6 @@ import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.RemoveException;
 import javax.ejb.TransactionRolledbackLocalException;
 import javax.sql.DataSource;
-import javax.transaction.RollbackException;
 import javax.transaction.Status;
 import javax.transaction.Synchronization;
 import javax.transaction.SystemException;

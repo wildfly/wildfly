@@ -31,7 +31,6 @@ import java.util.concurrent.ThreadFactory;
 
 import javax.ejb.NoSuchEJBException;
 
-import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.cache.Cacheable;
 import org.jboss.as.ejb3.cache.IdentifierFactory;

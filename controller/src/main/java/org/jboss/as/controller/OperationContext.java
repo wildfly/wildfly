@@ -29,7 +29,6 @@ import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -622,7 +621,7 @@ public interface OperationContext extends ExpressionResolver {
      * @param node the ModelNode containing expressions.
      * @return a copy of the node with expressions resolved
      *
-     * @throws OperationFailedException if there is a value of type {@link ModelType#EXPRESSION} in the node tree and
+     * @throws OperationFailedException if there is a value of type {@link org.jboss.dmr.ModelType#EXPRESSION} in the node tree and
      *            there is no system property or environment variable that matches the expression, or if a security
      *            manager exists and its {@link SecurityManager#checkPermission checkPermission} method doesn't allow
      *            access to the relevant system property or environment variable

@@ -22,13 +22,10 @@
 
 package org.jboss.as.connector.services.mdr;
 
+import java.util.Set;
+
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
-import org.jboss.msc.service.ServiceName;
-
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
 
 /**
  * AS7's extension of MetadataRepository

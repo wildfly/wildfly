@@ -22,23 +22,6 @@
 
 package org.jboss.as.connector.subsystems.common.pool;
 
-import org.jboss.as.connector.util.ConnectorServices;
-import org.jboss.as.controller.AbstractWriteAttributeHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.dmr.ModelNode;
-import org.jboss.jca.core.api.connectionmanager.pool.PoolConfiguration;
-import org.jboss.jca.core.api.management.Connector;
-import org.jboss.jca.core.api.management.DataSource;
-import org.jboss.jca.core.api.management.ManagementRepository;
-import org.jboss.msc.service.ServiceController;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
@@ -53,6 +36,23 @@ import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_S
 import static org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.jboss.as.connector.util.ConnectorServices;
+import org.jboss.as.controller.AbstractWriteAttributeHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.dmr.ModelNode;
+import org.jboss.jca.core.api.connectionmanager.pool.PoolConfiguration;
+import org.jboss.jca.core.api.management.Connector;
+import org.jboss.jca.core.api.management.DataSource;
+import org.jboss.jca.core.api.management.ManagementRepository;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>

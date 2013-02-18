@@ -22,6 +22,8 @@
 
 package org.jboss.as.connector.util;
 
+import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
+
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -31,8 +33,6 @@ import java.net.InetAddress;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.StringTokenizer;
-
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 
 
 /**

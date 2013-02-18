@@ -25,7 +25,6 @@ package org.jboss.as.web.security.jaspi.modules;
 import static org.jboss.as.web.WebMessages.MESSAGES;
 
 import org.apache.catalina.Context;
-import org.apache.catalina.authenticator.Constants;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.coyote.ActionCode;

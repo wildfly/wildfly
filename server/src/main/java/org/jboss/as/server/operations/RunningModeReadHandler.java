@@ -22,21 +22,12 @@
 
 package org.jboss.as.server.operations;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_MODE;
-
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.operations.validation.EnumValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-
 /**
  * Reports the current server {@link RunningMode}.
  *

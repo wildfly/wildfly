@@ -22,7 +22,6 @@
 
 package org.jboss.as.modcluster;
 
-import java.net.InetAddress;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;

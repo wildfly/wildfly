@@ -16,11 +16,8 @@ package org.jboss.as.web;
 
 import static org.jboss.as.web.WebMessages.MESSAGES;
 
-import java.net.MalformedURLException;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
-
 import javax.management.MBeanServer;
 
 import org.apache.catalina.Engine;

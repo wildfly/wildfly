@@ -24,8 +24,6 @@ package org.jboss.as.logging;
 
 import java.util.Collections;
 import java.util.Set;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.AbstractAttributeDefinitionBuilder;
 import org.jboss.as.controller.AttributeDefinition;
@@ -33,7 +31,6 @@ import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.DeprecationData;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.logging.resolvers.HandlerResolver;

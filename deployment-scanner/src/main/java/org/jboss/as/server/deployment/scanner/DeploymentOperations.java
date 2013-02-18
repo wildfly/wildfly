@@ -24,7 +24,6 @@ package org.jboss.as.server.deployment.scanner;
 
 import java.io.Closeable;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 

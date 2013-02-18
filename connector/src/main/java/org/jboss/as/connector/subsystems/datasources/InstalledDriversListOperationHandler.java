@@ -25,15 +25,6 @@
  */
 package org.jboss.as.connector.subsystems.datasources;
 
-import org.jboss.as.connector.services.driver.InstalledDriver;
-import org.jboss.as.connector.services.driver.registry.DriverRegistry;
-import org.jboss.as.connector.util.ConnectorServices;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-
 import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DEPLOYMENT_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS_NAME;
@@ -45,6 +36,15 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAM
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_COMPLIANT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE_SLOT;
+
+import org.jboss.as.connector.services.driver.InstalledDriver;
+import org.jboss.as.connector.services.driver.registry.DriverRegistry;
+import org.jboss.as.connector.util.ConnectorServices;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * Reads the "installed-drivers" attribute.

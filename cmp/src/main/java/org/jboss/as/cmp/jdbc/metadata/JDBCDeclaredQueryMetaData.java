@@ -23,7 +23,6 @@ package org.jboss.as.cmp.jdbc.metadata;
 
 import java.lang.reflect.Method;
 import java.util.Map;
-import org.jboss.as.cmp.CmpMessages;
 import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 
 

@@ -22,7 +22,6 @@
 package org.jboss.as.protocol.mgmt;
 
 import java.io.Closeable;
-import java.io.DataInput;
 import java.io.IOException;
 import java.util.Map;
 
@@ -32,7 +31,6 @@ import javax.security.auth.callback.CallbackHandler;
 import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.ProtocolConnectionConfiguration;
 import org.jboss.as.protocol.ProtocolMessages;
-import org.jboss.as.protocol.StreamUtils;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.Connection;

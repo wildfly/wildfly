@@ -35,7 +35,6 @@ import org.jboss.dmr.ModelNode;
 /**
  * A builder to create a controller and initialize it with the passed in subsystem xml or boot operations.
  *
- * @see AbstractSubsystemTest#createKernelServicesBuilder(AdditionalInitialization)
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public interface KernelServicesBuilder {
@@ -51,7 +50,6 @@ public interface KernelServicesBuilder {
     /**
      * By default the description is not validated. Call this to validates the full model description minus what is set up by {@link KnownIssuesValidationConfiguration}
      *
-     * @param validationConfiguration the validation configuration, set to {@code null} to turn off model validation configuration
      * @return this builder
      */
     KernelServicesBuilder validateDescription();
@@ -60,9 +58,9 @@ public interface KernelServicesBuilder {
     /**
      * Sets the subsystem xml resource containing the xml to be parsed to create the boot operations used to initialize the controller. The resource is loaded using similar
      * semantics to {@link Class#getResource(String)}
-     * @param subsystemXml the subsystem xml
+     * @param resource the resource with subsystem xml
      * @return this builder
-     * @throws IllegalStateException if {@link #setBootOperations(List)}, {@link #setSubsystemXml(String)} or {@link #setSubsystemXmlResource(String)} have
+     * @throws IllegalStateException if {@link #setBootOperations(List)}, {@link #setXml(String)} (String)} or {@link #setXmlResource(String)} (String)} have
      * already been called
      * @throws IllegalStateException if {@link #build()} has already been called
      * @throws AssertionFailedError if the resource could not be found

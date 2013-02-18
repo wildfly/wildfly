@@ -23,7 +23,6 @@
 package org.jboss.as.appclient.subsystem;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.appclient.deployment.ActiveApplicationClientProcessor;

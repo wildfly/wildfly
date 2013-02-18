@@ -22,18 +22,18 @@
 
 package org.jboss.as.connector.logging;
 
-import java.sql.Driver;
-
-import org.jboss.logging.BasicLogger;
-import org.jboss.logging.annotations.LogMessage;
-import org.jboss.logging.Logger;
-import org.jboss.logging.annotations.Message;
-import org.jboss.logging.annotations.MessageLogger;
-import org.jboss.msc.service.ServiceName;
-
 import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
+
+import java.sql.Driver;
+
+import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.LogMessage;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Date: 01.09.2011

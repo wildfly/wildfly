@@ -22,12 +22,10 @@
 
 package org.jboss.as.jpa.processor;
 
-import org.jboss.as.jpa.config.PersistenceProviderDeploymentHolder;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.DeploymentUtils;
 
 /**
  * begin installation of persistence unit service and persistence providers in deployment

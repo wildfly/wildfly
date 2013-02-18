@@ -22,12 +22,16 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER;
+import static org.jboss.as.connector.subsystems.datasources.Constants.JNDI_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import java.sql.Driver;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.connector.services.driver.registry.DriverRegistry;
+import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -51,10 +55,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueInjectionService;
 import org.jboss.security.SubjectFactory;
-
-import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER;
-import static org.jboss.as.connector.subsystems.datasources.Constants.JNDI_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * Abstract operation handler responsible for adding a DataSource.

@@ -24,7 +24,6 @@ package org.jboss.as.remoting;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ProcessType;
-import static org.jboss.as.remoting.CommonAttributes.CONNECTOR;
 
 import java.util.List;
 

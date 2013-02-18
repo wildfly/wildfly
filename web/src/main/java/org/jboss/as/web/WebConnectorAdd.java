@@ -23,14 +23,6 @@
 package org.jboss.as.web;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.web.Constants.EXECUTOR;
-import static org.jboss.as.web.Constants.MAX_CONNECTIONS;
-import static org.jboss.as.web.Constants.MAX_POST_SIZE;
-import static org.jboss.as.web.Constants.MAX_SAVE_POST_SIZE;
-import static org.jboss.as.web.Constants.PROXY_NAME;
-import static org.jboss.as.web.Constants.PROXY_PORT;
-import static org.jboss.as.web.Constants.REDIRECT_PORT;
-import static org.jboss.as.web.Constants.VIRTUAL_SERVER;
 import static org.jboss.as.web.WebConnectorDefinition.CONNECTOR_ATTRIBUTES;
 import static org.jboss.as.web.WebExtension.SSL_PATH;
 

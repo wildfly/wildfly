@@ -30,9 +30,6 @@ import static org.jboss.as.remoting.SaslPolicyResource.NO_DICTIONARY;
 import static org.jboss.as.remoting.SaslPolicyResource.NO_PLAIN_TEXT;
 import static org.jboss.as.remoting.SaslPolicyResource.PASS_CREDENTIALS;
 import static org.jboss.as.remoting.SaslPolicyResource.SASL_POLICY_CONFIG_PATH;
-import static org.jboss.as.remoting.SaslResource.REUSE_SESSION_ATTRIBUTE;
-import static org.jboss.as.remoting.SaslResource.SASL_CONFIG_PATH;
-import static org.jboss.as.remoting.SaslResource.SERVER_AUTH_ATTRIBUTE;
 
 import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
 import org.jboss.as.controller.transform.TransformersSubRegistration;

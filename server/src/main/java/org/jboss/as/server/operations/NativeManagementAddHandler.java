@@ -56,8 +56,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.remoting3.RemotingOptions;
 import org.xnio.OptionMap;
-import org.xnio.Options;
-
 
 /**
  * The Add handler for the Native Interface when running a standalone server.

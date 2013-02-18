@@ -28,8 +28,6 @@ import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
-import java.net.InetSocketAddress;
-
 import static org.jboss.logging.Logger.Level.INFO;
 
 /**

@@ -23,7 +23,6 @@
 package org.jboss.as.domain.management.security;
 
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.MECHANISM;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_PASSWORD_CALLBACK_SUPPORTED;
 
@@ -52,11 +51,7 @@ import org.jboss.as.domain.management.plugin.Identity;
 import org.jboss.as.domain.management.plugin.PasswordCredential;
 import org.jboss.as.domain.management.plugin.PlugInConfigurationSupport;
 import org.jboss.as.domain.management.plugin.ValidatePasswordCredential;
-import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
 import org.jboss.sasl.callback.DigestHashCallback;
 import org.jboss.sasl.callback.VerifyPasswordCallback;
 import org.jboss.sasl.util.UsernamePasswordHashUtil;

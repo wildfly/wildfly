@@ -46,7 +46,6 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.ejb.EJBObject;
 import javax.ejb.Handle;
-import org.jboss.as.cmp.CmpLogger;
 import static org.jboss.as.cmp.CmpLogger.ROOT_LOGGER;
 import org.jboss.as.cmp.CmpMessages;
 import static org.jboss.as.cmp.CmpMessages.MESSAGES;

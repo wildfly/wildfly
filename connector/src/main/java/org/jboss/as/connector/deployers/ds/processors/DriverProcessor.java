@@ -22,14 +22,16 @@
 
 package org.jboss.as.connector.deployers.ds.processors;
 
+import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYER_JDBC_LOGGER;
+
 import java.lang.reflect.Constructor;
 import java.sql.Driver;
 import java.util.List;
 
-import org.jboss.as.connector.util.ConnectorServices;
-import org.jboss.as.connector.services.driver.registry.DriverRegistry;
 import org.jboss.as.connector.services.driver.DriverService;
 import org.jboss.as.connector.services.driver.InstalledDriver;
+import org.jboss.as.connector.services.driver.registry.DriverRegistry;
+import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -40,8 +42,6 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
-
-import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYER_JDBC_LOGGER;
 
 /**
  * Deploy any JDBC drivers in a deployment unit.

@@ -33,7 +33,6 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.ExtendedPersistenceInheritance;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;

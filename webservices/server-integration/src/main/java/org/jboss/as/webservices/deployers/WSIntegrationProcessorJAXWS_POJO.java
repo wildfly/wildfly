@@ -34,17 +34,10 @@ import static org.jboss.as.webservices.util.WebMetaDataHelper.getServlets;
 
 import java.util.List;
 
-import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
-import org.jboss.as.ee.component.ViewConfiguration;
-import org.jboss.as.ee.component.ViewConfigurator;
-import org.jboss.as.ee.component.ViewDescription;
-import org.jboss.as.ee.component.interceptors.InterceptorOrder;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
-import org.jboss.as.webservices.injection.WSComponentDescription;
 import org.jboss.as.webservices.metadata.model.JAXWSDeployment;
 import org.jboss.as.webservices.metadata.model.POJOEndpoint;
 import org.jboss.jandex.AnnotationInstance;
@@ -127,7 +120,7 @@ public class WSIntegrationProcessorJAXWS_POJO extends AbstractIntegrationProcess
         final String endpointClassName = classInfo.name().toString();
         final JMSEndpointsMetaData jmsEndpointsMD = getRequiredAttachment(unit, JMS_ENDPOINT_METADATA_KEY);
         for (final JMSEndpointMetaData endpoint : jmsEndpointsMD.getEndpointsMetaData()) {
-            if (endpointClassName.equals(endpoint.getImplementor())) return true;
+            if (endpointClassName.equals(endpoint.getImplementor())) { return true; }
         }
         return false;
     }
