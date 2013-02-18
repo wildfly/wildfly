@@ -189,4 +189,16 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 11612, value = "Attribute %s of the resource at %s is deprecated and setting its value will not be taken into account")
     void deprecatedAttribute(String name, PathAddress address);
 
+    /**
+     * Logs a warning message indicating the clustered attribute can not be set to false since the
+     * hornetq-server at the given {@code address} is clustered (because it has cluster-connections children resources).
+     *
+     * @param address the path address of the hornetq server.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 11613, value = "Can not change the clustered attribute to false: The hornetq-server resource at %s has cluster-connection children resources and will remain clustered.")
+    void canNotChangeClusteredAttribute(PathAddress address);
+
+
+
 }
