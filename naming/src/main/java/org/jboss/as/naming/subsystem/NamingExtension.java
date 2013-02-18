@@ -101,8 +101,6 @@ public class NamingExtension implements Extension {
                     .addRejectCheck(new BindingTypeRejectChecker(), BINDING_TYPE)
                     .end();
             TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 1, 0));
-            /*final TransformersSubRegistration transformersSubRegistration110 = subsystem.registerModelTransformers(VERSION_1_1_0, ResourceTransformer.DEFAULT);
-            transformersSubRegistration110.registerSubResource(NamingSubsystemModel.BINDING_PATH,new Naming11Transformer());*/
         }
     }
 
