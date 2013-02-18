@@ -61,32 +61,6 @@ class LoggingOperationTransformer extends AbstractOperationTransformer {
             } else if (key.equals(AsyncHandlerResourceDefinition.ASYNC_HANDLER)) {
                 operation.get(ModelDescriptionConstants.OP).set(AsyncHandlerResourceDefinition.REMOVE_SUBHANDLER_OPERATION_NAME);
             }
-        } else if (operationName.equals(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION)) {
-            // write-attribute needs to fix the formatter and the filter-spec
-            // Get the attribute being written to
-            final String attributeName = operation.get(ModelDescriptionConstants.NAME).asString();
-            // Do not process expressions as they were not supported in previous versions
-            if (operation.get(ModelDescriptionConstants.VALUE).getType() != ModelType.EXPRESSION) {
-                // Check for the color in the pattern format
-                if (attributeName.equals(CommonAttributes.FORMATTER.getName())) {
-                    final String currentPattern = operation.get(ModelDescriptionConstants.VALUE).asString();
-                    operation.get(ModelDescriptionConstants.VALUE).set(Logging.fixFormatPattern(currentPattern));
-                } else if (attributeName.equals(CommonAttributes.FILTER_SPEC.getName())) {
-                    // Fix the filter-spec
-                    operation.get(ModelDescriptionConstants.NAME).set(CommonAttributes.FILTER.getName());
-                    final String filterExpression = operation.get(ModelDescriptionConstants.VALUE).asString();
-                    operation.get(ModelDescriptionConstants.VALUE).set(Filters.filterSpecToFilter(filterExpression));
-                } else if (attributeName.equals(CommonAttributes.ENABLED.getName())) {
-                    final boolean enabled = operation.get(ModelDescriptionConstants.VALUE).asBoolean();
-                    if (enabled) {
-                        operation.get(ModelDescriptionConstants.OP).set(AbstractHandlerDefinition.ENABLE_HANDLER.getName());
-                    } else {
-                        operation.get(ModelDescriptionConstants.OP).set(AbstractHandlerDefinition.DISABLE_HANDLER.getName());
-                    }
-                    operation.remove(ModelDescriptionConstants.NAME);
-                    operation.remove(ModelDescriptionConstants.VALUE);
-                }
-            }
         } else if (operationName.equals(ModelDescriptionConstants.ADD)) {
             // Category or name is required for add operations
             if (LoggerResourceDefinition.LOGGER.equals(key)) {
@@ -99,20 +73,6 @@ class LoggingOperationTransformer extends AbstractOperationTransformer {
             // set-root-logger operation can't have a name attribute
             operation.remove(CommonAttributes.NAME.getName());
         }
-        // Check for the color in the pattern format. Do not process expressions as they were not supported in previous versions
-        if (operation.hasDefined(CommonAttributes.FORMATTER.getName()) && operation.get(CommonAttributes.FORMATTER.getName()).getType() != ModelType.EXPRESSION) {
-            final String currentPattern = operation.get(CommonAttributes.FORMATTER.getName()).asString();
-            operation.get(CommonAttributes.FORMATTER.getName()).set(Logging.fixFormatPattern(currentPattern));
-        }
-        // Fix the filter. Do not process expressions as they were not supported in previous version
-        if (operation.hasDefined(CommonAttributes.FILTER_SPEC.getName()) && operation.get(CommonAttributes.FILTER_SPEC.getName()).getType() != ModelType.EXPRESSION) {
-            final String filterExpression = operation.get(CommonAttributes.FILTER_SPEC.getName()).asString();
-            operation.get(CommonAttributes.FILTER.getName()).set(Filters.filterSpecToFilter(filterExpression));
-        }
-        // Always remove the filter-spec
-        operation.remove(CommonAttributes.FILTER_SPEC.getName());
-        // Always remove the enable attribute
-        operation.remove(CommonAttributes.ENABLED.getName());
 
         LoggingLogger.ROOT_LOGGER.tracef("Changed operation from: %s%nto: %s", originalOperation, operation);
         return operation;

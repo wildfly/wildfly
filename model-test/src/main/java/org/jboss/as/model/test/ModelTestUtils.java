@@ -350,13 +350,13 @@ public class ModelTestUtils {
 
                 if (child1.isDefined()) {
                     if (!ignoreUndefined) {
-                        Assert.assertTrue("key=" + key + "\n with child1 \n" + child1.toString() + "\n has child2 not defined\n node2 is:\n" + node2.toString(), child2.isDefined());
+                        Assert.assertTrue(getCompareStackAsString(stack) + " key=" + key + "\n with child1 \n" + child1.toString() + "\n has child2 not defined\n node2 is:\n" + node2.toString(), child2.isDefined());
                     }
                     stack.push(key + "/");
                     compare(child1, child2, ignoreUndefined, ignoreType, stack);
                     stack.pop();
                 } else if (!ignoreUndefined) {
-                    Assert.assertFalse("key=" + key + "\n with child1 undefined has child2 \n" + child2.asString(), child2.isDefined());
+                    Assert.assertFalse(getCompareStackAsString(stack) + " key=" + key + "\n with child1 undefined has child2 \n" + child2.asString(), child2.isDefined());
                 }
             }
         } else if (node1.getType() == ModelType.LIST) {
@@ -379,12 +379,8 @@ public class ModelTestUtils {
             stack.pop();
 
         } else {
-            try {
-                Assert.assertEquals(getCompareStackAsString(stack) +
-                        "\n\"" + node1.asString() + "\"\n\"" + node2.asString() + "\"\n-----", node2.asString().trim(), node1.asString().trim());
-            } catch (AssertionFailedError error) {
-                throw error;
-            }
+            Assert.assertEquals(getCompareStackAsString(stack) +
+                        "\n\"" + node1.asString() + "\"\n\"" + node2.asString() + "\"\n-----", node1.asString().trim(), node2.asString().trim());
         }
     }
 

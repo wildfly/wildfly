@@ -37,11 +37,11 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.KernelServices;
-import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.as.subsystem.test.SubsystemOperations;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.LogContext;
@@ -119,42 +119,14 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
 
     @Test
     public void testDisableHandler() throws Exception {
-        testDisableHandler(null);
-        testDisableHandler(PROFILE);
+        testDisableHandler(null, false);
+        testDisableHandler(PROFILE, false);
     }
 
     @Test
     public void testLegacyDisableHandler() throws Exception {
-        final String subsystemXml = getSubsystemXml();
-        final ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
-        final KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
-                .setSubsystemXml(subsystemXml);
-
-        // Note this is running in ADMIN_ONLY meaning runtime changes won't take effect. Can't confirm the
-        // handlers actually get disabled.
-        builder.createLegacyKernelServicesBuilder(LoggingTestEnvironment.getManagementInstance(), modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-logging:7.1.2.Final")
-                //TODO https://issues.jboss.org/browse/AS7-6538
-                .skipReverseControllerCheck();
-
-        final KernelServices kernelServices = builder.build();
-        assertTrue(kernelServices.isSuccessfulBoot());
-        assertTrue(kernelServices.getLegacyServices(modelVersion).isSuccessfulBoot());
-        final ModelNode handlerAddress = createFileHandlerAddress("FILE").toModelNode();
-
-        // Disable the handler
-        TransformedOperation transformedOperation = kernelServices.transformOperation(modelVersion, SubsystemOperations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, false));
-        // Validate the operation has been transformed properly
-        assertEquals(AbstractHandlerDefinition.DISABLE_HANDLER.getName(), SubsystemOperations.getOperationName(transformedOperation.getTransformedOperation()));
-        // Execute the operation to confirm success
-        executeTransformOperation(kernelServices, modelVersion, SubsystemOperations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, false));
-
-        // Re-enable the handler
-        // Validate the operation has been transformed properly
-        transformedOperation = kernelServices.transformOperation(modelVersion, SubsystemOperations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, true));
-        assertEquals(AbstractHandlerDefinition.ENABLE_HANDLER.getName(), SubsystemOperations.getOperationName(transformedOperation.getTransformedOperation()));
-        // Execute the operation to confirm success
-        executeTransformOperation(kernelServices, modelVersion, SubsystemOperations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, true));
+        testDisableHandler(null, true);
+        testDisableHandler(PROFILE, true);
     }
 
     @Test
@@ -469,7 +441,7 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
         assertEquals(checksum, FileUtils.checksumCRC32(logFile));
     }
 
-    private void testDisableHandler(final String profileName) throws Exception {
+    private void testDisableHandler(final String profileName, boolean legacy) throws Exception {
         final KernelServices kernelServices = boot();
         final String fileHandlerName = "test-file-handler";
 
@@ -495,7 +467,9 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
 
         // Disable the handler
         final ModelNode handlerAddress = createFileHandlerAddress(profileName, fileHandlerName).toModelNode();
-        executeOperation(kernelServices, SubsystemOperations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, false));
+        ModelNode disableOp = legacy ? Util.getEmptyOperation(AbstractHandlerDefinition.DISABLE_HANDLER.getName(), handlerAddress)
+                                     : SubsystemOperations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, false);
+        executeOperation(kernelServices, disableOp);
 
         // Log 3 more lines
         logger.info("Test message 4");
@@ -507,7 +481,9 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
         assertEquals("Handler was not disable.", 3, lines.size());
 
         // Re-enable the handler
-        executeOperation(kernelServices, SubsystemOperations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, true));
+        ModelNode enableOp = legacy ? Util.getEmptyOperation(AbstractHandlerDefinition.ENABLE_HANDLER.getName(), handlerAddress)
+                : SubsystemOperations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, true);
+        executeOperation(kernelServices, enableOp);
 
         // Log 3 more lines
         logger.info("Test message 7");
