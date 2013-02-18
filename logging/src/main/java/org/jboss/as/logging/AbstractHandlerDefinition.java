@@ -46,6 +46,7 @@ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
@@ -132,6 +133,9 @@ abstract class AbstractHandlerDefinition extends SimpleResourceDefinition {
                 resourceRegistration.registerReadOnlyAttribute(def, null);
             }
         }
+        // Be careful with this attribute. It needs to show up in the "add" operation param list so ops from legacy
+        // scripts will validate. It does because it's registered as an attribute but is not setResourceOnly(true)
+        // so DefaultResourceAddDescriptionProvider adds it to the param list
         resourceRegistration.registerReadOnlyAttribute(NAME, ReadResourceNameOperationStepHandler.INSTANCE);
     }
 
@@ -161,23 +165,28 @@ abstract class AbstractHandlerDefinition extends SimpleResourceDefinition {
      */
     static ResourceTransformationDescriptionBuilder registerTransformers(final ResourceTransformationDescriptionBuilder handlerBuilder) {
         // Add default operation transformers
-        handlerBuilder.addOperationTransformationOverride(ADD)
-                .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
-                .inheritResourceAttributeDefinitions()
-                .end()
-                .addOperationTransformationOverride(WRITE_ATTRIBUTE_OPERATION)
-                .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
-                .inheritResourceAttributeDefinitions()
-                .end()
-                .addOperationTransformationOverride(UPDATE_OPERATION_NAME)
-                .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
-                .inheritResourceAttributeDefinitions()
-                .end()
-                // Set the resource transformer
-                .setCustomResourceTransformer(new LoggingResourceTransformer(NAME, FILTER_SPEC, ENABLED));
-
-        // Add reject attributes
-        return handlerBuilder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, DEFAULT_ATTRIBUTES)
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, LEGACY_ATTRIBUTES).end();
+        return handlerBuilder
+                .getAttributeBuilder()
+                    // discard level="ALL"
+                    .setDiscard(Transformers1_1_0.LEVEL_ALL_DISCARD_CHECKER, LEVEL)
+                    // Strip console color from format patterns
+                    .setValueConverter(Transformers1_1_0.CONSOLE_COLOR_CONVERTER, FORMATTER)
+                    // Discard undefined filter-spec, else convert the value and rename to "filter"
+                    .setDiscard(DiscardAttributeChecker.UNDEFINED, FILTER_SPEC)
+                    .setValueConverter(Transformers1_1_0.FILTER_SPEC_CONVERTER, FILTER_SPEC)
+                    .addRename(FILTER_SPEC, FILTER.getName())
+                    // Discard 'enabled' if undefined or true, else reject
+                    .setDiscard(Transformers1_1_0.DISCARD_ENABLED, ENABLED)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, ENABLED)
+                    // Standard expression rejection
+                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, DEFAULT_ATTRIBUTES)
+                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, LEGACY_ATTRIBUTES)
+                    .end()
+                .addOperationTransformationOverride(ADD)
+                    .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
+                    .inheritResourceAttributeDefinitions()
+                    .end()
+                // Discard 'name' as legacy slaves didn't store it in resources
+                .setCustomResourceTransformer(new LoggingResourceTransformer(NAME));
     }
 }

@@ -137,15 +137,15 @@ class AsyncHandlerResourceDefinition extends AbstractHandlerDefinition {
                                                                     final ResourceTransformationDescriptionBuilder loggingProfileBuilder) {
         // Register the logger resource
         final ResourceTransformationDescriptionBuilder child = subsystemBuilder.addChildResource(ASYNC_HANDLER_PATH)
-                .addOperationTransformationOverride(ADD_HANDLER_OPERATION_NAME)
-                .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
-                .end()
-                .addOperationTransformationOverride(REMOVE_HANDLER_OPERATION_NAME)
-                .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
-                .end()
                 .getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, QUEUE_LENGTH, OVERFLOW_ACTION)
-                .end();
+                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, QUEUE_LENGTH, OVERFLOW_ACTION)
+                    .end()
+                .addOperationTransformationOverride(ADD_HANDLER_OPERATION_NAME)
+                    .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
+                    .end()
+                .addOperationTransformationOverride(REMOVE_HANDLER_OPERATION_NAME)
+                    .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
+                    .end();
 
         // Reject logging profile resources
         loggingProfileBuilder.rejectChildResource(ASYNC_HANDLER_PATH);
