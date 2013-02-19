@@ -23,7 +23,6 @@
         <!-- Arquillian dependency versions -->
         <version.arquillian_core>${version.org.jboss.arquillian.core}</version.arquillian_core>
         <version.arquillian_as7>${project.parent.version}</version.arquillian_as7>
-        <version.xml.maven.plugin>1.0</version.xml.maven.plugin>
     </properties>
     <build>
         <plugins>
