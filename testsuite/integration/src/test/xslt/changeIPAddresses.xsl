@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="2.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns="urn:jboss:domain:1.4"
-                xmlns:d="urn:jboss:domain:1.4"
+                xmlns="urn:jboss:domain:2.0"
+                xmlns:d="urn:jboss:domain:2.0"
                 xmlns:ws11="urn:jboss:domain:webservices:1.1"
                 xmlns:ws12="urn:jboss:domain:webservices:1.2"
                 xmlns:xts="urn:jboss:domain:xts:1.0"

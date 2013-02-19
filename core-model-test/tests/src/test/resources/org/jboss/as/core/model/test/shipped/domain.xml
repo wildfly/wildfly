@@ -4,7 +4,7 @@
 This is the shipped configuration with the extensions and profiles removed  
  -->
 
-<domain xmlns="urn:jboss:domain:1.4">
+<domain xmlns="urn:jboss:domain:2.0">
     <system-properties>
         <!-- IPv4 is not required, but setting this helps avoid unintended use of IPv6 -->
         <property name="java.net.preferIPv4Stack" value="true"/>

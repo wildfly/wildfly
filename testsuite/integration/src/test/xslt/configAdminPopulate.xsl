@@ -24,7 +24,7 @@
  -->
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:ca="urn:jboss:domain:configadmin:1.0"
-                xmlns="urn:jboss:domain:1.4">
+                xmlns="urn:jboss:domain:2.0">
     <xsl:output indent="yes"/>
 
     <xsl:template match="ca:subsystem" priority="100" xmlns="urn:jboss:domain:configadmin:1.0">

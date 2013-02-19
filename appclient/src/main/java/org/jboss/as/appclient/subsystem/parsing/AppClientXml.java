@@ -86,20 +86,18 @@ public class AppClientXml extends CommonXml {
 
         Namespace readerNS = Namespace.forUri(reader.getNamespaceURI());
         switch (readerNS) {
-            case DOMAIN_1_0: {
+            case DOMAIN_1_0:
                 readServerElement_1_0(reader, address, operationList);
                 break;
-            }
-            case DOMAIN_1_1:
-            case DOMAIN_1_2:
-            case DOMAIN_1_3:
-            case DOMAIN_1_4:{
-                readServerElement_1_1(readerNS, reader, address, operationList);
-                break;
-            }
-            default: {
-              throw unexpectedElement(reader);
-            }
+            default:
+                // Instead of having to list the remaining versions we just check it is actually a valid version.
+                for (Namespace current : Namespace.domainValues()) {
+                    if (readerNS.equals(current)) {
+                        readServerElement_1_1(readerNS, reader, address, operationList);
+                        return;
+                    }
+                }
+                throw unexpectedElement(reader);
         }
     }
 

@@ -122,23 +122,29 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
         }
 
         Namespace readerNS = Namespace.forUri(reader.getNamespaceURI());
+
         switch (readerNS) {
-            case DOMAIN_1_0: {
+            case DOMAIN_1_0:
                 readServerElement_1_0(reader, address, operationList);
                 break;
-            }
             case DOMAIN_1_1:
             case DOMAIN_1_2:
             case DOMAIN_1_3:
                 readServerElement_1_1(readerNS, reader, address, operationList);
                 break;
-            case DOMAIN_1_4: {
-                readServerElement_1_4(readerNS, reader, address, operationList);
-                break;
-            }
-            default: {
-                throw unexpectedElement(reader);
-            }
+            default:
+                // Instead of having to list the remaining versions we just check it is actually a valid version.
+                boolean validNamespace = false;
+                for (Namespace current : Namespace.domainValues()) {
+                    if (readerNS.equals(current)) {
+                        validNamespace = true;
+                        readServerElement_1_4(readerNS, reader, address, operationList);
+                        break;
+                    }
+                }
+                if (validNamespace == false) {
+                    throw unexpectedElement(reader);
+                }
         }
 
         if (ROOT_LOGGER.isDebugEnabled()) {
