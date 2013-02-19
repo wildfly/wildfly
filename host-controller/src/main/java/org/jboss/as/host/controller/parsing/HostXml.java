@@ -118,20 +118,18 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
         }
         Namespace readerNS = Namespace.forUri(reader.getNamespaceURI());
         switch (readerNS) {
-            case DOMAIN_1_0: {
+            case DOMAIN_1_0:
                 readHostElement_1_0(reader, address, operationList);
                 break;
-            }
-            case DOMAIN_1_1:
-            case DOMAIN_1_2:
-            case DOMAIN_1_3:
-            case DOMAIN_1_4:{
-                readHostElement_1_1(readerNS, reader, address, operationList);
-                break;
-            }
-            default: {
+            default:
+                // Instead of having to list the remaining versions we just check it is actually a valid version.
+                for (Namespace current : Namespace.domainValues()) {
+                    if (readerNS.equals(current)) {
+                        readHostElement_1_1(readerNS, reader, address, operationList);
+                        return;
+                    }
+                }
                 throw unexpectedElement(reader);
-            }
         }
     }
 

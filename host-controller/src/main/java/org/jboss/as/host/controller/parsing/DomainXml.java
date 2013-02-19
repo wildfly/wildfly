@@ -122,10 +122,9 @@ public class DomainXml extends CommonXml {
         }
         Namespace readerNS = Namespace.forUri(reader.getNamespaceURI());
         switch (readerNS) {
-            case DOMAIN_1_0: {
+            case DOMAIN_1_0:
                 readDomainElement1_0(reader, new ModelNode(), readerNS, nodes);
                 break;
-            }
             case DOMAIN_1_1:
             case DOMAIN_1_2:
                 readDomainElement1_1(reader, new ModelNode(), readerNS, nodes);
@@ -133,13 +132,15 @@ public class DomainXml extends CommonXml {
             case DOMAIN_1_3:
                 readDomainElement1_3(reader, new ModelNode(), readerNS, nodes);
                 break;
-            case DOMAIN_1_4: {
-                readDomainElement1_4(reader, new ModelNode(), readerNS, nodes);
-                break;
-            }
-            default: {
+            default:
+                // Instead of having to list the remaining versions we just check it is actually a valid version.
+                for (Namespace current : Namespace.domainValues()) {
+                    if (readerNS.equals(current)) {
+                        readDomainElement1_4(reader, new ModelNode(), readerNS, nodes);
+                        return;
+                    }
+                }
                 throw unexpectedElement(reader);
-            }
         }
     }
 
