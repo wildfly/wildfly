@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
-<domain xmlns="urn:jboss:domain:1.4">
+<domain xmlns="urn:jboss:domain:2.0">
     <server-groups>
         <server-group name="test" profile="test">
             <jvm name="default" java-home="${mytest.java-home:javaHome}" env-classpath-ignored="${mytest.env-classpath-ignored:true}">

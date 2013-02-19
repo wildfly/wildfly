@@ -125,10 +125,10 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
             case DOMAIN_1_1:
             case DOMAIN_1_2:
             case DOMAIN_1_3:
-            case DOMAIN_1_4:{
+            case DOMAIN_1_4:
+            case DOMAIN_2_0:
                 readHostElement_1_1(readerNS, reader, address, operationList);
                 break;
-            }
             default: {
                 throw unexpectedElement(reader);
             }

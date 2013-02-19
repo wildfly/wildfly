@@ -132,10 +132,10 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
             case DOMAIN_1_3:
                 readServerElement_1_1(readerNS, reader, address, operationList);
                 break;
-            case DOMAIN_1_4: {
+            case DOMAIN_1_4:
+            case DOMAIN_2_0:
                 readServerElement_1_4(readerNS, reader, address, operationList);
                 break;
-            }
             default: {
                 throw unexpectedElement(reader);
             }
