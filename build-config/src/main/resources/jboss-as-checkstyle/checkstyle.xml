@@ -23,10 +23,8 @@
             <property name="allowStaticMemberImports" value="true"/>
         </module>
         <module name="RedundantImport"/>
-        <!-- Disabled until checkstyle can recognize imports which are used only by javadoc -->
-        <!--<module name="UnusedImports">
-            <property name="processJavadoc" value="true"/>
-        </module>-->
+
+        <module name="UnusedImports" />
 
         <!-- Modifier Checks                                    -->
         <module name="ModifierOrder"/>
