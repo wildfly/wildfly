@@ -26,18 +26,17 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
 import org.jboss.as.controller.registry.Resource;
 
 /**
  * {@link ResourceTransformer} that takes the value in the last element of the given address
  * and stores it in a model attribute named {@code name}.
  * <p>
- * This transformer can be used to preserve compatibility when {@link ReadResourceNameOperationStepHandler} is
+ * This transformer can be used to preserve compatibility when {@link org.jboss.as.controller.ReadResourceNameOperationStepHandler} is
  * used to replace storage of a resource name in the model.
  * </p>
  *
- * @see ReadResourceNameOperationStepHandler
+ * @see org.jboss.as.controller.ReadResourceNameOperationStepHandler
  */
 @SuppressWarnings("deprecation")
 public class AddNameFromAddressResourceTransformer implements ResourceTransformer {

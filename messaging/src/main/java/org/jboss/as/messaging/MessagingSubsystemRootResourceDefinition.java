@@ -23,11 +23,10 @@
 package org.jboss.as.messaging;
 
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 
 /**
- * {@link ResourceDefinition} for the messaging subsystem root resource.
+ * {@link org.jboss.as.controller.ResourceDefinition} for the messaging subsystem root resource.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

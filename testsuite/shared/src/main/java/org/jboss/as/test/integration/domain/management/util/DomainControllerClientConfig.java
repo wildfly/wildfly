@@ -22,7 +22,6 @@
 
 package org.jboss.as.test.integration.domain.management.util;
 
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.Remoting;
@@ -43,7 +42,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Shared test configuration where all {@linkplain ModelControllerClient}s share a common {@linkplain Endpoint} and
+ * Shared test configuration where all {@linkplain org.jboss.as.controller.client.ModelControllerClient}s share a common {@linkplain Endpoint} and
  * {@linkplain java.util.concurrent.Executor}.
  *
  * @author Emanuel Muckenhuber

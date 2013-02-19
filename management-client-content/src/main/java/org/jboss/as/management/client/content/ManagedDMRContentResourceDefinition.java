@@ -24,7 +24,6 @@ package org.jboss.as.management.client.content;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -37,7 +36,7 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelType;
 
 /**
- * {@link ResourceDefinition} for a resource that represents a named bit of re-usable DMR.
+ * {@link org.jboss.as.controller.ResourceDefinition} for a resource that represents a named bit of re-usable DMR.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

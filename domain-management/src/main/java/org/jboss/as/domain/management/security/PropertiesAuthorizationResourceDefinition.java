@@ -24,13 +24,12 @@ package org.jboss.as.domain.management.security;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.registry.OperationEntry;
 
 /**
- * {@link ResourceDefinition} for a management security realm's properties-file-based authorization resource.
+ * {@link org.jboss.as.controller.ResourceDefinition} for a management security realm's properties-file-based authorization resource.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */

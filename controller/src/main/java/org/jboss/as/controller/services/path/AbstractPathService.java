@@ -22,8 +22,6 @@
 
 package org.jboss.as.controller.services.path;
 
-import java.io.File;
-
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -52,7 +50,7 @@ public abstract class AbstractPathService implements Service<String> {
      * absolute if its prefix is <code>"/"</code>.  A Microsoft Windows pathname is absolute if its prefix is a drive
      * specifier followed by <code>"\\"</code>, or if its prefix is <code>"\\\\"</code>.
      * <p>
-     * <strong>This method differs from simply creating a new {@code File} and calling {@link File#isAbsolute()} in that
+     * <strong>This method differs from simply creating a new {@code File} and calling {@link java.io.File#isAbsolute()} in that
      * its results do not change depending on what the filesystem underlying the Java Virtual Machine is. </strong>
      * </p>
      *

@@ -25,12 +25,11 @@ package org.jboss.as.ejb3.concurrency;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstanceInterceptorFactory;
 import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 
 /**
- * An {@link InterceptorFactory} which returns a new instance of {@link ContainerManagedConcurrencyInterceptor} on each
- * invocation to {@link #create(org.jboss.invocation.InterceptorFactoryContext)}. This {@link InterceptorFactory} can be used
+ * An {@link org.jboss.invocation.InterceptorFactory} which returns a new instance of {@link ContainerManagedConcurrencyInterceptor} on each
+ * invocation to {@link #create(org.jboss.invocation.InterceptorFactoryContext)}. This {@link org.jboss.invocation.InterceptorFactory} can be used
  * for handling container managed concurrency invocations on a {@link LockableComponent}
  * <p/>
  * User: Jaikiran Pai

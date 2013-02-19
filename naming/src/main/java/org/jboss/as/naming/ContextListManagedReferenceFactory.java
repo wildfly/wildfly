@@ -21,12 +21,11 @@
  */
 package org.jboss.as.naming;
 
-import javax.naming.Context;
 
 /**
  * A {@link ManagedReferenceFactory} which knows the class name of its {@link ManagedReference} object instance. This type of
  * {@link ManagedReferenceFactory} should be used for JNDI bindings, the {@link ServiceBasedNamingStore} relies on it to provide
- * proper support for {@link Context} list operations.
+ * proper support for {@link javax.naming.Context} list operations.
  *
  * @author Eduardo Martins
  *

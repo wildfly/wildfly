@@ -42,7 +42,6 @@ import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.osgi.repository.RepositoryResolutionException;
 import org.jboss.osgi.repository.URLResourceBuilderFactory;
-import org.jboss.osgi.repository.XRepository;
 import org.jboss.osgi.repository.spi.AbstractRepository;
 import org.jboss.osgi.resolver.XCapability;
 import org.jboss.osgi.resolver.XResourceBuilder;
@@ -50,7 +49,7 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 
 /**
- * An {@link XRepository} that resolves artifacts from the local modules/bundles location
+ * An {@link org.jboss.osgi.repository.XRepository} that resolves artifacts from the local modules/bundles location
  *
  * @author thomas.diesler@jboss.com
  * @since 20-Jan-2012

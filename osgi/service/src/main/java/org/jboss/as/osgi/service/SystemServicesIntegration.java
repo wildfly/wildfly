@@ -51,7 +51,6 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.framework.spi.BundleManager;
-import org.jboss.osgi.framework.spi.IntegrationService;
 import org.jboss.osgi.framework.spi.IntegrationServices;
 import org.jboss.osgi.framework.spi.SystemServices;
 import org.jboss.osgi.framework.spi.SystemServicesPlugin;
@@ -59,7 +58,7 @@ import org.jboss.osgi.repository.XRepository;
 import org.osgi.framework.BundleContext;
 
 /**
- * An {@link IntegrationService} that provides system services on framework startup
+ * An {@link org.jboss.osgi.framework.spi.IntegrationService} that provides system services on framework startup
  *
  * @author Thomas.Diesler@jboss.com
  * @since 11-Sep-2010

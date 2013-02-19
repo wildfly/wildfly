@@ -41,7 +41,6 @@ import javax.xml.namespace.QName;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.ControllerMessages;
-import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersionRange;
 import org.jboss.as.controller.OperationDefinition;
@@ -79,7 +78,7 @@ import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLMapper;
 
 /**
- * A registry for information about {@link Extension}s to the core application server.
+ * A registry for information about {@link org.jboss.as.controller.Extension}s to the core application server.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
@@ -170,7 +169,7 @@ public class ExtensionRegistry {
     }
 
     /**
-     * Gets the module names of all known {@link Extension}s.
+     * Gets the module names of all known {@link org.jboss.as.controller.Extension}s.
      *
      * @return the names. Will not return {@code null}
      */
@@ -179,7 +178,7 @@ public class ExtensionRegistry {
     }
 
     /**
-     * Gets information about the subsystems provided by a given {@link Extension}.
+     * Gets information about the subsystems provided by a given {@link org.jboss.as.controller.Extension}.
      *
      * @param moduleName the name of the extension's module. Cannot be {@code null}
      * @return map of subsystem names to information about the subsystem.
@@ -198,7 +197,7 @@ public class ExtensionRegistry {
 
     /**
      * Gets an {@link ExtensionParsingContext} for use when
-     * {@link Extension#initializeParsers(ExtensionParsingContext) initializing the extension's parsers}.
+     * {@link org.jboss.as.controller.Extension#initializeParsers(ExtensionParsingContext) initializing the extension's parsers}.
      *
      * @param moduleName the name of the extension's module. Cannot be {@code null}
      * @param xmlMapper  the {@link XMLMapper} handling the extension parsing. Can be {@code null} if there won't
@@ -211,7 +210,7 @@ public class ExtensionRegistry {
 
     /**
      * Gets an {@link ExtensionContext} for use when handling an {@code add} operation for
-     * a resource representing an {@link Extension}.
+     * a resource representing an {@link org.jboss.as.controller.Extension}.
      *
      * @param moduleName the name of the extension's module. Cannot be {@code null}
      * @param isMasterDomainController set to {@code true} if we are the master domain controller, in which case transformers get registered

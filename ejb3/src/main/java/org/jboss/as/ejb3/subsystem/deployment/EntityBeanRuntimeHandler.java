@@ -25,10 +25,9 @@ package org.jboss.as.ejb3.subsystem.deployment;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
-import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponent;
 
 /**
- * Handles operations that provide runtime management of a {@link MessageDrivenComponent}.
+ * Handles operations that provide runtime management of a {@link org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponent}.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

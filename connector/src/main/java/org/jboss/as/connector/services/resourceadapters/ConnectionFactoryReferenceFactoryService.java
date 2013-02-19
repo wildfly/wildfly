@@ -22,8 +22,6 @@
 
 package org.jboss.as.connector.services.resourceadapters;
 
-import javax.resource.cci.ConnectionFactory;
-
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReference;
@@ -38,7 +36,7 @@ import org.jboss.msc.value.InjectedValue;
 
 /**
  * Service responsible for exposing a {@link ManagedReferenceFactory} for a
- * {@link ConnectionFactory}.
+ * {@link javax.resource.cci.ConnectionFactory}.
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
  *         Maestri</a>
  */

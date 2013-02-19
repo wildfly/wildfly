@@ -25,12 +25,11 @@ import java.util.concurrent.Future;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.client.helpers.standalone.impl.AbstractServerDeploymentManager;
 import org.jboss.dmr.ModelNode;
 
 /**
- * {@link ServerDeploymentManager} the uses a {@link org.jboss.as.controller.ModelController}.
+ * {@link org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager} the uses a {@link org.jboss.as.controller.ModelController}.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  *

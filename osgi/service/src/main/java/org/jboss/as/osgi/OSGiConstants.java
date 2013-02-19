@@ -22,13 +22,11 @@
 
 package org.jboss.as.osgi;
 
-import org.jboss.as.osgi.parser.SubsystemState;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.spi.BundleManager;
 import org.jboss.osgi.metadata.OSGiMetaData;
-import org.jboss.osgi.repository.XRepository;
 import org.jboss.osgi.resolver.XBundle;
 import org.jboss.osgi.resolver.XEnvironment;
 import org.jboss.osgi.resolver.XResolver;
@@ -69,12 +67,12 @@ public interface OSGiConstants {
     /** Attachment key for the OSGi system context. */
     AttachmentKey<BundleContext> SYSTEM_CONTEXT_KEY = AttachmentKey.create(BundleContext.class);
 
-    /** The {@link XRepository} service */
+    /** The {@link org.jboss.osgi.repository.XRepository} service */
     ServiceName REPOSITORY_SERVICE_NAME = SERVICE_BASE_NAME.append("repository");
 
-    /** The {@link Resolver} service */
+    /** The {@link org.jboss.as.osgi.service.ResolverService} service */
     ServiceName RESOLVER_SERVICE_NAME = SERVICE_BASE_NAME.append("resolver");
 
-    /** The {@link SubsystemState} service */
+    /** The {@link org.jboss.as.osgi.parser.SubsystemState} service */
     ServiceName SUBSYSTEM_STATE_SERVICE_NAME = SERVICE_BASE_NAME.append("subsystemstate");
 }

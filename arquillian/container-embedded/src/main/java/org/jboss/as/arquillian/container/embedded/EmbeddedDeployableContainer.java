@@ -16,14 +16,13 @@
  */
 package org.jboss.as.arquillian.container.embedded;
 
-import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.as.arquillian.container.CommonDeployableContainer;
 import org.jboss.as.embedded.EmbeddedServerFactory;
 import org.jboss.as.embedded.StandaloneServer;
 
 /**
- * {@link DeployableContainer} implementation to bootstrap JBoss Logging (installing the LogManager if possible), use the JBoss
+ * {@link org.jboss.arquillian.container.spi.client.container.DeployableContainer} implementation to bootstrap JBoss Logging (installing the LogManager if possible), use the JBoss
  * Modules modular ClassLoading Environment to create a new server instance, and handle lifecycle of the Application Server in
  * the currently-running environment.
  *

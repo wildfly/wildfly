@@ -36,7 +36,6 @@ import java.util.concurrent.TimeUnit;
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.BootContext;
 import org.jboss.as.controller.ControlledProcessState;
-import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
@@ -114,7 +113,7 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.JBossThreadFactory;
 
 /**
- * Service for the {@link ModelController} for an AS server instance.
+ * Service for the {@link org.jboss.as.controller.ModelController} for an AS server instance.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */

@@ -27,7 +27,6 @@ import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.RefAddr;
 import javax.naming.Reference;
-import javax.naming.spi.ObjectFactory;
 
 import org.jboss.as.naming.context.ModularReference;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -105,7 +104,7 @@ public class ServiceReferenceObjectFactory implements ServiceAwareObjectFactory 
 
     /**
      * Handles the service reference. The parameters are the same as
-     * {@link ObjectFactory#getObjectInstance(Object, Name, Context, Hashtable)}, but with the addition of the service value as
+     * {@link javax.naming.spi.ObjectFactory#getObjectInstance(Object, Name, Context, Hashtable)}, but with the addition of the service value as
      * the first parameter.
      */
     public Object getObjectInstance(Object serviceValue, Object obj, Name name, Context nameCtx,

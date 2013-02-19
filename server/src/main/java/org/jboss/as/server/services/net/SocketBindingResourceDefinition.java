@@ -28,7 +28,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.resource.AbstractSocketBindingResourceDefinition;
@@ -36,7 +35,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * {@link ResourceDefinition} for a server socket binding resource.
+ * {@link org.jboss.as.controller.ResourceDefinition} for a server socket binding resource.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

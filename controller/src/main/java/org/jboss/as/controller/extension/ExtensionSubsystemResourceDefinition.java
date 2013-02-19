@@ -28,10 +28,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -45,7 +43,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
 
 /**
- * {@link ResourceDefinition} for an {@link Extension}'s subsystem child resources.
+ * {@link org.jboss.as.controller.ResourceDefinition} for an {@link org.jboss.as.controller.Extension}'s subsystem child resources.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

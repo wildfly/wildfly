@@ -26,14 +26,13 @@
 package org.jboss.as.host.controller;
 
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.msc.service.ServiceName;
 
 import java.io.IOException;
 
 /**
- * Client for interacting with the master {@link DomainController} on a remote host.
+ * Client for interacting with the master {@link MasterDomainControllerClient} on a remote host.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

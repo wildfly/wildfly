@@ -24,14 +24,13 @@ package org.jboss.as.arquillian.container;
 import java.util.jar.Manifest;
 
 import org.jboss.arquillian.container.osgi.AbstractOSGiApplicationArchiveProcessor;
-import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
 import org.jboss.arquillian.test.spi.TestClass;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 
 
 /**
- * An OSGi {@link ApplicationArchiveProcessor} that does not generate the manifest on demand.
+ * An OSGi {@link org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor} that does not generate the manifest on demand.
  * AS7 test archives must be explicit about their manifest metadata.
  *
  * @author Thomas.Diesler@jboss.com

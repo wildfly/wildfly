@@ -28,10 +28,8 @@ import java.util.Hashtable;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 
-import org.osgi.service.http.HttpContext;
-
 /**
- * The default {@link HttpContext}
+ * The default {@link org.osgi.service.http.HttpContext}
  *
  * @author Thomas.Diesler@jboss.com
  * @since 19-Jul-2012

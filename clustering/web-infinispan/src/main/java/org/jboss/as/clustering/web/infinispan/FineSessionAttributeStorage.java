@@ -28,10 +28,9 @@ import java.util.Set;
 
 import org.jboss.as.clustering.web.OutgoingAttributeGranularitySessionData;
 import org.jboss.as.clustering.web.SessionAttributeMarshaller;
-import org.jboss.metadata.web.jboss.ReplicationGranularity;
 
 /**
- * Handles session attribute load/store operations for {@link ReplicationGranularity#ATTRIBUTE} distributed session managers.
+ * Handles session attribute load/store operations for {@link org.jboss.metadata.web.jboss.ReplicationGranularity#ATTRIBUTE} distributed session managers.
  *
  * @author Paul Ferraro
  */

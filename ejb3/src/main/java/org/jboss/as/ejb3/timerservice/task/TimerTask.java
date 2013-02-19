@@ -30,7 +30,6 @@ import org.jboss.as.ejb3.timerservice.TimerImpl;
 import org.jboss.as.ejb3.timerservice.TimerServiceImpl;
 import org.jboss.as.ejb3.timerservice.TimerState;
 import org.jboss.as.ejb3.timerservice.spi.BeanRemovedException;
-import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 
 /**
  * A timer task which will be invoked at appropriate intervals based on a {@link javax.ejb.Timer}
@@ -38,7 +37,7 @@ import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
  * <p/>
  * <p>
  * A {@link TimerTask} is responsible for invoking the timeout method on the target, through
- * the use of {@link TimedObjectInvoker}
+ * the use of {@link org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker}
  * </p>
  * <p>
  * For calendar timers, this {@link TimerTask} is additionally responsible for creating and
@@ -77,7 +76,7 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
     }
 
     /**
-     * Invokes the timeout method through the {@link TimedObjectInvoker} corresponding
+     * Invokes the timeout method through the {@link org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker} corresponding
      * to the {@link org.jboss.as.ejb3.timerservice.TimerImpl} to which this {@link TimerTask} belongs.
      * <p>
      * This method also sets other attributes on the {@link org.jboss.as.ejb3.timerservice.TimerImpl} including the

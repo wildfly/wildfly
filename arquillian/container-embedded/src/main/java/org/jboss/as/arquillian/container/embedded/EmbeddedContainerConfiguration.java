@@ -17,12 +17,11 @@
 package org.jboss.as.arquillian.container.embedded;
 
 import org.jboss.arquillian.container.spi.ConfigurationException;
-import org.jboss.arquillian.container.spi.client.container.ContainerConfiguration;
 import org.jboss.arquillian.container.spi.client.deployment.Validate;
 import org.jboss.as.arquillian.container.CommonContainerConfiguration;
 
 /**
- * {@link ContainerConfiguration} implementation for JBoss AS Embedded
+ * {@link org.jboss.arquillian.container.spi.client.container.ContainerConfiguration} implementation for JBoss AS Embedded
  *
  * @author <a href="mailto:alr@jboss.org">Andrew Lee Rubinger</a>
  * @author <a href="mailto:mmatloka@gmail.com">Michal Matloka</a>

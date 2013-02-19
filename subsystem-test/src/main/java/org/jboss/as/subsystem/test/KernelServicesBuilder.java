@@ -26,8 +26,6 @@ import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
-import junit.framework.AssertionFailedError;
-
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.dmr.ModelNode;
 
@@ -43,7 +41,7 @@ public interface KernelServicesBuilder {
      * semantics to {@link Class#getResource(String)}
      * @throws IllegalStateException if {@link #setBootOperations(List)}, {@link #setSubsystemXml(String)} have already been called
      * @return this builder
-     * @throws AssertionFailedError if the resource could not be found
+     * @throws junit.framework.AssertionFailedError if the resource could not be found
      * @throws IOException if there were problems reading the resource
      * @throws XMLStreamException if there were problems parsing the xml
      */
@@ -84,7 +82,7 @@ public interface KernelServicesBuilder {
      * @return the legacy kernel services initializer
      * @throws IllegalArgumentException if {@code additionalInit} does not have a running mode of {@link org.jboss.as.controller.RunningMode#ADMIN_ONLY}
      * @throws IllegalStateException if {@link #build()} has already been called
-     * @throws AssertionFailedError if the extension class name was not found in the {@code resources}
+     * @throws junit.framework.AssertionFailedError if the extension class name was not found in the {@code resources}
      */
      LegacyKernelServicesInitializer createLegacyKernelServicesBuilder(AdditionalInitialization additionalInit, ModelVersion modelVersion);
 
@@ -92,9 +90,9 @@ public interface KernelServicesBuilder {
      * Creates the controller and initializes it with the passed in configuration options.
      * If {@link #createLegacyKernelServicesBuilder(AdditionalInitialization, ModelVersion)} was called kernel services will be created for the legacy subsystem
      * controllers as well, accessible from {@link KernelServices#getLegacyServices(ModelVersion)} on the created {@link KernelServices}
-     * @throws IllegalStateException if {@link #build()} has already been called
+     * @throws IllegalStateException if #build() has already been called
      * @return the kernel services wrapping the controller
-     * @throws AssertionFailedError if the extension class does not implement {@link org.jboss.as.controller.Extension}}
+     * @throws junit.framework.AssertionFailedError if the extension class does not implement {@link org.jboss.as.controller.Extension}}
      * @throws IllegalArgumentException if any of the {@code resources} could not be found
      */
     KernelServices build() throws Exception;
@@ -111,7 +109,7 @@ public interface KernelServicesBuilder {
      * Parses the given xml into operations. The resource is loaded using similar semantics to {@link Class#getResource(String)}.
      * This may be called after {@link #build()} has been called.
      *
-     * @param xml a string containing the xml resource
+     * @param xmlResource a string containing the xml resource
      * @return the parsed operations
      */
     List<ModelNode> parseXmlResource(String xmlResource) throws Exception;

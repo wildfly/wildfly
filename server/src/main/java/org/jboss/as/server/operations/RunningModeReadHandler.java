@@ -25,11 +25,10 @@ package org.jboss.as.server.operations;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.dmr.ModelNode;
 /**
- * Reports the current server {@link RunningMode}.
+ * Reports the current server {@link org.jboss.as.controller.RunningMode}.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

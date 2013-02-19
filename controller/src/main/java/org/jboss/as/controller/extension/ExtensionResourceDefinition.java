@@ -24,9 +24,7 @@ package org.jboss.as.controller.extension;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 
-import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -38,7 +36,7 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelType;
 
 /**
- * {@link ResourceDefinition} for an {@link Extension} resource.
+ * {@link SimpleResourceDefinition} for an {@link org.jboss.as.controller.Extension} resource.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

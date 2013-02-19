@@ -41,7 +41,6 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.transform.DiscardUndefinedAttributesTransformer;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -488,7 +487,7 @@ public class FailedOperationTransformationConfig {
     }
 
     /**
-     * A standard configuration for the {@link DiscardUndefinedAttributesTransformer}
+     * A standard configuration for the {@link org.jboss.as.controller.transform.DiscardUndefinedAttributesTransformer}
      * for use with attributes that are new in a version.
      */
     public static class NewAttributesConfig extends AttributesPathAddressConfig<NewAttributesConfig> {

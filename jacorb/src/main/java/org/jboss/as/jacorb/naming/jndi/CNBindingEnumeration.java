@@ -38,8 +38,6 @@ import org.omg.CosNaming.BindingIterator;
 import org.omg.CosNaming.BindingIteratorHolder;
 import org.omg.CosNaming.BindingListHolder;
 import org.omg.CosNaming.NameComponent;
-import org.omg.CosNaming.NamingContextPackage.CannotProceed;
-import org.omg.CosNaming.NamingContextPackage.InvalidName;
 
 /**
  * Implements the JNDI NamingEnumeration interface for COS
@@ -208,8 +206,8 @@ final class CNBindingEnumeration implements NamingEnumeration {
      * Constructs a JNDI Binding object from the COS Naming binding
      * object.
      *
-     * @throws CannotProceed   Unable to obtain a continuation context
-     * @throws InvalidName     Name not understood.
+     * @throws org.omg.CosNaming.NamingContextPackage.CannotProceed   Unable to obtain a continuation context
+     * @throws org.omg.CosNaming.NamingContextPackage.InvalidNameCNCtx     Name not understood.
      * @throws NamingException One of the above.
      */
 

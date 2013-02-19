@@ -25,7 +25,6 @@ package org.jboss.as.modcluster;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -45,7 +44,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * {@link ResourceDefinition} implementation for the core mod-cluster configuration resource.
+ * {@link org.jboss.as.controller.ResourceDefinition} implementation for the core mod-cluster configuration resource.
  * <p/>
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.

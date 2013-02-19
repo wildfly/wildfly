@@ -32,7 +32,6 @@ import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.Stage;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -42,7 +41,7 @@ import org.jboss.as.controller.services.path.PathManagerService.PathEventContext
 import org.jboss.dmr.ModelNode;
 
 /**
- * {@link OperationStepHandler} for the write-attribute operation for a path resource.
+ * {@link org.jboss.as.controller.OperationStepHandler} for the write-attribute operation for a path resource.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */

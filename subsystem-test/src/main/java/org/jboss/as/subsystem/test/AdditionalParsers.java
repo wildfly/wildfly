@@ -1,7 +1,6 @@
 package org.jboss.as.subsystem.test;
 
 import org.jboss.as.controller.extension.ExtensionRegistry;
-import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.staxmapper.XMLMapper;
 
 /**
@@ -14,7 +13,7 @@ public class AdditionalParsers {
 
     /**
      * Allows you to {@link ExtensionRegistry#getExtensionParsingContext(String, XMLMapper) access an
-     * {@link ExtensionParsingContext} and use it to add subsystem parsers.
+     * {@link org.jboss.as.controller.parsing.ExtensionParsingContext} and use it to add subsystem parsers.
      *
      * @param registry the extension registry
      * @param xmlMapper the XMLMapper that will be used for overall parsing

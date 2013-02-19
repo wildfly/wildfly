@@ -29,12 +29,11 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.as.server.moduleservice.ExtensionIndex;
-import org.jboss.as.server.moduleservice.ExtensionIndexService;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceController;
 
 /**
- * A processor which stores extension information for deployed libraries into the {@link ExtensionIndexService}.
+ * A processor which stores extension information for deployed libraries into the {@link org.jboss.as.server.moduleservice.ExtensionIndexService}.
  *
  * @author Stuart Douglas
  */

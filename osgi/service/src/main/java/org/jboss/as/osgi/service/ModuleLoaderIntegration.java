@@ -59,7 +59,6 @@ import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
-import org.jboss.osgi.framework.spi.BundleManager;
 import org.jboss.osgi.framework.spi.FrameworkModuleLoader;
 import org.jboss.osgi.framework.spi.FrameworkModuleLoaderPlugin;
 import org.jboss.osgi.resolver.XBundle;
@@ -69,7 +68,7 @@ import org.osgi.framework.wiring.BundleWire;
 
 /**
  * This is the single {@link ModuleLoader} that the OSGi layer uses for the modules that are associated with the bundles that
- * are registered with the {@link BundleManager}.
+ * are registered with the {@link org.jboss.osgi.framework.spi.BundleManager}.
  *
  * @author thomas.diesler@jboss.com
  * @since 20-Apr-2011
@@ -205,7 +204,7 @@ final class ModuleLoaderIntegration extends FrameworkModuleLoaderPlugin {
 
         /**
          * Add an already loaded {@link Module} to the OSGi {@link ModuleLoader}. This happens when AS registers an existing
-         * {@link Module} with the {@link BundleManager}.
+         * {@link Module} with the {@link org.jboss.osgi.framework.spi.BundleManager}.
          * <p/>
          * The {@link Module} may not necessarily result from a user deployment. We use the same {@link ServiceName} convention as
          * in {@link ServiceModuleLoader#moduleServiceName(ModuleIdentifier)}

@@ -24,8 +24,6 @@ package org.jboss.as.server;
 
 import java.util.concurrent.ExecutorService;
 
-import org.jboss.as.server.moduleservice.ExternalModuleService;
-import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -56,12 +54,12 @@ public final class Services {
     static final ServiceName JBOSS_SERVER_EXECUTOR = JBOSS_AS.append("server-executor");
 
     /**
-     * The service corresponding to the {@link ServiceModuleLoader} for this instance.
+     * The service corresponding to the {@link org.jboss.as.server.moduleservice.ServiceModuleLoader} for this instance.
      */
     public static final ServiceName JBOSS_SERVICE_MODULE_LOADER = JBOSS_AS.append("service-module-loader");
 
     /**
-     * The service corresponding to the {@link ExternalModuleService} for this instance.
+     * The service corresponding to the {@link org.jboss.as.server.moduleservice.ExternalModuleService} for this instance.
      */
     public static final ServiceName JBOSS_EXTERNAL_MODULE_SERVICE = JBOSS_AS.append("external-module-service");
 

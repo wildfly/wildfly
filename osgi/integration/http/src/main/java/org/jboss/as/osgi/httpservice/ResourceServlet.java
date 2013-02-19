@@ -32,10 +32,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.servlets.DefaultServlet;
 import org.osgi.service.http.HttpContext;
-import org.osgi.service.http.HttpService;
 
 /**
- * An {@link HttpService} implementation
+ * An {@link org.osgi.service.http.HttpService} implementation
  *
  * @author Thomas.Diesler@jboss.com
  * @since 19-Jul-2012

@@ -32,13 +32,12 @@ import org.jboss.as.controller.client.helpers.domain.InitialDeploymentPlanBuilde
 import org.jboss.as.controller.client.helpers.domain.ServerDeploymentPlanResult;
 import org.jboss.as.controller.client.helpers.domain.ServerGroupDeploymentPlanResult;
 import org.jboss.as.controller.client.helpers.domain.ServerUpdateResult;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 
 /**
- * A deployer that uses the {@link ServerDeploymentManager}
+ * A deployer that uses the {@link org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager}
  *
  * @author Thomas.Diesler@jboss.com
  * @since 17-Nov-2010

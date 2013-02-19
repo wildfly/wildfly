@@ -24,13 +24,12 @@ package org.jboss.as.domain.controller.resources;
 
 import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.operations.common.SocketBindingAddHandler;
 import org.jboss.as.controller.operations.common.SocketBindingRemoveHandler;
 import org.jboss.as.controller.resource.AbstractSocketBindingResourceDefinition;
 
 /**
- * {@link ResourceDefinition} for a domain-level socket binding resource.
+ * {@link org.jboss.as.controller.ResourceDefinition} for a domain-level socket binding resource.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

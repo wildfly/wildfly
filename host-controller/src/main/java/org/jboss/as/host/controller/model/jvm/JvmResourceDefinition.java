@@ -25,7 +25,6 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
@@ -33,7 +32,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.host.controller.descriptions.HostEnvironmentResourceDefinition;
 
 /**
- * {@link ResourceDefinition} for JVM configuration resources.
+ * {@link org.jboss.as.controller.ResourceDefinition} for JVM configuration resources.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */

@@ -22,11 +22,10 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.parsing.Element;
 import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
- * Context passed to {@link XMLElementWriter}s that marshal a subsystem.
+ * Context passed to {@link org.jboss.staxmapper.XMLElementWriter}s that marshal a subsystem.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

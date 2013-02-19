@@ -24,7 +24,6 @@ package org.jboss.as.controller.client.helpers.domain.impl;
 
 import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
 
-import org.jboss.as.controller.client.helpers.domain.DeploymentSetPlan;
 import org.jboss.as.controller.client.helpers.domain.RollbackDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.domain.ServerGroupDeploymentPlan;
 import org.jboss.as.controller.client.helpers.domain.ServerGroupDeploymentPlanBuilder;
@@ -32,7 +31,7 @@ import org.jboss.as.controller.client.helpers.domain.ServerGroupDeploymentPlanBu
 
 /**
  * Variant of a {@link DeploymentPlanBuilderImpl} that exposes
- * directives that are only applicable when controlling how a {@link DeploymentSetPlan}
+ * directives that are only applicable when controlling how a {@link org.jboss.as.controller.client.helpers.domain.DeploymentSetPlan}
  * should be applied to one or more server groups.
  *
  * @author Brian Stansberry

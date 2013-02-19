@@ -42,13 +42,12 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.Phase;
 
 import static org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
- * {@link Phase#INSTALL} processor that adds management resources describing EJB components.
+ * {@link org.jboss.as.server.deployment.Phase#INSTALL} processor that adds management resources describing EJB components.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

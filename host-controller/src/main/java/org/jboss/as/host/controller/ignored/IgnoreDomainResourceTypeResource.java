@@ -29,12 +29,10 @@ import java.util.LinkedHashSet;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.PlaceholderResource;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
- * {@link Resource} implementation for a given type of ignored resource.
+ * {@link org.jboss.as.controller.registry.Resource} implementation for a given type of ignored resource.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
@@ -48,8 +46,8 @@ public class IgnoreDomainResourceTypeResource extends PlaceholderResource.Placeh
      * Constructor for use by operation step handlers.
      *
      * @param type the name of the type some of whose resources are to be ignored
-     * @param names the specific instances of type that should be ignored. Either {@link ModelType#LIST}
-     *              or {@link ModelType#UNDEFINED}; cannot be {@code null}
+     * @param names the specific instances of type that should be ignored. Either {@link org.jboss.dmr.ModelType#LIST}
+     *              or {@link org.jboss.dmr.ModelType#UNDEFINED}; cannot be {@code null}
      * @param wildcard {@code true} if all resources of the type should be matched. Use {@code null} to indicate
      *                 this is undefined by the user, meaning {@code false} in practical effect
      */

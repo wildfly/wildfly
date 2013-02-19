@@ -26,7 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_REMOTING_INTERFACE;
 
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.server.controller.descriptions.ServerDescriptions;
@@ -34,7 +33,7 @@ import org.jboss.as.server.operations.NativeRemotingManagementAddHandler;
 import org.jboss.as.server.operations.NativeRemotingManagementRemoveHandler;
 
 /**
- * {@link ResourceDefinition} for the Native Remoting Interface when running a standalone server.
+ * {@link org.jboss.as.controller.ResourceDefinition} for the Native Remoting Interface when running a standalone server.
  * (This reuses a connector from the remoting subsystem).
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.

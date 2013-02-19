@@ -30,7 +30,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -140,7 +139,7 @@ public class SubsystemOperations extends Operations {
 
     /**
      * Reads the result of an operation and returns the result as a string. If the operation does not have a {@link
-     * ClientConstants#RESULT} attribute and empty string is returned.
+     * org.jboss.as.controller.client.helpers.ClientConstants#RESULT} attribute and empty string is returned.
      *
      * @param result the result of executing an operation
      *
@@ -152,7 +151,7 @@ public class SubsystemOperations extends Operations {
 
     /**
      * Reads the result of an operation and returns the result as a list of strings. If the operation does not have a
-     * {@link ClientConstants#RESULT} attribute and empty list is returned.
+     * {@link org.jboss.as.controller.client.helpers.ClientConstants#RESULT} attribute and empty list is returned.
      *
      * @param result the result of executing an operation
      *

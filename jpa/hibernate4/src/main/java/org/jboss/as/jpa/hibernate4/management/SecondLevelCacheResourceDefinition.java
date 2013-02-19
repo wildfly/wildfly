@@ -23,7 +23,6 @@
 package org.jboss.as.jpa.hibernate4.management;
 
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -33,7 +32,7 @@ import org.jboss.as.jpa.spi.PersistenceUnitServiceRegistry;
 import org.jboss.dmr.ModelType;
 
 /**
- * {@link ResourceDefinition} for a resource representing a Hibernate Second Level Cache region.
+ * {@link org.jboss.as.controller.ResourceDefinition} for a resource representing a Hibernate Second Level Cache region.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

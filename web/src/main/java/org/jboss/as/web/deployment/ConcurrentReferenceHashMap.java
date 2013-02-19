@@ -37,12 +37,8 @@ import java.util.AbstractCollection;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.Collection;
-import java.util.ConcurrentModificationException;
 import java.util.EnumSet;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -109,7 +105,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Similarly, Iterators and Enumerations return elements reflecting the state of
  * the hash table at some point at or since the creation of the
  * iterator/enumeration. They do <em>not</em> throw
- * {@link ConcurrentModificationException}. However, iterators are designed to
+ * {@link java.util.ConcurrentModificationException}. However, iterators are designed to
  * be used by only one thread at a time.
  *
  * <p>
@@ -134,7 +130,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * methods of the {@link Map} and {@link Iterator} interfaces.
  *
  * <p>
- * Like {@link Hashtable} but unlike {@link HashMap}, this class does
+ * Like {@link java.util.Hashtable} but unlike {@link java.util.HashMap}, this class does
  * <em>not</em> allow <tt>null</tt> to be used as a key or value.
  *
  * <p>
@@ -171,7 +167,7 @@ final class ConcurrentReferenceHashMap<K, V> extends AbstractMap<K, V>
 
     public static enum Option {
         /** Indicates that referential-equality (== instead of .equals()) should
-         * be used when locating keys. This offers similar behavior to {@link IdentityHashMap} */
+         * be used when locating keys. This offers similar behavior to {@link java.util.IdentityHashMap} */
         IDENTITY_COMPARISONS
     };
 
@@ -1341,7 +1337,7 @@ final class ConcurrentReferenceHashMap<K, V> extends AbstractMap<K, V>
      * <tt>addAll</tt> operations.
      *
      * <p>The view's <tt>iterator</tt> is a "weakly consistent" iterator
-     * that will never throw {@link ConcurrentModificationException},
+     * that will never throw {@link java.util.ConcurrentModificationException},
      * and guarantees to traverse elements as they existed upon
      * construction of the iterator, and may (but is not guaranteed to)
      * reflect any modifications subsequent to construction.
@@ -1362,7 +1358,7 @@ final class ConcurrentReferenceHashMap<K, V> extends AbstractMap<K, V>
      * support the <tt>add</tt> or <tt>addAll</tt> operations.
      *
      * <p>The view's <tt>iterator</tt> is a "weakly consistent" iterator
-     * that will never throw {@link ConcurrentModificationException},
+     * that will never throw {@link java.util.ConcurrentModificationException},
      * and guarantees to traverse elements as they existed upon
      * construction of the iterator, and may (but is not guaranteed to)
      * reflect any modifications subsequent to construction.
@@ -1383,7 +1379,7 @@ final class ConcurrentReferenceHashMap<K, V> extends AbstractMap<K, V>
      * <tt>addAll</tt> operations.
      *
      * <p>The view's <tt>iterator</tt> is a "weakly consistent" iterator
-     * that will never throw {@link ConcurrentModificationException},
+     * that will never throw {@link java.util.ConcurrentModificationException},
      * and guarantees to traverse elements as they existed upon
      * construction of the iterator, and may (but is not guaranteed to)
      * reflect any modifications subsequent to construction.

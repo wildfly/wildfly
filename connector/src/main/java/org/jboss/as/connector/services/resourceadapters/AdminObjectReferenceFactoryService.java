@@ -25,7 +25,6 @@ package org.jboss.as.connector.services.resourceadapters;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReference;
-import org.jboss.jca.core.api.management.AdminObject;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -37,7 +36,7 @@ import org.jboss.msc.value.InjectedValue;
 
 /**
  * Service responsible for exposing a {@link ManagedReferenceFactory} for a
- * {@link AdminObject}.
+ * {@link org.jboss.jca.core.api.management.AdminObject}.
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
  *         Maestri</a>
  */

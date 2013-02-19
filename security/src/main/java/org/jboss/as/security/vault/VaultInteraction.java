@@ -24,10 +24,9 @@ package org.jboss.as.security.vault;
 import java.io.Console;
 import java.util.Scanner;
 
-import org.jboss.security.vault.SecurityVault;
 
 /**
- * Interaction with initialized {@link SecurityVault} via the {@link VaultTool}
+ * Interaction with initialized {@link org.jboss.security.vault.SecurityVault} via the {@link VaultTool}
  *
  * @author Anil Saldhana
  */

@@ -35,7 +35,6 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.modules.Module;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.spi.BundleManager;
 import org.jboss.osgi.resolver.XBundle;
@@ -50,7 +49,7 @@ import org.osgi.framework.wiring.BundleRequirement;
 import org.osgi.service.resolver.ResolutionException;
 
 /**
- * Attach the {@link Module} for a resolved OSGi bundle.
+ * Attach the {@link org.jboss.modules.Module} for a resolved OSGi bundle.
  *
  * @author Thomas.Diesler@jboss.com
  * @since 01-Jul-2012

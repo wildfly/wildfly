@@ -25,18 +25,16 @@ package org.jboss.as.controller.descriptions;
 import java.util.Locale;
 import java.util.Map;
 
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 
 /**
  * Provides description elements to override the description of a resource produced by a {@link DescriptionProvider}.
- * For use with specifically named resources (i.e. those whose {@link ManagementResourceRegistration} path is identified
- * with a {@link PathElement#pathElement(String, String) two-argument PathElement}) that expose additional attributes or
- * operations not provided by the generic resource description (i.e. the {@link ManagementResourceRegistration} whose
- * path is identified with a {@link PathElement#pathElement(String) one-argument PathElement}.)
+ * For use with specifically named resources (i.e. those whose {@link org.jboss.as.controller.registry.ManagementResourceRegistration} path is identified
+ * with a {@link org.jboss.as.controller.PathElement#pathElement(String, String) two-argument PathElement}) that expose additional attributes or
+ * operations not provided by the generic resource description (i.e. the {@link org.jboss.as.controller.registry.ManagementResourceRegistration} whose
+ * path is identified with a {@link org.jboss.as.controller.PathElement#pathElement(String) one-argument PathElement}.)
  *
- * @see ManagementResourceRegistration#registerOverrideModel(String, OverrideDescriptionProvider)
+ * @see org.jboss.as.controller.registry.ManagementResourceRegistration#registerOverrideModel(String, OverrideDescriptionProvider)
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

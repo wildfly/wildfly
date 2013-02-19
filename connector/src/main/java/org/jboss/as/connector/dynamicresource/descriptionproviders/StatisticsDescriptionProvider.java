@@ -39,18 +39,16 @@ import java.util.Map;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.jca.core.spi.statistics.StatisticsPlugin;
 
 
 /**
- * {@link DescriptionProvider} or {@link OverrideDescriptionProvider} for a resource whose contents include attributes
+ * {@link DescriptionProvider} or {@link org.jboss.as.controller.descriptions.OverrideDescriptionProvider} for a resource whose contents include attributes
  * provided by a list of {@link StatisticsPlugin}s. Use the {@link DescriptionProvider} API if the resource only
- * includes the statistics attributes; use {@link OverrideDescriptionProvider} if the resource is an
- * {@link ManagementResourceRegistration#registerOverrideModel(String, OverrideDescriptionProvider) override resource}
+ * includes the statistics attributes; use {@link org.jboss.as.controller.descriptions.OverrideDescriptionProvider} if the resource is an
+ * {@link org.jboss.as.controller.registry.ManagementResourceRegistration#registerOverrideModel(String, org.jboss.as.controller.descriptions.OverrideDescriptionProvider) override resource}
  * that adds resource-specific statistics to a generic resource.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
@@ -64,7 +62,7 @@ public class StatisticsDescriptionProvider implements DescriptionProvider {
     private final List<StatisticsPlugin> plugins;
 
     /**
-     * Constructor for the {@link OverrideDescriptionProvider} case. Internationalization support is not provided.
+     * Constructor for the {@link org.jboss.as.controller.descriptions.OverrideDescriptionProvider} case. Internationalization support is not provided.
      *
      * @param plugins the statistics plugins
      */

@@ -24,10 +24,9 @@ package org.jboss.as.controller;
 import java.util.regex.Pattern;
 
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
- * Resolves {@link ModelType#EXPRESSION} expressions in a {@link ModelNode}.
+ * Resolves {@link org.jboss.dmr.ModelType#EXPRESSION} expressions in a {@link ModelNode}.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
@@ -41,7 +40,7 @@ public interface ExpressionResolver {
      * @param node the ModelNode containing expressions.
      * @return a copy of the node with expressions resolved
      *
-     * @throws OperationFailedException if there is a value of type {@link ModelType#EXPRESSION} in the node tree and
+     * @throws OperationFailedException if there is a value of type {@link org.jboss.dmr.ModelType#EXPRESSION} in the node tree and
      *            there is no system property or environment variable that matches the expression, or if a security
      *            manager exists and its {@link SecurityManager#checkPermission checkPermission} method doesn't allow
      *            access to the relevant system property or environment variable

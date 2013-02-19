@@ -21,7 +21,6 @@
 */
 package org.jboss.as.subsystem.test;
 
-import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -63,7 +62,7 @@ public interface LegacyKernelServicesInitializer {
      *   <li>Using {@link Class#getResource(String)} semantics.</li>
      *   <li>Using {@link ClassLoader#getResource(String)} for the classloader used to load this class. If {@code this.getClass().getClassLoader()} is {@code null},
      *   the system classloader is used.</li>
-     *   <li>Using {link {@link File#File(String)}}
+     *   <li>Using {link {@link java.io.File#File(String)}}
      * </ul>
      *
      * @param resource the string containing the resource to be resolved

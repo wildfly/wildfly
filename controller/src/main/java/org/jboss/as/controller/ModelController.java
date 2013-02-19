@@ -28,7 +28,6 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.Service;
 
 /**
  * Controls reads of and modifications to a management model.
@@ -38,7 +37,7 @@ import org.jboss.msc.service.Service;
 public interface ModelController {
 
     /**
-     * A {@link RuntimePermission} needed to access a {@link ModelController} via {@link Service#getValue()} or
+     * A {@link RuntimePermission} needed to access a {@link ModelController} via {@link org.jboss.msc.service.Service#getValue()} or
      * to invoke its methods. The name of the necessary {@code RuntimePermission} is "{@code canAccessModelController}."
      */
     RuntimePermission ACCESS_PERMISSION = new RuntimePermission("canAccessModelController");

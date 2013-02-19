@@ -63,7 +63,6 @@ import org.apache.catalina.Session;
 import org.apache.catalina.SessionEvent;
 import org.apache.catalina.SessionListener;
 import org.apache.catalina.security.SecurityUtil;
-import org.apache.catalina.session.StandardSession;
 import org.apache.catalina.session.StandardSessionFacade;
 import org.apache.catalina.util.Enumerator;
 import org.jboss.as.clustering.web.DistributableSessionMetadata;
@@ -592,7 +591,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
     }
 
     /**
-     * Overrides the {@link StandardSession#isValid() superclass method} to call @ #isValid(boolean) isValid(true)} .
+     * Overrides the {@link org.apache.catalina.session.StandardSession#isValid() superclass method} to call @ #isValid(boolean) isValid(true)} .
      */
     @Override
     public boolean isValid() {

@@ -28,7 +28,6 @@ package org.jboss.as.jacorb.naming.jndi;
 import java.rmi.Remote;
 import java.util.Hashtable;
 
-import javax.naming.ConfigurationException;
 import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.NamingException;
@@ -58,7 +57,7 @@ public class RemoteToCorba implements StateFactory {
      * @param ctx  The non-null CNCtx whose ORB to use.
      * @param env  Ignored
      * @return The CORBA object for <tt>orig</tt> or null.
-     * @throws ConfigurationException If the CORBA object cannot be obtained
+     * @throws javax.naming.ConfigurationException If the CORBA object cannot be obtained
      *                                due to configuration problems, for instance, if RMI-IIOP not available.
      * @throws NamingException        If some other problem prevented a CORBA
      *                                object from being obtained from the Remote object.

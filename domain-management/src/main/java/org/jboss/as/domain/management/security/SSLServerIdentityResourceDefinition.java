@@ -24,7 +24,6 @@ package org.jboss.as.domain.management.security;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -38,7 +37,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * {@link ResourceDefinition} for a management security realm's SSL-based server identity resource.
+ * {@link org.jboss.as.controller.ResourceDefinition} for a management security realm's SSL-based server identity resource.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
