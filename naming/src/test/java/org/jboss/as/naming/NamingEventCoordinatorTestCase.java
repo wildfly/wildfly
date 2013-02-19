@@ -50,6 +50,7 @@ public class NamingEventCoordinatorTestCase {
 
     @Before
     public void setup() throws Exception {
+        NamingContext.setActiveNamingStore(new InMemoryNamingStore());
         context = new NamingContext(null);
     }
 
