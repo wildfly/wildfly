@@ -382,7 +382,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         final String advancedFilter = node.isDefined() ? node.asString() : null;
         final boolean recursive = LdapAuthorizationResourceDefinition.RECURSIVE.resolveModelAttribute(context, ldap).asBoolean();
         final boolean reverseGroup = LdapAuthorizationResourceDefinition.REVERSE_GROUP.resolveModelAttribute(context, ldap).asBoolean();
-        final String rolesDn = LdapAuthorizationResourceDefinition.ROLES_DN.resolveModelAttribute(context, ldap).asString();
+        final String rolesDn = LdapAuthorizationResourceDefinition.GROUPS_DN.resolveModelAttribute(context, ldap).asString();
         final String pattern = LdapAuthorizationResourceDefinition.PATTERN.resolveModelAttribute(context, ldap).asString();
         final String userDn = LdapAuthorizationResourceDefinition.USER_DN.resolveModelAttribute(context,ldap).asString();
         ModelNode groupNode = LdapAuthorizationResourceDefinition.GROUP.resolveModelAttribute(context, ldap);

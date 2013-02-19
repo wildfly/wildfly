@@ -1,3 +1,24 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.as.domain.management.security;
 
 import java.io.IOException;
@@ -7,8 +28,10 @@ import java.util.Set;
 
 import javax.security.auth.Subject;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
+import org.jboss.as.core.security.RealmGroup;
+import org.jboss.as.core.security.RealmUser;
 import org.junit.Test;
 
 public class LdapSubjectSupplementalTestCase {
@@ -23,8 +46,8 @@ public class LdapSubjectSupplementalTestCase {
         TestLdapSubjectSupplemental subjectSupplemental = new TestLdapSubjectSupplemental(false, null, null, null,"", null, null, 0, null);
         subjectSupplemental.supplementSubject(subject);
         Set<Principal> principals = subject.getPrincipals();
-        Assert.assertTrue(principals.contains(new RealmRole("cn=admin,ou=roles,dc=jboss,dc=org")));
-        Assert.assertTrue(principals.contains(new RealmRole("cn=emeaadmin,ou=roles,dc=jboss,dc=org")));
+        Assert.assertTrue(principals.contains(new RealmGroup("cn=admin,ou=groups,dc=jboss,dc=org")));
+        Assert.assertTrue(principals.contains(new RealmGroup("cn=emeaadmin,ou=groups,dc=jboss,dc=org")));
         Assert.assertEquals(3, principals.size());
     }
 
@@ -37,8 +60,8 @@ public class LdapSubjectSupplementalTestCase {
         TestLdapSubjectSupplemental subjectSupplemental = new TestLdapSubjectSupplemental(false, null, null, null, "", null, "=([^,]+)", 0, null);
         subjectSupplemental.supplementSubject(subject);
         Set<Principal> principals = subject.getPrincipals();
-        Assert.assertTrue(principals.contains(new RealmRole("=admin")));
-        Assert.assertTrue(principals.contains(new RealmRole("=emeaadmin")));
+        Assert.assertTrue(principals.contains(new RealmGroup("=admin")));
+        Assert.assertTrue(principals.contains(new RealmGroup("=emeaadmin")));
         Assert.assertEquals(3, principals.size());
     }
 
@@ -51,8 +74,8 @@ public class LdapSubjectSupplementalTestCase {
         TestLdapSubjectSupplemental subjectSupplemental = new TestLdapSubjectSupplemental(false, null, null, null,"", null, "=([^,]+)", 1, null);
         subjectSupplemental.supplementSubject(subject);
         Set<Principal> principals = subject.getPrincipals();
-        Assert.assertTrue(principals.contains(new RealmRole("admin")));
-        Assert.assertTrue(principals.contains(new RealmRole("emeaadmin")));
+        Assert.assertTrue(principals.contains(new RealmGroup("admin")));
+        Assert.assertTrue(principals.contains(new RealmGroup("emeaadmin")));
         Assert.assertEquals(3, principals.size());
 
         //Test with a empty regular expressions
@@ -86,8 +109,8 @@ public class LdapSubjectSupplementalTestCase {
         TestLdapSubjectSupplemental subjectSupplemental = new TestLdapSubjectSupplemental(false, null, null, null, "", null, "=([^,]+)", 1, "{0}-{2}");
         subjectSupplemental.supplementSubject(subject);
         Set<Principal> principals = subject.getPrincipals();
-        Assert.assertTrue(principals.contains(new RealmRole("admin-jboss")));
-        Assert.assertTrue(principals.contains(new RealmRole("emeaadmin-jboss")));
+        Assert.assertTrue(principals.contains(new RealmGroup("admin-jboss")));
+        Assert.assertTrue(principals.contains(new RealmGroup("emeaadmin-jboss")));
         Assert.assertEquals(3, principals.size());
 
         //test with empty result pattern
@@ -102,8 +125,8 @@ public class LdapSubjectSupplementalTestCase {
         subjectSupplemental = new TestLdapSubjectSupplemental(false, null, null, null,"", null, "=([^,]+)", 1, "{0}");
         subjectSupplemental.supplementSubject(subject);
         principals = subject.getPrincipals();
-        Assert.assertTrue(principals.contains(new RealmRole("admin")));
-        Assert.assertTrue(principals.contains(new RealmRole("emeaadmin")));
+        Assert.assertTrue(principals.contains(new RealmGroup("admin")));
+        Assert.assertTrue(principals.contains(new RealmGroup("emeaadmin")));
         Assert.assertEquals(3, principals.size());
 
         //test with result pattern that use a higher number of elements
@@ -123,15 +146,15 @@ public class LdapSubjectSupplementalTestCase {
 
 
     private class TestLdapSubjectSupplemental extends LdapSubjectSupplemental {
-        public TestLdapSubjectSupplemental(boolean recursive, String rolesDn, String baseDn, String userDn, String userNameAttribute, String advancedFilter, String pattern, int groups, String resultPattern) {
-            super(recursive,rolesDn,baseDn,userDn,userNameAttribute,advancedFilter,pattern,groups,resultPattern,true);
+        public TestLdapSubjectSupplemental(boolean recursive, String groupsDn, String baseDn, String userDn, String userNameAttribute, String advancedFilter, String pattern, int groups, String resultPattern) {
+            super(recursive,groupsDn,baseDn,userDn,userNameAttribute,advancedFilter,pattern,groups,resultPattern,true);
         }
 
         @Override
         protected Set<String> searchLdap(String username) {
             HashSet<String> ldapRoles = new HashSet<String>();
-            ldapRoles.add("cn=admin,ou=roles,dc=jboss,dc=org");
-            ldapRoles.add("cn=emeaadmin,ou=roles,dc=jboss,dc=org");
+            ldapRoles.add("cn=admin,ou=groups,dc=jboss,dc=org");
+            ldapRoles.add("cn=emeaadmin,ou=groups,dc=jboss,dc=org");
             return ldapRoles;
         }
     }
