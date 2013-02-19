@@ -27,7 +27,6 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.transform.AbstractOperationTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
