@@ -23,6 +23,7 @@ package org.jboss.as.core.model.test;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.model.test.ModelFixer;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -47,6 +48,25 @@ public interface LegacyKernelServicesInitializer {
      */
     LegacyKernelServicesInitializer setDontValidateOperations();
 
+
+    /**
+     * By default the {@link KernelServicesBuilder#build()} method will use the boot operations passed into the
+     * legacy controller and try to boot up the current controller with those. This is for checking that e.g. cli scripts written
+     * against the legacy controller still work with the current one. To turn this check off call this method.
+     *
+     * @return this initializer
+     */
+    LegacyKernelServicesInitializer skipReverseControllerCheck();
+
+    /**
+     * By default the {@link KernelServicesBuilder#build()} method will use the boot operations passed into the
+     * legacy controller and try to boot up the current controller with those. This is for checking that e.g. cli scripts written
+     * against the legacy controller still work with the current one. To turn this check off call this method.
+     *
+     * @param modelFixer a model fixer to fix up the booted subsystem model
+     * @return this initializer
+     */
+    LegacyKernelServicesInitializer configureReverseControllerCheck(ModelFixer modelFixer);
 
     public enum TestControllerVersion {
         MASTER ("org.jboss.as:jboss-as-host-controller:" + VERSION, null),

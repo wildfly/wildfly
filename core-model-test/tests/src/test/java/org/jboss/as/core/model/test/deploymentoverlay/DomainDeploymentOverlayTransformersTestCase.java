@@ -100,7 +100,9 @@ public class DomainDeploymentOverlayTransformersTestCase extends AbstractCoreMod
         StandardServerGroupInitializers.addServerGroupInitializers(
                     builder.createLegacyKernelServicesBuilder(modelVersion, testControllerVersion)
                 )
-                .setDontUseBootOperations();
+                .setDontUseBootOperations()
+                //Since the legacy controller does not know about deployment overlays, there will be not boot ops for the reverse check
+                .skipReverseControllerCheck();
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
@@ -131,7 +133,9 @@ public class DomainDeploymentOverlayTransformersTestCase extends AbstractCoreMod
         StandardServerGroupInitializers.addServerGroupInitializers(
                     builder.createLegacyKernelServicesBuilder(modelVersion, testControllerVersion)
                 )
-                .setDontUseBootOperations();
+                .setDontUseBootOperations()
+                //Since the legacy controller does not know about deployment overlays, there will be not boot ops for the reverse check
+                .skipReverseControllerCheck();
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
@@ -162,7 +166,10 @@ public class DomainDeploymentOverlayTransformersTestCase extends AbstractCoreMod
         StandardServerGroupInitializers.addServerGroupInitializers(
                     builder.createLegacyKernelServicesBuilder(modelVersion, testControllerVersion)
                 )
-                .setDontUseBootOperations();
+                .setDontUseBootOperations()
+                //Since the legacy controller does not know about deployment overlays, there will be not boot ops for the reverse check
+                .skipReverseControllerCheck();
+
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
