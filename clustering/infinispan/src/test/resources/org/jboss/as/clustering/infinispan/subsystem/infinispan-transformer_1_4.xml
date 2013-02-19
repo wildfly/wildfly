@@ -36,7 +36,7 @@
                 <write-behind flush-lock-timeout="2" modification-queue-size="2048" shutdown-timeout="20000" thread-pool-size="1" />
             </file-store>
             <indexing index="LOCAL">
-            <!-- 
+            <!--
                  TODO: These are not configurable in 7.1.x and should only be discarded if they have different values from the values assumed in 7.1.x.
                  Currently it is set up to discard if they are undefined
                 <property name="hibernate.search.default.directory_provider">infinispan</property>
@@ -70,7 +70,7 @@
             </store>
             <indexing index="NONE" />
         </replicated-cache>
-        <distributed-cache name="dist" mode="SYNC" batching="true" l1-lifespan="1200000" owners="4" remote-timeout="35000" start="EAGER" segments="2"  async-marshalling="true">
+        <distributed-cache name="dist" mode="SYNC" batching="true" l1-lifespan="1200000" owners="4" remote-timeout="35000" start="EAGER" segments="12"  async-marshalling="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_COMMITTED" striping="true"/>
             <transaction mode="FULL_XA" stop-timeout="60000"  locking="OPTIMISTIC"/>
             <eviction max-entries="20000" strategy="UNORDERED"/>

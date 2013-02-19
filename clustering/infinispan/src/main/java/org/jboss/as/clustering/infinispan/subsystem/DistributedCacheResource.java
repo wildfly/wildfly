@@ -36,6 +36,7 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
@@ -68,6 +69,7 @@ public class DistributedCacheResource extends SharedCacheResource {
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(2))
+                    .setValidator(new IntRangeValidator(1, true, true))
                     .build();
 
     @SuppressWarnings("deprecation")
@@ -79,6 +81,7 @@ public class DistributedCacheResource extends SharedCacheResource {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(1))
                     .setDeprecated(ModelVersion.create(1, 4, 0))
+                    .setAlternatives(ModelKeys.SEGMENTS)
                     .build();
 
     static final SimpleAttributeDefinition SEGMENTS =
@@ -87,6 +90,8 @@ public class DistributedCacheResource extends SharedCacheResource {
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(80)) // Recommended value is 10 * max_cluster_size.
+                    .setValidator(new IntRangeValidator(1, true, true))
+                    .setAlternatives(ModelKeys.VIRTUAL_NODES)
                     .build();
 
     static final AttributeDefinition[] DISTRIBUTED_CACHE_ATTRIBUTES = {OWNERS, SEGMENTS, L1_LIFESPAN};

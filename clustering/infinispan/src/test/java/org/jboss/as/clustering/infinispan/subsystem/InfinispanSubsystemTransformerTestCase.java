@@ -78,12 +78,10 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXml(getSubsystemXml());
         builder.createLegacyKernelServicesBuilder(null, version)
-            .addMavenResourceURL("org.jboss.as:jboss-as-clustering-infinispan:" + asVersion)
-            //TODO https://issues.jboss.org/browse/AS7-6533
-            .skipReverseControllerCheck();
+            .addMavenResourceURL("org.jboss.as:jboss-as-clustering-infinispan:" + asVersion);
 
         KernelServices mainServices = builder.build();
-        Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot()); ;
+        Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
 
         checkSubsystemModelTransformation(mainServices, version);
 
