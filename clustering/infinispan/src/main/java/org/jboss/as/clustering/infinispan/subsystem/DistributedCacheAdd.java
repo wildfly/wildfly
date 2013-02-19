@@ -65,7 +65,8 @@ public class DistributedCacheAdd extends SharedStateCacheAdd {
             // convert the virtual-nodes value to segments and update the incoming model
             // TBD: what to do it both values are coded?
             ModelNode convertedValue = SegmentsAndVirtualNodeConverter.virtualNodesToSegments(fromModel.get(deprecatedKey));
-            fromModel.get(ModelKeys.SEGMENTS).set(convertedValue) ;
+            fromModel.get(ModelKeys.SEGMENTS).set(convertedValue);
+            fromModel.remove(deprecatedKey);
         }
 
         DistributedCacheResource.OWNERS.validateAndSet(fromModel, toModel);
