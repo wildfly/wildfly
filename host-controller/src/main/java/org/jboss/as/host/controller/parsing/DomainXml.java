@@ -133,10 +133,10 @@ public class DomainXml extends CommonXml {
             case DOMAIN_1_3:
                 readDomainElement1_3(reader, new ModelNode(), readerNS, nodes);
                 break;
-            case DOMAIN_1_4: {
+            case DOMAIN_1_4:
+            case DOMAIN_2_0:
                 readDomainElement1_4(reader, new ModelNode(), readerNS, nodes);
                 break;
-            }
             default: {
                 throw unexpectedElement(reader);
             }
