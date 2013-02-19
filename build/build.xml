@@ -715,6 +715,7 @@
             <maven-resource group="org.hornetq" artifact="hornetq-journal"/>
             <maven-resource group="org.hornetq" artifact="hornetq-jms-client"/>
             <maven-resource group="org.hornetq" artifact="hornetq-jms-server"/>
+            <extract-native-jar group="org.hornetq" artifact="hornetq-native"/>
         </module-def>
 
         <module-def name="org.hornetq.ra">

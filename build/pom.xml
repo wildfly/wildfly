@@ -759,6 +759,11 @@
 
                 <dependency>
                     <groupId>org.hornetq</groupId>
+                    <artifactId>hornetq-native</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.hornetq</groupId>
                     <artifactId>hornetq-ra</artifactId>
                 </dependency>
 

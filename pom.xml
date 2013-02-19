@@ -3630,6 +3630,12 @@
 
             <dependency>
                 <groupId>org.hornetq</groupId>
+                <artifactId>hornetq-native</artifactId>
+                <version>${version.org.hornetq}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hornetq</groupId>
                 <artifactId>hornetq-ra</artifactId>
                 <version>${version.org.hornetq}</version>
             </dependency>
