@@ -389,6 +389,7 @@ public class CoreModelTestDelegate {
         private final TestParser testParser;
         private ProcessType processType;
         private ModelInitializer modelInitializer;
+        private ModelWriteSanitizer modelWriteSanitizer;
         private boolean validateDescription;
         private boolean validateOperations = true;
         private XMLMapper xmlMapper = XMLMapper.Factory.create();
@@ -448,6 +449,7 @@ public class CoreModelTestDelegate {
         public KernelServicesBuilder setModelInitializer(ModelInitializer modelInitializer, ModelWriteSanitizer modelWriteSanitizer) {
             bootOperationBuilder.validateNotAlreadyBuilt();
             this.modelInitializer = modelInitializer;
+            this.modelWriteSanitizer = modelWriteSanitizer;
             testParser.setModelWriteSanitizer(modelWriteSanitizer);
             return this;
         }
@@ -490,7 +492,7 @@ public class CoreModelTestDelegate {
                     }
                 }
 
-                LegacyControllerKernelServicesProxy legacyServices = legacyInitializer.install(kernelServices, transformedBootOperations);
+                LegacyControllerKernelServicesProxy legacyServices = legacyInitializer.install(kernelServices, modelInitializer, modelWriteSanitizer, contentRepositoryContents, transformedBootOperations);
                 kernelServices.addLegacyKernelService(entry.getKey(), legacyServices);
             }
 
@@ -530,15 +532,21 @@ public class CoreModelTestDelegate {
         private final TestControllerVersion testControllerVersion;
         private boolean validateOperations = true;
         private boolean dontUseBootOperations = false;
+        private boolean skipReverseCheck;
+        private ModelFixer reverseCheckModelFixer;
 
         public LegacyKernelServicesInitializerImpl(ModelVersion modelVersion, TestControllerVersion version) {
             this.modelVersion = modelVersion;
             this.testControllerVersion = version;
         }
 
-        private LegacyControllerKernelServicesProxy install(AbstractKernelServicesImpl mainServices, List<ModelNode> bootOperations) throws Exception {
+        private LegacyControllerKernelServicesProxy install(AbstractKernelServicesImpl mainServices, ModelInitializer modelInitializer, ModelWriteSanitizer modelWriteSanitizer, List<String> contentRepositoryContents, List<ModelNode> bootOperations) throws Exception {
             if (testControllerVersion == null) {
                 throw new IllegalStateException();
+            }
+
+            if (!skipReverseCheck) {
+                bootCurrentVersionWithLegacyBootOperations(bootOperations, modelInitializer, modelWriteSanitizer, contentRepositoryContents, mainServices);
             }
 
             classLoaderBuilder.addParentFirstClassPattern("org.jboss.as.core.model.bridge.shared.*");
@@ -590,5 +598,41 @@ public class CoreModelTestDelegate {
             return dontUseBootOperations;
         }
 
+        @Override
+        public LegacyKernelServicesInitializer skipReverseControllerCheck() {
+            skipReverseCheck = true;
+            return this;
+        }
+
+        @Override
+        public LegacyKernelServicesInitializer configureReverseControllerCheck(ModelFixer modelFixer) {
+            this.reverseCheckModelFixer = modelFixer;
+            return this;
+        }
+
+        private KernelServices bootCurrentVersionWithLegacyBootOperations(List<ModelNode> bootOperations, ModelInitializer modelInitializer, ModelWriteSanitizer modelWriteSanitizer, List<String> contentRepositoryHashes, KernelServices mainServices) throws Exception {
+            KernelServicesBuilder reverseServicesBuilder = createKernelServicesBuilder(TestModelType.DOMAIN)
+                .setBootOperations(bootOperations)
+                .setModelInitializer(modelInitializer, modelWriteSanitizer);
+            for (String hash : contentRepositoryHashes) {
+                reverseServicesBuilder.createContentRepositoryContent(hash);
+            }
+            KernelServices reverseServices = reverseServicesBuilder.build();
+            if (reverseServices.getBootError() != null) {
+                Throwable t = reverseServices.getBootError();
+                if (t instanceof Exception) {
+                    throw (Exception)t;
+                }
+                throw new Exception(t);
+            }
+            Assert.assertTrue(reverseServices.getBootError() == null ? "error" : reverseServices.getBootError().getMessage(), reverseServices.isSuccessfulBoot());
+
+            ModelNode reverseSubsystem = reverseServices.readWholeModel();
+            if (reverseCheckModelFixer != null) {
+                reverseCheckModelFixer.fixModel(reverseSubsystem);
+            }
+            ModelTestUtils.compare(mainServices.readWholeModel(), reverseSubsystem);
+            return reverseServices;
+        }
     }
 }
