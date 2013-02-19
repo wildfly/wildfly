@@ -533,7 +533,8 @@ public class CoreModelTestDelegate {
         private boolean validateOperations = true;
         private boolean dontUseBootOperations = false;
         private boolean skipReverseCheck;
-        private ModelFixer reverseCheckModelFixer;
+        private ModelFixer reverseCheckMainModelFixer;
+        private ModelFixer reverseCheckLegacyModelFixer;
 
         public LegacyKernelServicesInitializerImpl(ModelVersion modelVersion, TestControllerVersion version) {
             this.modelVersion = modelVersion;
@@ -604,8 +605,9 @@ public class CoreModelTestDelegate {
         }
 
         @Override
-        public LegacyKernelServicesInitializer configureReverseControllerCheck(ModelFixer modelFixer) {
-            this.reverseCheckModelFixer = modelFixer;
+        public LegacyKernelServicesInitializer configureReverseControllerCheck(ModelFixer mainModelFixer, ModelFixer legacyModelFixer) {
+            this.reverseCheckMainModelFixer = mainModelFixer;
+            this.reverseCheckLegacyModelFixer = legacyModelFixer;
             return this;
         }
 
@@ -626,11 +628,15 @@ public class CoreModelTestDelegate {
             }
             Assert.assertTrue(reverseServices.getBootError() == null ? "error" : reverseServices.getBootError().getMessage(), reverseServices.isSuccessfulBoot());
 
-            ModelNode reverseSubsystem = reverseServices.readWholeModel();
-            if (reverseCheckModelFixer != null) {
-                reverseCheckModelFixer.fixModel(reverseSubsystem);
+            ModelNode mainModel = mainServices.readWholeModel();
+            if (reverseCheckMainModelFixer != null) {
+                mainModel = reverseCheckMainModelFixer.fixModel(mainModel);
             }
-            ModelTestUtils.compare(mainServices.readWholeModel(), reverseSubsystem);
+            ModelNode reverseModel = reverseServices.readWholeModel();
+            if (reverseCheckLegacyModelFixer != null) {
+                reverseModel = reverseCheckLegacyModelFixer.fixModel(reverseModel);
+            }
+            ModelTestUtils.compare(mainModel, reverseModel);
             return reverseServices;
         }
     }

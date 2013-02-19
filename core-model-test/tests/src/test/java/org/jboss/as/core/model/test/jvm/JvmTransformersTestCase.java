@@ -52,6 +52,7 @@ import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -77,16 +78,27 @@ public class JvmTransformersTestCase extends AbstractCoreModelTest {
     }
 
     @Test
-    public void jvmResourceWithExpressions() throws Exception {
-        doJvmTransformer("domain-with-expressions.xml");
+    public void jvmResourceWithoutExpressions() throws Exception {
+        KernelServicesBuilder builder = createKernelServicesBuilder(TestModelType.DOMAIN)
+                .setModelInitializer(StandardServerGroupInitializers.XML_MODEL_INITIALIZER, StandardServerGroupInitializers.XML_MODEL_WRITE_SANITIZER)
+                .setXmlResource("domain-without-expressions.xml");
+
+        StandardServerGroupInitializers.addServerGroupInitializers(builder.createLegacyKernelServicesBuilder(modelVersion, testControllerVersion));
+
+        KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+        checkCoreModelTransformation(mainServices,
+                modelVersion,
+                REMOVE_SOCKET_BINDING_GROUP_FIXER,
+                REMOVE_SOCKET_BINDING_GROUP_FIXER);
     }
 
     @Test
-    public void jvmResourceWithoutExpressions() throws Exception {
-        doJvmTransformer("domain-without-expressions.xml");
-    }
-
-    private void doJvmTransformer(String xmlResource) throws Exception {
+    public void jvmResourceWithExpressions() throws Exception {
         //Boot up empty controllers with the resources needed for the ops coming from the xml to work
         KernelServicesBuilder builder = createKernelServicesBuilder(TestModelType.DOMAIN)
                 .setModelInitializer(StandardServerGroupInitializers.XML_MODEL_INITIALIZER, StandardServerGroupInitializers.XML_MODEL_WRITE_SANITIZER);
@@ -99,24 +111,18 @@ public class JvmTransformersTestCase extends AbstractCoreModelTest {
         assertTrue(legacyServices.isSuccessfulBoot());
 
         //Get the boot operations from the xml file
-        List<ModelNode> operations = builder.parseXmlResource(xmlResource);
+        List<ModelNode> operations = builder.parseXmlResource("domain-with-expressions.xml");
 
         //Run the standard tests trying to execute the parsed operations.
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, operations, getConfig());
 
         checkCoreModelTransformation(mainServices,
                 modelVersion,
+                REMOVE_SOCKET_BINDING_GROUP_FIXER,
                 new ModelFixer() {
                     @Override
                     public ModelNode fixModel(ModelNode modelNode) {
-                        modelNode.remove(SOCKET_BINDING_GROUP);
-                        return modelNode;
-                    }
-                },
-                new ModelFixer() {
-                    @Override
-                    public ModelNode fixModel(ModelNode modelNode) {
-                        modelNode.remove(SOCKET_BINDING_GROUP);
+                        modelNode = REMOVE_SOCKET_BINDING_GROUP_FIXER.fixModel(modelNode);
                         return isFailExpressions() ? modelNode.resolve() : modelNode;
                     }
                 });
@@ -136,4 +142,13 @@ public class JvmTransformersTestCase extends AbstractCoreModelTest {
     private boolean isFailExpressions() {
         return modelVersion.getMajor() == 1 && modelVersion.getMinor() <=3;
     }
+
+    private static ModelFixer REMOVE_SOCKET_BINDING_GROUP_FIXER = new ModelFixer() {
+
+        @Override
+        public ModelNode fixModel(ModelNode modelNode) {
+            modelNode.remove(SOCKET_BINDING_GROUP);
+            return modelNode;
+        }
+    };
 }

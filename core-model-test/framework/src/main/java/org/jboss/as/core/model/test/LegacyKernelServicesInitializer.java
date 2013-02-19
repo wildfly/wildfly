@@ -61,12 +61,13 @@ public interface LegacyKernelServicesInitializer {
     /**
      * By default the {@link KernelServicesBuilder#build()} method will use the boot operations passed into the
      * legacy controller and try to boot up the current controller with those. This is for checking that e.g. cli scripts written
-     * against the legacy controller still work with the current one. To turn this check off call this method.
+     * against the legacy controller still work with the current one. Configure how the models are compared with this method
      *
-     * @param modelFixer a model fixer to fix up the booted subsystem model
+     * @param mainModelFixer a model fixer to fix up the main model before comparison
+     * @param legacyModelFixer a model fixer to fix up the model created from legacy boot operations before comparison
      * @return this initializer
      */
-    LegacyKernelServicesInitializer configureReverseControllerCheck(ModelFixer modelFixer);
+    LegacyKernelServicesInitializer configureReverseControllerCheck(ModelFixer mainModelFixer, ModelFixer legacyModelFixer);
 
     public enum TestControllerVersion {
         MASTER ("org.jboss.as:jboss-as-host-controller:" + VERSION, null),
