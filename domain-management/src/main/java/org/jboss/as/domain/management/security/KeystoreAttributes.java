@@ -23,7 +23,6 @@
 package org.jboss.as.domain.management.security;
 
 import org.jboss.as.domain.management.ModelDescriptionConstants;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -31,7 +30,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelType;
 
 /**
- * Utility class to hold some {@link AttributeDefinition}s used in different resources.
+ * Utility class to hold some {@link org.jboss.as.controller.AttributeDefinition}s used in different resources.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>

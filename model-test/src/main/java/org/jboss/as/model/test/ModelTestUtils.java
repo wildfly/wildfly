@@ -42,7 +42,6 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import junit.framework.Assert;
-import junit.framework.AssertionFailedError;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -181,19 +180,19 @@ public class ModelTestUtils {
      *
      * @param node1 the first model
      * @param node2 the second model
-     * @throws AssertionFailedError if the models were not the same
+     * @throws junit.framework.AssertionFailedError if the models were not the same
      */
     public static void compare(ModelNode node1, ModelNode node2) {
         compare(node1, node2, false);
     }
 
     /**
-     * Resoolve two models and compare them to make sure that they have same
+     * Resolve two models and compare them to make sure that they have same
        content after expression resolution
      *
      * @param node1 the first model
      * @param node2 the second model
-     * @throws AssertionFailedError if the models were not the same
+     * @throws junit.framework.AssertionFailedError if the models were not the same
      */
     public static void resolveAndCompareModels(ModelNode node1, ModelNode node2) {
         compare(node1.resolve(), node2.resolve(), false, true, new Stack<String>());
@@ -205,7 +204,7 @@ public class ModelTestUtils {
      * @param node1           the first model
      * @param node2           the second model
      * @param ignoreUndefined {@code true} if keys containing undefined nodes should be ignored
-     * @throws AssertionFailedError if the models were not the same
+     * @throws junit.framework.AssertionFailedError if the models were not the same
      */
     public static void compare(ModelNode node1, ModelNode node2, boolean ignoreUndefined) {
         compare(node1, node2, ignoreUndefined, false, new Stack<String>());
@@ -289,7 +288,7 @@ public class ModelTestUtils {
      * call ModelNode.set("${A}") when ModelNode.setExpression("${A}) should have been used
      *
      * @param model the model to check
-     * @throws AssertionFailedError if any STRING entries contain expression formatted strings.
+     * @throws junit.framework.AssertionFailedError if any STRING entries contain expression formatted strings.
      */
     public static void scanForExpressionFormattedStrings(ModelNode model) {
         if (model.getType().equals(ModelType.STRING)) {

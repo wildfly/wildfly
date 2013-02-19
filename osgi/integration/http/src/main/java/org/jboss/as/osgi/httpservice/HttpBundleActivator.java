@@ -33,10 +33,9 @@ import org.jboss.osgi.framework.spi.FutureServiceValue;
 import org.jboss.osgi.resolver.XBundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.service.http.HttpService;
 
 /**
- * The {@link HttpService} activator
+ * The {@link org.osgi.service.http.HttpService} activator
  *
  * @author Thomas.Diesler@jboss.com
  * @since 19-Oct-2012

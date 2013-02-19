@@ -38,7 +38,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.dmr.ModelNode;
@@ -165,7 +164,7 @@ public class TransformersLogger {
     /**
      * Get a warning message for the given operation at the provided address for the passed attributes with the given
      * custom message appended. Intended for use in providing a failure description for an operation
-     * or an exception message for an {@link OperationFailedException}.
+     * or an exception message for an {@link org.jboss.as.controller.OperationFailedException}.
      *
      * @param address    where warning occurred
      * @param operation  where which problem occurred
@@ -179,7 +178,7 @@ public class TransformersLogger {
     /**
      * Get a warning message for the given operation at the provided address for the passed attributes with the given
      * custom message appended. Intended for use in providing a failure description for an operation
-     * or an exception message for an {@link OperationFailedException}.
+     * or an exception message for an {@link org.jboss.as.controller.OperationFailedException}.
      *
      * @param address    where warning occurred
      * @param operation  where which problem occurred
@@ -193,7 +192,7 @@ public class TransformersLogger {
     /**
      * Get a warning message for the given operation at the provided address for the passed attributes
      * with a default message appended. Intended for use in providing a failure description for an operation
-     * or an exception message for an {@link OperationFailedException}.
+     * or an exception message for an {@link org.jboss.as.controller.OperationFailedException}.
      * The default appended message is 'Attributes are not understood in the target model version and this resource
      * will need to be ignored on the target host.'
      *

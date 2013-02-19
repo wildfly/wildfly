@@ -26,11 +26,10 @@ import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
- * {@link OperationStepHandler} for the {@code write-attribute} operation for the
+ * {@link org.jboss.as.controller.OperationStepHandler} for the {@code write-attribute} operation for the
  * {@link JcaArchiveValidationDefinition bean validation resource}.
  *
  * @author Brian Stansberry (c) 2012 Red Hat Inc.

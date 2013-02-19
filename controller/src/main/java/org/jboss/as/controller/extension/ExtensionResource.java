@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.PlaceholderResource;
@@ -39,7 +38,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
 /**
- * {@link Resource} representing an {@link Extension}.
+ * {@link Resource} representing an {@link org.jboss.as.controller.Extension}.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

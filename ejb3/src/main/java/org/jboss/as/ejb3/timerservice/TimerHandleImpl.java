@@ -28,7 +28,6 @@ import javax.ejb.EJBException;
 import javax.ejb.Timer;
 import javax.ejb.TimerHandle;
 
-import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
@@ -43,7 +42,7 @@ public class TimerHandleImpl implements TimerHandle {
     private static final long serialVersionUID = 1L;
 
     /**
-     * Id of the target {@link TimedObjectInvoker}
+     * Id of the target {@link org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker}
      */
     private final String timedObjectId;
 
@@ -53,7 +52,7 @@ public class TimerHandleImpl implements TimerHandle {
     private final String serviceName;
 
     /**
-     * Each {@link TimedObjectInvoker} can have multiple timer instances.
+     * Each {@link org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker} can have multiple timer instances.
      * This id corresponds to one such <i>instance</i>
      */
     private final String id;
@@ -67,7 +66,7 @@ public class TimerHandleImpl implements TimerHandle {
      * Creates a {@link TimerHandleImpl}
      *
      * @param id            The id of the timer instance
-     * @param timedObjectId The id of the target {@link TimedObjectInvoker}
+     * @param timedObjectId The id of the target {@link org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker}
      * @param service       The timer service to which this timer handle belongs to
      * @throws IllegalArgumentException If either of the passed parameters is null
      */

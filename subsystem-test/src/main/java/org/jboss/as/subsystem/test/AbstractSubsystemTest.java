@@ -7,8 +7,6 @@ import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 
-import junit.framework.AssertionFailedError;
-
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
@@ -283,7 +281,7 @@ public abstract class AbstractSubsystemTest {
      *
      * @param node1 the first model
      * @param node2 the second model
-     * @throws AssertionFailedError if the models were not the same
+     * @throws junit.framework.AssertionFailedError if the models were not the same
      */
     protected void compare(ModelNode node1, ModelNode node2) {
         ModelTestUtils.compare(node1, node2);
@@ -295,7 +293,7 @@ public abstract class AbstractSubsystemTest {
      *
      * @param node1 the first model
      * @param node2 the second model
-     * @throws AssertionFailedError if the models were not the same
+     * @throws junit.framework.AssertionFailedError if the models were not the same
      */
     protected void resolveandCompareModel(ModelNode node1, ModelNode node2) {
         ModelTestUtils.resolveAndCompareModels(node1, node2);
@@ -307,7 +305,7 @@ public abstract class AbstractSubsystemTest {
      * @param node1           the first model
      * @param node2           the second model
      * @param ignoreUndefined {@code true} if keys containing undefined nodes should be ignored
-     * @throws AssertionFailedError if the models were not the same
+     * @throws junit.framework.AssertionFailedError if the models were not the same
      */
     protected void compare(ModelNode node1, ModelNode node2, boolean ignoreUndefined) {
         ModelTestUtils.compare(node1, node2, ignoreUndefined);

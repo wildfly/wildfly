@@ -27,9 +27,7 @@ import static org.jboss.as.configadmin.ConfigAdminLogger.LOGGER;
 import java.util.Dictionary;
 import java.util.Set;
 
-import org.apache.felix.cm.PersistenceManager;
 import org.jboss.as.configadmin.ConfigAdminListener;
-import org.jboss.as.configadmin.ConfigAdmin;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.service.cm.Configuration;
@@ -37,7 +35,7 @@ import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.util.tracker.ServiceTracker;
 
 /**
- * An implementation of the Apache Felix ConfigAdmin {@link PersistenceManager} that delegates to the {@link ConfigAdmin}
+ * An implementation of the Apache Felix ConfigAdmin {@link org.apache.felix.cm.PersistenceManager} that delegates to the {@link org.jboss.as.configadmin.ConfigAdmin}
  *
  * @author Thomas.Diesler@jboss.com
  * @since 01-Dec-2010

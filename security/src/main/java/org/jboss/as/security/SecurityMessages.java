@@ -37,7 +37,6 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Param;
-import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.StartException;
 
@@ -63,7 +62,7 @@ public interface SecurityMessages {
     SecurityMessages MESSAGES = Messages.getBundle(SecurityMessages.class);
 
     /**
-     * Creates an exception indicating the inability to get the {@link ModuleClassLoader}
+     * Creates an exception indicating the inability to get the {@link org.jboss.modules.ModuleClassLoader}
      *
      * @return a {@link IllegalStateException} for the error.
      */

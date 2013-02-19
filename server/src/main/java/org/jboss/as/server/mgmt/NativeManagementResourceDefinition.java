@@ -28,7 +28,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAT
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -46,7 +45,7 @@ import org.jboss.as.server.operations.NativeManagementWriteAttributeHandler;
 import org.jboss.dmr.ModelType;
 
 /**
- * {@link ResourceDefinition} for the native management interface resource.
+ * {@link org.jboss.as.controller.ResourceDefinition} for the native management interface resource.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

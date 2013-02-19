@@ -78,7 +78,6 @@ import java.util.Locale;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.DefaultResourceDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -88,7 +87,7 @@ import org.jboss.as.messaging.jms.JMSServerControlHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
- * {@link ResourceDefinition} for the messaging subsystem HornetQServer resource.
+ * {@link org.jboss.as.controller.ResourceDefinition} for the messaging subsystem HornetQServer resource.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

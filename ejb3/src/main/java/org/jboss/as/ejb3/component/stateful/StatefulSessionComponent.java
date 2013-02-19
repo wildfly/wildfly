@@ -32,7 +32,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.ejb.AccessTimeout;
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 import javax.ejb.TimerService;
@@ -211,7 +210,7 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     }
 
     /**
-     * Returns the {@link AccessTimeout} applicable to given method
+     * Returns the {@link javax.ejb.AccessTimeout} applicable to given method
      */
     public AccessTimeoutDetails getAccessTimeout(Method method) {
         final EJBBusinessMethod ejbMethod = new EJBBusinessMethod(method);

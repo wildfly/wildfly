@@ -56,7 +56,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.inject.MapInjector;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -323,7 +322,7 @@ class HornetQService implements Service<HornetQServer> {
     }
 
     /**
-     * Returns true if a {@link ServiceController} for this service has been {@link ServiceBuilder#install() installed}
+     * Returns true if a {@link ServiceController} for this service has been {@link org.jboss.msc.service.ServiceBuilder#install() installed}
      * in MSC under the
      * {@link MessagingServices#getHornetQServiceName(PathAddress) service name appropriate to the given operation}.
      *

@@ -24,7 +24,6 @@ package org.jboss.as.ejb3.component.session;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
 import javax.ejb.EJBLocalObject;
@@ -83,7 +82,7 @@ public abstract class SessionBeanComponent extends EJBComponent {
     }
 
     /**
-     * Return the {@link Executor} used for asynchronous invocations.
+     * Return the {@link java.util.concurrent.Executor} used for asynchronous invocations.
      *
      * @return the async executor
      */

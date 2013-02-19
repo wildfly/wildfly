@@ -22,14 +22,13 @@
 
 package org.jboss.as.controller.client.helpers.domain.impl;
 
-import org.jboss.as.controller.client.helpers.domain.DomainDeploymentManager;
 import org.jboss.as.controller.client.helpers.domain.InitialDeploymentPlanBuilder;
 
 
 /**
  * Factory for an {@link InitialDeploymentPlanBuilder}. Core purpose is to hide
  * the builder implementation classes from client yet provide a hook for external
- * {@link DomainDeploymentManager} implementations to create builders.
+ * {@link org.jboss.as.controller.client.helpers.domain.DomainDeploymentManager} implementations to create builders.
  *
  * @author Brian Stansberry
  */

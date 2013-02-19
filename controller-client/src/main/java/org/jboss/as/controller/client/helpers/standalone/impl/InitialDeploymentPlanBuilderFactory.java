@@ -23,12 +23,11 @@
 package org.jboss.as.controller.client.helpers.standalone.impl;
 
 import org.jboss.as.controller.client.helpers.standalone.InitialDeploymentPlanBuilder;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 
 /**
  * Factory for an {@link InitialDeploymentPlanBuilder}. Core purpose is to hide
  * the builder implementation classes from client yet provide a hook for external
- * {@link ServerDeploymentManager} implementations to create builders.
+ * {@link org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager} implementations to create builders.
  *
  * @author Brian Stansberry
  */

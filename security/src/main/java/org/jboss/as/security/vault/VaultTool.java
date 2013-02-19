@@ -32,10 +32,9 @@ import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
-import org.jboss.security.vault.SecurityVault;
 
 /**
- * Command Line Tool for the default implementation of the {@link SecurityVault}
+ * Command Line Tool for the default implementation of the {@link org.jboss.security.vault.SecurityVault}
  *
  * @author Anil Saldhana
  * @author Peter Skopek

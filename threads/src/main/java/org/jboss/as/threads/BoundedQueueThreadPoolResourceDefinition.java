@@ -25,7 +25,6 @@ package org.jboss.as.threads;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
-import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
@@ -33,7 +32,7 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 import org.jboss.msc.service.ServiceName;
 
 /**
- * {@link ResourceDefinition} for a bounded queue thread pool resource.
+ * {@link org.jboss.as.controller.ResourceDefinition} for a bounded queue thread pool resource.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

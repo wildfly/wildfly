@@ -56,7 +56,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * {@link ResourceDefinition} for a resource representing a socket binding group.
+ * {@link org.jboss.as.controller.ResourceDefinition} for a resource representing a socket binding group.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

@@ -24,7 +24,6 @@ package org.jboss.as.threads;
 
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
@@ -32,7 +31,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 
 /**
- * {@link ResourceDefinition} for the root resource of the threads subsystem.
+ * {@link org.jboss.as.controller.ResourceDefinition} for the root resource of the threads subsystem.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

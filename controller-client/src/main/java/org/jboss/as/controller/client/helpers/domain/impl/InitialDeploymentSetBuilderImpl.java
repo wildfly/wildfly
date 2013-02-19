@@ -26,14 +26,13 @@ import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
 
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.controller.client.helpers.domain.DeploymentSetPlan;
 import org.jboss.as.controller.client.helpers.domain.InitialDeploymentSetBuilder;
 
 
 /**
  * Variant of a {@link DeploymentPlanBuilderImpl} that is meant
  * to be used at the initial stages of the building process, when directives that
- * pertain to the entire {@link DeploymentSetPlan} can be applied.
+ * pertain to the entire {@link org.jboss.as.controller.client.helpers.domain.DeploymentSetPlan} can be applied.
  *
  * @author Brian Stansberry
  */

@@ -27,13 +27,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
-import java.io.PipedInputStream;
 
 import org.xnio.IoUtils;
 
 /**
  * An in-VM pipe between an input stream and an output stream, which does not suffer from the
- * bugs in {@link PipedInputStream}.
+ * bugs in {@link java.io.PipedInputStream}.
  *
  * This is forked from {@link org.xnio.streams.Pipe} to throw an exception if the writer kills the pipe
  *

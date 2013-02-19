@@ -23,7 +23,6 @@
 package org.jboss.as.controller;
 
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * A handler that simply calls {@link OperationContext#completeStep(OperationContext.RollbackHandler)} with a
@@ -35,7 +34,7 @@ public class NoopOperationStepHandler implements OperationStepHandler {
 
     /**
      * A {@code NoopOperationStepHandler} that also calls {@link OperationContext#getResult()} thus
-     * initializing it to {@link ModelType#UNDEFINED}.
+     * initializing it to {@link org.jboss.dmr.ModelType#UNDEFINED}.
      */
     public static final NoopOperationStepHandler WITH_RESULT = new NoopOperationStepHandler(true);
     /**

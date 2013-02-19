@@ -31,7 +31,6 @@ import org.jboss.as.ejb3.cache.IdentifierFactory;
 import org.jboss.as.ejb3.cache.PassivationManager;
 import org.jboss.as.ejb3.cache.impl.backing.SimpleBackingCacheEntryStore;
 import org.jboss.as.ejb3.cache.spi.BackingCacheEntryStore;
-import org.jboss.as.ejb3.cache.spi.BackingCacheEntryStoreSource;
 import org.jboss.as.ejb3.cache.spi.SerializationGroup;
 import org.jboss.as.ejb3.cache.spi.SerializationGroupMember;
 import org.jboss.as.ejb3.cache.spi.impl.AbstractBackingCacheEntryStoreSource;
@@ -44,7 +43,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 
 /**
- * {@link BackingCacheEntryStoreSource} for a non-clustered cache. Uses a {@link FilePersistentObjectStore} store for
+ * {@link org.jboss.as.ejb3.cache.spi.BackingCacheEntryStoreSource} for a non-clustered cache. Uses a {@link FilePersistentObjectStore} store for
  * persistence.
  *
  * @author Brian Stansberry

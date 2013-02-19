@@ -28,7 +28,6 @@ import java.util.Collection;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -526,7 +525,7 @@ public interface MessagingMessages {
 
     /**
      * Logs an error message indicating the given {@code address} does not match any known
-     * resource. Meant for use with runtime resources available via {@link HornetQServer#getManagementService()}
+     * resource. Meant for use with runtime resources available via {@link org.hornetq.core.server.HornetQServer#getManagementService()}
      *
      * @param address    the address.
      */

@@ -73,7 +73,6 @@ import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
 import org.jboss.as.ejb3.timerservice.schedule.CalendarBasedTimeout;
 import org.jboss.as.ejb3.timerservice.spi.ScheduleTimer;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
-import org.jboss.as.ejb3.timerservice.task.TimerTask;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -797,7 +796,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     }
 
     /**
-     * Creates and schedules a {@link TimerTask} for the next timeout of the passed <code>timer</code>
+     * Creates and schedules a {@link org.jboss.as.ejb3.timerservice.task.TimerTask} for the next timeout of the passed <code>timer</code>
      */
     protected void scheduleTimeout(TimerImpl timer, boolean newTimer) {
         synchronized (scheduledTimerFutures) {

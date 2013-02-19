@@ -41,11 +41,10 @@ import org.jboss.as.web.WebServer;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceFactory;
 import org.osgi.framework.ServiceRegistration;
-import org.osgi.service.http.HttpService;
 import org.osgi.service.http.NamespaceException;
 
 /**
- * A {@link ServiceFactory} for {@link HttpService}
+ * A {@link ServiceFactory} for {@link org.osgi.service.http.HttpService}
  *
  * @author Thomas.Diesler@jboss.com
  * @author David Bosschaert

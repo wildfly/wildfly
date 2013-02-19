@@ -34,12 +34,11 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
 import org.jboss.osgi.metadata.OSGiMetaData;
-import org.jboss.osgi.resolver.XEnvironment;
 
 /**
  * Processes deployments that have a Module attached.
  *
- * If so, register the module with the {@link XEnvironment}.
+ * If so, register the module with the {@link org.jboss.osgi.resolver.XEnvironment}.
  *
  * @author Thomas.Diesler@jboss.com
  * @since 03-Jun-2011

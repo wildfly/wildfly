@@ -24,8 +24,6 @@ package org.jboss.as.service.component;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.Resource;
-
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -37,7 +35,7 @@ import org.jboss.as.service.descriptor.JBossServiceConfig;
 import org.jboss.as.service.descriptor.JBossServiceXmlDescriptor;
 
 /**
- * Creates EE component descriptions for mbeans, to support {@link Resource} injection.
+ * Creates EE component descriptions for mbeans, to support {@link javax.annotation.Resource} injection.
  *
  * @author Eduardo Martins
  *

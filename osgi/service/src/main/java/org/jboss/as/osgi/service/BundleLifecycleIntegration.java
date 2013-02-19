@@ -66,7 +66,6 @@ import org.jboss.osgi.framework.spi.BundleLifecycle;
 import org.jboss.osgi.framework.spi.BundleLifecyclePlugin;
 import org.jboss.osgi.framework.spi.BundleManager;
 import org.jboss.osgi.framework.spi.FutureServiceValue;
-import org.jboss.osgi.framework.spi.IntegrationService;
 import org.jboss.osgi.framework.spi.ServiceTracker;
 import org.jboss.osgi.resolver.XBundle;
 import org.jboss.osgi.resolver.XEnvironment;
@@ -78,7 +77,7 @@ import org.osgi.service.resolver.ResolutionException;
 import org.osgi.service.startlevel.StartLevel;
 
 /**
- * An {@link IntegrationService} that that handles the bundle lifecycle.
+ * An {@link org.jboss.osgi.framework.spi.IntegrationService} that that handles the bundle lifecycle.
  *
  * @author thomas.diesler@jboss.com
  * @since 24-Nov-2010

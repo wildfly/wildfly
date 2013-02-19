@@ -23,7 +23,6 @@
 package org.jboss.as.ejb3.component.stateful;
 
 import org.jboss.ejb.client.EJBClient;
-import org.jboss.ejb.client.EJBClientContextIdentifier;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.ObjectTable;
 import org.jboss.marshalling.Unmarshaller;
@@ -31,8 +30,8 @@ import org.jboss.marshalling.Unmarshaller;
 import java.io.IOException;
 
 /**
- * By default, EJB proxies don't serialize the {@link EJBClientContextIdentifier} associated with them,
- * so this {@link ObjectTable} marshals such EJB proxies to serializable even the {@link EJBClientContextIdentifier} (if any)
+ * By default, EJB proxies don't serialize the {@link org.jboss.ejb.client.EJBClientContextIdentifier} associated with them,
+ * so this {@link ObjectTable} marshals such EJB proxies to serializable even the {@link org.jboss.ejb.client.EJBClientContextIdentifier} (if any)
  * associated with that proxy.
  *
  * @author Jaikiran Pai

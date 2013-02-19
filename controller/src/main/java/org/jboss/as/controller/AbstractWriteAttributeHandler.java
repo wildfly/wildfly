@@ -35,13 +35,12 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
 /**
  * Abstract handler for the write aspect of a
- * {@link ManagementResourceRegistration#registerReadWriteAttribute(AttributeDefinition, OperationStepHandler, OperationStepHandler) read-write attribute}.
+ * {@link org.jboss.as.controller.registry.ManagementResourceRegistration#registerReadWriteAttribute(AttributeDefinition, OperationStepHandler, OperationStepHandler) read-write attribute}.
  *
  * @param <T> the type of an object that, if stored by the
  * {@link AbstractWriteAttributeHandler#applyUpdateToRuntime(OperationContext, ModelNode, String, ModelNode, ModelNode, HandbackHolder)}

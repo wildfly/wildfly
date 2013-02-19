@@ -27,13 +27,12 @@ import java.io.Serializable;
 import javax.ejb.NoSuchEJBException;
 
 import org.jboss.as.ejb3.cache.AffinitySupport;
-import org.jboss.as.ejb3.cache.Cache;
 import org.jboss.as.ejb3.cache.Cacheable;
 import org.jboss.as.ejb3.cache.IdentifierFactory;
 import org.jboss.as.ejb3.cache.Removable;
 
 /**
- * An internal cache to which an external-facing {@link Cache} delegates, either directly or indirectly.
+ * An internal cache to which an external-facing {@link org.jboss.as.ejb3.cache.Cache} delegates, either directly or indirectly.
  * <p>
  * There are two key distinctions between a BackingCache and the external-facing Cache:
  * <ol>

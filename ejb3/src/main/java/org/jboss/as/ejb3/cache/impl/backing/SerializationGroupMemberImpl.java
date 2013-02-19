@@ -30,7 +30,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.cache.Cacheable;
 import org.jboss.as.ejb3.cache.spi.GroupAwareBackingCache;
-import org.jboss.as.ejb3.cache.spi.PassivatingBackingCache;
 import org.jboss.as.ejb3.cache.spi.SerializationGroup;
 import org.jboss.as.ejb3.cache.spi.SerializationGroupMember;
 import org.jboss.as.ejb3.cache.spi.impl.AbstractBackingCacheEntry;
@@ -277,7 +276,7 @@ public class SerializationGroupMemberImpl<K extends Serializable, V extends Cach
     }
 
     /**
-     * Allows our controlling {@link PassivatingBackingCache} to provide us a reference after deserialization.
+     * Allows our controlling {@link org.jboss.as.ejb3.cache.spi.PassivatingBackingCache} to provide us a reference after deserialization.
      *
      * @param delegate
      */

@@ -21,10 +21,9 @@
  */
 package org.jboss.as.naming;
 
-import javax.naming.Context;
 
 /**
- * A {@link ManagedReferenceFactory} which properly supports {@link Context} list operations, and JNDI View lookups.
+ * A {@link ManagedReferenceFactory} which properly supports {@link javax.naming.Context} list operations, and JNDI View lookups.
  *
  * @author Eduardo Martins
  *

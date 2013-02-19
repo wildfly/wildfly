@@ -25,14 +25,13 @@ package org.jboss.as.threads;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
-import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.msc.service.ServiceName;
 
 /**
- * {@link ResourceDefinition} for a queueless thread pool resource.
+ * {@link org.jboss.as.controller.ResourceDefinition} for a queueless thread pool resource.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

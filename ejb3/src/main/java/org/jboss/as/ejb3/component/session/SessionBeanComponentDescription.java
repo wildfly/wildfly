@@ -32,7 +32,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.ejb.AccessTimeout;
 import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.LockType;
 import javax.ejb.TransactionManagementType;
@@ -91,7 +90,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     private final Map<MethodIdentifier, LockType> methodLockTypes = new HashMap<MethodIdentifier, LockType>();
 
     /**
-     * The {@link AccessTimeout} applicable for a specific bean methods.
+     * The {@link javax.ejb.AccessTimeout} applicable for a specific bean methods.
      */
     private final Map<MethodIdentifier, AccessTimeoutDetails> methodAccessTimeouts = new HashMap<MethodIdentifier, AccessTimeoutDetails>();
 
@@ -241,7 +240,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     }
 
     /**
-     * Returns the {@link AccessTimeout} applicable for the bean.
+     * Returns the {@link javax.ejb.AccessTimeout} applicable for the bean.
      *
      * @return
      */
@@ -259,7 +258,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     }
 
     /**
-     * Sets the {@link AccessTimeout} for the specific bean method
+     * Sets the {@link javax.ejb.AccessTimeout} for the specific bean method
      *
      * @param accessTimeout The applicable access timeout for the method
      * @param method        The method

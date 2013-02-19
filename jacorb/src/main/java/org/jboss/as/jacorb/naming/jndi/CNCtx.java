@@ -43,7 +43,6 @@ import javax.naming.NameParser;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.NotContextException;
-import javax.naming.OperationNotSupportedException;
 import javax.naming.RefAddr;
 import javax.naming.Reference;
 import javax.naming.spi.NamingManager;
@@ -57,10 +56,6 @@ import org.omg.CORBA.ORB;
 import org.omg.CosNaming.NameComponent;
 import org.omg.CosNaming.NamingContext;
 import org.omg.CosNaming.NamingContextHelper;
-import org.omg.CosNaming.NamingContextPackage.AlreadyBound;
-import org.omg.CosNaming.NamingContextPackage.CannotProceed;
-import org.omg.CosNaming.NamingContextPackage.InvalidName;
-import org.omg.CosNaming.NamingContextPackage.NotEmpty;
 import org.omg.CosNaming.NamingContextPackage.NotFound;
 import org.omg.CosNaming.NamingContextPackage.NotFoundReason;
 
@@ -444,8 +439,8 @@ public class CNCtx implements javax.naming.Context {
      * @param path the NameComponent[] object.
      * @return Resolved object returned by the COS Name Server.
      * @throws NotFound      No objects under the name.
-     * @throws CannotProceed Unable to obtain a continuation context
-     * @throws InvalidName   Name not understood.
+     * @throws org.omg.CosNaming.NamingContextPackage.CannotProceed Unable to obtain a continuation context
+     * @throws org.omg.CosNaming.NamingContextPackage.InvalidName   Name not understood.
      */
     java.lang.Object callResolve(NameComponent[] path)
             throws NamingException {
@@ -530,8 +525,8 @@ public class CNCtx implements javax.naming.Context {
      * @param obj    Object to be bound.
      * @param rebind perform rebind ? if true performs a rebind.
      * @throws NotFound      No objects under the name.
-     * @throws CannotProceed Unable to obtain a continuation context
-     * @throws AlreadyBound  An object is already bound to this name.
+     * @throws org.omg.CosNaming.NamingContextPackage.CannotProceed Unable to obtain a continuation context
+     * @throws org.omg.CosNaming.NamingContextPackage.AlreadyBound  An object is already bound to this name.
      */
     private void callBindOrRebind(NameComponent[] pth, Name name,
                                   java.lang.Object obj, boolean rebind) throws NamingException {
@@ -673,8 +668,8 @@ public class CNCtx implements javax.naming.Context {
      * @param path NameComponent[] object
      * @throws NotFound      No objects under the name. If leaf
      *                       is not found, that's OK according to the JNDI spec
-     * @throws CannotProceed Unable to obtain a continuation context
-     * @throws InvalidName   Name not understood.
+     * @throws org.omg.CosNaming.NamingContextPackage.CannotProceed Unable to obtain a continuation context
+     * @throws org.omg.CosNaming.NamingContextPackage.InvalidName   Name not understood.
      */
     private void callUnbind(NameComponent[] path) throws NamingException {
         if (_nc == null)
@@ -855,7 +850,7 @@ public class CNCtx implements javax.naming.Context {
      * Calls the destroy on the COS Naming Server
      *
      * @param nc The NamingContext object to use.
-     * @throws NotEmpty when the context is not empty and cannot be destroyed.
+     * @throws org.omg.CosNaming.NamingContextPackage.NotEmpty when the context is not empty and cannot be destroyed.
      */
     private void callDestroy(NamingContext nc)
             throws NamingException {
@@ -873,7 +868,7 @@ public class CNCtx implements javax.naming.Context {
      * empty destroys the current context.
      *
      * @param name string
-     * @throws OperationNotSupportedException when list is invoked
+     * @throws javax.naming.OperationNotSupportedException when list is invoked
      *                                        with a non-null argument
      */
     public void destroySubcontext(String name) throws NamingException {
@@ -885,7 +880,7 @@ public class CNCtx implements javax.naming.Context {
      * the current context if name is empty.
      *
      * @param name JNDI Name
-     * @throws OperationNotSupportedException when list is invoked
+     * @throws javax.naming.OperationNotSupportedException when list is invoked
      *                                        with a non-null argument
      */
     public void destroySubcontext(Name name)
@@ -931,9 +926,9 @@ public class CNCtx implements javax.naming.Context {
      * @param path NameComponent[] object
      * @return the new context object.
      * @throws NotFound      No objects under the name.
-     * @throws CannotProceed Unable to obtain a continuation context
-     * @throws InvalidName   Name not understood.
-     * @throws AlreadyBound  An object is already bound to this name.
+     * @throws org.omg.CosNaming.NamingContextPackage.CannotProceed Unable to obtain a continuation context
+     * @throws org.omg.CosNaming.NamingContextPackage.InvalidName   Name not understood.
+     * @throws org.omg.CosNaming.NamingContextPackage.AlreadyBound  An object is already bound to this name.
      */
     private javax.naming.Context callBindNewContext(NameComponent[] path)
             throws NamingException {

@@ -64,7 +64,6 @@ import org.jboss.osgi.framework.spi.BootstrapBundlesInstall;
 import org.jboss.osgi.framework.spi.BootstrapBundlesResolve;
 import org.jboss.osgi.framework.spi.BundleManager;
 import org.jboss.osgi.framework.spi.BundleStorage;
-import org.jboss.osgi.framework.spi.IntegrationService;
 import org.jboss.osgi.framework.spi.IntegrationServices;
 import org.jboss.osgi.framework.spi.StorageState;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
@@ -92,7 +91,7 @@ import org.osgi.service.repository.ContentNamespace;
 import org.osgi.service.startlevel.StartLevel;
 
 /**
- * An {@link IntegrationService} to install the configured capability bundles.
+ * An {@link org.jboss.osgi.framework.spi.IntegrationService} to install the configured capability bundles.
  *
  * @author Thomas.Diesler@jboss.com
  * @since 11-Sep-2010

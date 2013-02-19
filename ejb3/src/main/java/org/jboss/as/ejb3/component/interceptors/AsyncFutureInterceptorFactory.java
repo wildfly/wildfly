@@ -24,7 +24,6 @@ package org.jboss.as.ejb3.component.interceptors;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.concurrent.Future;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.interceptors.InvocationType;
@@ -37,7 +36,7 @@ import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 
 /**
- * An asynchronous execution interceptor for methods returning {@link Future}.  Because asynchronous invocations
+ * An asynchronous execution interceptor for methods returning {@link java.util.concurrent.Future}.  Because asynchronous invocations
  * necessarily run in a concurrent thread, any thread context setup interceptors should run <b>after</b> this
  * interceptor to prevent that context from becoming lost.  This interceptor should be associated with the client
  * interceptor stack.

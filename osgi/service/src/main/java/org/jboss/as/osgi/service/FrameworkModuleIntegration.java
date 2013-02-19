@@ -43,11 +43,10 @@ import org.jboss.osgi.framework.spi.BundleManager;
 import org.jboss.osgi.framework.spi.BundleReferenceClassLoader;
 import org.jboss.osgi.framework.spi.FrameworkModuleProvider;
 import org.jboss.osgi.framework.spi.FrameworkModuleProviderPlugin;
-import org.jboss.osgi.framework.spi.IntegrationService;
 import org.osgi.framework.Bundle;
 
 /**
- * An {@link IntegrationService} that provides the Framework module.
+ * An {@link org.jboss.osgi.framework.spi.IntegrationService} that provides the Framework module.
  *
  * @author Thomas.Diesler@jboss.com
  * @since 11-Sep-2010

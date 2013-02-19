@@ -22,11 +22,9 @@
 
 package org.jboss.as.ejb3.subsystem.deployment;
 
-import org.jboss.as.controller.ResourceDefinition;
-import org.jboss.as.ejb3.component.singleton.SingletonComponent;
 
 /**
- * {@link ResourceDefinition} for a {@link SingletonComponent}.
+ * {@link org.jboss.as.controller.ResourceDefinition} for a {@link org.jboss.as.ejb3.component.singleton.SingletonComponent}.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

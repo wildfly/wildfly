@@ -25,11 +25,10 @@ package org.jboss.as.controller.parsing;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.as.controller.Extension;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Callback an {@link Extension} can register to, upon completion of normal parsing of a profile, manipulate the list
+ * Callback an {@link ProfileParsingCompletionHandler} can register to, upon completion of normal parsing of a profile, manipulate the list
  * of parsed boot operations associated with a profile.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.

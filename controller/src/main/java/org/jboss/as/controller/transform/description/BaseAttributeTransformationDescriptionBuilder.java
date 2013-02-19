@@ -26,8 +26,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.transform.ResourceTransformer;
-
 
 
 /**
@@ -42,11 +40,11 @@ import org.jboss.as.controller.transform.ResourceTransformer;
  * </li>
  *
  * All attributes are processed in each phase before moving onto the next one.  See the individual methods for information about how to add rules for each phase.
- * The {@link ResourceTransformer} which may be registered for a resource in {@link ResourceTransformationDescriptionBuilder#setCustomResourceTransformer(ResourceTransformer)}
+ * The {@link org.jboss.as.controller.transform.ResourceTransformer} which may be registered for a resource in {@link ResourceTransformationDescriptionBuilder#setCustomResourceTransformer(org.jboss.as.controller.transform.ResourceTransformer)}
  * is executed after all  the conversions done by this builder.
  *
  * @see ResourceTransformationDescriptionBuilder#getAttributeBuilder()
- * @see ResourceTransformationDescriptionBuilder#setCustomResourceTransformer(ResourceTransformer)
+ * @see ResourceTransformationDescriptionBuilder#setCustomResourceTransformer(org.jboss.as.controller.transform.ResourceTransformer)
  *
  * @author Emanuel Muckenhuber
  * @author Kabir Khan

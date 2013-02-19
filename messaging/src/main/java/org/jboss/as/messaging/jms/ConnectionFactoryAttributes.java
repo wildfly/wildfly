@@ -42,7 +42,6 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.ra.HornetQResourceAdapter;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.ListAttributeDefinition;
@@ -376,7 +375,7 @@ public interface ConnectionFactoryAttributes {
                 .build();
 
         /**
-         * By default, the resource adapter must reconnect infinitely (see {@link HornetQResourceAdapter#setParams})
+         * By default, the resource adapter must reconnect infinitely (see {@link org.hornetq.ra.HornetQResourceAdapter#setParams})
          */
         AttributeDefinition RECONNECT_ATTEMPTS = create("reconnect-attempts", INT)
                 .setDefaultValue(new ModelNode().set(-1))

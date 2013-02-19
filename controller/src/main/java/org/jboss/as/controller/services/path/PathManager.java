@@ -21,7 +21,6 @@
 */
 package org.jboss.as.controller.services.path;
 
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.services.path.PathManager.Callback.Handle;
 
 
@@ -110,27 +109,27 @@ public interface PathManager {
 
     interface PathEventContext {
         /**
-         * @see OperationContext#isBooting()
+         * @see org.jboss.as.controller.OperationContext#isBooting()
          */
         boolean isBooting();
 
         /**
-         * @see OperationContext#isNormalServer()
+         * @see org.jboss.as.controller.OperationContext#isNormalServer()
          */
         boolean isNormalServer();
 
         /**
-         * @see OperationContext#isResourceServiceRestartAllowed()
+         * @see org.jboss.as.controller.OperationContext#isResourceServiceRestartAllowed()
          */
         boolean isResourceServiceRestartAllowed();
 
         /**
-         * @see OperationContext#reloadRequired()
+         * @see org.jboss.as.controller.OperationContext#reloadRequired()
          */
         void reloadRequired();
 
         /**
-         * @see OperationContext#restartRequired()
+         * @see org.jboss.as.controller.OperationContext#restartRequired()
          */
         void restartRequired();
 

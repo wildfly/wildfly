@@ -53,7 +53,6 @@ import org.jboss.as.ejb3.cache.impl.backing.clustering.ClusteredBackingCacheEntr
 import org.jboss.as.ejb3.cache.impl.backing.clustering.ClusteredBackingCacheEntryStoreSource;
 import org.jboss.as.ejb3.cache.impl.backing.clustering.ClusteredBackingCacheEntryStoreSourceService;
 import org.jboss.as.ejb3.cache.spi.BackingCacheEntryStore;
-import org.jboss.as.ejb3.cache.spi.BackingCacheEntryStoreSource;
 import org.jboss.as.ejb3.cache.spi.SerializationGroup;
 import org.jboss.as.ejb3.cache.spi.SerializationGroupMember;
 import org.jboss.as.ejb3.cache.spi.impl.AbstractBackingCacheEntryStoreSource;
@@ -68,7 +67,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 
 /**
- * {@link BackingCacheEntryStoreSource} that provides instances of {@link InfinispanBackingCacheEntryStore}.
+ * {@link org.jboss.as.ejb3.cache.spi.BackingCacheEntryStoreSource} that provides instances of {@link InfinispanBackingCacheEntryStore}.
  *
  * @author Brian Stansberry
  */

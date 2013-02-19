@@ -30,11 +30,10 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.spi.BootstrapBundlesInstall;
-import org.jboss.osgi.framework.spi.IntegrationService;
 import org.jboss.osgi.framework.spi.IntegrationServices;
 
 /**
- * An {@link IntegrationService} that installs persistent bundles on framework startup.
+ * An {@link org.jboss.osgi.framework.spi.IntegrationService} that installs persistent bundles on framework startup.
  *
  * @author thomas.diesler@jboss.com
  * @since 12-Apr-2012

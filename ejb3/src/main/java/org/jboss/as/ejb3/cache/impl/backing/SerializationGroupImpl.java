@@ -34,7 +34,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.cache.Cacheable;
-import org.jboss.as.ejb3.cache.Identifiable;
 import org.jboss.as.ejb3.cache.spi.PassivatingBackingCache;
 import org.jboss.as.ejb3.cache.spi.SerializationGroup;
 import org.jboss.as.ejb3.cache.spi.SerializationGroupMember;
@@ -132,7 +131,7 @@ public class SerializationGroupImpl<K extends Serializable, V extends Cacheable<
     /**
      * Remove the specified member from the group.
      *
-     * @param key the {@link Identifiable#getId() id} of the member
+     * @param key the {@link org.jboss.as.ejb3.cache.Identifiable#getId() id} of the member
      */
     @Override
     public void removeMember(K key) {
@@ -150,9 +149,9 @@ public class SerializationGroupImpl<K extends Serializable, V extends Cacheable<
 
     /**
      * Returns the {@link SerializationGroupMember#getUnderlyingItem() member object} associated with the member whose
-     * {@link Identifiable#getId() id} matches <code>key</code>.
+     * {@link org.jboss.as.ejb3.cache.Identifiable#getId() id} matches <code>key</code>.
      *
-     * @param key the {@link Identifiable#getId() id} of the member
+     * @param key the {@link org.jboss.as.ejb3.cache.Identifiable#getId() id} of the member
      *
      * @return the object associated with the member, or <code>null</code> if <code>key</code> does not identify a member.
      */
@@ -221,7 +220,7 @@ public class SerializationGroupImpl<K extends Serializable, V extends Cacheable<
      * Records that the given member is no longer "active"; i.e. does not need to have @PrePassivate callbacks invoked before
      * serialization.
      *
-     * @param key the {@link Identifiable#getId() id} of the member
+     * @param key the {@link org.jboss.as.ejb3.cache.Identifiable#getId() id} of the member
      *
      * @throws IllegalStateException if <code>member</code> wasn't previously added to the group via
      *         {@link #addMember(SerializationGroupMember)}
@@ -234,7 +233,7 @@ public class SerializationGroupImpl<K extends Serializable, V extends Cacheable<
     /**
      * Notification that the given member is "in use", and therefore the group should not be serialized.
      *
-     * @param key the {@link Identifiable#getId() id} of the member
+     * @param key the {@link org.jboss.as.ejb3.cache.Identifiable#getId() id} of the member
      *
      * @throws IllegalStateException if <code>member</code> wasn't previously added to the group via
      *         {@link #addMember(SerializationGroupMember)}
@@ -248,7 +247,7 @@ public class SerializationGroupImpl<K extends Serializable, V extends Cacheable<
     /**
      * Notification that the given member is no longer "in use", and therefore should not prevent the group being serialized.
      *
-     * @param key the {@link Identifiable#getId() id} of the member
+     * @param key the {@link org.jboss.as.ejb3.cache.Identifiable#getId() id} of the member
      *
      * @throws IllegalStateException if <code>member</code> wasn't previously added to the group via
      *         {@link #addMember(SerializationGroupMember)}

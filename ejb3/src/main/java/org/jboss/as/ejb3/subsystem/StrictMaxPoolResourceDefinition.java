@@ -28,7 +28,6 @@ import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -47,7 +46,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * {@link ResourceDefinition} for the strict-max-bean-pool resource.
+ * {@link org.jboss.as.controller.ResourceDefinition} for the strict-max-bean-pool resource.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

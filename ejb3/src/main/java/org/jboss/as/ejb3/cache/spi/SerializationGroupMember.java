@@ -25,7 +25,6 @@ package org.jboss.as.ejb3.cache.spi;
 import java.io.Serializable;
 
 import org.jboss.as.ejb3.cache.Cacheable;
-import org.jboss.as.ejb3.cache.Identifiable;
 
 /**
  * Specialized {@link BackingCacheEntry} that wraps an {@link #setUnderlyingItem(org.jboss.as.ejb3.cache.Cacheable)}  underlying CacheItem} and represents
@@ -54,7 +53,7 @@ public interface SerializationGroupMember<K extends Serializable, V extends Cach
     void setGroup(SerializationGroup<K, V, G> group);
 
     /**
-     * Gets the {@link Identifiable#getId()} of this object's {@link SerializationGroup}. Will return <code>null</code> if this
+     * Gets the {@link org.jboss.as.ejb3.cache.Identifiable#getId()} of this object's {@link SerializationGroup}. Will return <code>null</code> if this
      * object has not yet been {@link #setGroup(SerializationGroup) assigned to a group}.
      *
      * @return the group id, or <code>null</code>

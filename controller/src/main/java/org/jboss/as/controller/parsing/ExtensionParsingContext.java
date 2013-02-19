@@ -24,14 +24,14 @@ package org.jboss.as.controller.parsing;
 
 import java.util.List;
 
-import org.jboss.as.controller.Extension;
+
 import org.jboss.as.controller.ProcessType;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 
 /**
- * Context in effect when the {@code extension} element for a given {@link Extension} is being parsed. Allows the
- * extension to {@link Extension#initializeParsers(ExtensionParsingContext) initialize the XML parsers} that can
+ * Context in effect when the {@code extension} element for a given {@link org.jboss.as.controller.Extension} is being parsed. Allows the
+ * extension to {@link org.jboss.as.controller.Extension#initializeParsers(ExtensionParsingContext) initialize the XML parsers} that can
  * be used for parsing the {@code subsystem} elements that contain the configuration for its subsystems.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -68,7 +68,7 @@ public interface ExtensionParsingContext {
      * @param namespaceUri the URI of the sussystem's XML namespace, in string form. Cannot be {@code null}
      * @param reader the element reader. Cannot be {@code null}
      *
-     * @throws IllegalStateException if another {@link Extension} has already registered a subsystem with the given
+     * @throws IllegalStateException if another {@link org.jboss.as.controller.Extension} has already registered a subsystem with the given
      *                               {@code subsystemName}
      */
     void setSubsystemXmlMapping(String subsystemName, String namespaceUri, XMLElementReader<List<ModelNode>> reader);
@@ -79,7 +79,7 @@ public interface ExtensionParsingContext {
      * @param namespaceUri the URI of the subsystem's XML namespace, in string form. Cannot be {@code null}
      * @param reader the element reader. Cannot be {@code null}
      *
-     * @throws IllegalStateException if another {@link Extension} has already registered a subsystem with the given
+     * @throws IllegalStateException if another {@link org.jboss.as.controller.Extension} has already registered a subsystem with the given
      *                               {@code subsystemName}
      *
      * @deprecated use {@link #setSubsystemXmlMapping(String, String, XMLElementReader)}
@@ -99,7 +99,7 @@ public interface ExtensionParsingContext {
      * @param namespaceUri the URI of the subsystem's XML namespace, in string form. Cannot be {@code null}
      * @param reader the element reader. Cannot be {@code null}
      *
-     * @throws IllegalStateException if another {@link Extension} has already registered a subsystem with the given
+     * @throws IllegalStateException if another {@link org.jboss.as.controller.Extension} has already registered a subsystem with the given
      *                               {@code subsystemName}
      *
      * @deprecated currently not used and will be removed in a future release if not used.

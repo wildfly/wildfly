@@ -24,7 +24,6 @@ package org.jboss.as.ejb3.cache.spi;
 
 import java.io.Serializable;
 
-import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.as.ejb3.cache.Cacheable;
 import org.jboss.as.ejb3.cache.IdentifierFactory;
 import org.jboss.as.ejb3.cache.PassivationManager;
@@ -33,7 +32,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
- * Provides {@link BackingCacheEntryStore} instances to a {@link CacheFactory} that needs to create a
+ * Provides {@link BackingCacheEntryStore} instances to a {@link org.jboss.as.ejb3.cache.CacheFactory} that needs to create a
  * {@link GroupAwareBackingCache}.
  *
  * @author Brian Stansberry
