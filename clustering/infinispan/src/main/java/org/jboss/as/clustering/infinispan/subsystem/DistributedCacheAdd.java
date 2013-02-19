@@ -28,7 +28,7 @@ import java.util.List;
 
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.jboss.as.clustering.infinispan.InfinispanMessages;
+import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.common.Util;
@@ -60,7 +60,12 @@ public class DistributedCacheAdd extends SharedStateCacheAdd {
         final String deprecatedKey = ModelKeys.VIRTUAL_NODES;
         if (fromModel.hasDefined(deprecatedKey)
                 && fromModel.get(deprecatedKey).asInt() != 1) {
-            throw InfinispanMessages.MESSAGES.attributeDeprecated(deprecatedKey);
+            // log a WARN
+            InfinispanLogger.ROOT_LOGGER.virtualNodesAttributeDeprecated();
+            // convert the virtual-nodes value to segments and update the incoming model
+            // TBD: what to do it both values are coded?
+            ModelNode convertedValue = SegmentsAndVirtualNodeConverter.virtualNodesToSegments(fromModel.get(deprecatedKey));
+            fromModel.get(ModelKeys.SEGMENTS).set(convertedValue) ;
         }
 
         DistributedCacheResource.OWNERS.validateAndSet(fromModel, toModel);

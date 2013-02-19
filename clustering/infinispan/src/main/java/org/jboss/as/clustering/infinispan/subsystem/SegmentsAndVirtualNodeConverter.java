@@ -23,6 +23,8 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 
+import org.jboss.dmr.ModelNode;
+
 /**
  * Convert the 1.4 SEGMENTS value to VIRTUAL_NODES in model and operations, if defined and not an expression
  * Remove the 1.4 attributes INDEXING_PROPERTIES and SEGMENTS from model and operations
@@ -34,14 +36,31 @@ public class SegmentsAndVirtualNodeConverter  {
 
     // ratio of segments to virtual nodes to convert between the two
     public static final int SEGMENTS_PER_VIRTUAL_NODE = 6;
+    public static final int VIRTUAL_NODES_DEFAULT = DistributedCacheResource.VIRTUAL_NODES.getDefaultValue().asInt();
+    public static final int SEGMENTS_DEFAULT = DistributedCacheResource.SEGMENTS.getDefaultValue().asInt();
 
     /*
      * Convert a 1.3 virtual nodes value to a 1.4 segments value
      */
+    public static int virtualNodesToSegments(int virtualNodes) {
+        return virtualNodes * SEGMENTS_PER_VIRTUAL_NODE;
+    }
+
+    /*
+     * Convert a 1.4 segments value to a 1.3 virtual nodes value
+     */
+    public static int segmentsToVirtualNodes(int segments) {
+        // divide by zero should not occur as segments is required to be > 0
+        return segments / SEGMENTS_PER_VIRTUAL_NODE;
+    }
+
+    /*
+     * Helper methods
+     */
     public static String virtualNodesToSegments(String virtualNodesValue) {
-        int segments = 0 ;
+        int segments = SEGMENTS_DEFAULT ;
         try {
-            segments =  Integer.parseInt(virtualNodesValue) * SEGMENTS_PER_VIRTUAL_NODE;
+            segments =  virtualNodesToSegments(Integer.parseInt(virtualNodesValue));
         }
         catch(NumberFormatException nfe) {
             // in case of expression
@@ -49,14 +68,10 @@ public class SegmentsAndVirtualNodeConverter  {
         return Integer.toString(segments);
     }
 
-    /*
-     * Convert a 1.4 segments value to a 1.3 virtual nodes value
-     */
     public static String segmentsToVirtualNodes(String segmentsValue) {
-        int virtualNodes = 0 ;
+        int virtualNodes = VIRTUAL_NODES_DEFAULT ;
         try {
-            // divide by zero should not occur as segments is required to be > 0
-            virtualNodes =  Integer.parseInt(segmentsValue) / SEGMENTS_PER_VIRTUAL_NODE;
+            virtualNodes =  segmentsToVirtualNodes(Integer.parseInt(segmentsValue));
         }
         catch(NumberFormatException nfe) {
             // in case of expression
@@ -64,5 +79,20 @@ public class SegmentsAndVirtualNodeConverter  {
         return Integer.toString(virtualNodes);
     }
 
+    public static ModelNode virtualNodesToSegments(ModelNode virtualNodes) {
+        int segments = SEGMENTS_DEFAULT ;
+        if (virtualNodes.isDefined()) {
+           segments = virtualNodesToSegments(virtualNodes.asInt());
+        }
+        return new ModelNode(segments) ;
+    }
+
+    public static ModelNode segmentsToVirtualNodes(ModelNode segments) {
+        int virtualNodes = VIRTUAL_NODES_DEFAULT ;
+        if (segments.isDefined()) {
+           virtualNodes = segmentsToVirtualNodes(segments.asInt());
+        }
+        return new ModelNode(virtualNodes) ;
+    }
 }
 
