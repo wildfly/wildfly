@@ -22,6 +22,7 @@
 
 package org.jboss.as.jpa.processor;
 
+
 import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
 import static org.jboss.as.jpa.JpaLogger.ROOT_LOGGER;
 import static org.jboss.as.jpa.JpaMessages.MESSAGES;
@@ -285,9 +286,10 @@ public class PersistenceUnitServiceHandler {
     private static void deployPersistenceUnit(DeploymentPhaseContext phaseContext, DeploymentUnit deploymentUnit, EEModuleDescription eeModuleDescription, Collection<ComponentDescription> components, ServiceTarget serviceTarget, ModuleClassLoader classLoader, PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder, PersistenceUnitMetadata pu, boolean startEarly) throws DeploymentUnitProcessingException {
         pu.setClassLoader(classLoader);
         try {
+            SerializableValidatorFactory validatorFactory = null;
             final HashMap<String, ValidatorFactory> properties = new HashMap<String, ValidatorFactory>();
             if (!ValidationMode.NONE.equals(pu.getValidationMode())) {
-                ValidatorFactory validatorFactory = SerializableValidatorFactory.validatorFactory();
+                validatorFactory = SerializableValidatorFactory.validatorFactory();
                 properties.put("javax.persistence.validation.factory", validatorFactory);
             }
             final PersistenceProviderAdaptor adaptor = getPersistenceProviderAdaptor(pu, persistenceProviderDeploymentHolder, deploymentUnit);
@@ -313,7 +315,7 @@ public class PersistenceUnitServiceHandler {
 
             final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(classLoader, pu, adaptor, provider, PersistenceUnitRegistryImpl.INSTANCE, deploymentUnit.getServiceName());
 
-            deploymentUnit.addToAttachmentList(REMOVAL_KEY, new PersistenceAdaptorRemoval(pu, adaptor));
+            deploymentUnit.addToAttachmentList(REMOVAL_KEY, new PersistenceAdaptorRemoval(validatorFactory, pu, adaptor));
 
             // add persistence provider specific properties
             adaptor.addProviderProperties(properties, pu);
@@ -736,16 +738,21 @@ public class PersistenceUnitServiceHandler {
     }
 
     private static class PersistenceAdaptorRemoval {
+        final SerializableValidatorFactory validatorFactory;
         final PersistenceUnitMetadata pu;
         final PersistenceProviderAdaptor adaptor;
 
-        public PersistenceAdaptorRemoval(PersistenceUnitMetadata pu, PersistenceProviderAdaptor adaptor) {
+        public PersistenceAdaptorRemoval(final SerializableValidatorFactory validatorFactory, PersistenceUnitMetadata pu, PersistenceProviderAdaptor adaptor) {
+            this.validatorFactory = validatorFactory;
             this.pu = pu;
             this.adaptor = adaptor;
         }
 
         private void cleanup() {
             adaptor.cleanup(pu);
+            if (validatorFactory != null) {
+                validatorFactory.clean();
+            }
         }
     }
 

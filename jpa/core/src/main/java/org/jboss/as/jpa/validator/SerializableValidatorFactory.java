@@ -54,7 +54,7 @@ public class SerializableValidatorFactory implements ValidatorFactory, Serializa
      */
     private transient volatile ValidatorFactory delegate = new JPALazyValidatorFactory();
 
-    public static ValidatorFactory validatorFactory() {
+    public static SerializableValidatorFactory validatorFactory() {
         return new SerializableValidatorFactory();
     }
 
@@ -112,6 +112,13 @@ public class SerializableValidatorFactory implements ValidatorFactory, Serializa
      */
     public TraversableResolver getTraversableResolver() {
         return delegate.getTraversableResolver();
+    }
+
+     /**
+      * Release the delegate
+      */
+    public void clean() {
+       this.delegate = null;
     }
 
     /**
