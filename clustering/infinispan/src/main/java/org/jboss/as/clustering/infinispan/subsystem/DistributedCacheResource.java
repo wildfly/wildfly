@@ -24,13 +24,13 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
-import org.jboss.as.clustering.infinispan.InfinispanMessages;
+import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -108,14 +108,38 @@ public class DistributedCacheResource extends SharedCacheResource {
             resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
         }
 
-        // Attribute virtual-nodes has been deprecated, so not to break management API, attempt to use it will fail.
-        final OperationStepHandler virtualNodesWriteHandler = new ModelOnlyWriteAttributeHandler(VIRTUAL_NODES) {
+        // Attribute virtual-nodes has been deprecated, convert to the corresponding segments value if not the default.
+        final OperationStepHandler virtualNodesWriteHandler = new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 if (operation.hasDefined(VALUE) && operation.get(VALUE).asInt() != 1) {
-                    throw InfinispanMessages.MESSAGES.attributeDeprecated(ModelKeys.VIRTUAL_NODES);
+
+                    // log a WARN
+                    InfinispanLogger.ROOT_LOGGER.virtualNodesAttributeDeprecated();
+
+                    // convert the virtual nodes value to a segments value and write
+                    ModelNode convertedValue = SegmentsAndVirtualNodeConverter.virtualNodesToSegments(operation.get(VALUE));
+                    final ModelNode submodel = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
+                    final ModelNode syntheticOp = new ModelNode();
+                    syntheticOp.get(ModelKeys.SEGMENTS).set(convertedValue);
+                    SEGMENTS.validateAndSet(syntheticOp, submodel);
+
+                    // since we modified the model, set reload required
+                    if (requiresRuntime(context)) {
+                        context.addStep(new OperationStepHandler() {
+                            @Override
+                            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                                context.reloadRequired();
+                                context.completeStep(OperationContext.RollbackHandler.REVERT_RELOAD_REQUIRED_ROLLBACK_HANDLER);
+                            }
+                        }, OperationContext.Stage.RUNTIME);
+                    }
                 }
                 context.stepCompleted();
+            }
+
+            protected boolean requiresRuntime(OperationContext context) {
+                return context.getProcessType().isServer() && !context.isBooting();
             }
         };
 

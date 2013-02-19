@@ -105,7 +105,7 @@ public interface InfinispanLogger extends BasicLogger {
      * Logs a warning message stating that the 'virtual-nodes' attribute is deprecated.
      */
     @LogMessage(level = WARN)
-    @Message(id = 10286, value = "Attribute 'virtual-nodes' has been deprecated and has no effect.")
+    @Message(id = 10286, value = "Attribute 'virtual-nodes' has been deprecated - converting legacy 'virtual-nodes' value to 'segments' value")
     void virtualNodesAttributeDeprecated();
 
 }

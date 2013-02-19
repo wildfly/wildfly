@@ -150,4 +150,28 @@ public class OperationsTestCase extends OperationTestCaseBase {
         return stringKeyedTable ;
     }
 
+    /*
+     * Tests adding dist cache with deprecated virtual nodes attribute
+     */
+    @Test
+    public void testDistCacheAddOperationWithVirtualNodes() throws Exception {
+
+        // Parse and install the XML into the controller
+        String subsystemXml = getSubsystemXml() ;
+        KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
+
+        // add the distributed cache with virtual-nodes = 6, should lead to segments value of 36 (6*6)
+        ModelNode distCacheAddOp = getCacheAddOperation("maximal", ModelKeys.DISTRIBUTED_CACHE, "new-dist-cache");
+        distCacheAddOp.get(ModelKeys.MODE).set("SYNC");
+        distCacheAddOp.get(ModelKeys.VIRTUAL_NODES).set(6);
+        ModelNode result = servicesA.executeOperation(distCacheAddOp);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+
+        // read the segments attribute
+        ModelNode readDistCacheSegmentsOp = getCacheReadOperation("maximal", ModelKeys.DISTRIBUTED_CACHE, "new-dist-cache", "segments");
+        result = servicesA.executeOperation(readDistCacheSegmentsOp);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals("36", result.get(RESULT).asString());
+    }
+
 }
