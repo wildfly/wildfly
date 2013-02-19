@@ -138,6 +138,7 @@ public class ModelDescriptionConstants {
     public static final String FULL_REPLACE_DEPLOYMENT = "full-replace-deployment";
     public static final String GRACEFUL_SHUTDOWN_TIMEOUT = "graceful-shutdown-timeout";
     public static final String GROUP = "group";
+    public static final String GROUPS_DN = "groups-dn";
     public static final String HANDLER = "handler";
     public static final String HASH = "hash";
     public static final String HEAD_COMMENT_ALLOWED = "head-comment-allowed";
@@ -299,7 +300,6 @@ public class ModelDescriptionConstants {
     public static final String ROLLING_TO_SERVERS = "rolling-to-servers";
     public static final String ROLLOUT_PLAN = "rollout-plan";
     public static final String ROLLOUT_PLANS = "rollout-plans";
-    public static final String ROLES_DN = "roles-dn";
     public static final String ROLES_FILTER = "roles-filter";
     public static final String RUNNING_MODE = "running-mode";
     public static final String RUNNING_SERVER = "server";

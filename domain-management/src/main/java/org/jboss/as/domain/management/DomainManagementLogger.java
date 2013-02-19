@@ -82,18 +82,18 @@ public interface DomainManagementLogger extends BasicLogger {
 
 
     /**
-     * Logs a warning message indicating it failed to retrieving roles from the LDAP provider
+     * Logs a warning message indicating it failed to retrieving groups from the LDAP provider
      */
     @LogMessage(level = WARN)
-    @Message(id = 15204, value = "Failed to retrieving roles from the LDAP provider.")
-    void failedRetrieveLdapRoles(@Cause Throwable cause);
+    @Message(id = 15204, value = "Failed to retrieving groups from the LDAP provider.")
+    void failedRetrieveLdapGroups(@Cause Throwable cause);
 
     /**
      * log warning message it was not able to retrieving matching groups from the pattern
      */
     @LogMessage(level = WARN)
     @Message(id = 15205, value = "Failed to retrieving matching groups from the pattern, check the regular expression for pattern attribute.")
-    void failedRetrieveMatchingLdapRoles(@Cause Throwable cause);
+    void failedRetrieveMatchingLdapGroups(@Cause Throwable cause);
 
     /**
      * log warning message it was not able to retriev matching groups from the pattern

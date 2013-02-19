@@ -45,6 +45,8 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.security.auth.Subject;
 
+import org.jboss.as.core.security.RealmGroup;
+import org.jboss.as.core.security.RealmUser;
 import org.jboss.as.domain.management.connections.ConnectionManager;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -61,7 +63,7 @@ public class LdapSubjectSupplemental implements Service<SubjectSupplementalServi
     protected final int searchTimeLimit = 10000; // TODO - Maybe make configurable.
     private final InjectedValue<ConnectionManager> connectionManager = new InjectedValue<ConnectionManager>();
     private final boolean recursive;
-    private final String rolesDn;
+    private final String groupsDn;
     private final String baseDn;
     private final String usernameAttribute;
     private final String advancedFilter;
@@ -72,9 +74,9 @@ public class LdapSubjectSupplemental implements Service<SubjectSupplementalServi
     private final String userDn;
     private final String userFilter;
 
-    public LdapSubjectSupplemental(boolean recursive, String rolesDn, String baseDn, String userDn,String userNameAttribute, String advancedFilter, String pattern, int groups, String resultPattern, Boolean reverseGroupMember) {
+    public LdapSubjectSupplemental(boolean recursive, String groupsDn, String baseDn, String userDn,String userNameAttribute, String advancedFilter, String pattern, int groups, String resultPattern, Boolean reverseGroupMember) {
         this.recursive = recursive;
-        this.rolesDn = rolesDn;
+        this.groupsDn = groupsDn;
         this.baseDn = baseDn;
         this.userDn = userDn;
         this.pattern = pattern;
@@ -129,9 +131,9 @@ public class LdapSubjectSupplemental implements Service<SubjectSupplementalServi
         Set<RealmUser> users = subject.getPrincipals(RealmUser.class);
         Set<Principal> principals = subject.getPrincipals();
         // In general we expect exactly one RealmUser, however we could cope with multiple
-        // identities so load the roles for them all.
+        // identities so load the groups for them all.
         for (RealmUser current : users) {
-            principals.addAll(getRoles(current));
+            principals.addAll(getGroups(current));
         }
     }
 
@@ -149,7 +151,7 @@ public class LdapSubjectSupplemental implements Service<SubjectSupplementalServi
         } else {
             searchControls.setSearchScope(SearchControls.ONELEVEL_SCOPE);
         }
-        searchControls.setReturningAttributes(new String[]{rolesDn});
+        searchControls.setReturningAttributes(new String[]{groupsDn});
         searchControls.setTimeLimit(searchTimeLimit);
         return searchControls;
     }
@@ -205,27 +207,27 @@ public class LdapSubjectSupplemental implements Service<SubjectSupplementalServi
             searchEnumeration = searchContext.search(baseDn, filter[0], filterArguments, searchControls);
             while (searchEnumeration.hasMore()) {
                 SearchResult result = searchEnumeration.next();
-                if (rolesDn.equalsIgnoreCase("dn")) {
+                if (groupsDn.equalsIgnoreCase("dn")) {
                     userNames.add(result.getNameInNamespace());
                 } else {
                     Attributes attributes = result.getAttributes();
                     if (attributes != null) {
-                        Attribute dn = attributes.get(rolesDn);
+                        Attribute dn = attributes.get(groupsDn);
                         if (dn != null) {
-                            NamingEnumeration<?> role = dn.getAll();
-                            while (role.hasMore()) {
-                                userNames.add(role.next().toString());
+                            NamingEnumeration<?> group = dn.getAll();
+                            while (group.hasMore()) {
+                                userNames.add(group.next().toString());
                             }
                         } else {
-                           ROOT_LOGGER.failedRetrieveLdapAttribute(rolesDn);
+                           ROOT_LOGGER.failedRetrieveLdapAttribute(groupsDn);
                         }
                     } else {
-                        ROOT_LOGGER.failedRetrieveLdapAttribute(rolesDn);
+                        ROOT_LOGGER.failedRetrieveLdapAttribute(groupsDn);
                     }
                 }
             }
         } catch (Exception e) {
-            ROOT_LOGGER.failedRetrieveLdapRoles(e);
+            ROOT_LOGGER.failedRetrieveLdapGroups(e);
         } finally {
             safeClose(searchEnumeration);
             safeClose(searchContext);
@@ -234,34 +236,34 @@ public class LdapSubjectSupplemental implements Service<SubjectSupplementalServi
         return userNames;
     }
 
-    private Set<RealmRole> getRoles(RealmUser user) {
-        Set<RealmRole> response = new HashSet<RealmRole>();
+    private Set<RealmGroup> getGroups(RealmUser user) {
+        Set<RealmGroup> response = new HashSet<RealmGroup>();
         try {
-            HashSet<String> ldapRole = (HashSet<String>) searchLdap(user.getName());
-            ROOT_LOGGER.trace("Retrieved roles ["+user.getName()+"] :");
-            for (String role : ldapRole) {
+            HashSet<String> ldapGroups = (HashSet<String>) searchLdap(user.getName());
+            ROOT_LOGGER.trace("Retrieved groups ["+user.getName()+"] :");
+            for (String group : ldapGroups) {
                 if (pattern != null) {
                     Pattern compilePattern = Pattern.compile(pattern);
-                    Matcher ldapRoleMatch = compilePattern.matcher(role);
-                    if (ldapRoleMatch.groupCount() > 0) {
-                        String parsedRole = replaceGroups(ldapRoleMatch);
-                        if (parsedRole.length() > 0) {
-                            response.add(new RealmRole(parsedRole));
+                    Matcher ldapGroupMatch = compilePattern.matcher(group);
+                    if (ldapGroupMatch.groupCount() > 0) {
+                        String parsedGroup = replaceGroups(ldapGroupMatch);
+                        if (parsedGroup.length() > 0) {
+                            response.add(new RealmGroup(parsedGroup));
                         }
                     }
                 } else {
-                    ROOT_LOGGER.trace("   role:"+role);
-                    response.add(new RealmRole(role));
+                    ROOT_LOGGER.trace("   group:"+group);
+                    response.add(new RealmGroup(group));
                 }
             }
         } catch (Exception e) {
-            ROOT_LOGGER.failedRetrieveLdapRoles(e);
+            ROOT_LOGGER.failedRetrieveLdapGroups(e);
         }
         return response;
     }
 
-    private String replaceGroups(Matcher ldapRoles) {
-        String parsedLdapRoles = new String();
+    private String replaceGroups(Matcher ldapGroupss) {
+        String parsedLdapGroups = new String();
         Pattern rPattern = Pattern.compile("(\\{)(.+?)(\\})");
         if (resultPattern != null) {
             Matcher resultMatch = rPattern.matcher(resultPattern);
@@ -270,30 +272,30 @@ public class LdapSubjectSupplemental implements Service<SubjectSupplementalServi
             while (resultMatch.find()) {
                 foundGroupMatch = true;
                 try {
-                    ldapRoles.reset();
+                    ldapGroupss.reset();
                     int elementNo = Integer.parseInt(resultMatch.group(2));
                     for (int i = 0; i <= elementNo; i++) {
-                        ldapRoles.find();
+                        ldapGroupss.find();
                     }
-                    resultMatch.appendReplacement(sb, ldapRoles.group(group));
+                    resultMatch.appendReplacement(sb, ldapGroupss.group(group));
 
                 } catch (Exception e) {
-                    ROOT_LOGGER.failedRetrieveMatchingLdapRoles(e);
+                    ROOT_LOGGER.failedRetrieveMatchingLdapGroups(e);
                     throw new IllegalStateException(e); // make sure we bail out to prevent return value is not set with incorrect data
                 }
             }
             resultMatch.appendTail(sb);
-            parsedLdapRoles = sb.toString();
+            parsedLdapGroups = sb.toString();
             if (!foundGroupMatch) {
                ROOT_LOGGER.failedRetrieveMatchingGroups();
-               parsedLdapRoles = ""; // better reset the return value then sent back rubbish
+               parsedLdapGroups = ""; // better reset the return value then sent back rubbish
             }
         } else {
-            if (ldapRoles.find()) {
-                parsedLdapRoles = ldapRoles.group(group);
+            if (ldapGroupss.find()) {
+                parsedLdapGroups = ldapGroupss.group(group);
             }
         }
-        return parsedLdapRoles;
+        return parsedLdapGroups;
     }
 
     private void safeClose(Context context) {

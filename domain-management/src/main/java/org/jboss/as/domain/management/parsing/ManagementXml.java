@@ -523,9 +523,6 @@ public class ManagementXml {
                         case DOMAIN_1_3:
                             parseSecurityRealm_1_3(reader, address, expectedNs, list);
                             break;
-                        case DOMAIN_1_4:
-                            parseSecurityRealm_1_4(reader, address, expectedNs, list);
-                            break;
                         default:
                             parseSecurityRealm_1_4(reader, address, expectedNs, list);
                             break;
@@ -680,7 +677,13 @@ public class ManagementXml {
                     break;
                 }
                 case AUTHORIZATION:
-                    parseAuthorization_1_4(reader, expectedNs, realmAddress, list);
+                    switch (expectedNs) {
+                        case DOMAIN_1_4:
+                            parseAuthorization_1_3(reader, expectedNs, realmAddress, list);
+                            break;
+                        default:
+                            parseAuthorization_2_0(reader, expectedNs, add, list);
+                    }
                     break;
                 default: {
                     throw unexpectedElement(reader);
@@ -1629,38 +1632,8 @@ public class ManagementXml {
                     authzFound = true;
                     break;
                 }
-                default: {
-                    throw unexpectedElement(reader);
-                }
-            }
-
-        }
-    }
-
-    private static void parseAuthorization_1_4(final XMLExtendedStreamReader reader, final Namespace expectedNs,
-            final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
-        boolean authzFound = false;
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            requireNamespace(reader, expectedNs);
-            final Element element = Element.forName(reader.getLocalName());
-            // Only a single element within the authorization element is currently supported.
-            if (authzFound) {
-                throw unexpectedElement(reader);
-            }
-            switch (element) {
-                case PROPERTIES: {
-                    parsePropertiesAuthorization(reader, realmAddress, list);
-                    authzFound = true;
-                    break;
-                }
-                case PLUG_IN: {
-                    ModelNode parentAddress = realmAddress.clone().add(AUTHORIZATION);
-                    parsePlugIn_Authorization(reader, expectedNs, parentAddress, list);
-                    authzFound = true;
-                    break;
-                }
                 case LDAP: {
-                    parseLdapAuthorization_1_4(reader, expectedNs, realmAddress, list);
+                    parseLdapAuthorization_2_0(reader, expectedNs, realmAddress, list);
                     authzFound = true;
                     break;
                 }
@@ -1672,7 +1645,9 @@ public class ManagementXml {
         }
     }
 
-    private static void parseLdapAuthorization_1_4(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+
+
+    private static void parseLdapAuthorization_2_0(final XMLExtendedStreamReader reader, final Namespace expectedNs,
             final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
         ModelNode addr = realmAddress.clone().add(AUTHORIZATION, LDAP);
         ModelNode ldapAuthorization = Util.getEmptyOperation(ADD, addr);
@@ -1726,9 +1701,9 @@ public class ManagementXml {
                     parseAdvancePropertiesAuthorization(reader, realmAddress, list, ldapAuthorization);
                     break;
 
-                case ROLES_FILTER: {
+                case GROUPS_FILTER: {
                     choiceFound = true;
-                    parseRolesPropertiesAuthorization(reader, realmAddress, list, ldapAuthorization);
+                    parseGroupsPropertiesAuthorization(reader, realmAddress, list, ldapAuthorization);
                     break;
                 }
                 default: {
@@ -1737,7 +1712,7 @@ public class ManagementXml {
             }
         }
         if (!choiceFound) {
-            throw missingOneOf(reader, EnumSet.of(Element.ADVANCED_FILTER, Element.USERNAME_FILTER, Element.ROLES_FILTER));
+            throw missingOneOf(reader, EnumSet.of(Element.ADVANCED_FILTER, Element.USERNAME_FILTER, Element.GROUPS_FILTER));
         }
     }
 
@@ -1751,7 +1726,7 @@ public class ManagementXml {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case ATTRIBUTE:
-                        LdapAuthorizationResourceDefinition.ROLES_DN.parseAndSetParameter(value, ldapAuthorization, reader);
+                        LdapAuthorizationResourceDefinition.GROUPS_DN.parseAndSetParameter(value, ldapAuthorization, reader);
                         break;
                     case FILTER:
                         LdapAuthorizationResourceDefinition.ADVANCED_FILTER.parseAndSetParameter(value, ldapAuthorization, reader);
@@ -1777,7 +1752,7 @@ public class ManagementXml {
         requireNoContent(reader);
     }
 
-    private static void parseRolesPropertiesAuthorization(XMLExtendedStreamReader reader, ModelNode realmAddress, List<ModelNode> list, ModelNode ldapAuthorization) throws XMLStreamException {
+    private static void parseGroupsPropertiesAuthorization(XMLExtendedStreamReader reader, ModelNode realmAddress, List<ModelNode> list, ModelNode ldapAuthorization) throws XMLStreamException {
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
@@ -1787,7 +1762,7 @@ public class ManagementXml {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case ATTRIBUTE:
-                        LdapAuthorizationResourceDefinition.ROLES_DN.parseAndSetParameter(value, ldapAuthorization, reader);
+                        LdapAuthorizationResourceDefinition.GROUPS_DN.parseAndSetParameter(value, ldapAuthorization, reader);
                         break;
                     case USERNAME_ATTRIBUTE:
                         LdapAuthorizationResourceDefinition.USERNAME.parseAndSetParameter(value, ldapAuthorization, reader);
@@ -2763,7 +2738,7 @@ public class ManagementXml {
     }
 
     protected void writeLdapAuthorizationPattern(XMLExtendedStreamWriter writer, ModelNode ldapNode) throws XMLStreamException {
-        LdapAuthorizationResourceDefinition.ROLES_DN.marshallAsAttribute(ldapNode, writer);
+        LdapAuthorizationResourceDefinition.GROUPS_DN.marshallAsAttribute(ldapNode, writer);
         if (ldapNode.hasDefined(LdapAuthorizationResourceDefinition.PATTERN.getName())) {
             LdapAuthorizationResourceDefinition.PATTERN.marshallAsAttribute(ldapNode, writer);
         }

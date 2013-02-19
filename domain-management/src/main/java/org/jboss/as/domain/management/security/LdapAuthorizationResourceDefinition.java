@@ -31,7 +31,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -53,32 +52,32 @@ import org.jboss.dmr.ModelType;
 public class LdapAuthorizationResourceDefinition extends LdapResourceDefinition {
 
     public static final SimpleAttributeDefinition USERNAME = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.USERNAME_ATTRIBUTE, ModelType.STRING, false)
-    .setXmlName("username-attribute")
-    .setAlternatives(ModelDescriptionConstants.ADVANCED_FILTER)
-    .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
-    .setValidateNull(false)
-    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
+            .setXmlName("username-attribute")
+            .setAlternatives(ModelDescriptionConstants.ADVANCED_FILTER)
+            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
+            .setValidateNull(false)
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
-    public static final SimpleAttributeDefinition ROLES_DN = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.ROLES_DN, ModelType.STRING, true)
-        .setXmlName("attribute")
-        .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false)).setDefaultValue(new ModelNode(UserLdapCallbackHandler.DEFAULT_USER_DN))
-        .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
+    public static final SimpleAttributeDefinition GROUPS_DN = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.GROUPS_DN, ModelType.STRING, true)
+            .setXmlName("attribute")
+            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false)).setDefaultValue(new ModelNode(UserLdapCallbackHandler.DEFAULT_USER_DN))
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
     public static final SimpleAttributeDefinition PATTERN = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PATTERN, ModelType.STRING, true)
-    .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false)).setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
+            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false)).setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
     public static final SimpleAttributeDefinition RESULT_PATTERN = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.RESULT_PATTERN, ModelType.STRING, true)
-    .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false)).setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
+            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false)).setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
     public static final SimpleAttributeDefinition GROUP = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.GROUP, ModelType.INT, true)
-    .setValidator(new LongRangeValidator(1, 9, true, false)).
-    setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES). build();
+            .setValidator(new LongRangeValidator(1, 9, true, false))
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES). build();
 
     public static final SimpleAttributeDefinition REVERSE_GROUP = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.REVERSE_GROUP, ModelType.BOOLEAN, true)
-    .setDefaultValue(new ModelNode(false)).setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
+            .setDefaultValue(new ModelNode(false)).setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
     public static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = {
-        CONNECTION, BASE_DN, RECURSIVE, USER_DN,USERNAME, ADVANCED_FILTER, ROLES_DN, PATTERN, GROUP, RESULT_PATTERN, REVERSE_GROUP
+        CONNECTION, BASE_DN, RECURSIVE, USER_DN,USERNAME, ADVANCED_FILTER, GROUPS_DN, PATTERN, GROUP, RESULT_PATTERN, REVERSE_GROUP
     };
 
     public LdapAuthorizationResourceDefinition() {
@@ -110,7 +109,7 @@ public class LdapAuthorizationResourceDefinition extends LdapResourceDefinition 
                     final ModelNode model = resource.getModel();
                     validateAttributeCombination(model);
                     validateAttributePatternCombination(model);
-                    context.completeStep();
+                    context.stepCompleted();
                 }
             }, OperationContext.Stage.MODEL);
             super.execute(context, operation);
