@@ -81,44 +81,41 @@ public class GlobalOpsTestCase extends AbstractCliTestBase {
     }
 
     private void testReadResource(boolean recursive) throws Exception {
-        cli.sendLine("/subsystem=web:read-resource(recursive="+ String.valueOf(recursive) +")");
+        cli.sendLine("/subsystem=undertow:read-resource(recursive="+ String.valueOf(recursive) +")");
         CLIOpResult result = cli.readAllAsOpResult();
 
         assertTrue(result.isIsOutcomeSuccess());
         assertTrue(result.getResult() instanceof Map);
         Map map = (Map) result.getResult();
 
-        assertTrue(map.get("virtual-server") instanceof Map);
+        assertTrue(map.get("server") instanceof Map);
 
-        Map vServer = (Map) map.get("virtual-server");
-        assertTrue(vServer.containsKey("default-host"));
+        Map vServer = (Map) map.get("server");
+        assertTrue(vServer.containsKey("default-server"));
 
         if (recursive) {
-            assertTrue(vServer.get("default-host") instanceof Map);
-            Map host = (Map) vServer.get("default-host");
-            assertTrue(host.containsKey("alias"));
+            assertTrue(vServer.get("default-server") instanceof Map);
+            Map host = (Map) vServer.get("default-server");
+            assertTrue(host.containsKey("default-host"));
         } else {
-            assertTrue(vServer.get("default-host").equals("undefined"));
+            assertTrue(vServer.get("default-server").equals("undefined"));
         }
     }
 
     @Test
     public void testReadAttribute() throws Exception {
-        cli.sendLine("/subsystem=web:read-attribute(name=native)");
+        cli.sendLine("/subsystem=undertow:read-attribute(name=default-servlet-container)");
         CLIOpResult result = cli.readAllAsOpResult();
 
         assertTrue(result.isIsOutcomeSuccess());
-        assertTrue(result.getResult().equals("true") || result.getResult().equals("false"));
+        assertTrue(result.getResult().equals("default"));
 
     }
 
-    @Test
-    public void testWriteAttribute() {
-    }
 
     @Test
     public void testReadResourceDescription() throws Exception {
-        cli.sendLine("/subsystem=web:read-resource-description");
+        cli.sendLine("/subsystem=undertow:read-resource-description");
         CLIOpResult result = cli.readAllAsOpResult();
 
         assertTrue(result.isIsOutcomeSuccess());
@@ -131,7 +128,7 @@ public class GlobalOpsTestCase extends AbstractCliTestBase {
 
     @Test
     public void testReadOperationNames() throws Exception {
-        cli.sendLine("/subsystem=web:read-operation-names");
+        cli.sendLine("/subsystem=undertow:read-operation-names");
         CLIOpResult result = cli.readAllAsOpResult();
 
         assertTrue(result.isIsOutcomeSuccess());
@@ -152,7 +149,7 @@ public class GlobalOpsTestCase extends AbstractCliTestBase {
 
     @Test
     public void testReadOperationDescription() throws Exception {
-        cli.sendLine("/subsystem=web:read-operation-description(name=add)");
+        cli.sendLine("/subsystem=undertow:read-operation-description(name=add)");
         CLIOpResult result = cli.readAllAsOpResult();
 
         assertTrue(result.isIsOutcomeSuccess());
@@ -166,40 +163,38 @@ public class GlobalOpsTestCase extends AbstractCliTestBase {
 
     @Test
     public void testReadChildrenTypes() throws Exception {
-        cli.sendLine("/subsystem=web:read-children-types");
+        cli.sendLine("/subsystem=undertow:read-children-types");
         CLIOpResult result = cli.readAllAsOpResult();
 
         assertTrue(result.isIsOutcomeSuccess());
         assertTrue(result.getResult() instanceof List);
         List types = (List) result.getResult();
 
-        assertTrue(types.contains("virtual-server"));
-        assertTrue(types.contains("connector"));
+        assertTrue(types.contains("server"));
+        assertTrue(types.contains("servlet-container"));
     }
 
     @Test
     public void testReadChildrenNames() throws Exception {
-        cli.sendLine("/subsystem=web:read-children-names(child-type=connector)");
+        cli.sendLine("/subsystem=undertow:read-children-names(child-type=server)");
         CLIOpResult result = cli.readAllAsOpResult();
 
         assertTrue(result.isIsOutcomeSuccess());
         assertTrue(result.getResult() instanceof List);
         List names = (List) result.getResult();
 
-        assertTrue(names.contains("http"));
+        assertTrue(names.contains("default-server"));
     }
 
     @Test
     public void testReadChildrenResources() throws Exception {
-        cli.sendLine("/subsystem=web:read-children-resources(child-type=connector)");
+        cli.sendLine("/subsystem=undertow:read-children-resources(child-type=server)");
         CLIOpResult result = cli.readAllAsOpResult();
 
         assertTrue(result.isIsOutcomeSuccess());
         assertTrue(result.getResult() instanceof Map);
         Map res = (Map) result.getResult();
-        assertTrue(res.get("http") instanceof Map);
-        Map http = (Map) res.get("http");
-        assertTrue(http.containsKey("enabled"));
+        assertTrue(res.get("default-server") instanceof Map);
 
     }
 
@@ -211,19 +206,20 @@ public class GlobalOpsTestCase extends AbstractCliTestBase {
         CLIOpResult result = cli.readAllAsOpResult();
         assertTrue(result.isIsOutcomeSuccess());
 
-        cli.sendLine("/subsystem=web/connector=test-connector:add(socket-binding=test, scheme=http, protocol=\"HTTP/1.1\", enabled=true)");
+        cli.sendLine("/subsystem=undertow/server=default-server/http-listener=test-listener:add(socket-binding=test, enabled=true)");
         result = cli.readAllAsOpResult();
         assertTrue(result.isIsOutcomeSuccess());
 
         // check that the connector is live
         String cURL = "http://" + url.getHost() + ":8181";
 
+        //this tests for default content serving...
         String response = HttpRequest.get(cURL, 10, TimeUnit.SECONDS);
         assertTrue("Invalid response: " + response, response.indexOf("JBoss") >=0);
 
 
         // remove connector
-        cli.sendLine("/subsystem=web/connector=test-connector:remove{allow-resource-service-restart=true}");
+        cli.sendLine("/subsystem=undertow/server=default-server/http-listener=test-listener:remove{allow-resource-service-restart=true}");
         result = cli.readAllAsOpResult();
         assertTrue(result.isIsOutcomeSuccess());
 

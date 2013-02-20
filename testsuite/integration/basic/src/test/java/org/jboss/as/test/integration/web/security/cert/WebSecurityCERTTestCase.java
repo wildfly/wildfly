@@ -72,6 +72,7 @@ import org.junit.runner.RunWith;
 @RunAsClient
 @ServerSetup(WebCERTTestsSecurityDomainSetup.class)
 @Category(CommonCriteria.class)
+@Ignore("We don't have full blown SSL support yet")
 public class WebSecurityCERTTestCase {
 
     @ArquillianResource

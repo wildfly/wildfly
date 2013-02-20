@@ -80,8 +80,11 @@ public class HttpMgmtProxy {
 
         HttpResponse response = httpClient.execute(post, httpContext);
         String str = EntityUtils.toString(response.getEntity());
-
-        return ModelNode.fromJSONString(str);
+        if (response.getStatusLine().getStatusCode()==200){
+            return ModelNode.fromJSONString(str);
+        }else{
+            throw new Exception("Could not execute command: "+str);
+        }
     }
 
     public static ModelNode getOpNode(String address, String operation) {

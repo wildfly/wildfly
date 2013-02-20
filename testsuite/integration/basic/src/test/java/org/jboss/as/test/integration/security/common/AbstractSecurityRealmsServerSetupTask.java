@@ -132,7 +132,7 @@ public abstract class AbstractSecurityRealmsServerSetupTask implements ServerSet
      * @param managementClient
      * @param containerId
      */
-    public final void tearDown(ManagementClient managementClient, String containerId) throws Exception {
+    public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
         if (securityRealms == null || securityRealms.length == 0) {
             LOGGER.warn("Empty security realms configuration.");
             return;

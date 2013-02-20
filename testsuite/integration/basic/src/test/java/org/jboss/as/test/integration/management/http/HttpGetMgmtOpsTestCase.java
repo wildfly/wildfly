@@ -32,6 +32,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.management.util.HttpMgmtProxy;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -82,14 +83,12 @@ public class HttpGetMgmtOpsTestCase {
         URL mgmtURL = new URL(url.getProtocol(), url.getHost(), MGMT_PORT, MGMT_CTX);
         HttpMgmtProxy httpMgmt = new HttpMgmtProxy(mgmtURL);
 
-        String cmd = recursive ?
-                "/subsystem/web?operation=resource&recursive=true" : "/subsystem/web?operation=resource";
+        String cmd = recursive ? "/subsystem/undertow/server/default-server?operation=resource&recursive=true" : "/subsystem/undertow/server/default-server?operation=resource";
 
         ModelNode node = httpMgmt.sendGetCommand(cmd);
 
-        assertTrue(node.has("virtual-server"));
-        ModelNode vServer = node.get("virtual-server");
-
+        assertTrue(node.has("host"));
+        ModelNode vServer = node.get("host");
         assertTrue(vServer.has("default-host"));
         ModelNode host = vServer.get("default-host");
 
@@ -98,7 +97,6 @@ public class HttpGetMgmtOpsTestCase {
         } else {
             assertFalse(host.isDefined());
         }
-
     }
 
     @Test
@@ -107,10 +105,10 @@ public class HttpGetMgmtOpsTestCase {
        URL mgmtURL = new URL(url.getProtocol(), url.getHost(), MGMT_PORT, MGMT_CTX);
         HttpMgmtProxy httpMgmt = new HttpMgmtProxy(mgmtURL);
 
-        ModelNode node = httpMgmt.sendGetCommand("/subsystem/web?operation=attribute&name=native");
+        ModelNode node = httpMgmt.sendGetCommand("/subsystem/undertow?operation=attribute&name=default-servlet-container");
 
         // check that a boolean is returned
-        assertTrue(node.asBoolean() || (! node.asBoolean()));
+        assertTrue(node.getType() == ModelType.STRING);
 
     }
 
@@ -121,7 +119,7 @@ public class HttpGetMgmtOpsTestCase {
         URL mgmtURL = new URL(url.getProtocol(), url.getHost(), MGMT_PORT, MGMT_CTX);
         HttpMgmtProxy httpMgmt = new HttpMgmtProxy(mgmtURL);
 
-        ModelNode node = httpMgmt.sendGetCommand("/subsystem/web?operation=resource-description");
+        ModelNode node = httpMgmt.sendGetCommand("/subsystem/undertow?operation=resource-description");
 
 
         assertTrue(node.has("description"));
@@ -134,7 +132,7 @@ public class HttpGetMgmtOpsTestCase {
         URL mgmtURL = new URL(url.getProtocol(), url.getHost(), MGMT_PORT, MGMT_CTX);
         HttpMgmtProxy httpMgmt = new HttpMgmtProxy(mgmtURL);
 
-        ModelNode node = httpMgmt.sendGetCommand("/subsystem/web?operation=operation-names");
+        ModelNode node = httpMgmt.sendGetCommand("/subsystem/undertow?operation=operation-names");
 
         List<ModelNode> names = node.asList();
 
@@ -160,7 +158,7 @@ public class HttpGetMgmtOpsTestCase {
         URL mgmtURL = new URL(url.getProtocol(), url.getHost(), MGMT_PORT, MGMT_CTX);
         HttpMgmtProxy httpMgmt = new HttpMgmtProxy(mgmtURL);
 
-        ModelNode node = httpMgmt.sendGetCommand("/subsystem/web?operation=operation-description&name=add");
+        ModelNode node = httpMgmt.sendGetCommand("/subsystem/undertow?operation=operation-description&name=add");
 
         assertTrue(node.has("operation-name"));
         assertTrue(node.has("description"));

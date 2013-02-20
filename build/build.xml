@@ -177,7 +177,7 @@
           ~ +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
           -->
 
-    	<module-def name="io.undertow">
+    	<module-def name="io.undertow.core">
             <maven-resource group="io.undertow" artifact="undertow-core"/>
         </module-def>
 
@@ -498,7 +498,7 @@
         </module-def>
 
         <module-def name="javax.servlet.api">
-            <maven-resource group="org.jboss.spec.javax.servlet" artifact="jboss-servlet-api_3.0_spec"/>
+            <maven-resource group="org.jboss.spec.javax.servlet" artifact="jboss-servlet-api_3.1_spec"/>
         </module-def>
 
         <module-def name="javax.servlet.jsp.api">
@@ -1326,6 +1326,22 @@
         <module-def name="sun.jdk"/>
 
         <module-def name="ibm.jdk"/>
+
+        <module-def name="org.jboss.as.undertow">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-undertow"/>
+        </module-def>
+        <module-def name="io.undertow.servlet">
+            <maven-resource group="io.undertow" artifact="undertow-servlet"/>
+            <maven-resource group="io.undertow" artifact="undertow-jsp"/>
+            <maven-resource group="io.undertow.jastow" artifact="jastow"/>
+            <maven-resource group="org.jboss.web" artifact="jasper-jdt"/>
+        </module-def>
+        <module-def name="io.undertow.websocket">
+           <maven-resource group="io.undertow" artifact="undertow-websockets-jsr"/>
+         </module-def>
+        <module-def name="javax.websocket.api">
+              <maven-resource group="org.jboss.spec.javax.websocket" artifact="jboss-websocket-api_1.0_spec"/>
+          </module-def>
 
     </target>
 
