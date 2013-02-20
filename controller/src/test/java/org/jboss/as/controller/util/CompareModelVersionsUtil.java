@@ -141,10 +141,10 @@ public class CompareModelVersionsUtil {
         }
         boolean compareDifferentVersions;
         if (diff.equals("n")) {
-            System.out.println("Reporting on differences in the model when the management versions are different");
+            System.out.println("Not reporting on differences in the model when the management versions are different");
             compareDifferentVersions = false;
         } else if (diff.equals("y")) {
-            System.out.println("Not reporting on differences in the model when the management versions are different");
+            System.out.println("Reporting on differences in the model when the management versions are different");
             compareDifferentVersions = true;
         } else {
             throw new IllegalArgumentException("Please enter 'y' or 'n'");
