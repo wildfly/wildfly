@@ -31,6 +31,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ListAttributeDefinition;
+import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
@@ -72,9 +73,6 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
 
-    private static final AttributeDefinition METHODS = new SimpleMapAttributeDefinition.Builder("methods", true)
-            .build();
-
     private static final AttributeDefinition PEAK_CONCURRENT_INVOCATIONS = new SimpleAttributeDefinitionBuilder("peak-concurrent-invocations", ModelType.LONG)
             .setAllowNull(false)
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
@@ -85,6 +83,11 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
             .build();
 
     private static final AttributeDefinition WAIT_TIME = new SimpleAttributeDefinitionBuilder("wait-time", ModelType.LONG)
+            .setAllowNull(false)
+            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+            .build();
+
+    private static final AttributeDefinition METHODS = ObjectTypeAttributeDefinition.Builder.of("methods", EXECUTION_TIME, INVOCATIONS, WAIT_TIME)
             .setAllowNull(false)
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
@@ -170,15 +173,14 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
         resourceRegistration.registerMetric(METHODS, new AbstractRuntimeMetricsHandler() {
             @Override
             protected void executeReadMetricStep(final OperationContext context, final ModelNode operation, final EJBComponent component) throws OperationFailedException {
-                context.getResult().setEmptyList();
-                for (final Map.Entry<String, InvocationMetrics.Values> entry : component.getInvocationMetrics().getMethods().entrySet())
-                {
+                context.getResult().setEmptyObject();
+                for (final Map.Entry<String, InvocationMetrics.Values> entry : component.getInvocationMetrics().getMethods().entrySet()) {
                     final InvocationMetrics.Values values = entry.getValue();
                     final ModelNode result = new ModelNode();
                     result.get("execution-time").set(values.getExecutionTime());
                     result.get("invocations").set(values.getInvocations());
                     result.get("wait-time").set(values.getWaitTime());
-                    context.getResult().add(entry.getKey(), result);
+                    context.getResult().get(entry.getKey()).set(result);
                 }
             }
         });
