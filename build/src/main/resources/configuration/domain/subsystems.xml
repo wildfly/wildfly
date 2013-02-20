@@ -24,7 +24,7 @@
       <subsystem supplement="domain">configuration/subsystems/security.xml</subsystem>
       <subsystem>configuration/subsystems/threads.xml</subsystem>
       <subsystem>configuration/subsystems/transactions.xml</subsystem>
-      <subsystem>configuration/subsystems/web.xml</subsystem>
+      <subsystem>configuration/subsystems/undertow.xml</subsystem>
       <subsystem>configuration/subsystems/webservices.xml</subsystem>
       <subsystem>configuration/subsystems/weld.xml</subsystem>
    </subsystems>
@@ -53,7 +53,7 @@
       <subsystem supplement="domain">configuration/subsystems/security.xml</subsystem>
       <subsystem>configuration/subsystems/threads.xml</subsystem>
       <subsystem>configuration/subsystems/transactions.xml</subsystem>
-      <subsystem supplement="ha">configuration/subsystems/web.xml</subsystem>
+      <subsystem supplement="ha">configuration/subsystems/undertow.xml</subsystem>
       <subsystem>configuration/subsystems/webservices.xml</subsystem>
       <subsystem>configuration/subsystems/weld.xml</subsystem>
    </subsystems>
@@ -83,7 +83,7 @@
       <subsystem supplement="domain">configuration/subsystems/security.xml</subsystem>
       <subsystem>configuration/subsystems/threads.xml</subsystem>
       <subsystem>configuration/subsystems/transactions.xml</subsystem>
-      <subsystem>configuration/subsystems/web.xml</subsystem>
+      <subsystem>configuration/subsystems/undertow.xml</subsystem>
       <subsystem>configuration/subsystems/webservices.xml</subsystem>
       <subsystem>configuration/subsystems/weld.xml</subsystem>
    </subsystems>
@@ -115,7 +115,7 @@
       <subsystem supplement="domain">configuration/subsystems/security.xml</subsystem>
       <subsystem>configuration/subsystems/threads.xml</subsystem>
       <subsystem>configuration/subsystems/transactions.xml</subsystem>
-      <subsystem supplement="ha">configuration/subsystems/web.xml</subsystem>
+      <subsystem supplement="ha">configuration/subsystems/undertow.xml</subsystem>
       <subsystem>configuration/subsystems/webservices.xml</subsystem>
       <subsystem>configuration/subsystems/weld.xml</subsystem>
    </subsystems>

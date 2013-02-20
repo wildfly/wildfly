@@ -87,8 +87,14 @@ class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
             newControllers.add(ServerConfigService.install(serviceTarget, serverConfig, verificationHandler));
             newControllers.add(EndpointRegistryService.install(serviceTarget, verificationHandler));
 
-            final Resource webSubsystem = context.readResourceFromRoot(PathAddress.pathAddress(PathElement.pathElement("subsystem", "web")));
-            String defaultHost = webSubsystem.getModel().get("default-virtual-server").asString();
+            String defaultHost = "localhost";
+            try {
+                final Resource webSubsystem = context.readResourceFromRoot(PathAddress.pathAddress(PathElement.pathElement("subsystem", "web")));
+                defaultHost = webSubsystem.getModel().get("default-virtual-server").asString();
+            } catch (Exception e) {
+                //TODO this code needs to be update to undertow
+                ROOT_LOGGER.info("Could not get default virtual host: "+e.getMessage());
+            }
             newControllers.add(PortComponentLinkService.install(serviceTarget, defaultHost, verificationHandler));
         }
     }

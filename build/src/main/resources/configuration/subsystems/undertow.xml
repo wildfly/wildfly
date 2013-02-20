@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
+<config>
+    <extension-module>org.jboss.as.undertow</extension-module>
+    <subsystem xmlns="urn:jboss:domain:undertow:1.0">
+        <worker name="default" task-core-threads="12" io-threads="3"/>
+        <buffer-pool name="default" buffer-size="2048" buffers-per-slice="512"/>
+
+        <server name="default-server" default-host="default-host" >
+            <http-listener name="default" socket-binding="http"/>
+            <?AJP?>
+            <host name="default-host" alias="localhost">
+                <location name="/">
+                    <file path="${jboss.home.dir}/welcome-content" cache-buffer-size="1024" cache-buffers="1024"/>
+                </location>
+            </host>
+        </server>
+        <servlet-container name="default">
+            <jsp-config/>
+        </servlet-container>
+    </subsystem>
+    <supplement name="ha">
+        <replacement placeholder="AJP">
+            <ajp-listener name="ajp-connector" socket-binding="ajp"/>
+        </replacement>
+    </supplement>
+    <socket-binding name="http" port="8080"/>
+    <socket-binding name="https" port="8443"/>
+    <socket-binding name="ajp" port="8009"/>
+</config>
+

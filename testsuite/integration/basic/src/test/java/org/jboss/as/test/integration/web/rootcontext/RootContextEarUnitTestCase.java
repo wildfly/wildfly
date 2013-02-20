@@ -57,12 +57,12 @@ public class RootContextEarUnitTestCase {
 
         @Override
         protected void doSetup(final ManagementClient managementClient) throws Exception {
-            RootContextUtil.createVirtualServer(managementClient.getControllerClient(), HOST);
+            RootContextUtil.createVirutalHost(managementClient.getControllerClient(), HOST);
         }
 
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-            RootContextUtil.removeVirtualServer(managementClient.getControllerClient(), HOST);
+            RootContextUtil.removeVirtualHost(managementClient.getControllerClient(), HOST);
         }
     }
 

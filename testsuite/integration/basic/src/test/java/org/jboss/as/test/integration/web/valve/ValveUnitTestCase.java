@@ -40,6 +40,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -55,6 +56,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup(ValveUnitTestCase.ValveSetup.class)
+@Ignore("We don't support valves yet in undertow")
 public class ValveUnitTestCase {
 
     private static Logger log = Logger.getLogger(ValveUnitTestCase.class);

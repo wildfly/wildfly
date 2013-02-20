@@ -66,7 +66,7 @@ import org.jboss.dmr.ModelNode;
 public class ManagementClient {
 
     private static final String SUBDEPLOYMENT = "subdeployment";
-    private static final String WEB = "web";
+    private static final String UNDERTOW = "undertow";
 
     private static final String JMX = "jmx";
 
@@ -339,8 +339,8 @@ public class ManagementClient {
     private void extractWebArchiveContexts(HTTPContext context, String deploymentName, ModelNode deploymentNode) {
         if (deploymentNode.hasDefined(SUBSYSTEM)) {
             ModelNode subsystem = deploymentNode.get(SUBSYSTEM);
-            if (subsystem.hasDefined(WEB)) {
-                ModelNode webSubSystem = subsystem.get(WEB);
+            if (subsystem.hasDefined(UNDERTOW)) {
+                ModelNode webSubSystem = subsystem.get(UNDERTOW);
                 if (webSubSystem.isDefined() && webSubSystem.hasDefined("context-root")) {
                     final String contextName = webSubSystem.get("context-root").asString();
                     if (webSubSystem.hasDefined(SERVLET)) {

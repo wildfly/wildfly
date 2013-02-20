@@ -23,7 +23,6 @@ package org.jboss.as.test.integration.web.rootcontext;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -52,34 +51,34 @@ import org.jboss.logging.Logger;
 public class RootContextUtil {
 
     private static Logger log = Logger.getLogger(RootContextUtil.class);
+    private static String SERVER = "server";
+    private static String HOST = "host";
 
-    // FIXME Duplicated from org.jboss.as.web.Constants.Constants
-    private static String VIRTUAL_SERVER = "virtual-server";
     private static String ENABLE_WELCOME_ROOT = "enable-welcome-root";
+    private static final String WEB_SUBSYSTEM_NAME = "undertow";
 
-    public static void createVirtualServer(ModelControllerClient client, String serverName) throws Exception {
+    public static void createVirutalHost(ModelControllerClient client, String virutalHost) throws Exception {
         final List<ModelNode> updates = new ArrayList<ModelNode>();
 
         ModelNode op = new ModelNode();
         op.get(OP).set(ADD);
-        op.get(OP_ADDR).add(SUBSYSTEM, "web");
-        op.get(OP_ADDR).add(VIRTUAL_SERVER, serverName);
-
-        op.get(NAME).set(ENABLE_WELCOME_ROOT);
-        op.get(ENABLE_WELCOME_ROOT).set(false);
+        op.get(OP_ADDR).add(SUBSYSTEM, WEB_SUBSYSTEM_NAME);
+        op.get(OP_ADDR).add(SERVER, "default-server");
+        op.get(OP_ADDR).add(HOST, virutalHost);
 
         updates.add(op);
 
         applyUpdates(updates, client);
     }
 
-    public static void removeVirtualServer(final ModelControllerClient client, String serverName) throws Exception {
+    public static void removeVirtualHost(final ModelControllerClient client, String virtualHost) throws Exception {
         final List<ModelNode> updates = new ArrayList<ModelNode>();
 
         ModelNode op = new ModelNode();
         op.get(OP).set(REMOVE);
-        op.get(OP_ADDR).add(SUBSYSTEM, "web");
-        op.get(OP_ADDR).add(VIRTUAL_SERVER, serverName);
+        op.get(OP_ADDR).add(SUBSYSTEM, WEB_SUBSYSTEM_NAME);
+        op.get(OP_ADDR).add(SERVER, "default-server");
+        op.get(OP_ADDR).add(HOST, virtualHost);
         updates.add(op);
 
         applyUpdates(updates, client);

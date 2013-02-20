@@ -6,7 +6,7 @@ package org.jboss.as.test.integration.management;
  * @author Dominik Pospisil <dpospisi@redhat.com>
  * @author <a href="mailto:pskopek@redhat.com">Peter Skopek</a>
  */
-public enum Connector {
+public enum Listener {
 
     HTTP("http", "http", "HTTP/1.1", false),
     HTTPS("http", "https", "HTTP/1.1", true),
@@ -22,7 +22,7 @@ public enum Connector {
     private final String protocol;
     private final boolean secure;
 
-    private Connector(String name, String scheme, String protocol, boolean secure) {
+    private Listener(String name, String scheme, String protocol, boolean secure) {
         this.name = name;
         this.scheme = scheme;
         this.protocol = protocol;

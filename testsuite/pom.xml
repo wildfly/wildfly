@@ -492,8 +492,8 @@
             <activation><property><name>allTests</name></property></activation>
             <modules>
                 <module>integration</module>
-                <module>compat</module>
-                <module>domain</module>
+                <!--<module>compat</module>
+                <module>domain</module>-->
             </modules>
         </profile>
         

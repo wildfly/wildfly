@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns="urn:jboss:domain:undertow:1.0"
+           targetNamespace="urn:jboss:domain:undertow:1.0"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified"
+           version="1.0">
+    <!-- The mail subsystem root element -->
+    <xs:element name="subsystem" type="undertow-subsystemType"/>
+    <xs:complexType name="undertow-subsystemType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                The configuration of the undertow subsystem.
+            ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice minOccurs="1" maxOccurs="unbounded">
+            <xs:element name="worker" type="workerType"/>
+            <xs:element name="buffer-pool" type="bufferPoolType"/>
+            <xs:element name="server" type="serverType"/>
+            <xs:element name="servlet-container" type="servletContainerType"/>
+        </xs:choice>
+    </xs:complexType>
+    <xs:complexType name="workerType">
+        <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="task-core-threads" use="optional" type="xs:int"/>
+        <xs:attribute name="io-threads" use="optional" type="xs:int"/>
+    </xs:complexType>
+    <xs:complexType name="bufferPoolType">
+        <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="buffer-size" use="optional" type="xs:int"/>
+        <xs:attribute name="buffers-per-slice" use="optional" type="xs:int"/>
+    </xs:complexType>
+    <xs:complexType name="serverType">
+        <xs:sequence>
+            <xs:element name="http-listener" type="http-listener-type" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="ajp-listener" type="ajp-listener-type" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="host" type="hostType" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="default-host" use="optional" type="xs:string"/>
+        <xs:attribute name="servlet-container" use="optional" type="xs:string"/>
+    </xs:complexType>
+    <xs:complexType name="http-listener-type">
+        <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="socket-binding" use="required" type="xs:string"/>
+    </xs:complexType>
+    <xs:complexType name="ajp-listener-type">
+        <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="socket-binding" use="required" type="xs:string"/>
+    </xs:complexType>
+    <xs:complexType name="servletContainerType">
+        <xs:sequence>
+            <xs:element name="jsp-config" type="jsp-configurationType" maxOccurs="1" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="name" use="required" type="xs:string"/>
+    </xs:complexType>
+    <xs:complexType name="hostType">
+        <xs:sequence>
+            <xs:element name="handlers" type="handlerType" maxOccurs="1" minOccurs="0"/>
+            <xs:element name="location" type="locationType" maxOccurs="1" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="alias" use="optional" type="xs:string"/>
+    </xs:complexType>
+
+    <xs:complexType name="jsp-configurationType">
+        <xs:attribute name="development" default="false" type="xs:boolean"/>
+        <xs:attribute name="disabled" default="false" type="xs:boolean"/>
+        <xs:attribute name="keep-generated" default="true" type="xs:boolean"/>
+        <xs:attribute name="trim-spaces" default="false" type="xs:boolean"/>
+        <xs:attribute name="tag-pooling" default="true" type="xs:boolean"/>
+        <xs:attribute name="mapped-file" default="true" type="xs:boolean"/>
+        <xs:attribute name="check-interval" default="0"/>
+        <xs:attribute name="modification-test-interval" default="4"/>
+        <xs:attribute name="recompile-on-fail" default="false" type="xs:boolean"/>
+        <xs:attribute name="smap" default="true" type="xs:boolean"/>
+        <xs:attribute name="dump-smap" default="false" type="xs:boolean"/>
+        <xs:attribute name="generate-strings-as-char-arrays" default="false" type="xs:boolean"/>
+        <xs:attribute name="error-on-use-bean-invalid-class-attribute" default="false" type="xs:boolean"/>
+        <xs:attribute name="scratch-dir"/>
+        <xs:attribute name="source-vm" default="1.5"/>
+        <xs:attribute name="target-vm" default="1.5"/>
+        <xs:attribute name="java-encoding" default="UTF8"/>
+        <xs:attribute name="x-powered-by" default="true" type="xs:boolean"/>
+        <xs:attribute name="display-source-fragment" default="true" type="xs:boolean"/>
+    </xs:complexType>
+    <xs:complexType name="handlerType">
+        <xs:sequence>
+            <xs:element name="file-error-page" type="file-error-page-type" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="locationType">
+        <xs:sequence>
+            <xs:element name="file" type="file-handlerType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="name" use="required" type="xs:string"/>
+    </xs:complexType>
+    <xs:complexType name="file-error-page-type">
+        <xs:attribute name="code" use="required" type="xs:string"/>
+        <xs:attribute name="file" use="required" type="xs:string"/>
+    </xs:complexType>
+    <xs:complexType name="file-handlerType">
+        <xs:attribute name="path" use="required" type="xs:string"/>
+        <xs:attribute name="cache-buffer-size" use="optional" type="xs:int" default="1024"/>
+        <xs:attribute name="cache-buffers" use="optional" type="xs:int" default="1024"/>
+    </xs:complexType>
+
+</xs:schema>
