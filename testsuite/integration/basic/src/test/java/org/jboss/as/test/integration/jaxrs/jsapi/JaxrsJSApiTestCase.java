@@ -28,6 +28,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.jaxrs.packaging.war.WebXml;
@@ -81,12 +82,14 @@ public class JaxrsJSApiTestCase {
     }
 
     @Test
+    @InSequence(1)
     public void testJaxRsWithNoApplication() throws Exception {
         String result = performCall("myjaxrs/jsapi");
         Assert.assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><customer><first>John</first><last>Citizen</last></customer>", result);
     }
 
     @Test
+    @InSequence(2)
     public void testJaxRsJSApis() throws Exception {
         String result = performCall("/rest-JS");
         Assert.assertTrue(result.contains("var CustomerResource"));

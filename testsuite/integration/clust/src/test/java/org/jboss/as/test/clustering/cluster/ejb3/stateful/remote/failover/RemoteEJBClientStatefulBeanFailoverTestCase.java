@@ -37,6 +37,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.EJBDirectory;
@@ -125,6 +126,7 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
      * @throws Exception
      */
     @Test
+    @InSequence(1)
     public void testFailoverFromRemoteClientWhenOneNodeGoesDown() throws Exception {
         this.failoverFromRemoteClient(false);
     }
@@ -135,6 +137,7 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
      * @throws Exception
      */
     @Test
+    @InSequence(2)
     public void testFailoverFromRemoteClientWhenOneNodeUndeploys() throws Exception {
         this.failoverFromRemoteClient(true);
 

@@ -28,6 +28,7 @@ import junit.framework.Assert;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.util.ModelUtil;
@@ -96,6 +97,7 @@ public class ExpressionSubstitutionInContainerTestCase {
      * </system-properties>
      */
     @Test
+    @InSequence(1)
     public void testPropertyDefinedFirst() {
         Utils.setProperty(EXPRESSION_PROP_NAME, EXPRESSION_PROP_VALUE, managementClient.getControllerClient());
         Utils.setProperty(PROP_NAME, "${" + EXPRESSION_PROP_NAME + ":" + PROP_DEFAULT_VALUE + "}", managementClient.getControllerClient());
@@ -116,6 +118,7 @@ public class ExpressionSubstitutionInContainerTestCase {
      */
     @Ignore("AS7-6431")
     @Test
+    @InSequence(2)
     public void testExpressionDefinedFirst() {
         Utils.setProperty(PROP_NAME, "${" + EXPRESSION_PROP_NAME + ":" + PROP_DEFAULT_VALUE + "}", managementClient.getControllerClient());
         Utils.setProperty(EXPRESSION_PROP_NAME, EXPRESSION_PROP_VALUE, managementClient.getControllerClient());
@@ -134,6 +137,7 @@ public class ExpressionSubstitutionInContainerTestCase {
      * </system-properties>
      */
     @Test
+    @InSequence(3)
     public void testSystemPropertyEvaluation() {
         // the system property has to be defined in the same VM as the container resides
         bean.addSystemProperty(EXPRESSION_PROP_NAME, EXPRESSION_PROP_VALUE);
@@ -154,6 +158,7 @@ public class ExpressionSubstitutionInContainerTestCase {
      * </system-properties>
      */
     @Test
+    @InSequence(4)
     public void testSystemPropertyEvaluationSetAfterExpression() {
         Utils.setProperty(PROP_NAME, "${" + EXPRESSION_PROP_NAME + ":" + PROP_DEFAULT_VALUE + "}", managementClient.getControllerClient());
         // the system property has to be defined in the same VM as the container resides
@@ -191,6 +196,7 @@ public class ExpressionSubstitutionInContainerTestCase {
       *  </system-properties>
      */
     @Test
+    @InSequence(5)
     public void testMultipleLevelExpression() {
         Utils.setProperty(EXPRESSION_PROP_NAME, EXPRESSION_PROP_VALUE, managementClient.getControllerClient());
         Utils.setProperty(INNER_PROP_NAME, "${" + EXPRESSION_PROP_NAME + ":" + INNER_PROP_DEFAULT_VALUE + "}", managementClient.getControllerClient());
@@ -227,6 +233,7 @@ public class ExpressionSubstitutionInContainerTestCase {
      */
     @Ignore("AS7-6431")  // for this test works there will be :reload after redefinition
     @Test
+    @InSequence(6)
     public void testRedefinitionExpressionValue() {
         Utils.setProperty(EXPRESSION_PROP_NAME, "firstly.defined.value.", managementClient.getControllerClient());
         Utils.setProperty(PROP_NAME, "${" + EXPRESSION_PROP_NAME + ":" + PROP_DEFAULT_VALUE + "}", managementClient.getControllerClient());
