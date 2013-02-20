@@ -72,7 +72,7 @@ public abstract class ModelTestModelControllerService extends AbstractController
     private final boolean validateOps;
     private final RunningModeControl runningModeControl;
     private volatile ManagementResourceRegistration rootRegistration;
-    private volatile Exception error;
+    private volatile Throwable error;
     private volatile boolean bootSuccess;
 
     protected ModelTestModelControllerService(final ProcessType processType, final RunningModeControl runningModeControl, final TransformerRegistry transformerRegistry,
@@ -179,17 +179,19 @@ public abstract class ModelTestModelControllerService extends AbstractController
             error = e;
             latch.countDown();
             throw e;
-        } catch (Exception e) {
-            error = e;
+        } catch (Throwable t) {
+            error = t;
             latch.countDown();
-            throw new StartException(e);
+            throw new StartException(t);
         }
     }
 
     public void waitForSetup() throws Exception {
         latch.await();
         if (error != null) {
-            throw error;
+            if (error instanceof Exception)
+                throw (Exception) error;
+            throw new RuntimeException(error);
         }
     }
 
