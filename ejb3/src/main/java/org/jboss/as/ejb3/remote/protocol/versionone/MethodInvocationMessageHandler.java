@@ -65,7 +65,7 @@ import java.util.concurrent.Future;
 /**
  * @author Jaikiran Pai
  */
-class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
+public class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
 
     private static final char METHOD_PARAM_TYPE_SEPARATOR = ',';
 
@@ -76,7 +76,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
     private final MarshallerFactory marshallerFactory;
     private final RemoteAsyncInvocationCancelStatusService remoteAsyncInvocationCancelStatus;
 
-    MethodInvocationMessageHandler(final DeploymentRepository deploymentRepository, final org.jboss.marshalling.MarshallerFactory marshallerFactory, final ExecutorService executorService,
+    public MethodInvocationMessageHandler(final DeploymentRepository deploymentRepository, final org.jboss.marshalling.MarshallerFactory marshallerFactory, final ExecutorService executorService,
                                    final RemoteAsyncInvocationCancelStatusService asyncInvocationCancelStatus) {
         super(deploymentRepository);
         this.marshallerFactory = marshallerFactory;

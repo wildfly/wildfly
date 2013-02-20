@@ -45,7 +45,7 @@ import java.util.concurrent.ExecutorService;
 /**
  * @author Jaikiran Pai
  */
-class SessionOpenRequestHandler extends EJBIdentifierBasedMessageHandler {
+public class SessionOpenRequestHandler extends EJBIdentifierBasedMessageHandler {
 
     private static final byte HEADER_SESSION_OPEN_RESPONSE = 0x02;
     private static final byte HEADER_EJB_NOT_STATEFUL = 0x0D;
@@ -53,7 +53,7 @@ class SessionOpenRequestHandler extends EJBIdentifierBasedMessageHandler {
     private final ExecutorService executorService;
     private final MarshallerFactory marshallerFactory;
 
-    SessionOpenRequestHandler(final DeploymentRepository deploymentRepository, final MarshallerFactory marshallerFactory,
+    public SessionOpenRequestHandler(final DeploymentRepository deploymentRepository, final MarshallerFactory marshallerFactory,
                               final ExecutorService executorService) {
         super(deploymentRepository);
         this.marshallerFactory = marshallerFactory;

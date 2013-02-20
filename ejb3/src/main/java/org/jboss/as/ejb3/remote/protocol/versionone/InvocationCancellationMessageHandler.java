@@ -35,13 +35,13 @@ import java.io.IOException;
  *
  * @author Jaikiran Pai
  */
-class InvocationCancellationMessageHandler extends AbstractMessageHandler {
+public class InvocationCancellationMessageHandler extends AbstractMessageHandler {
 
     private static final Logger logger = Logger.getLogger(InvocationCancellationMessageHandler.class);
 
     private final RemoteAsyncInvocationCancelStatusService remoteAsyncInvocationCancelStatus;
 
-    InvocationCancellationMessageHandler(final RemoteAsyncInvocationCancelStatusService asyncInvocationCancelStatus) {
+    public InvocationCancellationMessageHandler(final RemoteAsyncInvocationCancelStatusService asyncInvocationCancelStatus) {
         this.remoteAsyncInvocationCancelStatus = asyncInvocationCancelStatus;
     }
 

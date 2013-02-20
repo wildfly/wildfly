@@ -42,7 +42,7 @@ import org.jboss.remoting3.MessageOutputStream;
  *
  * @author Jaikiran Pai
  */
-class TransactionRequestHandler extends AbstractMessageHandler {
+public class TransactionRequestHandler extends AbstractMessageHandler {
 
     private static final byte HEADER_TX_INVOCATION_RESPONSE = 0x14;
 
@@ -52,7 +52,7 @@ class TransactionRequestHandler extends AbstractMessageHandler {
     private final MarshallerFactory marshallerFactory;
 
 
-    enum TransactionRequestType {
+    public enum TransactionRequestType {
         COMMIT,
         ROLLBACK,
         PREPARE,
@@ -60,7 +60,7 @@ class TransactionRequestHandler extends AbstractMessageHandler {
         BEFORE_COMPLETION
     }
 
-    TransactionRequestHandler(final EJBRemoteTransactionsRepository transactionsRepository, final MarshallerFactory marshallerFactory,
+    public TransactionRequestHandler(final EJBRemoteTransactionsRepository transactionsRepository, final MarshallerFactory marshallerFactory,
                               final ExecutorService executorService, final TransactionRequestType txRequestType) {
         this.executorService = executorService;
         this.transactionsRepository = transactionsRepository;
