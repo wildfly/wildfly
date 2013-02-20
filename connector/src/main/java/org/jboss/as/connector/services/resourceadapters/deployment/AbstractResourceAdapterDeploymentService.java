@@ -416,27 +416,18 @@ public abstract class AbstractResourceAdapterDeploymentService {
                     Injection injector = new Injection();
                     for (ConfigProperty cpmd : configs) {
                         if (cpmd.isValueSet()) {
-                            boolean setValue = true;
 
-                            if (cpmd instanceof org.jboss.jca.common.api.metadata.ra.ra16.ConfigProperty16) {
-                                org.jboss.jca.common.api.metadata.ra.ra16.ConfigProperty16 cpmd16 = (org.jboss.jca.common.api.metadata.ra.ra16.ConfigProperty16) cpmd;
-
-                                if (cpmd16.getConfigPropertyIgnore() != null && cpmd16.getConfigPropertyIgnore().booleanValue())
-                                    setValue = false;
+                            if (XsdString.isNull(cpmd.getConfigPropertyType())) {
+                                injector.inject(o,
+                                        cpmd.getConfigPropertyName().getValue(),
+                                        cpmd.getConfigPropertyValue().getValue());
+                            } else {
+                                injector.inject(o,
+                                        cpmd.getConfigPropertyName().getValue(),
+                                        cpmd.getConfigPropertyValue().getValue(),
+                                        cpmd.getConfigPropertyType().getValue());
                             }
 
-                            if (setValue) {
-                                if (XsdString.isNull(cpmd.getConfigPropertyType())) {
-                                    injector.inject(o,
-                                            cpmd.getConfigPropertyName().getValue(),
-                                            cpmd.getConfigPropertyValue().getValue());
-                                } else {
-                                    injector.inject(o,
-                                            cpmd.getConfigPropertyName().getValue(),
-                                            cpmd.getConfigPropertyValue().getValue(),
-                                            cpmd.getConfigPropertyType().getValue());
-                                }
-                            }
 
                         }
                     }
