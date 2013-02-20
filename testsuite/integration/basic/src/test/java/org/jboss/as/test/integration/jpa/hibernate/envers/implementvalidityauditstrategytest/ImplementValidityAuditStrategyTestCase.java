@@ -31,6 +31,7 @@ import javax.naming.NamingException;
 import org.hibernate.envers.DefaultRevisionEntity;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.jpa.hibernate.envers.Organization;
 import org.jboss.as.test.integration.jpa.hibernate.envers.SLSBValidityStrategyOrg;
@@ -74,6 +75,7 @@ public class ImplementValidityAuditStrategyTestCase {
     }
 
     @Test
+    @InSequence(1)
     public void testEnversforValidityStrategy() throws Exception {
 
         SLSBValidityStrategyOrg slsbvalidityOrg = lookup("SLSBValidityStrategyOrg", SLSBValidityStrategyOrg.class);
@@ -95,6 +97,7 @@ public class ImplementValidityAuditStrategyTestCase {
     }
 
     @Test
+    @InSequence(2)
     public void testValidityStrategyActivationforEnvers() throws Exception {
         SLSBValidityStrategyOrg slsbvalidityOrg = lookup("SLSBValidityStrategyOrg", SLSBValidityStrategyOrg.class);
 

@@ -26,6 +26,7 @@ import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -63,12 +64,14 @@ public class EPCPropagationNewTransactionTestCase {
     }
 
     @Test
+    @InSequence(1)
     public void testRequiresNewXPCPropagation() throws Exception {
         BikeManagerBean stateful = lookup(BikeManagerBean.class.getSimpleName(), BikeManagerBean.class);
         stateful.runTest();
     }
 
     @Test
+    @InSequence(2)
     public void testXPCIsAssociatedWithTX() throws Exception {
         BikeManagerBean stateful = lookup(BikeManagerBean.class.getSimpleName(), BikeManagerBean.class);
         stateful.runTest2();

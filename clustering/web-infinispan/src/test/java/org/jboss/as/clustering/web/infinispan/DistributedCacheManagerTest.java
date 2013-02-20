@@ -68,7 +68,9 @@ import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.as.clustering.web.SessionOwnershipSupport;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
@@ -76,6 +78,7 @@ import org.mockito.Mockito;
  * @author Paul Ferraro
  *
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class DistributedCacheManagerTest {
     private LocalDistributableSessionManager sessionManager = mock(LocalDistributableSessionManager.class);
     @SuppressWarnings("unchecked")
@@ -167,6 +170,7 @@ public class DistributedCacheManagerTest {
 
     @SuppressWarnings("unchecked")
     @Test
+
     public void storeSessionData() throws IOException {
         OutgoingDistributableSessionData data = mock(OutgoingDistributableSessionData.class);
         Map<Object, Object> map = mock(Map.class);
@@ -612,7 +616,7 @@ public class DistributedCacheManagerTest {
     }
 
     @Test
-    public void locate() {
+    public void testLocate() { //test keeps it in order
         EmbeddedCacheManager container = mock(EmbeddedCacheManager.class);
         DistributionManager distManager = mock(DistributionManager.class);
         Address localAddress = mock(Address.class);

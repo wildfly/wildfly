@@ -26,6 +26,7 @@ import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -48,6 +49,7 @@ public class EjbMethodInterceptorTestCase {
     }
 
     @Test
+    @InSequence(1)
     public void testMethodLevelInterceptors() throws NamingException {
         final InitialContext ctx = new InitialContext();
         final ClassifiedBean bean = (ClassifiedBean) ctx.lookup("java:module/" + ClassifiedBean.class.getSimpleName());
@@ -67,6 +69,7 @@ public class EjbMethodInterceptorTestCase {
     }
 
     @Test
+    @InSequence(2)
     public void testMethodOverloaded() throws NamingException {
         final InitialContext ctx = new InitialContext();
         final ClassifiedBean bean = (ClassifiedBean) ctx.lookup("java:module/" + ClassifiedBean.class.getSimpleName());
@@ -87,6 +90,7 @@ public class EjbMethodInterceptorTestCase {
     }
 
     @Test
+    @InSequence(3)
     public void testAroundInvokeOverridedByXmlDescriptor() throws NamingException {
         InitialContext ctx = new InitialContext();
         AroundInvokeBean bean = (AroundInvokeBean) ctx.lookup("java:module/" + AroundInvokeBean.class.getSimpleName());

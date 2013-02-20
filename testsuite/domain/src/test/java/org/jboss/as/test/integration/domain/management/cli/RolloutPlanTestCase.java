@@ -42,12 +42,15 @@ import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 /**
  *
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class RolloutPlanTestCase extends AbstractCliTestBase {
 
     private static WebArchive war;
@@ -107,7 +110,7 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
     }
 
     @Test
-    public void testInSeriesRolloutPlan() throws Exception {
+    public void test1InSeriesRolloutPlan() throws Exception {
 
         // create rollout plans
 
@@ -188,7 +191,7 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
      * Tests rollout plan with non-zero maxFailedServers attribute.
      */
     @Test
-    public void testMaxFailServersRolloutPlan() throws Exception {
+    public void test2MaxFailServersRolloutPlan() throws Exception {
 
         // deploy helper servlets
         cli.sendLine("deploy " + warFile.getAbsolutePath() + " --all-server-groups");
@@ -254,7 +257,7 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
      * Tests rollout plan with non-zero maxFailurePercentage attribute.
      */
     @Test
-    public void testMaxFailServersPercentageRolloutPlan() throws Exception {
+    public void test3MaxFailServersPercentageRolloutPlan() throws Exception {
 
         // deploy helper servlets
         cli.sendLine("deploy " + warFile.getAbsolutePath() + " --all-server-groups");
@@ -312,7 +315,7 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
      * Tests rollout plan with RollbackAcrossGroups set to true.
      */
     @Test
-    public void testRollbackAcrossGroupsRolloutPlan() throws Exception {
+    public void test4RollbackAcrossGroupsRolloutPlan() throws Exception {
         // deploy helper servlets
         cli.sendLine("deploy " + warFile.getAbsolutePath() + " --all-server-groups");
 
