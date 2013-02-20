@@ -58,7 +58,7 @@ public class SimpleTimerServiceTestCase {
     }
 
     @Test
-    public void testAnnotationTimeoutMethod() throws NamingException {
+    public void test2AnnotationTimeoutMethod() throws NamingException {
         InitialContext ctx = new InitialContext();
         AnnotationTimerServiceBean bean = (AnnotationTimerServiceBean) ctx.lookup("java:module/" + AnnotationTimerServiceBean.class.getSimpleName());
         bean.resetTimerServiceCalled();
@@ -76,7 +76,7 @@ public class SimpleTimerServiceTestCase {
     }
 
     @Test
-    public void testTimedObjectTimeoutMethod() throws NamingException {
+    public void test1TimedObjectTimeoutMethod() throws NamingException {
         InitialContext ctx = new InitialContext();
         TimedObjectTimerServiceBean bean = (TimedObjectTimerServiceBean) ctx.lookup("java:module/" + TimedObjectTimerServiceBean.class.getSimpleName());
         bean.resetTimerServiceCalled();
@@ -96,7 +96,7 @@ public class SimpleTimerServiceTestCase {
     }
 
     @Test
-    public void testIntervalTimer() throws NamingException {
+    public void test3IntervalTimer() throws NamingException {
         InitialContext ctx = new InitialContext();
         TimerConfig timerConfig = new TimerConfig();
         timerConfig.setInfo(INFO_MSG_FOR_CHECK);

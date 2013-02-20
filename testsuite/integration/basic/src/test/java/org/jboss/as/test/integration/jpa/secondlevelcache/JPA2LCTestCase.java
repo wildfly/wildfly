@@ -38,8 +38,10 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 
 /**
  * JPA Second level cache tests
@@ -47,6 +49,7 @@ import org.junit.runner.RunWith;
  * @author Scott Marlow and Zbynek Roubalik
  */
 @RunWith(Arquillian.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class JPA2LCTestCase {
 
     private static final String ARCHIVE_NAME = "jpa_SecondLevelCacheTestCase";
@@ -99,7 +102,7 @@ public class JPA2LCTestCase {
 
     
     @Test
-    public void testMultipleNonTXTransactionalEntityManagerInvocations() throws Exception {
+    public void test1MultipleNonTXTransactionalEntityManagerInvocations() throws Exception {
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
         sfsb1.createEmployee("Kelly Smith", "Watford, England", 1000);
         sfsb1.createEmployee("Alex Scott", "London, England", 2000);
@@ -126,7 +129,7 @@ public class JPA2LCTestCase {
     // When caching is disabled, no extra action is done or exception happens
  	// even if the code marks an entity and/or a query as cacheable
  	@Test
- 	public void testDisabledCache() throws Exception {
+ 	public void test2DisabledCache() throws Exception {
 
  		SFSB2LC sfsb = lookup("SFSB2LC", SFSB2LC.class);
  		String message = sfsb.disabled2LCCheck();
@@ -141,7 +144,7 @@ public class JPA2LCTestCase {
  	// when looking up for the ID of an entity which was returned by
  	// the original query, no SQL queries should be executed.
  	@Test
- 	public void testEntityCacheSameSession() throws Exception {
+ 	public void test3EntityCacheSameSession() throws Exception {
 
  		SFSB2LC sfsb = lookup("SFSB2LC", SFSB2LC.class);
  		String message = sfsb.sameSessionCheck(getCacheRegionName());
@@ -156,7 +159,7 @@ public class JPA2LCTestCase {
  	// when looking up for the ID of an entity which was returned by
  	// the original query, no SQL queries should be executed.
  	@Test
- 	public void testEntityCacheSecondSession() throws Exception {
+ 	public void test4EntityCacheSecondSession() throws Exception {
 
  		SFSB2LC sfsb = lookup("SFSB2LC", SFSB2LC.class);
  		String message = sfsb.secondSessionCheck(getCacheRegionName());
@@ -169,7 +172,7 @@ public class JPA2LCTestCase {
 
  	// Check if evicting entity second level cache is working as expected
 	@Test
- 	public void testEvictEntityCache() throws Exception {
+ 	public void test5EvictEntityCache() throws Exception {
 
  		SFSB2LC sfsb = lookup("SFSB2LC", SFSB2LC.class);
  		String message = sfsb.addEntitiesAndEvictAll(getCacheRegionName());
@@ -188,7 +191,7 @@ public class JPA2LCTestCase {
  	// When query caching is enabled, running the same query twice 
  	// without any operations between them will perform SQL queries only once.
  	@Test
- 	public void testSameQueryTwice() throws Exception {
+ 	public void test6SameQueryTwice() throws Exception {
 
  		SFSB2LC sfsb = lookup("SFSB2LC", SFSB2LC.class);
  	    String id = "1";
@@ -204,7 +207,7 @@ public class JPA2LCTestCase {
     //When query caching is enabled, running a query to return all entities of a class
     // and then adding one entity of such class would invalidate the cache
     @Test
-    public void testInvalidateQuery() throws Exception {
+    public void test7InvalidateQuery() throws Exception {
 
         SFSB2LC sfsb = lookup("SFSB2LC", SFSB2LC.class);
         String id = "2";
@@ -228,7 +231,7 @@ public class JPA2LCTestCase {
  	
  	// Check if evicting query cache is working as expected
  	@Test
- 	public void testEvictQueryCache() throws Exception {
+ 	public void test8EvictQueryCache() throws Exception {
 
  		SFSB2LC sfsb = lookup("SFSB2LC", SFSB2LC.class);
  		String id = "3";

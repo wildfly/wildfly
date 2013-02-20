@@ -75,7 +75,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <!-- Seems like a hacky way to pass multiple arguments, but it's the only way it worked. -->
-                    <fork>true</fork>
+                    <!--<fork>true</fork>-->
                     <compilerArgument>-Djava.endorsed.dirs=${project.build.directory}/endorsed" "-AgeneratedTranslationFilesPath=${project.build.directory}/generated-translation-files</compilerArgument>
                 </configuration>
             </plugin>

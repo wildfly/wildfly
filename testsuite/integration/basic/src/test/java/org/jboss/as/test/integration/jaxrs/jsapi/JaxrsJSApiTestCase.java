@@ -35,8 +35,10 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 
 /**
  * Tests the resteasy JavaScript API
@@ -45,6 +47,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class JaxrsJSApiTestCase {
 
 	private static final String depName = "jsapi";
@@ -87,7 +90,7 @@ public class JaxrsJSApiTestCase {
     }
 
     @Test
-    public void testJaxRsJSApis() throws Exception {
+    public void testWithJSApis() throws Exception {
         String result = performCall("/rest-JS");
         Assert.assertTrue(result.contains("var CustomerResource"));
     }

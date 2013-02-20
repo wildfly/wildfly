@@ -36,9 +36,11 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 
 /**
  * Validation of the system property substitution for expressions handling. Test for AS7-6120.
@@ -53,6 +55,7 @@ import org.junit.runner.RunWith;
  * @author <a href="ochaloup@jboss.com">Ondrej Chaloupka</a> 
  */
 @RunWith(Arquillian.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ExpressionSubstitutionInContainerTestCase {
     private static final Logger log = Logger.getLogger(ExpressionSubstitutionInContainerTestCase.class);
     
