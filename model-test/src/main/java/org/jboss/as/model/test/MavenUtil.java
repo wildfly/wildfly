@@ -33,8 +33,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.maven.repository.internal.DefaultServiceLocator;
 import org.apache.maven.repository.internal.MavenRepositorySystemSession;
-import org.apache.maven.repository.internal.MavenServiceLocator;
 import org.apache.maven.wagon.Wagon;
 import org.codehaus.plexus.DefaultPlexusContainer;
 import org.codehaus.plexus.PlexusContainer;
@@ -222,7 +222,7 @@ class MavenUtil {
          * using the prepopulated DefaultServiceLocator, we only need to
          * register the repository connector factories.
          */
-        MavenServiceLocator locator = new MavenServiceLocator();
+        DefaultServiceLocator locator = new DefaultServiceLocator();
         locator.addService(RepositoryConnectorFactory.class, FileRepositoryConnectorFactory.class);
         locator.addService(RepositoryConnectorFactory.class, WagonRepositoryConnectorFactory.class);
         locator.setServices(WagonProvider.class, new ManualWagonProvider());
