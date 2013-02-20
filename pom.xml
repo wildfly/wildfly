@@ -119,7 +119,7 @@
         <version.org.apache.juddi.scout>1.2.6</version.org.apache.juddi.scout>
         <version.org.apache.httpcomponents.httpclient>4.2.1</version.org.apache.httpcomponents.httpclient>
         <version.org.apache.httpcomponents.httpcore>4.2.1</version.org.apache.httpcomponents.httpcore>
-        <version.org.apache.maven>3.0.4</version.org.apache.maven>
+        <version.org.apache.maven>3.0.3</version.org.apache.maven>
         <version.org.apache.maven.wagon>2.2</version.org.apache.maven.wagon>
         <version.org.apache.maven.wagon.http-lightweight>2.2</version.org.apache.maven.wagon.http-lightweight>
         <version.org.apache.myfaces.core>2.1.8</version.org.apache.myfaces.core>
