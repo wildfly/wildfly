@@ -48,6 +48,13 @@ public final class EscapeCharacterState extends BaseParsingState {
 
     EscapeCharacterState() {
         super(ID);
+        setEnterHandler(new CharacterHandler(){
+            @Override
+            public void handle(ParsingContext ctx) throws CommandFormatException {
+                if(ctx.getLocation() + 1 < ctx.getInput().length() && ctx.getInput().charAt(ctx.getLocation() + 1) == '\\') {
+                    ctx.getCallbackHandler().character(ctx);
+                }
+            }});
     }
 
     @Override
