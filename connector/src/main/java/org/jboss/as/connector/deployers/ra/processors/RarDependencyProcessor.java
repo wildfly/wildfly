@@ -61,8 +61,8 @@ public class RarDependencyProcessor implements DeploymentUnitProcessor {
             return;  // Skip non ra deployments
         }
 
-        //if a module depends on a rar it also needs a dep on all the rar's dependencies
-        moduleSpecification.setRequiresTransitiveDependencies(true);
+        //if a module depends on a rar it also needs a dep on all the rar's "local dependencies"
+        moduleSpecification.setLocalDependenciesTransitive(true);
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JMS_ID, false, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, VALIDATION_ID, false, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, IRON_JACAMAR_ID, false, false, false, false));

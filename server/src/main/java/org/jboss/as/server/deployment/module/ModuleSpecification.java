@@ -53,6 +53,12 @@ public class ModuleSpecification extends SimpleAttachable {
      */
     private final List<ModuleDependency> localDependencies = new ArrayList<ModuleDependency>();
     /**
+     * If set to true this indicates that a dependency on this module requires a dependency on all it's local
+     * dependencies.
+     */
+    private boolean localDependenciesTransitive;
+
+    /**
      * User dependencies are dependencies that the user has specifically added, either via jboss-deployment-structure.xml
      * or via the manifest.
      * <p/>
@@ -83,12 +89,6 @@ public class ModuleSpecification extends SimpleAttachable {
      * Flag that indicates that this module should never be visible to other sub deployments
      */
     private boolean privateModule;
-
-    /**
-     * If set to true this indicates that a dependency on this module requires a dependency on all it's transitive
-     * dependencies.
-     */
-    private boolean requiresTransitiveDependencies;
 
     /**
      * Flag that indicates that local resources should come last in the dependencies list
@@ -227,12 +227,31 @@ public class ModuleSpecification extends SimpleAttachable {
         this.privateModule = privateModule;
     }
 
-    public boolean isRequiresTransitiveDependencies() {
-        return requiresTransitiveDependencies;
+    /**
+     * Returns true if the {@link #localDependencies} added for this {@link ModuleSpecification} should be made
+     * transitive (i.e. if any other module 'B' depends on the module 'A' represented by this {@link ModuleSpecification}, then
+     * module 'B' will be added with all "local dependencies" that are applicable for module "A"). Else returns false.
+     *
+     * @see {@link #localDependencies}
+     * @return
+     */
+    public boolean isLocalDependenciesTransitive() {
+        return localDependenciesTransitive;
     }
 
-    public void setRequiresTransitiveDependencies(final boolean requiresTransitiveDependencies) {
-        this.requiresTransitiveDependencies = requiresTransitiveDependencies;
+    /**
+     * Sets whether the {@link #localDependencies} applicable for this {@link ModuleSpecification} are to be treated as transitive dependencies
+     * for modules which depend on the module represented by this {@link ModuleSpecification}
+     *
+     * @param localDependenciesTransitive True if the {@link #localDependencies} added for this {@link ModuleSpecification} should be made
+     *                                    transitive (i.e. if any other module 'B' depends on the module 'A' represented by
+     *                                    this {@link ModuleSpecification}, then module 'B' will be added with
+     *                                    all "local dependencies" that are applicable for module "A"). False otherwise
+     * @see {@link #localDependencies}
+     * @return
+     */
+    public void setLocalDependenciesTransitive(final boolean localDependenciesTransitive) {
+        this.localDependenciesTransitive = localDependenciesTransitive;
     }
 
     public boolean isLocalLast() {
