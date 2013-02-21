@@ -44,6 +44,7 @@ import org.jboss.as.ee.component.deployers.EEModuleInitialProcessor;
 import org.jboss.as.ee.component.deployers.EEModuleNameProcessor;
 import org.jboss.as.ee.component.deployers.EarApplicationNameProcessor;
 import org.jboss.as.ee.component.deployers.EarMessageDestinationProcessor;
+import org.jboss.as.ee.naming.InApplicationClientBindingProcessor;
 import org.jboss.as.ee.component.deployers.InterceptorAnnotationProcessor;
 import org.jboss.as.ee.component.deployers.LifecycleAnnotationParsingProcessor;
 import org.jboss.as.ee.component.deployers.MessageDestinationResolutionProcessor;
@@ -51,6 +52,7 @@ import org.jboss.as.ee.component.deployers.ModuleJndiBindingProcessor;
 import org.jboss.as.ee.component.deployers.ResourceInjectionAnnotationParsingProcessor;
 import org.jboss.as.ee.component.deployers.ResourceReferenceProcessor;
 import org.jboss.as.ee.component.deployers.ResourceReferenceRegistrySetupProcessor;
+import org.jboss.as.ee.naming.InstanceNameBindingProcessor;
 import org.jboss.as.ee.structure.AppJBossAllParser;
 import org.jboss.as.ee.structure.DescriptorPropertyReplacementProcessor;
 import org.jboss.as.ee.managedbean.processors.JavaEEDependencyProcessor;
@@ -121,6 +123,8 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .addListener(verificationHandler)
                 .install();
 
+        final boolean appclient = context.getProcessType() == ProcessType.APPLICATION_CLIENT;
+
         final ModelNode globalModules = GlobalModulesDefinition.INSTANCE.resolveModelAttribute(context, model);
         // see if the ear subdeployment isolation flag is set. By default, we don't isolate subdeployments, so that
         // they can see each other's classes.
@@ -181,6 +185,8 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_ENV_ENTRY, new ResourceReferenceProcessor());
                 processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_INTERCEPTOR_ANNOTATIONS, new InterceptorAnnotationProcessor());
                 processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_NAMING_CONTEXT, new ModuleContextProcessor());
+                processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_IN_APP_CLIENT, new InApplicationClientBindingProcessor(appclient));
+                processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EE_INSTANCE_NAME, new InstanceNameBindingProcessor());
                 processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_APP_NAMING_CONTEXT, new ApplicationContextProcessor());
 
                 processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_RESOLVE_MESSAGE_DESTINATIONS, new MessageDestinationResolutionProcessor());
