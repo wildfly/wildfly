@@ -44,4 +44,16 @@ public interface TransformerEntry {
         }
     };
 
+    TransformerEntry DISCARD = new TransformerEntry() {
+
+        @Override
+        public ResourceTransformer getResourceTransformer() {
+            return ResourceTransformer.DISCARD;
+        }
+
+        @Override
+        public PathAddressTransformer getPathTransformation() {
+            return PathAddressTransformer.DEFAULT;
+        }
+    };
 }

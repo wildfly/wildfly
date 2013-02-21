@@ -93,7 +93,7 @@ public class TransformationTargetImpl implements TransformationTarget {
     @Override
     public ResourceTransformer resolveTransformer(final PathAddress address) {
         if (transformationExclusion != null && transformationExclusion.isResourceTransformationIgnored(address)) {
-            return ResourceTransformer.DEFAULT;
+            return ResourceTransformer.DISCARD;
         }
         OperationTransformerRegistry.ResourceTransformerEntry entry = registry.resolveResourceTransformer(address);
         if(entry == null) {
@@ -104,6 +104,9 @@ public class TransformationTargetImpl implements TransformationTarget {
 
     @Override
     public TransformerEntry getTransformerEntry(final PathAddress address) {
+        if (transformationExclusion != null && transformationExclusion.isResourceTransformationIgnored(address)) {
+            return TransformerEntry.DISCARD;
+        }
         return registry.getTransformerEntry(address);
     }
 
