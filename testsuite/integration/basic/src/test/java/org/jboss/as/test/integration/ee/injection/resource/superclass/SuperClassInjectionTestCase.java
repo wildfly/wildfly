@@ -41,12 +41,13 @@ import org.junit.runner.RunWith;
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
-public class BindingsOnInterceptorTestCase {
+public class SuperClassInjectionTestCase {
 
     @Deployment
     public static Archive<?> deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "multiple-bindings-superclass.war");
-        war.addClasses(Bean1.class, Bean2.class, BindingsOnInterceptorTestCase.class, SuperBean.class, SimpleManagedBean.class);
+        war.addClasses(Bean1.class, Bean2.class, SuperClassInjectionTestCase.class, SuperBean.class, SimpleManagedBean.class);
+        war.addAsWebInfResource(SuperClassInjectionTestCase.class.getPackage(), "web.xml", "web.xml");
         return war;
     }
 
@@ -72,5 +73,20 @@ public class BindingsOnInterceptorTestCase {
         Assert.assertTrue(result.getBean() instanceof SimpleManagedBean);
     }
 
+    //AS7-6500
+    @Test
+    public void testOverridenInjectionIsNotInjected() throws NamingException {
+        InitialContext context = new InitialContext();
+        Bean2 result = (Bean2) context.lookup("java:module/bean2");
+        Assert.assertEquals("string2", result.getSimpleString());
+        Assert.assertEquals(1, result.getSetCount());
 
+    }
+
+    @Test
+    public void testNoInjectionOnOverride() throws NamingException {
+        InitialContext context = new InitialContext();
+        Bean1 result = (Bean1) context.lookup("java:module/bean1");
+        Assert.assertNull(result.getSimpleString());
+    }
 }
