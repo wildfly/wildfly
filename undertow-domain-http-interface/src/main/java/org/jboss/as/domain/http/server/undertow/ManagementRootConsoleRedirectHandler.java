@@ -21,7 +21,6 @@
 */
 package org.jboss.as.domain.http.server.undertow;
 
-import io.undertow.server.HttpCompletionHandler;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.HttpHandlers;
@@ -43,9 +42,9 @@ class ManagementRootConsoleRedirectHandler implements HttpHandler {
     }
 
     @Override
-    public void handleRequest(HttpServerExchange exchange, HttpCompletionHandler completionHandler) {
+    public void handleRequest(HttpServerExchange exchange) {
         if (!exchange.getRequestMethod().equals(HTTP_GET)) {
-            HttpHandlers.executeHandler(Common.METHOD_NOT_ALLOWED_HANDLER, exchange, completionHandler);
+            HttpHandlers.executeHandler(Common.METHOD_NOT_ALLOWED_HANDLER, exchange);
             return;
         }
 
@@ -60,9 +59,9 @@ class ManagementRootConsoleRedirectHandler implements HttpHandler {
 
             System.out.println("---> Redirect to: " + redirect.toString());
 
-            HttpHandlers.executeHandler(Common.TEMPORARY_REDIRECT, exchange, completionHandler);
+            HttpHandlers.executeHandler(Common.TEMPORARY_REDIRECT, exchange);
         } else {
-            HttpHandlers.executeHandler(ResponseCodeHandler.HANDLE_404, exchange, completionHandler);
+            HttpHandlers.executeHandler(ResponseCodeHandler.HANDLE_404, exchange);
         }
     }
 }

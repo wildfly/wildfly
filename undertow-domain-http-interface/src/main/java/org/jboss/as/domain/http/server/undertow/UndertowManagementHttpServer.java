@@ -21,17 +21,14 @@
  */
 package org.jboss.as.domain.http.server.undertow;
 
-import static org.jboss.as.domain.http.server.undertow.UndertowHttpServerLogger.ROOT_LOGGER;
-import io.undertow.server.HttpOpenListener;
-import io.undertow.server.HttpTransferEncodingHandler;
-import io.undertow.server.handlers.CanonicalPathHandler;
-import io.undertow.server.handlers.PathHandler;
-import io.undertow.server.handlers.blocking.BlockingHandler;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 
+import io.undertow.server.HttpOpenListener;
+import io.undertow.server.handlers.CanonicalPathHandler;
+import io.undertow.server.handlers.PathHandler;
+import io.undertow.server.handlers.blocking.BlockingHandler;
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.domain.management.SecurityRealm;
@@ -49,6 +46,8 @@ import org.xnio.Xnio;
 import org.xnio.XnioWorker;
 import org.xnio.channels.AcceptingChannel;
 import org.xnio.channels.ConnectedStreamChannel;
+
+import static org.jboss.as.domain.http.server.undertow.UndertowHttpServerLogger.ROOT_LOGGER;
 
 /**
  * The general HTTP server for handling management API requests.
@@ -127,7 +126,7 @@ public class UndertowManagementHttpServer {
             ConsoleMode consoleMode, String consoleSlot)
             throws IOException {
 
-        HttpOpenListener openListener = new HttpOpenListener(new ByteBufferSlicePool(BufferAllocator.DIRECT_BYTE_BUFFER_ALLOCATOR, 8192, 8192 * 8192));
+        HttpOpenListener openListener = new HttpOpenListener(new ByteBufferSlicePool(BufferAllocator.DIRECT_BYTE_BUFFER_ALLOCATOR, 4096, 10 * 4096), 4096);
         setupOpenListener(openListener, modelControllerClient, consoleMode, consoleSlot, controlledProcessStateService);
         UndertowManagementHttpServer server = new UndertowManagementHttpServer(openListener, bindAddress, secureBindAddress, securityRealm);
 
@@ -138,8 +137,7 @@ public class UndertowManagementHttpServer {
 
     private static void setupOpenListener(HttpOpenListener listener, ModelControllerClient modelControllerClient, ConsoleMode consoleMode, String consoleSlot, ControlledProcessStateService controlledProcessStateService) {
         CanonicalPathHandler canonicalPathHandler = new CanonicalPathHandler();
-        HttpTransferEncodingHandler httpTransferEncodingHandler = new HttpTransferEncodingHandler(canonicalPathHandler);
-        listener.setRootHandler(httpTransferEncodingHandler);
+        listener.setRootHandler(canonicalPathHandler);
 
         PathHandler pathHandler = new PathHandler();
         canonicalPathHandler.setNext(pathHandler);
