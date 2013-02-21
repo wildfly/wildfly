@@ -151,7 +151,7 @@ public class HttpRequest {
         if (responseCode != HttpURLConnection.HTTP_OK) {
             final InputStream err = conn.getErrorStream();
             try {
-                throw new IOException(read(err));
+                throw new IOException("HTTP Status " + responseCode + " Response: " + read(err));
             }
             finally {
                 err.close();

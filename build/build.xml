@@ -512,7 +512,7 @@
         </module-def>
 
         <module-def name="javax.ws.rs.api">
-            <maven-resource group="org.jboss.spec.javax.ws.rs" artifact="jboss-jaxrs-api_1.1_spec"/>
+            <maven-resource group="org.jboss.resteasy" artifact="jaxrs-api"/>
         </module-def>
 
         <module-def name="javax.xml.bind.api">
@@ -984,9 +984,9 @@
         <module-def name="org.jboss.as.transactions">
             <maven-resource group="org.jboss.as" artifact="jboss-as-transactions"/>
         </module-def>
-    	
+
     	<module-def name="org.jboss.as.vault-tool" />
-        
+
     	<module-def name="org.jboss.as.version">
             <maven-resource group="org.jboss.as" artifact="jboss-as-version"/>
         </module-def>

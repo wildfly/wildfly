@@ -407,7 +407,7 @@
                     <groupId>org.jsoup</groupId>
                     <artifactId>jsoup</artifactId>
                 </dependency>
-                
+
                 <dependency>
                     <groupId>net.jcip</groupId>
                     <artifactId>jcip-annotations</artifactId>
@@ -1367,6 +1367,11 @@
 
                 <dependency>
                     <groupId>org.jboss.resteasy</groupId>
+                    <artifactId>jaxrs-api</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.resteasy</groupId>
                     <artifactId>resteasy-jaxrs</artifactId>
                 </dependency>
 
@@ -1563,11 +1568,6 @@
                 <dependency>
                     <groupId>org.jboss.spec.javax.transaction</groupId>
                     <artifactId>jboss-transaction-api_1.1_spec</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.jboss.spec.javax.ws.rs</groupId>
-                    <artifactId>jboss-jaxrs-api_1.1_spec</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1959,6 +1959,7 @@
                                         <include>org.jboss.remotingjmx:remoting-jmx</include>
                                         <include>org.jboss.sasl:jboss-sasl</include>
 
+                                        <include>org.jboss.resteasy:jaxrs-api</include>
                                         <include>org.jboss.spec.javax.annotation:jboss-annotations-api_1.1_spec</include>
                                         <include>org.jboss.spec.javax.ejb:jboss-ejb-api_3.1_spec</include>
                                         <include>org.jboss.spec.javax.el:jboss-el-api_2.2_spec</include>
@@ -1975,7 +1976,6 @@
                                         <include>org.jboss.spec.javax.servlet.jsp:jboss-jsp-api_2.2_spec</include>
                                         <include>org.jboss.spec.javax.servlet.jstl:jboss-jstl-api_1.2_spec</include>
                                         <include>org.jboss.spec.javax.transaction:jboss-transaction-api_1.1_spec</include>
-                                        <include>org.jboss.spec.javax.ws.rs:jboss-jaxrs-api_1.1_spec</include>
                                         <include>org.jboss.spec.javax.xml.bind:jboss-jaxb-api_2.2_spec</include>
                                         <include>org.jboss.spec.javax.xml.registry:jboss-jaxr-api_1.0_spec</include>
                                         <include>org.jboss.spec.javax.xml.rpc:jboss-jaxrpc-api_1.1_spec</include>
@@ -2892,7 +2892,7 @@
                                             <title>Module org.jsoup</title>
                                             <packages>org.jsoup:org.jsoup.examples:org.jsoup.helper:org.jsoup.nodes:org.jsoup.parser:org.jsoup.safety:org.jsoup.select</packages>
                                         </group>
-                                        
+
                                         <!--
                                         <group>
                                             <title>Module org.kohsuke.rngom</title>
