@@ -170,8 +170,8 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
             addResourceRoot(specBuilder, resourceRoot);
         }
 
-        createDependencies(specBuilder, dependencies, moduleSpecification.isRequiresTransitiveDependencies());
-        createDependencies(specBuilder, userDependencies, moduleSpecification.isRequiresTransitiveDependencies());
+        createDependencies(specBuilder, dependencies, false);
+        createDependencies(specBuilder, userDependencies, false);
 
         if (moduleSpecification.isLocalLast()) {
             createDependencies(specBuilder, localDependencies, moduleSpecification.isRequiresTransitiveDependencies());
