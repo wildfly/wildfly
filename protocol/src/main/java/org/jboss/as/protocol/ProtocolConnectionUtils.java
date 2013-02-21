@@ -42,6 +42,7 @@ import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -157,7 +158,27 @@ public class ProtocolConnectionUtils {
         try {
             final String hostName = uri.getHost();
             final InetAddress address = InetAddress.getByName(hostName);
-            final NetworkInterface nic = NetworkInterface.getByInetAddress(address);
+            NetworkInterface nic;
+            if (address.isLinkLocalAddress()) {
+                /*
+                 * AS7-6382 On Windows the getByInetAddress was not identifying a NIC where the address did not have the zone
+                 * ID, this manual iteration does allow for the address to be matched.
+                 */
+                Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+                nic = null;
+                while (interfaces.hasMoreElements() && nic == null) {
+                    NetworkInterface current = interfaces.nextElement();
+                    Enumeration<InetAddress> addresses = current.getInetAddresses();
+                    while (addresses.hasMoreElements() && nic == null) {
+                        InetAddress currentAddress = addresses.nextElement();
+                        if (address.equals(currentAddress)) {
+                            nic = current;
+                        }
+                    }
+                }
+            } else {
+                nic = NetworkInterface.getByInetAddress(address);
+            }
             return address.isLoopbackAddress() || nic != null;
         } catch (Exception e) {
             return false;
