@@ -419,6 +419,8 @@ public enum Phase {
     public static final int POST_MODULE_CMP_STORE_MANAGER               = 0x2500;
     public static final int POST_MODULE_EJB_IIOP                        = 0x2600;
     public static final int POST_MODULE_POJO                            = 0x2700;
+    public static final int POST_MODULE_IN_APP_CLIENT                   = 0x2780;
+    public static final int POST_MODULE_EE_INSTANCE_NAME                = 0x2790;
     public static final int POST_MODULE_NAMING_CONTEXT                  = 0x2800;
     public static final int POST_MODULE_APP_NAMING_CONTEXT              = 0x2900;
     public static final int POST_MODULE_CACHED_CONNECTION_MANAGER       = 0x2A00;
