@@ -191,7 +191,7 @@
         <version.org.jboss.remote-naming>1.0.5.Final</version.org.jboss.remote-naming>
         <version.org.jboss.remoting3>3.2.15.GA</version.org.jboss.remoting3>
         <version.org.jboss.remotingjmx.remoting-jmx>1.1.0.Final</version.org.jboss.remotingjmx.remoting-jmx>
-        <version.org.jboss.resteasy>2.3.5.Final</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>3.0-beta-3</version.org.jboss.resteasy>
         <version.org.jboss.sasl>1.0.3.Final</version.org.jboss.sasl>
         <version.org.jboss.seam.int>6.0.0.GA</version.org.jboss.seam.int>
         <version.org.jboss.security.jboss-negotiation>2.2.2.Final</version.org.jboss.security.jboss-negotiation>
@@ -218,7 +218,6 @@
         <version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.2_spec>1.0.1.Final</version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.2_spec>
         <version.org.jboss.spec.javax.servlet.jstl.jboss-jstl-api_1.2_spec>1.0.3.Final</version.org.jboss.spec.javax.servlet.jstl.jboss-jstl-api_1.2_spec>
         <version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.1_spec>1.0.1.Final</version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.1_spec>
-        <version.org.jboss.spec.javax.ws.rs.jboss-jaxrs-api_1.1_spec>1.0.1.Final</version.org.jboss.spec.javax.ws.rs.jboss-jaxrs-api_1.1_spec>
         <version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.2_spec>1.0.4.Final</version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.2_spec>
         <version.org.jboss.spec.javax.xml.registry.jboss-jaxr-api_1.0_spec>1.0.2.Final</version.org.jboss.spec.javax.xml.registry.jboss-jaxr-api_1.0_spec>
         <version.org.jboss.spec.javax.xml.rpc.jboss-jaxrpc-api_1.1_spec>1.0.1.Final</version.org.jboss.spec.javax.xml.rpc.jboss-jaxrpc-api_1.1_spec>
@@ -4885,6 +4884,12 @@
 
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
+                <artifactId>jaxrs-api</artifactId>
+                <version>${version.org.jboss.resteasy}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-jaxrs</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
                 <exclusions>
@@ -5312,12 +5317,6 @@
                 <groupId>org.jboss.spec.javax.xml.soap</groupId>
                 <artifactId>jboss-saaj-api_1.3_spec</artifactId>
                 <version>${version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.3_spec}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.spec.javax.ws.rs</groupId>
-                <artifactId>jboss-jaxrs-api_1.1_spec</artifactId>
-                <version>${version.org.jboss.spec.javax.ws.rs.jboss-jaxrs-api_1.1_spec}</version>
             </dependency>
 
             <dependency>

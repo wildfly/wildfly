@@ -32,10 +32,12 @@
         <module name="javax.api"/>
         <module name="javax.annotation.api"/>
         <module name="javax.activation.api"/>
+        <module name="javax.validation.api"/>
         <module name="javax.ws.rs.api"/>
         <module name="org.apache.commons.codec" />
         <module name="org.apache.httpcomponents" />
         <module name="org.apache.log4j"/>
+        <module name="org.hibernate.validator"/>
         <module name="org.scannotation.scannotation" />
         <module name="org.slf4j" />
         <module name="javax.servlet.api"/>

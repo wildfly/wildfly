@@ -40,6 +40,11 @@
   <dependencies>
 
     <!-- Export out the EE Specs and demos -->
+
+    <dependency>
+      <groupId>org.jboss.resteasy</groupId>
+      <artifactId>jaxrs-api</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.jboss.spec.javax.ejb</groupId>
       <artifactId>jboss-ejb-api_3.1_spec</artifactId>
@@ -91,10 +96,6 @@
     <dependency>
       <groupId>org.jboss.spec.javax.transaction</groupId>
       <artifactId>jboss-transaction-api_1.1_spec</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.spec.javax.ws.rs</groupId>
-      <artifactId>jboss-jaxrs-api_1.1_spec</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jboss.spec.javax.xml.bind</groupId>
@@ -149,7 +150,7 @@
       <artifactId>jboss-j2eemgmt-api_1.1_spec</artifactId>
     </dependency>
   </dependencies>
-  
+
   <!-- Modules -->
   <modules>
     <module>test</module>
