@@ -40,8 +40,10 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 
 /**
  * This testcase verifies whether Envers/Auditing functions properly when implemented with Validity Audit Strategy
@@ -49,6 +51,7 @@ import org.junit.runner.RunWith;
  * @author Madhumita Sadhukhan
  */
 @RunWith(Arquillian.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ImplementValidityAuditStrategyTestCase {
     private static final String ARCHIVE_NAME = "jpa_ImplementValidityAuditStrategyTestCase";
 

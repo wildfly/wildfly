@@ -30,13 +30,16 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 
 /**
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EjbMethodInterceptorTestCase {
 
     @Deployment
@@ -48,7 +51,7 @@ public class EjbMethodInterceptorTestCase {
     }
 
     @Test
-    public void testMethodLevelInterceptors() throws NamingException {
+    public void testAMethodLevelInterceptors() throws NamingException {
         final InitialContext ctx = new InitialContext();
         final ClassifiedBean bean = (ClassifiedBean) ctx.lookup("java:module/" + ClassifiedBean.class.getSimpleName());
 
