@@ -21,18 +21,6 @@
 */
 package org.jboss.as.domain.http.server.undertow;
 
-import static org.jboss.as.domain.http.server.undertow.UndertowHttpServerMessages.MESSAGES;
-import io.undertow.server.HttpServerExchange;
-import io.undertow.server.handlers.HttpHandlers;
-import io.undertow.server.handlers.ResponseCodeHandler;
-import io.undertow.server.handlers.blocking.BlockingHttpHandler;
-import io.undertow.server.handlers.blocking.BlockingHttpServerExchange;
-import io.undertow.util.HeaderMap;
-import io.undertow.util.Headers;
-import io.undertow.util.HttpString;
-import io.undertow.util.Methods;
-import io.undertow.util.StatusCodes;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -52,10 +40,22 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 
+import io.undertow.io.UndertowOutputStream;
+import io.undertow.server.HttpServerExchange;
+import io.undertow.server.handlers.HttpHandlers;
+import io.undertow.server.handlers.ResponseCodeHandler;
+import io.undertow.server.handlers.blocking.BlockingHttpHandler;
+import io.undertow.util.HeaderMap;
+import io.undertow.util.Headers;
+import io.undertow.util.HttpString;
+import io.undertow.util.Methods;
+import io.undertow.util.StatusCodes;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.xnio.IoUtils;
+
+import static org.jboss.as.domain.http.server.undertow.UndertowHttpServerMessages.MESSAGES;
 
 /**
  *
@@ -100,13 +100,12 @@ class ResourceHandler implements BlockingHttpHandler {
         return context;
     }
 
-    public void handleRequest(BlockingHttpServerExchange blockingExchange) {
-        final HttpServerExchange exchange = blockingExchange.getExchange();
+    public void handleBlockingRequest(HttpServerExchange exchange) {
         final HttpString requestMethod = exchange.getRequestMethod();
 
         // only GET supported
         if (!Methods.GET.equals(requestMethod)) {
-            HttpHandlers.executeHandler(Common.METHOD_NOT_ALLOWED_HANDLER, exchange, blockingExchange.getCompletionHandler());
+            HttpHandlers.executeHandler(Common.METHOD_NOT_ALLOWED_HANDLER, exchange);
             return;
         }
 
@@ -121,10 +120,10 @@ class ResourceHandler implements BlockingHttpHandler {
              */
             HeaderMap responseHeaders = exchange.getResponseHeaders();
             responseHeaders.add(Headers.LOCATION, getDefaultPath());
-            HttpHandlers.executeHandler(Common.TEMPORARY_REDIRECT, exchange, blockingExchange.getCompletionHandler());
+            HttpHandlers.executeHandler(Common.TEMPORARY_REDIRECT, exchange);
             return;
         } else if (!resource.contains(".")) {
-            HttpHandlers.executeHandler(ResponseCodeHandler.HANDLE_404, exchange, blockingExchange.getCompletionHandler());
+            HttpHandlers.executeHandler(ResponseCodeHandler.HANDLE_404, exchange);
             return;
         }
 
@@ -134,7 +133,7 @@ class ResourceHandler implements BlockingHttpHandler {
          */
         if (resource.startsWith("META-INF")) {
             //Forbidden
-            HttpHandlers.executeHandler(ResponseCodeHandler.HANDLE_403, exchange, blockingExchange.getCompletionHandler());
+            HttpHandlers.executeHandler(ResponseCodeHandler.HANDLE_403, exchange);
             return;
         }
 
@@ -168,7 +167,7 @@ class ResourceHandler implements BlockingHttpHandler {
                 exchange.setResponseCode(StatusCodes.CODE_200.getCode());
 
                 // nio write
-                OutputStream outputStream = blockingExchange.getOutputStream();
+                OutputStream outputStream = new UndertowOutputStream(exchange);
                 try {
                     fastChannelCopy(inputStream, outputStream);
                     outputStream.flush();
@@ -182,7 +181,7 @@ class ResourceHandler implements BlockingHttpHandler {
             }
 
         } else {
-            HttpHandlers.executeHandler(ResponseCodeHandler.HANDLE_404, exchange, blockingExchange.getCompletionHandler());
+            HttpHandlers.executeHandler(ResponseCodeHandler.HANDLE_404, exchange);
         }
 
     }

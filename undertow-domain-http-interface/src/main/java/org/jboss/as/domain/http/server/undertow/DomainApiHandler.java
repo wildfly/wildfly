@@ -21,26 +21,6 @@
 */
 package org.jboss.as.domain.http.server.undertow;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.domain.http.server.undertow.UndertowHttpServerLogger.ROOT_LOGGER;
-import static org.jboss.as.domain.http.server.undertow.UndertowHttpServerMessages.MESSAGES;
-import io.undertow.server.HttpServerExchange;
-import io.undertow.server.handlers.blocking.BlockingHttpHandler;
-import io.undertow.server.handlers.blocking.BlockingHttpServerExchange;
-import io.undertow.util.HeaderMap;
-import io.undertow.util.Headers;
-import io.undertow.util.Methods;
-import io.undertow.util.StatusCodes;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -53,10 +33,31 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import io.undertow.server.HttpServerExchange;
+import io.undertow.server.handlers.blocking.BlockingHttpHandler;
+import io.undertow.util.HeaderMap;
+import io.undertow.util.Headers;
+import io.undertow.util.Methods;
+import io.undertow.util.StatusCodes;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.dmr.ModelNode;
 import org.xnio.IoUtils;
+import org.xnio.streams.ChannelInputStream;
+import org.xnio.streams.ChannelOutputStream;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.domain.http.server.undertow.UndertowHttpServerLogger.ROOT_LOGGER;
+import static org.jboss.as.domain.http.server.undertow.UndertowHttpServerMessages.MESSAGES;
 
 /**
  *
@@ -97,8 +98,7 @@ class DomainApiHandler implements BlockingHttpHandler {
     }
 
     @Override
-    public void handleRequest(BlockingHttpServerExchange blockingExchange) {
-        HttpServerExchange exchange = blockingExchange.getExchange();
+    public void handleBlockingRequest(HttpServerExchange exchange) {
 
         ModelNode dmr;
         ModelNode response;
@@ -109,10 +109,10 @@ class DomainApiHandler implements BlockingHttpHandler {
 
         final boolean get = exchange.getRequestMethod().equals(Methods.GET);
         try {
-            dmr = get ? convertGetRequest(exchange) : convertPostRequest(blockingExchange, encode);
+            dmr = get ? convertGetRequest(exchange) : convertPostRequest(exchange, encode);
         } catch (Exception e) {
             ROOT_LOGGER.debugf("Unable to construct ModelNode '%s'", e.getMessage());
-            Common.sendError(blockingExchange, get, e.getLocalizedMessage());
+            Common.sendError(exchange, get, e.getLocalizedMessage());
             return;
         }
 
@@ -120,22 +120,22 @@ class DomainApiHandler implements BlockingHttpHandler {
             response = modelController.execute(new OperationBuilder(dmr).build());
         } catch (Throwable t) {
             ROOT_LOGGER.modelRequestError(t);
-            Common.sendError(blockingExchange, get, t.getLocalizedMessage());
+            Common.sendError(exchange, get, t.getLocalizedMessage());
             return;
         }
 
         if (response.hasDefined(OUTCOME) && FAILED.equals(response.get(OUTCOME).asString())) {
-            Common.sendError(blockingExchange, get, response.get(FAILURE_DESCRIPTION).asString());
+            Common.sendError(exchange, get, response.get(FAILURE_DESCRIPTION).asString());
             return;
         }
 
         boolean pretty = dmr.hasDefined("json.pretty") && dmr.get("json.pretty").asBoolean();
 
-        writeResponse(blockingExchange, get, pretty, response, StatusCodes.CODE_200.getCode(), encode);
+        writeResponse(exchange, get, pretty, response, StatusCodes.CODE_200.getCode(), encode);
     }
 
-    private ModelNode convertPostRequest(BlockingHttpServerExchange exchange, boolean encode) throws IOException {
-        InputStream in = exchange.getInputStream();
+    private ModelNode convertPostRequest(HttpServerExchange exchange, boolean encode) throws IOException {
+        InputStream in = new ChannelInputStream(exchange.getRequestChannel());
         try {
             return encode ? ModelNode.fromBase64(in) : ModelNode.fromJSONStream(in);
         } finally {
@@ -204,9 +204,8 @@ class DomainApiHandler implements BlockingHttpHandler {
         }
     }
 
-    static void writeResponse(BlockingHttpServerExchange blockingExchange, boolean isGet, boolean pretty, ModelNode response, int status, boolean encode) {
+    static void writeResponse(HttpServerExchange exchange, boolean isGet, boolean pretty, ModelNode response, int status, boolean encode) {
         final String contentType = encode ? Common.APPLICATION_DMR_ENCODED : Common.APPLICATION_JSON;
-        final HttpServerExchange exchange = blockingExchange.getExchange();
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, contentType  + ";" + Common.UTF_8);
         exchange.setResponseCode(status);
 
@@ -216,7 +215,7 @@ class DomainApiHandler implements BlockingHttpHandler {
             response = response.get(RESULT);
         }
 
-        OutputStream out = blockingExchange.getOutputStream();
+        OutputStream out = new ChannelOutputStream(exchange.getResponseChannel());
         PrintWriter print = new PrintWriter(out);
         try {
             try {

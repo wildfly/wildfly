@@ -21,28 +21,28 @@
 */
 package org.jboss.as.domain.http.server.undertow;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.domain.http.server.undertow.UndertowHttpServerLogger.ROOT_LOGGER;
-import io.undertow.server.HttpServerExchange;
-import io.undertow.server.handlers.blocking.BlockingHttpHandler;
-import io.undertow.server.handlers.blocking.BlockingHttpServerExchange;
-import io.undertow.server.handlers.form.FormData;
-import io.undertow.server.handlers.form.FormData.FormValue;
-import io.undertow.server.handlers.form.FormDataParser;
-import io.undertow.util.Headers;
-import io.undertow.util.StatusCodes;
-
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.PrintWriter;
 
+import io.undertow.server.HttpServerExchange;
+import io.undertow.server.handlers.blocking.BlockingHttpHandler;
+import io.undertow.server.handlers.form.FormData;
+import io.undertow.server.handlers.form.FormData.FormValue;
+import io.undertow.server.handlers.form.FormDataParser;
+import io.undertow.util.Headers;
+import io.undertow.util.StatusCodes;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.dmr.ModelNode;
 import org.xnio.IoUtils;
+import org.xnio.streams.ChannelOutputStream;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.domain.http.server.undertow.UndertowHttpServerLogger.ROOT_LOGGER;
 
 /**
  *
@@ -57,8 +57,7 @@ class DomainApiUploadHandler implements BlockingHttpHandler{
     }
 
     @Override
-    public void handleRequest(BlockingHttpServerExchange blockingExchange) throws Exception {
-        final HttpServerExchange exchange = blockingExchange.getExchange();
+    public void handleBlockingRequest(HttpServerExchange exchange) throws Exception {
         final FormDataParser parser = exchange.getAttachment(FormDataParser.ATTACHMENT_KEY);
         FormData data = parser.parse().get();
         for (String fieldName : data) {
@@ -77,34 +76,33 @@ class DomainApiUploadHandler implements BlockingHttpHandler{
                     operation.addInputStream(in);
                     response = modelController.execute(operation.build());
                     if (!response.get(OUTCOME).asString().equals(SUCCESS)){
-                        Common.sendError(blockingExchange, false, response.get(FAILURE_DESCRIPTION).asString());
+                        Common.sendError(exchange, false, response.get(FAILURE_DESCRIPTION).asString());
                         return;
                     }
                 } catch (Throwable t) {
                     // TODO Consider draining input stream
                     ROOT_LOGGER.uploadError(t);
-                    Common.sendError(blockingExchange, false, t.getLocalizedMessage());
+                    Common.sendError(exchange, false, t.getLocalizedMessage());
                     return;
                 } finally {
                     IoUtils.safeClose(in);
                 }
 
                 // TODO Determine what format the response should be in for a deployment upload request.
-                writeResponse(blockingExchange, response, Common.TEXT_HTML);
+                writeResponse(exchange, response, Common.TEXT_HTML);
                 return; //Ignore later files
             }
         }
-        Common.sendError(blockingExchange, false, "No file found"); //TODO i18n
+        Common.sendError(exchange, false, "No file found"); //TODO i18n
     }
 
-    static void writeResponse(BlockingHttpServerExchange blockingExchange, ModelNode response, String contentType) {
-        HttpServerExchange exchange = blockingExchange.getExchange();
+    static void writeResponse(HttpServerExchange exchange, ModelNode response, String contentType) {
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, contentType  + ";" + Common.UTF_8);
         exchange.setResponseCode(StatusCodes.CODE_200.getCode());
 
         //TODO Content-Length?
 
-        PrintWriter print = new PrintWriter(blockingExchange.getOutputStream());
+        PrintWriter print = new PrintWriter(new ChannelOutputStream(exchange.getResponseChannel()));
         try {
             response.writeJSONString(print, true);
         } finally {

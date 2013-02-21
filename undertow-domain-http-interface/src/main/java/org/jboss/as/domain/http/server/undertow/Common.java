@@ -21,16 +21,11 @@
 */
 package org.jboss.as.domain.http.server.undertow;
 
+import io.undertow.io.IoCallback;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.ResponseCodeHandler;
-import io.undertow.server.handlers.blocking.BlockingHttpServerExchange;
 import io.undertow.util.Headers;
 import io.undertow.util.StatusCodes;
-
-import java.io.IOException;
-import java.io.OutputStream;
-
-import org.xnio.IoUtils;
 
 /**
  *
@@ -58,26 +53,12 @@ public class Common {
     static String UTF_8 = "utf-8";
     static final String GMT = "GMT";
 
-    static void sendError(BlockingHttpServerExchange blockingExchange, boolean isGet, String msg) {
+    static void sendError(HttpServerExchange exchange, boolean isGet, String msg) {
         byte[] bytes = msg.getBytes();
-        HttpServerExchange exchange = blockingExchange.getExchange();
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, TEXT_PLAIN + ";" + UTF_8);
         exchange.getResponseHeaders().put(Headers.CONTENT_LENGTH, String.valueOf(bytes.length));
         exchange.setResponseCode(StatusCodes.CODE_500.getCode());
 
-        OutputStream out = blockingExchange.getOutputStream();
-        try {
-            try {
-                out.write(msg.getBytes());
-            } finally {
-                try {
-                    out.flush();
-                } finally {
-                    IoUtils.safeClose(out);
-                }
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        exchange.getResponseSender().send(msg, IoCallback.END_EXCHANGE);
     }
 }
