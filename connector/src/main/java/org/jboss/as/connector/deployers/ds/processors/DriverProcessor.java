@@ -73,7 +73,7 @@ public final class DriverProcessor implements DeploymentUnitProcessor {
                         DEPLOYER_JDBC_LOGGER.deployingNonCompliantJdbcDriver(driverClass, Integer.valueOf(majorVersion),
                                 Integer.valueOf(minorVersion));
                     }
-                    String driverName = driverNames.size() == 1 ? deploymentUnit.getName() : deploymentUnit.getName() + driverClassName + "_" + majorVersion +"_" + minorVersion;
+                    String driverName = deploymentUnit.getName() + "_" + driverClassName + "_" + majorVersion +"_" + minorVersion;
                     InstalledDriver driverMetadata = new InstalledDriver(driverName, driverClass.getName(), null, null, majorVersion,
                             minorVersion, compliant);
                     DriverService driverService = new DriverService(driverMetadata, driver);
