@@ -22,9 +22,12 @@
 
 package org.jboss.as.host.controller.operations;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.host.controller.HostControllerEnvironment;
+import org.jboss.as.host.controller.discovery.DiscoveryOption;
 
 /**
  * Default implementation of {@link LocalHostControllerInfo}.
@@ -45,6 +48,7 @@ public class LocalHostControllerInfoImpl implements LocalHostControllerInfo {
     private int remoteDcPort;
     private String remoteDCUser;
     private String remoteSecurityRealm;
+    private List<DiscoveryOption> remoteDiscoveryOptions = new ArrayList<DiscoveryOption>();
     private String httpManagementInterface;
     private int httpManagementPort;
     private int httpManagementSecurePort;
@@ -112,20 +116,16 @@ public class LocalHostControllerInfoImpl implements LocalHostControllerInfo {
         return httpManagementSecurityRealm;
     }
 
-    public String getRemoteDomainControllerHost() {
-        return remoteDcHost;
-    }
-
-    public int getRemoteDomainControllerPort() {
-        return remoteDcPort;
-    }
-
     public String getRemoteDomainControllerUsername() {
         return remoteDCUser;
     }
 
     public String getRemoteDomainControllerSecurityRealm() {
         return remoteSecurityRealm;
+    }
+
+    public List<DiscoveryOption> getRemoteDomainControllerDiscoveryOptions() {
+        return remoteDiscoveryOptions;
     }
 
     void setMasterDomainController(boolean master) {
@@ -174,5 +174,9 @@ public class LocalHostControllerInfoImpl implements LocalHostControllerInfo {
 
     void setRemoteDomainControllerSecurityRealm(String remoteSecurityRealm) {
         this.remoteSecurityRealm = remoteSecurityRealm;
+    }
+
+    void addRemoteDomainControllerDiscoveryOption(DiscoveryOption discoveryOption) {
+        this.remoteDiscoveryOptions.add(discoveryOption);
     }
 }

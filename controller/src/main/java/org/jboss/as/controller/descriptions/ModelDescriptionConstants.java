@@ -85,6 +85,8 @@ public class ModelDescriptionConstants {
     public static final String DIRECTORY = "directory";
     public static final String DIRECTORY_GROUPING = "directory-grouping";
     public static final String DISABLE = "disable";
+    public static final String DISCOVERY_OPTION = "discovery-option";
+    public static final String DISCOVERY_OPTIONS = "discovery-options";
     public static final String DOMAIN = "domain";
     public static final String DOMAIN_FAILURE_DESCRIPTION = "domain-failure-description";
     public static final String DOMAIN_CONTROLLER = "domain-controller";
@@ -272,6 +274,7 @@ public class ModelDescriptionConstants {
     public static final String SSL = "ssl";
     public static final String START = "start";
     public static final String START_SERVERS = "start-servers";
+    public static final String STATIC_DISCOVERY = "static-discovery";
     public static final String STATUS = "status";
     public static final String STEPS = "steps";
     public static final String STOP = "stop";

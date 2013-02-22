@@ -922,14 +922,31 @@
         </xs:choice>
     </xs:complexType>
 
-    <xs:complexType name="domain-controller-localType" />
+    <xs:complexType name="domain-controller-localType">
+        <xs:sequence>
+            <xs:element name="discovery-options" type="discovery-optionsType" minOccurs="0" />
+        </xs:sequence> 
+    </xs:complexType>
 
     <xs:complexType name="domain-controller-remoteType">
         <xs:sequence>
             <xs:element name="ignored-resources" type="ignored-resourcesType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="discovery-options" type="discovery-optionsType" minOccurs="0"/>
         </xs:sequence>
-        <xs:attribute name="host" type="xs:string" use="required" />
-        <xs:attribute name="port" type="xs:integer" use="required" />
+        <xs:attribute name="host" type="xs:string" use="optional" >
+            <xs:annotation>
+                <xs:documentation>
+                    The remote domain controller's host name. If not set, a discovery option must be provided.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="port" type="xs:integer" use="optional" >
+            <xs:annotation>
+                <xs:documentation>
+                    The remote domain controller's port. If not set, a discovery option must be provided.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
         <xs:attribute name="security-realm" type="xs:string" use="optional" />
         <xs:attribute name="username" type="xs:string" use="optional" />
     </xs:complexType>
@@ -975,6 +992,64 @@
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="name" type="xs:string" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="discovery-optionsType">
+        <xs:sequence>
+            <xs:element name="discovery-option" type="discovery-optionType" minOccurs="0" maxOccurs="unbounded" />
+            <xs:element name="static-discovery" type="static-discoveryType" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="discovery-optionType">
+        <xs:sequence>
+            <xs:element name="property" type="propertyType" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The name for this domain controller discovery option.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="code" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The fully qualified class name for the DiscoveryOption implementation.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="module" type="xs:string" use="optional" default="org.jboss.as.host-controller">
+            <xs:annotation>
+                <xs:documentation>
+                    The module to load the DiscoveryOption implementation from.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="static-discoveryType">
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The name for this domain controller discovery option.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="host" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The remote domain controller's host name.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="port" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The remote domain controller's port.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="serversType">
