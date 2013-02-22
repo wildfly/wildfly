@@ -67,7 +67,6 @@ import org.jboss.osgi.framework.spi.BundleLifecycle;
 import org.jboss.osgi.framework.spi.BundleLifecyclePlugin;
 import org.jboss.osgi.framework.spi.BundleManager;
 import org.jboss.osgi.framework.spi.FutureServiceValue;
-import org.jboss.osgi.framework.spi.ServiceTracker;
 import org.jboss.osgi.resolver.XBundle;
 import org.jboss.osgi.resolver.XEnvironment;
 import org.jboss.osgi.resolver.XResolveContext;
