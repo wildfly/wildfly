@@ -26,9 +26,8 @@ import javax.ejb.SessionBean;
 
 /**
  * @author Ondrej Chaloupka
- *
  */
-public class StatelessBeanDD extends StatelessBeanBase implements SessionBean  {
+public class StatelessBeanDD extends StatelessBeanBase implements SessionBean {
     private static final long serialVersionUID = 1L;
-    
+
 }

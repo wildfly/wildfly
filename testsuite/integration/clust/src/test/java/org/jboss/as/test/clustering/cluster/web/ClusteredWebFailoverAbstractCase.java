@@ -62,7 +62,7 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
 
     /**
      * Test simple graceful shutdown failover:
-     *
+     * <p/>
      * 1/ Start 2 containers and deploy <distributable/> webapp.
      * 2/ Query first container creating a web session.
      * 3/ Shutdown first container.
@@ -72,7 +72,7 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
      *
      * @throws IOException
      * @throws InterruptedException
-     * @throws URISyntaxException 
+     * @throws URISyntaxException
      */
     @Test
     @InSequence(1)
@@ -88,7 +88,7 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
 
         try {
             this.establishView(client, baseURL1, NODE_1, NODE_2);
-            
+
             HttpResponse response = client.execute(new HttpGet(url1));
             try {
                 log.info("Requested " + url1 + ", got " + response.getFirstHeader("value").getValue() + ".");
@@ -112,7 +112,7 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
             stop(CONTAINER_1);
 
             this.establishView(client, baseURL2, NODE_2);
-            
+
             // Now check on the 2nd server
 
             // Note that this DOES rely on the fact that both servers are running on the "same" domain,
@@ -140,7 +140,7 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
             start(CONTAINER_1);
 
             this.establishView(client, baseURL2, NODE_1, NODE_2);
-            
+
             // Lets wait for the cluster to update membership and tranfer state.
 
             response = client.execute(new HttpGet(url1));
@@ -170,7 +170,7 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
 
     /**
      * Test simple undeploy failover:
-     *
+     * <p/>
      * 1/ Start 2 containers and deploy <distributable/> webapp.
      * 2/ Query first container creating a web session.
      * 3/ Undeploy application from the first container.
@@ -180,7 +180,7 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
      *
      * @throws IOException
      * @throws InterruptedException
-     * @throws URISyntaxException 
+     * @throws URISyntaxException
      */
     @Test
     @InSequence(2)
@@ -196,7 +196,7 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
 
         try {
             this.establishView(client, baseURL1, NODE_1, NODE_2);
-            
+
             HttpResponse response = client.execute(new HttpGet(url1));
             try {
                 log.info("Requested " + url1 + ", got " + response.getFirstHeader("value").getValue() + ".");
@@ -220,7 +220,7 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
             undeploy(DEPLOYMENT_1);
 
             this.establishView(client, baseURL2, NODE_2);
-            
+
             // Now check on the 2nd server
 
             // Note that this DOES rely on the fact that both servers are running on the "same" domain,
@@ -248,7 +248,7 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
             deploy(DEPLOYMENT_1);
 
             this.establishView(client, baseURL2, NODE_1, NODE_2);
-            
+
             response = client.execute(new HttpGet(url1));
             try {
                 log.info("Requested " + url1 + ", got " + response.getFirstHeader("value").getValue() + ".");

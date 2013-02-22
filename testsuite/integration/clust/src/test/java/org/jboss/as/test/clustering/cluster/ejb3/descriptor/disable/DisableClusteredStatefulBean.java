@@ -29,7 +29,7 @@ import org.jboss.ejb3.annotation.Clustered;
 
 /**
  * Test for EJBTHREE-1346. The @Clustered is overridden via jboss-ejb3.xml
- * 
+ *
  * @author Ondrej Chaloupka
  * @author Brian Stansberry
  */
@@ -37,7 +37,6 @@ import org.jboss.ejb3.annotation.Clustered;
 @Clustered
 @Remote(DisableClusteredRemote.class)
 public class DisableClusteredStatefulBean extends DisableClusteredBase {
-    /** The serialVersionUID */
     private static final long serialVersionUID = 1L;
 
     // Only difference from superclass is the added class-level annotations

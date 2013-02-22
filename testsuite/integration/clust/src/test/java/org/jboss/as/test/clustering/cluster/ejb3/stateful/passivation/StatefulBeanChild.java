@@ -35,52 +35,53 @@ import org.jboss.logging.Logger;
 @Stateful
 public class StatefulBeanChild extends StatefulBeanParent implements StatefulBeanChildRemote {
     private static final Logger log = Logger.getLogger(StatefulBeanChild.class);
-    
+
     private TestingDTO dto = new TestingDTO();
     private transient TestingDTO transientDto = new TestingDTO();
-       
+
     public int getInt() {
         return intNumber;
     }
+
     public void setInt(int parentInt) {
         this.intNumber = parentInt;
     }
-    
+
     public String getNodeName() {
         String nodeName = NodeNameGetter.getNodeName();
         log.info(this.getClass().getSimpleName() + " called on node " + nodeName);
         return nodeName;
     }
-    
+
     // ---- Methods for manipulation with dto data ----
     public void setDTOStringData(String str) {
         dto.setData(str);
     }
-    
+
     public String getDTOStringData() {
         return dto.getData();
     }
-    
+
     public void setDTONumberData(int number) {
         dto.setNumber(number);
     }
-    
+
     public int getDTONumberData() {
         return dto.getNumber();
     }
-    
+
     public void setTransientDTOStringData(String str) {
         transientDto.setData(str);
     }
-    
+
     public String getTransientDTOStringData() {
         return transientDto.getData();
     }
-    
+
     public void setTransientDTONumberData(int number) {
         transientDto.setNumber(number);
     }
-    
+
     public int getTransientDTONumberData() {
         return transientDto.getNumber();
     }

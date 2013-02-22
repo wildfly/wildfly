@@ -39,6 +39,6 @@ public abstract class CDIDecorator implements DecoratorInterface, Serializable {
 
     @Override
     public String getMessage() {
-        return  "Hello " + delegate.getMessage();
+        return "Hello " + delegate.getMessage();
     }
 }

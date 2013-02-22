@@ -152,9 +152,9 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase extends ClusterAbstract
         boolean container2Stopped = false;
         try {
             final ViewChangeListener listener = context.lookupStateless(ViewChangeListenerBean.class, ViewChangeListener.class);
-            
+
             this.establishView(listener, NODE_1, NODE_2);
-            
+
             final RemoteCounter remoteCounter = context.lookupStateful(CounterBean.class, RemoteCounter.class);
             final DestructionCounterRemote destructionCounter = context.lookupSingleton(DestructionCounterSingleton.class, DestructionCounterRemote.class);
             // invoke on the bean a few times
@@ -187,7 +187,7 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase extends ClusterAbstract
                     stop(CONTAINER_2);
                 }
                 container2Stopped = true;
-                
+
                 this.establishView(listener, NODE_1);
             }
 

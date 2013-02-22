@@ -129,9 +129,9 @@ public class RemoteStatelessFailoverTestCase extends ClusterAbstractTestCase {
 
         try {
             ViewChangeListener listener = context.lookupStateless(ViewChangeListenerBean.class, ViewChangeListener.class);
-            
+
             this.establishView(listener, NODES[0]);
-            
+
             Stateless bean = context.lookupStateless(StatelessBean.class, Stateless.class);
 
             assertEquals(NODES[0], bean.getNodeName());
@@ -140,7 +140,7 @@ public class RemoteStatelessFailoverTestCase extends ClusterAbstractTestCase {
             deploy(DEPLOYMENT_2);
 
             this.establishView(listener, NODES);
-            
+
             List<String> results = new ArrayList<String>(10);
             for (int i = 0; i < 10; ++i) {
                 results.add(bean.getNodeName());
@@ -178,9 +178,9 @@ public class RemoteStatelessFailoverTestCase extends ClusterAbstractTestCase {
 
         try {
             ViewChangeListener listener = context.lookupStateless(ViewChangeListenerBean.class, ViewChangeListener.class);
-            
+
             this.establishView(listener, NODES[0]);
-            
+
             Stateless bean = context.lookupStateless(StatelessBean.class, Stateless.class);
 
             assertEquals(NODES[0], bean.getNodeName());
@@ -203,7 +203,7 @@ public class RemoteStatelessFailoverTestCase extends ClusterAbstractTestCase {
             undeploy(DEPLOYMENT_1);
 
             this.establishView(listener, NODES[1]);
-            
+
             assertEquals(NODES[1], bean.getNodeName());
         } finally {
             // reset the selector
@@ -237,13 +237,13 @@ public class RemoteStatelessFailoverTestCase extends ClusterAbstractTestCase {
 
         try {
             ViewChangeListener listener = context.lookupStateless(ViewChangeListenerBean.class, ViewChangeListener.class);
-            
+
             this.establishView(listener, NODES);
-            
+
             Stateless bean = context.lookupStateless(StatelessBean.class, Stateless.class);
 
             String node = bean.getNodeName();
-            log.info("Node called : " + node);
+            log.info("Node called: " + node);
 
             validateBalancing(bean, numberOfCalls, numberOfServers, serversProcessedAtLeast);
 
@@ -254,23 +254,23 @@ public class RemoteStatelessFailoverTestCase extends ClusterAbstractTestCase {
 
             bean = context.lookupStateless(StatelessBean.class, Stateless.class);
             node = bean.getNodeName();
-            log.info("Node called : " + node);
+            log.info("Node called: " + node);
 
             validateBalancing(bean, numberOfCalls, numberOfServers, serversProcessedAtLeast);
 
             stop(CONTAINER_1);
-            
+
             this.establishView(listener, NODES[1]);
-            
+
             node = bean.getNodeName();
-            log.info("Node called : " + node);
+            log.info("Node called: " + node);
 
             start(CONTAINER_1);
-            
+
             this.establishView(listener, NODES);
 
             node = bean.getNodeName();
-            log.info("Node called : " + node);
+            log.info("Node called: " + node);
 
             validateBalancing(bean, numberOfCalls, numberOfServers, serversProcessedAtLeast);
         } finally {

@@ -26,7 +26,6 @@ import javax.ejb.EJBObject;
 
 /**
  * @author Ondrej Chaloupka
- *
  */
 public interface StatelessRemote extends EJBObject {
     String getNodeName();

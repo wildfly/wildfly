@@ -33,7 +33,7 @@ import org.jboss.ejb3.annotation.SecurityDomain;
 @SecurityDomain("other")
 public class BeanParent implements BeanRemote {
 
-    @RolesAllowed({ "Role1", "Role2", "Users" })
+    @RolesAllowed({"Role1", "Role2", "Users"})
     public String getNodeName() {
         return NodeNameGetter.getNodeName();
     }

@@ -63,7 +63,6 @@ import org.junit.runner.RunWith;
 
 /**
  * @author Paul Ferraro
- *
  */
 @RunWith(Arquillian.class)
 @RunAsClient
@@ -122,14 +121,14 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
 
         try {
             this.establishView(client, baseURL1, NODE_1);
-            
+
             assertEquals(20010101, this.queryCount(client, url1));
             assertEquals(20020202, this.queryCount(client, url1));
 
             start(CONTAINER_2);
 
             this.establishView(client, baseURL1, NODE_1, NODE_2);
-            
+
             assertEquals(20030303, this.queryCount(client, url1));
             assertEquals(20040404, this.queryCount(client, url1));
 
@@ -139,14 +138,14 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
             stop(CONTAINER_2);
 
             this.establishView(client, baseURL1, NODE_1);
-            
+
             assertEquals(20070707, this.queryCount(client, url1));
             assertEquals(20080808, this.queryCount(client, url1));
 
             start(CONTAINER_2);
 
             this.establishView(client, baseURL1, NODE_1, NODE_2);
-            
+
             assertEquals(20090909, this.queryCount(client, url1));
             assertEquals(20101010, this.queryCount(client, url1));
 
@@ -154,9 +153,9 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
             assertEquals(20121212, this.queryCount(client, url2));
 
             stop(CONTAINER_1);
-            
+
             this.establishView(client, baseURL2, NODE_2);
-            
+
             assertEquals(20131313, this.queryCount(client, url2));
             assertEquals(20141414, this.queryCount(client, url2));
 
@@ -164,7 +163,7 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
             start(CONTAINER_1);
 
             this.establishView(client, baseURL2, NODE_1, NODE_2);
-            
+
             assertEquals(20151515, this.queryCount(client, url1));
             assertEquals(20161616, this.queryCount(client, url1));
 
@@ -191,7 +190,7 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
 
         try {
             this.establishView(client, baseURL1, NODE_1);
-            
+
             assertEquals(20010101, this.queryCount(client, url1));
             assertEquals(20020202, this.queryCount(client, url1));
 
@@ -199,7 +198,7 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
             //deploy(DEPLOYMENT_2);
 
             this.establishView(client, baseURL1, NODE_1, NODE_2);
-            
+
             assertEquals(20030303, this.queryCount(client, url1));
             assertEquals(20040404, this.queryCount(client, url1));
 
@@ -209,14 +208,14 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
             undeploy(DEPLOYMENT_2);
 
             this.establishView(client, baseURL1, NODE_1);
-            
+
             assertEquals(20070707, this.queryCount(client, url1));
             assertEquals(20080808, this.queryCount(client, url1));
 
             deploy(DEPLOYMENT_2);
 
             this.establishView(client, baseURL1, NODE_1, NODE_2);
-            
+
             assertEquals(20090909, this.queryCount(client, url1));
             assertEquals(20101010, this.queryCount(client, url1));
 
@@ -226,14 +225,14 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
             undeploy(DEPLOYMENT_1);
 
             this.establishView(client, baseURL2, NODE_2);
-            
+
             assertEquals(20131313, this.queryCount(client, url2));
             assertEquals(20141414, this.queryCount(client, url2));
 
             deploy(DEPLOYMENT_1);
 
             this.establishView(client, baseURL2, NODE_1, NODE_2);
-            
+
             assertEquals(20151515, this.queryCount(client, url1));
             assertEquals(20161616, this.queryCount(client, url1));
 

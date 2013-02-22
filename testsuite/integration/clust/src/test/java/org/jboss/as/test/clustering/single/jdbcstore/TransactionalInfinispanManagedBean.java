@@ -32,6 +32,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
 import javax.transaction.UserTransaction;
+
 import org.infinispan.Cache;
 
 /**
@@ -157,7 +158,7 @@ public class TransactionalInfinispanManagedBean {
         }
         return rowCount;
     }
-    
+
     private void initializeCache() throws Exception {
         try {
             tx.begin();

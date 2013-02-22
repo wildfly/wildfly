@@ -21,8 +21,6 @@
  */
 package org.jboss.as.test.clustering.cluster;
 
-import java.util.Properties;
-
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.RunAsClient;

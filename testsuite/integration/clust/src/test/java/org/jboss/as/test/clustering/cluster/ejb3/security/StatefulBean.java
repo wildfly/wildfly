@@ -26,6 +26,9 @@ import javax.ejb.Stateful;
 
 import org.jboss.ejb3.annotation.Clustered;
 
+/**
+ * @author Ondrej Chaloupka
+ */
 @Stateful
 @Clustered
 public class StatefulBean extends BeanParent implements BeanRemote {

@@ -32,7 +32,8 @@ import javax.ejb.Stateless;
 import org.jboss.ejb3.annotation.Clustered;
 
 /**
- * @author Kabir Khan, Ondrej Chaloupka
+ * @author Kabir Khan
+ * @author Ondrej Chaloupka
  */
 @Stateless
 @Clustered

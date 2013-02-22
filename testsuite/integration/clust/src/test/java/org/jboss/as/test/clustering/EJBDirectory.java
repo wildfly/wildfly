@@ -28,19 +28,24 @@ import javax.naming.NamingException;
 
 /**
  * EJB lookup helper
+ *
  * @author Paul Ferraro
  */
 public interface EJBDirectory {
     <T> T lookupStateful(String beanName, Class<T> beanInterface) throws NamingException;
+
     <T> T lookupStateful(Class<? extends T> beanClass, Class<T> beanInterface) throws NamingException;
 
     <T> T lookupStateless(String beanName, Class<T> beanInterface) throws NamingException;
+
     <T> T lookupStateless(Class<? extends T> beanClass, Class<T> beanInterface) throws NamingException;
 
     <T> T lookupSingleton(String beanName, Class<T> beanInterface) throws NamingException;
+
     <T> T lookupSingleton(Class<? extends T> beanClass, Class<T> beanInterface) throws NamingException;
 
     <T extends EJBHome> T lookupHome(String beanName, Class<T> homeInterface) throws NamingException;
+
     <T extends EJBHome> T lookupHome(Class<? extends SessionBean> beanClass, Class<T> homeInterface) throws NamingException;
 
     void close() throws NamingException;

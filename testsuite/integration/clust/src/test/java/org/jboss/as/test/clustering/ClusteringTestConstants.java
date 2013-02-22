@@ -69,7 +69,7 @@ public interface ClusteringTestConstants {
      * Name of cluster for remote client.
      */
     String CLUSTER_NAME = "ejb";
-    
+
     /**
      * Timeouts.
      */

@@ -27,18 +27,19 @@ import java.rmi.RemoteException;
 import javax.ejb.EJBException;
 import javax.ejb.SessionContext;
 import javax.ejb.TransactionAttributeType;
+
 import org.jboss.as.test.clustering.NodeNameGetter;
 import org.jboss.logging.Logger;
 
 /**
  * @author Ondrej Chaloupka
- *
  */
 public abstract class StatelessBeanBase {
     private static final Logger log = Logger.getLogger(StatelessBeanBase.class);
 
     /**
      * {@inheritDoc}
+     *
      * @see org.jboss.as.test.clustering.cluster.ejb3.stateless.bean.Stateless#getNodeName()
      */
     @javax.ejb.TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -47,36 +48,36 @@ public abstract class StatelessBeanBase {
         log.info("StatelessBean.getNodeName() was called on node: " + nodeName);
         return nodeName;
     }
-    
+
     public void ejbCreate() throws EJBException, RemoteException {
         // creating ejb2 bean
     }
 
     /**
-     * Overrides SessionBean method 
+     * Overrides SessionBean method
      */
     public void ejbActivate() throws EJBException, RemoteException {
-        
+
     }
 
     /**
-     * Overrides SessionBean method 
+     * Overrides SessionBean method
      */
     public void ejbPassivate() throws EJBException, RemoteException {
-        
+
     }
 
     /**
-     * Overrides SessionBean method 
+     * Overrides SessionBean method
      */
     public void ejbRemove() throws EJBException, RemoteException {
-        
+
     }
 
     /**
-     * Overrides SessionBean method 
+     * Overrides SessionBean method
      */
     public void setSessionContext(SessionContext arg0) throws EJBException, RemoteException {
-        
+
     }
 }

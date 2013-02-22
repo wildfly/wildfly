@@ -28,11 +28,10 @@ import javax.naming.NamingException;
 
 /**
  * @author Paul Ferraro
- *
  */
 public class LocalEJBDirectory extends AbstractEJBDirectory {
     private final String module;
-    
+
     public LocalEJBDirectory(String module) throws NamingException {
         super(new Properties());
         this.module = module;

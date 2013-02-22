@@ -33,7 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * @author Ondrej Chaloupka
  */
-@WebServlet(urlPatterns = { "/nodename" })
+@WebServlet(urlPatterns = {"/nodename"})
 public class NodeInfoServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     public static final String URL = "nodename";

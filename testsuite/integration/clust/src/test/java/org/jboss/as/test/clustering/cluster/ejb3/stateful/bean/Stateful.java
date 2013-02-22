@@ -26,7 +26,6 @@ import javax.ejb.Local;
 
 /**
  * @author Paul Ferraro
- *
  */
 @Local
 public interface Stateful {

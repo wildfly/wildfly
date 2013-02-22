@@ -22,22 +22,11 @@
 
 package org.jboss.as.test.clustering.cluster.ejb3.stateful.passivation;
 
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CLUSTER_ESTABLISHMENT_LOOP_COUNT;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CLUSTER_ESTABLISHMENT_WAIT_MS;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CLUSTER_NAME;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_2;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.HTTP_REQUEST_WAIT_TIME_S;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.WAIT_FOR_PASSIVATION_MS;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
 import javax.naming.NamingException;
 
 import org.junit.Assert;
@@ -75,7 +64,6 @@ import org.junit.runner.RunWith;
 
 /**
  * Clustering ejb passivation simple test.
- * Part of migration of tests from prior AS testsuites [JBQA-5855].
  *
  * @author Ondrej Chaloupka
  */
@@ -220,7 +208,7 @@ public class ClusterPassivationTestCase extends ClusterAbstractTestCase {
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2) throws Exception {
 
-        String nodeName1 = HttpRequest.get(baseURL1.toString() + NodeInfoServlet.URL , HTTP_REQUEST_WAIT_TIME_S, TimeUnit.SECONDS);
+        String nodeName1 = HttpRequest.get(baseURL1.toString() + NodeInfoServlet.URL, HTTP_REQUEST_WAIT_TIME_S, TimeUnit.SECONDS);
         node2deployment.put(nodeName1, DEPLOYMENT_1);
         node2container.put(nodeName1, CONTAINER_1);
         container2node.put(CONTAINER_1, nodeName1);
@@ -267,7 +255,7 @@ public class ClusterPassivationTestCase extends ClusterAbstractTestCase {
             Assert.assertTrue("Passivation of nested bean was not propagated", statefulBeanRemote.getNestedBeanPassivatedCalled() > 0);
             Assert.assertTrue("Activation of nested bean was not propagated", statefulBeanRemote.getNestedBeanActivatedCalled() > 0);
             Assert.assertTrue("Passivation of deep nested bean was not propagated", statefulBeanRemote.getDeepNestedBeanPassivatedCalled() > 0);
-            Assert.assertTrue("Activation of deep nested bean was not propagated",statefulBeanRemote.getDeepNestedBeanActivatedCalled() > 0);
+            Assert.assertTrue("Activation of deep nested bean was not propagated", statefulBeanRemote.getDeepNestedBeanActivatedCalled() > 0);
             Assert.assertTrue("Passivation of remote bean was not propagated", statefulBeanRemote.getRemoteNestedBeanPassivatedCalled() > 0);
             Assert.assertTrue("Activation of remote bean was not propagated", statefulBeanRemote.getRemoteNestedBeanActivatedCalled() > 0);
             statefulBeanRemote.resetNestedBean();
@@ -307,18 +295,18 @@ public class ClusterPassivationTestCase extends ClusterAbstractTestCase {
             Assert.assertTrue("Passivation of nested bean was not propagated", statefulBeanRemote.getNestedBeanPassivatedCalled() > 0);
             Assert.assertTrue("Activation of nested bean was not propagated", statefulBeanRemote.getNestedBeanActivatedCalled() > 0);
             Assert.assertTrue("Passivation of deep nested bean was not propagated", statefulBeanRemote.getDeepNestedBeanPassivatedCalled() > 0);
-            Assert.assertTrue("Activation of deep nested bean was not propagated",statefulBeanRemote.getDeepNestedBeanActivatedCalled() > 0);
+            Assert.assertTrue("Activation of deep nested bean was not propagated", statefulBeanRemote.getDeepNestedBeanActivatedCalled() > 0);
             Assert.assertTrue("Passivation of remote bean was not propagated", statefulBeanRemote.getRemoteNestedBeanPassivatedCalled() > 0);
             Assert.assertTrue("Activation of remote bean was not propagated", statefulBeanRemote.getRemoteNestedBeanActivatedCalled() > 0);
             statefulBeanRemote.resetNestedBean();
         } else {
             Assert.assertEquals("We suppose that the passivation is not provided.", "unknown", statefulBeanRemote.getPassivatedBy());
-            Assert.assertEquals("No passivation should be done",0, statefulBeanRemote.getNestedBeanPassivatedCalled());
-            Assert.assertEquals("No passivation should be done",0, statefulBeanRemote.getNestedBeanActivatedCalled());
-            Assert.assertEquals("No passivation should be done",0, statefulBeanRemote.getDeepNestedBeanPassivatedCalled());
-            Assert.assertEquals("No passivation should be done",0, statefulBeanRemote.getDeepNestedBeanActivatedCalled());
-            Assert.assertEquals("No passivation should be done",0, statefulBeanRemote.getRemoteNestedBeanPassivatedCalled());
-            Assert.assertEquals("No passivation should be done",0, statefulBeanRemote.getRemoteNestedBeanActivatedCalled());
+            Assert.assertEquals("No passivation should be done", 0, statefulBeanRemote.getNestedBeanPassivatedCalled());
+            Assert.assertEquals("No passivation should be done", 0, statefulBeanRemote.getNestedBeanActivatedCalled());
+            Assert.assertEquals("No passivation should be done", 0, statefulBeanRemote.getDeepNestedBeanPassivatedCalled());
+            Assert.assertEquals("No passivation should be done", 0, statefulBeanRemote.getDeepNestedBeanActivatedCalled());
+            Assert.assertEquals("No passivation should be done", 0, statefulBeanRemote.getRemoteNestedBeanPassivatedCalled());
+            Assert.assertEquals("No passivation should be done", 0, statefulBeanRemote.getRemoteNestedBeanActivatedCalled());
         }
         Thread.sleep(WAIT_FOR_PASSIVATION_MS); // waiting for passivation
         Assert.assertEquals(++clientNumber, statefulBeanRemote.getNumber()); // 43
@@ -417,7 +405,7 @@ public class ClusterPassivationTestCase extends ClusterAbstractTestCase {
         Assert.assertEquals("String data of dto defined in sfsb wasn't passivated correctly", stringData, sb.getDTOStringData());
         Assert.assertEquals("Int data of dto defined in sfsb wasn't passivated correctly", intData, sb.getDTONumberData());
         Assert.assertNull("String data of transient dto defined in sfsb has to be null after passivation", sb.getTransientDTOStringData());
-        Assert.assertEquals("Int data of transient dto has to be 0 after passivation", 0,sb.getTransientDTONumberData());
+        Assert.assertEquals("Int data of transient dto has to be 0 after passivation", 0, sb.getTransientDTONumberData());
         Assert.assertEquals("String data of dto defined in parent of sfsb wasn't passivated correctly", stringData, sb.getParentDTOStringData());
         Assert.assertNull("Transient string data of dto defined in parent of sfsb has to be null after passivation", sb.getParentDTOTransientStringData());
     }

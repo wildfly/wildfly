@@ -33,7 +33,6 @@ import org.jboss.ejb3.annotation.Clustered;
 
 /**
  * @author Paul Ferraro
- *
  */
 @Stateful
 @StatefulTimeout(value = 1000L, unit = TimeUnit.MILLISECONDS)
@@ -42,7 +41,7 @@ public class ClusteredBean {
     public static volatile boolean preDestroy = false;
     public static volatile boolean prePassivate = false;
     private int count = 0;
-    
+
     @PreDestroy
     public void preDestroy() {
         preDestroy = true;

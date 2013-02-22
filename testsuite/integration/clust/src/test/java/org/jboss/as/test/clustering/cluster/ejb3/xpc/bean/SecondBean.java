@@ -41,7 +41,7 @@ import org.jboss.ejb3.annotation.Clustered;
 @javax.ejb.Stateful
 public class SecondBean {
     @PersistenceContext(unitName = "mypc", type = PersistenceContextType.EXTENDED)
-        EntityManager em;
+    EntityManager em;
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public Employee getEmployee(int id) {

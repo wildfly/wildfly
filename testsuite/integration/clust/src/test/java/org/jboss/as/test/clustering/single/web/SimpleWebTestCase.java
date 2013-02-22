@@ -45,7 +45,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Validate the <distributable/> works for single node.
- * 
+ *
  * @author Paul Ferraro
  */
 @RunWith(Arquillian.class)

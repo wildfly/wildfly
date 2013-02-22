@@ -29,7 +29,7 @@ import javax.ejb.TransactionAttributeType;
 /**
  * Interface to see if that helps avoid the
  * error:
- *
+ * <p/>
  * JBAS014134: EJB Invocation failed on component StatefulBean for method
  * public org.jboss.as.test.clustering.unmanaged.ejb3.xpc.bean.Employee
  * org.jboss.as.test.clustering.unmanaged.ejb3.xpc.bean.StatefulBean.getEmployee(int):

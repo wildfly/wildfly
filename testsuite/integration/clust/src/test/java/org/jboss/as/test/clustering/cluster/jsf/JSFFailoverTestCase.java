@@ -129,8 +129,7 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
         if (setCookie != null) {
             String setCookieValue = setCookie.getValue();
             state.sessionId = setCookieValue.substring(setCookieValue.indexOf('=') + 1, setCookieValue.indexOf(';'));
-        }
-        else if (sessionId != null) {
+        } else if (sessionId != null) {
             // We don't get a cookie back if we have sent it, so just set it to whatever we had before
             state.sessionId = sessionId;
         }
@@ -160,6 +159,7 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
 
     /**
      * Creates an HTTP POST request with a number guess.
+     *
      * @param url
      * @param sessionId
      * @param viewState
@@ -170,7 +170,7 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
     private static HttpUriRequest buildPostRequest(String url, String sessionId, String viewState, String guess) throws UnsupportedEncodingException {
         HttpPost post = new HttpPost(url);
 
-        List<NameValuePair> list = new LinkedList<NameValuePair> ();
+        List<NameValuePair> list = new LinkedList<NameValuePair>();
 
         list.add(new BasicNameValuePair("javax.faces.ViewState", viewState));
         list.add(new BasicNameValuePair("numberGuess", "numberGuess"));
@@ -187,6 +187,7 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
 
     /**
      * Creates an HTTP GET request, with a potential JSESSIONID cookie.
+     *
      * @param url
      * @param sessionId
      * @return
@@ -212,7 +213,7 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
      *
      * @throws java.io.IOException
      * @throws InterruptedException
-     * @throws URISyntaxException 
+     * @throws URISyntaxException
      */
     @Test
     @InSequence(1)
@@ -240,7 +241,7 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             // We get a cookie!
             String sessionId = state.sessionId;
 
@@ -257,7 +258,7 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             Assert.assertEquals("2", state.smallest);
             Assert.assertEquals("100", state.biggest);
             Assert.assertEquals("9", state.remainingGuesses);
@@ -275,7 +276,7 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             // If the state would not be replicated, we would have 9 remaining guesses.
             Assert.assertEquals("Session failed to replicate after container 1 was shutdown.", "8", state.remainingGuesses);
 
@@ -292,7 +293,7 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             Assert.assertEquals("7", state.remainingGuesses);
             Assert.assertEquals("2", state.smallest);
             Assert.assertEquals("98", state.biggest);
@@ -309,7 +310,7 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             Assert.assertEquals("Session failed to replicate after container 1 was brought up.", "6", state.remainingGuesses);
             Assert.assertEquals(sessionId, state.sessionId);
             Assert.assertEquals("3", state.smallest);
@@ -323,7 +324,7 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             Assert.assertEquals(sessionId, state.sessionId);
             Assert.assertEquals("5", state.remainingGuesses);
             Assert.assertEquals("3", state.smallest);
@@ -347,7 +348,7 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
      *
      * @throws java.io.IOException
      * @throws InterruptedException
-     * @throws URISyntaxException 
+     * @throws URISyntaxException
      */
     @Test
     @InSequence(2)
@@ -373,7 +374,7 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             // We get a cookie!
             String sessionId = state.sessionId;
 
@@ -390,7 +391,7 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             Assert.assertEquals("2", state.smallest);
             Assert.assertEquals("100", state.biggest);
             Assert.assertEquals("9", state.remainingGuesses);
@@ -399,7 +400,7 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
             undeploy(DEPLOYMENT_1);
 
             this.establishView(client, baseURL2, NODE_2);
-            
+
             // Now we do a JSF POST request with a cookie on to the second node, guessing 100, expecting to find a replicated state.
             response = client.execute(buildPostRequest(url2, state.sessionId, state.jsfViewState, "100"));
             try {
@@ -408,7 +409,7 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             // If the state would not be replicated, we would have 9 remaining guesses.
             Assert.assertEquals("Session failed to replicate after container 1 was shutdown.", "8", state.remainingGuesses);
 
@@ -425,7 +426,7 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             Assert.assertEquals("7", state.remainingGuesses);
             Assert.assertEquals("2", state.smallest);
             Assert.assertEquals("98", state.biggest);
@@ -443,7 +444,7 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             Assert.assertEquals("Session failed to replicate after container 1 was brought up.", "6", state.remainingGuesses);
             Assert.assertEquals(sessionId, state.sessionId);
             Assert.assertEquals("3", state.smallest);
@@ -457,7 +458,7 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             Assert.assertEquals(sessionId, state.sessionId);
             Assert.assertEquals("5", state.remainingGuesses);
             Assert.assertEquals("3", state.smallest);

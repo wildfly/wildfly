@@ -46,7 +46,7 @@ import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
 
 /**
  * Clustering ejb passivation of EJB2 beans defined by annotation.
- * 
+ *
  * @author Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
@@ -58,7 +58,7 @@ public class ClusterPassivationTestCase extends ClusterPassivationTestBase {
     private ContainerController controller;
     @ArquillianResource
     private Deployer deployer;
-    
+
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
     public static Archive<?> deployment0() {
@@ -80,7 +80,7 @@ public class ClusterPassivationTestCase extends ClusterPassivationTestBase {
         log.info(war.toString(true));
         return war;
     }
-    
+
     @Override
     protected void startServers(ManagementClient client1, ManagementClient client2) {
         if (client1 == null || !client1.isServerInRunningState()) {
@@ -93,9 +93,9 @@ public class ClusterPassivationTestCase extends ClusterPassivationTestBase {
             controller.start(CONTAINER_2);
             deployer.deploy(DEPLOYMENT_2);
         }
-    }    
+    }
 
-    
+
     @Test
     @InSequence(-2)
     public void arquillianStartServers() {
@@ -109,11 +109,11 @@ public class ClusterPassivationTestCase extends ClusterPassivationTestBase {
     @Test
     @InSequence(-1)
     public void defineMaps(@ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
-            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2,
-            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
-            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2) throws Exception {
+                           @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2,
+                           @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
+                           @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2) throws Exception {
 
-        String nodeName1 = HttpRequest.get(baseURL1.toString() + NodeInfoServlet.URL , HTTP_REQUEST_WAIT_TIME_S, TimeUnit.SECONDS);
+        String nodeName1 = HttpRequest.get(baseURL1.toString() + NodeInfoServlet.URL, HTTP_REQUEST_WAIT_TIME_S, TimeUnit.SECONDS);
         node2deployment.put(nodeName1, DEPLOYMENT_1);
         node2container.put(nodeName1, CONTAINER_1);
         log.info("URL1 nodename: " + nodeName1);
@@ -124,7 +124,7 @@ public class ClusterPassivationTestCase extends ClusterPassivationTestBase {
         node2container.put(nodeName2, CONTAINER_2);
         log.info("URL2 nodename: " + nodeName2);
     }
-    
+
     @Ignore("JBPAPP-8774")
     @Test
     @InSequence(1)
@@ -133,10 +133,10 @@ public class ClusterPassivationTestCase extends ClusterPassivationTestBase {
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2) throws Exception {
         setPassivationAttributes(client1.getControllerClient());
         setPassivationAttributes(client2.getControllerClient());
-        
+
         // Setting context from .properties file to get ejb:/ remote context
         setupEJBClientContextSelector();
-        
+
         StatefulRemoteHome home = directory.lookupHome(StatefulBean.class, StatefulRemoteHome.class);
         StatefulRemote statefulBean = home.create();
 
@@ -157,12 +157,12 @@ public class ClusterPassivationTestCase extends ClusterPassivationTestBase {
         }
 
         // unset & undeploy & stop
-        if(client1.isServerInRunningState()) {
+        if (client1.isServerInRunningState()) {
             unsetPassivationAttributes(client1.getControllerClient());
             deployer.undeploy(DEPLOYMENT_1);
             controller.stop(CONTAINER_1);
         }
-        if(client2.isServerInRunningState()) {
+        if (client2.isServerInRunningState()) {
             unsetPassivationAttributes(client2.getControllerClient());
             deployer.undeploy(DEPLOYMENT_2);
             controller.stop(CONTAINER_2);

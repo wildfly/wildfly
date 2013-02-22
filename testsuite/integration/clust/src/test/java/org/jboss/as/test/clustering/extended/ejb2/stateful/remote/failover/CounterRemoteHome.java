@@ -22,12 +22,12 @@
 
 package org.jboss.as.test.clustering.extended.ejb2.stateful.remote.failover;
 
-import javax.ejb.*;
+import javax.ejb.EJBHome;
 
 /**
  * @author Ondrej Chaloupka
  */
 public interface CounterRemoteHome extends EJBHome {
     public CounterRemote create() throws java.rmi.RemoteException, javax.ejb.CreateException;
-    
+
 }

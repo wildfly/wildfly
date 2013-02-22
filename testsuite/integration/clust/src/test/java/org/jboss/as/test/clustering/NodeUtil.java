@@ -21,13 +21,8 @@
  */
 package org.jboss.as.test.clustering;
 
-import java.util.Date;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
-import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.logging.Logger;
 
 /**

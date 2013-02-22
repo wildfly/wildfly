@@ -24,7 +24,10 @@ package org.jboss.as.test.clustering.cluster.ejb2;
 
 import javax.ejb.EJBHome;
 
+/**
+ * @author Ondrej Chaloupka
+ */
 public interface StatefulRemoteHome extends EJBHome {
     public StatefulRemote create() throws java.rmi.RemoteException, javax.ejb.CreateException;
-    
+
 }

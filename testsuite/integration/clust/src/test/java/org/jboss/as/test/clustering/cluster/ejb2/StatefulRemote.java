@@ -27,5 +27,6 @@ package org.jboss.as.test.clustering.cluster.ejb2;
  */
 public interface StatefulRemote extends javax.ejb.EJBObject {
     int getNumber();
+
     String incrementNumber();
 }

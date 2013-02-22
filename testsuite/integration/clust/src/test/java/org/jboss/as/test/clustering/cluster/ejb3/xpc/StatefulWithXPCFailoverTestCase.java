@@ -71,20 +71,20 @@ import org.junit.runner.RunWith;
 public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
 
     private static final String persistence_xml =
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
-            "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
-            "  <persistence-unit name=\"mypc\">" +
-            "    <description>Persistence Unit." +
-            "    </description>" +
-            "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
-            "<shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>" +
-            "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
-            "<property name=\"hibernate.cache.use_second_level_cache\" value=\"true\" />" +
-            "<property name=\"hibernate.generate_statistics\" value=\"true\" />" +
-            "<property name=\"hibernate.show_sql\" value=\"true\"/>" +
-            "</properties>" +
-            "  </persistence-unit>" +
-            "</persistence>";
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
+                    "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
+                    "  <persistence-unit name=\"mypc\">" +
+                    "    <description>Persistence Unit." +
+                    "    </description>" +
+                    "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
+                    "<shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>" +
+                    "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
+                    "<property name=\"hibernate.cache.use_second_level_cache\" value=\"true\" />" +
+                    "<property name=\"hibernate.generate_statistics\" value=\"true\" />" +
+                    "<property name=\"hibernate.show_sql\" value=\"true\"/>" +
+                    "</properties>" +
+                    "  </persistence-unit>" +
+                    "</persistence>";
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
@@ -119,7 +119,7 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
     /**
      * Use the second level cache statistics to ensure that deleting an entity on a cluster node, will
      * remove the entity from the second level cache on other nodes.
-     *
+     * <p/>
      * Note that this test writes to the separate databases on both cluster nodes (so that both nodes can
      * read the entity from the database).  The important thing is that the second level cache entries are
      * invalidated when the entity is deleted from either database.
@@ -128,7 +128,7 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
      * @param baseURL2
      * @throws IOException
      * @throws InterruptedException
-     * @throws URISyntaxException 
+     * @throws URISyntaxException
      */
     @Test
     @InSequence(1)
@@ -157,9 +157,9 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
 
         try {
             this.establishView(client, baseURL1, NODE_1, NODE_2);
-            
+
             assertExecuteUrl(client, xpc1_echo_url + "StartingTestSecondLevelCache");  // echo message to server.log
-            assertExecuteUrl(client,xpc2_echo_url + "StartingTestSecondLevelCache"); // echo message to server.log
+            assertExecuteUrl(client, xpc2_echo_url + "StartingTestSecondLevelCache"); // echo message to server.log
 
             String employeeName = executeUrlWithAnswer(client, xpc1_create_url, "create entity in node1 in memory db");                           //
             assertEquals(employeeName, "Tom Brady");
@@ -168,7 +168,7 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
             employeeName = executeUrlWithAnswer(client, xpc1_get_url, "on node1, node1 should be able to read entity on node1");
             assertEquals(employeeName, "Tom Brady");
 
-            String employeesInCache = executeUrlWithAnswer(client,xpc1_secondLevelCacheEntries_url, "get number of elements in node1 second level cache (should be zero)");
+            String employeesInCache = executeUrlWithAnswer(client, xpc1_secondLevelCacheEntries_url, "get number of elements in node1 second level cache (should be zero)");
             assertEquals(employeesInCache, "0");    // we read the entity from the extended persistence context (hasn't been flushed yet)
 
             assertExecuteUrl(client, xpc1_flush_url); // flush changes to db
@@ -183,17 +183,17 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
             assertEquals(employeeName, "Tom Brady");
 
             // we should of read one Employee entity on node2, ensure the second level cache contains one entry
-            employeesInCache = executeUrlWithAnswer(client,xpc2_secondLevelCacheEntries_url, "get number of elements in node2 second level cache (should be zero)");
+            employeesInCache = executeUrlWithAnswer(client, xpc2_secondLevelCacheEntries_url, "get number of elements in node2 second level cache (should be zero)");
             assertEquals(employeesInCache, "1");
 
-            assertExecuteUrl(client,xpc1_echo_url + "testSecondLevelCacheclearedXPC");
-            assertExecuteUrl(client,xpc2_echo_url + "testSecondLevelCacheclearedXPC");
+            assertExecuteUrl(client, xpc1_echo_url + "testSecondLevelCacheclearedXPC");
+            assertExecuteUrl(client, xpc2_echo_url + "testSecondLevelCacheclearedXPC");
 
-            assertExecuteUrl(client,xpc2_delete_url);   // deleting the entity on one node should remove it from both nodes second level cache
-            assertExecuteUrl(client,xpc1_echo_url + "testSecondLevelCachedeletedEnityOnNode2");
-            assertExecuteUrl(client,xpc1_echo_url + "2lcOnNode1ShouldHaveZeroElemementsLoaded");
+            assertExecuteUrl(client, xpc2_delete_url);   // deleting the entity on one node should remove it from both nodes second level cache
+            assertExecuteUrl(client, xpc1_echo_url + "testSecondLevelCachedeletedEnityOnNode2");
+            assertExecuteUrl(client, xpc1_echo_url + "2lcOnNode1ShouldHaveZeroElemementsLoaded");
 
-            employeesInCache = executeUrlWithAnswer(client,xpc1_secondLevelCacheEntries_url, "get number of elements in node1 second level cache (should be zero)");
+            employeesInCache = executeUrlWithAnswer(client, xpc1_secondLevelCacheEntries_url, "get number of elements in node1 second level cache (should be zero)");
             assertEquals(employeesInCache, "0");
 
             employeesInCache = executeUrlWithAnswer(client, xpc2_secondLevelCacheEntries_url, "get number of elements in node2 second level cache (should be zero)");
@@ -287,7 +287,8 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
             return header.getValue();
         } finally {
             org.apache.http.client.utils.HttpClientUtils.closeQuietly(response);
-     }}
+        }
+    }
 
     private void assertExecuteUrl(HttpClient client, String url) throws IOException {
         HttpResponse response = client.execute(new HttpGet(url));

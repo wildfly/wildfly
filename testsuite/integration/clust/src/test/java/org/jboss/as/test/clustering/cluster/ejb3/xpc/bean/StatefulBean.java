@@ -56,10 +56,6 @@ public class StatefulBean implements Stateful {
     String version = "initial";
     HashMap valueBag = new HashMap();
 
-//     @EJB
-//     SecondBean secondBean;
-
-
     /**
      * Create the employee but don't commit the change to the database, instead keep it in the
      * extended persistence context.
@@ -79,7 +75,7 @@ public class StatefulBean implements Stateful {
         em.persist(emp);
         logStats("createEmployee");
         version = "created";
-        valueBag.put("version","created");
+        valueBag.put("version", "created");
     }
 
     @Override
@@ -102,7 +98,7 @@ public class StatefulBean implements Stateful {
     public void destroy() {
         logStats("destroy");
         version = "destroyed";
-        valueBag.put("version",version);
+        valueBag.put("version", version);
     }
 
     @Override
@@ -121,7 +117,7 @@ public class StatefulBean implements Stateful {
     public void flush() {
         logStats("flush");
         version = "flushed";
-        valueBag.put("version",version);
+        valueBag.put("version", version);
     }
 
     @Override
@@ -129,7 +125,7 @@ public class StatefulBean implements Stateful {
         em.clear();
         logStats("clear");
         version = "cleared";
-        valueBag.put("version",version);
+        valueBag.put("version", version);
     }
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
@@ -156,8 +152,8 @@ public class StatefulBean implements Stateful {
     @Override
     public long getEmployeesInMemory() {
         Session session = em.unwrap(Session.class);
-        String entityRegionNames[] =  session.getSessionFactory().getStatistics().getSecondLevelCacheRegionNames();
-        for (String name: entityRegionNames) {
+        String entityRegionNames[] = session.getSessionFactory().getStatistics().getSecondLevelCacheRegionNames();
+        for (String name : entityRegionNames) {
             if (name.contains(Employee.class.getName())) {
                 SecondLevelCacheStatistics stats = session.getSessionFactory().getStatistics().getSecondLevelCacheStatistics(name);
                 return stats.getElementCountInMemory();
@@ -169,14 +165,14 @@ public class StatefulBean implements Stateful {
 
     private void logStats(String methodName) {
         Session session = em.unwrap(Session.class);
-        log.info(methodName + "(version="+version+", HashMap version="+valueBag.get("version")+") logging statistics for session = " + session);
+        log.info(methodName + "(version=" + version + ", HashMap version=" + valueBag.get("version") + ") logging statistics for session = " + session);
         session.getSessionFactory().getStatistics().setStatisticsEnabled(true);
         session.getSessionFactory().getStatistics().logSummary();
-        String entityRegionNames[] =  session.getSessionFactory().getStatistics().getSecondLevelCacheRegionNames();
-        for (String name: entityRegionNames) {
+        String entityRegionNames[] = session.getSessionFactory().getStatistics().getSecondLevelCacheRegionNames();
+        for (String name : entityRegionNames) {
             log.info("cache entity region name = " + name);
             SecondLevelCacheStatistics stats = session.getSessionFactory().getStatistics().getSecondLevelCacheStatistics(name);
-            log.info("2lc for " + name+ ": " + stats.toString());
+            log.info("2lc for " + name + ": " + stats.toString());
 
         }
         // we will want to return the SecondLevelCacheStatistics for Employee
