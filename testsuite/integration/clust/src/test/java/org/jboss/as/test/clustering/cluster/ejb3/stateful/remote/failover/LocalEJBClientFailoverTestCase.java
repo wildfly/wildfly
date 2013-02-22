@@ -181,9 +181,9 @@ public class LocalEJBClientFailoverTestCase extends ClusterAbstractTestCase {
         final ContextSelector<EJBClientContext> previousSelector = EJBClientContextSelector.setup("cluster/ejb3/stateful/failover/local-ejb-sfsb-failover-jboss-ejb-client.properties");
         try {
             final ViewChangeListener listener = directory.lookupStateless(ViewChangeListenerBean.class, ViewChangeListener.class);
-            
+
             this.establishView(listener, NODE_1, NODE_2);
-            
+
             final ClientSFSBRemote clientSFSB = clientDirectory.lookupStateful(ClientSFSB.class, ClientSFSBRemote.class);
             // invoke on non-clustered SFSB which invokes/delegates to clustered SFSB on same node
             final String sfsbNodeName = clientSFSB.invokeAndFetchNodeNameFromClusteredSFSBRemoteBean();
@@ -194,7 +194,7 @@ public class LocalEJBClientFailoverTestCase extends ClusterAbstractTestCase {
             // now undeploy the clustered sfsb app on the node which has the client application
             this.deployer.undeploy(NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_2);
             nodeNameAppDeployedOnContainerTwo = false;
-            
+
             this.establishView(listener, NODE_1);
 
             // now invoke again on the same non-clustered sfsb

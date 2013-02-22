@@ -28,6 +28,7 @@ import org.jboss.ejb3.annotation.Cache;
 
 /**
  * Simple bean which will be injected in {@link StatefulBeanNested}.
+ *
  * @author Ondrej Chaloupka
  */
 @Stateful

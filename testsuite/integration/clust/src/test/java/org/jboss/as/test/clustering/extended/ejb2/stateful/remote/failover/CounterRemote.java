@@ -27,6 +27,8 @@ package org.jboss.as.test.clustering.extended.ejb2.stateful.remote.failover;
  */
 public interface CounterRemote extends javax.ejb.EJBObject {
     CounterResult increment();
+
     CounterResult decrement();
-    CounterResult getCount();   
+
+    CounterResult getCount();
 }

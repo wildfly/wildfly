@@ -34,12 +34,13 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.jboss.as.server.CurrentServiceContainer;
 
-@WebServlet(urlPatterns = { MyServiceServlet.SERVLET_PATH })
+@WebServlet(urlPatterns = {MyServiceServlet.SERVLET_PATH})
 public class MyServiceServlet extends HttpServlet {
     private static final long serialVersionUID = -592774116315946908L;
     private static final String SERVLET_NAME = "service";
     static final String SERVLET_PATH = "/" + SERVLET_NAME;
-    
+    private static final String SERVICE = "service";
+
     public static URI createURI(URL baseURL) throws URISyntaxException {
         return baseURL.toURI().resolve(SERVLET_NAME);
     }

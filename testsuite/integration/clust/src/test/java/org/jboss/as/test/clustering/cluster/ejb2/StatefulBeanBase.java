@@ -34,7 +34,7 @@ import java.rmi.RemoteException;
  */
 public abstract class StatefulBeanBase {
     private static Logger log = Logger.getLogger(StatefulBeanBase.class);
-    
+
     protected int number;
 
     /**
@@ -51,31 +51,31 @@ public abstract class StatefulBeanBase {
         return NodeNameGetter.getNodeName();
     }
 
-    /** 
+    /**
      * Creating method for home interface...
      */
     public void ejbCreate() throws RemoteException, javax.ejb.CreateException {
     }
-    
-    /** 
+
+    /**
      * @Override on SessionBean
      */
     public void ejbActivate() throws EJBException, RemoteException {
     }
 
-    /** 
+    /**
      * @Override on SessionBean
      */
     public void ejbPassivate() throws EJBException, RemoteException {
     }
 
-    /** 
+    /**
      * @Override on SessionBean
      */
     public void ejbRemove() throws EJBException, RemoteException {
     }
 
-    /** 
+    /**
      * @Override on SessionBean
      */
     public void setSessionContext(SessionContext arg0) throws EJBException, RemoteException {

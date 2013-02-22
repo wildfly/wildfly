@@ -30,7 +30,6 @@ import org.jboss.logging.Logger;
  * @author Brian Stansberry
  */
 public class DisableClusteredBase implements java.io.Serializable, DisableClusteredRemote {
-    /** The serialVersionUID */
     private static final long serialVersionUID = 1L;
 
     private Logger log = Logger.getLogger(getClass());

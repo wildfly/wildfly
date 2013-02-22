@@ -24,7 +24,6 @@ package org.jboss.as.test.clustering.cluster.ejb3.stateless.bean;
 
 /**
  * @author Paul Ferraro
- *
  */
 public interface Stateless {
     String getNodeName();

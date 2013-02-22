@@ -41,7 +41,7 @@ public abstract class AbstractEJBDirectory implements EJBDirectory {
     protected enum Type {
         STATEFUL, STATELESS, SINGLETON, HOME
     };
-    
+
     protected AbstractEJBDirectory(Properties env) throws NamingException {
         this.context = new InitialContext(env);
     }
@@ -59,7 +59,7 @@ public abstract class AbstractEJBDirectory implements EJBDirectory {
     public <T> T lookupStateful(String beanName, Class<T> beanInterface) throws NamingException {
         return this.lookup(beanName, beanInterface, Type.STATEFUL);
     }
-    
+
     public <T> T lookupStateless(Class<? extends T> beanClass, Class<T> beanInterface) throws NamingException {
         return this.lookupStateless(beanClass.getSimpleName(), beanInterface);
     }
@@ -68,7 +68,7 @@ public abstract class AbstractEJBDirectory implements EJBDirectory {
     public <T> T lookupStateless(String beanName, Class<T> beanInterface) throws NamingException {
         return this.lookup(beanName, beanInterface, Type.STATELESS);
     }
-    
+
     public <T> T lookupSingleton(Class<? extends T> beanClass, Class<T> beanInterface) throws NamingException {
         return this.lookupSingleton(beanClass.getSimpleName(), beanInterface);
     }

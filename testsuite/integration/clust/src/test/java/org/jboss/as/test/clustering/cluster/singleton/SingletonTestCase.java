@@ -100,11 +100,8 @@ public class SingletonTestCase extends ClusterAbstractTestCase {
         URI uri1 = MyServiceServlet.createURI(baseURL1);
         URI uri2 = MyServiceServlet.createURI(baseURL2);
 
-        log.info("URLs are: " + defaultURI1 + ", " + defaultURI2);
+        log.info("URLs are: " + uri1 + ", " + uri2);
 
-        URI quorumURI1 = MyServiceServlet.createURI(baseURL1, MyService.QUORUM_SERVICE_NAME);
-        URI quorumURI2 = MyServiceServlet.createURI(baseURL2, MyService.QUORUM_SERVICE_NAME);
-        
         try {
             this.establishView(client, baseURL1, NODE_1);
 
@@ -112,14 +109,6 @@ public class SingletonTestCase extends ClusterAbstractTestCase {
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(NODE_1, response.getFirstHeader("node").getValue());
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
-
-            response = client.execute(new HttpGet(quorumURI1));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertNull(response.getFirstHeader("node"));
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -175,7 +164,6 @@ public class SingletonTestCase extends ClusterAbstractTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-
 
             stop(CONTAINER_1);
 

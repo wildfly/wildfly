@@ -33,15 +33,15 @@ public class StatefulBeanParent {
     public void setParentDTOStringData(String str) {
         dtoParent.setData(str);
     }
-    
+
     public String getParentDTOStringData() {
         return dtoParent.getData();
     }
-    
+
     public void setParentDTOTransientStringData(String str) {
         dtoParent.setTransientData(str);
     }
-    
+
     public String getParentDTOTransientStringData() {
         return dtoParent.getTransientData();
     }

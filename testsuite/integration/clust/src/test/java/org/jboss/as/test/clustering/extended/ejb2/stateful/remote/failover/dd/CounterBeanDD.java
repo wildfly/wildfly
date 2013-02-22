@@ -38,15 +38,15 @@ import org.jboss.logging.Logger;
 public class CounterBeanDD extends CounterBaseBean implements SessionBean {
     private static final Logger log = Logger.getLogger(CounterBeanDD.class);
     private static final long serialVersionUID = 1L;
-    
+
     @Override
     public void ejbActivate() throws EJBException, RemoteException {
-        
+
     }
 
     @Override
     public void ejbPassivate() throws EJBException, RemoteException {
-        
+
     }
 
     @Override
@@ -57,6 +57,6 @@ public class CounterBeanDD extends CounterBaseBean implements SessionBean {
 
     @Override
     public void setSessionContext(SessionContext arg0) throws EJBException, RemoteException {
-        
+
     }
 }

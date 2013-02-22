@@ -52,7 +52,7 @@ import org.junit.BeforeClass;
 
 /**
  * Base class for passivation tests on EJB2 beans.
- * 
+ *
  * @author Ondrej Chaloupka
  */
 public abstract class ClusterPassivationTestBase {
@@ -104,7 +104,7 @@ public abstract class ClusterPassivationTestBase {
 
     /**
      * Start servers whether their are not started.
-     * 
+     *
      * @param client1 client for server1
      * @param client2 client for server2
      */
@@ -145,9 +145,9 @@ public abstract class ClusterPassivationTestBase {
         // A small hack - deleting node (by name) from cluster which this client knows
         // It means that the next request (ejb call) will be passed to the server #2
         EJBClientContext.requireCurrent().getClusterContext(CLUSTER_NAME).removeClusterNode(calledNodeFirst);
-        
+
         Assert.assertEquals("Supposing to get passivation node which was set", calledNodeFirst, statefulBean.getPassivatedBy());
-        
+
         String calledNodeSecond = statefulBean.incrementNumber(); // 42
         statefulBean.setPassivationNode(calledNodeSecond);
         log.info("Called node name second: " + calledNodeSecond);
@@ -170,7 +170,7 @@ public abstract class ClusterPassivationTestBase {
         Assert.assertEquals("It can't be node " + calledNodeSecond + " because is switched off", calledNodeFirst, calledNode);
 
         Assert.assertEquals("Supposing to get passivation node which was set", calledNodeSecond, statefulBean.getPassivatedBy());
-        
+
         Thread.sleep(WAIT_FOR_PASSIVATION_MS); // waiting for passivation
         Assert.assertEquals(++clientNumber, statefulBean.getNumber()); // 43
     }

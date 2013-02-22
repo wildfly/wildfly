@@ -32,7 +32,6 @@ import org.jboss.logging.Logger;
 
 /**
  * @author Paul Ferraro
- *
  */
 @javax.ejb.Stateless
 @Clustered
@@ -42,6 +41,7 @@ public class StatelessBean implements Stateless {
 
     /**
      * {@inheritDoc}
+     *
      * @see org.jboss.as.test.clustering.cluster.ejb3.stateless.bean.Stateless#getNodeName()
      */
     @javax.ejb.TransactionAttribute(TransactionAttributeType.SUPPORTS)

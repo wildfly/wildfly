@@ -50,9 +50,9 @@ public class MyServiceActivator implements ServiceActivator {
         SingletonService<Environment> singleton = new SingletonService<Environment>(service, MyService.SERVICE_NAME);
         singleton.setElectionPolicy(new PreferredSingletonElectionPolicy(new SimpleSingletonElectionPolicy(), new NamePreference(PREFERRED_NODE + "/" + SingletonService.DEFAULT_CONTAINER)));
         singleton.build(context.getServiceTarget())
-            .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.getEnvInjector())
-            .setInitialMode(ServiceController.Mode.ACTIVE)
-            .install()
+                .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.getEnvInjector())
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install()
         ;
     }
 }

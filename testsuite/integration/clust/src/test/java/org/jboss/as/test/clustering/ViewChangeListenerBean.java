@@ -38,6 +38,9 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.StartException;
 
+/**
+ * @author Paul Ferraro
+ */
 @Stateless
 @Remote(ViewChangeListener.class)
 @Listener(sync = false)
@@ -60,8 +63,7 @@ public class ViewChangeListenerBean implements ViewChangeListener {
         try {
             EmbeddedCacheManager manager = ServiceContainerHelper.getValue(controller, EmbeddedCacheManager.class);
             manager.addListener(this);
-            try
-            {
+            try {
                 long start = System.currentTimeMillis();
                 long now = start;
                 long timeout = start + TIMEOUT;

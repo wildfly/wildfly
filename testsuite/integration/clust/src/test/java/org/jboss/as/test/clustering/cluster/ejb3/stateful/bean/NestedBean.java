@@ -30,7 +30,6 @@ import org.jboss.ejb3.annotation.Clustered;
 
 /**
  * @author Paul Ferraro
- *
  */
 @Clustered
 @javax.ejb.Stateful(name = "NestedBean")

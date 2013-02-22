@@ -27,19 +27,22 @@ package org.jboss.as.test.clustering.cluster.ejb3.stateful.passivation;
  */
 public class TestingDTO extends TestingDTOParent {
     private static final long serialVersionUID = 1L;
-    
+
     private transient int transientNumber;
     private int number;
-        
+
     public int getTransientInt() {
         return transientNumber;
     }
+
     public void setTransientNumber(int num) {
         this.transientNumber = num;
     }
+
     public int getNumber() {
         return number;
     }
+
     public void setNumber(int num) {
         this.number = num;
     }

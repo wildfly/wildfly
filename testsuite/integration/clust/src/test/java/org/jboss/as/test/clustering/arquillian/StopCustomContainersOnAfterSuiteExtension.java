@@ -21,9 +21,6 @@
  */
 package org.jboss.as.test.clustering.arquillian;
 
-import java.io.File;
-import java.io.IOException;
-
 import org.jboss.arquillian.container.spi.Container;
 import org.jboss.arquillian.container.spi.Container.State;
 import org.jboss.arquillian.container.spi.ContainerRegistry;
@@ -50,7 +47,7 @@ public class StopCustomContainersOnAfterSuiteExtension implements LoadableExtens
 
     public static class StopCustomContainers {
         public void close(@Observes AfterSuite event, ContainerRegistry registry) {
-            for (Container c : registry.getContainers()) {
+            for (Container c: registry.getContainers()) {
                 if (c.getState() == State.STARTED && "custom".equalsIgnoreCase(c.getContainerConfiguration().getMode())) {
                     try {
                         c.stop();

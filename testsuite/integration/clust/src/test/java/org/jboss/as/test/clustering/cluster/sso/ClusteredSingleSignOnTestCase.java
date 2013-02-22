@@ -47,8 +47,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- *
- * @author Dominik Pospisil <dpospisi@redhat.com>
+ * @author <a href="mailto:dpospisi@redhat.com">Dominik Pospisil</a>
  */
 @RunWith(Arquillian.class)
 @RunAsClient
@@ -128,7 +127,7 @@ public class ClusteredSingleSignOnTestCase {
             @ArquillianResource(LogoutServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(LogoutServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
         log.info("+++ testFormAuthSingleSignOn");
-        SSOTestBase.executeFormAuthSingleSignOnTest(new URL(baseURL1, "/"), new URL(baseURL2, "/"),  log);
+        SSOTestBase.executeFormAuthSingleSignOnTest(new URL(baseURL1, "/"), new URL(baseURL2, "/"), log);
     }
 
     /**

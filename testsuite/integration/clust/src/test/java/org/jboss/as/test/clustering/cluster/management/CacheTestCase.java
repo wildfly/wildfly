@@ -53,7 +53,7 @@ import org.jboss.as.test.clustering.NodeUtil;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 
 /**
- * @author Dominik Pospisil <dpospisi@redhat.com>
+ * @author <a href="mailto:dpospisi@redhat.com>Dominik Pospisil</a>
  */
 @RunWith(Arquillian.class)
 @RunAsClient

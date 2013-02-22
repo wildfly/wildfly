@@ -33,7 +33,6 @@ import org.jboss.ejb3.annotation.Cache;
 
 /**
  * @author Paul Ferraro
- *
  */
 @Stateful
 @StatefulTimeout(value = 1000L, unit = TimeUnit.MILLISECONDS)

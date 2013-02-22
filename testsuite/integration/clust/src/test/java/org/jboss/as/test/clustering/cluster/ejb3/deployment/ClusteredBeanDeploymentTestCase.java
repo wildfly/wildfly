@@ -40,7 +40,9 @@ import javax.naming.InitialContext;
 
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
+
 import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
+
 import org.jboss.as.test.clustering.NodeUtil;
 
 /**

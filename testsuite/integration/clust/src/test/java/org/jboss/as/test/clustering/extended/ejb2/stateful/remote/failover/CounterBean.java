@@ -29,6 +29,7 @@ import javax.ejb.RemoteHome;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateful;
+
 import org.jboss.ejb3.annotation.Clustered;
 import org.jboss.logging.Logger;
 
@@ -41,24 +42,24 @@ import org.jboss.logging.Logger;
 public class CounterBean extends CounterBaseBean implements SessionBean {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CounterBean.class);
-        
+
     public void ejbRemove() throws EJBException, RemoteException {
         log.info("ejbRemove called...");
-        CounterSingleton.destroyCounter.incrementAndGet();        
+        CounterSingleton.destroyCounter.incrementAndGet();
     }
 
     @Override
     public void ejbActivate() throws EJBException, RemoteException {
-        
+
     }
 
     @Override
     public void ejbPassivate() throws EJBException, RemoteException {
-        
+
     }
 
     @Override
     public void setSessionContext(SessionContext arg0) throws EJBException, RemoteException {
-        
+
     }
 }

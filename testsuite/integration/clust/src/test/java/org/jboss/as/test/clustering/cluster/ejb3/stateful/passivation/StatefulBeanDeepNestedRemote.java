@@ -30,7 +30,10 @@ import javax.ejb.Remote;
 @Remote
 public interface StatefulBeanDeepNestedRemote {
     void reset();
+
     String getNodeName();
+
     int getPassivatedCalled();
+
     int getActivatedCalled();
 }

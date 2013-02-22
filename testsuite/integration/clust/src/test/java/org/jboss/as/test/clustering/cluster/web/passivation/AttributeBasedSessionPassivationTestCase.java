@@ -23,7 +23,9 @@ package org.jboss.as.test.clustering.cluster.web.passivation;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
+
 import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
+
 import org.jboss.as.test.clustering.cluster.web.ClusteredWebSimpleTestCase;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.shrinkwrap.api.Archive;

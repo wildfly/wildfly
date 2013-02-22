@@ -30,17 +30,17 @@ import org.junit.BeforeClass;
  * @author Ondrej Chaloupka
  */
 public abstract class RemoteEJBClientStatefulFaliloverTestBase {
-       private static final Logger log = Logger.getLogger(RemoteEJBClientStatefulFaliloverTestBase.class);
-    
+    private static final Logger log = Logger.getLogger(RemoteEJBClientStatefulFaliloverTestBase.class);
+
     protected static final String PROPERTIES_FILE = "cluster/ejb3/stateful/failover/sfsb-failover-jboss-ejb-client.properties";
     protected static final String ARCHIVE_NAME = "ejb2-failover-test";
     protected static final String ARCHIVE_NAME_SINGLE = ARCHIVE_NAME + "-single";
     protected static final String DEPLOYMENT_1_SINGLE = DEPLOYMENT_1 + "-single";
     protected static final String DEPLOYMENT_2_SINGLE = DEPLOYMENT_2 + "-single";
-    
+
     protected static EJBDirectory singletonDirectory;
     protected static EJBDirectory directory;
-    
+
     protected static Archive<?> createDeploymentSingleton() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME_SINGLE + ".jar");
         jar.addClasses(CounterSingleton.class, CounterSingletonRemote.class);
@@ -68,16 +68,16 @@ public abstract class RemoteEJBClientStatefulFaliloverTestBase {
      * @throws Exception
      */
     public abstract void testFailoverFromRemoteClientWhenOneNodeGoesDown() throws Exception;
-    
+
     /**
      * Same as above, but application gets undeployed while the server keeps running.
      *
      * @throws Exception
      */
     public abstract void testFailoverFromRemoteClientWhenOneNodeUndeploys() throws Exception;
-    
+
     /**
-     * Implementation of defined abstract tests above.  
+     * Implementation of defined abstract tests above.
      */
     protected void failoverFromRemoteClient(ContainerController container, Deployer deployer, boolean undeployOnly) throws Exception {
         // Container is unmanaged, so start it ourselves
@@ -96,16 +96,16 @@ public abstract class RemoteEJBClientStatefulFaliloverTestBase {
         boolean container2Stopped = false;
         try {
             ViewChangeListener listener = directory.lookupStateless(ViewChangeListenerBean.class, ViewChangeListener.class);
-            
+
             this.establishView(listener, NODE_1, NODE_2);
-            
+
             CounterRemoteHome home = directory.lookupHome(CounterBean.class, CounterRemoteHome.class);
             CounterRemote remoteCounter = home.create();
             Assert.assertNotNull(remoteCounter);
-            
+
             final CounterSingletonRemote destructionCounter = singletonDirectory.lookupSingleton(CounterSingleton.class, CounterSingletonRemote.class);
             destructionCounter.resetDestroyCount();
-            
+
             // invoke on the bean a few times
             final int NUM_TIMES = 25;
             for (int i = 0; i < NUM_TIMES; i++) {
@@ -128,9 +128,9 @@ public abstract class RemoteEJBClientStatefulFaliloverTestBase {
                 } else {
                     container.stop(CONTAINER_1);
                 }
-                
+
                 this.establishView(listener, NODE_2);
-                
+
                 container1Stopped = true;
             } else {
                 if (undeployOnly) {
@@ -139,9 +139,9 @@ public abstract class RemoteEJBClientStatefulFaliloverTestBase {
                 } else {
                     container.stop(CONTAINER_2);
                 }
-                
+
                 this.establishView(listener, NODE_1);
-                
+
                 container2Stopped = true;
             }
             // invoke again
