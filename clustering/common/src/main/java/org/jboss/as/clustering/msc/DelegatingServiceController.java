@@ -23,6 +23,8 @@
 package org.jboss.as.clustering.msc;
 
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
@@ -129,5 +131,15 @@ public class DelegatingServiceController<T> implements ServiceController<T> {
     @Override
     public Set<ServiceName> getImmediateUnavailableDependencies() {
         return this.controller.getImmediateUnavailableDependencies();
+    }
+
+    @Override
+    public T awaitValue() throws IllegalStateException, InterruptedException {
+        return this.controller.awaitValue();
+    }
+
+    @Override
+    public T awaitValue(long time, TimeUnit unit) throws IllegalStateException, InterruptedException, TimeoutException {
+        return this.controller.awaitValue(time, unit);
     }
 }

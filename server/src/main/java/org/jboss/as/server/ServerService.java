@@ -104,7 +104,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -230,7 +229,7 @@ public final class ServerService extends AbstractControllerService {
         try {
             final ServerEnvironment serverEnvironment = configuration.getServerEnvironment();
             final ServiceTarget serviceTarget = context.getServiceTarget();
-            serviceTarget.addListener(ServiceListener.Inheritance.ALL, bootstrapListener);
+            serviceTarget.addListener(bootstrapListener);
             final File[] extDirs = serverEnvironment.getJavaExtDirs();
             final File[] newExtDirs = Arrays.copyOf(extDirs, extDirs.length + 1);
             newExtDirs[extDirs.length] = new File(serverEnvironment.getServerBaseDir(), "lib/ext");
@@ -298,7 +297,6 @@ public final class ServerService extends AbstractControllerService {
             DeploymentStructureDescriptorParser.registerJBossXMLParsers();
             DeploymentDependenciesProcessor.registerJBossXMLParsers();
 
-
             try {
                 // Boot but by default don't rollback on runtime failures
                 // TODO replace system property used by tests with something properly configurable for general use
@@ -318,7 +316,7 @@ public final class ServerService extends AbstractControllerService {
 
         if (ok) {
             // Trigger the started message
-            bootstrapListener.tick();
+            bootstrapListener.printBootStatistics();
         } else {
             // Die!
             ServerLogger.ROOT_LOGGER.unsuccessfulBoot();

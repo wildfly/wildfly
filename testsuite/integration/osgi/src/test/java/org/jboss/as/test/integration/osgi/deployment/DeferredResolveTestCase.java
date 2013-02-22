@@ -152,6 +152,7 @@ public class DeferredResolveTestCase {
     }
 
     @Test
+    @org.junit.Ignore("AS7-6511")
     public void testFailAPICall() throws Exception {
         InputStream input = deployer.getDeployment(BAD_BUNDLE);
         Bundle bundle = context.installBundle(BAD_BUNDLE, input);
@@ -175,6 +176,7 @@ public class DeferredResolveTestCase {
     }
 
     @Test
+    @org.junit.Ignore("AS7-6511")
     public void testFailStartLevel() throws Exception {
         int orglevel = startLevel.getStartLevel();
         InputStream input = deployer.getDeployment(BAD_BUNDLE);

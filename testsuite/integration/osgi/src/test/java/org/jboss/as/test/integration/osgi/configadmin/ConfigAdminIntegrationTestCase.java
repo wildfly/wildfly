@@ -69,6 +69,7 @@ import org.osgi.util.tracker.ServiceTracker;
  * @since 30-Sep-2012
  */
 @RunWith(Arquillian.class)
+@org.junit.Ignore("AS7-6511")
 public class ConfigAdminIntegrationTestCase {
 
     static final String CONFIG_ADMIN_BUNDLE_A = "config-admin-bundle-a";

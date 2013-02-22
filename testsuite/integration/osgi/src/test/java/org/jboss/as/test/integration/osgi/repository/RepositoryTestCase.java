@@ -56,6 +56,7 @@ import org.osgi.util.tracker.ServiceTracker;
  * @since 19-Jan-2012
  */
 @RunWith(Arquillian.class)
+@org.junit.Ignore("AS7-6511")
 public class RepositoryTestCase {
 
     @ArquillianResource

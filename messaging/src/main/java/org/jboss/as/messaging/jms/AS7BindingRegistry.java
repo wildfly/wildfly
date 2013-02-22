@@ -27,18 +27,15 @@ import static org.jboss.as.messaging.MessagingLogger.ROOT_LOGGER;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.Locale;
-import java.util.concurrent.CountDownLatch;
 
 import org.hornetq.spi.core.naming.BindingRegistry;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
-import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceController.Transition;
-import org.jboss.msc.service.ServiceListener;
+import org.jboss.msc.service.StabilityMonitor;
 import org.jboss.msc.value.Values;
 
 /**
@@ -46,6 +43,7 @@ import org.jboss.msc.value.Values;
  *
  * @author Jason T. Greene
  * @author Jaikiran Pai
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class AS7BindingRegistry implements BindingRegistry {
 
@@ -91,7 +89,6 @@ public class AS7BindingRegistry implements BindingRegistry {
     /**
      * Unbind the resource and wait until the corresponding binding service is effectively removed.
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public void unbind(String name) {
         if (name == null || name.isEmpty()) {
@@ -103,30 +100,17 @@ public class AS7BindingRegistry implements BindingRegistry {
             ROOT_LOGGER.debugf("Cannot unbind %s since no binding exists with that name", name);
             return;
         }
-        final CountDownLatch removedLatch = new CountDownLatch(1);
-        final ServiceListener listener = new AbstractServiceListener() {
-            @Override
-            public void transition(ServiceController controller, Transition transition) {
-                if (transition.getAfter() == ServiceController.Substate.REMOVED) {
-                    removedLatch.countDown();
-                }
-            }
-        };
-        bindingService.addListener(listener);
-
         // remove the binding service
         bindingService.setMode(ServiceController.Mode.REMOVE);
-
+        final StabilityMonitor monitor = new StabilityMonitor();
+        monitor.addController(bindingService);
         try {
-            if (!removedLatch.await(5, SECONDS)) {
-                ROOT_LOGGER.failedToUnbindJndiName(name, 5, SECONDS.toString().toLowerCase(Locale.US));
-                return;
-            }
+            monitor.awaitStability();
             ROOT_LOGGER.unboundJndiName(bindInfo.getAbsoluteJndiName());
         } catch (InterruptedException e) {
             ROOT_LOGGER.failedToUnbindJndiName(name, 5, SECONDS.toString().toLowerCase(Locale.US));
         } finally {
-            bindingService.removeListener(listener);
+            monitor.removeController(bindingService);
         }
     }
 

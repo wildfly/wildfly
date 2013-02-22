@@ -42,7 +42,6 @@ import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.SubjectFactory;
@@ -81,7 +80,7 @@ public class RaServicesFactory {
                 .addDependency(ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(connectorXmlDescriptor.getDeploymentName()));
 
         if(serviceVerificationHandler != null) {
-            builder.addListener(ServiceListener.Inheritance.ALL, serviceVerificationHandler);
+            builder.addListener(serviceVerificationHandler);
         }
         if (registration != null && deploymentResource != null) {
             builder.addListener(new AbstractResourceAdapterDeploymentServiceListener(registration, deploymentUnitName, deploymentResource) {

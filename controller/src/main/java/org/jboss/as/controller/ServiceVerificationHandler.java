@@ -28,6 +28,7 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StabilityMonitor;
 import org.jboss.msc.service.StartException;
 
 import java.util.HashSet;
@@ -43,46 +44,30 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
  * if the service has a problme starting.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public final class ServiceVerificationHandler extends AbstractServiceListener<Object> implements ServiceListener<Object>, OperationStepHandler {
-    private final Set<ServiceController<?>> set = new HashSet<ServiceController<?>>();
-    private final Set<ServiceController<?>> failed = new HashSet<ServiceController<?>>();
-    private final Set<ServiceController<?>> problem = new HashSet<ServiceController<?>>();
-    private int outstanding;
+    private final StabilityMonitor monitor = new StabilityMonitor();
+
+    public synchronized void listenerAdded(final ServiceController<?> controller) {
+        monitor.addController(controller);
+        controller.removeListener(this);
+    }
 
     public synchronized void execute(final OperationContext context, final ModelNode operation) {
+        final Set<ServiceController<?>> failed = new HashSet<ServiceController<?>>();
+        final Set<ServiceController<?>> problems = new HashSet<ServiceController<?>>();
 
-        // Wait for services to reach rest state.
-        // Additionally...
-        // Temp workaround to MSC issue of geting STARTING_TO_STARTED notification for parent service before
-        // getting the PROBLEM_TO_START_REQUESTED notification for dependent services. If there are
-        // services in PROBLEM state, wait up to 100ms to give them a chance to transition to START_REQUESTED.
-
-        long start = 0;
-        long settleTime = 100;
-        while (outstanding > 0 || (settleTime > 0 && !problem.isEmpty())) {
-            try {
-                long wait = outstanding > 0 ? 0 : settleTime;
-                wait(wait);
-                if (outstanding == 0) {
-                    if (start == 0) {
-                        start = System.currentTimeMillis();
-                    } else {
-                        settleTime -= System.currentTimeMillis() - start;
-                    }
-                } else {
-                    start = 0;
-                    settleTime = 100;
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                context.getFailureDescription().set(MESSAGES.operationCancelled());
-                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
-                return;
-            }
+        try {
+            monitor.awaitStability(failed, problems);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            context.getFailureDescription().set(MESSAGES.operationCancelled());
+            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            return;
         }
 
-        if (!failed.isEmpty() || !problem.isEmpty()) {
+        if (!failed.isEmpty() || !problems.isEmpty()) {
             Set<ServiceController<?>> missingTransitive = null;
             Set<ServiceName> trackedServices = new HashSet<ServiceName>();
             final ModelNode failureDescription = context.getFailureDescription();
@@ -96,7 +81,7 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
                 failedList.get(serviceName.getCanonicalName()).set(getServiceFailureDescription(controller.getStartException()));
             }
             ModelNode problemList = null;
-            for (ServiceController<?> controller : problem) {
+            for (ServiceController<?> controller : problems) {
 
                 Set<ServiceName> immediatelyUnavailable = controller.getImmediateUnavailableDependencies();
                 if (!immediatelyUnavailable.isEmpty()) {
@@ -153,45 +138,7 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
                 context.setRollbackOnly();
             }
         }
-        for (ServiceController<?> controller : set) {
-            controller.removeListener(this);
-        }
         context.stepCompleted();
-    }
-
-    public synchronized void listenerAdded(final ServiceController<?> controller) {
-        set.add(controller);
-        if (!controller.getSubstate().isRestState()) {
-            outstanding++;
-        }
-    }
-
-    public synchronized void transition(final ServiceController<?> controller, final ServiceController.Transition transition) {
-        switch (transition) {
-            case STARTING_to_START_FAILED: {
-                failed.add(controller);
-                break;
-            }
-            case START_FAILED_to_STARTING: {
-                failed.remove(controller);
-                break;
-            }
-            case START_REQUESTED_to_PROBLEM: {
-                problem.add(controller);
-                break;
-            }
-            case PROBLEM_to_START_REQUESTED: {
-                problem.remove(controller);
-                break;
-            }
-        }
-        if (transition.leavesRestState()) {
-            outstanding++;
-        } else if (transition.entersRestState()) {
-            if (outstanding-- == 1) {
-                notifyAll();
-            }
-        }
     }
 
     private static ModelNode getServiceFailureDescription(final StartException exception) {
