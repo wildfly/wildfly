@@ -19,6 +19,7 @@ package org.jboss.as.arquillian.container.embedded;
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.as.arquillian.container.CommonDeployableContainer;
 import org.jboss.as.embedded.EmbeddedServerFactory;
+import org.jboss.as.embedded.EmbeddedStandAloneServerFactory;
 import org.jboss.as.embedded.StandaloneServer;
 
 /**
@@ -40,6 +41,9 @@ public final class EmbeddedDeployableContainer extends CommonDeployableContainer
     @Override
     public void setup(final EmbeddedContainerConfiguration config) {
         super.setup(config);
+        if (config.getCleanServerBaseDir() != null) {
+            SecurityActions.setSystemProperty(EmbeddedStandAloneServerFactory.JBOSS_EMBEDDED_ROOT, config.getCleanServerBaseDir());
+        }
         server = EmbeddedServerFactory.create(config.getJbossHome(), config.getModulePath(), config.getBundlePath());
     }
 
