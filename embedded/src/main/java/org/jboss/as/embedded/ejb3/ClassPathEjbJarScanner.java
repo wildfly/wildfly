@@ -27,6 +27,7 @@ import org.jboss.jandex.Index;
 import org.jboss.jandex.Indexer;
 import org.jboss.vfs.TempFileProvider;
 import org.jboss.vfs.VFS;
+import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 
 import javax.ejb.MessageDriven;
@@ -275,7 +276,6 @@ class ClassPathEjbJarScanner {
 
         // Represent as VFS so we get a nice unified API
         final VirtualFile file = VFS.getChild(candidate);
-        TempFileProvider provider = null;
 
         /*
         * See if we've been configured to skip this file
@@ -291,7 +291,8 @@ class ClassPathEjbJarScanner {
             }
         }
 
-        Closeable handle;
+        Closeable handle = null;
+        TempFileProvider provider = null;
         try {
 
             // If the file exists
@@ -303,9 +304,7 @@ class ClassPathEjbJarScanner {
                 }
                 // Mount EJB JAR
                 else if (file.getName().endsWith(EXTENSION_JAR)) {
-                    if (provider == null) {
-                        provider = TempFileProvider.create("jbossejbmodulescanner", ses);
-                    }
+                    provider = TempFileProvider.create("jbossejbmodulescanner", ses);
                     handle = VFS.mountZip(file.getPhysicalFile(), file, provider);
                 }
                 // No conditions met
@@ -322,38 +321,32 @@ class ClassPathEjbJarScanner {
                 return null;
             }
 
-            try {
-                /*
-                * Directories and real JARs are handled the same way in VFS, so just do
-                * one check and skip logic to test isDirectory or not
-                */
 
-                // Look for META-INF/ejb-jar.xml
-                final VirtualFile ejbJarXml = file.getChild(PATH_EJB_JAR_XML);
-                if (ejbJarXml.exists()) {
-                    if (ROOT_LOGGER.isTraceEnabled()) {
-                        ROOT_LOGGER.tracef("Found descriptor %s in %s", ejbJarXml.getPathNameRelativeTo(file), file);
-                    }
-                    return getModuleNameFromEjbJar(file, ejbJarXml);
-                }
+            /*
+            * Directories and real JARs are handled the same way in VFS, so just do
+            * one check and skip logic to test isDirectory or not
+            */
 
-                // Look for at least one .class with an EJB annotation
-                if (containsEjbComponentClass(file)) {
-                    return getModuleNameFromFileName(file);
+            // Look for META-INF/ejb-jar.xml
+            final VirtualFile ejbJarXml = file.getChild(PATH_EJB_JAR_XML);
+            if (ejbJarXml.exists()) {
+                if (ROOT_LOGGER.isTraceEnabled()) {
+                    ROOT_LOGGER.tracef("Found descriptor %s in %s", ejbJarXml.getPathNameRelativeTo(file), file);
                 }
-
-                // Return
-                return null;
-            } finally {
-                try {
-                    handle.close();
-                } catch (final IOException e) {
-                    // Ignore
-                    ROOT_LOGGER.cannotCloseFile(e, file);
-                }
+                return getModuleNameFromEjbJar(file, ejbJarXml);
             }
+
+            // Look for at least one .class with an EJB annotation
+            if (containsEjbComponentClass(file)) {
+                return getModuleNameFromFileName(file);
+            }
+
+            // Return
+            return null;
         } catch (final IOException e) {
             throw MESSAGES.cannotMountFile(e, candidate);
+        } finally {
+            VFSUtils.safeClose(handle, provider);
         }
 
     }

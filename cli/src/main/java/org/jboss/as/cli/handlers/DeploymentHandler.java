@@ -24,7 +24,6 @@ package org.jboss.as.cli.handlers;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.Executors;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
@@ -118,9 +117,8 @@ public abstract class DeploymentHandler extends BatchModeCommandHandler {
         return request;
     }
 
-    protected MountHandle extractArchive(File archive) throws IOException {
-        return ((MountHandle)VFS.mountZipExpanded(archive, VFS.getChild("cli"),
-                TempFileProvider.create("cli", Executors.newSingleThreadScheduledExecutor())));
+    protected MountHandle extractArchive(File archive, TempFileProvider tempFileProvider) throws IOException {
+        return ((MountHandle)VFS.mountZipExpanded(archive, VFS.getChild("cli"), tempFileProvider));
     }
 
     protected String activateNewBatch(CommandContext ctx) {

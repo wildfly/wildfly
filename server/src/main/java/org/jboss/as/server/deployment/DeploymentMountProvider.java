@@ -39,6 +39,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.threads.JBossThreadFactory;
 import org.jboss.vfs.TempFileProvider;
 import org.jboss.vfs.VFS;
+import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -115,6 +116,8 @@ public interface DeploymentMountProvider {
 
             @Override
             public void stop(StopContext context) {
+                VFSUtils.safeClose(tempFileProvider);
+
                 ServerLogger.ROOT_LOGGER.debugf("%s stopped", DeploymentMountProvider.class.getSimpleName());
             }
 
