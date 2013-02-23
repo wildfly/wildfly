@@ -29,7 +29,6 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.MapAttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
-import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -52,11 +51,6 @@ import org.jboss.dmr.ModelType;
  * @author Farah Juma
  */
 public class DiscoveryOptionResourceDefinition extends SimpleResourceDefinition {
-
-    public static final SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.NAME, ModelType.STRING)
-        .setResourceOnly()
-        .setValidator(new StringLengthValidator(1))
-        .build();
 
     public static final SimpleAttributeDefinition CODE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.CODE, ModelType.STRING)
         .setValidator(new StringLengthValidator(1))
@@ -85,7 +79,6 @@ public class DiscoveryOptionResourceDefinition extends SimpleResourceDefinition 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         super.registerAttributes(resourceRegistration);
-        resourceRegistration.registerReadOnlyAttribute(NAME, ReadResourceNameOperationStepHandler.INSTANCE);
         for (final AttributeDefinition attribute : DISCOVERY_ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attribute, null, new WriteAttributeHandlers.AttributeDefinitionValidatingHandler(attribute));
         }

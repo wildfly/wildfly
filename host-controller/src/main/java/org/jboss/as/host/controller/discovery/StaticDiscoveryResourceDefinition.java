@@ -25,7 +25,6 @@ package org.jboss.as.host.controller.discovery;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STATIC_DISCOVERY;
 
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -36,9 +35,9 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.host.controller.descriptions.HostResolver;
+import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.as.host.controller.operations.StaticDiscoveryAddHandler;
 import org.jboss.as.host.controller.operations.StaticDiscoveryRemoveHandler;
-import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -47,11 +46,6 @@ import org.jboss.dmr.ModelType;
  * @author Farah Juma
  */
 public class StaticDiscoveryResourceDefinition extends SimpleResourceDefinition {
-
-    public static final SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.NAME, ModelType.STRING)
-        .setResourceOnly()
-        .setValidator(new StringLengthValidator(1))
-        .build();
 
     public static final SimpleAttributeDefinition HOST = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.HOST, ModelType.STRING)
         .setAllowExpression(true)
@@ -75,7 +69,6 @@ public class StaticDiscoveryResourceDefinition extends SimpleResourceDefinition 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         super.registerAttributes(resourceRegistration);
-        resourceRegistration.registerReadOnlyAttribute(NAME, ReadResourceNameOperationStepHandler.INSTANCE);
         for (final SimpleAttributeDefinition attribute : STATIC_DISCOVERY_ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attribute, null, new WriteAttributeHandlers.AttributeDefinitionValidatingHandler(attribute));
         }
