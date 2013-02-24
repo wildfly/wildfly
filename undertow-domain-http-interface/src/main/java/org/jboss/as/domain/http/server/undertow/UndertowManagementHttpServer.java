@@ -25,12 +25,17 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 
+import javax.net.ssl.SSLContext;
+
+import io.undertow.security.handlers.SinglePortConfidentialityHandler;
+import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpOpenListener;
 import io.undertow.server.handlers.CanonicalPathHandler;
 import io.undertow.server.handlers.PathHandler;
 import io.undertow.server.handlers.blocking.BlockingHandler;
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.domain.management.AuthenticationMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -44,10 +49,15 @@ import org.xnio.OptionMap;
 import org.xnio.Options;
 import org.xnio.Xnio;
 import org.xnio.XnioWorker;
+import org.xnio.OptionMap.Builder;
 import org.xnio.channels.AcceptingChannel;
 import org.xnio.channels.ConnectedStreamChannel;
+import org.xnio.ssl.JsseXnioSsl;
+import org.xnio.ssl.XnioSsl;
 
 import static org.jboss.as.domain.http.server.undertow.UndertowHttpServerLogger.ROOT_LOGGER;
+import static org.xnio.Options.SSL_CLIENT_AUTH_MODE;
+import static org.xnio.SslClientAuthMode.REQUESTED;
 
 /**
  * The general HTTP server for handling management API requests.
@@ -93,20 +103,26 @@ public class UndertowManagementHttpServer {
                     .set(Options.CORK, true)
                     .getMap());
 
-            OptionMap serverOptions = OptionMap.builder()
+            Builder serverOptionsBuilder = OptionMap.builder()
                     .set(Options.WORKER_ACCEPT_THREADS, 4)
                     .set(Options.TCP_NODELAY, true)
-                    .set(Options.REUSE_ADDRESSES, true)
-                    .getMap();
-            ChannelListener<? super AcceptingChannel<ConnectedStreamChannel>> acceptListener = ChannelListeners.openListenerAdapter(openListener);
+                    .set(Options.REUSE_ADDRESSES, true);
+            ChannelListener acceptListener = ChannelListeners.openListenerAdapter(openListener);
             if (httpAddress != null) {
                 System.out.println("-----> Starting undertow server on " + httpAddress);
-                normalServer = worker.createStreamServer(httpAddress, acceptListener, serverOptions);
+                normalServer = worker.createStreamServer(httpAddress, acceptListener, serverOptionsBuilder.getMap());
                 normalServer.resumeAccepts();
             }
             if (secureAddress != null) {
-                System.out.println("-----> Starting undertow server on " + httpAddress);
-                secureServer = worker.createStreamServer(secureAddress, acceptListener, serverOptions);
+                SSLContext sslContext = securityRealm.getSSLContext();
+                if (securityRealm.getSupportedAuthenticationMechanisms().contains(AuthenticationMechanism.CLIENT_CERT)) {
+                    serverOptionsBuilder.set(SSL_CLIENT_AUTH_MODE, REQUESTED);
+                }
+
+                System.out.println("-----> Starting undertow server on " + secureAddress);
+                OptionMap secureOptions = serverOptionsBuilder.getMap();
+                XnioSsl xnioSsl = new JsseXnioSsl(worker.getXnio(), secureOptions, sslContext);
+                secureServer = xnioSsl.createSslTcpServer(worker, secureAddress, acceptListener, secureOptions);
                 secureServer.resumeAccepts();
             }
         } catch (IOException e) {
@@ -127,20 +143,23 @@ public class UndertowManagementHttpServer {
             throws IOException {
 
         HttpOpenListener openListener = new HttpOpenListener(new ByteBufferSlicePool(BufferAllocator.DIRECT_BYTE_BUFFER_ALLOCATOR, 4096, 10 * 4096), 4096);
-        setupOpenListener(openListener, modelControllerClient, consoleMode, consoleSlot, controlledProcessStateService);
+        int securePort = secureBindAddress != null ? secureBindAddress.getPort() : -1;
+        setupOpenListener(openListener, modelControllerClient, consoleMode, consoleSlot, controlledProcessStateService, securePort);
         UndertowManagementHttpServer server = new UndertowManagementHttpServer(openListener, bindAddress, secureBindAddress, securityRealm);
-
-
 
         return server;
     }
 
-    private static void setupOpenListener(HttpOpenListener listener, ModelControllerClient modelControllerClient, ConsoleMode consoleMode, String consoleSlot, ControlledProcessStateService controlledProcessStateService) {
+    private static void setupOpenListener(HttpOpenListener listener, ModelControllerClient modelControllerClient, ConsoleMode consoleMode, String consoleSlot, ControlledProcessStateService controlledProcessStateService, int securePort) {
         CanonicalPathHandler canonicalPathHandler = new CanonicalPathHandler();
         listener.setRootHandler(canonicalPathHandler);
 
         PathHandler pathHandler = new PathHandler();
-        canonicalPathHandler.setNext(pathHandler);
+        HttpHandler current = pathHandler;
+        if (securePort > 0) {
+            current = new SinglePortConfidentialityHandler(current, securePort);
+        }
+        canonicalPathHandler.setNext(current);
 
         ResourceHandler consoleHandler = null;
         try {
