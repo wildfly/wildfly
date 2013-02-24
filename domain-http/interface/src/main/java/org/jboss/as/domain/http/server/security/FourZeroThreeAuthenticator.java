@@ -28,7 +28,7 @@ import org.jboss.com.sun.net.httpserver.HttpExchange;
 
 /**
  * A special authenticator that prevents all access. This is used where the management http interface is associated with an
- * authentication capable security realm but not http compatible mechanisms are identified.
+ * authentication capable security realm but no http compatible mechanisms are identified.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
