@@ -29,8 +29,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
-import junit.framework.Assert;
-
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -42,7 +40,7 @@ import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.byteman.contrib.bmunit.BMRule;
 import org.jboss.byteman.contrib.bmunit.BMUnitRunner;
 import org.jboss.dmr.ModelNode;
-import org.jgroups.protocols.SHARED_LOOPBACK;
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;

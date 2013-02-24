@@ -25,10 +25,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import junit.framework.Assert;
-
 import org.jboss.as.cli.completion.mock.MockNode;
 import org.jboss.as.cli.operation.OperationRequestAddress;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

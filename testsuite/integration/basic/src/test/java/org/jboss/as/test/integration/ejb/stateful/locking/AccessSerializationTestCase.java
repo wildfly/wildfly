@@ -28,7 +28,7 @@ import java.util.concurrent.Future;
 
 import javax.naming.InitialContext;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;

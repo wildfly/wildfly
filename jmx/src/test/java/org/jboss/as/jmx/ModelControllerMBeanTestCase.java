@@ -40,18 +40,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-
 import javax.management.Attribute;
 import javax.management.AttributeList;
 import javax.management.InstanceNotFoundException;
@@ -77,8 +65,17 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.xml.stream.XMLStreamException;
-
-import junit.framework.Assert;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
@@ -117,6 +114,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLMapper;
+import org.junit.Assert;
 import org.junit.Test;
 import org.xnio.OptionMap;
 
@@ -603,7 +601,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         Assert.assertEquals(bigDecimal, assertCast(BigDecimal.class, connection.getAttribute(name, "bigdec")));
         Assert.assertEquals(bool, assertCast(Boolean.class, connection.getAttribute(name, "boolean")).booleanValue());
         assertEqualByteArray(assertCast(byte[].class, connection.getAttribute(name, "bytes")), bytes);
-        Assert.assertEquals(dbl, assertCast(Double.class, connection.getAttribute(name, "double")));
+        Assert.assertEquals(dbl, assertCast(Double.class, connection.getAttribute(name, "double")), 0.0d);
         Assert.assertEquals(s, assertCast(String.class, connection.getAttribute(name, "string")));
 
         Integer[] listValue = assertCast(Integer[].class, connection.getAttribute(name, "list"));
@@ -769,7 +767,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         Assert.assertEquals(bd, assertGetFromList(BigDecimal.class, list, "bigdec"));
         Assert.assertEquals(b, assertGetFromList(Boolean.class, list, "boolean").booleanValue());
         assertEqualByteArray(assertGetFromList(byte[].class, list, "bytes"), bytes);
-        Assert.assertEquals(d, assertGetFromList(Double.class, list, "double"));
+        Assert.assertEquals(d, assertGetFromList(Double.class, list, "double"), 0.0d);
         Assert.assertEquals(s, assertGetFromList(String.class, list, "string"));
         Integer[] listValue = assertGetFromList(Integer[].class, list, "list");
         Assert.assertEquals(lst.size(), listValue.length);

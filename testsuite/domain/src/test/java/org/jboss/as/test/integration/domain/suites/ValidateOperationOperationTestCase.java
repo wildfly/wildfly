@@ -30,7 +30,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import java.io.IOException;
 import java.net.UnknownHostException;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;

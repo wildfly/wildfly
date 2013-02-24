@@ -13,7 +13,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import java.io.IOException;
 import java.util.List;
 
-import junit.framework.Assert;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
@@ -22,6 +21,7 @@ import org.jboss.as.subsystem.test.ControllerInitializer;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

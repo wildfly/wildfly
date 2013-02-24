@@ -45,8 +45,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 
 import java.util.List;
 
-import junit.framework.Assert;
-
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.subsystem.test.ModelDescriptionValidator;
@@ -54,6 +52,7 @@ import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfigura
 import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationFailure;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

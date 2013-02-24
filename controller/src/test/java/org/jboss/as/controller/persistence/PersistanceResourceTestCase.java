@@ -30,11 +30,10 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Collections;
 
-import junit.framework.Assert;
-
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.xnio.IoUtils;

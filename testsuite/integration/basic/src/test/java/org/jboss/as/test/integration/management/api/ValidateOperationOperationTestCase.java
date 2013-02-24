@@ -23,7 +23,7 @@ package org.jboss.as.test.integration.management.api;
 
 import java.io.IOException;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;

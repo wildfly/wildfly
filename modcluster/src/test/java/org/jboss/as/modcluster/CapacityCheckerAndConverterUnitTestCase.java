@@ -22,10 +22,10 @@
 
 package org.jboss.as.modcluster;
 
-import junit.framework.Assert;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -52,7 +52,7 @@ public class CapacityCheckerAndConverterUnitTestCase {
         Assert.assertTrue(testee.rejectAttribute(PathAddress.EMPTY_ADDRESS, "foo", val, null));
         testee.convertAttribute(PathAddress.EMPTY_ADDRESS, "foo", val, null);
         Assert.assertEquals(ModelType.DOUBLE, val.getType());
-        Assert.assertEquals(1.1d, val.asDouble());
+        Assert.assertEquals(1.1d, val.asDouble(), 0.0d);
     }
 
     @Test

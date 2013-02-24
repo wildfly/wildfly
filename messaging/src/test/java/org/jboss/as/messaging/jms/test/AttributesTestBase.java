@@ -1,13 +1,14 @@
 package org.jboss.as.messaging.jms.test;
 
+import static java.beans.Introspector.getBeanInfo;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import java.beans.PropertyDescriptor;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
-import static java.beans.Introspector.getBeanInfo;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.fail;
 
 public class AttributesTestBase {
 

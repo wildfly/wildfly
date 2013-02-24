@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import junit.framework.Assert;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
@@ -39,6 +38,7 @@ import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>

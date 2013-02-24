@@ -32,8 +32,6 @@ import static org.jboss.as.modcluster.CommonAttributes.MOD_CLUSTER_CONFIG;
 import java.io.IOException;
 import java.util.Set;
 
-import junit.framework.Assert;
-
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -51,6 +49,7 @@ import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.modcluster.config.impl.ModClusterConfig;
 import org.jboss.msc.service.ServiceController;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

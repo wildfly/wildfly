@@ -51,7 +51,7 @@ import static org.jboss.as.test.integration.domain.management.util.DomainTestUti
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.executeForResult;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.exists;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.getRunningServerAddress;
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;

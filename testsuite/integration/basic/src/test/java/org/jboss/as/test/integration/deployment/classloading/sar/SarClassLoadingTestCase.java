@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.deployment.classloading.sar;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidConnectionFactory;
 

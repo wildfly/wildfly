@@ -39,7 +39,7 @@ import static org.jboss.as.naming.subsystem.NamingSubsystemModel.VALUE;
 import java.net.URL;
 import javax.ejb.EJB;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;

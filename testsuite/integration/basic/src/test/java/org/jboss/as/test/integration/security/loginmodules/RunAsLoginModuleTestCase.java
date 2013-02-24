@@ -39,7 +39,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;

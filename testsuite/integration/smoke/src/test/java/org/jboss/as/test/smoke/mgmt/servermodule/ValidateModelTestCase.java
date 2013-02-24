@@ -37,8 +37,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import junit.framework.Assert;
-
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
@@ -51,6 +49,7 @@ import org.jboss.as.model.test.ModelTestModelDescriptionValidator.ValidationFail
 import org.jboss.as.remoting.RemotingExtension;
 import org.jboss.as.threads.ThreadsExtension;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

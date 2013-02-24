@@ -29,14 +29,13 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
-
 import org.jboss.as.protocol.mgmt.support.RemoteChannelPairSetup;
 import org.jboss.as.protocol.mgmt.support.RemotingChannelPairSetup;
 import org.jboss.as.protocol.mgmt.support.SimpleHandlers;
 import org.jboss.as.protocol.mgmt.support.SimpleHandlers.SimpleClient;
 import org.jboss.threads.AsyncFuture;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 

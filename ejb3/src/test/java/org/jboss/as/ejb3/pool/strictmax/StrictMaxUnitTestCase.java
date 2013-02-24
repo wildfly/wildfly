@@ -21,14 +21,9 @@
  */
 package org.jboss.as.ejb3.pool.strictmax;
 
-import junit.framework.TestCase;
-import org.jboss.as.ejb3.EjbMessages;
-import org.jboss.as.ejb3.pool.Pool;
-import org.jboss.as.ejb3.pool.StatelessObjectFactory;
-import org.jboss.as.ejb3.pool.common.MockBean;
-import org.jboss.as.ejb3.pool.common.MockFactory;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
-import java.sql.Time;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -37,19 +32,22 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.pool.Pool;
+import org.jboss.as.ejb3.pool.StatelessObjectFactory;
+import org.jboss.as.ejb3.pool.common.MockBean;
+import org.jboss.as.ejb3.pool.common.MockFactory;
+
 /**
  * Comment
  *
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
  * @version $Revision: $
  */
-public class StrictMaxUnitTestCase extends TestCase {
+public class StrictMaxUnitTestCase {
     AtomicInteger used = new AtomicInteger(0);
 
-    @Override
     protected void setUp() throws Exception {
-        super.setUp();
-
         MockBean.reset();
         used = new AtomicInteger(0);
     }

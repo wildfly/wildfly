@@ -24,9 +24,8 @@ package org.jboss.as.connector.subsystems.complextestcases;
 import java.util.Enumeration;
 import java.util.Properties;
 
-import junit.framework.Assert;
-
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 
 /**Common utility class for parsing operation tests
  *

@@ -33,7 +33,7 @@ import java.util.Map;
 
 import javax.naming.NamingException;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;

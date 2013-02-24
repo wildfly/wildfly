@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.management.api.expression;
 
 import javax.ejb.EJB;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;

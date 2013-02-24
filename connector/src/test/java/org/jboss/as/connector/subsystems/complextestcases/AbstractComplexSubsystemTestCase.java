@@ -22,13 +22,13 @@
 package org.jboss.as.connector.subsystems.complextestcases;
 
 
-import junit.framework.Assert;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 
 /**
  *

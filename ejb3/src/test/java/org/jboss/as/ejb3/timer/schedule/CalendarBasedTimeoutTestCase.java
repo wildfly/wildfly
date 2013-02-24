@@ -21,15 +21,6 @@
  */
 package org.jboss.as.ejb3.timer.schedule;
 
-import junit.framework.Assert;
-import org.jboss.as.ejb3.timerservice.schedule.CalendarBasedTimeout;
-import org.jboss.logging.Logger;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
-
 import javax.ejb.ScheduleExpression;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,6 +30,15 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.TimeZone;
+
+import org.jboss.as.ejb3.timerservice.schedule.CalendarBasedTimeout;
+import org.jboss.logging.Logger;
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  * CalendarBasedTimeoutTestCase

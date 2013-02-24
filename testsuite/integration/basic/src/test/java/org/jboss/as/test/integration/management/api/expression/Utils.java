@@ -27,7 +27,7 @@ import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNo
 
 import java.io.IOException;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;

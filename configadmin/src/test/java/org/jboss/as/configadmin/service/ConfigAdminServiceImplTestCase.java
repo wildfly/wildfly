@@ -41,8 +41,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import junit.framework.Assert;
-
 import org.jboss.as.configadmin.ConfigAdminListener;
 import org.jboss.as.configadmin.parser.ConfigAdminExtension;
 import org.jboss.as.configadmin.parser.ModelConstants;
@@ -50,6 +48,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 

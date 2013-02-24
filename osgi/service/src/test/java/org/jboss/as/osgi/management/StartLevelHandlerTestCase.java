@@ -21,14 +21,13 @@
  */
 package org.jboss.as.osgi.management;
 
-import junit.framework.Assert;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.osgi.framework.Services;
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.osgi.service.startlevel.StartLevel;

@@ -132,8 +132,8 @@ public class SocketBindingTransformersTestCase extends AbstractCoreModelTest {
 
         OperationTransformer.TransformedOperation transOp = mainServices.transformOperation(modelVersion, write);
         ModelNode translatedWrite = transOp.getTransformedOperation();
-        junit.framework.Assert.assertTrue(translatedWrite.hasDefined(VALUE));
-        junit.framework.Assert.assertEquals(mappings, translatedWrite.get(VALUE));
+        Assert.assertTrue(translatedWrite.hasDefined(VALUE));
+        Assert.assertEquals(mappings, translatedWrite.get(VALUE));
         ModelNode result = mainServices.executeOperation(modelVersion, transOp);
         Assert.assertEquals("expected result: " + result, FAILED, result.get(OUTCOME).asString());
     }
@@ -153,8 +153,8 @@ public class SocketBindingTransformersTestCase extends AbstractCoreModelTest {
 
         OperationTransformer.TransformedOperation transOp = mainServices.transformOperation(modelVersion, add);
         ModelNode translatedAdd = transOp.getTransformedOperation();
-        junit.framework.Assert.assertTrue(translatedAdd.hasDefined(CLIENT_MAPPINGS));
-        junit.framework.Assert.assertEquals(mappings, translatedAdd.get(CLIENT_MAPPINGS));
+        Assert.assertTrue(translatedAdd.hasDefined(CLIENT_MAPPINGS));
+        Assert.assertEquals(mappings, translatedAdd.get(CLIENT_MAPPINGS));
         ModelNode result = mainServices.executeOperation(modelVersion, transOp);
         Assert.assertEquals("expected result: " + result, FAILED, result.get(OUTCOME).asString());
 

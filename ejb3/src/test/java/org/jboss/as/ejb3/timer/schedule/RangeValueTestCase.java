@@ -21,8 +21,8 @@
  */
 package org.jboss.as.ejb3.timer.schedule;
 
-import junit.framework.Assert;
 import org.jboss.as.ejb3.timerservice.schedule.value.RangeValue;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

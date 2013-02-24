@@ -24,14 +24,10 @@ package org.jboss.as.controller.interfaces;
 import java.net.Inet4Address;
 import java.util.regex.Pattern;
 
-import junit.framework.Assert;
-
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.parsing.Element;
 import org.jboss.dmr.ModelNode;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

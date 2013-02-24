@@ -22,7 +22,6 @@
 package org.jboss.as.core.model.test.systemproperty;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
-import junit.framework.Assert;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -30,6 +29,7 @@ import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
 import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Before;
 
 /**

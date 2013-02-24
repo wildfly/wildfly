@@ -22,9 +22,10 @@
 package org.jboss.as.connector.subsystems.complextestcases;
 
 import java.util.Properties;
-import junit.framework.Assert;
+
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

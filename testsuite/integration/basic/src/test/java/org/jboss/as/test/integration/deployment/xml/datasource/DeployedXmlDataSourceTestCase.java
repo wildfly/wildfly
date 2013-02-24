@@ -100,7 +100,7 @@ public class DeployedXmlDataSourceTestCase {
         Assert.assertNotNull(dataSource);
         Connection conn = dataSource.getConnection();
         ResultSet rs = conn.prepareStatement("select 1").executeQuery();
-        junit.framework.Assert.assertTrue(rs.next());
+        Assert.assertTrue(rs.next());
     }
 
 
@@ -110,7 +110,7 @@ public class DeployedXmlDataSourceTestCase {
         Assert.assertNotNull(dataSource);
         Connection conn = dataSource.getConnection();
         ResultSet rs = conn.prepareStatement("select 1").executeQuery();
-        junit.framework.Assert.assertTrue(rs.next());
+        Assert.assertTrue(rs.next());
     }
 
 

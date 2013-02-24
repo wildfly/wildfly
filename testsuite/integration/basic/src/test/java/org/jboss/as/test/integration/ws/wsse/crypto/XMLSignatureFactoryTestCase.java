@@ -27,7 +27,7 @@ import java.net.URL;
 
 import javax.xml.crypto.dsig.XMLSignatureFactory;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;

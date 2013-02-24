@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.multinode.transaction;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import javax.annotation.Resource;
 import javax.ejb.Stateless;

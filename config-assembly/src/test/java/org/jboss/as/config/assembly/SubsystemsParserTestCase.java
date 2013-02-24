@@ -25,8 +25,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.Map;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

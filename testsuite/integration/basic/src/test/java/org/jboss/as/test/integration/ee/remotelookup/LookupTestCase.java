@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ee.remotelookup;
 
-import static junit.framework.Assert.assertNotNull;
+import static org.junit.Assert.assertNotNull;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;

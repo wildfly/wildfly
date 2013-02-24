@@ -24,8 +24,6 @@ package org.jboss.as.controller.test;
 
 import java.util.Collections;
 
-import junit.framework.Assert;
-
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
@@ -56,6 +54,7 @@ import org.jboss.as.controller.transform.Transformers;
 import org.jboss.as.controller.transform.TransformersLogger;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 

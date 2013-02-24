@@ -21,20 +21,21 @@
  */
 package org.jboss.as.test.smoke.subsystem.xml;
 
-import org.junit.Test;
+import static org.junit.Assert.assertNotNull;
 
 import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.dom.DOMSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
-import java.io.File;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.DocumentBuilder;
-import org.w3c.dom.Document;
-import org.jboss.metadata.parser.util.XMLResourceResolver;
 import javax.xml.validation.Validator;
-import javax.xml.transform.dom.DOMSource;
+import java.io.File;
 import java.net.URL;
-import static junit.framework.Assert.assertNotNull;
+
+import org.jboss.metadata.parser.util.XMLResourceResolver;
+import org.junit.Test;
+import org.w3c.dom.Document;
 
 /**
  * A XSDValidationUnitTestCase.

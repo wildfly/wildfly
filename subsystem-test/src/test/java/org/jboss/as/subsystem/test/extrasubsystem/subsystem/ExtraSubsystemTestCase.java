@@ -30,8 +30,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
-
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.extension.ExtensionRegistry;
@@ -46,6 +44,7 @@ import org.jboss.as.subsystem.test.extrasubsystem.subsystem.main.MainService;
 import org.jboss.as.subsystem.test.extrasubsystem.subsystem.main.MainSubsystemExtension;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLMapper;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

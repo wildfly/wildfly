@@ -14,7 +14,7 @@ import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 /**
  * @author Stuart Douglas

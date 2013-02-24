@@ -22,8 +22,8 @@
 
 package org.jboss.as.controller;
 
-import junit.framework.Assert;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

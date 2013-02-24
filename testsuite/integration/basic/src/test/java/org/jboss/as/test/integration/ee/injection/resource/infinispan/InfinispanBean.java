@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ee.injection.resource.infinispan;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.infinispan.Cache;
 import org.infinispan.manager.CacheContainer;
 

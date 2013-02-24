@@ -21,12 +21,12 @@
  */
 package org.jboss.as.ejb3.timer.schedule;
 
-import junit.framework.Assert;
-import org.jboss.as.ejb3.timerservice.schedule.util.CalendarUtil;
-import org.junit.Test;
-
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+
+import org.jboss.as.ejb3.timerservice.schedule.util.CalendarUtil;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * Tests {@link CalendarUtil}

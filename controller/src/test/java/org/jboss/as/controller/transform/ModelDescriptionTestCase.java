@@ -1,6 +1,7 @@
 package org.jboss.as.controller.transform;
 
-import junit.framework.Assert;
+import java.util.List;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -9,10 +10,9 @@ import org.jboss.as.controller.registry.LegacyResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.util.List;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
@@ -54,7 +54,7 @@ public class ModelDescriptionTestCase {
         for (String name : orig.getAttributeNames(PathAddress.EMPTY_ADDRESS)) {
             AttributeDefinition attr1 = orig.getAttributeAccess(PathAddress.EMPTY_ADDRESS, name).getAttributeDefinition();
             AttributeDefinition attr2 = loaded.getAttributeAccess(PathAddress.EMPTY_ADDRESS, name).getAttributeDefinition();
-            Assert.assertEquals(1d, SimilarityIndex.compareAttributes(attr1, attr2));
+            Assert.assertEquals(1d, SimilarityIndex.compareAttributes(attr1, attr2), 0.0d);
         }
         for (PathElement pe : orig.getChildAddresses(PathAddress.EMPTY_ADDRESS)) {
             ManagementResourceRegistration origSub = orig.getSubModel(PathAddress.pathAddress(pe));

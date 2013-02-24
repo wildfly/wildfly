@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.embedded.jsf;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.JUnitTestRunner;

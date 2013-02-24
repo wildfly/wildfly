@@ -50,8 +50,6 @@ import static org.jboss.as.web.WebExtension.VALVE_PATH;
 import java.io.IOException;
 import java.util.List;
 
-import junit.framework.Assert;
-
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -66,6 +64,7 @@ import org.jboss.as.web.Constants;
 import org.jboss.as.web.WebExtension;
 import org.jboss.as.web.WebMessages;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
