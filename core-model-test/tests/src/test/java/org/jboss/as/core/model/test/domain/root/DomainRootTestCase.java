@@ -21,8 +21,6 @@
 */
 package org.jboss.as.core.model.test.domain.root;
 
-import junit.framework.Assert;
-
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
@@ -31,6 +29,7 @@ import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionConstants;
 import org.jboss.as.version.Version;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

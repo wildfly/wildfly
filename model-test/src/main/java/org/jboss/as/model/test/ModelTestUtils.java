@@ -41,8 +41,6 @@ import java.util.Stack;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
-import junit.framework.Assert;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
@@ -55,6 +53,7 @@ import org.jboss.as.controller.transform.OperationTransformer.TransformedOperati
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
+import org.junit.Assert;
 import org.w3c.dom.Document;
 import org.w3c.dom.bootstrap.DOMImplementationRegistry;
 import org.w3c.dom.ls.DOMImplementationLS;
@@ -180,7 +179,6 @@ public class ModelTestUtils {
      *
      * @param node1 the first model
      * @param node2 the second model
-     * @throws junit.framework.AssertionFailedError if the models were not the same
      */
     public static void compare(ModelNode node1, ModelNode node2) {
         compare(node1, node2, false);
@@ -192,7 +190,6 @@ public class ModelTestUtils {
      *
      * @param node1 the first model
      * @param node2 the second model
-     * @throws junit.framework.AssertionFailedError if the models were not the same
      */
     public static void resolveAndCompareModels(ModelNode node1, ModelNode node2) {
         compare(node1.resolve(), node2.resolve(), false, true, new Stack<String>());
@@ -204,7 +201,6 @@ public class ModelTestUtils {
      * @param node1           the first model
      * @param node2           the second model
      * @param ignoreUndefined {@code true} if keys containing undefined nodes should be ignored
-     * @throws junit.framework.AssertionFailedError if the models were not the same
      */
     public static void compare(ModelNode node1, ModelNode node2, boolean ignoreUndefined) {
         compare(node1, node2, ignoreUndefined, false, new Stack<String>());
@@ -288,7 +284,6 @@ public class ModelTestUtils {
      * call ModelNode.set("${A}") when ModelNode.setExpression("${A}) should have been used
      *
      * @param model the model to check
-     * @throws junit.framework.AssertionFailedError if any STRING entries contain expression formatted strings.
      */
     public static void scanForExpressionFormattedStrings(ModelNode model) {
         if (model.getType().equals(ModelType.STRING)) {

@@ -21,11 +21,12 @@
 */
 package org.jboss.as.connector.subsystems.complextestcases;
 
-import junit.framework.Assert;
+import java.util.Properties;
+
 import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Test;
-import java.util.Properties;
 
 /**
  *

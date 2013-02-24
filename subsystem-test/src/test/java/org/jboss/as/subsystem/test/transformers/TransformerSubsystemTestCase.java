@@ -27,8 +27,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 
-import junit.framework.Assert;
-
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -41,6 +39,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.StreamExporter;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 

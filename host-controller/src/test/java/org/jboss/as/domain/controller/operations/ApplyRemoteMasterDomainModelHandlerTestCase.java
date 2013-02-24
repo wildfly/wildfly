@@ -22,7 +22,6 @@
 
 package org.jboss.as.domain.controller.operations;
 
-import static junit.framework.Assert.assertTrue;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_MODEL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
@@ -36,6 +35,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import static org.junit.Assert.assertTrue;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;

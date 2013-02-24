@@ -21,10 +21,9 @@
 */
 package org.jboss.as.core.model.test;
 
+import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
 import java.util.List;
-
-import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.core.model.test.LegacyKernelServicesInitializer.TestControllerVersion;
@@ -61,7 +60,6 @@ public interface KernelServicesBuilder {
      * @throws IllegalStateException if {@link #setBootOperations(List)}, {@link #setXml(String)} (String)} or {@link #setXmlResource(String)} (String)} have
      * already been called
      * @throws IllegalStateException if {@link #build()} has already been called
-     * @throws junit.framework.AssertionFailedError if the resource could not be found
      * @throws IOException if there were problems reading the resource
      * @throws XMLStreamException if there were problems parsing the xml
      */
@@ -108,7 +106,6 @@ public interface KernelServicesBuilder {
      * @param testControllerVersion the version of the legacy controller to load up
      * @return the legacy kernel services initializer
      * @throws IllegalStateException if {@link #build()} has already been called
-     * @throws junit.framework.AssertionFailedError if the extension class name was not found in the {@code resources}
      */
      LegacyKernelServicesInitializer createLegacyKernelServicesBuilder(ModelVersion modelVersion, TestControllerVersion testControllerVersion);
 

@@ -45,7 +45,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.test.integration.ejb.management.deployments.EjbJarRuntimeResourceTestBase.MODULE_NAME;
 import static org.jboss.as.test.integration.ejb.management.deployments.EjbJarRuntimeResourceTestBase.componentAddress;

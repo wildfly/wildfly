@@ -29,8 +29,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import junit.framework.Assert;
-
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.core.model.test.AbstractCoreModelTest;
@@ -44,6 +42,7 @@ import org.jboss.as.core.model.test.util.TransformersTestParameters;
 import org.jboss.as.host.controller.ignored.IgnoreDomainResourceTypeResource;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;

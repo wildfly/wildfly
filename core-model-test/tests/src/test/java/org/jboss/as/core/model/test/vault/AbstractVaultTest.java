@@ -26,7 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_OPTIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import junit.framework.Assert;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
@@ -35,6 +34,7 @@ import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

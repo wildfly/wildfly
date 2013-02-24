@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationContext;
@@ -60,6 +59,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 
 /**

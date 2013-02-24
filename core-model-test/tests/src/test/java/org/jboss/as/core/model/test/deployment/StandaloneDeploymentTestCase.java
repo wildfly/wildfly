@@ -44,8 +44,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import junit.framework.Assert;
-
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
@@ -66,6 +64,7 @@ import org.jboss.as.server.deployment.DeploymentUploadStreamAttachmentHandler;
 import org.jboss.as.server.deployment.DeploymentUploadURLHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.junit.Assert;
 import org.junit.Test;
 import org.xnio.IoUtils;
 

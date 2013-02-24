@@ -27,12 +27,9 @@ package org.jboss.as.mail.extension;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.mail.extension.MailSubsystemModel.SERVER_TYPE;
 
+import javax.mail.Session;
 import java.io.IOException;
 import java.util.Properties;
-
-import javax.mail.Session;
-
-import junit.framework.Assert;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
@@ -47,6 +44,7 @@ import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

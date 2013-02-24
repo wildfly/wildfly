@@ -25,7 +25,7 @@ package org.jboss.as.test.integration.messaging.mgmt;
 import java.io.IOException;
 import java.util.HashMap;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;

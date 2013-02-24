@@ -26,7 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
-import junit.framework.Assert;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -38,6 +37,7 @@ import org.jboss.as.core.model.test.ModelInitializer;
 import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

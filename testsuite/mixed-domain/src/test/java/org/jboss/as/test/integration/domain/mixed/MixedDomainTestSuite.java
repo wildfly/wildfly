@@ -21,7 +21,7 @@
 */
 package org.jboss.as.test.integration.domain.mixed;
 
-import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 import org.jboss.as.test.integration.domain.mixed.util.MixedDomainTestSupport;
 import org.junit.AfterClass;

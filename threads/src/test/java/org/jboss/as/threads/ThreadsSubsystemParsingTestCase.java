@@ -23,10 +23,6 @@
  */
 package org.jboss.as.threads;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
@@ -62,9 +58,13 @@ import static org.jboss.as.threads.CommonAttributes.THREAD_NAME_PATTERN;
 import static org.jboss.as.threads.CommonAttributes.TIME;
 import static org.jboss.as.threads.CommonAttributes.UNBOUNDED_QUEUE_THREAD_POOL;
 import static org.jboss.as.threads.CommonAttributes.UNIT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import java.util.List;
 import javax.xml.stream.XMLStreamException;
+import java.util.List;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;

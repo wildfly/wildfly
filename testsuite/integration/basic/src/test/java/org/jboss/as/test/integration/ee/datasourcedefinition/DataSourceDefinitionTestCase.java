@@ -71,7 +71,7 @@ public class DataSourceDefinitionTestCase {
         DataSourceBean bean = (DataSourceBean)ctx.lookup("java:module/" + DataSourceBean.class.getSimpleName());
         DataSource ds = bean.getDataSource();
         ResultSet result = ds.getConnection().createStatement().executeQuery("select 1");
-        junit.framework.Assert.assertTrue(result.next());
+        Assert.assertTrue(result.next());
     }
 
     @Test

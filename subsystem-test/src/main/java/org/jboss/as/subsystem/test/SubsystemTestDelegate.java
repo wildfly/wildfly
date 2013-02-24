@@ -28,6 +28,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -44,13 +48,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-
-import junit.framework.Assert;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CompositeOperationHandler;
@@ -94,6 +91,7 @@ import org.jboss.as.model.test.StringConfigurationPersister;
 import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLMapper;
+import org.junit.Assert;
 import org.xnio.IoUtils;
 
 /**

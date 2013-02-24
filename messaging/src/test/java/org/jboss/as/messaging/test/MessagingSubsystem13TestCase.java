@@ -22,8 +22,6 @@
 
 package org.jboss.as.messaging.test;
 
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
 import static org.jboss.as.controller.PathElement.pathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
@@ -35,13 +33,14 @@ import static org.jboss.as.messaging.HornetQServerResourceDefinition.HORNETQ_SER
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_1_0;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Regular.FACTORY_TYPE;
 import static org.jboss.as.model.test.ModelTestUtils.checkFailedTransformedBootOperations;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.messaging.AddressSettingDefinition;
 import org.jboss.as.messaging.BridgeDefinition;

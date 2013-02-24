@@ -43,7 +43,6 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -57,6 +56,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceController.Transition;
 import org.jboss.msc.service.ServiceName;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

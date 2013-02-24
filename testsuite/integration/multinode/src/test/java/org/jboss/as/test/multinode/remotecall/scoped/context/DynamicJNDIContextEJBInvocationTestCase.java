@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.multinode.remotecall.scoped.context;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;

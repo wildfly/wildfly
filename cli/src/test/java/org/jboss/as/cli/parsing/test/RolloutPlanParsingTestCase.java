@@ -22,6 +22,12 @@
 package org.jboss.as.cli.parsing.test;
 
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -38,13 +44,11 @@ import org.jboss.as.cli.operation.impl.SingleRolloutPlanGroup;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 
-import junit.framework.TestCase;
-
 /**
  *
  * @author Alexey Loubyansky
  */
-public class RolloutPlanParsingTestCase extends TestCase {
+public class RolloutPlanParsingTestCase {
 
     private final CommandLineParser parser = DefaultOperationRequestParser.INSTANCE;
     private final DefaultCallbackHandler handler = new DefaultCallbackHandler();

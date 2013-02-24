@@ -27,8 +27,6 @@ import static org.jboss.as.jpa.subsystem.JPADefinition.DEFAULT_DATASOURCE;
 import java.io.IOException;
 import java.util.List;
 
-import junit.framework.Assert;
-
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -39,6 +37,7 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

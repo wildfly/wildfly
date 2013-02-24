@@ -36,8 +36,6 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 
-import junit.framework.Assert;
-
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ControlledProcessState;
@@ -79,6 +77,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.vfs.VirtualFile;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -32,8 +32,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
-
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ModelController.OperationTransactionControl;
 import org.jboss.as.controller.ModelVersion;
@@ -46,6 +44,7 @@ import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.host.controller.ignored.IgnoreDomainResourceTypeResource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceContainer;
+import org.junit.Assert;
 
 /**
  *

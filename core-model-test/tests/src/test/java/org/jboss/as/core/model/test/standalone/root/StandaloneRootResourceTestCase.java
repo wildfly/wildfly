@@ -29,8 +29,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 import java.net.InetAddress;
 import java.util.List;
 
-import junit.framework.Assert;
-
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -49,6 +47,7 @@ import org.jboss.as.server.controller.descriptions.ServerDescriptionConstants;
 import org.jboss.as.version.Version;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

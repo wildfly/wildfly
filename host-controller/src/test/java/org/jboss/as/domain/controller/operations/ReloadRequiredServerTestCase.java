@@ -21,7 +21,6 @@
 */
 package org.jboss.as.domain.controller.operations;
 
-import static junit.framework.Assert.assertEquals;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -34,12 +33,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.junit.Assert.assertEquals;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
-import junit.framework.Assert;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -53,6 +51,7 @@ import org.jboss.as.domain.controller.operations.coordination.ServerOperationRes
 import org.jboss.as.host.controller.operations.ServerRestartRequiredServerConfigWriteAttributeHandler;
 import org.jboss.as.server.operations.ServerRestartRequiredHandler;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

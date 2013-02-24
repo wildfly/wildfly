@@ -23,7 +23,6 @@ package org.jboss.as.core.model.test.systemproperty;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
-import junit.framework.Assert;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -34,6 +33,7 @@ import org.jboss.as.core.model.test.ModelInitializer;
 import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 
 
 /**

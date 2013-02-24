@@ -29,7 +29,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;

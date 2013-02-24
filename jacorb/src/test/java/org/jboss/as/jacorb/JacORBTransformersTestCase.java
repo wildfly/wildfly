@@ -21,7 +21,6 @@
  */
 package org.jboss.as.jacorb;
 
-import static junit.framework.Assert.assertTrue;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.INTEROP_CHUNK_RMI_VALUETYPES;
 import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.INTEROP_COMET;
@@ -64,10 +63,9 @@ import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.SECURITY_SERVER_REQ
 import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.SECURITY_SERVER_SUPPORTS;
 import static org.jboss.as.jacorb.JacORBSubsystemDefinitions.SECURITY_SUPPORT_SSL;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
-
-import junit.framework.Assert;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
@@ -81,6 +79,7 @@ import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

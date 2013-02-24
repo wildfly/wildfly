@@ -2,7 +2,7 @@ package org.jboss.as.test.integration.ws.context.application;
 
 import java.net.URL;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;

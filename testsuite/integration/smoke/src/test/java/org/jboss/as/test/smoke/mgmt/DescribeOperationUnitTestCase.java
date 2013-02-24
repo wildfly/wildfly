@@ -22,18 +22,6 @@
 
 package org.jboss.as.test.smoke.mgmt;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import junit.framework.Assert;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.arquillian.api.ContainerResource;
-import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.dmr.ModelNode;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
@@ -45,6 +33,18 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ContainerResource;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Test validating that subsystems register a "describe" operation in order to be able

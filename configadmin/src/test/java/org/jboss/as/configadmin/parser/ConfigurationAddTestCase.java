@@ -27,7 +27,6 @@ import java.lang.reflect.Field;
 import java.util.Hashtable;
 import java.util.Map;
 
-import junit.framework.Assert;
 import org.jboss.as.configadmin.ConfigAdmin;
 import org.jboss.as.configadmin.service.ConfigAdminServiceImpl;
 import org.jboss.as.controller.OperationContext;
@@ -44,6 +43,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;

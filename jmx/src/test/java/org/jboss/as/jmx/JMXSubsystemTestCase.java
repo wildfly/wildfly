@@ -34,15 +34,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UND
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.xml.stream.XMLStreamException;
-
-import junit.framework.Assert;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -73,6 +70,7 @@ import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.junit.Assert;
 import org.junit.Test;
 import org.xnio.OptionMap;
 

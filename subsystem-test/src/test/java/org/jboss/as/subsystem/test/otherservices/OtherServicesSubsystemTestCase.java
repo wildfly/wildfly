@@ -36,7 +36,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 
 import java.io.File;
 
-import junit.framework.Assert;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -55,6 +54,7 @@ import org.jboss.as.subsystem.test.simple.subsystem.SimpleSubsystemExtension;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

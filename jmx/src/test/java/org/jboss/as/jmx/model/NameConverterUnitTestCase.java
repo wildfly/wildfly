@@ -21,10 +21,8 @@
 */
 package org.jboss.as.jmx.model;
 
-import junit.framework.Assert;
-
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.jmx.model.NameConverter;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

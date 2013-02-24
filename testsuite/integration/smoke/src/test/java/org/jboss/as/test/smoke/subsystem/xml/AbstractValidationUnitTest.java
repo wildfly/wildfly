@@ -22,14 +22,10 @@
 
 package org.jboss.as.test.smoke.subsystem.xml;
 
-import org.apache.xerces.dom.DOMInputImpl;
-import org.w3c.dom.ls.LSInput;
-import org.w3c.dom.ls.LSResourceResolver;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -43,10 +39,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.fail;
+import org.apache.xerces.dom.DOMInputImpl;
+import org.w3c.dom.ls.LSInput;
+import org.w3c.dom.ls.LSResourceResolver;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /**
  * Date: 23.06.2011
@@ -139,7 +139,7 @@ public class AbstractValidationUnitTest {
     /**
      * The base directory, e.g. {@literal $user.home/../../build/target/jboss-*}.
      * <p/>
-     * Executes {@link junit.framework.Assert#fail()} if the base directory is null.
+     * Executes {@link org.junit.Assert#fail()} if the base directory is null.
      *
      * @return the base directory.
      */

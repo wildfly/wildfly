@@ -21,15 +21,13 @@
  */
 package org.jboss.as.naming;
 
-import java.util.Hashtable;
-
 import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.NamingException;
 import javax.naming.spi.ObjectFactory;
+import java.util.Hashtable;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.Before;
 

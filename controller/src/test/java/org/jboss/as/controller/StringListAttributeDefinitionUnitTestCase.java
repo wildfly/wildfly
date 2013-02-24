@@ -22,9 +22,9 @@
 
 package org.jboss.as.controller;
 
-import junit.framework.Assert;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

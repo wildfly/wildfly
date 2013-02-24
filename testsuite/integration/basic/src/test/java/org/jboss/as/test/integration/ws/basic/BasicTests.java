@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ws.basic;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

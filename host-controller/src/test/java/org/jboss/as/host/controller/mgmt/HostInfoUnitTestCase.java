@@ -22,7 +22,6 @@
 
 package org.jboss.as.host.controller.mgmt;
 
-import junit.framework.Assert;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -35,6 +34,7 @@ import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.as.version.Version;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

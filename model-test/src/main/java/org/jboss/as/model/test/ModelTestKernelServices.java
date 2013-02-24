@@ -136,7 +136,6 @@ public interface ModelTestKernelServices<T extends ModelTestKernelServices<T>> {
 
     /**
      * Execute an operation in the model controller, expecting failure.
-     * Gives a junit {@link junit.framework.AssertionFailedError} if the operation did not fail.
      *
      * @param operation the operation to execute
      */
@@ -153,7 +152,6 @@ public interface ModelTestKernelServices<T extends ModelTestKernelServices<T>> {
      * Validates the operations against the description providers in the model controller
      *
      * @param operations the operations to validate
-     * @throws junit.framework.AssertionFailedError if the operations are not valid
      */
     void validateOperations(List<ModelNode> operations);
 
@@ -161,7 +159,6 @@ public interface ModelTestKernelServices<T extends ModelTestKernelServices<T>> {
      * Validates the operation against the description providers in the model controller
      *
      * @param operation the operation to validate
-     * @throws junit.framework.AssertionFailedError if the operation is not valid
      */
     void validateOperation(ModelNode operation);
 

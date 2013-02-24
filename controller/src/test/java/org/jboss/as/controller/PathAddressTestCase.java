@@ -23,9 +23,9 @@ package org.jboss.as.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
-import junit.framework.Assert;
 
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

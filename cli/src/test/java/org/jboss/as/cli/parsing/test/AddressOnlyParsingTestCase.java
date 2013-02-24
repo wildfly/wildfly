@@ -21,6 +21,12 @@
  */
 package org.jboss.as.cli.parsing.test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Iterator;
 
 import org.jboss.as.cli.operation.CommandLineParser;
@@ -31,13 +37,11 @@ import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
 import org.junit.Test;
 
-import junit.framework.TestCase;
-
 /**
  *
  * @author Alexey Loubyansky
  */
-public class AddressOnlyParsingTestCase extends TestCase {
+public class AddressOnlyParsingTestCase {
 
     private CommandLineParser parser = DefaultOperationRequestParser.INSTANCE;
 

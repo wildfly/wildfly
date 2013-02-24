@@ -37,8 +37,6 @@ import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
-
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
@@ -56,6 +54,7 @@ import org.jboss.as.server.deployment.DeploymentDeployHandler;
 import org.jboss.as.server.deployment.DeploymentRedeployHandler;
 import org.jboss.as.server.deployment.DeploymentUndeployHandler;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

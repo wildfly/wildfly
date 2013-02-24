@@ -27,12 +27,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import junit.framework.Assert;
 
 import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 

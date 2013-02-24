@@ -3,7 +3,6 @@
  */
 package org.jboss.as.controller;
 
-import static junit.framework.Assert.assertEquals;
 import static org.jboss.as.controller.ModelControllerImplUnitTestCase.getOperation;
 import static org.jboss.as.controller.ModelControllerImplUnitTestCase.useNonRecursive;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
@@ -20,6 +19,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_UPDATE_SKIPPED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;

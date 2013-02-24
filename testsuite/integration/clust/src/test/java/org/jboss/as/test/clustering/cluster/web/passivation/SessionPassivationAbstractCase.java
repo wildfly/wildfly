@@ -22,7 +22,7 @@
 package org.jboss.as.test.clustering.cluster.web.passivation;
 
 import java.net.URL;
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;

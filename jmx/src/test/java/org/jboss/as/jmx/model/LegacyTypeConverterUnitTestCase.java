@@ -26,6 +26,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
+import javax.management.openmbean.ArrayType;
+import javax.management.openmbean.CompositeData;
+import javax.management.openmbean.CompositeDataSupport;
+import javax.management.openmbean.CompositeType;
+import javax.management.openmbean.OpenType;
+import javax.management.openmbean.SimpleType;
+import javax.management.openmbean.TabularData;
+import javax.management.openmbean.TabularType;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -35,20 +43,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.management.openmbean.ArrayType;
-import javax.management.openmbean.CompositeData;
-import javax.management.openmbean.CompositeDataSupport;
-import javax.management.openmbean.CompositeType;
-import javax.management.openmbean.OpenType;
-import javax.management.openmbean.SimpleType;
-import javax.management.openmbean.TabularData;
-import javax.management.openmbean.TabularType;
-
-import junit.framework.Assert;
-
 import org.jboss.as.jmx.model.TypeConverters.TypeConverter;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -117,7 +115,7 @@ public class LegacyTypeConverterUnitTestCase {
         TypeConverter converter = getConverter(description);
         Assert.assertEquals(SimpleType.DOUBLE, converter.getOpenType());
         Assert.assertEquals(Double.valueOf(1), assertCast(Double.class, converter.fromModelNode(new ModelNode().set(1))));
-        Assert.assertEquals(Double.valueOf(2), converter.toModelNode(Double.valueOf(2)).asDouble());
+        Assert.assertEquals(2.0d, converter.toModelNode(Double.valueOf(2)).asDouble(), 0.0d);
         assertToArray(converter, Double.valueOf(1), Double.valueOf(2));
     }
 

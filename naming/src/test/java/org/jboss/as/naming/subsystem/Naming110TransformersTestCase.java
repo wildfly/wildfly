@@ -21,7 +21,6 @@
  */
 package org.jboss.as.naming.subsystem;
 
-import static junit.framework.Assert.assertTrue;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -39,11 +38,11 @@ import static org.jboss.as.naming.subsystem.NamingSubsystemModel.SIMPLE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.TYPE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.VALUE;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.URL;
 
-import junit.framework.Assert;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -54,6 +53,7 @@ import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

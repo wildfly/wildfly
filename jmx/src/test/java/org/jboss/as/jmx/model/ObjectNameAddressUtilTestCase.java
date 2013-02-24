@@ -21,18 +21,16 @@
 */
 package org.jboss.as.jmx.model;
 
+import javax.management.ObjectName;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
-import javax.management.ObjectName;
-
-import junit.framework.Assert;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

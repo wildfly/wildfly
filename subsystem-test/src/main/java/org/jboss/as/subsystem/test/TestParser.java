@@ -24,17 +24,14 @@ package org.jboss.as.subsystem.test;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
+import javax.xml.XMLConstants;
+import javax.xml.stream.XMLStreamException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.xml.XMLConstants;
-import javax.xml.stream.XMLStreamException;
-
-import junit.framework.Assert;
 
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.extension.ExtensionRegistry;
@@ -49,6 +46,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import org.junit.Assert;
 
 final class TestParser implements  ModelTestParser {
 

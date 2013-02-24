@@ -40,7 +40,6 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Locale;
 
-import junit.framework.Assert;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -50,6 +49,7 @@ import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.validation.subsystem.ValidateSubsystemExtension;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

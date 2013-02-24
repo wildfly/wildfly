@@ -15,13 +15,12 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 
-import junit.framework.Assert;
-
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 

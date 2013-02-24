@@ -36,8 +36,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WIL
 import java.util.Collections;
 import java.util.Locale;
 
-import junit.framework.Assert;
-
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
@@ -59,6 +57,7 @@ import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.controller.transform.Transformers;
 import org.jboss.as.host.controller.mgmt.HostInfo;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

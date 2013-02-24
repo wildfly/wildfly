@@ -24,8 +24,7 @@ package org.jboss.as.configadmin.service;
 import java.util.Dictionary;
 import java.util.Hashtable;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

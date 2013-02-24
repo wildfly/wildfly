@@ -21,11 +21,13 @@
  */
 package org.jboss.as.webservices.parser;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
-
-import junit.framework.TestCase;
 
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
 import org.junit.Test;
@@ -34,7 +36,7 @@ import org.junit.Test;
  * @author alessio.soldano@jboss.com
  * @since 18-Jan-2011
  */
-public class WSDeploymentAspectParserTestCase extends TestCase {
+public class WSDeploymentAspectParserTestCase {
 
     @Test
     public void test() throws Exception {

@@ -22,12 +22,12 @@
 
 package org.jboss.as.core.model.test.servergroup;
 
-import junit.framework.Assert;
 import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.core.model.test.util.StandardServerGroupInitializers;
 import org.jboss.as.model.test.ModelTestUtils;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

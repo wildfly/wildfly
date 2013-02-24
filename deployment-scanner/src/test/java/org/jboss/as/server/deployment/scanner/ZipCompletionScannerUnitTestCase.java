@@ -28,11 +28,10 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
-import junit.framework.Assert;
-
 import org.jboss.as.server.deployment.scanner.ZipCompletionScanner.NonScannableZipException;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 

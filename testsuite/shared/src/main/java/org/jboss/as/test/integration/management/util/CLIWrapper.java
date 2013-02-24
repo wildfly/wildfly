@@ -26,14 +26,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import junit.framework.Assert;
-
 import org.jboss.as.cli.CliInitializationException;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.test.http.Authentication;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 
 
 /**

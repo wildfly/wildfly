@@ -21,7 +21,7 @@
 */
 package org.jboss.as.controller;
 
-import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

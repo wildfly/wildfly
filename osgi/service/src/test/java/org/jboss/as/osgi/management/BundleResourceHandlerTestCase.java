@@ -24,8 +24,6 @@ package org.jboss.as.osgi.management;
 import java.util.Dictionary;
 import java.util.Hashtable;
 
-import junit.framework.Assert;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -35,6 +33,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.osgi.framework.Services;
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.osgi.framework.Bundle;

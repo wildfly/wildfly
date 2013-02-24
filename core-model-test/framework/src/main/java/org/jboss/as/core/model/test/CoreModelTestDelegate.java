@@ -59,6 +59,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
@@ -69,12 +72,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-
-import junit.framework.Assert;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
@@ -99,6 +96,7 @@ import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLMapper;
+import org.junit.Assert;
 
 
 

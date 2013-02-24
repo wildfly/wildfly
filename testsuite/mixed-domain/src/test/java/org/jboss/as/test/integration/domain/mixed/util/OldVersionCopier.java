@@ -21,8 +21,8 @@
 */
 package org.jboss.as.test.integration.domain.mixed.util;
 
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;

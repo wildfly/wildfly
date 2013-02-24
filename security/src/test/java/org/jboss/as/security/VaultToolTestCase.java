@@ -35,12 +35,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.Assert;
-
 import org.jboss.as.security.vault.MockRuntimeVaultReader;
 import org.jboss.as.security.vault.VaultTool;
 import org.jboss.as.server.services.security.VaultReaderException;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 

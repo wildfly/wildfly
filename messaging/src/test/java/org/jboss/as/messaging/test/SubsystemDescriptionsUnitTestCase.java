@@ -25,13 +25,12 @@ package org.jboss.as.messaging.test;
 import java.util.Collections;
 import java.util.List;
 
-import junit.framework.Assert;
-
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.messaging.MessagingExtension;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

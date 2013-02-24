@@ -22,7 +22,7 @@
 package org.jboss.as.test.clustering.cluster.management;
 
 import java.net.URL;
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.jboss.arquillian.container.test.api.*;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;

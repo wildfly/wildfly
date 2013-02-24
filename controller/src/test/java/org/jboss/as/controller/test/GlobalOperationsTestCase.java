@@ -21,11 +21,6 @@
  */
 package org.jboss.as.controller.test;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES_ONLY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_DEFAULTS;
@@ -47,6 +42,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQ
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -54,12 +54,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import junit.framework.Assert;
-
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -840,7 +839,7 @@ public class GlobalOperationsTestCase extends AbstractGlobalOperationsTestCase {
         assertEquals(1, result.require("bytes").asBytes()[0]);
         assertEquals(2, result.require("bytes").asBytes()[1]);
         assertEquals(3, result.require("bytes").asBytes()[2]);
-        assertEquals(Double.MAX_VALUE, result.require("double").asDouble());
+        assertEquals(Double.MAX_VALUE, result.require("double").asDouble(), 0.0d);
         assertEquals("{expr}", result.require("expression").asString());
         assertEquals(102, result.require("int").asInt());
         List<ModelNode> list = result.require("list").asList();

@@ -24,7 +24,6 @@ package org.jboss.as.core.model.test.shipped;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
-import junit.framework.Assert;
 
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
@@ -35,6 +34,7 @@ import org.jboss.as.core.model.test.ModelWriteSanitizer;
 import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

@@ -24,7 +24,6 @@ package org.jboss.as.core.model.test.vault;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
-import junit.framework.Assert;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -33,6 +32,7 @@ import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
 import org.jboss.as.core.model.test.ModelInitializer;
 import org.jboss.as.core.model.test.TestModelType;
+import org.junit.Assert;
 
 /**
  *
