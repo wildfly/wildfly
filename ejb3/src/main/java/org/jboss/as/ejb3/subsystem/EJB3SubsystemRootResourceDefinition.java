@@ -233,19 +233,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance()
                 .getAttributeBuilder()
                     .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, EJB3SubsystemRootResourceDefinition.ENABLE_STATISTICS)
-                    .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
-
-                        @Override
-                        public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-                            return EjbMessages.MESSAGES.rejectTransformationDefinedDefaultSecurityDomain();
-                        }
-
-                        @Override
-                        protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
-                                TransformationContext context) {
-                            return attributeValue.isDefined();
-                        }
-                    }, EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN)
                     .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
 
                         @Override
@@ -269,14 +257,6 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         ClusterPassivationStoreResourceDefinition.registerTransformers_1_1_0(builder);
         TimerServiceResourceDefinition.registerTransformers_1_1_0(builder);
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, subsystem110);
-
-
-        ModelVersion subsystem120 = ModelVersion.create(1, 2);
-        builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        TimerServiceResourceDefinition.registerTransformers_1_2_0(builder);
-        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, subsystem120);
-
-
     }
 
     private static class EJB3ThreadFactoryResolver extends ThreadFactoryResolver.SimpleResolver {
