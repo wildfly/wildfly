@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.smoke.mgmt.servermodule;
 
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
@@ -99,7 +100,7 @@ public class HttpDeploymentUploadUnitTestCase {
             // Write the POST request and read the response from the HTTP server.
             writeUploadRequest(is, os);
             // JBAS-9291
-            assertEquals("text/html", connection.getHeaderField("Content-Type"));
+            assertEquals("text/html;utf-8", connection.getHeaderField("Content-Type"));
             ModelNode node = readResult(connection.getInputStream());
             assertNotNull(node);
             System.out.println(node);
