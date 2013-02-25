@@ -25,7 +25,7 @@ package org.jboss.as.server.operations;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.server.mgmt.HttpManagementService;
+import org.jboss.as.server.mgmt._UndertowHttpManagementService;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -58,6 +58,6 @@ public class HttpManagementRemoveHandler extends AbstractRemoveStepHandler {
     }
 
     static void removeHttpManagementService(final OperationContext context) {
-        context.removeService(HttpManagementService.SERVICE_NAME);
+        context.removeService(_UndertowHttpManagementService.SERVICE_NAME);
     }
 }

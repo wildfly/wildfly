@@ -21,6 +21,18 @@
 */
 package org.jboss.as.domain.http.server.undertow;
 
+import static org.jboss.as.domain.http.server.undertow.UndertowHttpServerMessages.MESSAGES;
+import io.undertow.io.UndertowOutputStream;
+import io.undertow.server.HttpServerExchange;
+import io.undertow.server.handlers.HttpHandlers;
+import io.undertow.server.handlers.ResponseCodeHandler;
+import io.undertow.server.handlers.blocking.BlockingHttpHandler;
+import io.undertow.util.HeaderMap;
+import io.undertow.util.Headers;
+import io.undertow.util.HttpString;
+import io.undertow.util.Methods;
+import io.undertow.util.StatusCodes;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -40,22 +52,10 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 
-import io.undertow.io.UndertowOutputStream;
-import io.undertow.server.HttpServerExchange;
-import io.undertow.server.handlers.HttpHandlers;
-import io.undertow.server.handlers.ResponseCodeHandler;
-import io.undertow.server.handlers.blocking.BlockingHttpHandler;
-import io.undertow.util.HeaderMap;
-import io.undertow.util.Headers;
-import io.undertow.util.HttpString;
-import io.undertow.util.Methods;
-import io.undertow.util.StatusCodes;
-import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
+import org.jboss.modules.ModuleLoader;
 import org.xnio.IoUtils;
-
-import static org.jboss.as.domain.http.server.undertow.UndertowHttpServerMessages.MESSAGES;
 
 /**
  *
@@ -120,7 +120,7 @@ class ResourceHandler implements BlockingHttpHandler {
              */
             HeaderMap responseHeaders = exchange.getResponseHeaders();
             responseHeaders.add(Headers.LOCATION, getDefaultPath());
-            HttpHandlers.executeHandler(Common.TEMPORARY_REDIRECT, exchange);
+            HttpHandlers.executeHandler(Common.MOVED_PERMANENTLY, exchange);
             return;
         } else if (!resource.contains(".")) {
             HttpHandlers.executeHandler(ResponseCodeHandler.HANDLE_404, exchange);
@@ -284,9 +284,9 @@ class ResourceHandler implements BlockingHttpHandler {
             return loader;
     }
 
-    protected static ClassLoader getClassLoader(final String module, final String slot) throws ModuleLoadException {
+    protected static ClassLoader getClassLoader(final ModuleLoader moduleLoader, final String module, final String slot) throws ModuleLoadException {
         ModuleIdentifier id = ModuleIdentifier.create(module, slot);
-        ClassLoader cl = Module.getCallerModuleLoader().loadModule(id).getClassLoader();
+        ClassLoader cl = moduleLoader.loadModule(id).getClassLoader();
 
         return cl;
     }

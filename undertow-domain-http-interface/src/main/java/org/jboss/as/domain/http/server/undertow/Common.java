@@ -34,6 +34,7 @@ import io.undertow.util.StatusCodes;
 public class Common {
 
     static final ResponseCodeHandler METHOD_NOT_ALLOWED_HANDLER = new ResponseCodeHandler(405);
+    static final ResponseCodeHandler MOVED_PERMANENTLY = new ResponseCodeHandler(301);
     static final ResponseCodeHandler TEMPORARY_REDIRECT = new ResponseCodeHandler(307);
     static final ResponseCodeHandler SERVICE_UNAVAIABLE = new ResponseCodeHandler(503);
     static final ResponseCodeHandler UNSUPPORTED_MEDIA_TYPE = new ResponseCodeHandler(415);

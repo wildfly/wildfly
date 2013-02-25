@@ -38,7 +38,7 @@ import org.jboss.com.sun.net.httpserver.HttpExchange;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class RedirectReadinessFilter extends RealmReadinessFilter {
+class RedirectReadinessFilter extends RealmReadinessFilter {
 
     private final String redirectTo;
 

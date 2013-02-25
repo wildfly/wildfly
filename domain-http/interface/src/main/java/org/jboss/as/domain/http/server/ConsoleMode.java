@@ -39,7 +39,7 @@ import org.jboss.modules.ModuleLoader;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public enum ConsoleMode {
+enum ConsoleMode {
 
     /**
      * Show the console normally

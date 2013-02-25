@@ -21,7 +21,14 @@
 */
 package org.jboss.as.domain.http.server.undertow;
 
+import java.io.File;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
+import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
+import org.jboss.modules.ModuleLoader;
 
 
 /**
@@ -105,7 +112,7 @@ public enum ConsoleMode {
      *
      * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
      */
-    private static class ConsoleHandler extends ResourceHandler {
+    static class ConsoleHandler extends ResourceHandler {
 
         private static final String NOCACHE_JS = ".nocache.js";
         private static final String INDEX_HTML = "index.html";
@@ -115,13 +122,36 @@ public enum ConsoleMode {
         private static final String CONTEXT = "/console";
         private static final String DEFAULT_RESOURCE = "/" + INDEX_HTML;
 
-        ConsoleHandler(String slot) throws ModuleLoadException {
-            super(CONTEXT, DEFAULT_RESOURCE, getClassLoader(CONSOLE_MODULE, slot));
+        ConsoleHandler(String skin) throws ModuleLoadException {
+            super(CONTEXT, DEFAULT_RESOURCE, findConsoleClassLoader(Module.getCallerModuleLoader(), skin));
         }
 
         @Override
         protected boolean skipCache(String resource) {
             return resource.endsWith(NOCACHE_JS) || resource.endsWith(APP_HTML) || resource.endsWith(INDEX_HTML);
+        }
+
+        static ClassLoader findConsoleClassLoader(ModuleLoader moduleLoader, String consoleSkin) throws ModuleLoadException {
+            final String moduleName = CONSOLE_MODULE + "." + (consoleSkin == null ? "main" : consoleSkin);
+
+            // Find all console versions on the filesystem, sorted by version
+            SortedSet<ConsoleVersion> consoleVersions = findConsoleVersions(moduleName);
+            for (ConsoleVersion consoleVersion : consoleVersions) {
+                try {
+                    return getClassLoader(moduleLoader, moduleName, consoleVersion.getName());
+                } catch (ModuleLoadException mle) {
+                    // ignore
+                }
+            }
+
+            // No joy. Fall back to the AS 7.1 approach where the module id is org.jboss.as.console:<sking>
+            try {
+                return getClassLoader(moduleLoader, CONSOLE_MODULE, consoleSkin);
+            } catch (ModuleLoadException mle) {
+                // ignore
+            }
+
+            throw UndertowHttpServerMessages.MESSAGES.consoleModuleNotFound(moduleName);
         }
     }
 
@@ -136,7 +166,7 @@ public enum ConsoleMode {
         private static final String NO_CONSOLE_FOR_ADMIN_MODE = "/noConsoleForAdminModeError.html";
 
         private DisabledConsoleHandler(String slot, String resource) throws ModuleLoadException {
-            super(CONTEXT, resource, getClassLoader(ERROR_MODULE, slot));
+            super(CONTEXT, resource, getClassLoader(Module.getCallerModuleLoader(), ERROR_MODULE, slot));
         }
 
         static DisabledConsoleHandler createNoConsoleForSlave(String slot) throws ModuleLoadException {
@@ -156,5 +186,63 @@ public enum ConsoleMode {
              */
             return true;
         }
+    }
+
+
+    /**
+     * Scan filesystem looking for the slot versions of all modules with the given name.
+     * Package protected to allow unit testing.
+     *
+     * @param moduleName the name portion of the target module's {@code ModuleIdentifier}
+     *
+     * @return set of console versions, sorted from highest version to lowest
+     */
+    static SortedSet<ConsoleVersion> findConsoleVersions(String moduleName) {
+        String path = moduleName.replace('.', '/') ;
+
+        final String modulePath = SecurityActions.getProperty("module.path");
+        File[] moduleRoots = getFiles(modulePath, 0, 0);
+        SortedSet<ConsoleVersion> consoleVersions = new TreeSet<ConsoleVersion>();
+        for (File root : moduleRoots) {
+            findConsoleModules(root, path, consoleVersions);
+            File layers = new File(root, "system" + File.separator + "layers");
+            File[] children = layers.listFiles();
+            if (children != null) {
+                for (File child : children) {
+                    findConsoleModules(child, path, consoleVersions);
+                }
+            }
+            File addOns = new File(root, "system" + File.separator + "add-ons");
+            children = addOns.listFiles();
+            if (children != null) {
+                for (File child : children) {
+                    findConsoleModules(child, path, consoleVersions);
+                }
+            }
+        }
+        return consoleVersions;
+    }
+
+    private static void findConsoleModules(File root, String path, Set<ConsoleVersion> consoleVersions) {
+        File module = new File(root, path);
+        File[] children = module.listFiles();
+        if (children != null) {
+            for (File child : children) {
+                consoleVersions.add(new ConsoleVersion(child.getName()));
+            }
+        }
+    }
+
+    private static File[] getFiles(final String modulePath, final int stringIdx, final int arrayIdx) {
+        final int i = modulePath.indexOf(File.pathSeparatorChar, stringIdx);
+        final File[] files;
+        if (i == -1) {
+            files = new File[arrayIdx + 1];
+            files[arrayIdx] = new File(modulePath.substring(stringIdx)).getAbsoluteFile();
+        } else {
+            files = getFiles(modulePath, i + 1, arrayIdx + 1);
+            files[arrayIdx] = new File(modulePath.substring(stringIdx, i)).getAbsoluteFile();
+        }
+        return files;
     }
 }

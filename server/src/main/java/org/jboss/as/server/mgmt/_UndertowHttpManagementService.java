@@ -28,7 +28,7 @@ import java.util.concurrent.ExecutorService;
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.domain.http.server.ConsoleMode;
+import org.jboss.as.domain.http.server.undertow.ConsoleMode;
 import org.jboss.as.domain.http.server.undertow.UndertowManagementHttpServer;
 import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.network.ManagedBinding;
@@ -164,31 +164,25 @@ public class _UndertowHttpManagementService implements Service<HttpManagement>{
             useUnmanagedBindings = true;
             final int port = portValue.getOptionalValue();
             if (port > 0) {
-                bindAddress = new InetSocketAddress(interfaceBinding.getAddress(), /*port*/1100);//TODO hard coded
+                bindAddress = new InetSocketAddress(interfaceBinding.getAddress(), port);
             }
             final int securePort = securePortValue.getOptionalValue();
             if (securePort > 0) {
-                secureBindAddress = new InetSocketAddress(interfaceBinding.getAddress(), /*securePort*/ 1101);//TODO hard coded
+                secureBindAddress = new InetSocketAddress(interfaceBinding.getAddress(), securePort);
             }
         } else {
             if (basicBinding != null) {
                 bindAddress = basicBinding.getSocketAddress();
-                //TODO hard coded port
-                bindAddress = new InetSocketAddress(bindAddress.getAddress(), 1100);
             }
             if (secureBinding != null) {
                 secureBindAddress = secureBinding.getSocketAddress();
-                //TODO hard coded port
-                secureBindAddress = new InetSocketAddress(secureBindAddress.getAddress(), 1101);
             }
         }
 
         try {
-            //TODO hacking the console mode here until the POC is working
-            org.jboss.as.domain.http.server.undertow.ConsoleMode undertowConsoleMode = _tempConvertConsoleMode(consoleMode);
 
             serverManagement = UndertowManagementHttpServer.create(bindAddress, secureBindAddress, 50, modelControllerClient,
-                    executorService, securityRealmService, controlledProcessStateService, undertowConsoleMode, consoleSlot);
+                    executorService, securityRealmService, controlledProcessStateService, consoleMode, consoleSlot);
             serverManagement.start();
 
             // Register the now-created sockets with the SBM
@@ -225,22 +219,6 @@ public class _UndertowHttpManagementService implements Service<HttpManagement>{
         } catch (Exception e) {
             throw ServerMessages.MESSAGES.failedToStartHttpManagementService(e);
         }
-    }
-
-    private org.jboss.as.domain.http.server.undertow.ConsoleMode _tempConvertConsoleMode(ConsoleMode consoleMode){
-        if (consoleMode == ConsoleMode.ADMIN_ONLY) {
-            return org.jboss.as.domain.http.server.undertow.ConsoleMode.ADMIN_ONLY;
-        }
-        if (consoleMode == ConsoleMode.CONSOLE) {
-            return org.jboss.as.domain.http.server.undertow.ConsoleMode.CONSOLE;
-        }
-        if (consoleMode == ConsoleMode.NO_CONSOLE) {
-            return org.jboss.as.domain.http.server.undertow.ConsoleMode.NO_CONSOLE;
-        }
-        if (consoleMode == ConsoleMode.SLAVE_HC) {
-            return org.jboss.as.domain.http.server.undertow.ConsoleMode.SLAVE_HC;
-        }
-        throw new IllegalArgumentException("Unknown console mode");
     }
 
     /**

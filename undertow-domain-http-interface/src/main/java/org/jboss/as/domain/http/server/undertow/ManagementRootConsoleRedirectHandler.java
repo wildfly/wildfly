@@ -57,9 +57,7 @@ class ManagementRootConsoleRedirectHandler implements HttpHandler {
             redirect.append(consoleHandler.getDefaultPath());
             exchange.getResponseHeaders().add(Headers.LOCATION, redirect.toString());
 
-            System.out.println("---> Redirect to: " + redirect.toString());
-
-            HttpHandlers.executeHandler(Common.TEMPORARY_REDIRECT, exchange);
+            HttpHandlers.executeHandler(Common.MOVED_PERMANENTLY, exchange);
         } else {
             HttpHandlers.executeHandler(ResponseCodeHandler.HANDLE_404, exchange);
         }

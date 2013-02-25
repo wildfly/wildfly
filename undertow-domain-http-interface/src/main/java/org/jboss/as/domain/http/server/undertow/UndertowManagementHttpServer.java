@@ -21,18 +21,22 @@
  */
 package org.jboss.as.domain.http.server.undertow;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.util.concurrent.ExecutorService;
-
-import javax.net.ssl.SSLContext;
-
+import static org.jboss.as.domain.http.server.undertow.UndertowHttpServerLogger.ROOT_LOGGER;
+import static org.xnio.Options.SSL_CLIENT_AUTH_MODE;
+import static org.xnio.SslClientAuthMode.REQUESTED;
 import io.undertow.security.handlers.SinglePortConfidentialityHandler;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpOpenListener;
 import io.undertow.server.handlers.CanonicalPathHandler;
 import io.undertow.server.handlers.PathHandler;
 import io.undertow.server.handlers.blocking.BlockingHandler;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.concurrent.ExecutorService;
+
+import javax.net.ssl.SSLContext;
+
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.domain.management.AuthenticationMechanism;
@@ -46,18 +50,14 @@ import org.xnio.ChannelListener;
 import org.xnio.ChannelListeners;
 import org.xnio.IoUtils;
 import org.xnio.OptionMap;
+import org.xnio.OptionMap.Builder;
 import org.xnio.Options;
 import org.xnio.Xnio;
 import org.xnio.XnioWorker;
-import org.xnio.OptionMap.Builder;
 import org.xnio.channels.AcceptingChannel;
 import org.xnio.channels.ConnectedStreamChannel;
 import org.xnio.ssl.JsseXnioSsl;
 import org.xnio.ssl.XnioSsl;
-
-import static org.jboss.as.domain.http.server.undertow.UndertowHttpServerLogger.ROOT_LOGGER;
-import static org.xnio.Options.SSL_CLIENT_AUTH_MODE;
-import static org.xnio.SslClientAuthMode.REQUESTED;
 
 /**
  * The general HTTP server for handling management API requests.
@@ -109,7 +109,6 @@ public class UndertowManagementHttpServer {
                     .set(Options.REUSE_ADDRESSES, true);
             ChannelListener acceptListener = ChannelListeners.openListenerAdapter(openListener);
             if (httpAddress != null) {
-                System.out.println("-----> Starting undertow server on " + httpAddress);
                 normalServer = worker.createStreamServer(httpAddress, acceptListener, serverOptionsBuilder.getMap());
                 normalServer.resumeAccepts();
             }
@@ -118,8 +117,6 @@ public class UndertowManagementHttpServer {
                 if (securityRealm.getSupportedAuthenticationMechanisms().contains(AuthenticationMechanism.CLIENT_CERT)) {
                     serverOptionsBuilder.set(SSL_CLIENT_AUTH_MODE, REQUESTED);
                 }
-
-                System.out.println("-----> Starting undertow server on " + secureAddress);
                 OptionMap secureOptions = serverOptionsBuilder.getMap();
                 XnioSsl xnioSsl = new JsseXnioSsl(worker.getXnio(), secureOptions, sslContext);
                 secureServer = xnioSsl.createSslTcpServer(worker, secureAddress, acceptListener, secureOptions);
@@ -131,7 +128,6 @@ public class UndertowManagementHttpServer {
     }
 
     public void stop() {
-        System.out.println("-----> Stopping undertow servers");
         IoUtils.safeClose(normalServer);
         IoUtils.safeClose(secureServer);
         worker.shutdown();
