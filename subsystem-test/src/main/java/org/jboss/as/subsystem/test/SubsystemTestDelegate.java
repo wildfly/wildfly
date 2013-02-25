@@ -87,6 +87,7 @@ import org.jboss.as.model.test.ModelTestBootOperationsBuilder;
 import org.jboss.as.model.test.ModelTestModelControllerService;
 import org.jboss.as.model.test.ModelTestParser;
 import org.jboss.as.model.test.ModelTestUtils;
+import org.jboss.as.model.test.OperationFixer;
 import org.jboss.as.model.test.StringConfigurationPersister;
 import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.dmr.ModelNode;
@@ -622,6 +623,12 @@ final class SubsystemTestDelegate {
         private boolean skipReverseCheck;
         private AdditionalInitialization reverseCheckConfig;
         private ModelFixer reverseCheckModelFixer;
+        private OperationFixer reverseCheckOperationFixer = new OperationFixer() {
+            @Override
+            public ModelNode fixOperation(ModelNode operation) {
+                return operation;
+            }
+        };
 
         public LegacyKernelServiceInitializerImpl(AdditionalInitialization additionalInit, ModelVersion modelVersion) {
             this.additionalInit = additionalInit == null ? AdditionalInitialization.MANAGEMENT : additionalInit;
@@ -708,11 +715,23 @@ final class SubsystemTestDelegate {
             return this;
         }
 
+        @Override
+        public LegacyKernelServicesInitializer configureReverseControllerCheck(AdditionalInitialization additionalInit,
+                ModelFixer modelFixer, OperationFixer fixer) {
+            this.reverseCheckConfig = additionalInit;
+            this.reverseCheckModelFixer = modelFixer;
+            this.reverseCheckOperationFixer = fixer;
+            return this;
+        }
+
         private KernelServices bootCurrentVersionWithLegacyBootOperations(List<ModelNode> bootOperations, KernelServices mainServices) throws Exception {
             //Clone the boot operations to avoid any pollution installing them in the main controller
             List<ModelNode> clonedBootOperations = new ArrayList<ModelNode>();
             for (ModelNode op : bootOperations) {
-                clonedBootOperations.add(op.clone());
+                ModelNode cloned = reverseCheckOperationFixer.fixOperation(op.clone());
+                if (cloned!=null){
+                    clonedBootOperations.add(cloned);
+                }
             }
 
             KernelServices reverseServices = createKernelServicesBuilder(reverseCheckConfig)
