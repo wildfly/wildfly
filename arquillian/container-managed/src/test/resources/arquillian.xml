@@ -12,7 +12,9 @@
                         <property name="allowConnectingToRunningServer">false</property>
 
 			<!--
-			
+            Time to wait for shutdown to complete
+            <property name="stopTimeoutInSeconds">60</property>
+
 			Space-delimited list of ports on which to wait 
 			<property name="waitForPorts">2222</property>
 			

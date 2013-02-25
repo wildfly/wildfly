@@ -41,6 +41,8 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
 
     private int startupTimeoutInSeconds = 60;
 
+    private int stopTimeoutInSeconds = 60;
+
     private boolean outputToConsole = true;
 
     private String serverConfig = System.getProperty("jboss.server.config.file.name", "standalone.xml");
@@ -93,6 +95,18 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
      */
     public int getStartupTimeoutInSeconds() {
         return startupTimeoutInSeconds;
+    }
+
+    public void setStopTimeoutInSeconds(int stopTimeoutInSeconds) {
+        this.stopTimeoutInSeconds = stopTimeoutInSeconds;
+    }
+
+    /**
+     * @return stopTimeoutInSeconds number of seconds to wait for the container process to shutdown;
+     *                              defaults to 60
+     */
+    public int getStopTimeoutInSeconds() {
+        return stopTimeoutInSeconds;
     }
 
     /**
