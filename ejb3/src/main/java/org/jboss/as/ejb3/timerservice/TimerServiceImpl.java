@@ -804,7 +804,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                 return;
             }
             // create the timer task
-            final TimerTask timerTask = timer.getTimerTask();
+            final TimerTask<?> timerTask = timer.getTimerTask();
             // find out how long is it away from now
             long delay = nextExpiration.getTime() - System.currentTimeMillis();
             // if in past, then trigger immediately

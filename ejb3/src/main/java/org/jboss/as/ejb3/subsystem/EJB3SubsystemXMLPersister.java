@@ -53,7 +53,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
     @Override
     public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
 
-        context.startSubsystemElement(EJB3SubsystemNamespace.EJB3_1_4.getUriString(), false);
+        context.startSubsystemElement(EJB3SubsystemNamespace.EJB3_1_5.getUriString(), false);
 
         writeElements(writer,  context);
 

@@ -72,6 +72,16 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
     }
 
 
+    @Test
+    public void testTransformer1_2_0_AS712() throws Exception {
+        testTransformerRejectDatasaseTimer_1_2_0(ModelTestControllerVersion.V7_1_2_FINAL, "7.1.2.Final");
+    }
+
+    @Test
+    public void testTransformer1_2_0_AS713() throws Exception {
+        testTransformerRejectDatasaseTimer_1_2_0(ModelTestControllerVersion.V7_1_3_FINAL, "7.1.3.Final");
+    }
+
     /**
      * Tests transformation of model from 1.2.0 version into 1.1.0 version.
      *
@@ -95,6 +105,25 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
         Assert.assertNotNull(mainServices);
+        Assert.assertNotNull(legacyServices);
+        checkSubsystemModelTransformation(mainServices, modelVersion, V_1_1_0_FIXER);
+    }
+
+    private void testTransformerRejectDatasaseTimer_1_2_0(ModelTestControllerVersion controllerVersion, String mavenVersion) throws Exception {
+        String subsystemXml = "transform_database_1_2_0.xml";   //This has no expressions not understood by 1.1.0
+        ModelVersion modelVersion = ModelVersion.create(1, 1, 0); //The old model version
+        //Use the non-runtime version of the extension which will happen on the HC
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXmlResource(subsystemXml);
+
+        // Add legacy subsystems
+        builder.createLegacyKernelServicesBuilder(null,controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-ejb3:" + mavenVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + mavenVersion)
+                .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, null);
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
         Assert.assertNotNull(legacyServices);
         checkSubsystemModelTransformation(mainServices, modelVersion, V_1_1_0_FIXER);
     }
@@ -152,8 +181,8 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
                         new FailedOperationTransformationConfig.RejectExpressionsConfig(FilePassivationStoreResourceDefinition.IDLE_TIMEOUT_UNIT))
                 .addFailedAttribute(subsystemAddress.append(ClusterPassivationStoreResourceDefinition.INSTANCE.getPathElement()),
                         new FailedOperationTransformationConfig.RejectExpressionsConfig(ClusterPassivationStoreResourceDefinition.IDLE_TIMEOUT_UNIT))
-                .addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.TIMER_SERVICE_PATH),
-                        new FailedOperationTransformationConfig.RejectExpressionsConfig(TimerServiceResourceDefinition.PATH))
+                //.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.TIMER_SERVICE_PATH),
+                //        new FailedOperationTransformationConfig.RejectExpressionsConfig(TimerServiceResourceDefinition.PATH))
                 .addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.REMOTE_SERVICE_PATH, ChannelCreationOptionResource.INSTANCE.getPathElement()),
                         new FailedOperationTransformationConfig.RejectExpressionsConfig(ChannelCreationOptionResource.CHANNEL_CREATION_OPTION_VALUE));
     }

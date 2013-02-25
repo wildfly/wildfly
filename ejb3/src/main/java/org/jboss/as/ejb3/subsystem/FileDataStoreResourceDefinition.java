@@ -90,8 +90,6 @@ public class FileDataStoreResourceDefinition extends SimpleResourceDefinition {
     @Override
     public void registerOperations(final ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
-
-        super.registerOperations(resourceRegistration);
         if (pathManager != null) {
             final ResolvePathHandler resolvePathHandler = ResolvePathHandler.Builder.of(pathManager)
                     .setPathAttribute(PATH)
