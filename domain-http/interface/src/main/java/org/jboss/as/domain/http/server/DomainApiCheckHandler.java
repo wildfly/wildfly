@@ -19,8 +19,9 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.domain.http.server.undertow;
+package org.jboss.as.domain.http.server;
 
+import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.HttpHandlers;
@@ -31,12 +32,10 @@ import io.undertow.util.HeaderMap;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
 import io.undertow.util.Methods;
+
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.com.sun.net.httpserver.Authenticator;
-
-import static org.jboss.as.domain.http.server.undertow.UndertowHttpServerLogger.ROOT_LOGGER;
 
 /**
  *
@@ -52,8 +51,7 @@ class DomainApiCheckHandler implements HttpHandler {
     private final MultiPartHandler uploadHandler = new MultiPartHandler();;
 
 
-    DomainApiCheckHandler(final ModelControllerClient modelController, final Authenticator authenticator,
-                     final ControlledProcessStateService controlledProcessStateService) {
+    DomainApiCheckHandler(final ModelControllerClient modelController, final ControlledProcessStateService controlledProcessStateService) {
         this.controlledProcessStateService = controlledProcessStateService;
         domainApiHandler = new BlockingHandler(new DomainApiHandler(modelController));
         uploadHandler.setNext(new BlockingHandler(new DomainApiUploadHandler(modelController)));

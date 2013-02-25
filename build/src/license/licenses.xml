@@ -2144,16 +2144,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.com.sun.httpserver</groupId>
-      <artifactId>httpserver</artifactId>
-      <licenses>
-        <license>
-          <name>GNU General Public License, Version 2</name>
-          <url>http://repository.jboss.org/licenses/gpl-2.0.txt</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>org.jboss.ejb3</groupId>
       <artifactId>jboss-ejb3-ext-api</artifactId>
       <licenses>

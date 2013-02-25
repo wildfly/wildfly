@@ -26,28 +26,25 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.jboss.as.domain.management.AuthenticationMechanism;
-import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.com.sun.net.httpserver.HttpContext;
-import org.jboss.com.sun.net.httpserver.HttpServer;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
+
 
 /**
  * Different modes for showing the admin console
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-enum ConsoleMode {
+public enum ConsoleMode {
 
     /**
      * Show the console normally
      */
     CONSOLE {
         @Override
-        ResourceHandler createConsoleHandler(String skin) throws ModuleLoadException {
-            return new ConsoleHandler(skin);
+        ResourceHandler createConsoleHandler(String slot) throws ModuleLoadException {
+            return new ConsoleHandler(slot);
         }
         @Override
         public boolean hasConsole() {
@@ -59,8 +56,8 @@ enum ConsoleMode {
      */
     SLAVE_HC {
         @Override
-        ResourceHandler createConsoleHandler(String skin) throws ModuleLoadException {
-            return DisabledConsoleHandler.createNoConsoleForSlave(skin);
+        ResourceHandler createConsoleHandler(String slot) throws ModuleLoadException {
+            return DisabledConsoleHandler.createNoConsoleForSlave(slot);
         }
         @Override
         public boolean hasConsole() {
@@ -72,8 +69,8 @@ enum ConsoleMode {
      */
     ADMIN_ONLY{
         @Override
-        ResourceHandler createConsoleHandler(String skin) throws ModuleLoadException {
-            return DisabledConsoleHandler.createNoConsoleForAdminMode(skin);
+        ResourceHandler createConsoleHandler(String slot) throws ModuleLoadException {
+            return DisabledConsoleHandler.createNoConsoleForAdminMode(slot);
         }
         @Override
         public boolean hasConsole() {
@@ -85,7 +82,7 @@ enum ConsoleMode {
      */
     NO_CONSOLE{
         @Override
-        ResourceHandler createConsoleHandler(String skin) throws ModuleLoadException {
+        ResourceHandler createConsoleHandler(String slot) throws ModuleLoadException {
             return null;
         }
         @Override
@@ -97,11 +94,9 @@ enum ConsoleMode {
     /**
      * Returns a console handler for the mode
      *
-     * @param skin the console look and feel to use
-     *
      * @return the console handler, may be {@code null}
      */
-    ResourceHandler createConsoleHandler(String skin) throws ModuleLoadException {
+    ResourceHandler createConsoleHandler(String slot) throws ModuleLoadException {
         throw new IllegalStateException("Not overridden for " + this);
     }
 
@@ -134,20 +129,6 @@ enum ConsoleMode {
         @Override
         protected boolean skipCache(String resource) {
             return resource.endsWith(NOCACHE_JS) || resource.endsWith(APP_HTML) || resource.endsWith(INDEX_HTML);
-        }
-
-        /*
-        * This method is override so we can ensure the RealmReadinessFilter is in place.
-        *
-        * (Later may change the return type to return the context so a sub-class can just continue after the parent class start)
-        */
-        @Override
-        public void start(HttpServer httpServer, SecurityRealm securityRealm) {
-            HttpContext httpContext = httpServer.createContext(getContext(), this);
-            if (securityRealm != null
-                    && securityRealm.getSupportedAuthenticationMechanisms().contains(AuthenticationMechanism.CLIENT_CERT) == false) {
-                httpContext.getFilters().add(new RedirectReadinessFilter(securityRealm, ErrorHandler.getRealmRedirect()));
-            }
         }
 
         static ClassLoader findConsoleClassLoader(ModuleLoader moduleLoader, String consoleSkin) throws ModuleLoadException {
@@ -206,6 +187,7 @@ enum ConsoleMode {
             return true;
         }
     }
+
 
     /**
      * Scan filesystem looking for the slot versions of all modules with the given name.

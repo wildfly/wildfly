@@ -1,103 +1,69 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */
-
+* JBoss, Home of Professional Open Source.
+* Copyright 2012, Red Hat Middleware LLC, and individual contributors
+* as indicated by the @author tags. See the copyright.txt file in the
+* distribution for a full listing of individual contributors.
+*
+* This is free software; you can redistribute it and/or modify it
+* under the terms of the GNU Lesser General Public License as
+* published by the Free Software Foundation; either version 2.1 of
+* the License, or (at your option) any later version.
+*
+* This software is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+* Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public
+* License along with this software; if not, write to the Free
+* Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+* 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+*/
 package org.jboss.as.domain.http.server;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.domain.http.server.Constants.ACCEPT;
-import static org.jboss.as.domain.http.server.Constants.APPLICATION_DMR_ENCODED;
-import static org.jboss.as.domain.http.server.Constants.APPLICATION_JSON;
-import static org.jboss.as.domain.http.server.Constants.CONTENT_DISPOSITION;
-import static org.jboss.as.domain.http.server.Constants.CONTENT_TYPE;
-import static org.jboss.as.domain.http.server.Constants.FORBIDDEN;
-import static org.jboss.as.domain.http.server.Constants.GET;
-import static org.jboss.as.domain.http.server.Constants.HOST;
-import static org.jboss.as.domain.http.server.Constants.HTTP;
-import static org.jboss.as.domain.http.server.Constants.HTTPS;
-import static org.jboss.as.domain.http.server.Constants.INTERNAL_SERVER_ERROR;
-import static org.jboss.as.domain.http.server.Constants.METHOD_NOT_ALLOWED;
-import static org.jboss.as.domain.http.server.Constants.OK;
-import static org.jboss.as.domain.http.server.Constants.OPTIONS;
-import static org.jboss.as.domain.http.server.Constants.ORIGIN;
-import static org.jboss.as.domain.http.server.Constants.POST;
-import static org.jboss.as.domain.http.server.Constants.RETRY_AFTER;
-import static org.jboss.as.domain.http.server.Constants.SERVICE_UNAVAILABLE;
-import static org.jboss.as.domain.http.server.Constants.TEXT_HTML;
-import static org.jboss.as.domain.http.server.Constants.UNSUPPORTED_MEDIA_TYPE;
-import static org.jboss.as.domain.http.server.Constants.US_ASCII;
-import static org.jboss.as.domain.http.server.Constants.UTF_8;
-import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
-import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
-import static org.jboss.as.domain.http.server.DomainUtil.writeResponse;
-import static org.jboss.as.domain.http.server.DomainUtil.safeClose;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
 import java.net.URLDecoder;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.Deque;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import org.jboss.as.controller.ControlledProcessState;
-import org.jboss.as.controller.ControlledProcessStateService;
+import io.undertow.server.HttpServerExchange;
+import io.undertow.server.handlers.blocking.BlockingHttpHandler;
+import io.undertow.util.HeaderMap;
+import io.undertow.util.Headers;
+import io.undertow.util.Methods;
+import io.undertow.util.StatusCodes;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.domain.http.server.multipart.BoundaryDelimitedInputStream;
-import org.jboss.as.domain.http.server.multipart.MimeHeaderParser;
-import org.jboss.as.domain.http.server.security.SubjectAssociationHandler;
-import org.jboss.as.domain.management.AuthenticationMechanism;
-import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.com.sun.net.httpserver.Authenticator;
-import org.jboss.com.sun.net.httpserver.Filter;
-import org.jboss.com.sun.net.httpserver.Headers;
-import org.jboss.com.sun.net.httpserver.HttpContext;
-import org.jboss.com.sun.net.httpserver.HttpExchange;
-import org.jboss.com.sun.net.httpserver.HttpServer;
-import org.jboss.com.sun.net.httpserver.HttpsServer;
 import org.jboss.dmr.ModelNode;
+import org.xnio.IoUtils;
+import org.xnio.streams.ChannelInputStream;
+import org.xnio.streams.ChannelOutputStream;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
+import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
 
 /**
- * An embedded web server that provides a JSON over HTTP API to the domain management model.
  *
- * @author Jason T. Greene
- * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-class DomainApiHandler implements ManagementHttpHandler {
-
-    private static final String DOMAIN_API_CONTEXT = "/management";
-    private static final String UPLOAD_REQUEST = DOMAIN_API_CONTEXT + "/add-content";
-
-    private static Pattern MULTIPART_FD_BOUNDARY =  Pattern.compile("^multipart/form-data.*;\\s*boundary=(.*)$");
-    private static Pattern DISPOSITION_FILE =  Pattern.compile("^form-data.*filename=\"?([^\"]*)?\"?.*$");
+class DomainApiHandler implements BlockingHttpHandler {
 
     /**
      * Represents all possible management operations that can be executed using HTTP GET
@@ -107,12 +73,12 @@ class DomainApiHandler implements ManagementHttpHandler {
          *  It is essential that the GET requests exposed over the HTTP interface are for read only
          *  operations that do not modify the domain model or update anything server side.
          */
-        RESOURCE("read-resource"),
+        RESOURCE(READ_RESOURCE_OPERATION),
         ATTRIBUTE("read-attribute"),
-        RESOURCE_DESCRIPTION("read-resource-description"),
+        RESOURCE_DESCRIPTION(READ_RESOURCE_DESCRIPTION_OPERATION),
         SNAPSHOTS("list-snapshots"),
-        OPERATION_DESCRIPTION("read-operation-description"),
-        OPERATION_NAMES("read-operation-names");
+        OPERATION_DESCRIPTION(READ_OPERATION_DESCRIPTION_OPERATION),
+        OPERATION_NAMES(READ_OPERATION_NAMES_OPERATION);
 
         private String realOperation;
 
@@ -125,194 +91,28 @@ class DomainApiHandler implements ManagementHttpHandler {
         }
     }
 
-    private final Authenticator authenticator;
-    private final ControlledProcessStateService controlledProcessStateService;
-    private ModelControllerClient modelController;
+    private final ModelControllerClient modelController;
 
-
-    DomainApiHandler(final ModelControllerClient modelController, final Authenticator authenticator,
-                     final ControlledProcessStateService controlledProcessStateService) {
+    DomainApiHandler(ModelControllerClient modelController) {
         this.modelController = modelController;
-        this.authenticator = authenticator;
-        this.controlledProcessStateService = controlledProcessStateService;
-    }
-
-    private void doHandle(HttpExchange http) throws IOException {
-
-        // AS7-2284 If we are starting or stopping, tell caller the service is unavailable and to try again
-        // later. If "stopping" it's either a reload, in which case trying again will eventually succeed,
-        // or it's a true process stop eventually the server will have stopped.
-        @SuppressWarnings("deprecation")
-        ControlledProcessState.State currentState = controlledProcessStateService.getCurrentState();
-        if (currentState == ControlledProcessState.State.STARTING
-                || currentState == ControlledProcessState.State.STOPPING) {
-            http.getResponseHeaders().add(RETRY_AFTER, "2"); //  2 secs is just a guesstimate
-            http.sendResponseHeaders(SERVICE_UNAVAILABLE, -1);
-            return;
-        }
-
-        /**
-         *  Request Verification - before the request is handled a set of checks are performed for
-         *  CSRF and XSS
-         */
-
-        /*
-         * Completely disallow OPTIONS - if the browser suspects this is a cross site request just reject it.
-         */
-        final String requestMethod = http.getRequestMethod();
-        if (OPTIONS.equals(requestMethod)) {
-            drain(http);
-            ROOT_LOGGER.debug("Request rejected due to 'OPTIONS' method which is not supported.");
-            http.sendResponseHeaders(METHOD_NOT_ALLOWED, -1);
-
-            return;
-        }
-
-        /*
-         *  Origin check, if it is set the Origin header should match the Host otherwise reject the request.
-         *
-         *  This check is for cross site scripted GET and POST requests.
-         */
-        final Headers headers = http.getRequestHeaders();
-        final URI request = http.getRequestURI();
-        if (headers.containsKey(ORIGIN)) {
-            String origin = headers.getFirst(ORIGIN);
-            String host = headers.getFirst(HOST);
-            String protocol = http.getHttpContext().getServer() instanceof HttpsServer ? HTTPS : HTTP;
-            //This browser set header should not need IPv6 escaping
-            String allowedOrigin = protocol + "://" + host;
-
-            // This will reject multi-origin Origin headers due to the exact match.
-            if (origin.equals(allowedOrigin) == false) {
-                drain(http);
-                ROOT_LOGGER.debug("Request rejected due to HOST/ORIGIN mis-match.");
-                http.sendResponseHeaders(FORBIDDEN, -1);
-
-                return;
-            }
-        }
-
-        /*
-         *  Cross Site Request Forgery makes use of a specially constructed form to pass in what appears to be
-         *  a valid operation request - except for upload requests any inbound requests where the Content-Type
-         *  is not application/json or application/dmr-encoded will be rejected.
-         */
-
-        final boolean uploadRequest = UPLOAD_REQUEST.equals(request.getPath());
-        if (POST.equals(requestMethod)) {
-            if (uploadRequest) {
-                // This type of request doesn't need the content type check.
-                processUploadRequest(http);
-
-                return;
-            }
-
-            String contentType = extractContentType(headers.getFirst(CONTENT_TYPE));
-            if (!(APPLICATION_JSON.equals(contentType) || APPLICATION_DMR_ENCODED.equals(contentType))) {
-                drain(http);
-                // RFC 2616: 14.11 Content-Encoding
-                // If the content-coding of an entity in a request message is not
-                // acceptable to the origin server, the server SHOULD respond with a
-                // status code of 415 (Unsupported Media Type).
-                ROOT_LOGGER.debug("Request rejected due to unsupported media type - should be one of (application/json,application/dmr-encoded).");
-                sendResponse(http, UNSUPPORTED_MEDIA_TYPE, contentType + "\n");
-
-                return;
-            }
-
-
-        }
-
-        processRequest(http);
     }
 
     @Override
-    public void handle(HttpExchange exchange) throws IOException {
-        // make sure we send something back
-        try {
-            doHandle(exchange);
-        } catch (Exception e) {
-            sendResponse(exchange, INTERNAL_SERVER_ERROR, e.getMessage() + "\n");
-        }
-    }
-
-    private void drain(HttpExchange exchange) throws IOException {
-        try {
-            exchange.getRequestBody().close();
-        } catch (IOException e) {
-            // ignore
-        }
-    }
-
-    private String extractContentType(final String fullContentType) {
-        int pos = fullContentType.indexOf(';');
-
-        return pos < 0 ? fullContentType : fullContentType.substring(0, pos).trim();
-    }
-
-    /**
-     * Handle a form POST deployment upload request.
-     *
-     * @param http The HttpExchange object that allows access to the request and response.
-     * @throws IOException if an error occurs while attempting to extract the deployment from the multipart/form data.
-     */
-    private void processUploadRequest(final HttpExchange http) throws IOException {
-        ModelNode response = null;
-
-        try {
-            SeekResult result = seekToDeployment(http);
-
-            final ModelNode dmr = new ModelNode();
-            dmr.get("operation").set("upload-deployment-stream");
-            dmr.get("address").setEmptyList();
-            dmr.get("input-stream-index").set(0);
-
-            OperationBuilder operation = new OperationBuilder(dmr);
-            operation.addInputStream(result.stream);
-            response = modelController.execute(operation.build());
-            drain(http.getRequestBody());
-        } catch (Throwable t) {
-            // TODO Consider draining input stream
-            ROOT_LOGGER.uploadError(t);
-            sendError(http,false,t);
-            return;
-        }
-
-        // TODO Determine what format the response should be in for a deployment upload request.
-        writeResponse(http, false, false, response, OK, false, TEXT_HTML);
-    }
-
-    /**
-     * Handles a operation request via HTTP.
-     *
-     * @param http The HttpExchange object that allows access to the request and response.
-     * @throws IOException if an error occurs while attempting to process the request.
-     */
-    private void processRequest(final HttpExchange http) throws IOException {
-        final URI request = http.getRequestURI();
-        final String requestMethod = http.getRequestMethod();
-
-        boolean isGet = GET.equals(requestMethod);
-        if (!isGet && !POST.equals(requestMethod)) {
-            ROOT_LOGGER.debug("Request rejected as method not one of (GET,POST).");
-            http.sendResponseHeaders(METHOD_NOT_ALLOWED, -1);
-
-            return;
-        }
+    public void handleBlockingRequest(HttpServerExchange exchange) {
 
         ModelNode dmr;
         ModelNode response;
-        int status = OK;
 
-        Headers requestHeaders = http.getRequestHeaders();
-        boolean encode = APPLICATION_DMR_ENCODED.equals(requestHeaders.getFirst(ACCEPT))
-                || APPLICATION_DMR_ENCODED.equals(requestHeaders.getFirst(CONTENT_TYPE));
+        HeaderMap requestHeaders = exchange.getRequestHeaders();
+        final boolean encode = Common.APPLICATION_DMR_ENCODED.equals(requestHeaders.getFirst(Headers.ACCEPT))
+                || Common.APPLICATION_DMR_ENCODED.equals(requestHeaders.getFirst(Headers.CONTENT_TYPE));
 
+        final boolean get = exchange.getRequestMethod().equals(Methods.GET);
         try {
-            dmr = isGet ? convertGetRequest(request) : convertPostRequest(http.getRequestBody(), encode);
-        } catch (Exception iae) {
-            ROOT_LOGGER.debugf("Unable to construct ModelNode '%s'", iae.getMessage());
-            sendError(http,isGet,iae);
+            dmr = get ? convertGetRequest(exchange) : convertPostRequest(exchange, encode);
+        } catch (Exception e) {
+            ROOT_LOGGER.debugf("Unable to construct ModelNode '%s'", e.getMessage());
+            Common.sendError(exchange, get, e.getLocalizedMessage());
             return;
         }
 
@@ -320,111 +120,39 @@ class DomainApiHandler implements ManagementHttpHandler {
             response = modelController.execute(new OperationBuilder(dmr).build());
         } catch (Throwable t) {
             ROOT_LOGGER.modelRequestError(t);
-            sendError(http,isGet,t);
+            Common.sendError(exchange, get, t.getLocalizedMessage());
             return;
         }
 
         if (response.hasDefined(OUTCOME) && FAILED.equals(response.get(OUTCOME).asString())) {
-            status = INTERNAL_SERVER_ERROR;
+            Common.sendError(exchange, get, response.get(FAILURE_DESCRIPTION).asString());
+            return;
         }
 
         boolean pretty = dmr.hasDefined("json.pretty") && dmr.get("json.pretty").asBoolean();
-        writeResponse(http, isGet, pretty, response, status, encode);
+
+        writeResponse(exchange, get, pretty, response, StatusCodes.CODE_200.getCode(), encode);
     }
 
-    private void sendError(final HttpExchange http, boolean isGet, Throwable t) throws IOException {
-        ModelNode response = new ModelNode();
-        response.set(t.getMessage());
-        writeResponse(http, isGet, true, response, INTERNAL_SERVER_ERROR, false);
-    }
-
-    private void sendResponse(final HttpExchange exchange, final int responseCode, final String body) throws IOException {
-        exchange.sendResponseHeaders(responseCode, 0);
-        final PrintWriter out = new PrintWriter(exchange.getResponseBody());
+    private ModelNode convertPostRequest(HttpServerExchange exchange, boolean encode) throws IOException {
+        InputStream in = new ChannelInputStream(exchange.getRequestChannel());
         try {
-            out.print(body);
-            out.flush();
+            return encode ? ModelNode.fromBase64(in) : ModelNode.fromJSONStream(in);
         } finally {
-            safeClose(out);
+            IoUtils.safeClose(in);
         }
     }
 
-    private static final class SeekResult {
-        BoundaryDelimitedInputStream stream;
-    }
-
-    /**
-     * Extracts the body content contained in a POST request.
-     *
-     * @param http The <code>HttpExchange</code> object containing POST request data.
-     * @return a result containing the stream and the file name reported by the client
-     * @throws IOException if an error occurs while attempting to extract the POST request data.
-     */
-    private SeekResult seekToDeployment(final HttpExchange http) throws IOException {
-        final String type = http.getRequestHeaders().getFirst(CONTENT_TYPE);
-        if (type == null)
-            throw MESSAGES.invalidContentType();
-
-        Matcher matcher = MULTIPART_FD_BOUNDARY.matcher(type);
-        if (!matcher.matches())
-            throw MESSAGES.invalidContentType(type);
-
-        final String boundary = "--" + matcher.group(1);
-
-        final BoundaryDelimitedInputStream stream = new BoundaryDelimitedInputStream(http.getRequestBody(), boundary.getBytes("US-ASCII"));
-
-        // Eat preamble
-        byte[] ignore = new byte[1024];
-        while (stream.read(ignore) != -1) {}
-
-        // From here on out a boundary is prefixed with a CRLF that should be skipped
-        stream.setBoundary(("\r\n" + boundary).getBytes(US_ASCII));
-
-        while (!stream.isOuterStreamClosed()) {
-            // purposefully send the trailing CRLF to headers so that a headerless body can be detected
-            MimeHeaderParser.ParseResult result = MimeHeaderParser.parseHeaders(stream);
-            if (result.eof()) continue; // Skip content-less part
-
-            Headers partHeaders = result.headers();
-            String disposition = partHeaders.getFirst(CONTENT_DISPOSITION);
-            if (disposition != null) {
-                matcher = DISPOSITION_FILE.matcher(disposition);
-                if (matcher.matches()) {
-                    SeekResult seek = new SeekResult();
-                    seek.stream = stream;
-
-                    return seek;
-                }
-            }
-
-            while (stream.read(ignore) != -1) {}
-        }
-
-        throw MESSAGES.invalidDeployment();
-    }
-
-    private void drain(InputStream stream) {
-        try {
-            byte[] ignore = new byte[1024];
-            while (stream.read(ignore) != -1) {}
-        } catch (Throwable eat) {
-        }
-    }
-
-    private ModelNode convertPostRequest(InputStream stream, boolean encode) throws IOException {
-        return encode ? ModelNode.fromBase64(stream) : ModelNode.fromJSONStream(stream);
-    }
-
-    private ModelNode convertGetRequest(URI request) {
-        ArrayList<String> pathSegments = decodePath(request.getRawPath());
-        Map<String, String> queryParameters = decodeQuery(request.getRawQuery());
+    private ModelNode convertGetRequest(HttpServerExchange exchange) {
+        ArrayList<String> pathSegments = decodePath(exchange.getRequestPath());
+        Map<String, Deque<String>> queryParameters = exchange.getQueryParameters();
 
         GetOperation operation = null;
         ModelNode dmr = new ModelNode();
-        for (Entry<String, String> entry : queryParameters.entrySet()) {
+        for (Entry<String, Deque<String>> entry : queryParameters.entrySet()) {
             String key = entry.getKey();
-            String value = entry.getValue();
-            if ("operation".equals(key)) {
+            String value = entry.getValue().getFirst();
+            if (OP.equals(key)) {
                 try {
                     operation = GetOperation.valueOf(value.toUpperCase(Locale.ENGLISH).replace('-', '_'));
                     value = operation.realOperation();
@@ -432,20 +160,15 @@ class DomainApiHandler implements ManagementHttpHandler {
                     throw MESSAGES.invalidOperation(e, value);
                 }
             }
-
-            dmr.get(entry.getKey()).set(value);
+            dmr.get(entry.getKey()).set(!value.equals("") ? value : "true");
         }
 
         // This will now only occur if no operation at all was specified on the incoming request.
         if (operation == null) {
             operation = GetOperation.RESOURCE;
-            dmr.get("operation").set(operation.realOperation);
+            dmr.get(OP).set(operation.realOperation);
         }
-
-        if (operation == GetOperation.RESOURCE && !dmr.has("recursive"))
-            dmr.get("recursive").set(false);
-
-        ModelNode list = dmr.get("address").setEmptyList();
+        ModelNode list = dmr.get(OP_ADDR).setEmptyList();
         for (int i = 1; i < pathSegments.size() - 1; i += 2) {
             list.add(pathSegments.get(i), pathSegments.get(i + 1));
         }
@@ -475,65 +198,43 @@ class DomainApiHandler implements ManagementHttpHandler {
     private String unescape(String string) {
         try {
             // URLDecoder could be way more efficient, replace it one day
-            return URLDecoder.decode(string, UTF_8);
+            return URLDecoder.decode(string, Common.UTF_8);
         } catch (UnsupportedEncodingException e) {
             throw new IllegalStateException(e);
         }
     }
 
-    private Map<String, String> decodeQuery(String query) {
-        if (query == null || query.isEmpty())
-            return Collections.emptyMap();
+    static void writeResponse(HttpServerExchange exchange, boolean isGet, boolean pretty, ModelNode response, int status, boolean encode) {
+        final String contentType = encode ? Common.APPLICATION_DMR_ENCODED : Common.APPLICATION_JSON;
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, contentType  + ";" + Common.UTF_8);
+        exchange.setResponseCode(status);
 
-        int i = 0;
-        Map<String, String> parameters = new HashMap<String, String>();
 
-        do {
-            int j = query.indexOf('&', i);
-            if (j == -1)
-                j = query.length();
+        //TODO Content-Length?
+        if (isGet && status == StatusCodes.CODE_200.getCode()) {
+            response = response.get(RESULT);
+        }
 
-            String pair = query.substring(i, j);
-            int k = pair.indexOf('=');
-
-            String key;
-            String value;
-            if (k == -1) {
-                key = unescape(pair);
-                value = "true";
-            } else {
-                key = unescape(pair.substring(0, k));
-                value = unescape(pair.substring(k + 1, pair.length()));
+        OutputStream out = new ChannelOutputStream(exchange.getResponseChannel());
+        PrintWriter print = new PrintWriter(out);
+        try {
+            try {
+                if (encode) {
+                    response.writeBase64(out);
+                } else {
+                    response.writeJSONString(print, !pretty);
+                }
+            } finally {
+                print.flush();
+                try {
+                    out.flush();
+                } finally {
+                    IoUtils.safeClose(print);
+                    IoUtils.safeClose(out);
+                }
             }
-
-            parameters.put(key, value);
-
-            i = j + 1;
-        } while (i < query.length());
-
-        return parameters;
-    }
-
-    public void start(HttpServer httpServer, SecurityRealm securityRealm) {
-        // The SubjectAssociationHandler wraps all calls to this HttpHandler to ensure the Subject has been associated
-        // with the security context.
-        HttpContext context = httpServer.createContext(DOMAIN_API_CONTEXT, new SubjectAssociationHandler(this));
-        // Once there is a trust store we can no longer rely on users being defined so skip
-        // any redirects.
-        if (authenticator != null) {
-            context.setAuthenticator(authenticator);
-            List<Filter> filters = context.getFilters();
-            if (securityRealm != null &&  securityRealm.getSupportedAuthenticationMechanisms().contains(AuthenticationMechanism.CLIENT_CERT) == false) {
-                filters.add(new DmrFailureReadinessFilter(securityRealm, ErrorHandler.getRealmRedirect()));
-            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
-
-    public void stop(HttpServer httpServer) {
-        httpServer.removeContext(DOMAIN_API_CONTEXT);
-        modelController = null;
-    }
-
 }
-
-

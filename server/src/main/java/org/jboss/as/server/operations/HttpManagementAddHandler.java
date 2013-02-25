@@ -43,7 +43,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.domain.http.server.undertow.ConsoleMode;
+import org.jboss.as.domain.http.server.ConsoleMode;
 import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.network.SocketBinding;

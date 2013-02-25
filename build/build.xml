@@ -255,10 +255,6 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-threads"/>
         </module-def>
 
-        <module-def name="org.jboss.as.undertow-domain-http-interface">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-undertow-domain-http-interface"/>
-        </module-def>
-
         <module-def name="org.jboss.com.sun.httpserver">
             <maven-resource group="org.jboss.com.sun.httpserver" artifact="httpserver"/>
         </module-def>

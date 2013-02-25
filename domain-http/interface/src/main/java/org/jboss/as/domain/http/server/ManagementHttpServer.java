@@ -22,203 +22,154 @@
 package org.jboss.as.domain.http.server;
 
 import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
-import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
+import static org.xnio.Options.SSL_CLIENT_AUTH_MODE;
+import static org.xnio.SslClientAuthMode.REQUESTED;
+import io.undertow.security.handlers.SinglePortConfidentialityHandler;
+import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpOpenListener;
+import io.undertow.server.handlers.CanonicalPathHandler;
+import io.undertow.server.handlers.PathHandler;
+import io.undertow.server.handlers.blocking.BlockingHandler;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLParameters;
 
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.domain.http.server.security.AnonymousAuthenticator;
-import org.jboss.as.domain.http.server.security.BasicAuthenticator;
-import org.jboss.as.domain.http.server.security.ClientCertAuthenticator;
-import org.jboss.as.domain.http.server.security.DigestAuthenticator;
-import org.jboss.as.domain.http.server.security.FourZeroThreeAuthenticator;
 import org.jboss.as.domain.management.AuthenticationMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.com.sun.net.httpserver.Authenticator;
-import org.jboss.com.sun.net.httpserver.HttpServer;
-import org.jboss.com.sun.net.httpserver.HttpsConfigurator;
-import org.jboss.com.sun.net.httpserver.HttpsParameters;
-import org.jboss.com.sun.net.httpserver.HttpsServer;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
+import org.xnio.BufferAllocator;
+import org.xnio.ByteBufferSlicePool;
+import org.xnio.ChannelListener;
+import org.xnio.ChannelListeners;
+import org.xnio.IoUtils;
+import org.xnio.OptionMap;
+import org.xnio.OptionMap.Builder;
+import org.xnio.Options;
+import org.xnio.Xnio;
+import org.xnio.XnioWorker;
+import org.xnio.channels.AcceptingChannel;
+import org.xnio.channels.ConnectedStreamChannel;
+import org.xnio.ssl.JsseXnioSsl;
+import org.xnio.ssl.XnioSsl;
 
 /**
  * The general HTTP server for handling management API requests.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-class ManagementHttpServer {
+public class ManagementHttpServer {
 
-    private final HttpServer httpServer;
+    private final HttpOpenListener openListener;
+    private final InetSocketAddress httpAddress;
+    private final InetSocketAddress secureAddress;
+    private volatile XnioWorker worker;
+    private volatile AcceptingChannel<? extends ConnectedStreamChannel> normalServer;
+    private volatile AcceptingChannel<? extends ConnectedStreamChannel> secureServer;
+    private final SecurityRealm securityRealm;
 
-    private final HttpServer secureHttpServer;
-
-    private SecurityRealm securityRealm;
-
-    private List<ManagementHttpHandler> handlers = new LinkedList<ManagementHttpHandler>();
-
-    private ManagementHttpServer(HttpServer httpServer, HttpServer secureHttpServer, SecurityRealm securityRealm) {
-        this.httpServer = httpServer;
-        this.secureHttpServer = secureHttpServer;
+    private ManagementHttpServer(HttpOpenListener openListener, InetSocketAddress httpAddress, InetSocketAddress secureAddress, SecurityRealm securityRealm) {
+        this.openListener = openListener;
+        this.httpAddress = httpAddress;
+        this.secureAddress = secureAddress;
         this.securityRealm = securityRealm;
     }
 
-    void addHandler(ManagementHttpHandler handler) {
-        handlers.add(handler);
-    }
 
     public void start() {
-        start(httpServer);
-        start(secureHttpServer);
-    }
-
-    private void start(HttpServer httpServer) {
-        if (httpServer == null)
-            return;
-
-        for (ManagementHttpHandler current : handlers) {
-            current.start(httpServer, securityRealm);
+        final Xnio xnio;
+        try {
+            //Do what org.jboss.as.remoting.XnioUtil does
+            xnio = Xnio.getInstance(null, Module.getModuleFromCallerModuleLoader(ModuleIdentifier.fromString("org.jboss.xnio.nio")).getClassLoader());
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getLocalizedMessage());
         }
-        httpServer.start();
+        try {
+            //TODO make this configurable
+            worker = xnio.createWorker(OptionMap.builder()
+                    .set(Options.WORKER_WRITE_THREADS, 4)
+                    .set(Options.WORKER_READ_THREADS, 4)
+                    .set(Options.CONNECTION_HIGH_WATER, 1000000)
+                    .set(Options.CONNECTION_LOW_WATER, 1000000)
+                    .set(Options.WORKER_TASK_CORE_THREADS, 10)
+                    .set(Options.WORKER_TASK_MAX_THREADS, 12)
+                    .set(Options.TCP_NODELAY, true)
+                    .set(Options.CORK, true)
+                    .getMap());
+
+            Builder serverOptionsBuilder = OptionMap.builder()
+                    .set(Options.WORKER_ACCEPT_THREADS, 4)
+                    .set(Options.TCP_NODELAY, true)
+                    .set(Options.REUSE_ADDRESSES, true);
+            ChannelListener acceptListener = ChannelListeners.openListenerAdapter(openListener);
+            if (httpAddress != null) {
+                normalServer = worker.createStreamServer(httpAddress, acceptListener, serverOptionsBuilder.getMap());
+                normalServer.resumeAccepts();
+            }
+            if (secureAddress != null) {
+                SSLContext sslContext = securityRealm.getSSLContext();
+                if (securityRealm.getSupportedAuthenticationMechanisms().contains(AuthenticationMechanism.CLIENT_CERT)) {
+                    serverOptionsBuilder.set(SSL_CLIENT_AUTH_MODE, REQUESTED);
+                }
+                OptionMap secureOptions = serverOptionsBuilder.getMap();
+                XnioSsl xnioSsl = new JsseXnioSsl(worker.getXnio(), secureOptions, sslContext);
+                secureServer = xnioSsl.createSslTcpServer(worker, secureAddress, acceptListener, secureOptions);
+                secureServer.resumeAccepts();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void stop() {
-        stop(httpServer);
-        stop(secureHttpServer);
-    }
-
-    private void stop(HttpServer httpServer) {
-        if (httpServer == null)
-            return;
-
-        httpServer.stop(0);
-        for (ManagementHttpHandler current : handlers) {
-            current.stop(httpServer);
-        }
+        IoUtils.safeClose(normalServer);
+        IoUtils.safeClose(secureServer);
+        worker.shutdown();
     }
 
     public static ManagementHttpServer create(InetSocketAddress bindAddress, InetSocketAddress secureBindAddress, int backlog,
-            ModelControllerClient modelControllerClient, Executor executor, SecurityRealm securityRealm, ControlledProcessStateService controlledProcessStateService,
-            ConsoleMode consoleMode, String consoleSkin)
+            ModelControllerClient modelControllerClient, ExecutorService executorService, SecurityRealm securityRealm, ControlledProcessStateService controlledProcessStateService,
+            ConsoleMode consoleMode, String consoleSlot)
             throws IOException {
-        Map<String, String> configuration = Collections.emptyMap();
 
-        Authenticator auth = null;
-        final CertAuth certAuthMode;
+        HttpOpenListener openListener = new HttpOpenListener(new ByteBufferSlicePool(BufferAllocator.DIRECT_BYTE_BUFFER_ALLOCATOR, 4096, 10 * 4096), 4096);
+        int securePort = secureBindAddress != null ? secureBindAddress.getPort() : -1;
+        setupOpenListener(openListener, modelControllerClient, consoleMode, consoleSlot, controlledProcessStateService, securePort);
+        ManagementHttpServer server = new ManagementHttpServer(openListener, bindAddress, secureBindAddress, securityRealm);
 
-        if (securityRealm != null) {
-            Set<AuthenticationMechanism> authenticationMechanisms = securityRealm.getSupportedAuthenticationMechanisms();
-            if (authenticationMechanisms.contains(AuthenticationMechanism.DIGEST)) {
-                Map<String, String> mechConfig = securityRealm.getMechanismConfig(AuthenticationMechanism.DIGEST);
-                boolean plainTextDigest = true;
-                if (mechConfig.containsKey(DIGEST_PLAIN_TEXT)) {
-                    plainTextDigest = Boolean.parseBoolean(mechConfig.get(DIGEST_PLAIN_TEXT));
-                }
-                auth = new DigestAuthenticator(securityRealm, plainTextDigest == false);
-            } else if (authenticationMechanisms.contains(AuthenticationMechanism.PLAIN)) {
-                auth = new BasicAuthenticator(securityRealm);
-            }
+        return server;
+    }
 
-            if (authenticationMechanisms.contains(AuthenticationMechanism.CLIENT_CERT)) {
-                if (auth == null) {
-                    certAuthMode = CertAuth.NEED;
-                    auth = new ClientCertAuthenticator(securityRealm);
-                } else {
-                    // We have the possibility to use Client Cert but also Username/Password authentication so don't
-                    // need to force clients into presenting a Cert.
-                    certAuthMode = CertAuth.WANT;
-                }
-            } else {
-                certAuthMode = CertAuth.NONE;
-            }
+    private static void setupOpenListener(HttpOpenListener listener, ModelControllerClient modelControllerClient, ConsoleMode consoleMode, String consoleSlot, ControlledProcessStateService controlledProcessStateService, int securePort) {
+        CanonicalPathHandler canonicalPathHandler = new CanonicalPathHandler();
+        listener.setRootHandler(canonicalPathHandler);
 
-            // By this point if an authenticator could have been defined it would have been.
-            if (auth == null) {
-                if (authenticationMechanisms.size() > 0) {
-                    // An authentication mechanism not supported for HTTP has been requested, disable access.
-                    auth = new FourZeroThreeAuthenticator();
-                } else {
-                    // The existence of the realm could have enabled SSL without mandating authentication.
-                    auth = new AnonymousAuthenticator();
-                }
-            }
-        } else {
-            auth = new AnonymousAuthenticator();
-            certAuthMode = CertAuth.NONE;
+        PathHandler pathHandler = new PathHandler();
+        HttpHandler current = pathHandler;
+        if (securePort > 0) {
+            current = new SinglePortConfidentialityHandler(current, securePort);
         }
+        canonicalPathHandler.setNext(current);
 
-        HttpServer httpServer = null;
-        if (bindAddress != null) {
-            httpServer = HttpServer.create(bindAddress, backlog, configuration);
-            httpServer.setExecutor(executor);
-        }
-
-        HttpsServer secureHttpServer = null;
-        if (secureBindAddress != null) {
-            secureHttpServer = HttpsServer.create(secureBindAddress, backlog, configuration);
-            final SSLContext context = securityRealm.getSSLContext();
-            if (context != null) {
-                secureHttpServer.setHttpsConfigurator(new HttpsConfigurator(context) {
-
-                    @Override
-                    public void configure(HttpsParameters params) {
-                        SSLParameters sslparams = context.getDefaultSSLParameters();
-
-                        switch (certAuthMode) {
-                            case NEED:
-                                sslparams.setNeedClientAuth(true);
-                                break;
-                            case WANT:
-                                sslparams.setWantClientAuth(true);
-                                break;
-                        }
-
-                        params.setSSLParameters(sslparams);
-
-                    }
-                });
-                secureHttpServer.setExecutor(executor);
-            } else {
-                ROOT_LOGGER.sslConfigurationNotFound();
-            }
-        }
-
-        ManagementHttpServer managementHttpServer = new ManagementHttpServer(httpServer, secureHttpServer, securityRealm);
         ResourceHandler consoleHandler = null;
         try {
-            consoleHandler = consoleMode.createConsoleHandler(consoleSkin);
+            consoleHandler = consoleMode.createConsoleHandler(consoleSlot);
         } catch (ModuleLoadException e) {
-            HttpServerLogger.ROOT_LOGGER.consoleModuleNotFound(consoleSkin == null ? "main" : consoleSkin);
+            ROOT_LOGGER.consoleModuleNotFound(consoleSlot == null ? "main" : consoleSlot);
         }
-        managementHttpServer.addHandler(new RootHandler(consoleHandler));
-        managementHttpServer.addHandler(new DomainApiHandler(modelControllerClient, auth, controlledProcessStateService));
+        ManagementRootConsoleRedirectHandler rootConsoleRedirectHandler = new ManagementRootConsoleRedirectHandler(consoleHandler);
+        DomainApiCheckHandler domainApiHandler = new DomainApiCheckHandler(modelControllerClient, controlledProcessStateService);
+        pathHandler.setDefaultHandler(rootConsoleRedirectHandler);
         if (consoleHandler != null) {
-            managementHttpServer.addHandler(consoleHandler);
+            pathHandler.addPath(consoleHandler.getContext(), new BlockingHandler(consoleHandler));
         }
+        pathHandler.addPath(DomainApiCheckHandler.PATH, domainApiHandler);
 
-        try {
-            managementHttpServer.addHandler(new ErrorHandler(consoleSkin));
-        } catch (ModuleLoadException e) {
-            throw new IOException("Unable to load resource handler", e);
-        }
-
-        managementHttpServer.addHandler(new LogoutHandler());
-
-        return managementHttpServer;
     }
-
-    private enum CertAuth {
-        NONE, WANT, NEED
-    }
-
 }
