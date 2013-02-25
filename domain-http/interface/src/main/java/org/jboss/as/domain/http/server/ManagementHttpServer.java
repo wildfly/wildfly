@@ -57,7 +57,7 @@ import org.jboss.modules.ModuleLoadException;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class ManagementHttpServer {
+class ManagementHttpServer {
 
     private final HttpServer httpServer;
 

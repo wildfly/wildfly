@@ -42,7 +42,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class DmrFailureReadinessFilter extends RealmReadinessFilter {
+class DmrFailureReadinessFilter extends RealmReadinessFilter {
 
     private final String redirectTo;
 

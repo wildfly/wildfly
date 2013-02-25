@@ -41,7 +41,7 @@ import org.jboss.com.sun.net.httpserver.HttpServer;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class RootHandler implements ManagementHttpHandler {
+class RootHandler implements ManagementHttpHandler {
 
     public static final String ROOT_CONTEXT = "/";
 

@@ -25,6 +25,7 @@ import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
+import org.jboss.modules.ModuleNotFoundException;
 
 
 /**
@@ -49,4 +50,6 @@ public interface UndertowHttpServerMessages {
     @Message(id = Message.NONE, value = "Invalid resource")
     String invalidResource();
 
+    @Message(id = Message.NONE, value = "No console module available with module name %s")
+    ModuleNotFoundException consoleModuleNotFound(final String moduleName);
 }
