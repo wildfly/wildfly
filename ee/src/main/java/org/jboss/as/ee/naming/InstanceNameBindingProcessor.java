@@ -19,10 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.txn.deployment;
-
-import javax.transaction.TransactionSynchronizationRegistry;
-import javax.transaction.UserTransaction;
+package org.jboss.as.ee.naming;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -30,28 +27,29 @@ import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
-import org.jboss.as.naming.ManagedReferenceInjector;
+import org.jboss.as.naming.ManagedReference;
+import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.txn.service.TransactionSynchronizationRegistryService;
-import org.jboss.as.txn.service.UserTransactionService;
+import org.jboss.msc.inject.InjectionException;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
- * Processor responsible for binding transaction related resources to JNDI.
- * </p>
- * Unlike other resource injections this binding happens for all eligible components,
- * regardless of the presence of the {@link javax.annotation.Resource} annotation.
+ * Processor responsible for binding java:comp/InAppClientContainer
  *
  * @author Stuart Douglas
  */
-public class TransactionJndiBindingProcessor implements DeploymentUnitProcessor {
+public class InstanceNameBindingProcessor implements DeploymentUnitProcessor {
+
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -63,7 +61,8 @@ public class TransactionJndiBindingProcessor implements DeploymentUnitProcessor 
 
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         //if this is a war we need to bind to the modules comp namespace
-        if(DeploymentTypeMarker.isType(DeploymentType.WAR,deploymentUnit)) {
+        if(DeploymentTypeMarker.isType(DeploymentType.WAR,deploymentUnit) ||
+                DeploymentTypeMarker.isType(DeploymentType.APPLICATION_CLIENT, deploymentUnit)) {
             final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getApplicationName(),moduleDescription.getModuleName());
             bindServices(deploymentUnit, serviceTarget, moduleContextServiceName);
         }
@@ -77,32 +76,42 @@ public class TransactionJndiBindingProcessor implements DeploymentUnitProcessor 
 
     }
 
-    /**
-     * Binds the java:comp/UserTransaction service and the java:comp/TransactionSynchronizationRegistry
-     *
-     * @param deploymentUnit The deployment unit
-     * @param serviceTarget The service target
-     * @param contextServiceName The service name of the context to bind to
-     */
     private void bindServices(DeploymentUnit deploymentUnit, ServiceTarget serviceTarget, ServiceName contextServiceName) {
 
-        final ServiceName userTransactionServiceName = contextServiceName.append("UserTransaction");
-        BinderService userTransactionBindingService = new BinderService("UserTransaction");
-        serviceTarget.addService(userTransactionServiceName, userTransactionBindingService)
-            .addDependency(UserTransactionService.SERVICE_NAME, UserTransaction.class,
-                    new ManagedReferenceInjector<UserTransaction>(userTransactionBindingService.getManagedObjectInjector()))
-            .addDependency(contextServiceName, ServiceBasedNamingStore.class, userTransactionBindingService.getNamingStoreInjector())
-            .install();
-        deploymentUnit.addToAttachmentList(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES,userTransactionServiceName);
+        final ServiceName instanceNameServiceName = contextServiceName.append("InstanceName");
+        final BinderService instanceNameService = new BinderService("InstanceName");
+        serviceTarget.addService(instanceNameServiceName, instanceNameService)
+            .addDependency(contextServiceName, ServiceBasedNamingStore.class, instanceNameService.getNamingStoreInjector())
+            .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, new Injector<ServerEnvironment>() {
+                @Override
+                public void inject(final ServerEnvironment serverEnvironment) throws InjectionException {
+                    instanceNameService.getManagedObjectInjector().inject(new ManagedReferenceFactory() {
+                        @Override
+                        public ManagedReference getReference() {
+                            return new ManagedReference() {
+                                @Override
+                                public void release() {
 
-        final ServiceName transactionSynchronizationRegistryName = contextServiceName.append("TransactionSynchronizationRegistry");
-        BinderService transactionSyncBinderService = new BinderService("TransactionSynchronizationRegistry");
-        serviceTarget.addService(transactionSynchronizationRegistryName, transactionSyncBinderService)
-            .addDependency(TransactionSynchronizationRegistryService.SERVICE_NAME, TransactionSynchronizationRegistry.class,
-                    new ManagedReferenceInjector<TransactionSynchronizationRegistry>(transactionSyncBinderService.getManagedObjectInjector()))
-            .addDependency(contextServiceName, ServiceBasedNamingStore.class, transactionSyncBinderService.getNamingStoreInjector())
+                                }
+
+                                @Override
+                                public Object getInstance() {
+                                    final String nodeName = serverEnvironment.getNodeName();
+                                    return nodeName == null ? "" : nodeName;
+                                }
+                            };
+                        }
+                    });
+                }
+
+                @Override
+                public void uninject() {
+                    instanceNameService.getManagedObjectInjector().uninject();
+                }
+            })
             .install();
-        deploymentUnit.addToAttachmentList(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES,transactionSynchronizationRegistryName);
+        deploymentUnit.addToAttachmentList(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES, instanceNameServiceName);
+
     }
 
 
