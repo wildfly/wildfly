@@ -28,8 +28,8 @@ import java.util.concurrent.ExecutorService;
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.domain.http.server.undertow.ConsoleMode;
-import org.jboss.as.domain.http.server.undertow.UndertowManagementHttpServer;
+import org.jboss.as.domain.http.server.ConsoleMode;
+import org.jboss.as.domain.http.server.ManagementHttpServer;
 import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.ManagedBindingRegistry;
@@ -66,7 +66,7 @@ public class _UndertowHttpManagementService implements Service<HttpManagement>{
     private final InjectedValue<ControlledProcessStateService> controlledProcessStateServiceValue = new InjectedValue<ControlledProcessStateService>();
     private final ConsoleMode consoleMode;
     private final String consoleSlot;
-    private UndertowManagementHttpServer serverManagement;
+    private ManagementHttpServer serverManagement;
     private SocketBindingManager socketBindingManager;
     private boolean useUnmanagedBindings = false;
     private ManagedBinding basicManagedBinding;
@@ -181,7 +181,7 @@ public class _UndertowHttpManagementService implements Service<HttpManagement>{
 
         try {
 
-            serverManagement = UndertowManagementHttpServer.create(bindAddress, secureBindAddress, 50, modelControllerClient,
+            serverManagement = ManagementHttpServer.create(bindAddress, secureBindAddress, 50, modelControllerClient,
                     executorService, securityRealmService, controlledProcessStateService, consoleMode, consoleSlot);
             serverManagement.start();
 
