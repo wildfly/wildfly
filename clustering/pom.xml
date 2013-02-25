@@ -82,6 +82,13 @@
             <artifactId>byteman-bmunit</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.sun</groupId>
+            <artifactId>tools</artifactId>
+            <scope>system</scope>
+            <version>1.6</version>
+            <systemPath>${com.sun.tools.path}</systemPath>
+        </dependency>
     </dependencies>
 
 </project>
