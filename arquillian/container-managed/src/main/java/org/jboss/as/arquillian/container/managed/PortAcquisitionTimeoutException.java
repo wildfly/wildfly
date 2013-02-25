@@ -22,7 +22,7 @@ import org.jboss.arquillian.container.spi.client.container.LifecycleException;
  * Denotes that a port could not be obtained within a designated timeout period.
  *
  * @author <a href="mailto:alr@jboss.org">ALR</a>
- * @see https://issues.jboss.org/browse/AS7-4070
+ * @see {@link https://issues.jboss.org/browse/AS7-4070}
  */
 public class PortAcquisitionTimeoutException extends LifecycleException {
     private static final long serialVersionUID = 1L;
@@ -30,7 +30,7 @@ public class PortAcquisitionTimeoutException extends LifecycleException {
     /**
      * Constructs a new instance noting the port that could not be acquired in the designated amount of time
      *
-     * @param ports
+     * @param port
      * @param timeoutSeconds
      */
     public PortAcquisitionTimeoutException(final int port, final int timeoutSeconds) {
