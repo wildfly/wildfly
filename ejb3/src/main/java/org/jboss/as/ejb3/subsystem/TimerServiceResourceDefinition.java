@@ -52,7 +52,6 @@ import org.jboss.as.controller.transform.OperationRejectionPolicy;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.PathAddressTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
-import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
