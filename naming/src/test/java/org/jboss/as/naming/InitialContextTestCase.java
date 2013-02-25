@@ -31,11 +31,19 @@ import javax.naming.spi.ObjectFactory;
 import junit.framework.Assert;
 
 import org.junit.Test;
+import org.junit.Before;
+
 
 /**
  * @author David Bosschaert
  */
 public class InitialContextTestCase {
+
+    @Before
+    public void before() {
+        NamingContext.setActiveNamingStore(new InMemoryNamingStore());
+    }
+
     @Test
     public void testRegisterURLSchemeHandler() throws Exception {
         InitialContext ictx = new InitialContext(null);
