@@ -61,6 +61,7 @@ import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
 import org.jboss.as.ejb3.timerservice.spi.ScheduleTimer;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
+import org.jboss.as.ejb3.timerservice.task.TimerTask;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -801,7 +802,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                 return;
             }
             // create the timer task
-            final TimerTask timerTask = timer.getTimerTask();
+            final TimerTask<?> timerTask = timer.getTimerTask();
             // find out how long is it away from now
             long delay = nextExpiration.getTime() - System.currentTimeMillis();
             // if in past, then trigger immediately

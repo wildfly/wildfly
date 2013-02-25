@@ -31,17 +31,14 @@ import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
-import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.services.path.PathManager;
-import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.ejb3.subsystem.deployment.EntityBeanResourceDefinition;
 import org.jboss.as.ejb3.subsystem.deployment.MessageDrivenBeanResourceDefinition;
 import org.jboss.as.ejb3.subsystem.deployment.SingletonBeanDeploymentResourceDefinition;
 import org.jboss.as.ejb3.subsystem.deployment.StatefulSessionBeanDeploymentResourceDefinition;
 import org.jboss.as.ejb3.subsystem.deployment.StatelessSessionBeanDeploymentResourceDefinition;
-import org.jboss.as.threads.UnboundedQueueThreadPoolResourceDefinition;
 
 /**
  * Extension that provides the EJB3 subsystem.
