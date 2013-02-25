@@ -41,6 +41,7 @@ import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -54,6 +55,7 @@ import org.osgi.util.tracker.ServiceTracker;
  * @since 23-Oct-2009
  */
 @RunWith(Arquillian.class)
+@Ignore("AS7-6627")
 public class TransactionTestCase {
 
     @ArquillianResource
