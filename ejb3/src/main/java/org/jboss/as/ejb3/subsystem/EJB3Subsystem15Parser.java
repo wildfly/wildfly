@@ -90,8 +90,6 @@ public class EJB3Subsystem15Parser extends EJB3Subsystem14Parser {
         timerServiceAdd.get(OP_ADDR).set(address);
 
         final int attCount = reader.getAttributeCount();
-        String threadPoolName = null;
-        String defaultDataStore = null;
         final EnumSet<EJB3SubsystemXMLAttribute> required = EnumSet.of(EJB3SubsystemXMLAttribute.THREAD_POOL_NAME, EJB3SubsystemXMLAttribute.DEFAULT_DATA_STORE);
         for (int i = 0; i < attCount; i++) {
             requireNoNamespaceAttribute(reader, i);
@@ -100,11 +98,11 @@ public class EJB3Subsystem15Parser extends EJB3Subsystem14Parser {
             required.remove(attribute);
             switch (attribute) {
                 case THREAD_POOL_NAME: {
-                    threadPoolName = value;
+                    TimerServiceResourceDefinition.THREAD_POOL_NAME.parseAndSetParameter(value,timerServiceAdd,reader);
                     break;
                 }
                 case DEFAULT_DATA_STORE: {
-                    defaultDataStore = value;
+                    TimerServiceResourceDefinition.DEFAULT_DATA_STORE.parseAndSetParameter(value,timerServiceAdd,reader);
                     break;
                 }
                 default:
@@ -114,8 +112,6 @@ public class EJB3Subsystem15Parser extends EJB3Subsystem14Parser {
         if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
-        timerServiceAdd.get(THREAD_POOL_NAME).set(threadPoolName);
-        timerServiceAdd.get(DEFAULT_DATA_STORE).set(defaultDataStore);
         operations.add(timerServiceAdd);
 
         while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {

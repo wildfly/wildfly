@@ -44,7 +44,7 @@ public class UndefineAttributeHandler extends WriteAttributeHandler {
             .setRuntimeOnly()
             .build();
 
-    static final OperationStepHandler INSTANCE = new UndefineAttributeHandler();
+    public static final OperationStepHandler INSTANCE = new UndefineAttributeHandler();
 
     @Override
     public void execute(final OperationContext context, final ModelNode original) throws OperationFailedException {

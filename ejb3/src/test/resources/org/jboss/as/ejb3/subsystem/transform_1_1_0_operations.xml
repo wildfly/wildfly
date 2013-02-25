@@ -14,8 +14,8 @@
     <!-- EJB3 pools -->
     <pools>
         <bean-instance-pools>
-            <strict-max-pool name="slsb-strict-max-pool" max-pool-size="${prop.strict-max-pool:20}" instance-acquisition-timeout="${prop.instance-acquisition-timeout:5}" instance-acquisition-timeout-unit="MINUTES"/>
-            <strict-max-pool name="mdb-strict-max-pool" max-pool-size="${prop.strict-max-pool:20}" instance-acquisition-timeout="${prop.instance-acquisition-timeout:5}" instance-acquisition-timeout-unit="MINUTES"/>
+            <strict-max-pool name="slsb-strict-max-pool" max-pool-size="${prop.strict-max-pool:20}" instance-acquisition-timeout="${prop.instance-acquisition-timeout:5}" instance-acquisition-timeout-unit="${prop.instance-acquisition-timeout-unit:MINUTES}"/>
+            <strict-max-pool name="mdb-strict-max-pool" max-pool-size="${prop.strict-max-pool:20}" instance-acquisition-timeout="${prop.instance-acquisition-timeout:5}" instance-acquisition-timeout-unit="${prop.instance-acquisition-timeout-unit:MINUTES}"/>
         </bean-instance-pools>
     </pools>
     <caches>
@@ -25,18 +25,19 @@
     </caches>
     <passivation-stores>
         <file-passivation-store name="file"/>
-        <cluster-passivation-store name="cluster" cache-container="sfsb" bean-cache="repl" client-mappings-cache="client-mappings" idle-timeout="${prop.idle-timeout:5}" idle-timeout-unit="MINUTES"/>
+        <cluster-passivation-store name="cluster" cache-container="sfsb" bean-cache="repl" client-mappings-cache="client-mappings" idle-timeout="${prop.idle-timeout:5}" idle-timeout-unit="${prop.idle-timeout-unit:MINUTES}"/>
     </passivation-stores>
     <async thread-pool-name="default"/>
     <timer-service thread-pool-name="default" default-data-store="file-data-store">
         <data-stores>
             <file-data-store name="file-data-store" path="timer-service-data" relative-to="jboss.server.data.dir"/>
-            <database-data-store name="database-data-store" datasource-jndi-name="java:global/DataSource"/>
+            <file-data-store name="file-data-store-rejected" path="timer-service-data" relative-to="jboss.server.data.dir"/>
+            <database-data-store name="database-data-store" datasource-jndi-name="${prop.timer-service-database:java:global/DataSource}"/>
         </data-stores>
     </timer-service>
     <remote connector-ref="remoting-connector" thread-pool-name="default">
         <channel-creation-options>
-            <option name="READ_TIMEOUT" value="20" type="xnio"/>
+            <option name="READ_TIMEOUT" value="${prop.remoting-connector.read.timeout:20}" type="xnio"/>
             <option name="MAX_OUTBOUND_MESSAGES" value="1234" type="remoting"/>
         </channel-creation-options>
     </remote>
@@ -45,13 +46,15 @@
     <thread-pools>
         <thread-pool name="default">
             <max-threads count="${prop.max-thread-count:10}"/>
-            <keepalive-time time="100" unit="milliseconds"/>
+            <keepalive-time time="${prop.keepalive-time:100}" unit="${prop.idle-timeout-unit:milliseconds}"/>
         </thread-pool>
     </thread-pools>
 
     <iiop use-qualified-name="true" enable-by-default="true"/>
     <!-- Disable pass-by-value for in-vm remote interface invocations on EJBs -->
     <in-vm-remote-interface-invocation pass-by-value="false"/>
-    <statistics enabled="true" />
     <default-distinct-name value="myname"/>
+    <default-security-domain value="domain"/>
+    <default-missing-method-permissions-deny-access value="false" />
+    <statistics enabled="${ejb.enable-statistics:true}" />
 </subsystem>
