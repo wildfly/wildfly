@@ -44,7 +44,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
- * Processor responsible for binding java:comp/InAppClientContainer
+ * Processor responsible for binding java:comp/InstanceName
  *
  * @author Stuart Douglas
  */
