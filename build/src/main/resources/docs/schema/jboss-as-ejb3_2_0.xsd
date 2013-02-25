@@ -23,12 +23,12 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           targetNamespace="urn:jboss:domain:ejb3:1.5"
-           xmlns="urn:jboss:domain:ejb3:1.5"
+           targetNamespace="urn:jboss:domain:ejb3:2.0"
+           xmlns="urn:jboss:domain:ejb3:2.0"
            xmlns:threads="urn:jboss:domain:threads:1.1"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
-           version="1.5">
+           version="2.0">
 
     <xs:import namespace="urn:jboss:domain:threads:1.1" schemaLocation="jboss-as-threads_1_1.xsd"/>
 

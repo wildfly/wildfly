@@ -43,22 +43,20 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DATABASE_DATA_STORE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DATASOURCE_JNDI_NAME;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_DATA_STORE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.FILE_DATA_STORE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PATH;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.RELATIVE_TO;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.THREAD_POOL_NAME;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TIMER_SERVICE;
 
 
 /**
  */
-public class EJB3Subsystem15Parser extends EJB3Subsystem14Parser {
+public class EJB3Subsystem20Parser extends EJB3Subsystem14Parser {
 
-    public static final EJB3Subsystem15Parser INSTANCE = new EJB3Subsystem15Parser();
+    public static final EJB3Subsystem20Parser INSTANCE = new EJB3Subsystem20Parser();
 
-    protected EJB3Subsystem15Parser() {
+    protected EJB3Subsystem20Parser() {
     }
 
     @Override
@@ -76,7 +74,7 @@ public class EJB3Subsystem15Parser extends EJB3Subsystem14Parser {
 
     @Override
     protected EJB3SubsystemNamespace getExpectedNamespace() {
-        return EJB3SubsystemNamespace.EJB3_1_5;
+        return EJB3SubsystemNamespace.EJB3_2_0;
     }
 
 
