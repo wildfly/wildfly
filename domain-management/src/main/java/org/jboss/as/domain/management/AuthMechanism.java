@@ -27,7 +27,7 @@ package org.jboss.as.domain.management;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public enum AuthenticationMechanism {
+public enum AuthMechanism {
     /*
      * Values are ordered in priority order, do not re-order unless deliberately changing priority order.
      */

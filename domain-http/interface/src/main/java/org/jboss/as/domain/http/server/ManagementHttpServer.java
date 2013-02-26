@@ -22,9 +22,23 @@
 package org.jboss.as.domain.http.server;
 
 import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
+import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
 import static org.xnio.Options.SSL_CLIENT_AUTH_MODE;
 import static org.xnio.SslClientAuthMode.REQUESTED;
+import static org.xnio.SslClientAuthMode.REQUIRED;
+import io.undertow.security.api.AuthenticationMechanism;
+import io.undertow.security.api.AuthenticationMode;
+import io.undertow.security.handlers.AuthenticationCallHandler;
+import io.undertow.security.handlers.AuthenticationConstraintHandler;
+import io.undertow.security.handlers.AuthenticationMechanismsHandler;
+import io.undertow.security.handlers.SecurityInitialHandler;
 import io.undertow.security.handlers.SinglePortConfidentialityHandler;
+import io.undertow.security.impl.BasicAuthenticationMechanism;
+import io.undertow.security.impl.ClientCertAuthenticationMechanism;
+import io.undertow.security.impl.DigestAlgorithm;
+import io.undertow.security.impl.DigestAuthenticationMechanism;
+import io.undertow.security.impl.DigestQop;
+import io.undertow.security.impl.SimpleNonceManager;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpOpenListener;
 import io.undertow.server.handlers.CanonicalPathHandler;
@@ -33,13 +47,19 @@ import io.undertow.server.handlers.blocking.BlockingHandler;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 import javax.net.ssl.SSLContext;
 
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.domain.management.AuthenticationMechanism;
+import org.jboss.as.domain.http.server.security.RealmIdentityManager;
+import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -114,8 +134,15 @@ public class ManagementHttpServer {
             }
             if (secureAddress != null) {
                 SSLContext sslContext = securityRealm.getSSLContext();
-                if (securityRealm.getSupportedAuthenticationMechanisms().contains(AuthenticationMechanism.CLIENT_CERT)) {
-                    serverOptionsBuilder.set(SSL_CLIENT_AUTH_MODE, REQUESTED);
+                Set<AuthMechanism> supportedMechanisms = securityRealm.getSupportedAuthenticationMechanisms();
+                if (supportedMechanisms.contains(AuthMechanism.CLIENT_CERT)) {
+                    if (supportedMechanisms.contains(AuthMechanism.DIGEST)
+                            || supportedMechanisms.contains(AuthMechanism.PLAIN)) {
+                        // Username / Password auth is possible so don't mandate a client certificate.
+                        serverOptionsBuilder.set(SSL_CLIENT_AUTH_MODE, REQUESTED);
+                    } else {
+                        serverOptionsBuilder.set(SSL_CLIENT_AUTH_MODE, REQUIRED);
+                    }
                 }
                 OptionMap secureOptions = serverOptionsBuilder.getMap();
                 XnioSsl xnioSsl = new JsseXnioSsl(worker.getXnio(), secureOptions, sslContext);
@@ -140,13 +167,13 @@ public class ManagementHttpServer {
 
         HttpOpenListener openListener = new HttpOpenListener(new ByteBufferSlicePool(BufferAllocator.DIRECT_BYTE_BUFFER_ALLOCATOR, 4096, 10 * 4096), 4096);
         int securePort = secureBindAddress != null ? secureBindAddress.getPort() : -1;
-        setupOpenListener(openListener, modelControllerClient, consoleMode, consoleSlot, controlledProcessStateService, securePort);
+        setupOpenListener(openListener, modelControllerClient, consoleMode, consoleSlot, controlledProcessStateService, securePort, securityRealm);
         ManagementHttpServer server = new ManagementHttpServer(openListener, bindAddress, secureBindAddress, securityRealm);
 
         return server;
     }
 
-    private static void setupOpenListener(HttpOpenListener listener, ModelControllerClient modelControllerClient, ConsoleMode consoleMode, String consoleSlot, ControlledProcessStateService controlledProcessStateService, int securePort) {
+    private static void setupOpenListener(HttpOpenListener listener, ModelControllerClient modelControllerClient, ConsoleMode consoleMode, String consoleSlot, ControlledProcessStateService controlledProcessStateService, int securePort, SecurityRealm securityRealm) {
         CanonicalPathHandler canonicalPathHandler = new CanonicalPathHandler();
         listener.setRootHandler(canonicalPathHandler);
 
@@ -169,7 +196,51 @@ public class ManagementHttpServer {
         if (consoleHandler != null) {
             pathHandler.addPath(consoleHandler.getContext(), new BlockingHandler(consoleHandler));
         }
-        pathHandler.addPath(DomainApiCheckHandler.PATH, domainApiHandler);
-
+        pathHandler.addPath(DomainApiCheckHandler.PATH, secureDomainAccess(domainApiHandler, securityRealm));
     }
+
+    private static HttpHandler secureDomainAccess(final HttpHandler domainHandler, final SecurityRealm securityRealm) {
+        if (securityRealm != null) {
+            Set<AuthMechanism> mechanisms = securityRealm.getSupportedAuthenticationMechanisms();
+            List<AuthenticationMechanism> undertowMechanisms = new ArrayList<AuthenticationMechanism>(mechanisms.size());
+            for (AuthMechanism current : mechanisms) {
+                switch (current) {
+                    case CLIENT_CERT:
+                        undertowMechanisms.add(new ClientCertAuthenticationMechanism());
+                        break;
+                    case DIGEST:
+                        Map<String, String> mechConfig = securityRealm.getMechanismConfig(AuthMechanism.DIGEST);
+                        boolean plainTextDigest = true;
+                        if (mechConfig.containsKey(DIGEST_PLAIN_TEXT)) {
+                            plainTextDigest = Boolean.parseBoolean(mechConfig.get(DIGEST_PLAIN_TEXT));
+                        }
+                        List<DigestAlgorithm> digestAlgorithms = Collections.singletonList(DigestAlgorithm.MD5);
+                        List<DigestQop> digestQops = Collections.emptyList();
+                        undertowMechanisms.add(new DigestAuthenticationMechanism(digestAlgorithms, digestQops, securityRealm
+                                .getName(), new SimpleNonceManager(), plainTextDigest));
+                        break;
+                    case PLAIN:
+                        undertowMechanisms.add(new BasicAuthenticationMechanism(securityRealm.getName()));
+                        break;
+                }
+            }
+
+            if (undertowMechanisms.size() > 0) {
+                HttpHandler current = new AuthenticationCallHandler(domainHandler);
+                // Currently the security handlers are being added after a PATH handler so we know authentication is required by
+                // this point.
+                current = new AuthenticationConstraintHandler(current);
+                current = new AuthenticationMechanismsHandler(current, undertowMechanisms);
+
+                return new SecurityInitialHandler(AuthenticationMode.PRO_ACTIVE, new RealmIdentityManager(securityRealm),
+                        current);
+            }
+
+            // TODO - If there were no mechanisms to begin with requests should be represented as an anonymous user.
+            // If there were mechanisms but none suitable for HTTP reject all requests.
+        }
+
+        return domainHandler;
+    }
+
 }

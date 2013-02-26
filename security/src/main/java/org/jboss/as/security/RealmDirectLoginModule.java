@@ -43,7 +43,7 @@ import javax.security.auth.login.LoginException;
 import javax.security.sasl.RealmCallback;
 
 import org.jboss.as.controller.security.SubjectUserInfo;
-import org.jboss.as.domain.management.AuthenticationMechanism;
+import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.AuthorizingCallbackHandler;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.security.RealmRole;
@@ -80,7 +80,7 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
     };
 
     private SecurityRealm securityRealm;
-    private AuthenticationMechanism chosenMech;
+    private AuthMechanism chosenMech;
     private ValidationMode validationMode;
     private UsernamePasswordHashUtil hashUtil;
     private AuthorizingCallbackHandler callbackHandler;
@@ -99,12 +99,12 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
         if (securityRealm == null) {
             throw SecurityMessages.MESSAGES.realmNotFound(realm);
         }
-        Set<AuthenticationMechanism> authMechs = securityRealm.getSupportedAuthenticationMechanisms();
+        Set<AuthMechanism> authMechs = securityRealm.getSupportedAuthenticationMechanisms();
 
-        if (authMechs.contains(AuthenticationMechanism.DIGEST)) {
-            chosenMech = AuthenticationMechanism.DIGEST;
-        } else if (authMechs.contains(AuthenticationMechanism.PLAIN)) {
-            chosenMech = AuthenticationMechanism.PLAIN;
+        if (authMechs.contains(AuthMechanism.DIGEST)) {
+            chosenMech = AuthMechanism.DIGEST;
+        } else if (authMechs.contains(AuthMechanism.PLAIN)) {
+            chosenMech = AuthMechanism.PLAIN;
         } else {
             throw SecurityMessages.MESSAGES.noPasswordValidationAvailable(realm);
         }
@@ -116,7 +116,7 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
             // callback handler can handle the conversion comparison itself.
             validationMode = ValidationMode.VALIDATION;
         } else {
-            if (chosenMech == AuthenticationMechanism.DIGEST) {
+            if (chosenMech == AuthMechanism.DIGEST) {
                 if (mechOpts.containsKey(DIGEST_PLAIN_TEXT) && Boolean.parseBoolean(mechOpts.get(DIGEST_PLAIN_TEXT))) {
                     validationMode = ValidationMode.PASSWORD;
                 } else {

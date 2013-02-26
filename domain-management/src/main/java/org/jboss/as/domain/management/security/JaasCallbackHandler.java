@@ -44,7 +44,7 @@ import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
 
 import org.jboss.as.controller.security.ServerSecurityManager;
-import org.jboss.as.domain.management.AuthenticationMechanism;
+import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -85,11 +85,11 @@ public class JaasCallbackHandler implements Service<CallbackHandlerService>, Cal
      * CallbackHandlerService Methods
      */
 
-    public AuthenticationMechanism getPreferredMechanism() {
-        return AuthenticationMechanism.PLAIN;
+    public AuthMechanism getPreferredMechanism() {
+        return AuthMechanism.PLAIN;
     }
 
-    public Set<AuthenticationMechanism> getSupplementaryMechanisms() {
+    public Set<AuthMechanism> getSupplementaryMechanisms() {
         return Collections.emptySet();
     }
 

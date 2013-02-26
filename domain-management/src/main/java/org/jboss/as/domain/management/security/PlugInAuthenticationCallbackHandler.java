@@ -43,7 +43,7 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
 
-import org.jboss.as.domain.management.AuthenticationMechanism;
+import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.plugin.AuthenticationPlugIn;
 import org.jboss.as.domain.management.plugin.Credential;
 import org.jboss.as.domain.management.plugin.DigestCredential;
@@ -68,12 +68,12 @@ public class PlugInAuthenticationCallbackHandler extends AbstractPlugInService i
 
     private static UsernamePasswordHashUtil hashUtil = null;
 
-    private final AuthenticationMechanism mechanism;
+    private final AuthMechanism mechanism;
 
     PlugInAuthenticationCallbackHandler(final String realmName,
                                         final String pluginName,
                                         final Map<String, String> properties,
-                                        final AuthenticationMechanism mechanism) {
+                                        final AuthMechanism mechanism) {
         super(realmName, pluginName, properties);
         this.mechanism = mechanism;
     }
@@ -102,16 +102,16 @@ public class PlugInAuthenticationCallbackHandler extends AbstractPlugInService i
      * CallbackHandlerService Methods
      */
 
-    public AuthenticationMechanism getPreferredMechanism() {
+    public AuthMechanism getPreferredMechanism() {
         return mechanism;
     }
 
-    public Set<AuthenticationMechanism> getSupplementaryMechanisms() {
+    public Set<AuthMechanism> getSupplementaryMechanisms() {
         return Collections.emptySet();
     }
 
     public Map<String, String> getConfigurationOptions() {
-        if (mechanism == AuthenticationMechanism.DIGEST) {
+        if (mechanism == AuthMechanism.DIGEST) {
             // If the plug-in returns a plain text password we can hash it.
             return Collections.singletonMap(DIGEST_PLAIN_TEXT, Boolean.FALSE.toString());
         } else {

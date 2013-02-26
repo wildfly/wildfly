@@ -27,7 +27,7 @@ import java.util.Set;
 
 import javax.security.auth.callback.CallbackHandler;
 
-import org.jboss.as.domain.management.AuthenticationMechanism;
+import org.jboss.as.domain.management.AuthMechanism;
 
 /**
  * The interface to be implemented by all services supplying callback handlers.
@@ -39,12 +39,12 @@ public interface CallbackHandlerService {
     /**
      * @return The preferred authentication mechanism of the CBH.
      */
-    AuthenticationMechanism getPreferredMechanism();
+    AuthMechanism getPreferredMechanism();
 
     /**
      * @return A set of additional mechanisms that can be handled by CallbackHandlers supplied by this service.
      */
-    Set<AuthenticationMechanism> getSupplementaryMechanisms();
+    Set<AuthMechanism> getSupplementaryMechanisms();
 
     /**
      * @return The transport independent config options for the CallbackHandler supplied by this service.
