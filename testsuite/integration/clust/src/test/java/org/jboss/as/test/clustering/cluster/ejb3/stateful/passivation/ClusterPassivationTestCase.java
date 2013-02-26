@@ -279,7 +279,7 @@ public class ClusterPassivationTestCase {
             Assert.assertTrue("Activation of remote bean was not propagated", statefulBeanRemote.getRemoteNestedBeanActivatedCalled() > 0);
             statefulBeanRemote.resetNestedBean();
         } else {
-            Assert.assertNull("We suppose that the passivation is not provided.", statefulBeanRemote.getPassivatedBy());
+            Assert.assertEquals("We suppose that the passivation is not provided", "unknown", statefulBeanRemote.getPassivatedBy());
             Assert.assertEquals("No passivation should be done", 0, statefulBeanRemote.getNestedBeanPassivatedCalled());
             Assert.assertEquals("No passivation should be done", 0,  statefulBeanRemote.getNestedBeanActivatedCalled());
             Assert.assertEquals("No passivation should be done", 0, statefulBeanRemote.getDeepNestedBeanPassivatedCalled());
@@ -319,7 +319,7 @@ public class ClusterPassivationTestCase {
             Assert.assertTrue("Activation of remote bean was not propagated", statefulBeanRemote.getRemoteNestedBeanActivatedCalled() > 0);
             statefulBeanRemote.resetNestedBean();
         } else {
-            Assert.assertNull("We suppose that the passivation is not provided.", statefulBeanRemote.getPassivatedBy());
+            Assert.assertEquals("We suppose that the passivation is not provided.", "unknown", statefulBeanRemote.getPassivatedBy());
             Assert.assertEquals("No passivation should be done",0, statefulBeanRemote.getNestedBeanPassivatedCalled());
             Assert.assertEquals("No passivation should be done",0, statefulBeanRemote.getNestedBeanActivatedCalled());
             Assert.assertEquals("No passivation should be done",0, statefulBeanRemote.getDeepNestedBeanPassivatedCalled());
@@ -342,13 +342,15 @@ public class ClusterPassivationTestCase {
         DMRUtil.setPassivationOnReplicate(client1.getControllerClient(), isPassivated);
         DMRUtil.setPassivationIdleTimeout(client2.getControllerClient());
         DMRUtil.setPassivationOnReplicate(client2.getControllerClient(), isPassivated);
+        DMRUtil.reload(client1);
+        DMRUtil.reload(client2);
+        
         runPassivation(isPassivated);
         startServers(client1, client2);
     }
 
     @Test
     @InSequence(2)
-    @Ignore("AS7-4246")
     public void testPassivationOverNodesNotPassivated(
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2) throws Exception {
@@ -357,6 +359,9 @@ public class ClusterPassivationTestCase {
         DMRUtil.setPassivationOnReplicate(client1.getControllerClient(), isPassivated);
         DMRUtil.setPassivationIdleTimeout(client2.getControllerClient());
         DMRUtil.setPassivationOnReplicate(client2.getControllerClient(), isPassivated);
+        DMRUtil.reload(client1);
+        DMRUtil.reload(client2);
+        
         runPassivation(isPassivated);
         startServers(client1, client2);
     }
@@ -437,15 +442,40 @@ public class ClusterPassivationTestCase {
         }
 
         // unset & undeploy & stop
+        // the try blocks were added to be sure that the attemp for undeploy will be provided although that
+        // client1/2 does not respond - e.g. after failed reload operation
         if(client1.isServerInRunningState()) {
             unsetPassivationAttributes(client1.getControllerClient());
-            deployer.undeploy(DEPLOYMENT_1);
-            controller.stop(CONTAINER_1);
         }
+        try {
+            deployer.undeploy(DEPLOYMENT_1);
+        } catch (Exception e) {
+            log.warnf("Deployment %s can't be undeployed from container %s because of exception %s. " +
+            		"Ignore this warning when server was already stopped by other test before.", DEPLOYMENT_1, CONTAINER_1, e.getClass().getName() + ": " + e.getMessage());
+        } finally {
+            try {
+                controller.stop(CONTAINER_1);
+            } catch (Exception e) {
+                log.warnf("Container %s can't be stopped because of exception %s. " +
+                        "Ignore this warning when server was already stopped by other test before.", CONTAINER_1, e.getClass().getName() + ": " + e.getMessage());
+            }
+        }
+        
         if(client2.isServerInRunningState()) {
             unsetPassivationAttributes(client2.getControllerClient());
+        }
+        try {
             deployer.undeploy(DEPLOYMENT_2);
-            controller.stop(CONTAINER_2);
+        } catch (Exception e) {
+            log.warnf("Deployment %s can't be undeployed from container %s because of exception %s. " +
+                    "Ignore this warning when server was already stopped by other test before.", DEPLOYMENT_2, CONTAINER_2, e.getClass().getName() + ": " + e.getMessage());
+        } finally {
+            try {
+                controller.stop(CONTAINER_2);
+            } catch (Exception e) {
+                log.warnf("Container %s can't be stopped because of exception %s. " +
+                        "Ignore this warning when server was already stopped by other test before.", CONTAINER_2, e.getClass().getName() + ": " + e.getMessage());
+            }
         }
     }
 }
