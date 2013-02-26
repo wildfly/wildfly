@@ -32,10 +32,7 @@ import java.util.regex.Pattern;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ControllerMessages;
-import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
@@ -45,9 +42,6 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.global.ReadAttributeHandler;
-import org.jboss.as.controller.operations.global.UndefineAttributeHandler;
-import org.jboss.as.controller.operations.global.WriteAttributeHandler;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -82,18 +76,9 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition DEFAULT_DATA_STORE =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_DATA_STORE, ModelType.STRING)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setAllowNull(true) //for backward compatibility!
-                    .setDefaultValue(new ModelNode("default-file-store")) //for backward compatibility!
+                    .setAllowNull(false)
+                    //.setDefaultValue(new ModelNode("default-file-store")) //for backward compatibility!
                     .build();
-    @Deprecated
-    static final SimpleAttributeDefinition PATH = new SimpleAttributeDefinitionBuilder(FileDataStoreResourceDefinition.PATH)
-            .setDeprecated(ModelVersion.create(2,0))
-            .build();
-    @Deprecated
-    static final SimpleAttributeDefinition RELATIVE_TO = new SimpleAttributeDefinitionBuilder(FileDataStoreResourceDefinition.RELATIVE_TO)
-            .setDeprecated(ModelVersion.create(2,0))
-            .build();
-
 
     public static final Map<String, AttributeDefinition> ATTRIBUTES ;
 
@@ -121,8 +106,6 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
         for (AttributeDefinition attr : ATTRIBUTES.values()) {
             resourceRegistration.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
         }
-        resourceRegistration.registerReadWriteAttribute(PATH,FileStoreForwarder.INSTANCE,FileStoreForwarder.INSTANCE);
-        resourceRegistration.registerReadWriteAttribute(RELATIVE_TO,FileStoreForwarder.INSTANCE,FileStoreForwarder.INSTANCE);
     }
 
     @Override
@@ -130,34 +113,6 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerSubModel(new FileDataStoreResourceDefinition(pathManager));
 
         resourceRegistration.registerSubModel(DatabaseDataStoreResourceDefinition.INSTANCE);
-    }
-
-    static final class FileStoreForwarder implements OperationStepHandler{
-        static FileStoreForwarder INSTANCE = new FileStoreForwarder();
-        private FileStoreForwarder(){
-
-        }
-        @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            String op = operation.get(ModelDescriptionConstants.OP).asString();
-            ModelNode defaultDataStore = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().get(DEFAULT_DATA_STORE.getName());
-            if (!defaultDataStore.isDefined()){
-                defaultDataStore = DEFAULT_DATA_STORE.getDefaultValue();
-            }
-            PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS));
-            address = address.append(EJB3SubsystemModel.FILE_DATA_STORE,defaultDataStore.asString());
-            operation.get(ModelDescriptionConstants.ADDRESS).set(address.toModelNode());
-            if (op.equals(ModelDescriptionConstants.ADD)){
-                context.addStep(new ModelNode(), operation, FileDataStoreAdd.INSTANCE, OperationContext.Stage.MODEL, true);
-            }else if (op.equals(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION)){
-                context.addStep(new ModelNode(), operation, ReadAttributeHandler.INSTANCE, OperationContext.Stage.MODEL, true);
-            }else if (op.equals(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION)){
-                context.addStep(new ModelNode(), operation, WriteAttributeHandler.INSTANCE, OperationContext.Stage.MODEL, true);
-            }else if (op.equals(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION)){
-                context.addStep(new ModelNode(), operation, UndefineAttributeHandler.INSTANCE, OperationContext.Stage.MODEL, true);
-            }
-            context.stepCompleted();
-        }
     }
 
     static void registerTransformers_1_1_0(ResourceTransformationDescriptionBuilder parent) {

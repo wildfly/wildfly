@@ -30,7 +30,6 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ejb3.deployment.processors.AroundTimeoutAnnotationParsingProcessor;
 import org.jboss.as.ejb3.deployment.processors.TimerServiceDeploymentProcessor;
 import org.jboss.as.ejb3.deployment.processors.annotation.TimerServiceAnnotationProcessor;
@@ -75,16 +74,6 @@ public class TimerServiceAdd extends AbstractBoottimeAddStepHandler {
             attr.validateAndSet(operation, timerServiceModel);
         }
     }
-
-    @Override
-    protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-        super.populateModel(context, operation, resource);
-        //we got legacy operation
-        if (operation.hasDefined(TimerServiceResourceDefinition.PATH.getName()) || operation.hasDefined(TimerServiceResourceDefinition.RELATIVE_TO.getName())){
-            context.addStep(new ModelNode(), operation, TimerServiceResourceDefinition.FileStoreForwarder.INSTANCE, OperationContext.Stage.MODEL, true);
-        }
-    }
-
 
     protected void performBoottime(final OperationContext context, ModelNode operation, final ModelNode model,
                                    final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {

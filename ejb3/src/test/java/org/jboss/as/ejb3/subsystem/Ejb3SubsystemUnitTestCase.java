@@ -74,13 +74,11 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testTransformerAS712() throws Exception {
         testTransformer_1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
-        //testTransformer_1_1_0_reverse(ModelTestControllerVersion.V7_1_2_FINAL, null);
     }
 
     @Test
     public void testTransformerAS713() throws Exception {
         testTransformer_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
-        //testTransformer_1_1_0_reverse(ModelTestControllerVersion.V7_1_3_FINAL, null);
     }
 
     /**
@@ -109,32 +107,6 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
         Assert.assertNotNull(legacyServices);
         checkSubsystemModelTransformation(mainServices, modelVersion, V_1_1_0_FIXER);
     }
-
-    /**
-     * Tests transformation of model from 1.2.0 version into 1.1.0 version.
-     *
-     * @throws Exception
-     */
-    private void testTransformer_1_1_0_reverse(ModelTestControllerVersion controllerVersion, String mavenVersion) throws Exception {
-        String subsystemXml = "transform_1_1_0_reverse.xml";   //This has no expressions not understood by 1.1.0
-        ModelVersion modelVersion = ModelVersion.create(1, 1, 0); //The old model version
-        //Use the non-runtime version of the extension which will happen on the HC
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXmlResource(subsystemXml);
-
-        // Add legacy subsystems
-        builder.createLegacyKernelServicesBuilder(null,controllerVersion, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-ejb3:" + mavenVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + mavenVersion)
-                .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, null);
-
-        KernelServices mainServices = builder.build();
-        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
-        Assert.assertNotNull(mainServices);
-        Assert.assertNotNull(legacyServices);
-        checkSubsystemModelTransformation(mainServices, modelVersion, V_1_1_0_FIXER);
-    }
-
 
     @Test
     public void testRejectExpressionsEAP600() throws Exception {
