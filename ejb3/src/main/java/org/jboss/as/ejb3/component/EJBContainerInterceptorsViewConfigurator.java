@@ -112,7 +112,7 @@ public class EJBContainerInterceptorsViewConfigurator implements ViewConfigurato
 
         final Map<String, List<InterceptorFactory>> userAroundInvokesByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
         final Map<String, List<InterceptorFactory>> userAroundTimeoutsByInterceptorClass;
-        if (ejbComponentDescription.isTimerServiceApplicable()) {
+        if (ejbComponentDescription.isTimerServiceRequired()) {
             userAroundTimeoutsByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
         } else {
             userAroundTimeoutsByInterceptorClass = null;
@@ -137,10 +137,11 @@ public class EJBContainerInterceptorsViewConfigurator implements ViewConfigurato
             if (aroundInvokeInterceptorFactories != null) {
                 userAroundInvokesByInterceptorClass.put(interceptorClassName, aroundInvokeInterceptorFactories);
             }
-
-            final List<InterceptorFactory> aroundTimeoutInterceptorFactories = interceptorClassDescriptionTraversal.getAroundTimeoutInterceptorFactories();
-            if (aroundTimeoutInterceptorFactories != null) {
-                userAroundTimeoutsByInterceptorClass.put(interceptorClassName, aroundTimeoutInterceptorFactories);
+            if (ejbComponentDescription.isTimerServiceRequired()) {
+                final List<InterceptorFactory> aroundTimeoutInterceptorFactories = interceptorClassDescriptionTraversal.getAroundTimeoutInterceptorFactories();
+                if (aroundTimeoutInterceptorFactories != null) {
+                    userAroundTimeoutsByInterceptorClass.put(interceptorClassName, aroundTimeoutInterceptorFactories);
+                }
             }
         }
 
@@ -161,7 +162,7 @@ public class EJBContainerInterceptorsViewConfigurator implements ViewConfigurato
                     if (aroundInvokesOnInterceptor != null) {
                         aroundInvokesApplicableForMethod.addAll(aroundInvokesOnInterceptor);
                     }
-                    if (ejbComponentDescription.isTimerServiceApplicable()) {
+                    if (ejbComponentDescription.isTimerServiceRequired()) {
                         final List<InterceptorFactory> aroundTimeoutsOnInterceptor = userAroundTimeoutsByInterceptorClass.get(interceptorClassName);
                         if (aroundTimeoutsOnInterceptor != null) {
                             aroundTimeoutsApplicableForMethod.addAll(aroundTimeoutsOnInterceptor);
@@ -178,7 +179,7 @@ public class EJBContainerInterceptorsViewConfigurator implements ViewConfigurato
                     if (aroundInvokesOnInterceptor != null) {
                         aroundInvokesApplicableForMethod.addAll(aroundInvokesOnInterceptor);
                     }
-                    if (ejbComponentDescription.isTimerServiceApplicable()) {
+                    if (ejbComponentDescription.isTimerServiceRequired()) {
                         final List<InterceptorFactory> aroundTimeoutsOnInterceptor = userAroundTimeoutsByInterceptorClass.get(interceptorClassName);
                         if (aroundTimeoutsOnInterceptor != null) {
                             aroundTimeoutsApplicableForMethod.addAll(aroundTimeoutsOnInterceptor);
@@ -196,7 +197,7 @@ public class EJBContainerInterceptorsViewConfigurator implements ViewConfigurato
                     if (aroundInvokesOnInterceptor != null) {
                         aroundInvokesApplicableForMethod.addAll(aroundInvokesOnInterceptor);
                     }
-                    if (ejbComponentDescription.isTimerServiceApplicable()) {
+                    if (ejbComponentDescription.isTimerServiceRequired()) {
                         final List<InterceptorFactory> aroundTimeoutsOnInterceptor = userAroundTimeoutsByInterceptorClass.get(interceptorClassName);
                         if (aroundTimeoutsOnInterceptor != null) {
                             aroundTimeoutsApplicableForMethod.addAll(aroundTimeoutsOnInterceptor);
@@ -271,7 +272,7 @@ public class EJBContainerInterceptorsViewConfigurator implements ViewConfigurato
                 this.aroundInvokeInterceptorFactories.add(aroundInvokeInterceptorFactory);
             }
 
-            if (ejbComponentDescription.isTimerServiceApplicable()) {
+            if (ejbComponentDescription.isTimerServiceRequired()) {
                 final MethodIdentifier aroundTimeoutMethodIdentifier = interceptorConfig.getAroundTimeout();
                 final InterceptorFactory aroundTimeoutInterceptorFactory = createInterceptorFactory(clazz, aroundTimeoutMethodIdentifier, interceptorClassConstructor);
                 if (aroundTimeoutInterceptorFactory != null) {

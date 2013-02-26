@@ -2453,4 +2453,10 @@ public interface EjbMessages {
 
     @Message(id = 14237, value = "More than one timer found in database with id %s")
     RuntimeException moreThanOneTimerFoundWithId(String id);
+
+    @Message(id = 14238, value = "The timer service has been disabled. Please add a <timer-service> entry into the ejb section of the server configuration to enable it.")
+    String timerServiceIsNotActive();
+
+    @Message(id = 14239, value = "This EJB does not have any timeout methods")
+    String ejbHasNoTimerMethods();
 }
