@@ -60,6 +60,8 @@
         <jboss.as.scm.connection>git@github.com:jbossas/jboss-as.git</jboss.as.scm.connection>
 
         <!-- Build configuration -->
+        <maven.compiler.target>1.7</maven.compiler.target>
+        <maven.compiler.source>1.7</maven.compiler.source>
         <version.surefire.plugin>2.11</version.surefire.plugin>
         <!--
             Dependency versions. Please keep alphabetical.
