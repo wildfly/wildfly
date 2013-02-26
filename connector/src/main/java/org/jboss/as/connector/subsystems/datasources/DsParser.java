@@ -320,8 +320,8 @@ public class DsParser extends AbstractParser {
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(ADD);
         boolean enabled = Defaults.ENABLED.booleanValue();
-        // Don't persist the enabled flag unless the user set it
-        boolean persistEnabled = false;
+        // Persist the enabled flag because xml default is != from DMR default
+        boolean persistEnabled = true;
         for (DataSource.Attribute attribute : DataSource.Attribute.values()) {
             switch (attribute) {
                 case ENABLED: {
@@ -548,7 +548,7 @@ public class DsParser extends AbstractParser {
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(ADD);
         boolean enabled = Defaults.ENABLED.booleanValue();
-        // Don't persist the enabled flag unless the user set it
+        // Persist the enabled flag because xml default is != from DMR default
         boolean persistEnabled = true;
         for (DataSource.Attribute attribute : DataSource.Attribute.values()) {
             switch (attribute) {
