@@ -183,7 +183,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     /**
      * TODO: this should not be part of the description
      */
-    private TimerService timerService = NonFunctionalTimerService.INSTANCE;
+    private TimerService timerService = NonFunctionalTimerService.DISABLED;
 
     /**
      * If true this component is accessible via CORBA
@@ -294,7 +294,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                 }
                 final List<SetupAction> ejbSetupActions = context.getDeploymentUnit().getAttachmentList(Attachments.OTHER_EE_SETUP_ACTIONS);
 
-                if (description.isTimerServiceApplicable()) {
+                if (description.isTimerServiceRequired()) {
 
                     if (!ejbSetupActions.isEmpty()) {
                         configuration.addTimeoutViewInterceptor(AdditionalSetupInterceptor.factory(ejbSetupActions), InterceptorOrder.View.EE_SETUP);
@@ -904,6 +904,16 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         this.methodLevelContainerInterceptors.put(methodIdentifier, containerInterceptors);
     }
 
+    public Set<MethodIdentifier> getTimerMethods() {
+        final Set<MethodIdentifier> methods = new HashSet<MethodIdentifier>();
+        if(timeoutMethod != null) {
+            methods.add(MethodIdentifier.getIdentifierForMethod(timeoutMethod));
+        }
+        for(Method method : scheduleMethods.keySet()) {
+            methods.add(MethodIdentifier.getIdentifierForMethod(method));
+        }
+        return methods;
+    }
 
     /**
      * Returns a combined map of class and method level container interceptors
