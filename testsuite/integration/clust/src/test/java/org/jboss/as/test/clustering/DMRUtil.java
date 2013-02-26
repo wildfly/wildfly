@@ -1,11 +1,14 @@
 package org.jboss.as.test.clustering;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+
 import org.junit.Assert;
 
 import org.apache.log4j.Logger;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.management.ManagementOperations;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -88,5 +91,35 @@ public class DMRUtil {
     
     public static void unsetPassivationOnReplicate(ModelControllerClient client) throws Exception {
         unsetPassivationAttributes(client, PASSIVATE_EVENTS_ON_REPLICATE_ATTR);
+    }
+    
+    /**
+     * Provide reload operation on server.
+     * Until an appropriate API is provided busy waiting is used.
+     */
+    public static void reload(final ManagementClient managementClient) throws Exception {
+        ModelNode operation = new ModelNode();
+        operation.get(OP).set("reload");
+
+        try {
+            managementClient.getControllerClient().execute(operation);
+        } catch (Exception e) {
+            log.error("Exception applying reload operation. This is probably fine, as the server probably shut down before the response was sent", e);
+        }
+        boolean reloaded = false;
+        int i = 0;
+        while (!reloaded && i++ <= 20) {
+            try {
+                Thread.sleep(TimeoutUtil.adjust(TimeoutUtil.adjust(2000)));
+                if (managementClient.isServerInRunningState()) {
+                    reloaded = true;
+                }
+            } catch (Throwable t) {
+                // nothing to do, just waiting
+            } 
+        }
+        if (!reloaded) {
+            throw new Exception("Server reloading failed");
+        }
     }
 }
