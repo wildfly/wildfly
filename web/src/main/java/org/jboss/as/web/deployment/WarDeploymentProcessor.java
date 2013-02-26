@@ -22,6 +22,16 @@
 
 package org.jboss.as.web.deployment;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.security.jacc.PolicyConfiguration;
+
 import org.apache.catalina.ContainerListener;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleListener;
@@ -33,6 +43,7 @@ import org.apache.tomcat.util.IntrospectionUtils;
 import org.jboss.as.clustering.web.DistributedCacheManagerFactory;
 import org.jboss.as.clustering.web.DistributedCacheManagerFactoryService;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.ee.component.ComponentRegistry;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
 import org.jboss.as.security.deployment.AbstractSecurityDeployer;
@@ -50,8 +61,12 @@ import org.jboss.as.web.VirtualHost;
 import org.jboss.as.web.WebDeploymentDefinition;
 import org.jboss.as.web.WebServerService;
 import org.jboss.as.web.WebSubsystemServices;
+import org.jboss.as.web.common.ExpressionFactoryWrapper;
+import org.jboss.as.web.common.ServletContextAttribute;
+import org.jboss.as.web.common.WarMetaData;
+import org.jboss.as.web.common.WebComponentDescription;
+import org.jboss.as.web.common.WebInjectionContainer;
 import org.jboss.as.web.deployment.WebDeploymentService.ContextActivator;
-import org.jboss.as.web.deployment.component.ComponentInstantiator;
 import org.jboss.as.web.ext.WebContextFactory;
 import org.jboss.as.web.security.JBossWebRealmService;
 import org.jboss.as.web.security.SecurityContextAssociationValve;
@@ -64,6 +79,7 @@ import org.jboss.metadata.web.jboss.ContainerListenerMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.jboss.ValveMetaData;
+import org.jboss.metadata.web.spec.ListenerMetaData;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceBuilder;
@@ -75,15 +91,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityUtil;
 import org.jboss.vfs.VirtualFile;
-
-import javax.security.jacc.PolicyConfiguration;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import static org.jboss.as.web.WebMessages.MESSAGES;
 
@@ -156,7 +163,6 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         final ClassLoader classLoader = module.getClassLoader();
         final JBossWebMetaData metaData = warMetaData.getMergedJBossWebMetaData();
         final List<SetupAction> setupActions = deploymentUnit.getAttachmentList(org.jboss.as.ee.component.Attachments.WEB_SETUP_ACTIONS);
-
         // Resolve the context factory
         WebContextFactory contextFactory = deploymentUnit.getAttachment(WebContextFactory.ATTACHMENT);
         if (contextFactory == null) {
@@ -183,28 +189,31 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         webContext.setIgnoreAnnotations(true);
         webContext.setCrossContext(!metaData.isDisableCrossContext());
 
+        //setup JSP expression factory wrapper
+        List<ExpressionFactoryWrapper> wrappers = deploymentUnit.getAttachmentList(ExpressionFactoryWrapper.ATTACHMENT_KEY);
+        if (!wrappers.isEmpty()) {
+            if (metaData.getListeners() == null) {
+                metaData.setListeners(new ArrayList<ListenerMetaData>());
+            }
+            final ListenerMetaData listenerMetaData = new ListenerMetaData();
+            listenerMetaData.setListenerClass(JspInitializationListener.class.getName());
+            metaData.getListeners().add(listenerMetaData);
+            deploymentUnit.addToAttachmentList(ServletContextAttribute.ATTACHMENT_KEY, new ServletContextAttribute(JspInitializationListener.CONTEXT_KEY, wrappers));
+        }
+
         // Hook for post processing the web context (e.g. for SIP)
         contextFactory.postProcessContext(deploymentUnit, webContext);
 
-        final WebInjectionContainer injectionContainer = new WebInjectionContainer(module.getClassLoader());
-
+        final Set<ServiceName> dependentComponents = new HashSet<ServiceName>();
         // see AS7-2077
         // basically we want to ignore components that have failed for whatever reason
         // if they are important they will be picked up when the web deployment actually starts
-        final Map<String, ComponentInstantiator> components = deploymentUnit.getAttachment(WebAttachments.WEB_COMPONENT_INSTANTIATORS);
-        if (components != null) {
-            final Set<ServiceName> failed = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.FAILED_COMPONENTS);
-            for (Map.Entry<String, ComponentInstantiator> entry : components.entrySet()) {
-                boolean skip = false;
-                for (final ServiceName serviceName : entry.getValue().getServiceNames()) {
-                    if (failed.contains(serviceName)) {
-                        skip = true;
-                        break;
-                    }
-                }
-                if (!skip) {
-                    injectionContainer.addInstantiator(entry.getKey(), entry.getValue());
-                }
+        final List<ServiceName> components = deploymentUnit.getAttachmentList(WebComponentDescription.WEB_COMPONENTS);
+        final Set<ServiceName> failed = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.FAILED_COMPONENTS);
+        for (final ServiceName component : components) {
+            boolean skip = false;
+            if (!failed.contains(component)) {
+                dependentComponents.add(component);
             }
         }
 
@@ -291,10 +300,18 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
                     .addDependency(DependencyType.REQUIRED, SecurityDomainService.SERVICE_NAME.append(securityDomain), SecurityDomainContext.class,
                             realmService.getSecurityDomainContextInjector()).setInitialMode(Mode.ACTIVE).install();
 
-            final WebDeploymentService webappService = new WebDeploymentService(webContext, injectionContainer, setupActions, attributes);
+            ComponentRegistry componentRegistry = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.COMPONENT_REGISTRY);
+            if(componentRegistry == null) {
+                //we do this to avoid lots of other null checks
+                //this will only happen if the EE subsystem is not installed
+                componentRegistry = new ComponentRegistry(null);
+            }
+
+
+            final WebDeploymentService webappService = new WebDeploymentService(webContext, new WebInjectionContainer(module.getClassLoader(), componentRegistry), setupActions, attributes);
             ServiceBuilder<StandardContext> webappBuilder = serviceTarget.addService(webappServiceName, webappService)
                     .addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName), VirtualHost.class, new WebContextInjector(webContext))
-                    .addDependencies(injectionContainer.getServiceNames()).addDependency(realmServiceName, Realm.class, webappService.getRealm())
+                    .addDependencies(dependentComponents).addDependency(realmServiceName, Realm.class, webappService.getRealm())
                     .addDependencies(deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES))
                     .addDependency(JndiNamingDependencyProcessor.serviceName(deploymentUnit.getServiceName()));
 

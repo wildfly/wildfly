@@ -22,6 +22,9 @@
 
 package org.jboss.as.test.integration.weld.jpa;
 
+import javax.inject.Inject;
+import javax.persistence.NoResultException;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -31,12 +34,6 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.inject.Inject;
-
-import javax.persistence.NoResultException;
-
-import static org.junit.Assert.assertNull;
 
 /**
  * Weld JPA injection tests. Simply tests that a persistence context can be injected into a CDI bean.

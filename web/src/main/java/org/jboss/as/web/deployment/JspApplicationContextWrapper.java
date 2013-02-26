@@ -14,57 +14,79 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.as.weld.webtier.jsp;
+package org.jboss.as.web.deployment;
 
 import javax.el.ELContextListener;
 import javax.el.ELResolver;
 import javax.el.ExpressionFactory;
+import javax.servlet.ServletContext;
 import javax.servlet.jsp.JspContext;
 
 import org.apache.jasper.el.ELContextImpl;
 import org.apache.jasper.runtime.JspApplicationContextImpl;
+import org.jboss.as.web.common.ExpressionFactoryWrapper;
+
+import java.util.List;
 
 /**
  * @author pmuir
- *
  */
-public abstract class ForwardingJspApplicationContextImpl extends JspApplicationContextImpl {
+public class JspApplicationContextWrapper extends JspApplicationContextImpl {
 
-    protected abstract JspApplicationContextImpl delegate();
+    private final JspApplicationContextImpl delegate;
+    private final List<ExpressionFactoryWrapper> wrapperList;
+    private final ServletContext servletContext;
+    private volatile ExpressionFactory factory;
+
+    protected JspApplicationContextWrapper(JspApplicationContextImpl delegate, List<ExpressionFactoryWrapper> wrapperList, ServletContext servletContext) {
+        this.delegate = delegate;
+        this.wrapperList = wrapperList;
+        this.servletContext = servletContext;
+    }
 
     @Override
     public void addELContextListener(ELContextListener listener) {
-        delegate().addELContextListener(listener);
+        delegate.addELContextListener(listener);
     }
 
     @Override
     public void addELResolver(ELResolver resolver) throws IllegalStateException {
-        delegate().addELResolver(resolver);
+        delegate.addELResolver(resolver);
     }
 
     @Override
     public ELContextImpl createELContext(JspContext arg0) {
-        return delegate().createELContext(arg0);
+        return delegate.createELContext(arg0);
     }
 
     @Override
     public ExpressionFactory getExpressionFactory() {
-        return delegate().getExpressionFactory();
+        if (factory == null) {
+            synchronized (this) {
+                if (factory == null) {
+                    factory = delegate.getExpressionFactory();
+                    for (ExpressionFactoryWrapper wrapper : wrapperList) {
+                        factory = wrapper.wrap(factory, servletContext);
+                    }
+                }
+            }
+        }
+        return factory;
     }
 
     @Override
     public boolean equals(Object obj) {
-        return this == obj || delegate().equals(obj);
+        return this == obj || delegate.equals(obj);
     }
 
     @Override
     public int hashCode() {
-        return delegate().hashCode();
+        return delegate.hashCode();
     }
 
     @Override
     public String toString() {
-        return delegate().toString();
+        return delegate.toString();
     }
 
 }

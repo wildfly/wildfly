@@ -82,6 +82,7 @@ import org.jboss.metadata.web.spec.ServletsMetaData;
 import org.jboss.metadata.web.spec.TransportGuaranteeType;
 import org.jboss.metadata.web.spec.Web30MetaData;
 import org.jboss.metadata.web.spec.WebMetaData;
+import org.jboss.as.web.common.WarMetaData;
 
 /**
  * Web annotation deployment processor.

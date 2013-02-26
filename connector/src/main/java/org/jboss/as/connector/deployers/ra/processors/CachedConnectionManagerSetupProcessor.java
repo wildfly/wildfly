@@ -44,7 +44,6 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 /**
- *
  * Setup processor that adds sets operations for the cached connection manager. These operations are run around
  * incoming requests.
  *
@@ -74,8 +73,7 @@ public class CachedConnectionManagerSetupProcessor implements DeploymentUnitProc
 
     }
 
-
-    private static class CachedConnectionManagerSetupAction  implements SetupAction, Service<Void> {
+    private static class CachedConnectionManagerSetupAction implements SetupAction, Service<Void> {
 
         private final InjectedValue<CachedConnectionManager> cachedConnectionManager = new InjectedValue<CachedConnectionManager>();
 
@@ -92,7 +90,10 @@ public class CachedConnectionManagerSetupProcessor implements DeploymentUnitProc
         @Override
         public void setup(final Map<String, Object> properties) {
             try {
-                cachedConnectionManager.getValue().pushMetaAwareObject(this, unsharable);
+                final CachedConnectionManager connectionManager = cachedConnectionManager.getOptionalValue();
+                if (connectionManager != null) {
+                    cachedConnectionManager.getValue().pushMetaAwareObject(this, unsharable);
+                }
             } catch (ResourceException e) {
                 throw new RuntimeException(e);
             }
@@ -101,7 +102,10 @@ public class CachedConnectionManagerSetupProcessor implements DeploymentUnitProc
         @Override
         public void teardown(final Map<String, Object> properties) {
             try {
-                cachedConnectionManager.getValue().popMetaAwareObject(unsharable);
+                final CachedConnectionManager connectionManager = cachedConnectionManager.getOptionalValue();
+                if (connectionManager != null) {
+                    connectionManager.popMetaAwareObject(unsharable);
+                }
             } catch (ResourceException e) {
                 throw new RuntimeException(e);
             }

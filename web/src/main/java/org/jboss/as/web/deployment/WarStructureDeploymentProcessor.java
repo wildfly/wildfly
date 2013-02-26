@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.as.web.common.WarMetaData;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
@@ -41,7 +42,7 @@ import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.MountHandle;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.module.TempFileProviderService;
-import org.jboss.as.web.SharedTldsMetaDataBuilder;
+import org.jboss.as.web.common.SharedTldsMetaDataBuilder;
 import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.modules.filter.PathFilters;
 import org.jboss.vfs.VFS;

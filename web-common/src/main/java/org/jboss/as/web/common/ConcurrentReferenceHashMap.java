@@ -26,7 +26,7 @@
  * http://creativecommons.org/licenses/publicdomain
  */
 
-package org.jboss.as.web.deployment;
+package org.jboss.as.web.common;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.ref.Reference;

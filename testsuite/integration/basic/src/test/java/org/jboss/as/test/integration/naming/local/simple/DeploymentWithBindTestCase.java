@@ -27,6 +27,7 @@ import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.HttpRequest;
@@ -63,6 +64,7 @@ public class DeploymentWithBindTestCase {
     }
 
     @Test
+    @InSequence(1)
     public void testEjb() throws Exception {
         final BeanWithBind bean = lookup(BeanWithBind.class);
         bean.doBind();
@@ -76,6 +78,7 @@ public class DeploymentWithBindTestCase {
     }
 
     @Test
+    @InSequence(2)
     public void testServlet() throws Exception {
         performCall("simple", "bind");
         assertNotNull(iniCtx.lookup("java:jboss/test"));
@@ -84,15 +87,16 @@ public class DeploymentWithBindTestCase {
     }
 
     @Test
+    @InSequence(3)
     public void testBasicsNamespaces() throws Exception {
     	iniCtx.lookup("java:global");
     	iniCtx.listBindings("java:global");
-    	
+
     	iniCtx.lookup("java:jboss");
     	iniCtx.listBindings("java:jboss");
 
     	iniCtx.lookup("java:jboss/exported");
     	iniCtx.listBindings("java:jboss/exported");
-    	
+
     }
 }

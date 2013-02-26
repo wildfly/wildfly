@@ -36,10 +36,8 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.as.web.deployment.WarMetaData;
-import org.jboss.as.web.deployment.WebAttachments;
-import org.jboss.as.web.deployment.component.WebComponentDescription;
-import org.jboss.as.web.deployment.component.WebComponentInstantiator;
+import org.jboss.as.web.common.WarMetaData;
+import org.jboss.as.web.common.WebComponentDescription;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
@@ -245,7 +243,7 @@ public class JSFManagedBeanProcessor implements DeploymentUnitProcessor {
     private void installManagedBeanComponent(String className, final EEModuleDescription moduleDescription, final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClassesDescription) {
         final ComponentDescription componentDescription = new WebComponentDescription(MANAGED_BEAN.toString() + "." + className, className, moduleDescription, deploymentUnit.getServiceName(), applicationClassesDescription);
         moduleDescription.addComponent(componentDescription);
-        deploymentUnit.getAttachment(WebAttachments.WEB_COMPONENT_INSTANTIATORS).put(componentDescription.getComponentClassName(), new WebComponentInstantiator(deploymentUnit, componentDescription));
+        deploymentUnit.addToAttachmentList(WebComponentDescription.WEB_COMPONENTS, componentDescription.getStartServiceName());
     }
 
     @Override

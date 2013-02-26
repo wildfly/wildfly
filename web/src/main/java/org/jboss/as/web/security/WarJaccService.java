@@ -46,7 +46,7 @@ import org.apache.catalina.Wrapper;
 import org.apache.catalina.deploy.SecurityCollection;
 import org.apache.catalina.deploy.SecurityConstraint;
 import org.jboss.as.security.service.JaccService;
-import org.jboss.as.web.deployment.WarMetaData;
+import org.jboss.as.web.common.WarMetaData;
 import org.jboss.metadata.web.spec.WebResourceCollectionMetaData;
 
 /**

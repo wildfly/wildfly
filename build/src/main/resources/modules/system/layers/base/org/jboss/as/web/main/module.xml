@@ -50,6 +50,7 @@
         <module name="org.jboss.as.security"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.threads"/>
+        <module name="org.jboss.as.web-common"/>
         <module name="org.jboss.invocation"/>
         <module name="org.jboss.marshalling"/>
         <module name="org.jboss.metadata"/>

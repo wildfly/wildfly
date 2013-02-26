@@ -115,7 +115,6 @@ public class JaxrsComponentDeployer implements DeploymentUnitProcessor {
                 // make sure its removed from list
                 resteasy.getScannedResourceClasses().remove(component.getComponentClassName());
             } else if (component instanceof ManagedBeanComponentDescription) {
-
                 String jndiName = "java:app/" + moduleDescription.getModuleName() + "/" + component.getComponentName();
 
                 JAXRS_LOGGER.debugf("Found JAX-RS Managed Bean: %s local jndi name: %s", component.getComponentClassName(), jndiName);
