@@ -124,7 +124,7 @@ public class CommonDomainContainerConfiguration implements ContainerConfiguratio
      * Change the container mode of the Servers or ServerGroups in the Domain.
      * format: host:server-name=manual,host:.*=suite
      *
-     * @param containerModeMap
+     * @param containerModeString
      */
     public void setContainerModeMap(String containerModeString) {
         this.containerModeMap = convertToMap(containerModeString);

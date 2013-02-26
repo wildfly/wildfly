@@ -33,6 +33,7 @@ import org.jboss.as.arquillian.container.domain.CommonDomainDeployableContainer;
 import org.jboss.as.arquillian.container.domain.Domain;
 import org.jboss.as.arquillian.container.domain.ManagementClient;
 import org.jboss.as.arquillian.container.domain.Domain.Server;
+import org.jboss.dmr.ModelNode;
 
 /**
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
@@ -126,9 +127,41 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
         }
         try {
             if (process != null) {
-                process.destroy();
+                Thread shutdown = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Thread.sleep(getContainerConfiguration().getStopTimeoutInSeconds() * 1000);
+                        } catch (InterruptedException e) {
+                            return;
+                        }
+
+                        // The process hasn't shutdown within 60 seconds. Terminate forcibly.
+                        if (process != null) {
+                            process.destroy();
+                        }
+                    }
+                });
+                shutdown.start();
+
+                // Fetch the local-host-name attribute (e.g. "master")
+                ModelNode op = new ModelNode();
+                op.get("operation").set("read-attribute");
+                op.get("name").set("local-host-name");
+                ModelNode result = getManagementClient().getControllerClient().execute(op, null);
+                String hostName = result.get("result").asString();
+
+                // AS7-6620: Create the shutdown operation and run it asynchronously and wait for process to terminate
+                op = new ModelNode();
+                op.get("operation").set("shutdown");
+                ModelNode address = op.get("address");
+                address.add("host", hostName);
+                getManagementClient().getControllerClient().executeAsync(op, null);
+
                 process.waitFor();
                 process = null;
+
+                shutdown.interrupt();
             }
         } catch (Exception e) {
             throw new LifecycleException("Could not stop container", e);
