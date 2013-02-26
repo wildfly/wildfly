@@ -31,7 +31,6 @@
     <timer-service thread-pool-name="default" default-data-store="file-data-store">
         <data-stores>
             <file-data-store name="file-data-store" path="timer-service-data" relative-to="jboss.server.data.dir"/>
-            <database-data-store name="database-data-store" datasource-jndi-name="java:global/DataSource"/>
         </data-stores>
     </timer-service>
     <remote connector-ref="remoting-connector" thread-pool-name="default">

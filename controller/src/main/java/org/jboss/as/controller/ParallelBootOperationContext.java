@@ -80,6 +80,14 @@ class ParallelBootOperationContext extends AbstractOperationContext {
     }
 
     @Override
+    public void addStep(ModelNode operation, OperationStepHandler step, Stage stage, final boolean addFirst) throws IllegalArgumentException {
+        if (activeStep == null) {
+            throw MESSAGES.noActiveStep();
+        }
+        addStep(activeStep.response, operation, step, stage, addFirst);
+    }
+
+    @Override
     public void addStep(ModelNode response, ModelNode operation, OperationStepHandler step, Stage stage) throws IllegalArgumentException {
         switch (stage) {
             case MODEL:
