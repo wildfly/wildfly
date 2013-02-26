@@ -64,7 +64,10 @@ public class DefaultEmbeddedCacheManager extends AbstractDelegatingEmbeddedCache
     @Deprecated
     @Override
     public org.infinispan.config.Configuration defineConfiguration(String cacheName, org.infinispan.config.Configuration configurationOverride) {
-        return this.cm.defineConfiguration(this.getCacheName(cacheName), configurationOverride);
+        // Synchronize to workaround ISPN-2866 to fix AS7-6639
+        synchronized (cm) {
+            return this.cm.defineConfiguration(this.getCacheName(cacheName), configurationOverride);
+        }
     }
 
     /**
@@ -74,12 +77,18 @@ public class DefaultEmbeddedCacheManager extends AbstractDelegatingEmbeddedCache
     @Deprecated
     @Override
     public org.infinispan.config.Configuration defineConfiguration(String cacheName, String templateCacheName, org.infinispan.config.Configuration configurationOverride) {
-        return this.cm.defineConfiguration(this.getCacheName(cacheName), this.getCacheName(templateCacheName), configurationOverride);
+        // Synchronize to workaround ISPN-2866 to fix AS7-6639
+        synchronized (cm) {
+            return this.cm.defineConfiguration(this.getCacheName(cacheName), this.getCacheName(templateCacheName), configurationOverride);
+        }
     }
 
     @Override
     public Configuration defineConfiguration(String cacheName, Configuration configuration) {
-        return this.cm.defineConfiguration(this.getCacheName(cacheName), configuration);
+        // Synchronize to workaround ISPN-2866 to fix AS7-6639
+        synchronized (cm) {
+            return this.cm.defineConfiguration(this.getCacheName(cacheName), configuration);
+        }
     }
 
     /**
