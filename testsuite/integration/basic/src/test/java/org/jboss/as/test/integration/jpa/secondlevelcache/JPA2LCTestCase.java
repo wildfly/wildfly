@@ -49,7 +49,6 @@ import org.junit.runners.MethodSorters;
  * @author Scott Marlow and Zbynek Roubalik
  */
 @RunWith(Arquillian.class)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class JPA2LCTestCase {
 
     private static final String ARCHIVE_NAME = "jpa_SecondLevelCacheTestCase";
