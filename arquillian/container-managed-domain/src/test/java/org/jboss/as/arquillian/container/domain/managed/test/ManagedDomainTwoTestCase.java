@@ -30,8 +30,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * For Domain server DeployableContianer implementations, the DeployableContainer will register 
- * all groups/individual servers it controls as Containers in Arquillians Registry during start.
+ * For Domain server DeployableContainer implementations, the DeployableContainer will register
+ * all groups/individual servers it controls as Containers in Arquillian's Registry during start.
  * 
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
  * @version $Revision: $

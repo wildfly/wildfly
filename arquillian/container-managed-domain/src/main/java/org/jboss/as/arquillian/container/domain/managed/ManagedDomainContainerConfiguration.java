@@ -39,6 +39,8 @@ public class ManagedDomainContainerConfiguration extends CommonDomainContainerCo
 
     private int startupTimeoutInSeconds = 60;
 
+    private int stopTimeoutInSeconds = 60;
+
     private int autoServerStartupTimeoutInSeconds = 60;
 
     private boolean outputToConsole = true;
@@ -127,6 +129,21 @@ public class ManagedDomainContainerConfiguration extends CommonDomainContainerCo
     }
 
     /**
+     * @param stopTimeoutInSeconds number of seconds to wait for the container process to shutdown
+     */
+    public void setStopTimeoutInSeconds(int stopTimeoutInSeconds) {
+        this.stopTimeoutInSeconds = stopTimeoutInSeconds;
+    }
+
+    /**
+     * @return stopTimeoutInSeconds number of seconds to wait for the container process to shutdown;
+     *                              defaults to 60
+     */
+    public int getStopTimeoutInSeconds() {
+        return stopTimeoutInSeconds;
+    }
+
+    /**
      * The number of seconds to wait before failing when starting servers in Auto start mode
      *
      * @param autoServerStartupTimeoutInSeconds
@@ -185,7 +202,7 @@ public class ManagedDomainContainerConfiguration extends CommonDomainContainerCo
     /**
      * Set the server configuration file name. Equivalent to [-Djboss.host.default.config=...] on the command line.
      *
-     * @param domainConfig the host xml file name
+     * @param hostConfig the host xml file name
      */
     public void setHostConfig(String hostConfig) {
         this.hostConfig = hostConfig;
