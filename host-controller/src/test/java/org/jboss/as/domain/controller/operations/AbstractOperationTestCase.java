@@ -188,6 +188,9 @@ public abstract class AbstractOperationTestCase {
             }
             expectedSteps.remove(opAddress);
         }
+        public void addStep(ModelNode operation, OperationStepHandler step, OperationContext.Stage stage, boolean addFirst) throws IllegalArgumentException {
+            addStep(operation, step, stage, addFirst);
+        }
 
         @Override
         public void addStep(ModelNode response, ModelNode operation, OperationStepHandler step, Stage stage, boolean addFirst) throws IllegalArgumentException {

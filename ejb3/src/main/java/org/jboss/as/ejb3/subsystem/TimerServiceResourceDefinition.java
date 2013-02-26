@@ -139,13 +139,13 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
             address = address.append(EJB3SubsystemModel.FILE_DATA_STORE,defaultDataStore.asString());
             operation.get(ModelDescriptionConstants.ADDRESS).set(address.toModelNode());
             if (op.equals(ModelDescriptionConstants.ADD)){
-                context.addStep(new ModelNode(), operation, FileDataStoreAdd.INSTANCE, OperationContext.Stage.MODEL, true);
+                context.addStep(operation, FileDataStoreAdd.INSTANCE, OperationContext.Stage.MODEL, true);
             }else if (op.equals(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION)){
-                context.addStep(new ModelNode(), operation, ReadAttributeHandler.INSTANCE, OperationContext.Stage.MODEL, true);
+                context.addStep(operation, ReadAttributeHandler.INSTANCE, OperationContext.Stage.MODEL, true);
             }else if (op.equals(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION)){
-                context.addStep(new ModelNode(), operation, WriteAttributeHandler.INSTANCE, OperationContext.Stage.MODEL, true);
+                context.addStep(operation, WriteAttributeHandler.INSTANCE, OperationContext.Stage.MODEL, true);
             }else if (op.equals(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION)){
-                context.addStep(new ModelNode(), operation, UndefineAttributeHandler.INSTANCE, OperationContext.Stage.MODEL, true);
+                context.addStep(operation, UndefineAttributeHandler.INSTANCE, OperationContext.Stage.MODEL, true);
             }
             context.stepCompleted();
         }
@@ -224,7 +224,7 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
                 throw new OperationFailedException("Only file-store configuration is supported on target");
             }
             if (transformed.hasDefined(EJB3SubsystemModel.PATH)) { //happens when first file store was already transformed
-                throw new OperationFailedException(context.getLogger().getRejectedResourceWarning(address, null));
+                //throw new OperationFailedException(context.getLogger().getRejectedResourceWarning(address, null));
             } else {
                 transformed.get(EJB3SubsystemModel.PATH).set(fileStore.get(EJB3SubsystemModel.PATH));
                 transformed.get(EJB3SubsystemModel.RELATIVE_TO).set(fileStore.get(EJB3SubsystemModel.RELATIVE_TO));
