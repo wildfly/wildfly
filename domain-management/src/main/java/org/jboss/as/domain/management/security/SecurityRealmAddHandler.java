@@ -53,7 +53,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.security.ServerSecurityManager;
-import org.jboss.as.domain.management.AuthenticationMechanism;
+import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.CallbackHandlerFactory;
 import org.jboss.as.domain.management.SSLIdentity;
 import org.jboss.as.domain.management.connections.ConnectionManager;
@@ -285,7 +285,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         final String pluginName = PlugInAuthorizationResourceDefinition.NAME.resolveModelAttribute(context, model).asString();
         final Map<String, String> properties = resolveProperties(context, model);
         String mechanismName = PlugInAuthenticationResourceDefinition.MECHANISM.resolveModelAttribute(context, model).asString();
-        AuthenticationMechanism mechanism = AuthenticationMechanism.valueOf(mechanismName);
+        AuthMechanism mechanism = AuthMechanism.valueOf(mechanismName);
         PlugInAuthenticationCallbackHandler plugInService = new PlugInAuthenticationCallbackHandler(registry.getName(),
                 pluginName, properties, mechanism);
 

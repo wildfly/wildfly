@@ -41,19 +41,19 @@ public interface SecurityRealm {
     /**
      * @return The set of authentication mechanisms supported by this realm.
      */
-    Set<AuthenticationMechanism> getSupportedAuthenticationMechanisms();
+    Set<AuthMechanism> getSupportedAuthenticationMechanisms();
 
     /**
      * @return A Map containing the combined configuration options for the specified mechanisms.
      */
-    Map<String, String> getMechanismConfig(final AuthenticationMechanism mechanism);
+    Map<String, String> getMechanismConfig(final AuthMechanism mechanism);
 
     /**
      * @param mechanism - The mechanism being used for authentication.
      * @return The {@link AuthorizingCallbackHandler} for the specified mechanism.
      * @throws IllegalArgumentException If the mechanism is not supported by this realm.
      */
-    AuthorizingCallbackHandler getAuthorizingCallbackHandler(final AuthenticationMechanism mechanism);
+    AuthorizingCallbackHandler getAuthorizingCallbackHandler(final AuthMechanism mechanism);
 
     /**
      * Indicate that all supported mechanisms are ready.

@@ -31,7 +31,7 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.domain.management.AuthenticationMechanism;
+import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -45,9 +45,9 @@ public class PlugInAuthenticationResourceDefinition extends AbstractPlugInAuthRe
 
     public static final SimpleAttributeDefinition MECHANISM = new SimpleAttributeDefinitionBuilder(
             ModelDescriptionConstants.MECHANISM, ModelType.STRING, true)
-            .setValidator(new EnumValidator<AuthenticationMechanism>(AuthenticationMechanism.class, true, true,
-                    AuthenticationMechanism.DIGEST, AuthenticationMechanism.PLAIN)) //currently only these are supported
-            .setDefaultValue(new ModelNode(AuthenticationMechanism.DIGEST.toString()))
+            .setValidator(new EnumValidator<AuthMechanism>(AuthMechanism.class, true, true,
+                    AuthMechanism.DIGEST, AuthMechanism.PLAIN)) //currently only these are supported
+            .setDefaultValue(new ModelNode(AuthMechanism.DIGEST.toString()))
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 

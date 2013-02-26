@@ -53,7 +53,7 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.jboss.as.controller.security.SubjectUserInfo;
 import org.jboss.as.controller.security.UniqueIdUserInfo;
-import org.jboss.as.domain.management.AuthenticationMechanism;
+import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.security.RealmUser;
 import org.jboss.remoting3.Remoting;
@@ -120,10 +120,10 @@ class RealmSecurityProvider implements RemotingSecurityProvider {
             builder.set(SASL_POLICY_NOANONYMOUS, false);
             builder.set(SSL_ENABLED, false);
         } else {
-            Set<AuthenticationMechanism> authMechs = realm.getSupportedAuthenticationMechanisms();
-            if (authMechs.contains(AuthenticationMechanism.LOCAL)) {
+            Set<AuthMechanism> authMechs = realm.getSupportedAuthenticationMechanisms();
+            if (authMechs.contains(AuthMechanism.LOCAL)) {
                 mechanisms.add(JBOSS_LOCAL_USER);
-                Map<String, String> mechConfig = realm.getMechanismConfig(AuthenticationMechanism.LOCAL);
+                Map<String, String> mechConfig = realm.getMechanismConfig(AuthMechanism.LOCAL);
                 if (mechConfig.containsKey(LOCAL_DEFAULT_USER)) {
                     properties.add(Property.of(SASL_OPT_LOCAL_DEFAULT_USER, mechConfig.get(LOCAL_DEFAULT_USER)));
                 }
@@ -132,10 +132,10 @@ class RealmSecurityProvider implements RemotingSecurityProvider {
                 }
             }
 
-            if (authMechs.contains(AuthenticationMechanism.DIGEST)) {
+            if (authMechs.contains(AuthMechanism.DIGEST)) {
                 mechanisms.add(DIGEST_MD5);
                 properties.add(Property.of(SASL_OPT_REALM_PROPERTY, realm.getName()));
-                Map<String, String> mechConfig = realm.getMechanismConfig(AuthenticationMechanism.DIGEST);
+                Map<String, String> mechConfig = realm.getMechanismConfig(AuthMechanism.DIGEST);
                 boolean plainTextDigest = true;
                 if (mechConfig.containsKey(DIGEST_PLAIN_TEXT)) {
                     plainTextDigest = Boolean.parseBoolean(mechConfig.get(DIGEST_PLAIN_TEXT));
@@ -146,7 +146,7 @@ class RealmSecurityProvider implements RemotingSecurityProvider {
                 }
             }
 
-            if (authMechs.contains(AuthenticationMechanism.PLAIN)) {
+            if (authMechs.contains(AuthMechanism.PLAIN)) {
                 mechanisms.add(PLAIN);
                 builder.set(SASL_POLICY_NOPLAINTEXT, false);
             }
@@ -154,7 +154,7 @@ class RealmSecurityProvider implements RemotingSecurityProvider {
             if (realm.getSSLContext() == null) {
                 builder.set(SSL_ENABLED, false);
             } else {
-                if (authMechs.contains(AuthenticationMechanism.CLIENT_CERT)) {
+                if (authMechs.contains(AuthMechanism.CLIENT_CERT)) {
                     builder.set(SSL_ENABLED, true);
                     builder.set(SSL_STARTTLS, true);
                     mechanisms.add(0, EXTERNAL);
@@ -263,21 +263,21 @@ class RealmSecurityProvider implements RemotingSecurityProvider {
 
         if (JBOSS_LOCAL_USER.equals(mechanismName)) {
             // We now only enable this mechanism is configured in the realm so the realm can not be null.
-            return new RealmCallbackHandler(realm.getAuthorizingCallbackHandler(AuthenticationMechanism.LOCAL));
+            return new RealmCallbackHandler(realm.getAuthorizingCallbackHandler(AuthMechanism.LOCAL));
         }
 
         // In this calls only the AuthorizeCallback is needed, we are not making use if an authorization ID just yet
         // so don't need to be linked back to the realms.
         if (EXTERNAL.equals(mechanismName)) {
-            return new RealmCallbackHandler(realm.getAuthorizingCallbackHandler(AuthenticationMechanism.CLIENT_CERT));
+            return new RealmCallbackHandler(realm.getAuthorizingCallbackHandler(AuthMechanism.CLIENT_CERT));
         }
 
         final RealmCallbackHandler realmCallbackHandler; // Referenced later by an inner-class so needs to be final.
 
         if (DIGEST_MD5.equals(mechanismName)) {
-            realmCallbackHandler = new RealmCallbackHandler(realm.getAuthorizingCallbackHandler(AuthenticationMechanism.DIGEST));
+            realmCallbackHandler = new RealmCallbackHandler(realm.getAuthorizingCallbackHandler(AuthMechanism.DIGEST));
         } else if (PLAIN.equals(mechanismName)) {
-            realmCallbackHandler = new RealmCallbackHandler(realm.getAuthorizingCallbackHandler(AuthenticationMechanism.PLAIN));
+            realmCallbackHandler = new RealmCallbackHandler(realm.getAuthorizingCallbackHandler(AuthMechanism.PLAIN));
         } else {
             return null;
         }
