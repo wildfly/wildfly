@@ -53,7 +53,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
     @Override
     public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
 
-        context.startSubsystemElement(EJB3SubsystemNamespace.EJB3_1_4.getUriString(), false);
+        context.startSubsystemElement(EJB3SubsystemNamespace.EJB3_2_0.getUriString(), false);
 
         writeElements(writer,  context);
 
@@ -437,13 +437,41 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
     }
 
     private void writeTimerService(final XMLExtendedStreamWriter writer, final ModelNode timerServiceModel) throws XMLStreamException {
+
         TimerServiceResourceDefinition.THREAD_POOL_NAME.marshallAsAttribute(timerServiceModel, writer);
-        // <data-store>
-        if (TimerServiceResourceDefinition.PATH.isMarshallable(timerServiceModel)
-                || TimerServiceResourceDefinition.RELATIVE_TO.isMarshallable(timerServiceModel)) {
-            writer.writeEmptyElement(EJB3SubsystemXMLElement.DATA_STORE.getLocalName());
-            TimerServiceResourceDefinition.PATH.marshallAsAttribute(timerServiceModel, writer);
-            TimerServiceResourceDefinition.RELATIVE_TO.marshallAsAttribute(timerServiceModel, writer);
+        TimerServiceResourceDefinition.DEFAULT_DATA_STORE.marshallAsAttribute(timerServiceModel, writer);
+
+        writer.writeStartElement(EJB3SubsystemXMLElement.DATA_STORES.getLocalName());
+        writeFileDataStores(writer, timerServiceModel);
+        writeDatabaseDataStores(writer, timerServiceModel);
+        writer.writeEndElement();
+
+    }
+
+    private void writeDatabaseDataStores(final XMLExtendedStreamWriter writer, final ModelNode timerServiceModel) throws XMLStreamException {
+        if (timerServiceModel.hasDefined(EJB3SubsystemModel.DATABASE_DATA_STORE)) {
+            List<Property> stores = timerServiceModel.get(EJB3SubsystemModel.DATABASE_DATA_STORE).asPropertyList();
+            for (Property property : stores) {
+                writer.writeStartElement(EJB3SubsystemXMLElement.DATABASE_DATA_STORE.getLocalName());
+                ModelNode store = property.getValue();
+                writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), property.getName());
+                DatabaseDataStoreResourceDefinition.DATASOURCE_JNDI_NAME.marshallAsAttribute(store, writer);
+                writer.writeEndElement();
+            }
+        }
+    }
+
+    private void writeFileDataStores(final XMLExtendedStreamWriter writer, final ModelNode timerServiceModel) throws XMLStreamException {
+        if (timerServiceModel.hasDefined(EJB3SubsystemModel.FILE_DATA_STORE)) {
+            List<Property> stores = timerServiceModel.get(EJB3SubsystemModel.FILE_DATA_STORE).asPropertyList();
+            for (Property property : stores) {
+                writer.writeStartElement(EJB3SubsystemXMLElement.FILE_DATA_STORE.getLocalName());
+                ModelNode store = property.getValue();
+                writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), property.getName());
+                FileDataStoreResourceDefinition.PATH.marshallAsAttribute(store, writer);
+                FileDataStoreResourceDefinition.RELATIVE_TO.marshallAsAttribute(store, writer);
+                writer.writeEndElement();
+            }
         }
     }
 

@@ -47,9 +47,9 @@ public class TimedObjectTimerServiceBean implements TimedObject {
 
     private TimerService timerService;
 
-    private static String timerInfo;
-    private static boolean isPersistent;
-    private static boolean isCalendar;
+    private static volatile String timerInfo;
+    private static volatile boolean isPersistent;
+    private static volatile boolean isCalendar;
 
     public synchronized TimerService getTimerService() {
         if (timerService == null) {

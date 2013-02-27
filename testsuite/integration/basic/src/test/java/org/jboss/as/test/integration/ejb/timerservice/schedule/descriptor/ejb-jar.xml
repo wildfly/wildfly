@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ejb-jar xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         version="3.1"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd">
+    <enterprise-beans>
+        <session>
+            <ejb-name>DescriptorScheduleBean</ejb-name>
+            <local-bean/>
+            <ejb-class>org.jboss.as.test.integration.ejb.timerservice.schedule.descriptor.DescriptorScheduleBean
+            </ejb-class>
+            <session-type>Stateless</session-type>
+            <timer>
+                <description/>
+                <schedule>
+                    <second>*</second>
+                    <minute>*</minute>
+                    <hour>*</hour>
+                    <day-of-month>*</day-of-month>
+                    <month>*</month>
+                    <day-of-week>*</day-of-week>
+                </schedule>
+                <start>1990-01-01T00:00:00</start>
+                <end>9000-12-31T00:00:00</end>
+                <timeout-method>
+                    <method-name>descriptorScheduledMethod</method-name>
+                </timeout-method>
+                <persistent>false</persistent>
+                <info>INFO</info>
+            </timer>
+        </session>
+    </enterprise-beans>
+</ejb-jar>

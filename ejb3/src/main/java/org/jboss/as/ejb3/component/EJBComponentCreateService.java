@@ -114,7 +114,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         // Setup the security metadata for the bean
         this.securityMetaData = new EJBSecurityMetaData(componentConfiguration);
 
-        if (ejbComponentDescription.isTimerServiceApplicable()) {
+        if (ejbComponentDescription.isTimerServiceRequired()) {
             Map<Method, InterceptorFactory> timeoutInterceptors = new IdentityHashMap<Method, InterceptorFactory>();
             for (Method method : componentConfiguration.getDefinedComponentMethods()) {
                 if ((ejbComponentDescription.getTimeoutMethod() != null && ejbComponentDescription.getTimeoutMethod().equals(method)) ||

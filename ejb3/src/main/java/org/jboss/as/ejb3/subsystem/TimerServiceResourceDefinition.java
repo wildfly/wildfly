@@ -27,20 +27,29 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManager;
-import org.jboss.as.controller.services.path.ResolvePathHandler;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.CombinedTransformer;
+import org.jboss.as.controller.transform.OperationRejectionPolicy;
+import org.jboss.as.controller.transform.OperationResultTransformer;
+import org.jboss.as.controller.transform.PathAddressTransformer;
+import org.jboss.as.controller.transform.ResourceTransformationContext;
+import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -50,45 +59,38 @@ import org.jboss.dmr.ModelType;
  */
 public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
 
-    public static final SimpleAttributeDefinition PATH =
-            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.PATH, ModelType.STRING, true)
-                    .setAllowExpression(true)
-                    .setValidator(new ModelTypeValidator(ModelType.STRING, true, true))
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .build();
-
-    public static final SimpleAttributeDefinition RELATIVE_TO =
-            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.RELATIVE_TO, ModelType.STRING, true)
-                    .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .build();
-
-    public static final SimpleAttributeDefinition THREAD_POOL_NAME =
+    static final SimpleAttributeDefinition THREAD_POOL_NAME =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.THREAD_POOL_NAME, ModelType.STRING, false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
+    static final SimpleAttributeDefinition DEFAULT_DATA_STORE =
+            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_DATA_STORE, ModelType.STRING)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setAllowNull(false)
+                    //.setDefaultValue(new ModelNode("default-file-store")) //for backward compatibility!
+                    .build();
 
     public static final Map<String, AttributeDefinition> ATTRIBUTES ;
 
+    private final PathManager pathManager;
+
     static {
         Map<String, AttributeDefinition> map = new LinkedHashMap<String, AttributeDefinition>();
-        map.put(PATH.getName(), PATH);
-        map.put(RELATIVE_TO.getName(), RELATIVE_TO);
         map.put(THREAD_POOL_NAME.getName(), THREAD_POOL_NAME);
+        map.put(DEFAULT_DATA_STORE.getName(), DEFAULT_DATA_STORE);
 
         ATTRIBUTES = Collections.unmodifiableMap(map);
     }
 
-    private final PathManager pathManager;
-
-    TimerServiceResourceDefinition(PathManager pathManager) {
+    public TimerServiceResourceDefinition(final PathManager pathManager) {
         super(EJB3SubsystemModel.TIMER_SERVICE_PATH,
                 EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.TIMER_SERVICE),
                 TimerServiceAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE,
                 OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
         this.pathManager = pathManager;
     }
+
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
@@ -98,20 +100,79 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
     }
 
     @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
-        if (pathManager != null) {
-            final ResolvePathHandler resolvePathHandler = ResolvePathHandler.Builder.of(pathManager)
-                    .setPathAttribute(TimerServiceResourceDefinition.PATH)
-                    .setRelativeToAttribute(TimerServiceResourceDefinition.RELATIVE_TO)
-                    .build();
-            resourceRegistration.registerOperationHandler(resolvePathHandler.getOperationDefinition(), resolvePathHandler);
-        }
+    public void registerChildren(final ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerSubModel(new FileDataStoreResourceDefinition(pathManager));
+
+        resourceRegistration.registerSubModel(DatabaseDataStoreResourceDefinition.INSTANCE);
     }
 
     static void registerTransformers_1_1_0(ResourceTransformationDescriptionBuilder parent) {
-        parent.addChildResource(EJB3SubsystemModel.TIMER_SERVICE_PATH)
-            .getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, PATH);
+        ResourceTransformationDescriptionBuilder timerService = parent.addChildResource(EJB3SubsystemModel.TIMER_SERVICE_PATH);
+        timerService.getAttributeBuilder()
+                .setDiscard(DiscardAttributeChecker.ALWAYS, EJB3SubsystemModel.DEFAULT_DATA_STORE)//this is ok, as default-data-store only has any sense with new model, but it is always set!
+                .end();
+        timerService.discardOperations(ModelDescriptionConstants.ADD);
+        timerService.setCustomResourceTransformer(DataStoreTransformer.INSTANCE);
+        timerService.rejectChildResource(EJB3SubsystemModel.DATABASE_DATA_STORE_PATH);
+        timerService.addChildRedirection(EJB3SubsystemModel.FILE_DATA_STORE_PATH, new PathAddressTransformer() {
+            @Override
+            public PathAddress transform(PathElement current, Builder builder) {
+                return builder.getCurrent();
+            }
+        })
+                .addOperationTransformationOverride(ModelDescriptionConstants.ADD).setCustomOperationTransformer(DataStoreTransformer.INSTANCE)
+                .end();
+
     }
+
+    private static class DataStoreTransformer implements CombinedTransformer {
+        static final DataStoreTransformer INSTANCE = new DataStoreTransformer();
+
+        private DataStoreTransformer() {
+
+        }
+
+        @Override
+        public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation) throws OperationFailedException {
+            Resource original = context.readResource(address);
+            if (original.getChildren(EJB3SubsystemModel.FILE_DATA_STORE).size()>1){
+                return new TransformedOperation(operation,new OperationRejectionPolicy() {
+                    @Override
+                    public boolean rejectOperation(ModelNode preparedResult) {
+                        return true;
+                    }
+
+                    @Override
+                    public String getFailureDescription() {
+                        return context.getLogger().getRejectedResourceWarning(address,operation);
+                    }
+                }, OperationResultTransformer.ORIGINAL_RESULT);
+            }
+            operation.get(THREAD_POOL_NAME.getName()).set(original.getModel().get(THREAD_POOL_NAME.getName()));
+            return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
+        }
+
+        @Override
+        public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
+            Resource untransformedResource = context.readResource(PathAddress.EMPTY_ADDRESS);
+            ModelNode untransformedModel = Resource.Tools.readModel(untransformedResource);
+            String defaultDataStore = untransformedModel.get(DEFAULT_DATA_STORE.getName()).asString();
+
+            ModelNode transformed = resource.getModel();
+            transformed.remove(DEFAULT_DATA_STORE.getName());
+            ModelNode fileStore = untransformedModel.get(EJB3SubsystemModel.FILE_DATA_STORE, defaultDataStore);
+            if (!fileStore.isDefined()) {//happens where default is not file-store
+                throw new OperationFailedException("Only file-store configuration is supported on target");
+            }
+            if (transformed.hasDefined(EJB3SubsystemModel.PATH)) { //happens when first file store was already transformed
+                //throw new OperationFailedException(context.getLogger().getRejectedResourceWarning(address, null));
+            } else {
+                transformed.get(EJB3SubsystemModel.PATH).set(fileStore.get(EJB3SubsystemModel.PATH));
+                transformed.get(EJB3SubsystemModel.RELATIVE_TO).set(fileStore.get(EJB3SubsystemModel.RELATIVE_TO));
+            }
+            context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
+            //do not process children!
+        }
+    }
+
 }

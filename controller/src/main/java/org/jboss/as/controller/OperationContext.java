@@ -78,6 +78,20 @@ public interface OperationContext extends ExpressionResolver {
     void addStep(final ModelNode operation, final OperationStepHandler step, final Stage stage) throws IllegalArgumentException;
 
     /**
+     * Add an execution step to this operation process, writing any output to the response object
+     * associated with the current step.
+     * Runtime operation steps are automatically added after configuration operation steps.  Since only one operation
+     * may perform runtime work at a time, this method may block until other runtime operations have completed.
+     *
+     * @param operation the operation body to pass into the added step
+     * @param step the step to add
+     * @param stage the stage at which the operation applies
+     * @param addFirst add the handler before the others
+     * @throws IllegalArgumentException if the step handler is not valid for this controller type
+     */
+    void addStep(final ModelNode operation, final OperationStepHandler step, final Stage stage, boolean addFirst) throws IllegalArgumentException;
+
+    /**
      * Add an execution step to this operation process.  Runtime operation steps are automatically added after
      * configuration operation steps.  Since only one operation may perform runtime work at a time, this method
      * may block until other runtime operations have completed.

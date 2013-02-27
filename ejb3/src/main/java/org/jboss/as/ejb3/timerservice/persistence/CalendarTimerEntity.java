@@ -30,7 +30,10 @@ import org.jboss.as.ejb3.timerservice.CalendarTimer;
 import org.jboss.as.ejb3.timerservice.schedule.CalendarBasedTimeout;
 
 /**
- * CalendarTimerEntity
+ * DO NOT MODIFY THIS CLASS
+ *
+ * Due to a temporary implementation that became permanent, the {@link org.jboss.as.ejb3.timerservice.persistence.filestore.FileTimerPersistence}
+ * writes these out directly, modifying this class will break compatibility
  *
  * @author Jaikiran Pai
  * @author Stuart Douglas

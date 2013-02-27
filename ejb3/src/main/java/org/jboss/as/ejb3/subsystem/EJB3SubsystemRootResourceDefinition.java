@@ -233,19 +233,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance()
                 .getAttributeBuilder()
                     .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, EJB3SubsystemRootResourceDefinition.ENABLE_STATISTICS)
-                    .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
-
-                        @Override
-                        public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-                            return EjbMessages.MESSAGES.rejectTransformationDefinedDefaultSecurityDomain();
-                        }
-
-                        @Override
-                        protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
-                                TransformationContext context) {
-                            return attributeValue.isDefined();
-                        }
-                    }, EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN)
                     .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
 
                         @Override
