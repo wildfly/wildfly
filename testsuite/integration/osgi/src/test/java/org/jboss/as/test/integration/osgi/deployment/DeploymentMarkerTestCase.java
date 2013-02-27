@@ -30,6 +30,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -44,6 +45,7 @@ import org.osgi.service.startlevel.StartLevel;
  * @since 19-Oct-2012
  */
 @RunWith(Arquillian.class)
+@Ignore("AS7-6647")
 public class DeploymentMarkerTestCase {
 
     static final String BUNDLE_A = "deploymentmarker-bundle-a";
