@@ -1496,11 +1496,6 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.spec.javax.enterprise.deploy</groupId>
-                    <artifactId>jboss-jad-api_1.2_spec</artifactId>
-                </dependency>
-
-                <dependency>
                     <groupId>org.jboss.spec.javax.faces</groupId>
                     <artifactId>jboss-jsf-api_2.1_spec</artifactId>
                 </dependency>
@@ -1958,7 +1953,6 @@
                                         <include>org.jboss.spec.javax.annotation:jboss-annotations-api_1.1_spec</include>
                                         <include>org.jboss.spec.javax.ejb:jboss-ejb-api_3.1_spec</include>
                                         <include>org.jboss.spec.javax.el:jboss-el-api_2.2_spec</include>
-                                        <include>org.jboss.spec.javax.enterprise.deploy:jboss-jad-api_1.2_spec</include>
                                         <include>org.jboss.spec.javax.faces:jboss-jsf-api_2.1_spec</include>
                                         <include>org.jboss.spec.javax.interceptor:jboss-interceptors-api_1.1_spec</include>
                                         <include>org.jboss.spec.javax.jms:jboss-jms-api_1.1_spec</include>
@@ -2234,10 +2228,6 @@
                                         <group>
                                             <title>Module javax.enterprise.api</title>
                                             <packages>javax.decorator:javax.enterprise.context:javax.enterprise.context.spi:javax.enterprise.event:javax.enterprise.inject:javax.enterprise.inject.spi:javax.enterprise.util</packages>
-                                        </group>
-                                        <group>
-                                            <title>Module javax.enterprise.deploy.api</title>
-                                            <packages>javax.enterprise.deploy.model:javax.enterprise.deploy.model.exceptions:javax.enterprise.deploy.shared:javax.enterprise.deploy.shared.factories:javax.enterprise.deploy.spi:javax.enterprise.deploy.spi.exceptions:javax.enterprise.deploy.spi.factories:javax.enterprise.deploy.spi.status</packages>
                                         </group>
                                         <group>
                                             <title>Module javax.faces.api</title>
