@@ -206,4 +206,12 @@ public interface ConnectorLogger extends BasicLogger {
     @Message(id = 10416, value = "Forcing ironjacamar.xml descriptor to null")
     void forceIJToNull();
 
+    @LogMessage(level = INFO)
+    @Message(id = 10417, value = "Started Driver service with driver-name = %s")
+    void startedDriverService(String driverName);
+
+    @LogMessage(level = INFO)
+    @Message(id = 10418, value = "Stopped Driver service with driver-name = %s")
+    void stoppeddDriverService(String driverName);
+
 }
