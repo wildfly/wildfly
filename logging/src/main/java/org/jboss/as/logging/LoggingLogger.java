@@ -142,4 +142,13 @@ public interface LoggingLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 11510, value = "The configuration file in '%s' appears to be a J.U.L. configuration file. The log manager does not allow this type of configuration file.")
     void julConfigurationFileFound(String fileName);
+
+    /**
+     * Logs a warning message indicating the handler is being replaced due to a different type or module name.
+     *
+     * @param name the name of the handler
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 11511, value = "Replacing handler '%s' during add operation. Either the handler type or the module name differs from the initial configuration.")
+    void replacingNamedHandler(String name);
 }
