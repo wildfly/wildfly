@@ -33,7 +33,6 @@
         <module name="javax.ejb.api" export="true"/>
         <module name="javax.el.api" export="true"/>
         <module name="javax.enterprise.api" export="true"/>
-        <module name="javax.enterprise.deploy.api" export="true"/>
         <module name="javax.inject.api" export="true"/>
         <module name="javax.interceptor.api" export="true"/>
         <module name="javax.jms.api" export="true"/>
