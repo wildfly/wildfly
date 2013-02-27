@@ -252,7 +252,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-help-plugin</artifactId>
-                <version>2.1.1</version>
                 <inherited>true</inherited>
                 <executions>
                     <execution><id>help.active-profiles</id>
@@ -279,9 +278,8 @@
             </plugin>
 
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
+                <groupId>org.kuali.maven.plugins</groupId>
                 <artifactId>properties-maven-plugin</artifactId>
-                <version>1.0-alpha-2</version>
                 <executions>
                     <execution>
                         <phase>initialize</phase>
@@ -421,7 +419,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
-                <version>3.0</version>
                 <executions><execution><id>default-site</id><phase>none</phase></execution></executions>
             </plugin>
 
@@ -466,11 +463,10 @@
 
                 </executions>
                 <dependencies>
-                    <!-- Todo: Move to <pluginManagement>. -->
                     <dependency>
-                        <groupId>ant</groupId>
+                        <groupId>org.apache.ant</groupId>
                         <artifactId>ant-junit</artifactId>
-                        <version>1.6.5</version>
+                        <version>${version.ant.junit}</version>
                     </dependency>
                 </dependencies>
             </plugin>
