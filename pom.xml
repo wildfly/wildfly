@@ -74,6 +74,7 @@
             For example: <version.org.jboss.as.console>
          -->
 
+        <version.ant.junit>1.8.3</version.ant.junit>
         <version.antlr>2.7.7</version.antlr>
         <version.asm>3.3.1</version.asm>
         <version.ch.qos.cal10n>0.7.3</version.ch.qos.cal10n>
@@ -267,8 +268,10 @@
 
         <!-- Non-default plugin versions and configuration -->
         <version.org.zanata.plugin>1.5.0</version.org.zanata.plugin>
+        <version.help.plugin>2.2</version.help.plugin>
         <version.shade.plugin>1.5</version.shade.plugin>
         <version.jacoco.plugin>0.5.6.201201232323</version.jacoco.plugin> <!-- Needs to be set explicitely to match with org.jacoco:org.jacoco.ant - see testsuite. -->
+        <version.properties.plugin>1.5.3</version.properties.plugin>
         <version.xml.maven.plugin>1.0</version.xml.maven.plugin>
 
 
@@ -652,6 +655,33 @@
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>xml-maven-plugin</artifactId>
                     <version>${version.xml.maven.plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-help-plugin</artifactId>
+                    <version>${version.help.plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.kuali.maven.plugins</groupId>
+                    <artifactId>properties-maven-plugin</artifactId>
+                    <version>${version.properties.plugin}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.kuali.common</groupId>
+                            <artifactId>kuali-util</artifactId>
+                            <version>3.0.11</version>
+                            <exclusions>
+                                <exclusion>
+                                    <groupId>org.springframework</groupId>
+                                    <artifactId>spring-context</artifactId>
+                                </exclusion>
+                                <exclusion>
+                                    <groupId>org.springframework</groupId>
+                                    <artifactId>spring-beans</artifactId>
+                                </exclusion>
+                            </exclusions>
+                        </dependency>
+                    </dependencies>
                 </plugin>
             </plugins>
         </pluginManagement>
