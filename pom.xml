@@ -957,12 +957,6 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-ee-deployment</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-ejb3</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -6388,7 +6382,6 @@
                 <module>deployment-scanner</module>
                 <module>dist</module>
                 <module>ee</module>
-                <module>ee-deployment</module>
                 <module>ejb3</module>
                 <module>host-controller</module>
                 <module>jacorb</module>
