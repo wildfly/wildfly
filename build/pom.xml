@@ -1673,7 +1673,7 @@
                 <dependency>
                     <groupId>org.jboss.ws.cxf</groupId>
                     <artifactId>jbossws-cxf-resources</artifactId>
-                    <classifier>jboss711</classifier>
+                    <classifier>jboss800</classifier>
                 </dependency>
 
                 <dependency>
