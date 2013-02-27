@@ -109,9 +109,9 @@ public class DefaultEmbeddedCacheManager extends AbstractDelegatingEmbeddedCache
      * @see org.infinispan.manager.EmbeddedCacheManager#getCache(java.lang.String, boolean)
      */
     @Override
-    public <K, V> Cache<K, V> getCache(String cacheName, boolean start) {
+    public <K, V> Cache<K, V> getCache(String cacheName, boolean createIfAbsent) {
         // Synchronize to workaround ISPN-2796 / AS7-6639
-        if (start) {
+        if (createIfAbsent) {
             return this.getCache(cacheName);
         }
 
