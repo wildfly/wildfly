@@ -291,36 +291,10 @@
                 </executions>
             </plugin>
 
-            <!--
-                Provide jboss-annotations-api_1.2_spec to compiler as endorsed.
-                Big complex hack just to get @Resource(lookup="foo").  AS7-3123
-            -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <inherited>true</inherited>  <!-- Needed for compilation of all submodules. -->
-                <executions combine.children="append">
-                    <execution>
-                        <id>copy-annotations-endorsed</id>
-                        <goals><goal>copy</goal></goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.jboss.spec.javax.annotation</groupId>
-                                    <artifactId>jboss-annotations-api_1.2_spec</artifactId>
-                                </artifactItem>
-                            </artifactItems>
-                            <outputDirectory>${project.build.directory}/endorsed</outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <compilerArgument>-Djava.endorsed.dirs=${project.build.directory}/endorsed</compilerArgument>
-                </configuration>
                 <!-- Don't compile src/main/java - nothing to do. -->
                 <executions><execution><id>default-compile</id><phase>none</phase></execution></executions>
             </plugin>
