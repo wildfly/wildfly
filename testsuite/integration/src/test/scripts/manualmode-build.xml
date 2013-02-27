@@ -33,6 +33,15 @@
         <copy todir="target/jbossas-with-remote-outbound-connection">
             <fileset dir="target/jbossas"/>
         </copy>
+
+        <echo message="Copying and configuring instance jbossas-layered"/>
+        <copy todir="target/jbossas-layered">
+            <fileset dir="target/jbossas"/>
+        </copy>
+        <copy todir="target/jbossas-layered/modules">
+            <fileset dir="${jboss.dist}/modules"/>
+        </copy>
+
         <!-- Connects back to original host (node0) -->
         <ts.config-as.add-remote-outbound-connection name="jbossas-with-remote-outbound-connection" node="${node0}"
                                                      remotePort="4447" securityRealm="PasswordRealm" userName="user1"/>
