@@ -440,7 +440,7 @@
         </module-def>
 
         <module-def name="javax.faces.api">
-            <maven-resource group="org.jboss.spec.javax.faces" artifact="jboss-jsf-api_2.1_spec"/>
+            <maven-resource group="org.jboss.spec.javax.faces" artifact="jboss-jsf-api_2.2_spec"/>
         </module-def>
 
         <module-def name="javax.faces.api" slot="1.2">
