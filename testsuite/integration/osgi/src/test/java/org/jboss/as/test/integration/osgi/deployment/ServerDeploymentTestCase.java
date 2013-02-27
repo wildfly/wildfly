@@ -39,6 +39,7 @@ import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -56,6 +57,7 @@ import org.osgi.util.tracker.ServiceTracker;
  * @since 22-Mar-2012
  */
 @RunWith(Arquillian.class)
+@Ignore("AS7-6647")
 public class ServerDeploymentTestCase {
 
     static final String GOOD_BUNDLE = "good-bundle.jar";
