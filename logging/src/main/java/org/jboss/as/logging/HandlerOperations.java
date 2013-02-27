@@ -175,11 +175,35 @@ final class HandlerOperations {
 
         @Override
         public void performRuntime(final OperationContext context, final ModelNode operation, final LogContextConfiguration logContextConfiguration, final String name, final ModelNode model) throws OperationFailedException {
+            final String className;
+            final String moduleName;
+
+            // Assume if the type is null we are using the MODULE and CLASS attributes
+            if (type == null) {
+                className = CLASS.resolveModelAttribute(context, model).asString();
+                moduleName = MODULE.resolveModelAttribute(context, model).asString();
+            } else {
+                className = type.getName();
+                moduleName = null;
+            }
+
             HandlerConfiguration configuration = logContextConfiguration.getHandlerConfiguration(name);
             final boolean exists = configuration != null;
             if (!exists) {
                 LoggingLogger.ROOT_LOGGER.tracef("Adding handler '%s' at '%s'", name, LoggingOperations.getAddress(operation));
-                configuration = createHandlerConfiguration(context, model, name, logContextConfiguration);
+                configuration = createHandlerConfiguration(className, moduleName, name, logContextConfiguration);
+            } else if (!className.equals(configuration.getClassName()) || (moduleName == null ? configuration.getModuleName() != null : !moduleName.equals(configuration.getModuleName()))) {
+                LoggingLogger.ROOT_LOGGER.replacingNamedHandler(name);
+                LoggingLogger.ROOT_LOGGER.debugf("Removing handler %s of type '%s' in module '%s' and replacing with type '%s' in module '%s'",
+                        name, configuration.getClassName(), configuration.getModuleName(), className, moduleName);
+                // Remove the original configuration and set-up the new one. This overrides anything in the original
+                // configuration, e.g. the logging.properties configuration, with the model configuration.
+                logContextConfiguration.removeHandlerConfiguration(name);
+                // Remove POJO if it exists
+                if (logContextConfiguration.getPojoNames().contains(name)) {
+                    logContextConfiguration.removePojoConfiguration(name);
+                }
+                configuration = createHandlerConfiguration(className, moduleName, name, logContextConfiguration);
             }
 
             for (AttributeDefinition attribute : attributes) {
@@ -197,20 +221,9 @@ final class HandlerOperations {
             }
         }
 
-        protected HandlerConfiguration createHandlerConfiguration(final OperationContext context,
-                                                                  final ModelNode model, final String name,
+        protected HandlerConfiguration createHandlerConfiguration(final String className,
+                                                                  final String moduleName, final String name,
                                                                   final LogContextConfiguration logContextConfiguration) throws OperationFailedException {
-            final String className;
-            final String moduleName;
-
-            // Assume if the type is null we are using the MODULE and CLASS attributes
-            if (type == null) {
-                className = CLASS.resolveModelAttribute(context, model).asString();
-                moduleName = MODULE.resolveModelAttribute(context, model).asString();
-            } else {
-                className = type.getName();
-                moduleName = null;
-            }
 
             final HandlerConfiguration configuration;
 
