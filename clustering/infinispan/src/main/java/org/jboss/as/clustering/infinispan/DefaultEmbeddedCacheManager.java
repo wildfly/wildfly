@@ -23,7 +23,6 @@
 package org.jboss.as.clustering.infinispan;
 
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.infinispan.AbstractDelegatingAdvancedCache;
@@ -97,7 +96,12 @@ public class DefaultEmbeddedCacheManager extends AbstractDelegatingEmbeddedCache
      */
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName) {
-        return this.getCache(cacheName, true);
+        Cache<K, V> cache;
+        // Synchronize to workaround ISPN-2796 / AS7-6639
+        synchronized (cm) {
+            cache = this.cm.<K, V>getCache(this.getCacheName(cacheName), true);
+        }
+        return (cache != null) ? new DelegatingCache<K, V>(cache) : null;
     }
 
     /**
@@ -106,7 +110,12 @@ public class DefaultEmbeddedCacheManager extends AbstractDelegatingEmbeddedCache
      */
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName, boolean start) {
-        Cache<K, V> cache = this.cm.<K, V>getCache(this.getCacheName(cacheName), start);
+        // Synchronize to workaround ISPN-2796 / AS7-6639
+        if (start) {
+            return this.getCache(cacheName);
+        }
+
+        Cache<K, V> cache = this.cm.<K, V>getCache(this.getCacheName(cacheName), false);
         return (cache != null) ? new DelegatingCache<K, V>(cache) : null;
     }
 
@@ -159,11 +168,12 @@ public class DefaultEmbeddedCacheManager extends AbstractDelegatingEmbeddedCache
 
     @Override
     public EmbeddedCacheManager startCaches(String... names) {
-        Set<String> cacheNames = new LinkedHashSet<String>();
-        for (String name: names) {
-            cacheNames.add(this.getCacheName(name));
+        for (String name : names) {
+            // Synchronize to workaround ISPN-2796 / AS7-6639
+            synchronized (cm) {
+                this.cm.startCaches(name);
+            }
         }
-        this.cm.startCaches(cacheNames.toArray(new String[cacheNames.size()]));
         return this;
     }
 
