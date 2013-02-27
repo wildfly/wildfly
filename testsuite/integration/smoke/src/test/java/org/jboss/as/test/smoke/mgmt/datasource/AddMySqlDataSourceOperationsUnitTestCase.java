@@ -74,7 +74,7 @@ public class AddMySqlDataSourceOperationsUnitTestCase extends DsMgmtTestBase{
         operation.get(OP_ADDR).set(address);
 
         operation.get("jndi-name").set("java:jboss/datasources/MySqlDs");
-        operation.get("driver-name").set("mysql-connector-java-5.1.15.jar_com.mysql.jdbc.Driver_5_1");
+        operation.get("driver-name").set("mysql-connector-java-5.1.15.jar");
         operation.get("connection-url").set("dont_care");
         operation.get("user-name").set("sa");
         operation.get("password").set("sa");
