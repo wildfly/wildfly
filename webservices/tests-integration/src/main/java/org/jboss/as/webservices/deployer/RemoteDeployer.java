@@ -212,6 +212,7 @@ public final class RemoteDeployer implements Deployer {
             final ModelNode compositeOp = new ModelNode();
             compositeOp.get(OP).set(COMPOSITE);
             compositeOp.get(OP_ADDR).setEmptyList();
+            compositeOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
 
             ModelNode steps = compositeOp.get(STEPS);
             PathAddress address = PathAddress.pathAddress()
@@ -252,6 +253,7 @@ public final class RemoteDeployer implements Deployer {
             op.get(OP).set(REMOVE);
             op.get(OP_ADDR).add(SUBSYSTEM, "security");
             op.get(OP_ADDR).add(SECURITY_DOMAIN, name);
+            op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
 
             applyUpdate(op);
@@ -287,6 +289,7 @@ public final class RemoteDeployer implements Deployer {
     public void removeHttpsConnector() throws Exception {
         try {
             ModelNode op = createOpNode("subsystem=web/connector=jbws-test-https-connector", REMOVE);
+            op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             applyUpdate(op);
         } finally {
             httpsConnSemaphore.release();
