@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,22 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.ejb.entity.cmp.findbypkey;
+package org.jboss.as.test.integration.ejb.entity.cmp.callback;
 
 /**
- * Local interface for SimpleEntity.
+ * Remote home interface for SimpleEntity.
  *
- * @author @author <a href="mailto:wfink@redhat.com">Wolf-Dieter Fink</a>
+ * @author <a href="mailto:wfink@redhat.com">Wolf-Dieter Fink</a>
  */
-public interface SimpleEntityLocal extends javax.ejb.EJBLocalObject {
+public interface SimpleEntityRemoteHome extends javax.ejb.EJBHome {
 
-   public java.lang.Long getId(  ) ;
-
-   public void setId( java.lang.Long id ) ;
-
-   public java.lang.String getName(  ) ;
-
-   public void setName( java.lang.String name ) ;
-
-   public int getEjbStoreCounter();
+   public SimpleEntityRemote create(java.lang.Long id , java.lang.String name) throws javax.ejb.CreateException, java.rmi.RemoteException;
+   public SimpleEntityRemote findById(java.lang.Long id) throws javax.ejb.FinderException, java.rmi.RemoteException;
+   public SimpleEntityRemote findByPrimaryKey(java.lang.Long pk) throws javax.ejb.FinderException, java.rmi.RemoteException;
 }

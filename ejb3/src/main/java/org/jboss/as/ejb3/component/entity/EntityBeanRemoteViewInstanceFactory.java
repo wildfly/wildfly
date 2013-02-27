@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.component.entity;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -43,8 +45,6 @@ import org.jboss.ejb.client.EntityEJBLocator;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.Interceptors;
 import org.jboss.msc.value.ImmediateValue;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * @author John Bailey

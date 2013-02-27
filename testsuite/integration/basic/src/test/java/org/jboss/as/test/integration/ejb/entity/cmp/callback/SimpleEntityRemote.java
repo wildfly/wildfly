@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,16 +19,20 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.ejb.entity.cmp.findbypkey;
+package org.jboss.as.test.integration.ejb.entity.cmp.callback;
 
 /**
- * Local home interface for SimpleEntity.
+ * Remote interface for SimpleEntity.
  *
- * @author @author <a href="mailto:wfink@redhat.com">Wolf-Dieter Fink</a>
+ * @author <a href="mailto:wfink@redhat.com">Wolf-Dieter Fink</a>
  */
-public interface SimpleEntityLocalHome extends javax.ejb.EJBLocalHome {
+public interface SimpleEntityRemote extends javax.ejb.EJBObject {
 
-   public SimpleEntityLocal create(java.lang.Long id , java.lang.String name) throws javax.ejb.CreateException;
-   public SimpleEntityLocal findById(java.lang.Long id) throws javax.ejb.FinderException;
-   public SimpleEntityLocal findByPrimaryKey(java.lang.Long pk) throws javax.ejb.FinderException;
+   public java.lang.Long getId(  ) throws java.rmi.RemoteException;
+
+   public void setId( java.lang.Long id ) throws java.rmi.RemoteException;
+
+   public java.lang.String getName(  ) throws java.rmi.RemoteException;
+
+   public void setName( java.lang.String name ) throws java.rmi.RemoteException;
 }
