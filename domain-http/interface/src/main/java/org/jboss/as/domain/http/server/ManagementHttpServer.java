@@ -58,6 +58,7 @@ import javax.net.ssl.SSLContext;
 
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.domain.http.server.security.AuthenticationMechanismWrapper;
 import org.jboss.as.domain.http.server.security.RealmIdentityManager;
 import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
@@ -206,7 +207,7 @@ public class ManagementHttpServer {
             for (AuthMechanism current : mechanisms) {
                 switch (current) {
                     case CLIENT_CERT:
-                        undertowMechanisms.add(new ClientCertAuthenticationMechanism());
+                        undertowMechanisms.add(wrap(new ClientCertAuthenticationMechanism()));
                         break;
                     case DIGEST:
                         Map<String, String> mechConfig = securityRealm.getMechanismConfig(AuthMechanism.DIGEST);
@@ -216,11 +217,11 @@ public class ManagementHttpServer {
                         }
                         List<DigestAlgorithm> digestAlgorithms = Collections.singletonList(DigestAlgorithm.MD5);
                         List<DigestQop> digestQops = Collections.emptyList();
-                        undertowMechanisms.add(new DigestAuthenticationMechanism(digestAlgorithms, digestQops, securityRealm
-                                .getName(), new SimpleNonceManager(), plainTextDigest));
+                        undertowMechanisms.add(wrap(new DigestAuthenticationMechanism(digestAlgorithms, digestQops,
+                                securityRealm.getName(), new SimpleNonceManager(), plainTextDigest)));
                         break;
                     case PLAIN:
-                        undertowMechanisms.add(new BasicAuthenticationMechanism(securityRealm.getName()));
+                        undertowMechanisms.add(wrap(new BasicAuthenticationMechanism(securityRealm.getName())));
                         break;
                 }
             }
@@ -241,6 +242,10 @@ public class ManagementHttpServer {
         }
 
         return domainHandler;
+    }
+
+    private static AuthenticationMechanism wrap(final AuthenticationMechanism toWrap) {
+        return new AuthenticationMechanismWrapper(toWrap);
     }
 
 }
