@@ -500,12 +500,28 @@ public class ComponentDescription implements ResourceInjectionTarget {
     }
 
     /**
-     * TODO: change this to a per method setting
      *
-     * @return true if timer service interceptor chains should be built for this component
+     *
+     * @return true If this component type is eligible for a timer service
      */
     public boolean isTimerServiceApplicable() {
         return false;
+    }
+
+    /**
+     *
+     * @return <code>true</code> if this component has timeout methods and is eligible for a 'real' timer service
+     */
+    public boolean isTimerServiceRequired() {
+        return isTimerServiceApplicable() && !getTimerMethods().isEmpty();
+    }
+
+    /**
+     *
+     * @return The set of all method identifiers for the timeout methods
+     */
+    public Set<MethodIdentifier> getTimerMethods() {
+        return Collections.emptySet();
     }
 
     public boolean isPassivationApplicable() {
@@ -579,13 +595,15 @@ public class ComponentDescription implements ResourceInjectionTarget {
             final Map<String, List<InterceptorFactory>> userPostConstructByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
             final Map<String, List<InterceptorFactory>> userPreDestroyByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
 
-            if (description.isTimerServiceApplicable()) {
+            final Set<MethodIdentifier> timeoutMethods = description.getTimerMethods();
+            if (description.isTimerServiceRequired()) {
                 componentUserAroundTimeout = new ArrayList<InterceptorFactory>();
                 userAroundTimeoutsByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
             } else {
                 componentUserAroundTimeout = null;
                 userAroundTimeoutsByInterceptorClass = null;
             }
+
 
             if (description.isPassivationApplicable()) {
                 userPrePassivatesByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
@@ -683,7 +701,7 @@ public class ComponentDescription implements ResourceInjectionTarget {
                         final MethodIdentifier aroundInvokeMethodIdentifier = interceptorConfig.getAroundInvoke();
                         handleInterceptorClass(clazz, aroundInvokeMethodIdentifier, userAroundInvokesByInterceptorClass, false, false);
 
-                        if (description.isTimerServiceApplicable()) {
+                        if (description.isTimerServiceRequired()) {
                             final MethodIdentifier aroundTimeoutMethodIdentifier = interceptorConfig.getAroundTimeout();
                             handleInterceptorClass(clazz, aroundTimeoutMethodIdentifier, userAroundTimeoutsByInterceptorClass, false, false);
                         }
@@ -745,7 +763,7 @@ public class ComponentDescription implements ResourceInjectionTarget {
                     handleClassMethod(clazz, interceptorConfig.getPreDestroy(), userPreDestroy, true, true);
                     handleClassMethod(clazz, interceptorConfig.getAroundInvoke(), componentUserAroundInvoke, false, false);
 
-                    if (description.isTimerServiceApplicable()) {
+                    if (description.isTimerServiceRequired()) {
                         handleClassMethod(clazz, interceptorConfig.getAroundTimeout(), componentUserAroundTimeout, false, false);
                     }
 
@@ -828,6 +846,7 @@ public class ComponentDescription implements ResourceInjectionTarget {
                     final List<InterceptorFactory> userComponentAroundInvokes = new ArrayList<InterceptorFactory>();
                     final List<InterceptorFactory> userComponentAroundTimeouts = new ArrayList<InterceptorFactory>();
                     // first add the default interceptors (if not excluded) to the deque
+                    final boolean requiresTimerChain = description.isTimerServiceRequired() && timeoutMethods.contains(identifier);
                     if (!description.isExcludeDefaultInterceptors() && !description.isExcludeDefaultInterceptors(identifier)) {
                         for (InterceptorDescription interceptorDescription : description.getDefaultInterceptors()) {
                             String interceptorClassName = interceptorDescription.getInterceptorClassName();
@@ -835,7 +854,7 @@ public class ComponentDescription implements ResourceInjectionTarget {
                             if (aroundInvokes != null) {
                                 userAroundInvokes.addAll(aroundInvokes);
                             }
-                            if (description.isTimerServiceApplicable()) {
+                            if (requiresTimerChain) {
                                 List<InterceptorFactory> aroundTimeouts = userAroundTimeoutsByInterceptorClass.get(interceptorClassName);
                                 if (aroundTimeouts != null) {
                                     userAroundTimeouts.addAll(aroundTimeouts);
@@ -852,7 +871,7 @@ public class ComponentDescription implements ResourceInjectionTarget {
                             if (aroundInvokes != null) {
                                 userAroundInvokes.addAll(aroundInvokes);
                             }
-                            if (description.isTimerServiceApplicable()) {
+                            if (requiresTimerChain) {
                                 List<InterceptorFactory> aroundTimeouts = userAroundTimeoutsByInterceptorClass.get(interceptorClassName);
                                 if (aroundTimeouts != null) {
                                     userAroundTimeouts.addAll(aroundTimeouts);
@@ -870,7 +889,7 @@ public class ComponentDescription implements ResourceInjectionTarget {
                             if (aroundInvokes != null) {
                                 userAroundInvokes.addAll(aroundInvokes);
                             }
-                            if (description.isTimerServiceApplicable()) {
+                            if (requiresTimerChain) {
                                 List<InterceptorFactory> aroundTimeouts = userAroundTimeoutsByInterceptorClass.get(interceptorClassName);
                                 if (aroundTimeouts != null) {
                                     userAroundTimeouts.addAll(aroundTimeouts);
@@ -881,7 +900,7 @@ public class ComponentDescription implements ResourceInjectionTarget {
 
                     // finally add the component level around invoke to the deque so that it's triggered last
                     userComponentAroundInvokes.addAll(componentUserAroundInvoke);
-                    if (componentUserAroundTimeout != null) {
+                    if (componentUserAroundTimeout != null && requiresTimerChain) {
                         userComponentAroundTimeouts.addAll(componentUserAroundTimeout);
                     }
                     configuration.addComponentInterceptor(method, new UserInterceptorFactory(weaved(userAroundInvokes), weaved(userAroundTimeouts)), InterceptorOrder.Component.USER_INTERCEPTORS);

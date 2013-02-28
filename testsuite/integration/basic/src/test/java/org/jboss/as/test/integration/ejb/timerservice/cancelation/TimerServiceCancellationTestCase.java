@@ -25,11 +25,10 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class TimerServiceCancellationTestCase {
     // countlatchdown waiting time
-    private static int TIMER_CALL_WAITING_S = 30; 
+    private static int TIMER_CALL_WAITING_S = 30;
 
     @Deployment
     public static Archive<?> deploy() {
-
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "timerCancelTest.jar");
         jar.addPackage(TimerServiceCancellationTestCase.class.getPackage());
         return jar;
@@ -62,7 +61,6 @@ public class TimerServiceCancellationTestCase {
         bean.getTimerExit().countDown();
         Assert.assertFalse(CalendarTimerServiceBean.quickAwaitTimerCall());
         Assert.assertEquals(0, bean.getTimerCount());
-
     }
 
 }

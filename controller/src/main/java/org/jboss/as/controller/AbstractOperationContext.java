@@ -128,6 +128,13 @@ abstract class AbstractOperationContext implements OperationContext {
     }
 
     @Override
+    public void addStep(final ModelNode operation, final OperationStepHandler step, final Stage stage, final boolean addFirst)
+            throws IllegalArgumentException {
+        final ModelNode response = activeStep == null ? new ModelNode().setEmptyObject() : activeStep.response;
+        addStep(response, operation, null, step, stage, addFirst);
+    }
+
+    @Override
     public void addStep(final ModelNode response, final ModelNode operation, final OperationStepHandler step, final Stage stage)
             throws IllegalArgumentException {
         addStep(response, operation, null, step, stage);
