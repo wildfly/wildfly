@@ -325,6 +325,13 @@
 				 <group-id>myGroup</group-id>
               </connection-factory>
               <pooled-connection-factory name="hornetq-ra">
+                 <inbound-config>
+                     <use-jndi>false</use-jndi>
+                     <jndi-params>whatever</jndi-params>
+                     <use-local-tx>true</use-local-tx>
+                     <setup-attempts>123</setup-attempts>
+                     <setup-interval>456</setup-interval>
+                 </inbound-config>
                  <transaction mode="xa"/>
                  <user>alice</user>
                  <password>alicepassword</password>
