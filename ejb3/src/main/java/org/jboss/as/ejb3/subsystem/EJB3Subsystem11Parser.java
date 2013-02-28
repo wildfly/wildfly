@@ -22,19 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -51,11 +38,22 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.FILE_DATA_STORE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT_UNIT;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_POOL_SIZE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PATH;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.RELATIVE_TO;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TIMER_SERVICE;
+
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
  * User: Jaikiran Pai
@@ -270,16 +268,23 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>> 
         final ModelNode timerServiceAdd = new ModelNode();
         timerServiceAdd.get(OP).set(ADD);
         timerServiceAdd.get(OP_ADDR).set(address);
+        timerServiceAdd.get(DEFAULT_DATA_STORE).set("default-file-store");
 
-        String dataStorePath = null;
-        String dataStorePathRelativeTo = null;
+        operations.add(timerServiceAdd);
+
+        final ModelNode fileDataStoreAdd = new ModelNode();
+        final ModelNode fileDataAddress = address.clone();
+        fileDataAddress.add(FILE_DATA_STORE, "default-file-store");
+        fileDataStoreAdd.get(OP).set(ADD);
+        fileDataStoreAdd.get(OP_ADDR).set(fileDataAddress);
+
+        boolean foundDataStorePath = false;
         while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
             switch (EJB3SubsystemXMLElement.forName(reader.getLocalName())) {
                 case THREAD_POOL: {
                     final int count = reader.getAttributeCount();
                     for (int i = 0; i < count; i++) {
                         requireNoNamespaceAttribute(reader, i);
-                        final String value = reader.getAttributeValue(i);
                         final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
                         switch (attribute) {
                             case CORE_THREADS:
@@ -303,35 +308,21 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>> 
                         final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
                         switch (attribute) {
                             case PATH:
-                                if (dataStorePath != null) {
-                                    throw unexpectedAttribute(reader, i);
-                                }
-                                dataStorePath = FileDataStoreResourceDefinition.PATH.parse(value, reader).asString();
+                                foundDataStorePath = true;
+                                FileDataStoreResourceDefinition.PATH.parseAndSetParameter(value, fileDataStoreAdd, reader);
                                 break;
-                            case RELATIVE_TO:
-                                if (dataStorePathRelativeTo != null) {
-                                    throw unexpectedAttribute(reader, i);
-                                }
-                                dataStorePathRelativeTo = FileDataStoreResourceDefinition.RELATIVE_TO.parse(value, reader).asString();
+                            case RELATIVE_TO:FileDataStoreResourceDefinition.RELATIVE_TO.parseAndSetParameter(value, fileDataStoreAdd, reader);
                                 break;
                             default:
                                 throw unexpectedAttribute(reader, i);
                         }
                     }
-                    if (dataStorePath == null) {
+                    if (!foundDataStorePath) {
                         throw missingRequired(reader, Collections.singleton(EJB3SubsystemXMLAttribute.PATH));
                     }
-                    timerServiceAdd.get(DEFAULT_DATA_STORE).set("default-file-store");
-                    final ModelNode fileDataStoreAdd = new ModelNode();
-                    final ModelNode fileDataAddress = address.clone();
-                    fileDataAddress.add(FILE_DATA_STORE, "default-file-store");
-                    fileDataStoreAdd.get(OP).set(ADD);
-                    fileDataStoreAdd.get(OP_ADDR).set(fileDataAddress);
-                    fileDataStoreAdd.get(PATH).set(dataStorePath);
-                    if (dataStorePathRelativeTo != null) {
-                        fileDataStoreAdd.get(RELATIVE_TO).set(dataStorePathRelativeTo);
-                    }
                     requireNoContent(reader);
+
+                    operations.add(fileDataStoreAdd);
                     break;
                 }
                 default: {
@@ -339,7 +330,6 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>> 
                 }
             }
         }
-        operations.add(timerServiceAdd);
     }
 
     private ModelNode createAddStrictMaxBeanInstancePoolOperation(final String name, final Integer maxPoolSize, final Long timeout, final String timeoutUnit) {

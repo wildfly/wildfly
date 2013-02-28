@@ -40,8 +40,6 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_DATA_STORE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.FILE_DATA_STORE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.FILE_PASSIVATION_STORE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.IIOP;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PATH;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.RELATIVE_TO;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL;
@@ -646,16 +644,22 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
 
     private void parseTimerService(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
 
-        ModelNode fileDataStoreAdd = null;
         final ModelNode address = new ModelNode();
         address.add(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME);
         address.add(SERVICE, TIMER_SERVICE);
+
         final ModelNode timerServiceAdd = new ModelNode();
         timerServiceAdd.get(OP).set(ADD);
         timerServiceAdd.get(OP_ADDR).set(address);
+        timerServiceAdd.get(DEFAULT_DATA_STORE).set("default-file-store");
 
-        ModelNode dataStorePath = null;
-        ModelNode dataStorePathRelativeTo = null;
+        operations.add(timerServiceAdd);
+
+        ModelNode fileDataStoreAdd = new ModelNode();
+        final ModelNode fileDataAddress = address.clone();
+        fileDataAddress.add(FILE_DATA_STORE, "default-file-store");
+        fileDataStoreAdd.get(OP).set(ADD);
+        fileDataStoreAdd.get(OP_ADDR).set(fileDataAddress);
 
         final int attCount = reader.getAttributeCount();
         final EnumSet<EJB3SubsystemXMLAttribute> required = EnumSet.of(EJB3SubsystemXMLAttribute.THREAD_POOL_NAME);
@@ -676,6 +680,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
             throw missingRequired(reader, required);
         }
 
+        boolean foundDataStorePath = false;
         while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
             switch (EJB3SubsystemXMLElement.forName(reader.getLocalName())) {
                 case DATA_STORE: {
@@ -686,45 +691,27 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
                         final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
                         switch (attribute) {
                             case PATH:
-                                if (dataStorePath != null) {
-                                    throw unexpectedAttribute(reader, i);
-                                }
-                                dataStorePath = FileDataStoreResourceDefinition.PATH.parse(value, reader);
+                                foundDataStorePath = true;
+                                FileDataStoreResourceDefinition.PATH.parseAndSetParameter(value, fileDataStoreAdd, reader);
                                 break;
                             case RELATIVE_TO:
-                                if (dataStorePathRelativeTo != null) {
-                                    throw unexpectedAttribute(reader, i);
-                                }
-                                dataStorePathRelativeTo = FileDataStoreResourceDefinition.RELATIVE_TO.parse(value, reader);
+                                FileDataStoreResourceDefinition.RELATIVE_TO.parseAndSetParameter(value, fileDataStoreAdd, reader);
                                 break;
                             default:
                                 throw unexpectedAttribute(reader, i);
                         }
                     }
-                    if (dataStorePath == null) {
+                    if (!foundDataStorePath) {
                         throw missingRequired(reader, Collections.singleton(EJB3SubsystemXMLAttribute.PATH));
                     }
-                    timerServiceAdd.get(DEFAULT_DATA_STORE).set("default-file-store");
-                    fileDataStoreAdd = new ModelNode();
-                    final ModelNode fileDataAddress = address.clone();
-                    fileDataAddress.add(FILE_DATA_STORE, "default-file-store");
-                    fileDataStoreAdd.get(OP).set(ADD);
-                    fileDataStoreAdd.get(OP_ADDR).set(fileDataAddress);
-                    fileDataStoreAdd.get(PATH).set(dataStorePath);
-                    if (dataStorePathRelativeTo != null) {
-                        fileDataStoreAdd.get(RELATIVE_TO).set(dataStorePathRelativeTo);
-                    }
                     requireNoContent(reader);
+                    operations.add(fileDataStoreAdd);
                     break;
                 }
                 default: {
                     throw unexpectedElement(reader);
                 }
             }
-        }
-        operations.add(timerServiceAdd);
-        if(fileDataStoreAdd != null) {
-            operations.add(fileDataStoreAdd);
         }
     }
 
