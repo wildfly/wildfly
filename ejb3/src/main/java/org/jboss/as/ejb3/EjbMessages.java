@@ -397,6 +397,59 @@ public interface EjbMessages {
     @Message(id = 14210, value = "Timer invocation failed, transaction rolled back")
     TimerTransactionRolledBackException timerInvocationRolledBack();
 
+
+    // *Exception messages* greater >= 14225 start here.
+    @Message(id = 14225, value = "Could not create an instance of deployment node selector %s")
+    DeploymentUnitProcessingException failedToCreateDeploymentNodeSelector(@Cause Exception e, String deploymentNodeSelectorClassName);
+
+    @Message(id = 14226, value = "Could not lookup service %s")
+    IllegalStateException serviceNotFound(ServiceName serviceName);
+
+    @Message(id = 14227, value = "EJB %s of type %s must have public default constructor")
+    DeploymentUnitProcessingException ejbMustHavePublicDefaultConstructor(String componentName, String componentClassName);
+
+    @Message(id = 14228, value = "EJB %s of type %s must not be inner class")
+    DeploymentUnitProcessingException ejbMustNotBeInnerClass(String componentName, String componentClassName);
+
+    @Message(id = 14229, value = "EJB %s of type %s must be declared public")
+    DeploymentUnitProcessingException ejbMustBePublicClass(String componentName, String componentClassName);
+
+    @Message(id = 14230, value = "EJB %s of type %s must not be declared final")
+    DeploymentUnitProcessingException ejbMustNotBeFinalClass(String componentName, String componentClassName);
+
+    @Message(id = 14231, value = "EJB client context selector failed due to unavailability of %s service")
+    IllegalStateException ejbClientContextSelectorUnableToFunctionDueToMissingService(ServiceName serviceName);
+
+    @Message(id = 14232, value = "@PostConstruct method of EJB singleton %s of type %s has been recursively invoked")
+    IllegalStateException reentrantSingletonCreation(String componentName, String componentClassName);
+
+    @Message(id = 14233, value = "Failed to read EJB info")
+    IOException failedToReadEjbInfo(@Cause Throwable e);
+
+    @Message(id = 14234, value = "Failed to read EJB Locator")
+    IOException failedToReadEJBLocator(@Cause Throwable e);
+
+    @Message(id = 14235, value = "default-security-domain was defined")
+    String rejectTransformationDefinedDefaultSecurityDomain();
+
+    @Message(id = 14236, value = "default-missing-method-permissions-deny-access was set to true")
+    String rejectTransformationDefinedDefaultMissingMethodPermissionsDenyAccess();
+
+    @Message(id = 14237, value = "Only session and message-driven beans with bean-managed transaction demarcation are allowed to access UserTransaction")
+    IllegalStateException unauthorizedAccessToUserTransaction();
+
+    @Message(id = 14238, value = "More than one timer found in database with id %s")
+    RuntimeException moreThanOneTimerFoundWithId(String id);
+
+    @Message(id = 14239, value = "The timer service has been disabled. Please add a <timer-service> entry into the ejb section of the server configuration to enable it.")
+    String timerServiceIsNotActive();
+
+    @Message(id = 14240, value = "This EJB does not have any timeout methods")
+    String ejbHasNoTimerMethods();
+
+    // Don't add exception messages greater that 14240!!! If you need more go to
+    // https://community.jboss.org/docs/DOC-16810 and allocate another block for this subsystem
+
     /**
      * Creates an exception indicating it could not find the EJB with specific id
      *
@@ -2406,60 +2459,10 @@ public interface EjbMessages {
     @Message(id = 14581, value = "EJB 3.1 FR 13.3.3: BMT bean %s should complete transaction before returning.")
     String transactionNotComplete(String componentName);
 
+    @Message(id = 14582, value = "Timer service resource %s is not suitable for the target. Only a configuration with a single file-store and no other configured data-store is supported on target")
+    String untransformableTimerService(PathAddress address);
+
     // STOP!!! Don't add message ids greater that 14599!!! If you need more first check what EjbLogger is
     // using and take more (lower) numbers from the available range for this module. If the range for the module is
     // all used, go to https://community.jboss.org/docs/DOC-16810 and allocate another block for this subsystem
-
-
-    // *Exception messages* greater >= 14225 start here.
-    @Message(id = 14225, value = "Could not create an instance of deployment node selector %s")
-    DeploymentUnitProcessingException failedToCreateDeploymentNodeSelector(@Cause Exception e, String deploymentNodeSelectorClassName);
-
-    // Don't add exception messages greater that 14240!!! If you need more go to
-    // https://community.jboss.org/docs/DOC-16810 and allocate another block for this subsystem
-
-    @Message(id = 14226, value = "Could not lookup service %s")
-    IllegalStateException serviceNotFound(ServiceName serviceName);
-
-    @Message(id = 14227, value = "EJB %s of type %s must have public default constructor")
-    DeploymentUnitProcessingException ejbMustHavePublicDefaultConstructor(String componentName, String componentClassName);
-
-    @Message(id = 14228, value = "EJB %s of type %s must not be inner class")
-    DeploymentUnitProcessingException ejbMustNotBeInnerClass(String componentName, String componentClassName);
-
-    @Message(id = 14229, value = "EJB %s of type %s must be declared public")
-    DeploymentUnitProcessingException ejbMustBePublicClass(String componentName, String componentClassName);
-
-    @Message(id = 14230, value = "EJB %s of type %s must not be declared final")
-    DeploymentUnitProcessingException ejbMustNotBeFinalClass(String componentName, String componentClassName);
-
-    @Message(id = 14231, value = "EJB client context selector failed due to unavailability of %s service")
-    IllegalStateException ejbClientContextSelectorUnableToFunctionDueToMissingService(ServiceName serviceName);
-
-    @Message(id = 14232, value = "@PostConstruct method of EJB singleton %s of type %s has been recursively invoked")
-    IllegalStateException reentrantSingletonCreation(String componentName, String componentClassName);
-
-    @Message(id = 14233, value = "Failed to read EJB info")
-    IOException failedToReadEjbInfo(@Cause Throwable e);
-
-    @Message(id = 14234, value = "Failed to read EJB Locator")
-    IOException failedToReadEJBLocator(@Cause Throwable e);
-
-    @Message(id = 14235, value = "default-security-domain was defined")
-    String rejectTransformationDefinedDefaultSecurityDomain();
-
-    @Message(id = 14236, value = "default-missing-method-permissions-deny-access was set to true")
-    String rejectTransformationDefinedDefaultMissingMethodPermissionsDenyAccess();
-
-    @Message(id = 14237, value = "Only session and message-driven beans with bean-managed transaction demarcation are allowed to access UserTransaction")
-    IllegalStateException unauthorizedAccessToUserTransaction();
-
-    @Message(id = 14238, value = "More than one timer found in database with id %s")
-    RuntimeException moreThanOneTimerFoundWithId(String id);
-
-    @Message(id = 14239, value = "The timer service has been disabled. Please add a <timer-service> entry into the ejb section of the server configuration to enable it.")
-    String timerServiceIsNotActive();
-
-    @Message(id = 14240, value = "This EJB does not have any timeout methods")
-    String ejbHasNoTimerMethods();
 }

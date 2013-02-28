@@ -2620,7 +2620,6 @@ public interface ControllerMessages {
     @Message(id = 14896, value = "Resource %s is rejected on the target host, and will need to be ignored on the host")
     String rejectedResourceResourceTransformation(PathAddress address);
 
-
     @Message(id = 14897, value = "Resource %s is rejected on the target host and will need to be ignored on the host: %s")
     String rejectResourceOperationTransformation(PathAddress address, ModelNode operation);
 
