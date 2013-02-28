@@ -21,8 +21,24 @@
  */
 package org.jboss.as.domain.http.server.security;
 
+import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
+
+import java.io.IOException;
+import java.security.Principal;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.sasl.RealmCallback;
+
+import org.jboss.as.controller.security.SubjectUserInfo;
 import org.jboss.as.domain.management.AuthMechanism;
+import org.jboss.as.domain.management.AuthorizingCallbackHandler;
 import org.jboss.as.domain.management.SecurityRealm;
+import org.jboss.sasl.callback.DigestHashCallback;
 
 import io.undertow.security.idm.Account;
 import io.undertow.security.idm.Credential;
@@ -58,12 +74,130 @@ public class RealmIdentityManager implements IdentityManager {
 
     @Override
     public Account getAccount(String id) {
-        return null;
+        assertMechanism(AuthMechanism.DIGEST);
+        AuthorizingCallbackHandler ach = securityRealm.getAuthorizingCallbackHandler(AuthMechanism.DIGEST);
+        Callback[] callbacks = new Callback[3];
+        callbacks[0] = new RealmCallback("Realm", securityRealm.getName());
+        callbacks[1] = new NameCallback("Username", id);
+        boolean plainText = plainTextDigest();
+        if (plainText) {
+            callbacks[2] = new PasswordCallback("Password", false);
+        } else {
+            callbacks[2] = new DigestHashCallback("Digest");
+        }
+
+        try {
+            ach.handle(callbacks);
+        } catch (Exception e) {
+            // TODO - Error reporting.
+            return null;
+        }
+
+        Principal user = new SimplePrincipal(id);
+        Collection<Principal> userCol = Collections.singleton(user);
+        SubjectUserInfo supplemental;
+        try {
+            supplemental = ach.createSubjectUserInfo(userCol);
+        } catch (IOException e) {
+            return null;
+        }
+        // TODO - Will modify for roles later, to begin with just get authentication working.
+        if (plainText) {
+            return new PlainDigestAccount(user, ((PasswordCallback) callbacks[2]).getPassword());
+        } else {
+            return new HashedDigestAccount(user, ((DigestHashCallback) callbacks[2]).getHash());
+        }
+    }
+
+    private boolean plainTextDigest() {
+        Map<String, String> mechConfig = securityRealm.getMechanismConfig(AuthMechanism.DIGEST);
+        boolean plainTextDigest = true;
+        if (mechConfig.containsKey(DIGEST_PLAIN_TEXT)) {
+            plainTextDigest = Boolean.parseBoolean(mechConfig.get(DIGEST_PLAIN_TEXT));
+        }
+
+        return plainTextDigest;
     }
 
     @Override
     public char[] getPassword(Account account) {
-        return null;
+        if (account instanceof PlainDigestAccount) {
+            return ((PlainDigestAccount) account).getPassword();
+        }
+        throw new IllegalArgumentException("Account not instanceof 'PlainDigestAccount'.");
+    }
+
+    @Override
+    public byte[] getHash(Account account) {
+        if (account instanceof HashedDigestAccount) {
+            return ((HashedDigestAccount) account).getHash();
+        }
+        throw new IllegalArgumentException("Account not instanceof 'HashedDigestAccount'.");
+    }
+
+    private abstract class DigestAccount implements Account {
+
+        private final Principal principal;
+
+        private DigestAccount(final Principal principal) {
+            this.principal = principal;
+        }
+
+        @Override
+        public Principal getPrincipal() {
+            return principal;
+        }
+
+        @Override
+        public boolean isUserInGroup(String group) {
+            // TODO - Not really used for domains yet.
+            return false;
+        }
+
+    }
+
+    private class PlainDigestAccount extends DigestAccount {
+
+        private final char[] password;
+
+        private PlainDigestAccount(final Principal principal, final char[] password) {
+            super(principal);
+            this.password = password;
+        }
+
+        private char[] getPassword() {
+            return password;
+        }
+
+    }
+
+    private class HashedDigestAccount extends DigestAccount {
+
+        private final byte[] hash;
+
+        private HashedDigestAccount(final Principal principal, final byte[] hash) {
+            super(principal);
+            this.hash = hash;
+        }
+
+        private byte[] getHash() {
+            return hash;
+        }
+    }
+
+    private class SimplePrincipal implements Principal {
+
+        private final String name;
+
+        private SimplePrincipal(final String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
     }
 
     /*
@@ -72,6 +206,7 @@ public class RealmIdentityManager implements IdentityManager {
 
     @Override
     public Account verify(String id, Credential credential) {
+        assertMechanism(AuthMechanism.PLAIN);
         return null;
     }
 
@@ -81,7 +216,14 @@ public class RealmIdentityManager implements IdentityManager {
 
     @Override
     public Account verify(Credential credential) {
+        assertMechanism(AuthMechanism.CLIENT_CERT);
         return null;
+    }
+
+    private static void assertMechanism(final AuthMechanism mechanism) {
+        if (mechanism != currentMechanism.get()) {
+            throw new IllegalStateException("Unexpected authentication mechanism executing.");
+        }
     }
 
 }
