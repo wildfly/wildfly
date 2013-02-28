@@ -35,7 +35,6 @@ import static org.jboss.as.messaging.CommonAttributes.DIVERT;
 import static org.jboss.as.messaging.CommonAttributes.DURABLE;
 import static org.jboss.as.messaging.CommonAttributes.GROUPING_HANDLER;
 import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
-import static org.jboss.as.messaging.CommonAttributes.INBOUND_CONFIG;
 import static org.jboss.as.messaging.CommonAttributes.IN_VM_ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.IN_VM_CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.JMS_BRIDGE;
@@ -70,7 +69,6 @@ import org.jboss.as.messaging.jms.JMSTopicDefinition;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryDefinition;
 import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
@@ -620,21 +618,14 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
                     writer.writeAttribute(Attribute.NAME.getLocalName(), name);
 
                     // write inbound config attributes first...
-                    if(factory.hasDefined(INBOUND_CONFIG)) {
-                        final ModelNode inboundConfigs = factory.get(INBOUND_CONFIG);
-                        if (inboundConfigs.getType() == ModelType.LIST) {
-                            writer.writeStartElement(Element.INBOUND_CONFIG.getLocalName());
-                            for (ModelNode config : inboundConfigs.asList()) {
-                                if (config.isDefined()) {
-                                    for (ConnectionFactoryAttribute attribute : PooledConnectionFactoryDefinition.ATTRIBUTES) {
-                                        if (attribute.isInboundConfig()) {
-                                            attribute.getDefinition().marshallAsElement(factory, writer);
-                                        }
-                                    }
-                                }
+                    if(hasDefinedInboundConfigAttributes(factory)) {
+                        writer.writeStartElement(Element.INBOUND_CONFIG.getLocalName());
+                        for (ConnectionFactoryAttribute attribute : PooledConnectionFactoryDefinition.ATTRIBUTES) {
+                            if (attribute.isInboundConfig()) {
+                                attribute.getDefinition().marshallAsElement(factory, writer);
                             }
-                            writer.writeEndElement();
                         }
+                        writer.writeEndElement();
                     }
 
                     // ... then the attributes that are not part of the inbound config
@@ -648,6 +639,15 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
                 }
             }
         }
+    }
+
+    private static boolean hasDefinedInboundConfigAttributes(ModelNode pcf) {
+        for (ConnectionFactoryAttribute attribute : PooledConnectionFactoryDefinition.ATTRIBUTES) {
+            if (attribute.isInboundConfig() && pcf.hasDefined(attribute.getDefinition().getName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void writeJmsQueues(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
