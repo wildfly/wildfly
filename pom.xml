@@ -987,12 +987,6 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-jaxr</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-jaxrs</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -6378,7 +6372,6 @@
                 <module>ejb3</module>
                 <module>host-controller</module>
                 <module>jacorb</module>
-                <module>jaxr</module>
                 <module>jaxrs</module>
                 <module>jdr</module>
                 <module>jpa</module>

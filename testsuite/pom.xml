@@ -1189,7 +1189,6 @@
                                                     <fileset dir="../embedded/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../host-controller/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../jacorb/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../jaxr/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../jaxrs/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../jdr/jboss-as-jdr/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../jmx/src/main/java"><include name="**/*.java"/></fileset>

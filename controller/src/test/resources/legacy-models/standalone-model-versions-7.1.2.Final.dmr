@@ -67,14 +67,6 @@
                 "urn:jboss:domain:jacorb:1.2"
             ]
         },
-        "jaxr" => {
-            "management-major-version" => 1,
-            "management-minor-version" => 1,
-            "xml-namespaces" => [
-                "urn:jboss:domain:jaxr:1.1",
-                "urn:jboss:domain:jaxr:1.0"
-            ]
-        },
         "jaxrs" => {
             "management-major-version" => 1,
             "management-minor-version" => 0,
