@@ -21,8 +21,10 @@
 */
 package org.jboss.as.server.controller.resources;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
+import org.jboss.as.util.security.GetClassLoaderAction;
+
+import static java.lang.System.getSecurityManager;
+import static java.security.AccessController.doPrivileged;
 
 /**
  *
@@ -30,13 +32,6 @@ import java.security.PrivilegedAction;
  */
 class SecurityActions {
     static ClassLoader getClassLoader(final Class<?> clazz) {
-        if (System.getSecurityManager() == null) {
-            return clazz.getClassLoader();
-        }
-        return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
-            public ClassLoader run() {
-                return clazz.getClassLoader();
-            }
-        });
+        return getSecurityManager() == null ? clazz.getClassLoader() : doPrivileged(new GetClassLoaderAction(clazz));
     }
 }

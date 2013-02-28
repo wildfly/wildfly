@@ -237,6 +237,10 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-remoting"/>
         </module-def>
 
+        <module-def name="org.jboss.as.security-util">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-security-util"/>
+        </module-def>
+
         <module-def name="org.jboss.as.server">
             <maven-resource group="org.jboss.as" artifact="jboss-as-server"/>
         </module-def>
@@ -967,6 +971,10 @@
 
         <module-def name="org.jboss.as.security">
             <maven-resource group="org.jboss.as" artifact="jboss-as-security"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.security-util">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-security-util"/>
         </module-def>
 
     	<module-def name="org.jboss.as.system-jmx">

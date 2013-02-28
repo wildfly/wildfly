@@ -21,8 +21,6 @@
  */
 package org.jboss.as.web.deployment;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -130,20 +128,8 @@ public class JBossContextConfig extends ContextConfig {
     private Set<String> overlays = new HashSet<String>();
     private final InjectedValue<DistributedCacheManagerFactory> factory = new InjectedValue<DistributedCacheManagerFactory>();
     private Map<String, AuthenticatorValve> authenValves = null;
-    private boolean DELETE_WORK_DIR_ONCONTEXTDESTROY = Boolean.valueOf(getSystemProperty("org.jboss.as.web.deployment.DELETE_WORK_DIR_ONCONTEXTDESTROY", "false")).booleanValue();
+    private boolean DELETE_WORK_DIR_ONCONTEXTDESTROY = Boolean.parseBoolean(SecurityActions.getSystemProperty("org.jboss.as.web.deployment.DELETE_WORK_DIR_ONCONTEXTDESTROY", "false"));
 
-    static String getSystemProperty(final String key, final String defaultValue) {
-        if (System.getSecurityManager() == null) {
-            return System.getProperty(key, defaultValue);
-        }
-        return AccessController.doPrivileged(new PrivilegedAction<String>() {
-
-            @Override
-            public String run() {
-                return System.getProperty(key, defaultValue);
-            }
-        });
-    }
     /**
      * <p>
      * Creates a new instance of {@code JBossContextConfig}.

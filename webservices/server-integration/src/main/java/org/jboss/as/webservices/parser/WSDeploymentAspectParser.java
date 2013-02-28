@@ -21,6 +21,9 @@
  */
 package org.jboss.as.webservices.parser;
 
+import static java.lang.System.getSecurityManager;
+import static java.lang.Thread.currentThread;
+import static java.security.AccessController.doPrivileged;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 import static org.jboss.as.webservices.WSMessages.MESSAGES;
@@ -28,8 +31,6 @@ import static org.jboss.wsf.spi.util.StAXUtils.match;
 
 import java.io.InputStream;
 import java.lang.reflect.Method;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +40,8 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.ws.WebServiceException;
 
+import org.jboss.as.util.security.GetContextClassLoaderAction;
+import org.jboss.as.util.security.SetContextClassLoaderAction;
 import org.jboss.ws.common.JavaUtils;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
 import org.jboss.wsf.spi.util.StAXUtils;
@@ -358,16 +361,7 @@ public class WSDeploymentAspectParser {
      * @return the current context classloader
      */
     private static ClassLoader getContextClassLoader() {
-        SecurityManager sm = System.getSecurityManager();
-        if (sm == null) {
-            return Thread.currentThread().getContextClassLoader();
-        } else {
-            return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
-                public ClassLoader run() {
-                    return Thread.currentThread().getContextClassLoader();
-                }
-            });
-        }
+        return getSecurityManager() == null ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
     }
 
     /**
@@ -376,15 +370,10 @@ public class WSDeploymentAspectParser {
      * @param classLoader the classloader
      */
     private static void setContextClassLoader(final ClassLoader classLoader) {
-        if (System.getSecurityManager() == null) {
-            Thread.currentThread().setContextClassLoader(classLoader);
+        if (getSecurityManager() == null) {
+            currentThread().setContextClassLoader(classLoader);
         } else {
-            AccessController.doPrivileged(new PrivilegedAction<Object>() {
-                public Object run() {
-                    Thread.currentThread().setContextClassLoader(classLoader);
-                    return null;
-                }
-            });
+            doPrivileged(new SetContextClassLoaderAction(classLoader));
         }
     }
 }

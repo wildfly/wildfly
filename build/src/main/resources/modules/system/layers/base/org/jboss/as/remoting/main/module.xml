@@ -38,6 +38,7 @@
         <module name="org.jboss.as.network"/>
         <module name="org.jboss.as.protocol"/>
         <module name="org.jboss.as.server"/>
+        <module name="org.jboss.as.security-util"/>
         <module name="org.jboss.as.security" optional="true"/>
         <module name="org.jboss.as.threads"/>
         <module name="org.jboss.logging"/>

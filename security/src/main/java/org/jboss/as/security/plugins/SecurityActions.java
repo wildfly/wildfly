@@ -22,19 +22,22 @@
 
 package org.jboss.as.security.plugins;
 
-import java.security.AccessController;
 import java.security.Principal;
 import java.security.PrivilegedAction;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 
-import org.jboss.as.security.SecurityMessages;
+import org.jboss.as.util.security.GetContextClassLoaderAction;
+import org.jboss.as.util.security.GetModuleClassLoaderAction;
+import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
+
+import static java.lang.System.getSecurityManager;
+import static java.lang.Thread.currentThread;
+import static java.security.AccessController.doPrivileged;
 
 /**
  * Privileged blocks for this package
@@ -44,26 +47,13 @@ import org.jboss.security.SecurityContextAssociation;
 class SecurityActions {
 
     static ModuleClassLoader getModuleClassLoader(final ModuleLoader loader, final String moduleSpec) throws ModuleLoadException {
-        if (System.getSecurityManager() != null) {
-            try {
-                return AccessController.doPrivileged(new PrivilegedExceptionAction<ModuleClassLoader>() {
-                    public ModuleClassLoader run() throws ModuleLoadException {
-                        ModuleIdentifier identifier = ModuleIdentifier.fromString(moduleSpec);
-                        return loader.loadModule(identifier).getClassLoader();
-                    }
-                });
-            } catch (PrivilegedActionException pae) {
-                throw SecurityMessages.MESSAGES.moduleLoadException(pae);
-            }
-        } else {
-            ModuleIdentifier identifier = ModuleIdentifier.fromString(moduleSpec);
-            return loader.loadModule(identifier).getClassLoader();
-        }
+        final Module module = loader.loadModule(ModuleIdentifier.fromString(moduleSpec));
+        return getSecurityManager() != null ? doPrivileged(new GetModuleClassLoaderAction(module)) : module.getClassLoader();
     }
 
     static SecurityContext getSecurityContext() {
-        if (System.getSecurityManager() != null) {
-            return AccessController.doPrivileged(new PrivilegedAction<SecurityContext>() {
+        if (getSecurityManager() != null) {
+            return doPrivileged(new PrivilegedAction<SecurityContext>() {
                 public SecurityContext run() {
                     return SecurityContextAssociation.getSecurityContext();
                 }
@@ -74,8 +64,8 @@ class SecurityActions {
     }
 
     static Principal getPrincipal() {
-        if (System.getSecurityManager() != null) {
-            return AccessController.doPrivileged(new PrivilegedAction<Principal>() {
+        if (getSecurityManager() != null) {
+            return doPrivileged(new PrivilegedAction<Principal>() {
                 public Principal run() {
                     Principal principal = null;
                     SecurityContext sc = getSecurityContext();
@@ -96,8 +86,8 @@ class SecurityActions {
     }
 
     static Object getCredential() {
-        if (System.getSecurityManager() != null) {
-            return AccessController.doPrivileged(new PrivilegedAction<Object>() {
+        if (getSecurityManager() != null) {
+            return doPrivileged(new PrivilegedAction<Object>() {
                 public Object run() {
                     Object credential = null;
                     SecurityContext sc = getSecurityContext();
@@ -118,11 +108,6 @@ class SecurityActions {
     }
 
     static ClassLoader getContextClassLoader() {
-        return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
-            @Override
-            public ClassLoader run() {
-                return Thread.currentThread().getContextClassLoader();
-            }
-        });
+        return getSecurityManager() == null ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
     }
 }

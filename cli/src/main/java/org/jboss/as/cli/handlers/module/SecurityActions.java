@@ -21,76 +21,28 @@
  */
 package org.jboss.as.cli.handlers.module;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
+import org.jboss.as.util.security.ReadEnvironmentPropertyAction;
+import org.jboss.as.util.security.ReadPropertyAction;
 
+import static java.lang.System.getProperty;
+import static java.lang.System.getSecurityManager;
+import static java.lang.System.getenv;
+import static java.security.AccessController.doPrivileged;
 
 /**
  * Package privileged actions
  *
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Scott.Stark@jboss.org
  * @author Alexey Loubyansky
  */
 class SecurityActions {
-    private interface TCLAction {
-        class UTIL {
-            static TCLAction getTCLAction() {
-                return System.getSecurityManager() == null ? NON_PRIVILEGED : PRIVILEGED;
-            }
 
-            public static String getSystemProperty(String name) {
-                return getTCLAction().getSystemProperty(name);
-            }
-
-            public static String getEnvironmentVariable(String name) {
-                return getTCLAction().getEnvironmentVariable(name);
-            }
-        }
-
-        TCLAction NON_PRIVILEGED = new TCLAction() {
-
-            @Override
-            public String getSystemProperty(String name) {
-                return System.getProperty(name);
-            }
-
-            @Override
-            public String getEnvironmentVariable(String name) {
-                return System.getenv(name);
-            }
-        };
-
-        TCLAction PRIVILEGED = new TCLAction() {
-
-            @Override
-            public String getSystemProperty(final String name) {
-                return (String) AccessController.doPrivileged(new PrivilegedAction<Object>() {
-                    public Object run() {
-                        return System.getProperty(name);
-                    }
-                });
-            }
-
-            @Override
-            public String getEnvironmentVariable(final String name) {
-                return (String) AccessController.doPrivileged(new PrivilegedAction<Object>() {
-                    public Object run() {
-                        return System.getenv(name);
-                    }
-                });
-            }
-        };
-
-        String getEnvironmentVariable(String name);
-
-        String getSystemProperty(String name);
+    static String getSystemProperty(String name) {
+        return getSecurityManager() == null ? getProperty(name) : doPrivileged(new ReadPropertyAction(name));
     }
 
-    protected static String getSystemProperty(String name) {
-        return TCLAction.UTIL.getSystemProperty(name);
-    }
-
-    protected static String getEnvironmentVariable(String name) {
-        return TCLAction.UTIL.getEnvironmentVariable(name);
+    static String getEnvironmentVariable(String name) {
+        return getSecurityManager() == null ? getenv(name) : doPrivileged(new ReadEnvironmentPropertyAction(name));
     }
 }

@@ -55,6 +55,7 @@
         <module name="org.jboss.as.jpa"/>
         <module name="org.jboss.as.jpa.spi"/>
         <module name="org.jboss.as.naming"/>
+        <module name="org.jboss.as.security-util"/>
         <module name="org.jboss.as.security"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.transactions"/>

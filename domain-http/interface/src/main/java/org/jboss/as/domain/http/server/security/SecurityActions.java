@@ -22,12 +22,16 @@
 
 package org.jboss.as.domain.http.server.security;
 
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 
 import javax.security.auth.Subject;
 
 import org.jboss.as.controller.security.SecurityContext;
+import org.jboss.as.util.security.ReadPropertyAction;
+
+import static java.lang.System.getProperty;
+import static java.lang.System.getSecurityManager;
+import static java.security.AccessController.doPrivileged;
 
 /**
  * Security Actions for classes in the org.jboss.as.domain.http.server.security package.
@@ -38,39 +42,37 @@ import org.jboss.as.controller.security.SecurityContext;
  */
 class SecurityActions {
 
+    static String getStringProperty(final String key) {
+        return getSecurityManager() == null ? getProperty(key) : doPrivileged(new ReadPropertyAction(key));
+    }
 
     static boolean getBoolean(final String key) {
-        return AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
-            public Boolean run() {
-                return Boolean.getBoolean(key);
-            }
-        });
+        return Boolean.parseBoolean(getStringProperty(key));
     }
 
     static int getInt(final String key, final int def) {
-        return AccessController.doPrivileged(new PrivilegedAction<Integer>() {
-            public Integer run() {
-                return Integer.getInteger(key, def);
-            }
-            });
+        try {
+            final String value = getStringProperty(key);
+            return value == null ? def : Integer.parseInt(value);
+        } catch (NumberFormatException ignored) {
+            return def;
+        }
     }
 
     static void setSecurityContextSubject(final Subject subject) {
-        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+        doPrivileged(new PrivilegedAction<Void>() {
             public Void run() {
                 SecurityContext.setSubject(subject);
                 return null;
-
             }
         });
     }
 
     static void clearSubjectSecurityContext() {
-        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+        doPrivileged(new PrivilegedAction<Void>() {
             public Void run() {
                 SecurityContext.clearSubject();
                 return null;
-
             }
         });
     }

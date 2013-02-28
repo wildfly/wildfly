@@ -22,11 +22,16 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 
 import org.jboss.as.security.remoting.RemotingContext;
+import org.jboss.as.util.security.GetContextClassLoaderAction;
+import org.jboss.as.util.security.SetContextClassLoaderAction;
 import org.jboss.remoting3.Connection;
+
+import static java.lang.System.getSecurityManager;
+import static java.lang.Thread.currentThread;
+import static java.security.AccessController.doPrivileged;
 
 final class SecurityActions {
 
@@ -40,16 +45,7 @@ final class SecurityActions {
      * @return the current context classloader
      */
     static ClassLoader getContextClassLoader() {
-        if (System.getSecurityManager() == null) {
-            return Thread.currentThread().getContextClassLoader();
-        } else {
-            return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
-                @Override
-                public ClassLoader run() {
-                    return Thread.currentThread().getContextClassLoader();
-                }
-            });
-        }
+        return getSecurityManager() == null ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
     }
 
     /**
@@ -59,16 +55,10 @@ final class SecurityActions {
      *            the classloader
      */
     static void setContextClassLoader(final ClassLoader classLoader) {
-        if (System.getSecurityManager() == null) {
-            Thread.currentThread().setContextClassLoader(classLoader);
+        if (getSecurityManager() == null) {
+            currentThread().setContextClassLoader(classLoader);
         } else {
-            AccessController.doPrivileged(new PrivilegedAction<Object>() {
-                @Override
-                public Object run() {
-                    Thread.currentThread().setContextClassLoader(classLoader);
-                    return null;
-                }
-            });
+            doPrivileged(new SetContextClassLoaderAction(classLoader));
         }
     }
 
@@ -89,7 +79,7 @@ final class SecurityActions {
     }
 
     private static RemotingContextAssociationActions remotingContextAccociationActions() {
-        return System.getSecurityManager() == null ? RemotingContextAssociationActions.NON_PRIVILEGED
+        return getSecurityManager() == null ? RemotingContextAssociationActions.NON_PRIVILEGED
                 : RemotingContextAssociationActions.PRIVILEGED;
     }
 
@@ -121,7 +111,7 @@ final class SecurityActions {
             };
 
             public void setConnection(final Connection connection) {
-                AccessController.doPrivileged(new PrivilegedAction<Void>() {
+                doPrivileged(new PrivilegedAction<Void>() {
 
                     public Void run() {
                         NON_PRIVILEGED.setConnection(connection);
@@ -133,7 +123,7 @@ final class SecurityActions {
 
             @Override
             public void clear() {
-                AccessController.doPrivileged(CLEAR_ACTION);
+                doPrivileged(CLEAR_ACTION);
             }
         };
 

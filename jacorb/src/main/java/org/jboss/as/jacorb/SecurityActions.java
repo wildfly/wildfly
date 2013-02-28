@@ -22,8 +22,11 @@
 
 package org.jboss.as.jacorb;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
+import org.jboss.as.util.security.WritePropertyAction;
+
+import static java.lang.System.getSecurityManager;
+import static java.lang.System.setProperty;
+import static java.security.AccessController.doPrivileged;
 
 /**
  * <p>
@@ -31,6 +34,7 @@ import java.security.PrivilegedAction;
  * </p>
  *
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 class SecurityActions {
 
@@ -42,13 +46,7 @@ class SecurityActions {
      * @param key   the system property key.
      * @param value the system property value.
      */
-    static void setSystemProperty(final String key, final String value) {
-        AccessController.doPrivileged(new PrivilegedAction<Void>() {
-            @Override
-            public Void run() {
-                System.setProperty(key, value);
-                return null;
-            }
-        });
+    static String setSystemProperty(final String key, final String value) {
+        return getSecurityManager() == null ? setProperty(key, value) : doPrivileged(new WritePropertyAction(key, value));
     }
 }

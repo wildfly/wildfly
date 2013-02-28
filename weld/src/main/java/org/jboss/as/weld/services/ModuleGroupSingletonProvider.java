@@ -21,18 +21,21 @@
  */
 package org.jboss.as.weld.services;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.jboss.as.util.security.GetContextClassLoaderAction;
 import org.jboss.as.weld.WeldMessages;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.weld.bootstrap.api.Singleton;
 import org.jboss.weld.bootstrap.api.SingletonProvider;
+
+import static java.lang.System.getSecurityManager;
+import static java.lang.Thread.currentThread;
+import static java.security.AccessController.doPrivileged;
 
 /**
  * Singleton Provider that uses the TCCL to figure out the current application.
@@ -120,16 +123,7 @@ public class ModuleGroupSingletonProvider extends SingletonProvider {
         }
 
         private ClassLoader getClassLoader() {
-            SecurityManager sm = System.getSecurityManager();
-            if (sm != null) {
-                return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
-                    public ClassLoader run() {
-                        return Thread.currentThread().getContextClassLoader();
-                    }
-                });
-            } else {
-                return Thread.currentThread().getContextClassLoader();
-            }
+            return getSecurityManager() == null ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
         }
 
         /*

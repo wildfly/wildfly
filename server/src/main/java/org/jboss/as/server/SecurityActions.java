@@ -22,11 +22,23 @@
 
 package org.jboss.as.server;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.security.Security;
 import java.util.Map;
 import java.util.Properties;
+import org.jboss.as.util.security.ClearPropertyAction;
+import org.jboss.as.util.security.GetEnvironmentAction;
+import org.jboss.as.util.security.GetSystemPropertiesAction;
+import org.jboss.as.util.security.ReadPropertyAction;
+import org.jboss.as.util.security.WritePropertyAction;
+import org.jboss.as.util.security.WriteSecurityPropertyAction;
+
+import static java.lang.System.clearProperty;
+import static java.lang.System.getProperties;
+import static java.lang.System.getProperty;
+import static java.lang.System.getSecurityManager;
+import static java.lang.System.getenv;
+import static java.lang.System.setProperty;
+import static java.security.AccessController.doPrivileged;
 
 /**
  * Security actions to access system environment information.  No methods in
@@ -41,98 +53,34 @@ class SecurityActions {
     }
 
     static String getSystemProperty(final String key) {
-        if (System.getSecurityManager() == null) {
-            return System.getProperty(key);
-        }
-
-        return AccessController.doPrivileged(new PrivilegedAction<String>() {
-
-            @Override
-            public String run() {
-                return System.getProperty(key);
-            }
-        });
+        return getSecurityManager() == null ? getProperty(key) : doPrivileged(new ReadPropertyAction(key));
     }
 
     static String getSystemProperty(final String key, final String defaultValue) {
-        if (System.getSecurityManager() == null) {
-            return System.getProperty(key, defaultValue);
-        }
-
-        return AccessController.doPrivileged(new PrivilegedAction<String>() {
-
-            @Override
-            public String run() {
-                return System.getProperty(key, defaultValue);
-            }
-        });
+        return getSecurityManager() == null ? getProperty(key, defaultValue) : doPrivileged(new ReadPropertyAction(key, defaultValue));
     }
 
-    static void setSystemProperty(final String key, final String value) {
-        if (System.getSecurityManager() == null) {
-            System.setProperty(key, value);
-        } else {
-            AccessController.doPrivileged(new PrivilegedAction<Void>() {
-
-                @Override
-                public Void run() {
-                    System.setProperty(key, value);
-                    return null;
-                }
-            });
-        }
+    static String setSystemProperty(final String key, final String value) {
+        return getSecurityManager() == null ? setProperty(key, value) : doPrivileged(new WritePropertyAction(key, value));
     }
 
-    static void clearSystemProperty(final String key) {
-        if (System.getSecurityManager() == null) {
-            System.clearProperty(key);
-        } else {
-            AccessController.doPrivileged(new PrivilegedAction<Void>() {
-
-                @Override
-                public Void run() {
-                    System.clearProperty(key);
-                    return null;
-                }
-            });
-        }
+    static String clearSystemProperty(final String key) {
+        return getSecurityManager() == null ? clearProperty(key) : doPrivileged(new ClearPropertyAction(key));
     }
 
     static Properties getSystemProperties() {
-        if (System.getSecurityManager() == null) {
-            return System.getProperties();
-        } else {
-            return AccessController.doPrivileged(new PrivilegedAction<Properties>() {
-                public Properties run() {
-                    return System.getProperties();
-                }
-            });
-        }
+        return getSecurityManager() == null ? getProperties() : doPrivileged(GetSystemPropertiesAction.getInstance());
     }
 
     static Map<String, String> getSystemEnvironment() {
-        if (System.getSecurityManager() == null) {
-            return System.getenv();
-        } else {
-            return AccessController.doPrivileged(new PrivilegedAction<Map<String, String>>() {
-                public Map<String, String> run() {
-                    return System.getenv();
-                }
-            });
-        }
+        return getSecurityManager() == null ? getenv() : doPrivileged(GetEnvironmentAction.getInstance());
     }
 
     static void setSecurityProperty(final String key, final String value){
-        if (System.getSecurityManager() == null) {
+        if (getSecurityManager() == null) {
            Security.setProperty(key, value);
         } else {
-           AccessController.doPrivileged(new PrivilegedAction<Void>() {
-               @Override
-                public Void run() {
-                    Security.setProperty(key, value);
-                    return null;
-                }
-            });
+           doPrivileged(new WriteSecurityPropertyAction(key, value));
         }
     }
 }

@@ -18,13 +18,14 @@
  */
 package org.jboss.as.controller.persistence;
 
+import static java.lang.System.getProperty;
+import static java.lang.System.getSecurityManager;
+import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -36,6 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 import org.jboss.as.controller.persistence.ConfigurationPersister.SnapshotInfo;
+import org.jboss.as.util.security.ReadPropertyAction;
 
 /**
  * Encapsulates the configuration file and manages its history
@@ -499,17 +501,16 @@ public class ConfigurationFile {
     }
 
     private int getInteger(final String name, final int defaultValue) {
-        final SecurityManager sm = System.getSecurityManager();
-        if (sm == null) {
-            return Integer.getInteger(name, defaultValue);
-        } else {
-            return AccessController.doPrivileged(new PrivilegedAction<Integer>() {
-                @Override
-                public Integer run() {
-                    return Integer.getInteger(name, defaultValue);
-                }
-            });
+        final String val = getStringProperty(name);
+        try {
+            return val == null ? defaultValue : Integer.parseInt(val);
+        } catch (NumberFormatException ignored) {
+            return defaultValue;
         }
+    }
+
+    private String getStringProperty(final String name) {
+        return getSecurityManager() == null ? getProperty(name) : doPrivileged(new ReadPropertyAction(name));
     }
 
     private void deleteRecursive(final File file) {

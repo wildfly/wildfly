@@ -22,8 +22,16 @@
 
 package org.jboss.as.jacorb.service;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
+import org.jboss.as.util.security.CreateThreadAction;
+import org.jboss.as.util.security.GetClassLoaderAction;
+import org.jboss.as.util.security.GetContextClassLoaderAction;
+import org.jboss.as.util.security.SetContextClassLoaderAction;
+import org.jboss.as.util.security.WritePropertyAction;
+
+import static java.lang.System.getSecurityManager;
+import static java.lang.System.setProperty;
+import static java.lang.Thread.currentThread;
+import static java.security.AccessController.doPrivileged;
 
 /**
  * <p>
@@ -42,14 +50,8 @@ class SecurityActions {
      * @param key   the system property key.
      * @param value the system property value.
      */
-    static void setSystemProperty(final String key, final String value) {
-        AccessController.doPrivileged(new PrivilegedAction<Void>() {
-            @Override
-            public Void run() {
-                System.setProperty(key, value);
-                return null;
-            }
-        });
+    static String setSystemProperty(final String key, final String value) {
+        return getSecurityManager() == null ? setProperty(key, value) : doPrivileged(new WritePropertyAction(key, value));
     }
 
     /**
@@ -60,12 +62,7 @@ class SecurityActions {
      * @return a reference to the current thread context {@code ClassLoader}.
      */
     static ClassLoader getThreadContextClassLoader() {
-        return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
-            @Override
-            public ClassLoader run() {
-                return Thread.currentThread().getContextClassLoader();
-            }
-        });
+        return getSecurityManager() == null ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
     }
 
     /**
@@ -76,13 +73,11 @@ class SecurityActions {
      * @param loader the {@code ClassLoader} to be set.
      */
     static void setThreadContextClassLoader(final ClassLoader loader) {
-        AccessController.doPrivileged(new PrivilegedAction<Void>() {
-            @Override
-            public Void run() {
-                Thread.currentThread().setContextClassLoader(loader);
-                return null;
-            }
-        });
+        if (getSecurityManager() == null) {
+            currentThread().setContextClassLoader(loader);
+        } else {
+            doPrivileged(new SetContextClassLoaderAction(loader));
+        }
     }
 
     /**
@@ -94,12 +89,7 @@ class SecurityActions {
      * @return the {@code ClassLoader} of the specified {@code Class} object.
      */
     static ClassLoader getClassLoader(final Class<?> clazz) {
-        return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
-            @Override
-            public ClassLoader run() {
-                return clazz.getClassLoader();
-            }
-        });
+        return getSecurityManager() == null ? clazz.getClassLoader() : doPrivileged(new GetClassLoaderAction(clazz));
     }
 
     /**
@@ -112,13 +102,6 @@ class SecurityActions {
      * @return the construct {@code Thread} instance.
      */
     static Thread createThread(final Runnable runnable, final String threadName) {
-        return AccessController.doPrivileged(new PrivilegedAction<Thread>() {
-            @Override
-            public Thread run() {
-                Thread thread = new Thread(runnable);
-                thread.setName(threadName);
-                return thread;
-            }
-        });
+        return getSecurityManager() == null ? new Thread(runnable, threadName) : doPrivileged(new CreateThreadAction(runnable, threadName));
     }
 }

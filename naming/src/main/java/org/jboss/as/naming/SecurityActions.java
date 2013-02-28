@@ -22,8 +22,16 @@
 
 package org.jboss.as.naming;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
+import org.jboss.as.util.security.GetContextClassLoaderAction;
+import org.jboss.as.util.security.ReadPropertyAction;
+import org.jboss.as.util.security.SetContextClassLoaderAction;
+import org.jboss.as.util.security.WritePropertyAction;
+
+import static java.lang.System.getProperty;
+import static java.lang.System.getSecurityManager;
+import static java.lang.System.setProperty;
+import static java.lang.Thread.currentThread;
+import static java.security.AccessController.doPrivileged;
 
 final class SecurityActions {
 
@@ -32,27 +40,14 @@ final class SecurityActions {
     }
 
     static String getSystemProperty(final String property) {
-        if (System.getSecurityManager() == null) {
-            return System.getProperty(property);
-        } else {
-            return AccessController.doPrivileged(new PrivilegedAction<String>() {
-                public String run() {
-                    return System.getProperty(property);
-                }
-            });
-        }
+        return getSecurityManager() == null ? getProperty(property) : doPrivileged(new ReadPropertyAction(property));
     }
 
     static void setSystemProperty(final String property, final String value) {
-        if (System.getSecurityManager() == null) {
-            System.setProperty(property, value);
+        if (getSecurityManager() == null) {
+            setProperty(property, value);
         } else {
-            AccessController.doPrivileged(new PrivilegedAction<Object>() {
-                public Object run() {
-                    System.setProperty(property, value);
-                    return null;
-                }
-            });
+            doPrivileged(new WritePropertyAction(property, value));
         }
     }
 
@@ -62,15 +57,7 @@ final class SecurityActions {
      * @return the current context classloader
      */
     static ClassLoader getContextClassLoader() {
-        if (System.getSecurityManager() == null) {
-            return Thread.currentThread().getContextClassLoader();
-        } else {
-            return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
-                public ClassLoader run() {
-                    return Thread.currentThread().getContextClassLoader();
-                }
-            });
-        }
+        return getSecurityManager() == null ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
     }
 
     /**
@@ -80,15 +67,10 @@ final class SecurityActions {
      *            the classloader
      */
     static void setContextClassLoader(final ClassLoader classLoader) {
-        if (System.getSecurityManager() == null) {
-            Thread.currentThread().setContextClassLoader(classLoader);
+        if (getSecurityManager() == null) {
+            currentThread().setContextClassLoader(classLoader);
         } else {
-            AccessController.doPrivileged(new PrivilegedAction<Object>() {
-                public Object run() {
-                    Thread.currentThread().setContextClassLoader(classLoader);
-                    return null;
-                }
-            });
+            doPrivileged(new SetContextClassLoaderAction(classLoader));
         }
     }
 }

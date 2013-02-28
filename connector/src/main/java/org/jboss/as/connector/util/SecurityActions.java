@@ -20,12 +20,20 @@
 
 package org.jboss.as.connector.util;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
+import org.jboss.as.util.security.GetContextClassLoaderAction;
+import org.jboss.as.util.security.ReadPropertyAction;
+import org.jboss.as.util.security.SetContextClassLoaderAction;
+
+import static java.lang.System.getProperty;
+import static java.lang.System.getSecurityManager;
+import static java.lang.Thread.currentThread;
+import static java.security.AccessController.doPrivileged;
 
 /**
  * Privileged Blocks
+ *
  * @author <a href="mailto:jesper.pedersen@comcast.net">Jesper Pedersen</a>
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 class SecurityActions {
     /**
@@ -39,12 +47,7 @@ class SecurityActions {
      * @return The class loader
      */
     static ClassLoader getThreadContextClassLoader() {
-        return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
-            @Override
-            public ClassLoader run() {
-                return Thread.currentThread().getContextClassLoader();
-            }
-        });
+        return getSecurityManager() == null ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
     }
 
     /**
@@ -52,13 +55,11 @@ class SecurityActions {
      * @param cl The class loader
      */
     static void setThreadContextClassLoader(final ClassLoader cl) {
-        AccessController.doPrivileged(new PrivilegedAction<Object>() {
-            @Override
-            public Object run() {
-                Thread.currentThread().setContextClassLoader(cl);
-                return null;
-            }
-        });
+        if (getSecurityManager() == null) {
+            currentThread().setContextClassLoader(cl);
+        } else {
+            doPrivileged(new SetContextClassLoaderAction(cl));
+        }
     }
 
     /**
@@ -67,14 +68,6 @@ class SecurityActions {
      * @return The property value
      */
     static String getSystemProperty(final String name) {
-        if (System.getSecurityManager() == null) {
-            return System.getProperty(name);
-        } else {
-            return (String) AccessController.doPrivileged(new PrivilegedAction<Object>() {
-                public Object run() {
-                    return System.getProperty(name);
-                }
-            });
-        }
+        return getSecurityManager() == null ? getProperty(name) : doPrivileged(new ReadPropertyAction(name));
     }
 }

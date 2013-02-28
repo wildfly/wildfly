@@ -33,6 +33,7 @@
 
     <dependencies>
         <module name="javax.ejb.api"/>
+        <module name="org.jboss.as.security-util"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.controller-client"/>

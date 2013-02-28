@@ -22,8 +22,6 @@
 
 package org.jboss.as.arquillian.service;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -39,6 +37,8 @@ import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.SetupAction;
+import org.jboss.as.util.security.GetContextClassLoaderAction;
+import org.jboss.as.util.security.SetContextClassLoaderAction;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -55,6 +55,9 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.resolver.XBundle;
 import org.osgi.framework.BundleContext;
 
+import static java.lang.System.getSecurityManager;
+import static java.lang.Thread.currentThread;
+import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT;
 
 /**
@@ -288,32 +291,16 @@ public class ArquillianService implements Service<ArquillianService> {
         }
     }
 
-    /**
-     * {@link PrivilegedAction} implementation to get at the TCCL
-     *
-     * @author <a href="mailto:alr@jboss.org">Andrew Lee Rubinger</a>
-     */
-    private enum GetTcclAction implements PrivilegedAction<ClassLoader> {
-        INSTANCE;
-
-        @Override
-        public ClassLoader run() {
-            return Thread.currentThread().getContextClassLoader();
-        }
-    }
-
     private static ClassLoader getTccl() {
-        return AccessController.doPrivileged(GetTcclAction.INSTANCE);
+        return getSecurityManager() == null ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
     }
 
     private static void setTccl(final ClassLoader cl) {
         assert cl != null : "ClassLoader must be specified";
-        AccessController.doPrivileged(new PrivilegedAction<Void>() {
-            @Override
-            public Void run() {
-                Thread.currentThread().setContextClassLoader(cl);
-                return null;
-            }
-        });
+        if (getSecurityManager() == null) {
+            currentThread().setContextClassLoader(cl);
+        } else {
+            doPrivileged(new SetContextClassLoaderAction(cl));
+        }
     }
 }

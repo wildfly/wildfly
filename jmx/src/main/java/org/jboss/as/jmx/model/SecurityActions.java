@@ -21,9 +21,10 @@
 */
 package org.jboss.as.jmx.model;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
+import org.jboss.as.util.security.GetClassLoaderAction;
 
+import static java.lang.System.getSecurityManager;
+import static java.security.AccessController.doPrivileged;
 
 /**
  *
@@ -31,35 +32,6 @@ import java.security.PrivilegedAction;
  */
 public class SecurityActions {
     static ClassLoader getClassLoader(final Class<?> clazz) {
-        if (System.getSecurityManager() == null) {
-            return GetClassLoaderAction.NON_PRIVILEGED.getClassLoader(clazz);
-        } else {
-            return GetClassLoaderAction.PRIVILEGED.getClassLoader(clazz);
-        }
+        return getSecurityManager() == null ? clazz.getClassLoader() : doPrivileged(new GetClassLoaderAction(clazz));
     }
-
-    private interface GetClassLoaderAction {
-
-        ClassLoader getClassLoader(Class<?> clazz);
-
-        GetClassLoaderAction NON_PRIVILEGED = new GetClassLoaderAction() {
-            @Override
-            public ClassLoader getClassLoader(final Class<?> clazz) {
-                return clazz.getClassLoader();
-            }
-        };
-
-        GetClassLoaderAction PRIVILEGED = new GetClassLoaderAction() {
-
-            @Override
-            public ClassLoader getClassLoader(final Class<?> clazz) {
-                return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
-                    public ClassLoader run() {
-                        return clazz.getClassLoader();
-                    }
-                });
-            }
-        };
-    }
-
 }

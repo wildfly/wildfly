@@ -25,8 +25,6 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -42,11 +40,14 @@ import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerMessages;
+import org.jboss.as.util.security.ReadPropertyAction;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+
+import static java.security.AccessController.doPrivileged;
 
 /**
  * Service resolving the {@code NetworkInterfaceBinding} based on the configured interfaces in the domain model.
@@ -172,16 +173,6 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
     }
 
     private static boolean isPreferIPv4Stack() {
-
-        return AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
-            @Override
-            public Boolean run() {
-                try {
-                    return Boolean.getBoolean("java.net.preferIPv4Stack");
-                } catch (Exception e) {
-                    return Boolean.FALSE;
-                }
-            }
-        });
+        return Boolean.parseBoolean(doPrivileged(new ReadPropertyAction("java.net.preferIPv4Stack")));
     }
 }

@@ -21,6 +21,8 @@
  */
 package org.jboss.as.embedded.ejb3;
 
+import static java.lang.System.getSecurityManager;
+import static java.lang.System.setProperty;
 import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.controller.client.helpers.ClientConstants.ADD;
 import static org.jboss.as.controller.client.helpers.ClientConstants.EXTENSION;
@@ -32,7 +34,6 @@ import static org.jboss.as.embedded.EmbeddedMessages.MESSAGES;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.PrivilegedAction;
 import java.util.Map;
 
 import javax.ejb.EJBException;
@@ -41,6 +42,7 @@ import javax.ejb.spi.EJBContainerProvider;
 
 import org.jboss.as.embedded.EmbeddedServerFactory;
 import org.jboss.as.embedded.StandaloneServer;
+import org.jboss.as.util.security.WritePropertyAction;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 
@@ -110,13 +112,6 @@ public class JBossStandaloneEJBContainerProvider implements EJBContainerProvider
     }
 
     private static String setSystemProperty(final String key, final String value) {
-        if (System.getSecurityManager() == null)
-            return System.setProperty(key, value);
-        return doPrivileged(new PrivilegedAction<String>() {
-            @Override
-            public String run() {
-                return System.setProperty(key, value);
-            }
-        });
+        return getSecurityManager() == null ? setProperty(key, value) : doPrivileged(new WritePropertyAction(key, value));
     }
 }

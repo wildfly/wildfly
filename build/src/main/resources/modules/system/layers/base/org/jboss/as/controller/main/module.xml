@@ -35,6 +35,7 @@
         <module name="javax.api"/>
         <module name="org.jboss.as.controller-client" export="true"/>
         <module name="org.jboss.as.protocol"/>
+        <module name="org.jboss.as.security-util"/>
         <module name="org.jboss.dmr" export="true"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.modules"/>

@@ -37,10 +37,11 @@ import javax.transaction.xa.XAResource;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.jboss.as.util.security.SetContextClassLoaderAction;
 
+import static java.lang.System.getSecurityManager;
 import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
-import static org.jboss.as.ejb3.inflow.ContextClassLoaderActions.contextClassLoader;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -87,7 +88,11 @@ public class MessageEndpointInvocationHandler extends AbstractInvocationHandler 
         } catch (RollbackException e) {
             throw new LocalTransactionException(e);
         } finally {
-            doPrivileged(contextClassLoader(previousClassLoader));
+            if (getSecurityManager() == null) {
+                Thread.currentThread().setContextClassLoader(previousClassLoader);
+            } else {
+                doPrivileged(new SetContextClassLoaderAction(previousClassLoader));
+            }
             previousClassLoader = null;
         }
     }
@@ -97,7 +102,13 @@ public class MessageEndpointInvocationHandler extends AbstractInvocationHandler 
         // JCA 1.6 FR 13.5.6
         // The application server must set the thread context class loader to the endpoint
         // application class loader during the beforeDelivery call.
-        previousClassLoader = doPrivileged(contextClassLoader(getApplicationClassLoader()));
+        final Thread thread = Thread.currentThread();
+        if (getSecurityManager() == null) {
+            previousClassLoader = thread.getContextClassLoader();
+            thread.setContextClassLoader(getApplicationClassLoader());
+        } else {
+            previousClassLoader = doPrivileged(new SetContextClassLoaderAction(getApplicationClassLoader()));
+        }
         try {
             final TransactionManager tm = getTransactionManager();
             // TODO: in violation of JCA 1.6 FR 13.5.9?
@@ -111,7 +122,11 @@ public class MessageEndpointInvocationHandler extends AbstractInvocationHandler 
             }
         }
         catch(Throwable t) {
-            doPrivileged(contextClassLoader(previousClassLoader));
+            if (getSecurityManager() == null) {
+                thread.setContextClassLoader(previousClassLoader);
+            } else {
+                doPrivileged(new SetContextClassLoaderAction(previousClassLoader));
+            }
             throw new ApplicationServerInternalException(t);
         }
     }

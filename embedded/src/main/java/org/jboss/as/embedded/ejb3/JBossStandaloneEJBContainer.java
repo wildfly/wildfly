@@ -21,6 +21,9 @@
  */
 package org.jboss.as.embedded.ejb3;
 
+import static java.lang.System.getProperty;
+import static java.lang.System.getSecurityManager;
+import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.embedded.EmbeddedLogger.ROOT_LOGGER;
 
 import org.jboss.as.embedded.StandaloneServer;
@@ -32,14 +35,13 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import org.jboss.as.util.security.ReadPropertyAction;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -89,16 +91,11 @@ public class JBossStandaloneEJBContainer extends EJBContainer {
             deploy(new File(candidates[0]));
         } else if (candidates.length > 1) {
             //TODO: this is a massive hack, we build up an EAR and then deploy it as an EAR
-
+            // TODO: this is security manager unfriendly; a lot of this stuff is privileged.  This should probably be one big block
 
             File tempEar;
             if (properties.containsKey(EJBContainer.APP_NAME)) {
-                String tmpDir = AccessController.doPrivileged(new PrivilegedAction<String>() {
-                    @Override
-                    public String run() {
-                        return System.getProperty("java.io.tmpdir");
-                    }
-                });
+                String tmpDir = getSecurityManager() == null ? getProperty("java.io.tmpdir") : doPrivileged(new ReadPropertyAction("java.io.tmpdir"));
                 tempEar = new File(tmpDir + "/" + properties.get(EJBContainer.APP_NAME) + ".ear");
             } else {
                 tempEar = File.createTempFile("ejb-embedded", ".ear");

@@ -303,6 +303,7 @@
         <module>process-controller</module>
         <module>protocol</module>
         <module>remoting</module>
+        <module>security-util</module>
         <module>server</module>
         <module>subsystem-test</module>
         <module>threads</module>
@@ -1193,6 +1194,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-security</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-security-util</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -6426,6 +6433,7 @@
                 <module>system-jmx</module>
                 <module>sar</module>
                 <module>security</module>
+                <module>security-util</module>
                 <module>spec-api</module>
                 <module>transactions</module>
                 <module>web</module>

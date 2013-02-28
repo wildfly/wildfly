@@ -50,6 +50,10 @@
         </dependency>
         <dependency>
           <groupId>org.jboss.as</groupId>
+          <artifactId>jboss-as-security-util</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.jboss.as</groupId>
           <artifactId>jboss-as-arquillian-testenricher-msc</artifactId>
         </dependency>
         <dependency>
