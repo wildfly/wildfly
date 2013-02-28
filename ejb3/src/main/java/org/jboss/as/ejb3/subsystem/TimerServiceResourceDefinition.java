@@ -22,11 +22,16 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -47,9 +52,11 @@ import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.PathAddressTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -119,11 +126,12 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
 
     private static void registerDataStoreTransformers(ResourceTransformationDescriptionBuilder timerService, boolean rejectPathExpressions) {
 
+        DataStoreTransformer dataStoreTransformer = new DataStoreTransformer(rejectPathExpressions);
         timerService.getAttributeBuilder()
                 .setDiscard(DiscardAttributeChecker.ALWAYS, EJB3SubsystemModel.DEFAULT_DATA_STORE)//this is ok, as default-data-store only has any sense with new model, but it is always set!
                 .end();
         timerService.discardOperations(ModelDescriptionConstants.ADD);
-        timerService.setCustomResourceTransformer(DataStoreTransformer.INSTANCE);
+        timerService.setCustomResourceTransformer(dataStoreTransformer);
         timerService.rejectChildResource(EJB3SubsystemModel.DATABASE_DATA_STORE_PATH);
         ResourceTransformationDescriptionBuilder fileDataStore = timerService.addChildRedirection(EJB3SubsystemModel.FILE_DATA_STORE_PATH, new PathAddressTransformer() {
             @Override
@@ -139,23 +147,25 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
         }
         fileDataStore.addOperationTransformationOverride(ModelDescriptionConstants.ADD)
             .inheritResourceAttributeDefinitions()
-            .setCustomOperationTransformer(DataStoreTransformer.INSTANCE)
+            .setCustomOperationTransformer(dataStoreTransformer)
             .end();
 
     }
 
     private static class DataStoreTransformer implements CombinedTransformer {
 
-        static final DataStoreTransformer INSTANCE = new DataStoreTransformer();
+        private final Pattern EXPRESSION_PATTERN = Pattern.compile(".*\\$\\{.*\\}.*");
 
-        private DataStoreTransformer() {
+        private final boolean rejectPathExpression;
 
+        private DataStoreTransformer(boolean rejectPathExpression) {
+            this.rejectPathExpression = rejectPathExpression;
         }
 
         @Override
         public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation) throws OperationFailedException {
             Resource original = context.readResource(address);
-            if (original.getChildren(EJB3SubsystemModel.FILE_DATA_STORE).size()>1){
+            if (original.getChildren(EJB3SubsystemModel.FILE_DATA_STORE).size() > 1){
                 return new TransformedOperation(operation,new OperationRejectionPolicy() {
                     @Override
                     public boolean rejectOperation(ModelNode preparedResult) {
@@ -182,16 +192,57 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
             transformed.remove(DEFAULT_DATA_STORE.getName());
             ModelNode fileStore = untransformedModel.get(EJB3SubsystemModel.FILE_DATA_STORE, defaultDataStore);
             if (!fileStore.isDefined()) {//happens where default is not file-store
-                throw new OperationFailedException("Only file-store configuration is supported on target");
+                rejectIncompatibleDataStores(context, address);
+                // If we get here the slave must be 7.1 and we don't know if the slave has this profile ignored
+                // Just use an empty "file-store" which won't work on a slave server anyway because a null 'path'
+                // won't work in FileTimerPersistence
+                fileStore = new ModelNode();
+            } else if ((untransformedModel.hasDefined(EJB3SubsystemModel.DATABASE_DATA_STORE)
+                            && untransformedModel.get(EJB3SubsystemModel.DATABASE_DATA_STORE).asInt() > 0)
+                        || untransformedModel.get(EJB3SubsystemModel.FILE_DATA_STORE).asInt() > 1) {
+                rejectIncompatibleDataStores(context, address);
             }
-            if (transformed.hasDefined(EJB3SubsystemModel.PATH)) { //happens when first file store was already transformed
-                //throw new OperationFailedException(context.getLogger().getRejectedResourceWarning(address, null));
-            } else {
-                transformed.get(EJB3SubsystemModel.PATH).set(fileStore.get(EJB3SubsystemModel.PATH));
-                transformed.get(EJB3SubsystemModel.RELATIVE_TO).set(fileStore.get(EJB3SubsystemModel.RELATIVE_TO));
+
+            ModelNode path = fileStore.get(EJB3SubsystemModel.PATH);
+            if (rejectPathExpression) {
+                rejectPathExpression(context, address, defaultDataStore, path);
             }
+            transformed.get(EJB3SubsystemModel.PATH).set(path);
+            transformed.get(EJB3SubsystemModel.RELATIVE_TO).set(fileStore.get(EJB3SubsystemModel.RELATIVE_TO));
+
             context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
             //do not process children!
+        }
+
+        private void rejectIncompatibleDataStores(ResourceTransformationContext context, PathAddress address) throws OperationFailedException {
+            TransformationTarget tgt = context.getTarget();
+            if (tgt.isIgnoredResourceListAvailableAtRegistration()) {
+                // Slave is 7.2.x or higher and we know this resource is not ignored
+                throw new OperationFailedException(EjbMessages.MESSAGES.untransformableTimerService(address));
+            } else {
+                // 7.1.x slave; resource *may* be ignored so we can't fail; just log
+                context.getLogger().logWarning(EjbMessages.MESSAGES.untransformableTimerService(address));
+            }
+        }
+
+        private void rejectPathExpression(ResourceTransformationContext context, PathAddress address, String dataStoreName, ModelNode pathAttribute) throws OperationFailedException {
+
+            if (pathAttribute.getType() == ModelType.EXPRESSION
+                    || (pathAttribute.getType() == ModelType.STRING && EXPRESSION_PATTERN.matcher(pathAttribute.asString()).matches())) {
+
+                PathAddress fileStoreAddress =
+                        PathAddress.pathAddress(address, PathElement.pathElement(EJB3SubsystemModel.FILE_DATA_STORE, dataStoreName));
+
+                TransformationTarget tgt = context.getTarget();
+                if (tgt.isIgnoredResourceListAvailableAtRegistration()) {
+                    // Slave is 7.2.x or higher and we know this resource is not ignored
+                    List<String> msg = Collections.singletonList(context.getLogger().getAttributeWarning(fileStoreAddress, null, MESSAGES.attributesDontSupportExpressions(), FileDataStoreResourceDefinition.PATH.getName()));
+                    throw ControllerMessages.MESSAGES.rejectAttributesCoreModelResourceTransformer(fileStoreAddress, tgt.getHostName(), tgt.getVersion(), msg);
+                } else {
+                    // 7.1.x slave; resource *may* be ignored so we can't fail; just log
+                    context.getLogger().logAttributeWarning(fileStoreAddress, MESSAGES.attributesDontSupportExpressions(), FileDataStoreResourceDefinition.PATH.getName());
+                }
+            }
         }
     }
 
