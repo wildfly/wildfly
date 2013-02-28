@@ -36,12 +36,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 
 /**
@@ -407,6 +409,8 @@ public class FailedOperationTransformationConfig {
      */
     public static class RejectExpressionsConfig extends AttributesPathAddressConfig<RejectExpressionsConfig> {
 
+        private final Pattern EXPRESSION_PATTERN = Pattern.compile(".*\\$\\{.*\\}.*");
+
         public RejectExpressionsConfig(String...attributes) {
             super(attributes);
         }
@@ -417,6 +421,9 @@ public class FailedOperationTransformationConfig {
 
 
         protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
+            if (toResolve.getType() == ModelType.STRING) {
+                toResolve = new ModelNode().setExpression(toResolve.asString());
+            }
             return toResolve.resolve();
         }
 
@@ -436,6 +443,8 @@ public class FailedOperationTransformationConfig {
             switch (attribute.getType()) {
             case EXPRESSION:
                 return true;
+            case STRING:
+                return EXPRESSION_PATTERN.matcher(attribute.asString()).matches();
             case LIST:
                 for (ModelNode entry : attribute.asList()) {
                     if (complexChildConfig == null) {

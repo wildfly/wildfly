@@ -224,6 +224,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
 
     static void registerTransformers(SubsystemRegistration subsystemRegistration) {
         registerTransformers_1_1_0(subsystemRegistration);
+        registerTransformers_1_2_0(subsystemRegistration);
     }
 
     private static void registerTransformers_1_1_0(SubsystemRegistration subsystemRegistration) {
@@ -256,6 +257,14 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         FilePassivationStoreResourceDefinition.registerTransformers_1_1_0(builder);
         ClusterPassivationStoreResourceDefinition.registerTransformers_1_1_0(builder);
         TimerServiceResourceDefinition.registerTransformers_1_1_0(builder);
+        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, subsystem110);
+    }
+
+    private static void registerTransformers_1_2_0(SubsystemRegistration subsystemRegistration) {
+
+        ModelVersion subsystem110 = ModelVersion.create(1, 2);
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        TimerServiceResourceDefinition.registerTransformers_1_2_0(builder);
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, subsystem110);
     }
 

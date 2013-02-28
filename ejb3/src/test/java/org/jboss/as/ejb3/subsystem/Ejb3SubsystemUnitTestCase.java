@@ -28,7 +28,6 @@ import java.util.List;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestUtils;
@@ -40,6 +39,7 @@ import org.jboss.as.threads.PoolAttributeDefinitions;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -122,10 +122,44 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
         List<ModelNode> xmlOps = builder.parseXmlResource("transform_1_1_0_operations.xml");
 
-        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_1_0, xmlOps, getConfig());
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_1_0, xmlOps, getConfig_1_1_0());
     }
 
-    private FailedOperationTransformationConfig getConfig() {
+    @Test
+    public void testRejectFileStorePathExpressionsAS713() throws Exception {
+        testRejectFileStorePathExpressions("7.1.3.Final", true);
+    }
+
+    @Test
+    @Ignore("No 7.2.0.Final yet") // TODO enable
+    public void testRejectFileStorePathExpressionsAS720() throws Exception {
+        testRejectFileStorePathExpressions("7.2.0.Final", false);
+    }
+
+    private void testRejectFileStorePathExpressions(String mavenVersion, boolean expectReject) throws Exception {
+        // create builder for current subsystem version
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
+
+        // create builder for legacy subsystem version
+        ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
+        builder.createLegacyKernelServicesBuilder(null, version_1_1_0)
+                .addMavenResourceURL("org.jboss.as:jboss-as-ejb3:" + mavenVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + mavenVersion);
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(version_1_1_0);
+
+        Assert.assertNotNull(legacyServices);
+        Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+        List<ModelNode> xmlOps = builder.parseXmlResource("timer_path_expr.xml");
+
+        FailedOperationTransformationConfig failedConfig = expectReject ? getFileStorePathConfig() : new FailedOperationTransformationConfig();
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_1_0, xmlOps, failedConfig);
+    }
+
+    private FailedOperationTransformationConfig getConfig_1_1_0() {
         PathAddress subsystemAddress = PathAddress.pathAddress(EJB3Extension.SUBSYSTEM_PATH);
         FailedOperationTransformationConfig.RejectExpressionsConfig keepaliveOnly =
                 new FailedOperationTransformationConfig.RejectExpressionsConfig(PoolAttributeDefinitions.KEEPALIVE_TIME);
@@ -152,6 +186,13 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
                 .addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.TIMER_SERVICE_PATH, PathElement.pathElement(EJB3SubsystemModel.FILE_DATA_STORE, "file-data-store-rejected")), FailedOperationTransformationConfig.REJECTED_RESOURCE)
                 .addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.TIMER_SERVICE_PATH, EJB3SubsystemModel.DATABASE_DATA_STORE_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE)
                 ;
+    }
+
+    private FailedOperationTransformationConfig getFileStorePathConfig() {
+        return new FailedOperationTransformationConfig()
+                .addFailedAttribute(PathAddress.pathAddress(EJB3Extension.SUBSYSTEM_PATH, EJB3SubsystemModel.TIMER_SERVICE_PATH,
+                        PathElement.pathElement(EJB3SubsystemModel.FILE_DATA_STORE, "file-data-store")),
+                        new FailedOperationTransformationConfig.RejectExpressionsConfig(FileDataStoreResourceDefinition.PATH));
     }
 
     private static final ModelFixer V_1_1_0_FIXER = new ModelFixer()  {

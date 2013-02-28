@@ -48,6 +48,7 @@ import org.jboss.as.controller.transform.PathAddressTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -108,24 +109,43 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
 
     static void registerTransformers_1_1_0(ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder timerService = parent.addChildResource(EJB3SubsystemModel.TIMER_SERVICE_PATH);
+        registerDataStoreTransformers(timerService, true);
+    }
+
+    static void registerTransformers_1_2_0(ResourceTransformationDescriptionBuilder parent) {
+        ResourceTransformationDescriptionBuilder timerService = parent.addChildResource(EJB3SubsystemModel.TIMER_SERVICE_PATH);
+        registerDataStoreTransformers(timerService, false);
+    }
+
+    private static void registerDataStoreTransformers(ResourceTransformationDescriptionBuilder timerService, boolean rejectPathExpressions) {
+
         timerService.getAttributeBuilder()
                 .setDiscard(DiscardAttributeChecker.ALWAYS, EJB3SubsystemModel.DEFAULT_DATA_STORE)//this is ok, as default-data-store only has any sense with new model, but it is always set!
                 .end();
         timerService.discardOperations(ModelDescriptionConstants.ADD);
         timerService.setCustomResourceTransformer(DataStoreTransformer.INSTANCE);
         timerService.rejectChildResource(EJB3SubsystemModel.DATABASE_DATA_STORE_PATH);
-        timerService.addChildRedirection(EJB3SubsystemModel.FILE_DATA_STORE_PATH, new PathAddressTransformer() {
+        ResourceTransformationDescriptionBuilder fileDataStore = timerService.addChildRedirection(EJB3SubsystemModel.FILE_DATA_STORE_PATH, new PathAddressTransformer() {
             @Override
             public PathAddress transform(PathElement current, Builder builder) {
                 return builder.getCurrent();
             }
-        })
-                .addOperationTransformationOverride(ModelDescriptionConstants.ADD).setCustomOperationTransformer(DataStoreTransformer.INSTANCE)
+        });
+
+        if (rejectPathExpressions) {
+            fileDataStore = fileDataStore.getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, FileDataStoreResourceDefinition.PATH)
                 .end();
+        }
+        fileDataStore.addOperationTransformationOverride(ModelDescriptionConstants.ADD)
+            .inheritResourceAttributeDefinitions()
+            .setCustomOperationTransformer(DataStoreTransformer.INSTANCE)
+            .end();
 
     }
 
     private static class DataStoreTransformer implements CombinedTransformer {
+
         static final DataStoreTransformer INSTANCE = new DataStoreTransformer();
 
         private DataStoreTransformer() {
