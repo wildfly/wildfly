@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -193,7 +195,6 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
                 .inheritResourceAttributeDefinitions()
                 .setCustomOperationTransformer(dataStoreTransformer)
                 .end();
-
     }
 
     private static class DataStoreTransformer implements CombinedTransformer {
@@ -208,7 +209,7 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
 
         @Override
         public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation) throws OperationFailedException {
-            Resource original = context.readResourceFromRoot(address);
+            Resource original = context.readResource(address);
             if (original.getChildren(EJB3SubsystemModel.FILE_DATA_STORE).size() > 1){
                 return new TransformedOperation(operation,new OperationRejectionPolicy() {
                     @Override
@@ -242,8 +243,8 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
                 // won't work in FileTimerPersistence
                 fileStore = new ModelNode();
             } else if ((untransformedModel.hasDefined(EJB3SubsystemModel.DATABASE_DATA_STORE)
-                    && untransformedModel.get(EJB3SubsystemModel.DATABASE_DATA_STORE).keys().size() > 0)
-                    || untransformedModel.get(EJB3SubsystemModel.FILE_DATA_STORE).keys().size() > 1) {
+                            && untransformedModel.get(EJB3SubsystemModel.DATABASE_DATA_STORE).asInt() > 0)
+                        || untransformedModel.get(EJB3SubsystemModel.FILE_DATA_STORE).asInt() > 1) {
                 rejectIncompatibleDataStores(context, address);
             }
 
@@ -257,7 +258,6 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
             context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
             //do not process children!
         }
-
         private void rejectIncompatibleDataStores(ResourceTransformationContext context, PathAddress address) throws OperationFailedException {
             TransformationTarget tgt = context.getTarget();
             if (tgt.isIgnoredResourceListAvailableAtRegistration()) {
@@ -280,11 +280,11 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
                 TransformationTarget tgt = context.getTarget();
                 if (tgt.isIgnoredResourceListAvailableAtRegistration()) {
                     // Slave is 7.2.x or higher and we know this resource is not ignored
-                    List<String> msg = Collections.singletonList(context.getLogger().getAttributeWarning(fileStoreAddress, null, ControllerMessages.MESSAGES.attributesDontSupportExpressions(), FileDataStoreResourceDefinition.PATH.getName()));
+                    List<String> msg = Collections.singletonList(context.getLogger().getAttributeWarning(fileStoreAddress, null, MESSAGES.attributesDontSupportExpressions(), FileDataStoreResourceDefinition.PATH.getName()));
                     throw ControllerMessages.MESSAGES.rejectAttributesCoreModelResourceTransformer(fileStoreAddress, tgt.getHostName(), tgt.getVersion(), msg);
                 } else {
                     // 7.1.x slave; resource *may* be ignored so we can't fail; just log
-                    context.getLogger().logAttributeWarning(fileStoreAddress, ControllerMessages.MESSAGES.attributesDontSupportExpressions(), FileDataStoreResourceDefinition.PATH.getName());
+                    context.getLogger().logAttributeWarning(fileStoreAddress, MESSAGES.attributesDontSupportExpressions(), FileDataStoreResourceDefinition.PATH.getName());
                 }
             }
         }

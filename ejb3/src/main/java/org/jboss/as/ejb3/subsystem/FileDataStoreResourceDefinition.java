@@ -48,7 +48,7 @@ import org.jboss.dmr.ModelType;
 public class FileDataStoreResourceDefinition extends SimpleResourceDefinition {
 
     public static final SimpleAttributeDefinition PATH =
-            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.PATH, ModelType.STRING, true)
+            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.PATH, ModelType.STRING, false)
                     .setAllowExpression(true)
                     .setValidator(new ModelTypeValidator(ModelType.STRING, true, true))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
