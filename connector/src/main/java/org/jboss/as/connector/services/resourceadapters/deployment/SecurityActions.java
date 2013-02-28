@@ -22,8 +22,12 @@
 
 package org.jboss.as.connector.services.resourceadapters.deployment;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
+import org.jboss.as.util.security.GetContextClassLoaderAction;
+import org.jboss.as.util.security.SetContextClassLoaderAction;
+
+import static java.lang.System.getSecurityManager;
+import static java.lang.Thread.currentThread;
+import static java.security.AccessController.doPrivileged;
 
 /**
  * Privileged Blocks
@@ -42,12 +46,7 @@ class SecurityActions {
      * @return The class loader
      */
     static ClassLoader getThreadContextClassLoader() {
-        return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
-            @Override
-            public ClassLoader run() {
-                return Thread.currentThread().getContextClassLoader();
-            }
-        });
+        return getSecurityManager() == null ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
     }
 
     /**
@@ -55,12 +54,10 @@ class SecurityActions {
      * @param cl The class loader
      */
     static void setThreadContextClassLoader(final ClassLoader cl) {
-        AccessController.doPrivileged(new PrivilegedAction<Object>() {
-            @Override
-            public Object run() {
-                Thread.currentThread().setContextClassLoader(cl);
-                return null;
-            }
-        });
+        if (getSecurityManager() == null) {
+            currentThread().setContextClassLoader(cl);
+        } else {
+            doPrivileged(new SetContextClassLoaderAction(cl));
+        }
     }
 }

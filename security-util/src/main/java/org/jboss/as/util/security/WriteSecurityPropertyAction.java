@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright (c) 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,23 +19,29 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.inflow;
+
+package org.jboss.as.util.security;
 
 import java.security.PrivilegedAction;
+import java.security.Security;
 
 /**
- * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
+ * A security action which sets a security property.
+ *
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-class ContextClassLoaderActions {
-    static PrivilegedAction<ClassLoader> contextClassLoader(final ClassLoader classLoader) {
-        return new PrivilegedAction<ClassLoader>() {
-            @Override
-            public ClassLoader run() {
-                Thread thread = Thread.currentThread();
-                final ClassLoader previous = thread.getContextClassLoader();
-                thread.setContextClassLoader(classLoader);
-                return previous;
-            }
-        };
+public final class WriteSecurityPropertyAction implements PrivilegedAction<Void> {
+
+    private final String key;
+    private final String value;
+
+    public WriteSecurityPropertyAction(final String key, final String value) {
+        this.key = key;
+        this.value = value;
+    }
+
+    public Void run() {
+        Security.setProperty(key, value);
+        return null;
     }
 }

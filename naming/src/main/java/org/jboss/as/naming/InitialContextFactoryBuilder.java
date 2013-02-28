@@ -22,11 +22,13 @@
 
 package org.jboss.as.naming;
 
+import static java.lang.System.getSecurityManager;
+import static java.lang.Thread.currentThread;
+import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.Hashtable;
+import org.jboss.as.util.security.GetContextClassLoaderAction;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -66,13 +68,7 @@ public class InitialContextFactoryBuilder implements javax.naming.spi.InitialCon
     }
 
     private ClassLoader getContextClassLoader() {
-        return AccessController.doPrivileged(
-            new PrivilegedAction<ClassLoader>() {
-                public ClassLoader run() {
-                    return Thread.currentThread().getContextClassLoader();
-                }
-            }
-        );
+        return getSecurityManager() == null ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
     }
 
 }

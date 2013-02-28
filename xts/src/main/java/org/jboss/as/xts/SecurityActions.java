@@ -21,8 +21,11 @@
  */
 package org.jboss.as.xts;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
+import org.jboss.as.util.security.SetContextClassLoaderAction;
+
+import static java.lang.System.getSecurityManager;
+import static java.lang.Thread.currentThread;
+import static java.security.AccessController.doPrivileged;
 
 /**
  * Privileged actions used by this package.
@@ -42,14 +45,12 @@ final class SecurityActions {
      * @return The class loader previously associated with the current thread
      */
     public static ClassLoader setContextLoader(final ClassLoader classLoader) {
-        return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
-            @Override
-            public ClassLoader run() {
-                Thread currentThread = Thread.currentThread();
-                ClassLoader current = currentThread.getContextClassLoader();
-                currentThread.setContextClassLoader(classLoader);
-                return current;
-            }
-        });
+        if (getSecurityManager() == null) try {
+            return currentThread().getContextClassLoader();
+        } finally {
+            currentThread().setContextClassLoader(classLoader);
+        } else {
+            return doPrivileged(new SetContextClassLoaderAction(classLoader));
+        }
     }
 }

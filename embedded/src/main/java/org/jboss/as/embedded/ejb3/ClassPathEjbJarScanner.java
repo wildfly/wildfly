@@ -21,6 +21,7 @@
  */
 package org.jboss.as.embedded.ejb3;
 
+import org.jboss.as.util.security.ReadPropertyAction;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
@@ -39,7 +40,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -50,6 +50,8 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
+import static java.lang.System.getProperty;
+import static java.lang.System.getSecurityManager;
 import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.embedded.EmbeddedLogger.ROOT_LOGGER;
 import static org.jboss.as.embedded.EmbeddedMessages.MESSAGES;
@@ -228,26 +230,8 @@ class ClassPathEjbJarScanner {
         return returnValue.toArray(DUMMY);
     }
 
-    private static ClassLoader getTccl() {
-        if (System.getSecurityManager() == null)
-            return Thread.currentThread().getContextClassLoader();
-        return doPrivileged(new PrivilegedAction<ClassLoader>() {
-            @Override
-            public ClassLoader run() {
-                return Thread.currentThread().getContextClassLoader();
-            }
-        });
-    }
-
     private static String getSystemProperty(final String property) {
-        if (System.getSecurityManager() == null)
-            return System.getProperty(property);
-        return doPrivileged(new PrivilegedAction<String>() {
-            @Override
-            public String run() {
-                return System.getProperty(property);
-            }
-        });
+        return getSecurityManager() == null ? getProperty(property) : doPrivileged(new ReadPropertyAction(property));
     }
 
     //-------------------------------------------------------------------------------------||

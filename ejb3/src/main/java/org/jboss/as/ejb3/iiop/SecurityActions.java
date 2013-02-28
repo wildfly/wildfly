@@ -22,8 +22,12 @@
 
 package org.jboss.as.ejb3.iiop;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
+import org.jboss.as.util.security.GetContextClassLoaderAction;
+import org.jboss.as.util.security.SetContextClassLoaderAction;
+
+import static java.lang.System.getSecurityManager;
+import static java.lang.Thread.currentThread;
+import static java.security.AccessController.doPrivileged;
 
 final class SecurityActions {
 
@@ -37,15 +41,7 @@ final class SecurityActions {
      * @return the current context classloader
      */
     static ClassLoader getContextClassLoader() {
-        if (System.getSecurityManager() == null) {
-            return Thread.currentThread().getContextClassLoader();
-        } else {
-            return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
-                public ClassLoader run() {
-                    return Thread.currentThread().getContextClassLoader();
-                }
-            });
-        }
+        return getSecurityManager() == null ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
     }
 
     /**
@@ -55,15 +51,10 @@ final class SecurityActions {
      *            the classloader
      */
     static void setContextClassLoader(final ClassLoader classLoader) {
-        if (System.getSecurityManager() == null) {
-            Thread.currentThread().setContextClassLoader(classLoader);
+        if (getSecurityManager() == null) {
+            currentThread().setContextClassLoader(classLoader);
         } else {
-            AccessController.doPrivileged(new PrivilegedAction<Object>() {
-                public Object run() {
-                    Thread.currentThread().setContextClassLoader(classLoader);
-                    return null;
-                }
-            });
+            doPrivileged(new SetContextClassLoaderAction(classLoader));
         }
     }
 

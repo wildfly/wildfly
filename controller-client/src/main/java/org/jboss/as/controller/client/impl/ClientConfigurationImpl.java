@@ -23,6 +23,7 @@
 package org.jboss.as.controller.client.impl;
 
 import org.jboss.as.controller.client.ModelControllerClientConfiguration;
+import org.jboss.as.util.security.ReadPropertyAction;
 import org.jboss.threads.JBossThreadFactory;
 
 import javax.net.ssl.SSLContext;
@@ -30,7 +31,6 @@ import javax.security.auth.callback.CallbackHandler;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -38,6 +38,10 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static java.lang.System.getProperty;
+import static java.lang.System.getSecurityManager;
+import static java.security.AccessController.doPrivileged;
 
 /**
  * @author Emanuel Muckenhuber
@@ -158,18 +162,15 @@ public class ClientConfigurationImpl implements ModelControllerClientConfigurati
     }
 
     private static int getSystemProperty(final String name, final int defaultValue) {
-        final SecurityManager sm = System.getSecurityManager();
-        if(sm == null) {
-            return Integer.getInteger(name, defaultValue);
-        } else {
-            return AccessController.doPrivileged(new PrivilegedAction<Integer>() {
-                @Override
-                public Integer run() {
-                    return Integer.getInteger(name, defaultValue);
-                }
-            });
+        final String value = getStringProperty(name);
+        try {
+            return value == null ? defaultValue : Integer.parseInt(value);
+        } catch (NumberFormatException ignored) {
+            return defaultValue;
         }
     }
 
-
+    private static String getStringProperty(final String name) {
+        return getSecurityManager() == null ? getProperty(name) : doPrivileged(new ReadPropertyAction(name));
+    }
 }

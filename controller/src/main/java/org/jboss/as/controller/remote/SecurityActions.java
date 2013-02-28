@@ -22,12 +22,16 @@
 
 package org.jboss.as.controller.remote;
 
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 
 import javax.security.auth.Subject;
 
 import org.jboss.as.controller.security.SecurityContext;
+import org.jboss.as.util.security.ReadPropertyAction;
+
+import static java.lang.System.getProperty;
+import static java.lang.System.getSecurityManager;
+import static java.security.AccessController.doPrivileged;
 
 /**
  * Security Actions for classes in the org.jboss.as.controller.remote package.
@@ -39,21 +43,11 @@ import org.jboss.as.controller.security.SecurityContext;
 class SecurityActions {
 
     static String getSystemProperty(final String key, final String defaultValue) {
-        if (System.getSecurityManager() == null) {
-            return System.getProperty(key, defaultValue);
-        }
-
-        return AccessController.doPrivileged(new PrivilegedAction<String>() {
-
-            @Override
-            public String run() {
-                return System.getProperty(key, defaultValue);
-            }
-        });
+        return getSecurityManager() == null ? getProperty(key, defaultValue) : doPrivileged(new ReadPropertyAction(key, defaultValue));
     }
 
     static void setSecurityContextSubject(final Subject subject) {
-        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+        doPrivileged(new PrivilegedAction<Void>() {
             public Void run() {
                 SecurityContext.setSubject(subject);
                 return null;
@@ -62,7 +56,7 @@ class SecurityActions {
     }
 
     static void clearSubjectSecurityContext() {
-        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+        doPrivileged(new PrivilegedAction<Void>() {
             public Void run() {
                 SecurityContext.clearSubject();
                 return null;

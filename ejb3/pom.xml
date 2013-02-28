@@ -86,6 +86,11 @@ vi:ts=4:sw=4:expandtab
 
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>jboss-as-security-util</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>jboss-as-transactions</artifactId>
         </dependency>
 

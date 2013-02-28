@@ -56,10 +56,15 @@
             <artifactId>jboss-msc</artifactId>
         </dependency>
 
-	    <dependency>
-	        <groupId>org.jboss.as</groupId>
-	        <artifactId>jboss-as-controller</artifactId>
-	    </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-controller</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-security-util</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.hornetq</groupId>

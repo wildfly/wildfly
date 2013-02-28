@@ -28,15 +28,19 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.Arrays;
 
+import org.jboss.as.util.security.GetContextClassLoaderAction;
+import org.jboss.as.util.security.SetContextClassLoaderAction;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.SimpleDataInput;
 import org.jboss.marshalling.SimpleDataOutput;
 import org.jboss.marshalling.Unmarshaller;
+
+import static java.lang.System.getSecurityManager;
+import static java.lang.Thread.currentThread;
+import static java.security.AccessController.doPrivileged;
 
 /**
  * A non-hashable marshalled value, that is lazily serialized, but only deserialized on demand.
@@ -193,31 +197,14 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
     }
 
     static ClassLoader getCurrentThreadContextClassLoader() {
-        if(System.getSecurityManager() == null) {
-            return Thread.currentThread().getContextClassLoader();
-        } else {
-            PrivilegedAction<ClassLoader> action = new PrivilegedAction<ClassLoader>() {
-                @Override
-                public ClassLoader run() {
-                    return Thread.currentThread().getContextClassLoader();
-                }
-            };
-            return AccessController.doPrivileged(action);
-        }
+        return getSecurityManager() == null ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
     }
 
     static void setCurrentThreadContextClassLoader(final ClassLoader loader) {
-        if(System.getSecurityManager() == null) {
-            Thread.currentThread().setContextClassLoader(loader);
+        if (getSecurityManager() == null) {
+            currentThread().setContextClassLoader(loader);
         } else {
-            PrivilegedAction<Void> action = new PrivilegedAction<Void>() {
-                @Override
-                public Void run() {
-                    Thread.currentThread().setContextClassLoader(loader);
-                    return null;
-                }
-            };
-            AccessController.doPrivileged(action);
+            doPrivileged(new SetContextClassLoaderAction(loader));
         }
     }
 }

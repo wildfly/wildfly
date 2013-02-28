@@ -27,9 +27,9 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.Arrays;
 import java.util.Locale;
+import org.jboss.as.util.security.ReadPropertyAction;
 
 /**
  * Utility methods related to networking.
@@ -203,19 +203,12 @@ public class NetworkUtils {
     }
 
     private static boolean checkForPresence(final String key, final String value) {
-
-        return AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
-
-            @Override
-            public Boolean run() {
-                try {
-                    String tmp = System.getProperty(key);
-                    return tmp != null && tmp.trim().toLowerCase(Locale.ENGLISH).startsWith(value);
-                } catch (Throwable t) {
-                    return false;
-                }
-            }
-        });
+        final String tmp = System.getSecurityManager() == null ? System.getProperty(key) : AccessController.doPrivileged(new ReadPropertyAction(key));
+        try {
+            return tmp != null && tmp.trim().toLowerCase(Locale.ENGLISH).startsWith(value);
+        } catch (Throwable t) {
+            return false;
+        }
     }
 
     // No instantiation

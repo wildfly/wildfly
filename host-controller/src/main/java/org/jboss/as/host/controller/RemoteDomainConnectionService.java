@@ -38,7 +38,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -564,17 +563,11 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     }
 
     private static int getSystemProperty(final String name, final int defaultValue) {
-        final SecurityManager sm = System.getSecurityManager();
-        if(sm == null) {
-            return Integer.getInteger(name, defaultValue);
-        } else {
-            return AccessController.doPrivileged( new PrivilegedAction<Integer>() {
-                @Override
-                public Integer run() {
-                    return Integer.getInteger(name, defaultValue);
-                }
-            });
+        final String value = SecurityActions.getSystemProperty(name);
+        try {
+            return value == null ? defaultValue : Integer.parseInt(value);
+        } catch (NumberFormatException ignored) {
+            return defaultValue;
         }
     }
-
 }

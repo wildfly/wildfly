@@ -22,14 +22,15 @@
 
 package org.jboss.as.connector.services.resourceadapters.deployment;
 
+import static java.lang.System.getSecurityManager;
+import static java.lang.Thread.currentThread;
+import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER;
 import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 
 import java.io.File;
 import java.io.PrintWriter;
 import java.net.URL;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.List;
 import javax.naming.Reference;
 import javax.resource.spi.ResourceAdapter;
@@ -50,6 +51,9 @@ import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
+import org.jboss.as.util.security.ClearContextClassLoaderAction;
+import org.jboss.as.util.security.GetClassLoaderAction;
+import org.jboss.as.util.security.SetContextClassLoaderAction;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
 import org.jboss.jca.common.api.metadata.ra.ConfigProperty;
 import org.jboss.jca.common.api.metadata.ra.Connector;
@@ -396,12 +400,15 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
         @Override
         protected TransactionManager getTransactionManager() {
-            AccessController.doPrivileged(new SetContextLoaderAction(
-                    com.arjuna.ats.jbossatx.jta.TransactionManagerService.class.getClassLoader()));
+            if (getSecurityManager() == null) {
+                currentThread().setContextClassLoader(TransactionIntegration.class.getClassLoader());
+            } else {
+                doPrivileged(new SetContextClassLoaderAction(doPrivileged(new GetClassLoaderAction(TransactionIntegration.class))));
+            }
             try {
                 return getTxIntegration().getValue().getTransactionManager();
             } finally {
-                AccessController.doPrivileged(CLEAR_ACTION);
+                doPrivileged(ClearContextClassLoaderAction.getInstance());
             }
         }
 
@@ -497,21 +504,4 @@ public abstract class AbstractResourceAdapterDeploymentService {
             return new BeanValidation(new JCAValidatorFactory(cl));
         }
     }
-
-    private static final SetContextLoaderAction CLEAR_ACTION = new SetContextLoaderAction(null);
-
-    private static class SetContextLoaderAction implements PrivilegedAction<Void> {
-
-        private final ClassLoader classLoader;
-
-        public SetContextLoaderAction(final ClassLoader classLoader) {
-            this.classLoader = classLoader;
-        }
-
-        public Void run() {
-            Thread.currentThread().setContextClassLoader(classLoader);
-            return null;
-        }
-    }
-
 }

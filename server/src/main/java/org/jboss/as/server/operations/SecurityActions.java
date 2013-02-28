@@ -21,8 +21,16 @@
 */
 package org.jboss.as.server.operations;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
+import org.jboss.as.util.security.ClearPropertyAction;
+import org.jboss.as.util.security.GetClassLoaderAction;
+import org.jboss.as.util.security.ReadPropertyAction;
+import org.jboss.as.util.security.WritePropertyAction;
+
+import static java.lang.System.clearProperty;
+import static java.lang.System.getProperty;
+import static java.lang.System.getSecurityManager;
+import static java.lang.System.setProperty;
+import static java.security.AccessController.doPrivileged;
 
 /**
  *
@@ -31,42 +39,18 @@ import java.security.PrivilegedAction;
 class SecurityActions {
 
     static String setSystemProperty(final String key, final String value) throws SecurityException {
-
-        return AccessController.doPrivileged(new PrivilegedAction<String>() {
-            public String run() {
-                return System.setProperty(key, value);
-            }
-        });
+        return getSecurityManager() == null ? setProperty(key, value) : doPrivileged(new WritePropertyAction(key, value));
     }
 
     static String clearSystemProperty(final String key) throws SecurityException {
-
-        return AccessController.doPrivileged(new PrivilegedAction<String>() {
-            public String run() {
-                return System.clearProperty(key);
-            }
-        });
+        return getSecurityManager() == null ? clearProperty(key) : doPrivileged(new ClearPropertyAction(key));
     }
 
     static String getSystemProperty(final String name) {
-        if (System.getSecurityManager() == null) {
-            return System.getProperty(name);
-        }
-        return AccessController.doPrivileged(new PrivilegedAction<String>() {
-            public String run() {
-                return System.getProperty(name);
-            }
-        });
+        return getSecurityManager() == null ? getProperty(name) : doPrivileged(new ReadPropertyAction(name));
     }
 
     static ClassLoader getClassLoader(final Class<?> clazz) {
-        if (System.getSecurityManager() == null) {
-            return clazz.getClassLoader();
-        }
-        return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
-            public ClassLoader run() {
-                return clazz.getClassLoader();
-            }
-        });
+        return getSecurityManager() == null ? clazz.getClassLoader() : doPrivileged(new GetClassLoaderAction(clazz));
     }
 }

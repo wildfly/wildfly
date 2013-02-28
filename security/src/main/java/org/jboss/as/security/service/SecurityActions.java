@@ -22,7 +22,6 @@
 
 package org.jboss.as.security.service;
 
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
@@ -30,12 +29,20 @@ import java.security.Security;
 
 import org.jboss.as.security.SecurityMessages;
 import org.jboss.as.security.remoting.RemotingContext;
+import org.jboss.as.util.security.GetContextClassLoaderAction;
+import org.jboss.as.util.security.GetModuleClassLoaderAction;
+import org.jboss.as.util.security.ReadPropertyAction;
+import org.jboss.as.util.security.WriteSecurityPropertyAction;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.remoting3.Connection;
+
+import static java.lang.System.getSecurityManager;
+import static java.lang.Thread.currentThread;
+import static java.security.AccessController.doPrivileged;
 
 /**
  * Privileged blocks for this package
@@ -47,66 +54,31 @@ import org.jboss.remoting3.Connection;
 class SecurityActions {
 
     static ModuleClassLoader getModuleClassLoader(final String moduleSpec) throws ModuleLoadException {
-        if (System.getSecurityManager() != null) {
-            try {
-                return AccessController.doPrivileged(new PrivilegedExceptionAction<ModuleClassLoader>() {
-                    public ModuleClassLoader run() throws ModuleLoadException {
-                        ModuleLoader loader = Module.getCallerModuleLoader();
-                        ModuleIdentifier identifier = ModuleIdentifier.fromString(moduleSpec);
-                        return loader.loadModule(identifier).getClassLoader();
-                    }
-                });
-            } catch (PrivilegedActionException pae) {
-                throw SecurityMessages.MESSAGES.moduleLoadException(pae);
-            }
-        } else {
-            ModuleLoader loader = Module.getCallerModuleLoader();
-            ModuleIdentifier identifier = ModuleIdentifier.fromString(moduleSpec);
-            return loader.loadModule(identifier).getClassLoader();
-        }
+        ModuleLoader loader = Module.getCallerModuleLoader();
+        final Module module = loader.loadModule(ModuleIdentifier.fromString(moduleSpec));
+        return getSecurityManager() != null ? doPrivileged(new GetModuleClassLoaderAction(module)) : module.getClassLoader();
     }
 
     static void setSecurityProperty(final String key, final String value) {
-        if (System.getSecurityManager() != null) {
-            AccessController.doPrivileged(new PrivilegedAction<Void>() {
-                public Void run() {
-                    Security.setProperty(key, value);
-                    return null;
-                }
-            });
+        if (getSecurityManager() != null) {
+            doPrivileged(new WriteSecurityPropertyAction(key, value));
         } else {
             Security.setProperty(key, value);
         }
     }
 
     static String getSystemProperty(final String name, final String defaultValue) {
-        if (System.getSecurityManager() != null) {
-            return AccessController.doPrivileged(new PrivilegedAction<String>() {
-                public String run() {
-                    return System.getProperty(name, defaultValue);
-                }
-            });
-        } else {
-            return System.getProperty(name, defaultValue);
-        }
+        return getSecurityManager() == null ? System.getProperty(name, defaultValue) : doPrivileged(new ReadPropertyAction(name, defaultValue));
     }
 
     static ClassLoader getContextClassLoader() {
-        if (System.getSecurityManager() != null) {
-            return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
-                public ClassLoader run() {
-                    return Thread.currentThread().getContextClassLoader();
-                }
-            });
-        } else {
-            return Thread.currentThread().getContextClassLoader();
-        }
+        return getSecurityManager() == null ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
     }
 
     static Class<?> loadClass(final String name) throws ClassNotFoundException {
-        if (System.getSecurityManager() != null) {
+        if (getSecurityManager() != null) {
             try {
-                return AccessController.doPrivileged(new PrivilegedExceptionAction<Class<?>>() {
+                return doPrivileged(new PrivilegedExceptionAction<Class<?>>() {
                     public Class<?> run() throws ClassNotFoundException {
                         ClassLoader[] cls = new ClassLoader[] { SecurityActions.class.getClassLoader(), // PB classes (not always on TCCL [modular env])
                                 getContextClassLoader(), // User defined classes
@@ -114,8 +86,7 @@ class SecurityActions {
                         };
                         ClassNotFoundException e = null;
                         for (ClassLoader cl : cls) {
-                            if (cl == null)
-                                continue;
+                            if (cl == null) continue;
 
                             try {
                                 return cl.loadClass(name);
@@ -162,7 +133,7 @@ class SecurityActions {
     }
 
     private static RemotingContextAssociationActions remotingContextAccociationActions() {
-        return System.getSecurityManager() == null ? RemotingContextAssociationActions.NON_PRIVILEGED
+        return getSecurityManager() == null ? RemotingContextAssociationActions.NON_PRIVILEGED
                 : RemotingContextAssociationActions.PRIVILEGED;
     }
 
@@ -216,15 +187,15 @@ class SecurityActions {
             };
 
             public boolean isSet() {
-                return AccessController.doPrivileged(IS_SET_ACTION);
+                return doPrivileged(IS_SET_ACTION);
             }
 
             public Connection getConnection() {
-                return AccessController.doPrivileged(GET_CONNECTION_ACTION);
+                return doPrivileged(GET_CONNECTION_ACTION);
             }
 
             public void clear() {
-                AccessController.doPrivileged(CLEAR_ACTION);
+                doPrivileged(CLEAR_ACTION);
             }
         };
 

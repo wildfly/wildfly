@@ -21,75 +21,27 @@
  */
 package org.jboss.as.cli;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
+import org.jboss.as.util.security.GetContextClassLoaderAction;
+import org.jboss.as.util.security.ReadPropertyAction;
 
+import static java.lang.System.getProperty;
+import static java.lang.System.getSecurityManager;
+import static java.lang.Thread.currentThread;
+import static java.security.AccessController.doPrivileged;
 
 /**
  * Package privileged actions
  *
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Scott.Stark@jboss.org
  * @author Alexey Loubyansky
  */
 class SecurityActions {
-    private interface TCLAction {
-        class UTIL {
-            static TCLAction getTCLAction() {
-                return System.getSecurityManager() == null ? NON_PRIVILEGED : PRIVILEGED;
-            }
-
-            static String getSystemProperty(String name) {
-                return getTCLAction().getSystemProperty(name);
-            }
-
-            static ClassLoader getContextClassLoader() {
-                return getTCLAction().getContextClassLoader();
-            }
-        }
-
-        TCLAction NON_PRIVILEGED = new TCLAction() {
-            @Override
-            public String getSystemProperty(String name) {
-                return System.getProperty(name);
-            }
-
-            @Override
-            public ClassLoader getContextClassLoader() {
-                return Thread.currentThread().getContextClassLoader();
-            }
-        };
-
-        TCLAction PRIVILEGED = new TCLAction() {
-
-            @Override
-            public String getSystemProperty(final String name) {
-                return (String) AccessController.doPrivileged(new PrivilegedAction<Object>() {
-                    public Object run() {
-                        return System.getProperty(name);
-                    }
-                });
-            }
-
-            @Override
-            public ClassLoader getContextClassLoader() {
-                return (ClassLoader) AccessController.doPrivileged(new PrivilegedAction<Object>() {
-                    public Object run() {
-                        return Thread.currentThread().getContextClassLoader();
-                    }
-                });
-            }
-        };
-
-        String getSystemProperty(String name);
-
-        ClassLoader getContextClassLoader();
+    static String getSystemProperty(String name) {
+        return getSecurityManager() == null ? getProperty(name) : doPrivileged(new ReadPropertyAction(name));
     }
 
-    protected static String getSystemProperty(String name) {
-        return TCLAction.UTIL.getSystemProperty(name);
-    }
-
-    protected static ClassLoader getContextClassLoader() {
-        return TCLAction.UTIL.getContextClassLoader();
+    static ClassLoader getContextClassLoader() {
+        return getSecurityManager() == null ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
     }
 }

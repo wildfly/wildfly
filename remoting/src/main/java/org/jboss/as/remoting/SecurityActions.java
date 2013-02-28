@@ -21,8 +21,12 @@
 */
 package org.jboss.as.remoting;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
+import org.jboss.as.util.security.GetClassLoaderAction;
+import org.jboss.as.util.security.ReadPropertyAction;
+
+import static java.lang.System.getProperty;
+import static java.lang.System.getSecurityManager;
+import static java.security.AccessController.doPrivileged;
 
 /**
  *
@@ -31,25 +35,11 @@ import java.security.PrivilegedAction;
 class SecurityActions {
 
     static String getSystemProperty(final String name) {
-        if (System.getSecurityManager() == null) {
-            return System.getProperty(name);
-        }
-        return AccessController.doPrivileged(new PrivilegedAction<String>() {
-            public String run() {
-                return System.getProperty(name);
-            }
-        });
+        return getSecurityManager() == null ? getProperty(name) : doPrivileged(new ReadPropertyAction(name));
     }
 
     static ClassLoader getClassLoader(final Class<?> clazz) {
-        if (System.getSecurityManager() == null) {
-            return clazz.getClassLoader();
-        }
-        return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
-            public ClassLoader run() {
-                return clazz.getClassLoader();
-            }
-        });
+        return getSecurityManager() == null ? clazz.getClassLoader() : doPrivileged(new GetClassLoaderAction(clazz));
     }
 
 }

@@ -22,8 +22,11 @@
 
 package org.jboss.as.protocol;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
+import org.jboss.as.util.security.ReadPropertyAction;
+
+import static java.lang.System.getProperty;
+import static java.lang.System.getSecurityManager;
+import static java.security.AccessController.doPrivileged;
 
 /**
  * Security actions to access system environment information.  No methods in
@@ -37,16 +40,6 @@ final class SecurityActions {
     }
 
     static String getSystemProperty(final String key) {
-        if (System.getSecurityManager() == null) {
-            return System.getProperty(key);
-        }
-
-        return AccessController.doPrivileged(new PrivilegedAction<String>() {
-
-            @Override
-            public String run() {
-                return System.getProperty(key);
-            }
-        });
+        return getSecurityManager() == null ? getProperty(key) : doPrivileged(new ReadPropertyAction(key));
     }
 }

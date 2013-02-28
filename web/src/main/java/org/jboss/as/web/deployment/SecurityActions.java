@@ -22,8 +22,13 @@
 
 package org.jboss.as.web.deployment;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
+import org.jboss.as.util.security.ReadPropertyAction;
+import org.jboss.as.util.security.WritePropertyAction;
+
+import static java.lang.System.getProperty;
+import static java.lang.System.getSecurityManager;
+import static java.lang.System.setProperty;
+import static java.security.AccessController.doPrivileged;
 
 /**
  * Privileged actions used by this package.
@@ -37,30 +42,10 @@ class SecurityActions {
     }
 
     static String getSystemProperty(final String key, final String defaultValue) {
-        if (System.getSecurityManager() == null) {
-            return System.getProperty(key, defaultValue);
-        }
-        return AccessController.doPrivileged(new PrivilegedAction<String>() {
-
-            @Override
-            public String run() {
-                return System.getProperty(key, defaultValue);
-            }
-        });
+        return getSecurityManager() == null ? getProperty(key, defaultValue) : doPrivileged(new ReadPropertyAction(key, defaultValue));
     }
 
-    static void setSystemProperty(final String key, final String value) {
-        if (System.getSecurityManager() == null) {
-            System.setProperty(key, value);
-        } else {
-            AccessController.doPrivileged(new PrivilegedAction<Void>() {
-
-                @Override
-                public Void run() {
-                    System.setProperty(key, value);
-                    return null;
-                }
-            });
-        }
+    static String setSystemProperty(final String key, final String value) {
+        return getSecurityManager() == null ? setProperty(key, value) : doPrivileged(new WritePropertyAction(key, value));
     }
 }
