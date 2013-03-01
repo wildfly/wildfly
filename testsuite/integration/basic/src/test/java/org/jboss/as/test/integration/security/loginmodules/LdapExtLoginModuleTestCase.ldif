@@ -1,4 +1,40 @@
-# Example1
+# Roles used in referrals
+
+dn: ou=SharedRoles,dc=jboss,dc=org
+objectclass: top
+objectclass: organizationalUnit
+ou: SharedRoles
+
+dn: cn=User,ou=SharedRoles,dc=jboss,dc=org
+objectClass: top
+objectClass: groupOfNames
+cn: User
+member:
+
+# Map Admin role for Example1, Example3. The Example4 ignores referrals.
+dn: cn=Admin,ou=SharedRoles,dc=jboss,dc=org
+objectClass: top
+objectClass: groupOfNames
+cn: Admin
+member: uid=jduke,ou=People,dc=jboss,dc=org
+member: uid=jduke,ou=People,o=example3,dc=jboss,dc=org
+member: uid=jduke,ou=People,o=example4,dc=jboss,dc=org
+
+# If the Example2 has referral follow, then this would be used to map the User role for jduke
+dn: cn=jduke,ou=SharedRoles,dc=jboss,dc=org
+objectClass: top
+objectClass: groupOfNames
+cn: jduke
+description: cn=User,ou=SharedRoles,dc=jboss,dc=org
+member: 
+
+# Example1: "jduke" - "TheDuke", "Echo", "Admin"
+#baseCtxDN= ou=People,dc=jboss,dc=org
+#baseFilter= (uid={0})
+#rolesCtxDN= ou=Roles,dc=jboss,dc=org
+#roleFilter= (|(objectClass=referral)(member={1}))
+#roleAttributeID= cn
+#java.naming.referral= follow
 
 dn: ou=People,dc=jboss,dc=org
 objectclass: top
@@ -33,7 +69,23 @@ cn: TheDuke
 description: TheDuke role context
 member: uid=jduke,ou=People,dc=jboss,dc=org
 
-# Example2
+dn: ou=RefRoles,ou=Roles,dc=jboss,dc=org
+objectClass: extensibleObject
+objectClass: referral
+objectClass: top
+ou: RefRoles
+ref: ldap://${hostname}:${ldapPort}/ou=SharedRoles,dc=jboss,dc=org
+
+# Example2: "jduke" - "TheDuke", "Echo", "jduke"
+#baseCtxDN= ou=People,o=example2,dc=jboss,dc=org"
+#baseFilter= (uid={0})
+#rolesCtxDN= ou=Roles,o=example2,dc=jboss,dc=org
+#roleFilter= (|(objectClass=referral)(cn={0}))
+#roleAttributeID= description
+#roleAttributeIsDN= true
+#roleNameAttributeID= cn
+#roleRecursion= 0
+#java.naming.referral= ignore
 
 dn: o=example2,dc=jboss,dc=org
 objectClass: top
@@ -122,9 +174,22 @@ objectClass: groupOfNames
 cn: JBossAdmin
 description: the JBossAdmin group
 member: uid=jduke,ou=People,o=example2,dc=jboss,dc=org
-#member: uid=jduke,ou=People,dc=jboss,dc=org
 
-# Example3
+dn: ou=RefRoles,ou=Roles,o=example2,dc=jboss,dc=org
+objectClass: extensibleObject
+objectClass: referral
+objectClass: top
+ou: RefRoles
+ref: ldap://${hostname}:${ldapPort}/ou=SharedRoles,dc=jboss,dc=org
+
+# Example3: "Java Duke" - "TheDuke", "Echo", "Admin"
+#baseCtxDN= ou=People,o=example3,dc=jboss,dc=org"
+#baseFilter= (cn={0})
+#rolesCtxDN= ou=Roles,o=example3,dc=jboss,dc=org
+#roleFilter= (|(objectClass=referral)(member={1}))
+#roleAttributeID= cn
+#roleRecursion= 0
+#java.naming.referral= follow
 
 dn: o=example3,dc=jboss,dc=org
 objectclass: top
@@ -174,7 +239,21 @@ objectClass: top
 cn: TheDuke
 member: uid=jduke,ou=People,o=example3,dc=jboss,dc=org
 
-# Example4
+dn: ou=RefRoles,ou=Roles,o=example3,dc=jboss,dc=org
+objectClass: extensibleObject
+objectClass: referral
+objectClass: top
+ou: RefRoles
+ref: ldaps://${hostname}:${ldapsPort}/ou=SharedRoles,dc=jboss,dc=org
+
+# Example4: "Java Duke" - "RG2", "R1", "R2", "R3", "R5"
+#baseCtxDN= ou=People,o=example4,dc=jboss,dc=org"
+#baseFilter= (cn={0})
+#rolesCtxDN= ou=Roles,o=example4,dc=jboss,dc=org
+#roleFilter= (|(objectClass=referral)(member={1}))
+#roleAttributeID= cn
+#roleRecursion= 1
+#java.naming.referral= ignore
 
 dn: o=example4,dc=jboss,dc=org
 objectclass: top
@@ -254,6 +333,13 @@ objectClass: top
 cn: R5
 member: cn=RG3,cn=RG1,ou=Roles,o=example4,dc=jboss,dc=org
 member: uid=jduke,ou=People,o=example4,dc=jboss,dc=org
+
+dn: ou=RefRoles,ou=Roles,o=example4,dc=jboss,dc=org
+objectClass: extensibleObject
+objectClass: referral
+objectClass: top
+ou: RefRoles
+ref: ldaps://${hostname}:${ldapsPort}/ou=SharedRoles,dc=jboss,dc=org
 
 # Example5 - role name in user's attribute (employeeNumber)
 dn: o=example5,dc=jboss,dc=org
