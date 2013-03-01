@@ -35,5 +35,8 @@
   <security-role><role-name>R4</role-name></security-role>
   <security-role><role-name>R5</role-name></security-role>
   <security-role><role-name>Roles</role-name></security-role>
+  <security-role><role-name>User</role-name></security-role>
+  <security-role><role-name>Admin</role-name></security-role>
+  <security-role><role-name>SharedRoles</role-name></security-role>
   
 </web-app>
