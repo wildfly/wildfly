@@ -12,12 +12,16 @@ public class WriteDefaultWebModule extends WriteAttributeHandler {
     static final WriteDefaultWebModule INSTANCE = new WriteDefaultWebModule();
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final ModelNode virtualHost = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
-        String war = operation.get("value").toString();
-        if(virtualHost.hasDefined(Constants.ENABLE_WELCOME_ROOT) && Boolean.parseBoolean(virtualHost.get(Constants.ENABLE_WELCOME_ROOT).toString())) {
-            // That is no supported.
-            throw new OperationFailedException(MESSAGES.noWelcomeWebappWithDefaultWebModule());
+        if (operation.hasDefined("value")) {
+            String war = operation.get("value").toString();
+            if(virtualHost.hasDefined(Constants.ENABLE_WELCOME_ROOT) && Boolean.parseBoolean(virtualHost.get(Constants.ENABLE_WELCOME_ROOT).toString())) {
+                // That is no supported.
+                throw new OperationFailedException(MESSAGES.noWelcomeWebappWithDefaultWebModule());
+            } else {
+                virtualHost.get(Constants.DEFAULT_WEB_MODULE).set(war);
+            }
         } else {
-            virtualHost.get(Constants.DEFAULT_WEB_MODULE).set(war);
+            virtualHost.get(Constants.DEFAULT_WEB_MODULE).clear();
         }
         if (context.isNormalServer()) {
             context.reloadRequired();
