@@ -22,19 +22,30 @@
 
 package org.jboss.as.ejb3.subsystem.deployment;
 
+import java.util.Locale;
+import java.util.Map;
+import java.util.ResourceBundle;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ListAttributeDefinition;
+import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleListAttributeDefinition;
+import org.jboss.as.controller.SimpleMapAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.ejb3.component.invocationmetrics.InvocationMetrics;
 import org.jboss.as.ejb3.subsystem.EJB3Extension;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -71,6 +82,11 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
             .build();
 
     private static final AttributeDefinition WAIT_TIME = new SimpleAttributeDefinitionBuilder("wait-time", ModelType.LONG)
+            .setAllowNull(false)
+            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+            .build();
+
+    private static final AttributeDefinition METHODS = ObjectTypeAttributeDefinition.Builder.of("methods", EXECUTION_TIME, INVOCATIONS, WAIT_TIME)
             .setAllowNull(false)
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
@@ -151,6 +167,20 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
             @Override
             protected void executeReadMetricStep(final OperationContext context, final ModelNode operation, final EJBComponent component) throws OperationFailedException {
                 context.getResult().set(component.getInvocationMetrics().getWaitTime());
+            }
+        });
+        resourceRegistration.registerMetric(METHODS, new AbstractRuntimeMetricsHandler() {
+            @Override
+            protected void executeReadMetricStep(final OperationContext context, final ModelNode operation, final EJBComponent component) throws OperationFailedException {
+                context.getResult().setEmptyObject();
+                for (final Map.Entry<String, InvocationMetrics.Values> entry : component.getInvocationMetrics().getMethods().entrySet()) {
+                    final InvocationMetrics.Values values = entry.getValue();
+                    final ModelNode result = new ModelNode();
+                    result.get("execution-time").set(values.getExecutionTime());
+                    result.get("invocations").set(values.getInvocations());
+                    result.get("wait-time").set(values.getWaitTime());
+                    context.getResult().get(entry.getKey()).set(result);
+                }
             }
         });
     }
