@@ -73,7 +73,9 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
     public ResourceAdapterXmlDeploymentService(ConnectorXmlDescriptor connectorXmlDescriptor, ResourceAdapter raxml,
                                                Module module, final String deployment, final ServiceName deploymentServiceName, final ServiceName duServiceName) {
         this.connectorXmlDescriptor = connectorXmlDescriptor;
-        this.raxml = raxml;
+        synchronized (this) {
+            this.raxml = raxml;
+        }
         this.module = module;
         this.deployment = deployment;
         if (raxml != null && raxml.getArchive() != null && raxml.getArchive().indexOf(".rar") != -1) {
