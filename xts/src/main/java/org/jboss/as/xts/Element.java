@@ -34,7 +34,9 @@ enum Element {
     // must be first
     UNKNOWN(null),
 
-    XTS_ENVIRONMENT(CommonAttributes.XTS_ENVIRONMENT),;
+    XTS_ENVIRONMENT(CommonAttributes.XTS_ENVIRONMENT),
+    DEFAULT_CONTEXT_PROPAGATION(CommonAttributes.DEFAULT_CONTEXT_PROPAGATION),
+    ;
 
     private final String name;
 

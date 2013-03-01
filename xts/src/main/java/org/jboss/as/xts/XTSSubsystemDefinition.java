@@ -53,6 +53,13 @@ public class XTSSubsystemDefinition extends SimpleResourceDefinition {
                             //.setDefaultValue(new ModelNode().setExpression("http://${jboss.bind.address:127.0.0.1}:8080/ws-c11/ActivationService"))
                     .build();
 
+    protected static final SimpleAttributeDefinition DEFAULT_CONTEXT_PROPAGATION =
+            new SimpleAttributeDefinitionBuilder(CommonAttributes.DEFAULT_CONTEXT_PROPAGATION, ModelType.BOOLEAN, true)
+                    .setAllowExpression(false)
+                    .setXmlName(Attribute.ENABLED.getLocalName())
+                    .setFlags(AttributeAccess.Flag.RESTART_JVM)
+                    .build();
+
     @Deprecated //just legacy support
     private static final ObjectTypeAttributeDefinition ENVIRONMENT = ObjectTypeAttributeDefinition.
             Builder.of(CommonAttributes.XTS_ENVIRONMENT, ENVIRONMENT_URL)
@@ -81,6 +88,7 @@ public class XTSSubsystemDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadWriteAttribute(ENVIRONMENT_URL, null, new ReloadRequiredWriteAttributeHandler(ENVIRONMENT_URL));
+        resourceRegistration.registerReadWriteAttribute(DEFAULT_CONTEXT_PROPAGATION, null, new ReloadRequiredWriteAttributeHandler(DEFAULT_CONTEXT_PROPAGATION));
         //this here just for legacy support!
         resourceRegistration.registerReadOnlyAttribute(ENVIRONMENT, new OperationStepHandler() {
             @Override

@@ -33,6 +33,7 @@ import java.util.Map;
 enum Attribute {
     UNKNOWN(null),
     URL("url"),
+    ENABLED("enabled"),
     ;
     private final String name;
 
