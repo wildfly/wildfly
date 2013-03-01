@@ -4,11 +4,6 @@
         "management-minor-version" => 1
     }},
     "subsystem" => {
-        "cmp" => {
-            "management-major-version" => 1,
-            "management-minor-version" => 0,
-            "xml-namespaces" => ["urn:jboss:domain:cmp:1.0"]
-        },
         "configadmin" => {
             "management-major-version" => 1,
             "management-minor-version" => 0,
