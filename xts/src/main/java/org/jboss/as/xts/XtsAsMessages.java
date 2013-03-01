@@ -26,7 +26,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
 import org.jboss.msc.service.StartException;
 
 /**

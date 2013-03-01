@@ -28,5 +28,6 @@ package org.jboss.as.xts;
 interface CommonAttributes {
 
     String XTS_ENVIRONMENT= "xts-environment";
+    String DEFAULT_CONTEXT_PROPAGATION = "default-context-propagation";
     // TODO, many more!
 }

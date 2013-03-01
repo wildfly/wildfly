@@ -22,6 +22,9 @@
 
 package org.jboss.as.xts;
 
+import static org.jboss.as.xts.XTSSubsystemDefinition.DEFAULT_CONTEXT_PROPAGATION;
+import static org.jboss.as.xts.XTSSubsystemDefinition.ENVIRONMENT_URL;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,8 +49,6 @@ import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.wsf.spi.management.ServerConfig;
 import org.jboss.wsf.spi.publish.Context;
-
-import static org.jboss.as.xts.XTSSubsystemDefinition.ENVIRONMENT_URL;
 
 
 /**
@@ -149,6 +150,7 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         ENVIRONMENT_URL.validateAndSet(operation, model);
+        DEFAULT_CONTEXT_PROPAGATION.validateAndSet(operation, model);
     }
 
 
@@ -159,6 +161,9 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
         if (coordinatorURL != null && XtsAsLogger.ROOT_LOGGER.isDebugEnabled()) {
             XtsAsLogger.ROOT_LOGGER.debugf("nodeIdentifier=%s\n", coordinatorURL);
         }
+
+        final boolean isDefaultContextPropagation = model.hasDefined(CommonAttributes.DEFAULT_CONTEXT_PROPAGATION)
+                ? model.get(CommonAttributes.DEFAULT_CONTEXT_PROPAGATION).asBoolean() : false;
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
@@ -201,7 +206,7 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         // add an XTS service which depends on all the WS endpoints
 
-        final XTSManagerService xtsService = new XTSManagerService(coordinatorURL);
+        final XTSManagerService xtsService = new XTSManagerService(coordinatorURL, isDefaultContextPropagation);
 
         // this service needs to depend on the transaction recovery service
         // because it can only initialise XTS recovery once the transaction recovery

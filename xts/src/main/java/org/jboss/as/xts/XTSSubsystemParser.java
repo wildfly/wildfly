@@ -22,6 +22,16 @@
 
 package org.jboss.as.xts;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.xts.XTSSubsystemDefinition.DEFAULT_CONTEXT_PROPAGATION;
+import static org.jboss.as.xts.XTSSubsystemDefinition.ENVIRONMENT_URL;
+
+import java.util.EnumSet;
+import java.util.List;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ParseUtils;
@@ -31,14 +41,6 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import java.util.EnumSet;
-import java.util.List;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.xts.XTSSubsystemDefinition.ENVIRONMENT_URL;
 
 /**
  * @author <a href="mailto:adinn@redhat.com">Andrew Dinn</a>
@@ -59,9 +61,9 @@ class XTSSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
         final ModelNode subsystem = Util.getEmptyOperation(ADD, PathAddress.pathAddress(XTSExtension.SUBSYSTEM_PATH).toModelNode());
         list.add(subsystem);
 
-
         // elements
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
+
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case XTS_1_0: {
@@ -72,6 +74,10 @@ class XTSSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     switch (element) {
                         case XTS_ENVIRONMENT: {
                             parseXTSEnvironmentElement(reader,subsystem);
+                            break;
+                        }
+                        case DEFAULT_CONTEXT_PROPAGATION: {
+                            parseDefaultContextPropagationElement(reader, subsystem);
                             break;
                         }
                         default: {
@@ -117,6 +123,35 @@ class XTSSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
     }
 
     /**
+     * Handle the enable-client-handler element.
+     *
+     * @param reader
+     * @param subsystem
+     * @throws XMLStreamException
+     */
+    static void parseDefaultContextPropagationElement(XMLExtendedStreamReader reader, ModelNode subsystem) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            ParseUtils.requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case ENABLED:
+                    if (value == null || (!value.toLowerCase().equals("true") && !value.toLowerCase().equals("false"))) {
+                        throw ParseUtils.invalidAttributeValue(reader, i);
+                    }
+                    DEFAULT_CONTEXT_PROPAGATION.parseAndSetParameter(value, subsystem, reader);
+                    break;
+                default:
+                    throw ParseUtils.unexpectedAttribute(reader, i);
+            }
+        }
+
+        // Handle elements
+        ParseUtils.requireNoContent(reader);
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -129,6 +164,10 @@ class XTSSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
 
         writer.writeStartElement(Element.XTS_ENVIRONMENT.getLocalName());
         ENVIRONMENT_URL.marshallAsAttribute(node, writer);
+        writer.writeEndElement();
+
+        writer.writeStartElement(Element.DEFAULT_CONTEXT_PROPAGATION.getLocalName());
+        DEFAULT_CONTEXT_PROPAGATION.marshallAsAttribute(node, writer);
         writer.writeEndElement();
 
         writer.writeEndElement();
