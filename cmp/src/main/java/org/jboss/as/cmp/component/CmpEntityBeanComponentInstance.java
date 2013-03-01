@@ -168,6 +168,7 @@ public class CmpEntityBeanComponentInstance extends EntityBeanComponentInstance 
     public void passivate() {
         final JDBCEntityPersistenceStore store = getComponent().getStoreManager();
         try {
+            super.invokeEjbPassivate();
             store.passivateEntity(this.getEjbContext());
             clearPrimaryKey();
             setRemoved(false);

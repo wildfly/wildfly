@@ -203,13 +203,7 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
      */
     public synchronized void passivate() {
         try {
-            if (!removed) {
-                final InterceptorContext context = prepareInterceptorContext();
-                final EntityBeanComponent component = getComponent();
-                context.setMethod(component.getEjbPassivateMethod());
-                context.putPrivateData(InvocationType.class, InvocationType.ENTITY_EJB_PASSIVATE);
-                ejbPassivate.processInvocation(context);
-            }
+            invokeEjbPassivate();
             primaryKey = null;
             removed = false;
         } catch (RemoteException e) {
@@ -218,6 +212,20 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
             throw e;
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Invokes the ejbPassivate method if the entity is not removed.
+     * @throws Exception
+     */
+    protected void invokeEjbPassivate() throws Exception {
+        if (!removed) {
+            final InterceptorContext context = prepareInterceptorContext();
+            final EntityBeanComponent component = getComponent();
+            context.setMethod(component.getEjbPassivateMethod());
+            context.putPrivateData(InvocationType.class, InvocationType.ENTITY_EJB_PASSIVATE);
+            ejbPassivate.processInvocation(context);
         }
     }
 
