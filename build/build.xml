@@ -455,6 +455,10 @@
             <maven-resource group="org.jboss.spec.javax.interceptor" artifact="jboss-interceptors-api_1.1_spec"/>
         </module-def>
 
+        <module-def name="javax.json.api">
+            <maven-resource group="javax.json" artifact="javax.json-api"/>
+        </module-def>
+
         <module-def name="javax.jms.api">
             <maven-resource group="org.jboss.spec.javax.jms" artifact="jboss-jms-api_1.1_spec"/>
         </module-def>
@@ -695,6 +699,10 @@
 
         <module-def name="org.codehaus.jettison">
             <maven-resource group="org.codehaus.jettison" artifact="jettison" />
+        </module-def>
+
+        <module-def name="org.glassfish.javax.json">
+            <maven-resource group="org.glassfish" artifact="javax.json"/>
         </module-def>
 
         <module-def name="org.hibernate">
