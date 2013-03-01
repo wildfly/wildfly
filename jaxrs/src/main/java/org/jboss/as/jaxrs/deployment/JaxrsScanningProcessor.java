@@ -31,6 +31,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
 import org.jboss.as.jaxrs.JaxrsAnnotations;
@@ -191,31 +192,29 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
             return;
         }
 
-        final Set<ClassInfo> applicationClass = index.getAllKnownSubclasses(APPLICATION);
-        try {
-            if (applicationClass.size() > 1) {
-                StringBuilder builder = new StringBuilder();
-                Set<ClassInfo> aClasses = new HashSet<ClassInfo>();
-                for (ClassInfo c : applicationClass) {
-                    if (!Modifier.isAbstract(c.flags())) {
-                        aClasses.add(c);
+        if (!resteasyDeploymentData.isDispatcherCreated()) {
+            final Set<ClassInfo> applicationClasses = index.getAllKnownSubclasses(APPLICATION);
+            try {
+                Set<Class<? extends Application>> applicationClassSet = new HashSet<Class<? extends Application>>();
+                for (ClassInfo c : applicationClasses) {
+                    if (Modifier.isAbstract(c.flags())) continue;
+                    Class<? extends Application> applicationClass = (Class<? extends Application>) classLoader.loadClass(c.name().toString());
+                    if (applicationClass.isAnnotationPresent(ApplicationPath.class))
+                        applicationClassSet.add(applicationClass);
+                }
+
+                // abort if more than one @ApplicationPath annotated class
+                if (applicationClassSet.size() > 1) {
+                    StringBuilder builder = new StringBuilder();
+                    for (Class c : applicationClassSet) {
+                        builder.append(" ").append(c.getName());
                     }
-                    builder.append(" ").append(c.name().toString());
-                }
-                if (aClasses.size() > 1) {
                     throw new DeploymentUnitProcessingException(MESSAGES.onlyOneApplicationClassAllowed(builder));
-                } else if (aClasses.size() == 1) {
-                    ClassInfo aClass = applicationClass.iterator().next();
-                    resteasyDeploymentData.setScannedApplicationClass((Class<? extends Application>) classLoader
-                            .loadClass(aClass.name().toString()));
                 }
-            } else if (applicationClass.size() == 1) {
-                ClassInfo aClass = applicationClass.iterator().next();
-                resteasyDeploymentData.setScannedApplicationClass((Class<? extends Application>) classLoader
-                        .loadClass(aClass.name().toString()));
+                if (applicationClassSet.size() == 1) resteasyDeploymentData.setScannedApplicationClass(applicationClassSet.iterator().next());
+            } catch (ClassNotFoundException e) {
+                throw MESSAGES.cannotLoadApplicationClass(e);
             }
-        } catch (ClassNotFoundException e) {
-            throw MESSAGES.cannotLoadApplicationClass(e);
         }
 
         List<AnnotationInstance> resources = null;
