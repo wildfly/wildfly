@@ -62,7 +62,6 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.domain.http.server.security.AuthenticationMechanismWrapper;
 import org.jboss.as.domain.http.server.security.ConnectionAuthenticationCacheHandler;
 import org.jboss.as.domain.http.server.security.RealmIdentityManager;
-import org.jboss.as.domain.http.server.security.SubjectAssociationHandler;
 import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.modules.Module;
@@ -232,7 +231,7 @@ public class ManagementHttpServer {
 
             if (undertowMechanisms.size() > 1) {
                 // If the only mechanism is the cached mechanism then no need to add these.
-                HttpHandler current = new SubjectAssociationHandler(domainHandler);
+                HttpHandler current = domainHandler;
                 current = new AuthenticationCallHandler(current);
                 // Currently the security handlers are being added after a PATH handler so we know authentication is required by
                 // this point.
