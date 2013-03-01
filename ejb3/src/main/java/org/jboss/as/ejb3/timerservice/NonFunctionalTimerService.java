@@ -113,6 +113,13 @@ public class NonFunctionalTimerService implements TimerService {
         return Collections.emptySet();
     }
 
+    @Override
+    public Collection<Timer> getAllTimers() throws IllegalStateException, EJBException {
+        // NonFunctionalTimerService isn't expected to return any timers, we just invoke the getTimers() so that it can
+        // do the necessary state checks before returning an empty collection
+        return this.getTimers();
+    }
+
     private void assertInvocationAllowed() {
         AllowedMethodsInformation.checkAllowed(MethodType.TIMER_SERVICE_METHOD);
         final InterceptorContext currentInvocationContext = CurrentInvocationContext.get();
