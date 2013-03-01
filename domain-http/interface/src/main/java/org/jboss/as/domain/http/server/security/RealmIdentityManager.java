@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
+import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
@@ -43,6 +44,7 @@ import org.jboss.sasl.callback.DigestHashCallback;
 import io.undertow.security.idm.Account;
 import io.undertow.security.idm.Credential;
 import io.undertow.security.idm.IdentityManager;
+import io.undertow.security.idm.X509CertificateCredential;
 
 /**
  * {@link IdentityManager} implementation to wrap the current security realms.
@@ -65,7 +67,7 @@ public class RealmIdentityManager implements IdentityManager {
 
     @Override
     public Account verify(Account account) {
-        throw new RuntimeException("Not implemented for domain management.");
+        return account;
     }
 
     /*
@@ -103,9 +105,9 @@ public class RealmIdentityManager implements IdentityManager {
         }
         // TODO - Will modify for roles later, to begin with just get authentication working.
         if (plainText) {
-            return new PlainDigestAccount(user, ((PasswordCallback) callbacks[2]).getPassword());
+            return new PlainDigestAccount(supplemental.getSubject(), user, ((PasswordCallback) callbacks[2]).getPassword());
         } else {
-            return new HashedDigestAccount(user, ((DigestHashCallback) callbacks[2]).getHash());
+            return new HashedDigestAccount(supplemental.getSubject(), user, ((DigestHashCallback) callbacks[2]).getHash());
         }
     }
 
@@ -133,56 +135,6 @@ public class RealmIdentityManager implements IdentityManager {
             return ((HashedDigestAccount) account).getHash();
         }
         throw new IllegalArgumentException("Account not instanceof 'HashedDigestAccount'.");
-    }
-
-    private abstract class DigestAccount implements Account {
-
-        private final Principal principal;
-
-        private DigestAccount(final Principal principal) {
-            this.principal = principal;
-        }
-
-        @Override
-        public Principal getPrincipal() {
-            return principal;
-        }
-
-        @Override
-        public boolean isUserInGroup(String group) {
-            // TODO - Not really used for domains yet.
-            return false;
-        }
-
-    }
-
-    private class PlainDigestAccount extends DigestAccount {
-
-        private final char[] password;
-
-        private PlainDigestAccount(final Principal principal, final char[] password) {
-            super(principal);
-            this.password = password;
-        }
-
-        private char[] getPassword() {
-            return password;
-        }
-
-    }
-
-    private class HashedDigestAccount extends DigestAccount {
-
-        private final byte[] hash;
-
-        private HashedDigestAccount(final Principal principal, final byte[] hash) {
-            super(principal);
-            this.hash = hash;
-        }
-
-        private byte[] getHash() {
-            return hash;
-        }
     }
 
     private class SimplePrincipal implements Principal {
@@ -217,7 +169,22 @@ public class RealmIdentityManager implements IdentityManager {
     @Override
     public Account verify(Credential credential) {
         assertMechanism(AuthMechanism.CLIENT_CERT);
-        return null;
+        if (credential instanceof X509CertificateCredential == false) {
+            return null;
+        }
+        X509CertificateCredential certCred = (X509CertificateCredential) credential;
+
+        AuthorizingCallbackHandler ach = securityRealm.getAuthorizingCallbackHandler(AuthMechanism.CLIENT_CERT);
+        Principal user = certCred.getCertificate().getSubjectDN();
+        Collection<Principal> userCol = Collections.singleton(user);
+        SubjectUserInfo supplemental;
+        try {
+            supplemental = ach.createSubjectUserInfo(userCol);
+        } catch (IOException e) {
+            return null;
+        }
+
+        return new RealmIdentityAccount(supplemental.getSubject(), user);
     }
 
     private static void assertMechanism(final AuthMechanism mechanism) {
@@ -226,4 +193,60 @@ public class RealmIdentityManager implements IdentityManager {
         }
     }
 
+    private class RealmIdentityAccount implements Account {
+
+        private final Subject subject;
+        private final Principal principal;
+
+        private RealmIdentityAccount(final Subject subject, final Principal principal) {
+            this.subject = subject;
+            this.principal = principal;
+        }
+
+        @Override
+        public Principal getPrincipal() {
+            return principal;
+        }
+
+        @Override
+        public boolean isUserInGroup(String group) {
+            // TODO - Not really used for domains yet.
+            return false;
+        }
+
+        public Subject getSubject() {
+            // TODO may need to map this method to a domain management API to ensure it can be used.
+            return subject;
+        }
+
+    }
+
+    private class PlainDigestAccount extends RealmIdentityAccount {
+
+        private final char[] password;
+
+        private PlainDigestAccount(final Subject subject, final Principal principal, final char[] password) {
+            super(subject, principal);
+            this.password = password;
+        }
+
+        private char[] getPassword() {
+            return password;
+        }
+
+    }
+
+    private class HashedDigestAccount extends RealmIdentityAccount {
+
+        private final byte[] hash;
+
+        private HashedDigestAccount(final Subject subject, final Principal principal, final byte[] hash) {
+            super(subject, principal);
+            this.hash = hash;
+        }
+
+        private byte[] getHash() {
+            return hash;
+        }
+    }
 }
