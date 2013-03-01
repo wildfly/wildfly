@@ -34,6 +34,7 @@ import io.undertow.security.handlers.AuthenticationMechanismsHandler;
 import io.undertow.security.handlers.SecurityInitialHandler;
 import io.undertow.security.handlers.SinglePortConfidentialityHandler;
 import io.undertow.security.impl.BasicAuthenticationMechanism;
+import io.undertow.security.impl.CachedAuthenticatedSessionMechanism;
 import io.undertow.security.impl.ClientCertAuthenticationMechanism;
 import io.undertow.security.impl.DigestAlgorithm;
 import io.undertow.security.impl.DigestAuthenticationMechanism;
@@ -59,6 +60,7 @@ import javax.net.ssl.SSLContext;
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.domain.http.server.security.AuthenticationMechanismWrapper;
+import org.jboss.as.domain.http.server.security.ConnectionAuthenticationCacheHandler;
 import org.jboss.as.domain.http.server.security.RealmIdentityManager;
 import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
@@ -204,6 +206,7 @@ public class ManagementHttpServer {
         if (securityRealm != null) {
             Set<AuthMechanism> mechanisms = securityRealm.getSupportedAuthenticationMechanisms();
             List<AuthenticationMechanism> undertowMechanisms = new ArrayList<AuthenticationMechanism>(mechanisms.size());
+            undertowMechanisms.add(wrap(new CachedAuthenticatedSessionMechanism()));
             for (AuthMechanism current : mechanisms) {
                 switch (current) {
                     case CLIENT_CERT:
@@ -218,7 +221,7 @@ public class ManagementHttpServer {
                         List<DigestAlgorithm> digestAlgorithms = Collections.singletonList(DigestAlgorithm.MD5);
                         List<DigestQop> digestQops = Collections.emptyList();
                         undertowMechanisms.add(wrap(new DigestAuthenticationMechanism(digestAlgorithms, digestQops,
-                                securityRealm.getName(), new SimpleNonceManager(), plainTextDigest)));
+                                securityRealm.getName(), "/management", new SimpleNonceManager(), plainTextDigest)));
                         break;
                     case PLAIN:
                         undertowMechanisms.add(wrap(new BasicAuthenticationMechanism(securityRealm.getName())));
@@ -226,12 +229,14 @@ public class ManagementHttpServer {
                 }
             }
 
-            if (undertowMechanisms.size() > 0) {
+            if (undertowMechanisms.size() > 1) {
+                // If the only mechanism is the cached mechanism then no need to add these.
                 HttpHandler current = new AuthenticationCallHandler(domainHandler);
                 // Currently the security handlers are being added after a PATH handler so we know authentication is required by
                 // this point.
                 current = new AuthenticationConstraintHandler(current);
                 current = new AuthenticationMechanismsHandler(current, undertowMechanisms);
+                current = new ConnectionAuthenticationCacheHandler(current);
 
                 return new SecurityInitialHandler(AuthenticationMode.PRO_ACTIVE, new RealmIdentityManager(securityRealm),
                         current);
