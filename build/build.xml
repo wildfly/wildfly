@@ -428,7 +428,7 @@
         </module-def>
 
         <module-def name="javax.ejb.api">
-            <maven-resource group="org.jboss.spec.javax.ejb" artifact="jboss-ejb-api_3.1_spec"/>
+            <maven-resource group="org.jboss.spec.javax.ejb" artifact="jboss-ejb-api_3.2_spec"/>
         </module-def>
 
         <module-def name="javax.el.api">

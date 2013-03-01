@@ -36,6 +36,7 @@ import org.jboss.as.ee.component.DependencyConfigurator;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
+import org.jboss.as.ejb3.component.TimerServiceRegistry;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.timerservice.NonFunctionalTimerService;
 import org.jboss.as.ejb3.timerservice.TimedObjectInvokerImpl;
@@ -47,6 +48,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.EjbDeploymentMarker;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
@@ -82,6 +84,10 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
 
         ServiceName defaultTimerPersistenceService = TimerPersistence.SERVICE_NAME.append(defaultTimerDataStore);
         final Map<String, ServiceName> timerPersistenceServices = new HashMap<String, ServiceName>();
+        // if this is a EJB deployment then create a EJB module level TimerServiceRegistry which can be used by the timer services
+        // of all EJB components that belong to this EJB module.
+        final TimerServiceRegistry timerServiceRegistry = EjbDeploymentMarker.isEjbDeployment(deploymentUnit) ? new TimerServiceRegistry() : null;
+
         if (ejbJarMetaData != null && ejbJarMetaData.getAssemblyDescriptor() != null) {
             List<TimerServiceMetaData> timerService = ejbJarMetaData.getAssemblyDescriptor().getAny(TimerServiceMetaData.class);
             if (timerService != null) {
@@ -124,7 +130,7 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
 
                             //install the timer create service
                             final ServiceName serviceName = component.getServiceName().append(TimerServiceImpl.SERVICE_NAME);
-                            final TimerServiceImpl service = new TimerServiceImpl(ejbComponentDescription.getScheduleMethods(), serviceName);
+                            final TimerServiceImpl service = new TimerServiceImpl(ejbComponentDescription.getScheduleMethods(), serviceName, timerServiceRegistry);
                             final ServiceBuilder<javax.ejb.TimerService> createBuilder = context.getServiceTarget().addService(serviceName, service);
                             createBuilder.addDependency(TIMER_SERVICE_NAME, Timer.class, service.getTimerInjectedValue());
                             createBuilder.addDependency(component.getCreateServiceName(), EJBComponent.class, service.getEjbComponentInjectedValue());

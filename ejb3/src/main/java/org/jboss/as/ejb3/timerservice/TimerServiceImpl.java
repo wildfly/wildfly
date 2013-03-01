@@ -21,37 +21,8 @@
  */
 package org.jboss.as.ejb3.timerservice;
 
-import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-
-import javax.ejb.EJBException;
-import javax.ejb.ScheduleExpression;
-import javax.ejb.Timer;
-import javax.ejb.TimerConfig;
-import javax.ejb.TimerHandle;
-import javax.ejb.TimerService;
-import javax.transaction.RollbackException;
-import javax.transaction.Status;
-import javax.transaction.Synchronization;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-
 import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.ejb3.component.TimerServiceRegistry;
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.allowedmethods.MethodType;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
@@ -70,6 +41,35 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+
+import javax.ejb.EJBException;
+import javax.ejb.ScheduleExpression;
+import javax.ejb.Timer;
+import javax.ejb.TimerConfig;
+import javax.ejb.TimerHandle;
+import javax.ejb.TimerService;
+import javax.transaction.RollbackException;
+import javax.transaction.Status;
+import javax.transaction.Synchronization;
+import javax.transaction.SystemException;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
 
 import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
@@ -134,6 +134,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
 
     private TransactionManager transactionManager;
     private TransactionSynchronizationRegistry tsr;
+    private final TimerServiceRegistry timerServiceRegistry;
 
 
     private volatile boolean started = false;
@@ -151,10 +152,25 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      * @param autoTimers
      * @param serviceName
      * @throws IllegalArgumentException If either of the passed param is null
+     * @deprecated Use {@link #TimerServiceImpl(java.util.Map, org.jboss.msc.service.ServiceName, org.jboss.as.ejb3.component.TimerServiceRegistry)} instead
      */
+    @Deprecated
     public TimerServiceImpl(final Map<Method, List<AutoTimer>> autoTimers, final ServiceName serviceName) {
+        this(autoTimers, serviceName, null);
+    }
+
+    /**
+     * Creates a {@link TimerServiceImpl}
+     *
+     * @param autoTimers The auto timers associated with this timer service
+     * @param serviceName The service name of this timer service
+     * @param registry The {@link TimerServiceRegistry} which has the knowledge of other timer services belonging to the EJB module to which this
+     *                  timer service belongs.
+     */
+    public TimerServiceImpl(final Map<Method, List<AutoTimer>> autoTimers, final ServiceName serviceName, final TimerServiceRegistry registry) {
         this.autoTimers = autoTimers;
         this.serviceName = serviceName;
+        this.timerServiceRegistry = registry;
     }
 
     @Override
@@ -178,10 +194,18 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         // restore the timers
         started = true;
         restoreTimers(timers);
+        // register ourselves to the TimerServiceRegistry (if any)
+        if (timerServiceRegistry != null) {
+            timerServiceRegistry.registerTimerService(this);
+        }
     }
 
     @Override
     public synchronized void stop(final StopContext context) {
+        // un-register ourselves to the TimerServiceRegistry (if any)
+        if (timerServiceRegistry != null) {
+            timerServiceRegistry.unRegisterTimerService(this);
+        }
         suspendTimers();
         timerPersistence.getValue().timerUndeployed(timedObjectInvoker.getValue().getTimedObjectId());
         started = false;
@@ -375,6 +399,20 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             }
         }
         return activeTimers;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Collection<Timer> getAllTimers() throws IllegalStateException, EJBException {
+        // query the registry
+        if (this.timerServiceRegistry != null) {
+            return this.timerServiceRegistry.getAllActiveTimers();
+        }
+        // if we don't have the registry (shouldn't really happen) which stores the timer services applicable for the EJB module to which
+        // this timer service belongs, then let's at least return the active timers that are applicable only for this timer service
+        return this.getTimers();
     }
 
     /**
