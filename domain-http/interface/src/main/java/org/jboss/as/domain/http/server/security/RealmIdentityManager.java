@@ -22,6 +22,11 @@
 package org.jboss.as.domain.http.server.security;
 
 import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
+import io.undertow.security.idm.Account;
+import io.undertow.security.idm.Credential;
+import io.undertow.security.idm.IdentityManager;
+import io.undertow.security.idm.PasswordCredential;
+import io.undertow.security.idm.X509CertificateCredential;
 
 import java.io.IOException;
 import java.security.Principal;
@@ -40,11 +45,7 @@ import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.AuthorizingCallbackHandler;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.sasl.callback.DigestHashCallback;
-
-import io.undertow.security.idm.Account;
-import io.undertow.security.idm.Credential;
-import io.undertow.security.idm.IdentityManager;
-import io.undertow.security.idm.X509CertificateCredential;
+import org.jboss.sasl.callback.VerifyPasswordCallback;
 
 /**
  * {@link IdentityManager} implementation to wrap the current security realms.
@@ -159,7 +160,37 @@ public class RealmIdentityManager implements IdentityManager {
     @Override
     public Account verify(String id, Credential credential) {
         assertMechanism(AuthMechanism.PLAIN);
-        return null;
+        if (credential instanceof PasswordCredential == false) {
+            return null;
+        }
+
+        AuthorizingCallbackHandler ach = securityRealm.getAuthorizingCallbackHandler(AuthMechanism.PLAIN);
+        Callback[] callbacks = new Callback[3];
+        callbacks[0] = new RealmCallback("Realm", securityRealm.getName());
+        callbacks[1] = new NameCallback("Username", id);
+        callbacks[2] = new VerifyPasswordCallback(new String(((PasswordCredential) credential).getPassword()));
+
+        try {
+            ach.handle(callbacks);
+        } catch (Exception e) {
+            // TODO - Error reporting.
+            return null;
+        }
+
+        if (((VerifyPasswordCallback) callbacks[2]).isVerified() == false) {
+            return null;
+        }
+
+        Principal user = new SimplePrincipal(id);
+        Collection<Principal> userCol = Collections.singleton(user);
+        SubjectUserInfo supplemental;
+        try {
+            supplemental = ach.createSubjectUserInfo(userCol);
+        } catch (IOException e) {
+            return null;
+        }
+
+        return new RealmIdentityAccount(supplemental.getSubject(), user);
     }
 
     /*
@@ -193,7 +224,7 @@ public class RealmIdentityManager implements IdentityManager {
         }
     }
 
-    private class RealmIdentityAccount implements Account {
+    private class RealmIdentityAccount implements SubjectAccount {
 
         private final Subject subject;
         private final Principal principal;
