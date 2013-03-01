@@ -369,6 +369,11 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>javax.json</groupId>
+                    <artifactId>javax.json-api</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>javax.jws</groupId>
                     <artifactId>jsr181-api</artifactId>
                 </dependency>
@@ -681,6 +686,12 @@
                 <dependency>
                     <groupId>org.codehaus.woodstox</groupId>
                     <artifactId>stax2-api</artifactId>
+                </dependency>
+
+                <!-- JSR-353 JSONP RI implementation -->
+                <dependency>
+                    <groupId>org.glassfish</groupId>
+                    <artifactId>javax.json</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1909,6 +1920,7 @@
                                         <include>javax.enterprise:cdi-api</include>
                                         <include>javax.faces:jsf-api</include>
                                         <include>javax.inject:javax.inject</include>
+                                        <include>javax.json:javax.json-api</include>
                                         <include>javax.jws:jsr181-api</include>
                                         <include>javax.mail:mail</include>
                                         <include>javax.validation:validation-api</include>
@@ -1920,6 +1932,7 @@
                                         <include>org.apache.juddi.scout:scout</include>
                                         <include>org.apache.juddi:uddi-ws</include>
                                         <include>org.apache.ws.security:wss4j</include>
+                                        <include>org.glassfish:javax-json</include>
                                         <include>org.hibernate.common:hibernate-commons-annotations</include>
                                         <include>org.hibernate:hibernate-core</include>
                                         <include>org.hibernate:hibernate-entitymanager</include>
@@ -2252,6 +2265,10 @@
                                             <packages>javax.interceptor</packages>
                                         </group>
                                         <group>
+                                            <title>Module javax.json-api</title>
+                                            <packages>javax.json:javax.json.spi:javax.json.stream</packages>
+                                        </group>
+                                        <group>
                                             <title>Module javax.jms.api</title>
                                             <packages>javax.jms</packages>
                                         </group>
@@ -2454,6 +2471,10 @@
                                         <group>
                                             <title>Module org.codehaus.jettison</title>
                                             <packages>org.codehaus.jettison:org.codehaus.jettison.badgerfish:org.codehaus.jettison.json:org.codehaus.jettison.mapped:org.codehaus.jettison.util</packages>
+                                        </group>
+                                        <group>
+                                            <title>Module org.glassfish.javax.json</title>
+                                            <packages>org.glassfish.json</packages>
                                         </group>
                                         <group>
                                             <title>Module org.hibernate</title>

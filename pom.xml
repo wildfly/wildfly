@@ -101,6 +101,7 @@
         <version.javax.enterprise>1.0-SP4</version.javax.enterprise>
         <version.javax.faces>1.2_15-jbossorg-2</version.javax.faces>
         <version.javax.inject.javax.inject>1</version.javax.inject.javax.inject>
+        <version.javax.json-api>1.0-b04</version.javax.json-api>
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
         <version.javax.mail>1.4.6</version.javax.mail>
         <version.javax.validation>1.0.0.GA</version.javax.validation>
@@ -1655,6 +1656,12 @@
                 <groupId>javax.inject</groupId>
                 <artifactId>javax.inject</artifactId>
                 <version>${version.javax.inject.javax.inject}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.json</groupId>
+                <artifactId>javax.json-api</artifactId>
+                <version>${version.javax.json-api}</version>
             </dependency>
 
             <dependency>
@@ -3448,6 +3455,13 @@
                         <artifactId>stax-api</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <!-- JSR-353 JSONP RI implementation -->
+            <dependency>
+                <groupId>org.glassfish</groupId>
+                <artifactId>javax.json</artifactId>
+                <version>${version.javax.json-api}</version>
             </dependency>
 
             <dependency>
