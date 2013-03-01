@@ -62,6 +62,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.domain.http.server.security.AuthenticationMechanismWrapper;
 import org.jboss.as.domain.http.server.security.ConnectionAuthenticationCacheHandler;
 import org.jboss.as.domain.http.server.security.RealmIdentityManager;
+import org.jboss.as.domain.http.server.security.SubjectAssociationHandler;
 import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.modules.Module;
@@ -231,7 +232,8 @@ public class ManagementHttpServer {
 
             if (undertowMechanisms.size() > 1) {
                 // If the only mechanism is the cached mechanism then no need to add these.
-                HttpHandler current = new AuthenticationCallHandler(domainHandler);
+                HttpHandler current = new SubjectAssociationHandler(domainHandler);
+                current = new AuthenticationCallHandler(current);
                 // Currently the security handlers are being added after a PATH handler so we know authentication is required by
                 // this point.
                 current = new AuthenticationConstraintHandler(current);
@@ -241,7 +243,6 @@ public class ManagementHttpServer {
                 return new SecurityInitialHandler(AuthenticationMode.PRO_ACTIVE, new RealmIdentityManager(securityRealm),
                         current);
             }
-
             // TODO - If there were no mechanisms to begin with requests should be represented as an anonymous user.
             // If there were mechanisms but none suitable for HTTP reject all requests.
         }
