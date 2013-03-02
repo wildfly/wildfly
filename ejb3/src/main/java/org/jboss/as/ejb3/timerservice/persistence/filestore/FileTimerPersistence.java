@@ -21,26 +21,6 @@
  */
 package org.jboss.as.ejb3.timerservice.persistence.filestore;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
-import javax.transaction.Status;
-import javax.transaction.Synchronization;
-import javax.transaction.SystemException;
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.ejb3.component.stateful.CurrentSynchronizationCallback;
 import org.jboss.as.ejb3.timerservice.CalendarTimer;
@@ -63,6 +43,25 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+
+import javax.transaction.Status;
+import javax.transaction.Synchronization;
+import javax.transaction.SystemException;
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
@@ -324,8 +323,9 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
                             .setNextDate(entity.getNextDate())
                             .setPreviousRun(entity.getPreviousRun())
                             .setInfo(entity.getInfo())
-                            .setPrimaryKey(entity.getPreviousRun())
-                            .setTimerState(entity.getTimerState());
+                            .setPrimaryKey(entity.getPrimaryKey())
+                            .setTimerState(entity.getTimerState())
+                            .setPersistent(true);
 
                     timers.put(entity.getId(), builder.build(timerService));
                     unmarshaller.finish();
