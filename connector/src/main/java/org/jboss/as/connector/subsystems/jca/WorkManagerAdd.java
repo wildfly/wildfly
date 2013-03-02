@@ -21,12 +21,6 @@
  */
 package org.jboss.as.connector.subsystems.jca;
 
-import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_LONG_RUNNING;
-import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_SHORT_RUNNING;
-
-import java.util.List;
-import java.util.concurrent.Executor;
-
 import org.jboss.as.connector.services.workmanager.NamedWorkManager;
 import org.jboss.as.connector.services.workmanager.WorkManagerService;
 import org.jboss.as.connector.util.ConnectorServices;
@@ -42,6 +36,12 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.tm.JBossXATerminator;
+
+import java.util.List;
+import java.util.concurrent.Executor;
+
+import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_LONG_RUNNING;
+import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_SHORT_RUNNING;
 
 /**
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
@@ -64,13 +64,16 @@ public class WorkManagerAdd extends AbstractAddStepHandler {
 
         String name = JcaWorkManagerDefinition.WmParameters.NAME.getAttribute().resolveModelAttribute(context, model).asString();
 
+
         ServiceTarget serviceTarget = context.getServiceTarget();
 
-        WorkManager wm = new NamedWorkManager(name);
 
-        final WorkManagerService wmService = new WorkManagerService(wm);
+        WorkManager wm = new NamedWorkManager(name);
+        WorkManagerService wmService = new WorkManagerService(wm);
         ServiceBuilder builder = serviceTarget
                 .addService(ConnectorServices.WORKMANAGER_SERVICE.append(name), wmService);
+
+
         builder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, ThreadsServices.EXECUTOR.append(WORKMANAGER_LONG_RUNNING).append(name), Executor.class, wmService.getExecutorLongInjector());
         builder.addDependency(ThreadsServices.EXECUTOR.append(WORKMANAGER_SHORT_RUNNING).append(name), Executor.class, wmService.getExecutorShortInjector());
 

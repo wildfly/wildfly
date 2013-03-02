@@ -40,9 +40,9 @@ import static org.junit.Assert.*;
 
 /**
  * Resource adapter statistics testCase
- * 
+ *
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
- * 
+ *
  */
 @RunWith(Arquillian.class)
 @RunAsClient
@@ -215,6 +215,7 @@ public class ResourceAdapterStatisticsTestCase extends JcaStatisticsBase {
         statNode.add(DEPLOYMENT, connectionNode.get(1).get("resource-adapter").asString());
         statNode.add(SUBSYSTEM, "resource-adapters");
         statNode.add("statistics", "statistics");
+        statNode.add(connectionNode.get(1));
         statNode.add("connection-definitions", connectionNode.get(2).get("connection-definitions").asString());
         return statNode;
     }

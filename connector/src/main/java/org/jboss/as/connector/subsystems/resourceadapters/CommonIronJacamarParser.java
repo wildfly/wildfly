@@ -21,12 +21,47 @@
  */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import org.jboss.as.connector.util.AbstractParser;
+import org.jboss.as.connector.util.ParserException;
+import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.dmr.ModelNode;
+import org.jboss.jca.common.CommonBundle;
+import org.jboss.jca.common.api.metadata.common.Capacity;
+import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
+import org.jboss.jca.common.api.metadata.common.CommonPool;
+import org.jboss.jca.common.api.metadata.common.CommonSecurity;
+import org.jboss.jca.common.api.metadata.common.CommonTimeOut;
+import org.jboss.jca.common.api.metadata.common.CommonValidation;
+import org.jboss.jca.common.api.metadata.common.CommonXaPool;
+import org.jboss.jca.common.api.metadata.common.Credential;
+import org.jboss.jca.common.api.metadata.common.Recovery;
+import org.jboss.jca.common.api.metadata.common.v10.CommonConnDef;
+import org.jboss.jca.common.api.metadata.common.v11.ConnDefPool;
+import org.jboss.jca.common.api.metadata.common.v11.ConnDefXaPool;
+import org.jboss.jca.common.api.metadata.ds.v11.DataSource;
+import org.jboss.jca.common.api.metadata.ds.v11.XaDataSource;
+import org.jboss.jca.common.api.metadata.ds.v12.DsPool;
+import org.jboss.jca.common.api.metadata.resourceadapter.v10.ResourceAdapter;
+import org.jboss.jca.common.api.validator.ValidateException;
+import org.jboss.logging.Messages;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+
+import javax.xml.stream.XMLStreamException;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.IDLETIMEOUTMINUTES;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.MAX_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.MIN_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY;
@@ -39,6 +74,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.APPLI
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CLASS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFIG_PROPERTY_VALUE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.INTERLEAVING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDINAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXSEPARATEPOOL;
@@ -53,38 +89,13 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOV
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SAME_RM_OVERRIDE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN_AND_APPLICATION;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SHARABLE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_CCM;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WRAP_XA_RESOURCE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.connector.util.AbstractParser;
-import org.jboss.as.connector.util.ParserException;
-import org.jboss.as.controller.parsing.ParseUtils;
-import org.jboss.dmr.ModelNode;
-import org.jboss.jca.common.CommonBundle;
-import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
-import org.jboss.jca.common.api.metadata.common.CommonPool;
-import org.jboss.jca.common.api.metadata.common.CommonSecurity;
-import org.jboss.jca.common.api.metadata.common.CommonTimeOut;
-import org.jboss.jca.common.api.metadata.common.CommonValidation;
-import org.jboss.jca.common.api.metadata.common.CommonXaPool;
-import org.jboss.jca.common.api.metadata.common.Credential;
-import org.jboss.jca.common.api.metadata.common.Recovery;
-import org.jboss.jca.common.api.metadata.common.v10.CommonConnDef;
-import org.jboss.jca.common.api.metadata.ds.v11.DataSource;
-import org.jboss.jca.common.api.metadata.ds.v11.XaDataSource;
-import org.jboss.jca.common.api.metadata.resourceadapter.v10.ResourceAdapter;
-import org.jboss.jca.common.api.validator.ValidateException;
-import org.jboss.logging.Messages;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
  * A CommonIronJacamarParser.
@@ -135,7 +146,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
         boolean poolDefined = Boolean.FALSE;
 
         for (int i = 0; i < attributeSize; i++) {
-            CommonConnDef.Attribute attribute = CommonConnDef.Attribute.forName(reader.getAttributeLocalName(i));
+            org.jboss.jca.common.api.metadata.common.v11.CommonConnDef.Attribute attribute = org.jboss.jca.common.api.metadata.common.v11.CommonConnDef.Attribute.forName(reader.getAttributeLocalName(i));
             String value = reader.getAttributeValue(i);
             switch (attribute) {
                 case ENABLED: {
@@ -160,6 +171,15 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
 
                 case USE_CCM: {
                     USE_CCM.parseAndSetParameter(value, connectionDefinitionNode, reader);
+                    break;
+                }
+
+                case SHARABLE: {
+                    SHARABLE.parseAndSetParameter(value, connectionDefinitionNode, reader);
+                }
+
+                case ENLISTMENT: {
+                    ENLISTMENT.parseAndSetParameter(value, connectionDefinitionNode, reader);
                     break;
                 }
 
@@ -471,51 +491,68 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                     break;
                 }
                 case START_ELEMENT: {
-                    String value = rawElementText(reader);
-                    switch (CommonXaPool.Tag.forName(reader.getLocalName())) {
+                    switch (ConnDefXaPool.Tag.forName(reader.getLocalName())) {
                         case MAX_POOL_SIZE: {
+                            String value = rawElementText(reader);
                             MAX_POOL_SIZE.parseAndSetParameter(value, node, reader);
                             break;
                         }
                         case MIN_POOL_SIZE: {
+                            String value = rawElementText(reader);
                             MIN_POOL_SIZE.parseAndSetParameter(value, node, reader);
                             break;
                         }
-
+                        case INITIAL_POOL_SIZE: {
+                            String value = rawElementText(reader);
+                            INITIAL_POOL_SIZE.parseAndSetParameter(value, node, reader);
+                            break;
+                        }
                         case PREFILL: {
+                            String value = rawElementText(reader);
                             POOL_PREFILL.parseAndSetParameter(value, node, reader);
                             break;
                         }
                         case USE_STRICT_MIN: {
+                            String value = rawElementText(reader);
                             POOL_USE_STRICT_MIN.parseAndSetParameter(value, node, reader);
                             break;
                         }
                         case FLUSH_STRATEGY: {
+                            String value = rawElementText(reader);
                             POOL_FLUSH_STRATEGY.parseAndSetParameter(value, node, reader);
                             break;
                         }
                         case INTERLEAVING: {
+                            String value = rawElementText(reader);
                             //just presence means true
                             value = value == null ? "true" : value;
                             INTERLEAVING.parseAndSetParameter(value, node, reader);
                             break;
                         }
                         case IS_SAME_RM_OVERRIDE: {
+                            String value = rawElementText(reader);
                             SAME_RM_OVERRIDE.parseAndSetParameter(value, node, reader);
                             break;
                         }
                         case NO_TX_SEPARATE_POOLS: {
+                            String value = rawElementText(reader);
                             //just presence means true
                             value = value == null ? "true" : value;
                             NOTXSEPARATEPOOL.parseAndSetParameter(value, node, reader);
                             break;
                         }
                         case PAD_XID: {
+                            String value = rawElementText(reader);
                             PAD_XID.parseAndSetParameter(value, node, reader);
                             break;
                         }
                         case WRAP_XA_RESOURCE: {
+                            String value = rawElementText(reader);
                             WRAP_XA_RESOURCE.parseAndSetParameter(value, node, reader);
+                            break;
+                        }
+                        case CAPACITY: {
+                            parseCapacity(reader, node);
                             break;
                         }
 
@@ -548,26 +585,39 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                     break;
                 }
                 case START_ELEMENT: {
-                    String value = rawElementText(reader);
-                    switch (CommonPool.Tag.forName(reader.getLocalName())) {
+                    switch (ConnDefPool.Tag.forName(reader.getLocalName())) {
                         case MAX_POOL_SIZE: {
+                            String value = rawElementText(reader);
                             MAX_POOL_SIZE.parseAndSetParameter(value, node, reader);
                             break;
                         }
+                        case INITIAL_POOL_SIZE: {
+                            String value = rawElementText(reader);
+                            INITIAL_POOL_SIZE.parseAndSetParameter(value, node, reader);
+                            break;
+                        }
                         case MIN_POOL_SIZE: {
+                            String value = rawElementText(reader);
                             MIN_POOL_SIZE.parseAndSetParameter(value, node, reader);
                             break;
                         }
                         case PREFILL: {
+                            String value = rawElementText(reader);
                             POOL_PREFILL.parseAndSetParameter(value, node, reader);
                             break;
                         }
                         case USE_STRICT_MIN: {
+                            String value = rawElementText(reader);
                             POOL_USE_STRICT_MIN.parseAndSetParameter(value, node, reader);
                             break;
                         }
                         case FLUSH_STRATEGY: {
+                            String value = rawElementText(reader);
                             POOL_FLUSH_STRATEGY.parseAndSetParameter(value, node, reader);
+                            break;
+                        }
+                        case CAPACITY: {
+                            parseCapacity(reader, node);
                             break;
                         }
                         default:
@@ -580,6 +630,42 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
         throw ParseUtils.unexpectedEndElement(reader);
     }
 
+    private void parseCapacity(XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException, ParserException,
+            ValidateException {
+
+        while (reader.hasNext()) {
+            switch (reader.nextTag()) {
+                case END_ELEMENT: {
+                    if (DsPool.Tag.forName(reader.getLocalName()) == DsPool.Tag.CAPACITY) {
+
+                        return;
+                    } else {
+                        if (Capacity.Tag.forName(reader.getLocalName()) == Capacity.Tag.UNKNOWN) {
+                            throw new ParserException(bundle.unexpectedEndTag(reader.getLocalName()));
+                        }
+                    }
+                    break;
+                }
+                case START_ELEMENT: {
+                    switch (Capacity.Tag.forName(reader.getLocalName())) {
+                        case INCREMENTER: {
+                            parseExtension(reader, reader.getLocalName(), operation, CAPACITY_INCREMENTER_CLASS, CAPACITY_INCREMENTER_PROPERTIES);
+                            break;
+                        }
+                        case DECREMENTER: {
+                            parseExtension(reader, reader.getLocalName(), operation, CAPACITY_DECREMENTER_CLASS, CAPACITY_DECREMENTER_PROPERTIES);
+                            break;
+                        }
+
+                        default:
+                            throw new ParserException(bundle.unexpectedElement(reader.getLocalName()));
+                    }
+                    break;
+                }
+            }
+        }
+        throw new ParserException(bundle.unexpectedEndOfDocument());
+    }
 
     protected void parseRecovery(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException, ParserException,
             ValidateException {

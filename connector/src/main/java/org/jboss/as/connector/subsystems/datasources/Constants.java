@@ -21,11 +21,6 @@
  */
 package org.jboss.as.connector.subsystems.datasources;
 
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISABLE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
-
 import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -51,15 +46,20 @@ import org.jboss.jca.common.api.metadata.ds.Driver;
 import org.jboss.jca.common.api.metadata.ds.Statement;
 import org.jboss.jca.common.api.metadata.ds.TimeOut;
 import org.jboss.jca.common.api.metadata.ds.Validation;
-import org.jboss.jca.common.api.metadata.ds.v11.DataSource;
-import org.jboss.jca.common.api.metadata.ds.v11.DsPool;
-import org.jboss.jca.common.api.metadata.ds.v11.XaDataSource;
+import org.jboss.jca.common.api.metadata.ds.v12.DataSource;
+import org.jboss.jca.common.api.metadata.ds.v12.DsPool;
+import org.jboss.jca.common.api.metadata.ds.v12.XaDataSource;
+
+import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISABLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
 
 /**
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
  *         Maestri</a>
  */
-class Constants {
+public class Constants {
 
     static final String DATASOURCES = "datasources";
 
@@ -101,6 +101,8 @@ class Constants {
 
     private static final String URL_DELIMITER_NAME = "url-delimiter";
 
+    private static final String URL_PROPERTY_NAME = "url-property";
+
     private static final String URL_SELECTOR_STRATEGY_CLASS_NAME_NAME = "url-selector-strategy-class-name";
 
     private static final String USE_JAVA_CONTEXT_NAME = "use-java-context";
@@ -118,6 +120,10 @@ class Constants {
     private static final String ALLOCATION_RETRY_WAIT_MILLIS_NAME = "allocation-retry-wait-millis";
 
     private static final String ALLOW_MULTIPLE_USERS_NAME = "allow-multiple-users";
+
+    private static final String CONNECTION_LISTENER_CLASS_NAME = "connection-listener-class";
+
+    private static final String CONNECTION_LISTENER_PROPERTY_NAME = "connection-listener-property";
 
     private static final String SETTXQUERYTIMEOUT_NAME = "set-tx-query-timeout";
 
@@ -256,6 +262,12 @@ class Constants {
 
     static SimpleAttributeDefinition URL_DELIMITER = new SimpleAttributeDefinition(URL_DELIMITER_NAME, DataSource.Tag.URL_DELIMITER.getLocalName(), new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
+    static SimpleAttributeDefinition URL_PROPERTY = new SimpleAttributeDefinitionBuilder(URL_PROPERTY_NAME, ModelType.STRING)
+            .setAllowExpression(true)
+            .setAllowNull(true)
+            .setXmlName(XaDataSource.Tag.URL_PROPERTY.getLocalName())
+            .build();
+
     static SimpleAttributeDefinition URL_SELECTOR_STRATEGY_CLASS_NAME = new SimpleAttributeDefinition(URL_SELECTOR_STRATEGY_CLASS_NAME_NAME, DataSource.Tag.URL_SELECTOR_STRATEGY_CLASS_NAME.getLocalName(), new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
     static SimpleAttributeDefinition USE_JAVA_CONTEXT = new SimpleAttributeDefinition(USE_JAVA_CONTEXT_NAME, DataSource.Attribute.USE_JAVA_CONTEXT.getLocalName(), new ModelNode().set(Defaults.USE_JAVA_CONTEXT), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
@@ -273,11 +285,11 @@ class Constants {
 
     static SimpleAttributeDefinition JTA = new SimpleAttributeDefinition(JTA_NAME, DataSource.Attribute.JTA.getLocalName(), new ModelNode().set(Defaults.JTA), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition CONNECTION_PROPERTIES = new SimpleAttributeDefinition(CONNECTION_PROPERTIES_NAME, DataSource.Tag.CONNECTION_PROPERTY.getLocalName(), new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition CONNECTION_PROPERTIES = new SimpleAttributeDefinition(CONNECTION_PROPERTIES_NAME, DataSource.Tag.CONNECTION_PROPERTY.getLocalName(), new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition CONNECTION_PROPERTY_VALUE = new SimpleAttributeDefinition(CONNECTION_PROPERTY_VALUE_NAME, DataSource.Tag.CONNECTION_PROPERTY.getLocalName(), new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition CONNECTION_PROPERTY_VALUE = new SimpleAttributeDefinition(CONNECTION_PROPERTY_VALUE_NAME, DataSource.Tag.CONNECTION_PROPERTY.getLocalName(), new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition USERNAME = new SimpleAttributeDefinitionBuilder(USERNAME_NAME, ModelType.STRING)
+    public static SimpleAttributeDefinition USERNAME = new SimpleAttributeDefinitionBuilder(USERNAME_NAME, ModelType.STRING)
             .setXmlName(Credential.Tag.USER_NAME.getLocalName())
             .setAllowExpression(true)
             .setAllowNull(true)
@@ -286,7 +298,7 @@ class Constants {
             .addAccessConstraint(DS_SECURITY_DEF)
             .build();
 
-    static SimpleAttributeDefinition PASSWORD = new SimpleAttributeDefinitionBuilder(PASSWORD_NAME, ModelType.STRING)
+    public static SimpleAttributeDefinition PASSWORD = new SimpleAttributeDefinitionBuilder(PASSWORD_NAME, ModelType.STRING)
             .setXmlName(Credential.Tag.PASSWORD.getLocalName())
             .setAllowExpression(true)
             .setAllowNull(true)
@@ -315,6 +327,18 @@ class Constants {
     static SimpleAttributeDefinition ALLOCATION_RETRY_WAIT_MILLIS = new SimpleAttributeDefinition(ALLOCATION_RETRY_WAIT_MILLIS_NAME, TimeOut.Tag.ALLOCATION_RETRY_WAIT_MILLIS.getLocalName(), new ModelNode(), ModelType.LONG, true, true, MeasurementUnit.NONE);
 
     static SimpleAttributeDefinition ALLOW_MULTIPLE_USERS = new SimpleAttributeDefinition(ALLOW_MULTIPLE_USERS_NAME, DsPool.Tag.ALLOW_MULTIPLE_USERS.getLocalName(), new ModelNode(Defaults.ALLOW_MULTIPLE_USERS), ModelType.BOOLEAN, true, false, MeasurementUnit.NONE);
+
+    static SimpleAttributeDefinition CONNECTION_LISTENER_CLASS = new SimpleAttributeDefinitionBuilder(CONNECTION_LISTENER_CLASS_NAME, ModelType.STRING)
+           .setAllowExpression(true)
+            .setAllowNull(true)
+            .setXmlName( org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName())
+            .build();
+    static PropertiesAttributeDefinition CONNECTION_LISTENER_PROPERTIES = new PropertiesAttributeDefinition.Builder(CONNECTION_LISTENER_PROPERTY_NAME, true)
+                .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
+                .setAllowNull(true)
+                .setAllowExpression(true)
+                .build();
+
 
     static SimpleAttributeDefinition QUERY_TIMEOUT = new SimpleAttributeDefinition(QUERYTIMEOUT_NAME, TimeOut.Tag.QUERY_TIMEOUT.getLocalName(), new ModelNode(), ModelType.LONG, true, true, MeasurementUnit.NONE);
 
@@ -385,11 +409,13 @@ class Constants {
             NEW_CONNECTION_SQL, URL_DELIMITER,
             URL_SELECTOR_STRATEGY_CLASS_NAME, USE_JAVA_CONTEXT,
             JTA, org.jboss.as.connector.subsystems.common.pool.Constants.MAX_POOL_SIZE,
-            org.jboss.as.connector.subsystems.common.pool.Constants.MIN_POOL_SIZE, org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL, org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN,
+            org.jboss.as.connector.subsystems.common.pool.Constants.MIN_POOL_SIZE, org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE,
+            org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL, org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN,
+            org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS,
             USERNAME, PASSWORD, SECURITY_DOMAIN,
             REAUTH_PLUGIN_CLASSNAME,
             org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY,
-            ALLOW_MULTIPLE_USERS,
+            ALLOW_MULTIPLE_USERS, CONNECTION_LISTENER_CLASS, CONNECTION_PROPERTIES,
             PREPARED_STATEMENTS_CACHE_SIZE,
             SHARE_PREPARED_STATEMENTS,
             TRACK_STATEMENTS,
@@ -414,7 +440,9 @@ class Constants {
             REAUTHPLUGIN_PROPERTIES,
             EXCEPTION_SORTER_PROPERTIES,
             STALE_CONNECTION_CHECKER_PROPERTIES,
-            VALID_CONNECTION_CHECKER_PROPERTIES,
+            VALID_CONNECTION_CHECKER_PROPERTIES, CONNECTION_LISTENER_PROPERTIES,
+            org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES,
+
     };
 
     static SimpleAttributeDefinition RECOVERY_USERNAME = new SimpleAttributeDefinitionBuilder(RECOVERY_USERNAME_NAME, ModelType.STRING)
@@ -454,13 +482,14 @@ class Constants {
             Constants.XA_DATASOURCE_CLASS, JNDI_NAME, DATASOURCE_DRIVER,
             NEW_CONNECTION_SQL, URL_DELIMITER,
             URL_SELECTOR_STRATEGY_CLASS_NAME, USE_JAVA_CONTEXT,
-            org.jboss.as.connector.subsystems.common.pool.Constants.MAX_POOL_SIZE, org.jboss.as.connector.subsystems.common.pool.Constants.MIN_POOL_SIZE,
+            org.jboss.as.connector.subsystems.common.pool.Constants.MAX_POOL_SIZE, org.jboss.as.connector.subsystems.common.pool.Constants.MIN_POOL_SIZE, org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE,
             org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL, org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN, INTERLEAVING,
+            org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS,
             NO_TX_SEPARATE_POOL, PAD_XID, SAME_RM_OVERRIDE,
             WRAP_XA_RESOURCE, USERNAME, PASSWORD,
             SECURITY_DOMAIN,
             REAUTH_PLUGIN_CLASSNAME,
-            org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY, ALLOW_MULTIPLE_USERS,
+            org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY, ALLOW_MULTIPLE_USERS, CONNECTION_LISTENER_CLASS,
             PREPARED_STATEMENTS_CACHE_SIZE,
             SHARE_PREPARED_STATEMENTS, TRACK_STATEMENTS,
             ALLOCATION_RETRY, ALLOCATION_RETRY_WAIT_MILLIS,
@@ -477,16 +506,16 @@ class Constants {
             SPY, USE_CCM,
             RECOVERY_USERNAME, RECOVERY_PASSWORD,
             RECOVERY_SECURITY_DOMAIN, RECOVER_PLUGIN_CLASSNAME,
-            NO_RECOVERY, JTA};
+            NO_RECOVERY, URL_PROPERTY};
 
     static final PropertiesAttributeDefinition[] XA_DATASOURCE_PROPERTIES_ATTRIBUTES = new PropertiesAttributeDefinition[]{
             REAUTHPLUGIN_PROPERTIES,
             EXCEPTION_SORTER_PROPERTIES,
             STALE_CONNECTION_CHECKER_PROPERTIES,
             VALID_CONNECTION_CHECKER_PROPERTIES,
-            RECOVER_PLUGIN_PROPERTIES
+            RECOVER_PLUGIN_PROPERTIES,  CONNECTION_LISTENER_PROPERTIES,
+            org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES,
     };
-
 
     static SimpleAttributeDefinition XADATASOURCE_PROPERTIES = new SimpleAttributeDefinition(XADATASOURCEPROPERTIES_NAME, XaDataSource.Tag.XA_DATASOURCE_PROPERTY.getLocalName(), new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
 
@@ -574,7 +603,12 @@ class Constants {
             .setRuntimeOnly().build();
     static final SimpleOperationDefinition FLUSH_ALL_CONNECTION = new SimpleOperationDefinitionBuilder("flush-all-connection-in-pool", DataSourcesExtension.getResourceDescriptionResolver())
             .setRuntimeOnly().build();
+    static final SimpleOperationDefinition FLUSH_INVALID_CONNECTION = new SimpleOperationDefinitionBuilder("flush-invalid-connection-in-pool", DataSourcesExtension.getResourceDescriptionResolver())
+                .setRuntimeOnly().build();
+    static final SimpleOperationDefinition FLUSH_GRACEFULLY_CONNECTION = new SimpleOperationDefinitionBuilder("flush-gracefully-connection-in-pool", DataSourcesExtension.getResourceDescriptionResolver())
+                .setRuntimeOnly().build();
     static final SimpleOperationDefinition TEST_CONNECTION = new SimpleOperationDefinitionBuilder("test-connection-in-pool", DataSourcesExtension.getResourceDescriptionResolver())
+            .setParameters(USERNAME, PASSWORD)
             .setRuntimeOnly().build();
     static final SimpleOperationDefinition CLEAR_STATISTICS = new SimpleOperationDefinitionBuilder("clear-statistics", DataSourcesExtension.getResourceDescriptionResolver())
             .build();

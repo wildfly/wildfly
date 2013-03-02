@@ -22,9 +22,9 @@
 
 package org.jboss.as.controller;
 
-import java.util.Collection;
-
 import org.jboss.dmr.ModelNode;
+
+import java.util.Collection;
 
 /**
  * Simple {@link AbstractWriteAttributeHandler} that always triggers putting the process in a restart required state.

@@ -22,15 +22,10 @@
 
 package org.jboss.as.connector.services.workmanager;
 
-import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
-
-import java.util.concurrent.Executor;
-
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.jca.core.api.workmanager.WorkManager;
-import org.jboss.jca.core.security.DefaultCallback;
-import org.jboss.jca.core.spi.security.Callback;
 import org.jboss.jca.core.tx.jbossts.XATerminatorImpl;
+import org.jboss.jca.core.workmanager.WorkManagerCoordinator;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -39,10 +34,15 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.BlockingExecutor;
 import org.jboss.tm.JBossXATerminator;
-import org.wildfly.security.manager.WildFlySecurityManager;
+
+import java.util.concurrent.Executor;
+
+import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
+import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_NAME;
 
 /**
  * A WorkManager Service.
+ *
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
@@ -56,16 +56,15 @@ public final class WorkManagerService implements Service<WorkManager> {
 
     private final InjectedValue<JBossXATerminator> xaTerminator = new InjectedValue<JBossXATerminator>();
 
-    private volatile Callback callback;
-
-    /** create an instance
+    /**
+     * create an instance
+     *
      * @param value the work manager
      */
     public WorkManagerService(WorkManager value) {
         super();
         ROOT_LOGGER.debugf("Building WorkManager");
         this.value = value;
-
     }
 
     @Override
@@ -75,6 +74,8 @@ public final class WorkManagerService implements Service<WorkManager> {
 
     @Override
     public void start(StartContext context) throws StartException {
+        ROOT_LOGGER.debugf("Starting JCA WorkManager: ", value.getName());
+
         BlockingExecutor longRunning = (BlockingExecutor) executorLong.getOptionalValue();
         if (longRunning != null) {
             this.value.setLongRunningThreadPool(longRunning);
@@ -84,35 +85,31 @@ public final class WorkManagerService implements Service<WorkManager> {
             this.value.setShortRunningThreadPool((BlockingExecutor) executorShort.getValue());
 
         }
+
         this.value.setXATerminator(new XATerminatorImpl(xaTerminator.getValue()));
 
-        // TODO - Remove and do proper integration (IronJacamar 1.1)
-        String callbackProperties = WildFlySecurityManager.getPropertyPrivileged("callback.properties", null);
-        if (callbackProperties != null) {
-            try {
-                DefaultCallback defaultCallback = new DefaultCallback(callbackProperties);
-                defaultCallback.start();
-
-                this.callback = defaultCallback;
-                this.value.setCallbackSecurity(callback);
-            } catch (Throwable t) {
-                ROOT_LOGGER.debug(t.getMessage(), t);
-            }
+        if (value.getName().equals(DEFAULT_NAME)) {
+            WorkManagerCoordinator.getInstance().setDefaultWorkManager(value);
+        } else {
+            WorkManagerCoordinator.getInstance().registerWorkManager(value);
         }
 
-        ROOT_LOGGER.debugf("Starting JCA WorkManager");
+        ROOT_LOGGER.debugf("Started JCA WorkManager: ", value.getName());
     }
 
     @Override
     public void stop(StopContext context) {
+        ROOT_LOGGER.debugf("Stopping JCA WorkManager: ", value.getName());
+
         value.shutdown();
 
-        try {
-            if (callback != null)
-                callback.stop();
-        } catch (Throwable t) {
-            ROOT_LOGGER.debug(t.getMessage(), t);
+        if (value.getName().equals(DEFAULT_NAME)) {
+            WorkManagerCoordinator.getInstance().setDefaultWorkManager(null);
+        } else {
+            WorkManagerCoordinator.getInstance().unregisterWorkManager(value);
         }
+
+        ROOT_LOGGER.debugf("Stopped JCA WorkManager: ", value.getName());
     }
 
     public Injector<Executor> getExecutorShortInjector() {
@@ -126,5 +123,4 @@ public final class WorkManagerService implements Service<WorkManager> {
     public Injector<JBossXATerminator> getXaTerminatorInjector() {
         return xaTerminator;
     }
-
 }

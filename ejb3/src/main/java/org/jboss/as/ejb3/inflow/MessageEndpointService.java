@@ -47,4 +47,6 @@ public interface MessageEndpointService<T> {
      * @return
      */
     ClassLoader getClassLoader();
+
+    String getActivationName();
 }

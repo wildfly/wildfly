@@ -112,6 +112,7 @@ public class DataSourceDefinitionDeploymentDescriptorParser extends AbstractDepl
         directDataSourceInjectionSource.setMaxStatements(dataSource.getMaxStatements());
         directDataSourceInjectionSource.setMaxPoolSize(dataSource.getMaxPoolSize());
         directDataSourceInjectionSource.setMinPoolSize(dataSource.getMinPoolSize());
+        directDataSourceInjectionSource.setInitialPoolSize(dataSource.getInitialPoolSize());
         directDataSourceInjectionSource.setPassword(dataSource.getPassword());
         directDataSourceInjectionSource.setPortNumber(dataSource.getPortNumber());
         directDataSourceInjectionSource.setProperties(properties);

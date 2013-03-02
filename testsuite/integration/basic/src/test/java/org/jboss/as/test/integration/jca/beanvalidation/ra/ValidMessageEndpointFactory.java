@@ -30,9 +30,9 @@ import javax.transaction.xa.XAResource;
 
 /**
  * A simple message endpoint factory
- * 
+ *
  * @author <a href="mailto:vrastsel@redhat.com>Vladimir Rastseluev</a>
- * 
+ *
  */
 public class ValidMessageEndpointFactory implements MessageEndpointFactory
 {
@@ -71,4 +71,14 @@ public class ValidMessageEndpointFactory implements MessageEndpointFactory
    {
       return false;
    }
+
+    @Override
+    public String getActivationName() {
+        return "activationName";
+    }
+
+    @Override
+    public Class<?> getEndpointClass() {
+        return me.getClass();
+    }
 }

@@ -70,7 +70,7 @@ public class RaAdd extends AbstractAddStepHandler {
         }
 
 
-        ModifiableResourceAdapter resourceAdapter = RaOperationUtil.buildResourceAdaptersObject(context, operation, archiveOrModuleName);
+        ModifiableResourceAdapter resourceAdapter = RaOperationUtil.buildResourceAdaptersObject(name, context, operation, archiveOrModuleName);
 
         if (model.get(ARCHIVE.getName()).isDefined()) {
             RaOperationUtil.installRaServices(context, verificationHandler, name, resourceAdapter, newControllers);

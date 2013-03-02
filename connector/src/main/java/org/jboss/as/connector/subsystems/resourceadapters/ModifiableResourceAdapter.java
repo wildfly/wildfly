@@ -22,22 +22,25 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
-import java.util.List;
-import java.util.Map;
-
 import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
-import org.jboss.jca.common.api.metadata.common.v10.CommonConnDef;
-import org.jboss.jca.common.metadata.resourceadapter.v10.ResourceAdapterImpl;
+import org.jboss.jca.common.api.metadata.common.v11.CommonConnDef;
+import org.jboss.jca.common.api.metadata.common.v11.WorkManager;
+import org.jboss.jca.common.metadata.resourceadapter.v11.ResourceAdapterImpl;
 import org.jboss.msc.service.ServiceName;
+
+import java.util.List;
+import java.util.Map;
 
 
 public class ModifiableResourceAdapter extends ResourceAdapterImpl {
 
     private volatile ServiceName raXmlDeploymentServiceName = null;
 
-    public ModifiableResourceAdapter(String archive, TransactionSupportEnum transactionSupport, List<CommonConnDef> connectionDefinitions, List<CommonAdminObject> adminObjects, Map<String, String> configProperties, List<String> beanValidationGroups, String bootstrapContext) {
-        super(archive, transactionSupport, connectionDefinitions, adminObjects, configProperties, beanValidationGroups, bootstrapContext);
+    public ModifiableResourceAdapter(String id, String archive, TransactionSupportEnum transactionSupport, List<CommonConnDef> connectionDefinitions,
+                                     List<CommonAdminObject> adminObjects, Map<String, String> configProperties, List<String> beanValidationGroups,
+                                     String bootstrapContext, WorkManager workmanager) {
+        super(id, archive, transactionSupport, connectionDefinitions, adminObjects, configProperties, beanValidationGroups, bootstrapContext, workmanager);
     }
 
     public synchronized void addConfigProperty(String name, String value) {

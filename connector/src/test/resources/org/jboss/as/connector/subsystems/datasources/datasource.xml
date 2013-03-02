@@ -1,4 +1,4 @@
-        <subsystem xmlns="urn:jboss:domain:datasources:1.1">
+        <subsystem xmlns="urn:jboss:domain:datasources:3.0">
             <datasources>
                 <datasource jndi-name="java:jboss/datasources/complexDs" pool-name="complexDs_Pool" jta="false" use-java-context="true" spy="false" use-ccm="true">
                     <connection-url>
@@ -108,7 +108,7 @@
                         <track-statements>nowarn</track-statements>
                     </statement>
                 </datasource>
-                <xa-datasource jndi-name="java:jboss/xa-datasources/complexXaDs" pool-name="complexXaDs_Pool" use-java-context="true" spy="false" use-ccm="true" jta="false">
+                <xa-datasource jndi-name="java:jboss/xa-datasources/complexXaDs" pool-name="complexXaDs_Pool" use-java-context="true" spy="false" use-ccm="true">
                     <xa-datasource-property name="URL">
                         jdbc:h2:mem:test
                     </xa-datasource-property>

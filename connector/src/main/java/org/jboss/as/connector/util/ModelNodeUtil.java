@@ -1,9 +1,14 @@
 package org.jboss.as.connector.util;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.dmr.ModelNode;
@@ -53,4 +58,28 @@ public class ModelNodeUtil {
             return null;
         }
     }
+
+    public static List<String> extractListOfStrings(ModelNode operation, PrimitiveListAttributeDefinition primitiveListAttributeDefinition) {
+        List<String> returnList = null;
+        if (operation.hasDefined(primitiveListAttributeDefinition.getName())) {
+            returnList = new ArrayList<String>(operation.get(primitiveListAttributeDefinition.getName()).asList().size());
+            for (ModelNode node : operation.get(primitiveListAttributeDefinition.getName()).asList()) {
+                returnList.add(node.asString());
+            }
+
+        }
+        return returnList;
+    }
+
+    public static Map<String,String> extractMap(ModelNode operation,  ObjectListAttributeDefinition objList, SimpleAttributeDefinition keyAttribute, SimpleAttributeDefinition valueAttribute) {
+            Map<String, String> returnMap = null;
+            if (operation.hasDefined(objList.getName())) {
+                returnMap = new HashMap<String, String>(operation.get(objList.getName()).asList().size());
+                for (ModelNode node : operation.get(objList.getName()).asList()) {
+                    returnMap.put(node.asObject().get(keyAttribute.getName()).asString(), node.asObject().get(valueAttribute.getName()).asString());
+                }
+
+            }
+            return returnMap;
+        }
 }

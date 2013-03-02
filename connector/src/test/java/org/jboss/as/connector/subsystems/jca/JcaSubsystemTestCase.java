@@ -84,22 +84,31 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
      * @throws Exception
      */
     private void testTransformer1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
-        String subsystemXml = "jca-full.xml";   //This has no expressions not understood by 1.1.0
-        ModelVersion modelVersion = ModelVersion.create(1, 1, 0); //The old model version
-        //Use the non-runtime version of the extension which will happen on the HC
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXmlResource(subsystemXml);
+        // create builder for current subsystem version
+                KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
-        // Add legacy subsystems
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
-                .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + controllerVersion.getMavenGavVersion())
-                .setExtensionClassName("org.jboss.as.connector.subsystems.jca.JcaExtension");
+                // create builder for legacy subsystem version
+                ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
+                builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_1_0)
+                        .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
+                        .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + controllerVersion.getMavenGavVersion())
+                        .setExtensionClassName("org.jboss.as.connector.subsystems.jca.JcaExtension").skipReverseControllerCheck();
 
-        KernelServices mainServices = builder.build();
-        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
-        Assert.assertNotNull(legacyServices);
-        checkSubsystemModelTransformation(mainServices, modelVersion);
+                KernelServices mainServices = builder.build();
+                KernelServices legacyServices = mainServices.getLegacyServices(version_1_1_0);
+
+                Assert.assertNotNull(legacyServices);
+                Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
+                Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+                List<ModelNode> xmlOps = builder.parseXmlResource("jca-full.xml");
+
+                ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_1_0, xmlOps,
+                        new FailedOperationTransformationConfig()
+                                .addFailedAttribute(PathAddress.pathAddress(JcaSubsystemRootDefinition.PATH_SUBSYSTEM, JcaDistributedWorkManagerDefinition.PATH_DISTRIBUTED_WORK_MANAGER),
+                                        FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                                .addFailedAttribute(PathAddress.pathAddress(JcaSubsystemRootDefinition.PATH_SUBSYSTEM, JcaDistributedWorkManagerDefinition.PATH_DISTRIBUTED_WORK_MANAGER, PathElement.pathElement(WORKMANAGER_SHORT_RUNNING)),
+                                        FailedOperationTransformationConfig.REJECTED_RESOURCE));
     }
 
     @Test
@@ -121,7 +130,7 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_1_0)
                 .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
                 .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + controllerVersion.getMavenGavVersion())
-                .setExtensionClassName("org.jboss.as.connector.subsystems.jca.JcaExtension");
+                .setExtensionClassName("org.jboss.as.connector.subsystems.jca.JcaExtension").skipReverseControllerCheck();
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(version_1_1_0);
@@ -140,7 +149,10 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
                         .addFailedAttribute(PathAddress.pathAddress(JcaSubsystemRootDefinition.PATH_SUBSYSTEM, JcaWorkManagerDefinition.PATH_WORK_MANAGER,
                                 PathElement.pathElement(WORKMANAGER_LONG_RUNNING)),
                                 new FailedOperationTransformationConfig.RejectExpressionsConfig(PoolAttributeDefinitions.ALLOW_CORE_TIMEOUT, PoolAttributeDefinitions.KEEPALIVE_TIME))
-        );
+                        .addFailedAttribute(PathAddress.pathAddress(JcaSubsystemRootDefinition.PATH_SUBSYSTEM, JcaDistributedWorkManagerDefinition.PATH_DISTRIBUTED_WORK_MANAGER),
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                        .addFailedAttribute(PathAddress.pathAddress(JcaSubsystemRootDefinition.PATH_SUBSYSTEM, JcaDistributedWorkManagerDefinition.PATH_DISTRIBUTED_WORK_MANAGER, PathElement.pathElement(WORKMANAGER_SHORT_RUNNING)),
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE));
     }
 
     @Override

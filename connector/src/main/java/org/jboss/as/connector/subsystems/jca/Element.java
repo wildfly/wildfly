@@ -54,13 +54,26 @@ public enum Element {
     /** workmanager element **/
     WORKMANAGER("workmanager"),
 
+    /** distributed workmanager element **/
+    DISTRIBUTED_WORKMANAGER("distributed-workmanager"),
+
     WORKMANAGERS("workmanagers"),
 
 
     /** bootstrap-contexts element **/
     BOOTSTRAP_CONTEXTS("bootstrap-contexts"),
 
-    BOOTSTRAP_CONTEXT("bootstrap-context");
+    BOOTSTRAP_CONTEXT("bootstrap-context"),
+
+    POLICY("policy"),
+
+    SELECTOR("selector"),
+
+    OPTION("option"),
+
+    TRANSPORT("transport");
+
+
 
 
     private final String name;

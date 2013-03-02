@@ -28,6 +28,7 @@ import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.jca.core.api.bootstrap.CloneableBootstrapContext;
 import org.jboss.jca.core.api.workmanager.WorkManager;
+import org.jboss.jca.core.bootstrapcontext.BootstrapContextCoordinator;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -85,6 +86,9 @@ public final class BootStrapContextService implements Service<CloneableBootstrap
         jcaConfig.getValue().getBootstrapContexts().put(name, value);
         if(usingDefaultWm) {
             jcaConfig.getValue().setDefaultBootstrapContext(value);
+            BootstrapContextCoordinator.getInstance().setDefaultBootstrapContext(value);
+        } else {
+            BootstrapContextCoordinator.getInstance().registerBootstrapContext(value);
         }
         ROOT_LOGGER.debugf("Starting JCA DefaultBootstrapContext");
     }
@@ -92,6 +96,13 @@ public final class BootStrapContextService implements Service<CloneableBootstrap
     @Override
     public void stop(StopContext context) {
         jcaConfig.getValue().getBootstrapContexts().remove(name);
+        if (usingDefaultWm) {
+            jcaConfig.getValue().setDefaultBootstrapContext(null);
+            BootstrapContextCoordinator.getInstance().setDefaultBootstrapContext(null);
+        } else {
+            BootstrapContextCoordinator.getInstance().unregisterBootstrapContext(value);
+        }
+
     }
 
     public Injector<com.arjuna.ats.jbossatx.jta.TransactionManagerService> getTxManagerInjector() {

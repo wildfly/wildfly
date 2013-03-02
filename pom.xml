@@ -166,7 +166,7 @@
         <version.org.jboss.ejb3.ext-api>2.1.0</version.org.jboss.ejb3.ext-api>
         <version.org.jboss.iiop-client>1.0.0.Final</version.org.jboss.iiop-client>
         <version.org.jboss.invocation>1.2.0.Beta2</version.org.jboss.invocation>
-        <version.org.jboss.ironjacamar>1.0.17.Final</version.org.jboss.ironjacamar>
+        <version.org.jboss.ironjacamar>1.1.0.Final</version.org.jboss.ironjacamar>
         <version.org.jboss.jandex>1.1.0.Alpha1</version.org.jboss.jandex>
         <version.org.jboss.jboss-dmr>1.2.0.Beta2</version.org.jboss.jboss-dmr>
         <version.org.jboss.jboss-transaction-spi>7.0.1.Final</version.org.jboss.jboss-transaction-spi>
@@ -204,7 +204,7 @@
         <version.org.jboss.spec.javax.interceptor.jboss-interceptors-api_1.2_spec>1.0.0.Alpha3</version.org.jboss.spec.javax.interceptor.jboss-interceptors-api_1.2_spec>
         <version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>1.0.0.Alpha1</version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>
         <version.org.jboss.spec.javax.management.j2ee.jboss-j2eemgmt-api_1.1_spec>1.0.1.Final</version.org.jboss.spec.javax.management.j2ee.jboss-j2eemgmt-api_1.1_spec>
-        <version.org.jboss.spec.javax.resource.jboss-connector-api_1.6_spec>1.0.1.Final</version.org.jboss.spec.javax.resource.jboss-connector-api_1.6_spec>
+        <version.org.jboss.spec.javax.resource.jboss-connector-api_1.7_spec>1.0.0.Beta1</version.org.jboss.spec.javax.resource.jboss-connector-api_1.7_spec>
         <version.org.jboss.spec.javax.rmi.jboss-rmi-api_1.0_spec>1.0.4.Final</version.org.jboss.spec.javax.rmi.jboss-rmi-api_1.0_spec>
         <version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.0_spec>1.0.1.Final</version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.0_spec>
         <version.org.jboss.spec.javax.security.jacc.jboss-jacc-api_1.4_spec>1.0.2.Final</version.org.jboss.spec.javax.security.jacc.jboss-jacc-api_1.4_spec>
@@ -5027,8 +5027,8 @@
 
             <dependency>
                 <groupId>org.jboss.spec.javax.resource</groupId>
-                <artifactId>jboss-connector-api_1.6_spec</artifactId>
-                <version>${version.org.jboss.spec.javax.resource.jboss-connector-api_1.6_spec}</version>
+                <artifactId>jboss-connector-api_1.7_spec</artifactId>
+                <version>${version.org.jboss.spec.javax.resource.jboss-connector-api_1.7_spec}</version>
             </dependency>
 
             <dependency>

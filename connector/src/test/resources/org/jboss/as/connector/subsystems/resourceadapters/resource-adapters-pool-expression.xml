@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:resource-adapters:1.1">
+<subsystem xmlns="urn:jboss:domain:resource-adapters:2.0">
   <!--Optional:-->
   <resource-adapters>
     <!--1 or more repetitions:-->
@@ -18,7 +18,7 @@
       <!--Optional:-->
       <connection-definitions>
         <!--1 or more repetitions:-->
-        <connection-definition use-ccm="${test.expr:true}" class-name="${test.expr:token}" jndi-name="${test.expr:java:jboss/cf/PoolName}" enabled="${test.expr:true}" use-java-context="${test.expr:true}" pool-name="poolName">
+        <connection-definition use-ccm="${test.expr:true}" sharable="${test.expr:false}" enlistment="${test.expr:true}" class-name="${test.expr:token}" jndi-name="${test.expr:java:jboss/cf/PoolName}" enabled="${test.expr:true}" use-java-context="${test.expr:true}" pool-name="poolName">
           <!--Zero or more repetitions:-->
           <config-property name="config2">${test.expr:value}</config-property>
           <!--You have a CHOICE of the next 2 items at this level-->
@@ -26,6 +26,8 @@
           <pool>
             <!--Optional:-->
             <min-pool-size>${test.expr:200}</min-pool-size>
+            <!--Optional:-->
+            <initial-pool-size>${test.expr:200}</initial-pool-size>
             <!--Optional:-->
             <max-pool-size>${test.expr:200}</max-pool-size>
             <!--Optional:-->

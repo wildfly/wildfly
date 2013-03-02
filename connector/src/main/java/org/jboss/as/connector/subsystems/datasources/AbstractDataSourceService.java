@@ -385,7 +385,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
         @Override
         protected ManagedConnectionFactory createMcf(XaDataSource arg0, String arg1, ClassLoader arg2)
                 throws NotFoundException, DeployException {
-            final MyXaMCF xaManagedConnectionFactory = new MyXaMCF();
+            final WildFlyXaMCF xaManagedConnectionFactory = new WildFlyXaMCF();
 
             if (xaDataSourceConfig.getUrlDelimiter() != null) {
                 xaManagedConnectionFactory.setURLDelimiter(xaDataSourceConfig.getUrlDelimiter());
@@ -414,7 +414,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
             }
 
             setMcfProperties(xaManagedConnectionFactory, xaDataSourceConfig, xaDataSourceConfig.getStatement());
-            xaManagedConnectionFactory.setUserTransactionJndiName("java:jboss/UserTransaction");
+            xaManagedConnectionFactory.setTransactionSynchronizationRegistry(getTransactionIntegration().getTransactionSynchronizationRegistry());
             return xaManagedConnectionFactory;
 
         }
@@ -422,8 +422,10 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
         @Override
         protected ManagedConnectionFactory createMcf(org.jboss.jca.common.api.metadata.ds.DataSource arg0, String arg1,
                 ClassLoader arg2) throws NotFoundException, DeployException {
-            final LocalManagedConnectionFactory managedConnectionFactory = new LocalManagedConnectionFactory();
-            managedConnectionFactory.setUserTransactionJndiName("java:jboss/UserTransaction");
+            final WildFlyLocalMCF managedConnectionFactory = new WildFlyLocalMCF();
+            if (dataSourceConfig.isJTA()) {
+                managedConnectionFactory.setTransactionSynchronizationRegistry(getTransactionIntegration().getTransactionSynchronizationRegistry());
+            }
             managedConnectionFactory.setDriverClass(dataSourceConfig.getDriverClass());
 
             if (dataSourceConfig.getUrlDelimiter() != null) {
@@ -569,13 +571,30 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
 
     }
 
-    private class MyXaMCF extends XAManagedConnectionFactory {
+    private class WildFlyXaMCF extends XAManagedConnectionFactory {
 
         private static final long serialVersionUID = 4876371551002746953L;
 
         public void setXaProps(Map<String, String> inputProperties) {
             xaProps.putAll(inputProperties);
         }
+
+        public void setTransactionSynchronizationRegistry(javax.transaction.TransactionSynchronizationRegistry tsr) {
+            super.setTransactionSynchronizationRegistry(tsr);
+        }
+
+
+    }
+
+    private class WildFlyLocalMCF extends LocalManagedConnectionFactory {
+
+        private static final long serialVersionUID = 4876371551002746953L;
+
+
+        public void setTransactionSynchronizationRegistry(javax.transaction.TransactionSynchronizationRegistry tsr) {
+            super.setTransactionSynchronizationRegistry(tsr);
+        }
+
 
     }
 }

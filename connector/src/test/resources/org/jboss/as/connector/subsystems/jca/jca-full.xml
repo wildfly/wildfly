@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:jca:1.1">
+<subsystem xmlns="urn:jboss:domain:jca:2.0">
   <!--Optional:-->
   <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
   <!--Optional:-->
@@ -51,6 +51,21 @@
     </long-running-threads>
   </workmanager>
   <!--Optional:-->
+  <distributed-workmanager name="MyDWM">
+    <selector name="PING_TIME">
+      <option name="myOption">ignored</option>
+    </selector>
+    <policy name="WATERMARK">
+      <option name="watermark">0</option>
+    </policy>
+    <short-running-threads>
+      <core-threads count="50"/>
+      <queue-length count="50"/>
+      <max-threads count="50"/>
+      <keepalive-time time="10" unit="seconds"/>
+    </short-running-threads>
+    <transport jgroups-stack="udp" jgroups-channel="myChannel" request-timeout="100000"/>
+  </distributed-workmanager>
   <bootstrap-contexts>
     <!--1 or more repetitions:-->
     <bootstrap-context name="bootStrapContext" workmanager="anotherWm"/>

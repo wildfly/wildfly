@@ -169,6 +169,7 @@ public class IronJacamarDeploymentStatisticsTestCase extends JcaStatisticsBase {
         statNode.add(DEPLOYMENT, connectionNode.get(0).get(DEPLOYMENT).asString());
         statNode.add(SUBSYSTEM, "resource-adapters");
         statNode.add("statistics", "statistics");
+        statNode.add(connectionNode.get(3));
         statNode.add("connection-definitions", connectionNode.get(4).get("connection-definitions").asString());
         return statNode;
     }

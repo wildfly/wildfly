@@ -33,11 +33,11 @@ import org.jboss.jca.common.api.metadata.ds.Statement;
 import org.jboss.jca.common.api.metadata.ds.TimeOut;
 import org.jboss.jca.common.api.metadata.ds.TransactionIsolation;
 import org.jboss.jca.common.api.metadata.ds.Validation;
-import org.jboss.jca.common.api.metadata.ds.v11.DataSource;
-import org.jboss.jca.common.api.metadata.ds.v11.DsPool;
+import org.jboss.jca.common.api.metadata.ds.v12.DataSource;
+import org.jboss.jca.common.api.metadata.ds.v12.DsPool;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.jca.common.metadata.ds.DataSourceAbstractImpl;
-import org.jboss.jca.common.metadata.ds.v11.DataSourceImpl;
+import org.jboss.jca.common.metadata.ds.v12.DataSourceImpl;
 import org.jboss.logging.Messages;
 
 /** A modifiable DataSourceImpl to add connection properties

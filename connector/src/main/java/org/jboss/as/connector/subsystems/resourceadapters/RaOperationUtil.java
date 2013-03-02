@@ -42,6 +42,7 @@ import org.jboss.as.server.deployment.module.MountHandle;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jandex.Index;
+import org.jboss.jca.common.api.metadata.common.Capacity;
 import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
 import org.jboss.jca.common.api.metadata.common.CommonPool;
 import org.jboss.jca.common.api.metadata.common.CommonSecurity;
@@ -52,15 +53,18 @@ import org.jboss.jca.common.api.metadata.common.Extension;
 import org.jboss.jca.common.api.metadata.common.FlushStrategy;
 import org.jboss.jca.common.api.metadata.common.Recovery;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
-import org.jboss.jca.common.api.metadata.common.v10.CommonConnDef;
-import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
+import org.jboss.jca.common.api.metadata.common.v11.CommonConnDef;
+import org.jboss.jca.common.api.metadata.common.v11.WorkManager;
+import org.jboss.jca.common.api.metadata.resourceadapter.v11.ResourceAdapter;
 import org.jboss.jca.common.api.validator.ValidateException;
-import org.jboss.jca.common.metadata.common.CommonPoolImpl;
 import org.jboss.jca.common.metadata.common.CommonSecurityImpl;
 import org.jboss.jca.common.metadata.common.CommonTimeOutImpl;
 import org.jboss.jca.common.metadata.common.CommonValidationImpl;
-import org.jboss.jca.common.metadata.common.CommonXaPoolImpl;
 import org.jboss.jca.common.metadata.common.CredentialImpl;
+import org.jboss.jca.common.metadata.common.v11.ConnDefPoolImpl;
+import org.jboss.jca.common.metadata.common.v11.ConnDefXaPoolImpl;
+import org.jboss.jca.common.metadata.common.v11.WorkManagerImpl;
+import org.jboss.jca.common.metadata.common.v11.WorkManagerSecurityImpl;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
@@ -86,14 +90,18 @@ import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.IDLETIMEOUTMINUTES;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.MAX_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.MIN_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL;
-import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.APPLICATION;
@@ -101,6 +109,8 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BEANV
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BOOTSTRAP_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CLASS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_FROM;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.INTERLEAVING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDINAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXSEPARATEPOOL;
@@ -114,9 +124,18 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOV
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SAME_RM_OVERRIDE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN_AND_APPLICATION;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SHARABLE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_TO;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTION_SUPPORT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_CCM;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_DEFAULT_GROUPS;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_DEFAULT_PRINCIPAL;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_DOMAIN;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_GROUPS;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_REQUIRED;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_USERS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WRAP_XA_RESOURCE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
 
@@ -126,94 +145,110 @@ public class RaOperationUtil {
     private static final ServiceName RAR_MODULE = ServiceName.of("rarinsidemodule");
 
 
-    public static ModifiableResourceAdapter buildResourceAdaptersObject(final OperationContext context, ModelNode operation, String archiveOrModule) throws OperationFailedException {
+    public static ModifiableResourceAdapter buildResourceAdaptersObject(final String id, final OperationContext context, ModelNode operation, String archiveOrModule) throws OperationFailedException {
         Map<String, String> configProperties = new HashMap<String, String>(0);
         List<CommonConnDef> connectionDefinitions = new ArrayList<CommonConnDef>(0);
         List<CommonAdminObject> adminObjects = new ArrayList<CommonAdminObject>(0);
         TransactionSupportEnum transactionSupport = operation.hasDefined(TRANSACTION_SUPPORT.getName()) ? TransactionSupportEnum
                 .valueOf(operation.get(TRANSACTION_SUPPORT.getName()).asString()) : null;
         String bootstrapContext = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, operation, BOOTSTRAP_CONTEXT);
-        List<String> beanValidationGroups = null;
-        if (operation.hasDefined(BEANVALIDATION_GROUPS.getName())) {
-            beanValidationGroups = new ArrayList<String>(operation.get(BEANVALIDATION_GROUPS.getName()).asList().size());
-            for (ModelNode beanValidation : operation.get(BEANVALIDATION_GROUPS.getName()).asList()) {
-                beanValidationGroups.add(beanValidation.asString());
-            }
+        List<String> beanValidationGroups = ModelNodeUtil.extractListOfStrings(operation, BEANVALIDATION_GROUPS);
+        boolean wmSecurity = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, operation, WM_SECURITY);
+        WorkManager workManager = null;
 
+        if (wmSecurity) {
+            final boolean mappingRequired = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, operation, WM_SECURITY_MAPPING_REQUIRED);
+            final String domain = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, operation, WM_SECURITY_DOMAIN);
+            final String defaultPrincipal = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, operation, WM_SECURITY_DEFAULT_PRINCIPAL);
+            final List<String> defaultGroups = ModelNodeUtil.extractListOfStrings(operation, WM_SECURITY_DEFAULT_GROUPS);
+            final Map<String, String> groups = ModelNodeUtil.extractMap(operation, WM_SECURITY_MAPPING_GROUPS, WM_SECURITY_MAPPING_FROM, WM_SECURITY_MAPPING_TO);
+            final Map<String, String> users = ModelNodeUtil.extractMap(operation, WM_SECURITY_MAPPING_USERS, WM_SECURITY_MAPPING_FROM, WM_SECURITY_MAPPING_TO);
+            workManager = new WorkManagerImpl(new WorkManagerSecurityImpl(mappingRequired, domain, defaultPrincipal, defaultGroups, users, groups));
         }
+
         ModifiableResourceAdapter ra;
-        ra = new ModifiableResourceAdapter(archiveOrModule, transactionSupport, connectionDefinitions,
-                adminObjects, configProperties, beanValidationGroups, bootstrapContext);
+        ra = new ModifiableResourceAdapter(id, archiveOrModule, transactionSupport, connectionDefinitions,
+                adminObjects, configProperties, beanValidationGroups, bootstrapContext, workManager);
 
         return ra;
 
     }
 
-    public static ModifiableConnDef buildConnectionDefinitionObject(final OperationContext context, final ModelNode recoveryEnvModel, final String poolName,
+
+
+    public static ModifiableConnDef buildConnectionDefinitionObject(final OperationContext context, final ModelNode connDefModel, final String poolName,
                                                                     final boolean isXa) throws OperationFailedException, ValidateException {
         Map<String, String> configProperties = new HashMap<String, String>(0);
-        String className = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, recoveryEnvModel, CLASS_NAME);
-        String jndiName = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, recoveryEnvModel, JNDINAME);
-        boolean enabled = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, recoveryEnvModel, ENABLED);
-        boolean useJavaContext = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, recoveryEnvModel, USE_JAVA_CONTEXT);
-        boolean useCcm = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, recoveryEnvModel, USE_CCM);
+        String className = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, connDefModel, CLASS_NAME);
+        String jndiName = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, connDefModel, JNDINAME);
+        boolean enabled = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, ENABLED);
+        boolean useJavaContext = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, USE_JAVA_CONTEXT);
+        boolean useCcm = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, USE_CCM);
+        boolean sharable = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, SHARABLE);
+        boolean enlistment = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, ENLISTMENT);
 
-        int maxPoolSize = ModelNodeUtil.getIntIfSetOrGetDefault(context, recoveryEnvModel, MAX_POOL_SIZE);
-        int minPoolSize = ModelNodeUtil.getIntIfSetOrGetDefault(context, recoveryEnvModel, MIN_POOL_SIZE);
-        boolean prefill = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, recoveryEnvModel, POOL_PREFILL);
-        boolean useStrictMin = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, recoveryEnvModel, POOL_USE_STRICT_MIN);
-        String flushStrategyString = POOL_FLUSH_STRATEGY.resolveModelAttribute(context, recoveryEnvModel).asString();
+        int maxPoolSize = ModelNodeUtil.getIntIfSetOrGetDefault(context, connDefModel, MAX_POOL_SIZE);
+        int minPoolSize = ModelNodeUtil.getIntIfSetOrGetDefault(context, connDefModel, MIN_POOL_SIZE);
+        Integer initialPoolSize = ModelNodeUtil.getIntIfSetOrGetDefault(context, connDefModel, INITIAL_POOL_SIZE);
+        boolean prefill = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, POOL_PREFILL);
+        boolean useStrictMin = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, POOL_USE_STRICT_MIN);
+        String flushStrategyString = POOL_FLUSH_STRATEGY.resolveModelAttribute(context, connDefModel).asString();
         final FlushStrategy flushStrategy = FlushStrategy.forName(flushStrategyString);
-        Boolean isSameRM  = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, recoveryEnvModel, SAME_RM_OVERRIDE);
-        boolean interlivng = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, recoveryEnvModel, INTERLEAVING);
-        boolean padXid = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, recoveryEnvModel, PAD_XID);
-        boolean wrapXaResource = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, recoveryEnvModel, WRAP_XA_RESOURCE);
-        boolean noTxSeparatePool = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, recoveryEnvModel, NOTXSEPARATEPOOL);
+        Boolean isSameRM  = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, SAME_RM_OVERRIDE);
+        boolean interlivng = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, INTERLEAVING);
+        boolean padXid = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, PAD_XID);
+        boolean wrapXaResource = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, WRAP_XA_RESOURCE);
+        boolean noTxSeparatePool = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, NOTXSEPARATEPOOL);
 
 
 
-        Integer allocationRetry = ModelNodeUtil.getIntIfSetOrGetDefault(context, recoveryEnvModel, ALLOCATION_RETRY);
-        Long allocationRetryWaitMillis = ModelNodeUtil.getLongIfSetOrGetDefault(context, recoveryEnvModel, ALLOCATION_RETRY_WAIT_MILLIS);
-        Long blockingTimeoutMillis = ModelNodeUtil.getLongIfSetOrGetDefault(context, recoveryEnvModel, BLOCKING_TIMEOUT_WAIT_MILLIS);
-        Long idleTimeoutMinutes = ModelNodeUtil.getLongIfSetOrGetDefault(context, recoveryEnvModel, IDLETIMEOUTMINUTES);
-        Integer xaResourceTimeout = ModelNodeUtil.getIntIfSetOrGetDefault(context, recoveryEnvModel, XA_RESOURCE_TIMEOUT);
+        Integer allocationRetry = ModelNodeUtil.getIntIfSetOrGetDefault(context, connDefModel, ALLOCATION_RETRY);
+        Long allocationRetryWaitMillis = ModelNodeUtil.getLongIfSetOrGetDefault(context, connDefModel, ALLOCATION_RETRY_WAIT_MILLIS);
+        Long blockingTimeoutMillis = ModelNodeUtil.getLongIfSetOrGetDefault(context, connDefModel, BLOCKING_TIMEOUT_WAIT_MILLIS);
+        Long idleTimeoutMinutes = ModelNodeUtil.getLongIfSetOrGetDefault(context, connDefModel, IDLETIMEOUTMINUTES);
+        Integer xaResourceTimeout = ModelNodeUtil.getIntIfSetOrGetDefault(context, connDefModel, XA_RESOURCE_TIMEOUT);
 
         CommonTimeOut timeOut = new CommonTimeOutImpl(blockingTimeoutMillis, idleTimeoutMinutes, allocationRetry,
                 allocationRetryWaitMillis, xaResourceTimeout);
+
+        Extension incrementer = ModelNodeUtil.extractExtension(context, connDefModel, CAPACITY_INCREMENTER_CLASS, CAPACITY_INCREMENTER_PROPERTIES);
+        Extension decrementer = ModelNodeUtil.extractExtension(context, connDefModel, CAPACITY_DECREMENTER_CLASS, CAPACITY_DECREMENTER_PROPERTIES);
+        final Capacity capacity = new Capacity(incrementer, decrementer);
+
         CommonPool pool;
         if (isXa) {
-            pool = new CommonXaPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy, isSameRM, interlivng, padXid, wrapXaResource, noTxSeparatePool);
+            pool = new ConnDefXaPoolImpl(minPoolSize, initialPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy, capacity, isSameRM, interlivng, padXid, wrapXaResource, noTxSeparatePool);
         } else {
-            pool = new CommonPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy);
+            pool = new ConnDefPoolImpl(minPoolSize, initialPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy, capacity);
         }
-        String securityDomain = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, recoveryEnvModel, SECURITY_DOMAIN);
-        String securityDomainAndApplication = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, recoveryEnvModel, SECURITY_DOMAIN_AND_APPLICATION);
+        String securityDomain = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, connDefModel, SECURITY_DOMAIN);
+        String securityDomainAndApplication = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, connDefModel, SECURITY_DOMAIN_AND_APPLICATION);
 
-        boolean application = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, recoveryEnvModel, APPLICATION);
+        boolean application = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, APPLICATION);
         CommonSecurity security = null;
         if (securityDomain != null || securityDomainAndApplication != null || application) {
             security = new CommonSecurityImpl(securityDomain, securityDomainAndApplication, application);
         }
-        Long backgroundValidationMillis = ModelNodeUtil.getLongIfSetOrGetDefault(context, recoveryEnvModel, BACKGROUNDVALIDATIONMILLIS);
-        boolean backgroundValidation = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, recoveryEnvModel, BACKGROUNDVALIDATION);
-        boolean useFastFail = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, recoveryEnvModel, USE_FAST_FAIL);
+        Long backgroundValidationMillis = ModelNodeUtil.getLongIfSetOrGetDefault(context, connDefModel, BACKGROUNDVALIDATIONMILLIS);
+        boolean backgroundValidation = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, BACKGROUNDVALIDATION);
+        boolean useFastFail = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, USE_FAST_FAIL);
         CommonValidation validation = new CommonValidationImpl(backgroundValidation, backgroundValidationMillis, useFastFail);
 
-        final String recoveryUsername = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, recoveryEnvModel, RECOVERY_USERNAME);
+        final String recoveryUsername = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, connDefModel, RECOVERY_USERNAME);
 
-        final String recoveryPassword =  ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, recoveryEnvModel, RECOVERY_PASSWORD);
-        final String recoverySecurityDomain = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, recoveryEnvModel, RECOVERY_SECURITY_DOMAIN);
-        boolean noRecovery = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, recoveryEnvModel, NO_RECOVERY);
+        final String recoveryPassword =  ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, connDefModel, RECOVERY_PASSWORD);
+        final String recoverySecurityDomain = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, connDefModel, RECOVERY_SECURITY_DOMAIN);
+        boolean noRecovery = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, NO_RECOVERY);
 
         Recovery recovery = null;
         if ((recoveryUsername != null && recoveryPassword != null) || recoverySecurityDomain != null) {
             Credential credential = null;
             credential = new CredentialImpl(recoveryUsername, recoveryPassword, recoverySecurityDomain);
-            Extension recoverPlugin = ModelNodeUtil.extractExtension(context, recoveryEnvModel, RECOVERLUGIN_CLASSNAME, RECOVERLUGIN_PROPERTIES);
+            Extension recoverPlugin = ModelNodeUtil.extractExtension(context, connDefModel, RECOVERLUGIN_CLASSNAME, RECOVERLUGIN_PROPERTIES);
             recovery = new Recovery(credential, recoverPlugin, noRecovery);
         }
         ModifiableConnDef connectionDefinition = new ModifiableConnDef(configProperties, className, jndiName, poolName,
-                enabled, useJavaContext, useCcm, pool, timeOut, validation, security, recovery);
+                enabled, useJavaContext, useCcm, pool, timeOut, validation, security, recovery, sharable, enlistment);
 
         return connectionDefinition;
 
@@ -315,21 +350,18 @@ public class RaOperationUtil {
 
         final ServiceController<?> resourceAdaptersService = context.getServiceRegistry(false).getService(
                 ConnectorServices.RESOURCEADAPTERS_SERVICE);
+
         if (resourceAdaptersService == null) {
             newControllers.add(serviceTarget.addService(ConnectorServices.RESOURCEADAPTERS_SERVICE,
                     new ResourceAdaptersService()).setInitialMode(ServiceController.Mode.ACTIVE).addListener(verificationHandler).install());
         }
+
         ServiceName raServiceName = ServiceName.of(ConnectorServices.RA_SERVICE, name);
-        String bootStrapCtxName = DEFAULT_NAME;
-        if (resourceAdapter.getBootstrapContext() != null && ! resourceAdapter.getBootstrapContext().equals("undefined")) {
-            bootStrapCtxName = resourceAdapter.getBootstrapContext();
-        }
         final ServiceController<?> service = context.getServiceRegistry(true).getService(raServiceName);
         if (service == null) {
             ResourceAdapterService raService = new ResourceAdapterService(resourceAdapter);
             newControllers.add(serviceTarget.addService(raServiceName, raService).setInitialMode(ServiceController.Mode.ACTIVE)
                     .addDependency(ConnectorServices.RESOURCEADAPTERS_SERVICE, ResourceAdaptersService.ModifiableResourceAdaptors.class, raService.getResourceAdaptersInjector())
-                    .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(bootStrapCtxName))
                     .addListener(verificationHandler).install());
         }
         return raServiceName;

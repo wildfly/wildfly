@@ -59,6 +59,8 @@ public class CachedConnectionManagerAdd extends AbstractAddStepHandler {
 
         final boolean debug = JcaCachedConnectionManagerDefinition.CcmParameters.DEBUG.getAttribute().resolveModelAttribute(context, model).asBoolean();
         final boolean error = JcaCachedConnectionManagerDefinition.CcmParameters.ERROR.getAttribute().resolveModelAttribute(context, model).asBoolean();
+        final boolean ignoreUnknownConnections = JcaCachedConnectionManagerDefinition.CcmParameters.IGNORE_UNKNOWN_CONNECTIONS.getAttribute().resolveModelAttribute(context, model).asBoolean();
+
         final boolean install = JcaCachedConnectionManagerDefinition.CcmParameters.INSTALL.getAttribute().resolveModelAttribute(context, model).asBoolean();
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
@@ -71,7 +73,7 @@ public class CachedConnectionManagerAdd extends AbstractAddStepHandler {
             }, OperationContext.Stage.RUNTIME);
         }
 
-        CachedConnectionManagerService ccmService = new CachedConnectionManagerService(debug, error);
+        CachedConnectionManagerService ccmService = new CachedConnectionManagerService(debug, error, ignoreUnknownConnections);
         newControllers.add(serviceTarget
                 .addService(ConnectorServices.CCM_SERVICE, ccmService)
                 .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class,

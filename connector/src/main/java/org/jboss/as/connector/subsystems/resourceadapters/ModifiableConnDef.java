@@ -33,7 +33,7 @@ import org.jboss.jca.common.api.metadata.common.CommonTimeOut;
 import org.jboss.jca.common.api.metadata.common.CommonValidation;
 import org.jboss.jca.common.api.metadata.common.CommonXaPool;
 import org.jboss.jca.common.api.metadata.common.Recovery;
-import org.jboss.jca.common.api.metadata.common.v10.CommonConnDef;
+import org.jboss.jca.common.api.metadata.common.v11.CommonConnDef;
 import org.jboss.jca.common.api.validator.ValidateException;
 
 
@@ -67,6 +67,10 @@ public class ModifiableConnDef implements CommonConnDef {
 
     private final Recovery recovery;
 
+    private final Boolean sharable;
+
+    private final Boolean enlistment;
+
 
     /**
      * Create a new ConnectionDefinition.
@@ -86,7 +90,7 @@ public class ModifiableConnDef implements CommonConnDef {
      */
     public ModifiableConnDef(Map<String, String> configProperties, String className, String jndiName,
                              String poolName, Boolean enabled, Boolean useJavaContext, Boolean useCcm, CommonPool pool, CommonTimeOut timeOut,
-                             CommonValidation validation, CommonSecurity security, Recovery recovery) throws ValidateException {
+                             CommonValidation validation, CommonSecurity security, Recovery recovery, Boolean sharable, Boolean enlistment) throws ValidateException {
         super();
         if (configProperties != null) {
             this.configProperties = new ConcurrentHashMap<String, String>(configProperties.size());
@@ -105,6 +109,8 @@ public class ModifiableConnDef implements CommonConnDef {
         this.validation = validation;
         this.security = security;
         this.recovery = recovery;
+        this.sharable = sharable;
+        this.enlistment = enlistment;
 
     }
 
@@ -389,4 +395,13 @@ public class ModifiableConnDef implements CommonConnDef {
         return recovery;
     }
 
+    @Override
+    public Boolean isSharable() {
+        return sharable;
+    }
+
+    @Override
+    public Boolean isEnlistment() {
+        return enlistment;
+    }
 }

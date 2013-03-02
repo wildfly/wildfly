@@ -29,9 +29,11 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
+import org.jboss.jca.common.api.metadata.common.CommonPool;
 import org.jboss.jca.common.api.metadata.common.CommonXaPool;
-import org.jboss.jca.common.api.metadata.ds.XaDataSource;
-import org.jboss.jca.common.api.metadata.ds.v11.DsXaPool;
+import org.jboss.jca.common.api.metadata.ds.v12.DsPool;
+import org.jboss.jca.common.api.metadata.ds.v12.XaDataSource;
+import org.jboss.jca.common.api.metadata.ds.v12.DsXaPool;
 
 /**
  * Runtime attribute handler for XA XML datasources
@@ -72,6 +74,8 @@ public class XMLXaDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeH
             setStringIfNotNull(context, dataSource.getNewConnectionSql());
         } else if (attributeName.equals(Constants.URL_DELIMITER.getName())) {
             setStringIfNotNull(context, dataSource.getUrlDelimiter());
+        } else if (attributeName.equals(Constants.URL_PROPERTY.getName())) {
+            setStringIfNotNull(context, dataSource.getUrlProperty());
         } else if (attributeName.equals(Constants.URL_SELECTOR_STRATEGY_CLASS_NAME.getName())) {
             setStringIfNotNull(context, dataSource.getUrlSelectorStrategyClassName());
         } else if (attributeName.equals(Constants.USE_JAVA_CONTEXT.getName())) {
@@ -81,6 +85,11 @@ public class XMLXaDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeH
                 return;
             }
             setIntIfNotNull(context, dataSource.getXaPool().getMaxPoolSize());
+        } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE.getName())) {
+            if (dataSource.getXaPool() == null) {
+                return;
+            }
+            setIntIfNotNull(context, dataSource.getXaPool().getInitialPoolSize());
         } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.pool.Constants.MIN_POOL_SIZE.getName())) {
             if (dataSource.getXaPool() == null) {
                 return;
@@ -104,7 +113,47 @@ public class XMLXaDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeH
                 return;
             }
             setStringIfNotNull(context, dataSource.getXaPool().getFlushStrategy().getName());
-        } else if (attributeName.equals(Constants.INTERLEAVING.getName())) {
+
+        } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS.getName())) {
+            if (dataSource.getXaPool() == null || dataSource.getXaPool().getCapacity() == null || dataSource.getXaPool().getCapacity().getIncrementer() == null) {
+                return;
+            }
+            setStringIfNotNull(context, dataSource.getXaPool().getCapacity().getIncrementer().getClassName());
+        } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS.getName())) {
+            if (dataSource.getXaPool() == null || dataSource.getXaPool().getCapacity() == null || dataSource.getXaPool().getCapacity().getDecrementer() == null) {
+                return;
+            }
+            setStringIfNotNull(context, dataSource.getXaPool().getCapacity().getDecrementer().getClassName());
+
+        } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES.getName())) {
+            CommonPool pool = dataSource.getXaPool();
+            if (pool == null || ((DsPool) pool).getCapacity() == null || ((DsPool) pool).getCapacity().getIncrementer() == null)
+                return;
+
+            final Map<String, String> propertiesMap = ((DsPool) pool).getCapacity().getIncrementer().getConfigPropertiesMap();
+            if (propertiesMap == null) {
+                return;
+            }
+            for (final Map.Entry<String, String> entry : propertiesMap.entrySet()) {
+                context.getResult().asPropertyList().add(new ModelNode().set(entry.getKey(), entry.getValue()).asProperty());
+            }
+
+
+        } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES.getName())) {
+            CommonPool pool = dataSource.getXaPool();
+            if (pool == null || ((DsPool) pool).getCapacity() == null || ((DsPool) pool).getCapacity().getDecrementer() == null)
+                return;
+
+            final Map<String, String> propertiesMap = ((DsPool) pool).getCapacity().getDecrementer().getConfigPropertiesMap();
+            if (propertiesMap == null) {
+                return;
+            }
+            for (final Map.Entry<String, String> entry : propertiesMap.entrySet()) {
+                context.getResult().asPropertyList().add(new ModelNode().set(entry.getKey(), entry.getValue()).asProperty());
+            }
+
+        }
+        else if (attributeName.equals(Constants.INTERLEAVING.getName())) {
             if(dataSource.getXaPool() == null) {
                 return;
             }
@@ -414,7 +463,26 @@ public class XMLXaDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeH
                 return;
             }
             setBooleanIfNotNull(context, ((DsXaPool) pool).isAllowMultipleUsers());
-        }else {
+        } else if (attributeName.equals(Constants.CONNECTION_LISTENER_CLASS.getName())) {
+            CommonPool pool = dataSource.getXaPool();
+            if (!(pool instanceof DsXaPool) || ((DsXaPool) pool).getConnectionListener() == null) {
+                return;
+            }
+            setStringIfNotNull(context, ((DsXaPool) pool).getConnectionListener().getClassName());
+
+        } else if (attributeName.equals(Constants.CONNECTION_LISTENER_PROPERTIES.getName())) {
+            CommonPool pool = dataSource.getXaPool();
+            if (!(pool instanceof DsXaPool) || ((DsXaPool) pool).getConnectionListener() == null) {
+                return;
+            }
+            final Map<String, String> propertiesMap = ((DsXaPool) pool).getConnectionListener().getConfigPropertiesMap();
+            if (propertiesMap == null) {
+                return;
+            }
+            for (final Map.Entry<String, String> entry : propertiesMap.entrySet()) {
+                context.getResult().asPropertyList().add(new ModelNode().set(entry.getKey(), entry.getValue()).asProperty());
+            }
+        } else {
             throw ConnectorMessages.MESSAGES.unknownAttribute(attributeName);
         }
 

@@ -500,7 +500,7 @@
         </module-def>
 
         <module-def name="javax.resource.api">
-            <maven-resource group="org.jboss.spec.javax.resource" artifact="jboss-connector-api_1.6_spec"/>
+            <maven-resource group="org.jboss.spec.javax.resource" artifact="jboss-connector-api_1.7_spec"/>
         </module-def>
 
         <module-def name="javax.rmi.api">

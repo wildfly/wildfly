@@ -22,25 +22,6 @@
 
 package org.jboss.as.connector.subsystems.common.pool;
 
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.IDLETIMEOUTMINUTES;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.MAX_POOL_SIZE;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.MIN_POOL_SIZE;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_ATTRIBUTES;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
@@ -54,6 +35,26 @@ import org.jboss.jca.core.api.management.DataSource;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.msc.service.ServiceController;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.IDLETIMEOUTMINUTES;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.MAX_POOL_SIZE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.MIN_POOL_SIZE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_ATTRIBUTES;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 /**
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  * @author <a href="mailto:jeff.zhang@jboss.org">Jeff Zhang</a>
@@ -62,7 +63,7 @@ public class PoolConfigurationRWHandler {
 
     static final String[] NO_LOCATION = new String[0];
 
-    public static final List<String> ATTRIBUTES = Arrays.asList(MAX_POOL_SIZE.getName(), MIN_POOL_SIZE.getName(), BLOCKING_TIMEOUT_WAIT_MILLIS.getName(),
+    public static final List<String> ATTRIBUTES = Arrays.asList(MAX_POOL_SIZE.getName(), MIN_POOL_SIZE.getName(), INITIAL_POOL_SIZE.getName(),BLOCKING_TIMEOUT_WAIT_MILLIS.getName(),
             IDLETIMEOUTMINUTES.getName(), BACKGROUNDVALIDATION.getName(), BACKGROUNDVALIDATIONMILLIS.getName(),
             POOL_PREFILL.getName(), POOL_USE_STRICT_MIN.getName(), POOL_FLUSH_STRATEGY.getName());
 
@@ -134,6 +135,9 @@ public class PoolConfigurationRWHandler {
                 }
                 if (MIN_POOL_SIZE.getName().equals(parameterName)) {
                     pc.setMinSize(newValue.asInt());
+                }
+                if (INITIAL_POOL_SIZE.getName().equals(parameterName)) {
+                    pc.setInitialSize(newValue.asInt());
                 }
                 if (BLOCKING_TIMEOUT_WAIT_MILLIS.getName().equals(parameterName)) {
                     pc.setBlockingTimeout(newValue.asLong());

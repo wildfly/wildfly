@@ -22,9 +22,6 @@
 
 package org.jboss.as.connector.deployers.ra.processors;
 
-import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
-
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.services.resourceadapters.deployment.InactiveResourceAdapterDeploymentService;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersService;
@@ -48,6 +45,9 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+
+import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
+import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 
 /**
  * DeploymentUnitProcessor responsible for using IronJacamar metadata and create
@@ -128,7 +128,7 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
                         rarName = rarName.substring(0, rarName.indexOf(ConnectorServices.RA_SERVICE_NAME_SEPARATOR));
                     }
                     if (deploymentUnitName.equals(rarName)) {
-                        RaServicesFactory.createDeploymentService(registration, connectorXmlDescriptor, module, serviceTarget, deploymentUnitName, deploymentUnit.getServiceName(), deployment, raxml, deploymentResource, null);
+                        RaServicesFactory.createDeploymentService(registration, connectorXmlDescriptor, module, serviceTarget, deploymentUnitName, deploymentUnit.getServiceName(), deployment, (org.jboss.jca.common.api.metadata.resourceadapter.v11.ResourceAdapter) raxml, deploymentResource, null);
 
 
                     }

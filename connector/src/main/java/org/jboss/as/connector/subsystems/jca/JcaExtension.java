@@ -27,17 +27,20 @@ import static org.jboss.as.connector.subsystems.jca.Constants.BEAN_VALIDATION;
 import static org.jboss.as.connector.subsystems.jca.Constants.BOOTSTRAP_CONTEXT;
 import static org.jboss.as.connector.subsystems.jca.Constants.CACHED_CONNECTION_MANAGER;
 import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_NAME;
+import static org.jboss.as.connector.subsystems.jca.Constants.DISTRIBUTED_WORKMANAGER;
 import static org.jboss.as.connector.subsystems.jca.Constants.JCA;
 import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER;
 import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_LONG_RUNNING;
 import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_SHORT_RUNNING;
 import static org.jboss.as.connector.subsystems.jca.JcaArchiveValidationDefinition.ArchiveValidationParameters;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequiredElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
+import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
@@ -49,6 +52,8 @@ import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.PropertiesAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
@@ -70,8 +75,8 @@ public class JcaExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "jca";
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 2;
+    private static final int MANAGEMENT_API_MAJOR_VERSION = 2;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     private static final String RESOURCE_NAME = JcaExtension.class.getPackage().getName() + ".LocalDescriptions";
@@ -107,6 +112,7 @@ public class JcaExtension implements Extension {
     public void initializeParsers(final ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JCA_1_0.getUriString(), ConnectorSubsystemParser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JCA_1_1.getUriString(), ConnectorSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JCA_2_0.getUriString(), ConnectorSubsystemParser.INSTANCE);
     }
 
     static final class ConnectorSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
@@ -125,6 +131,7 @@ public class JcaExtension implements Extension {
             writeArchiveValidation(writer, node);
             writeBeanValidation(writer, node);
             writeWorkManagers(writer, node);
+            writeDistributedWorkManagers(writer, node);
             writeBootstrapContexts(writer, node);
             writeCachedConnectionManager(writer, node);
             writer.writeEndElement();
@@ -166,6 +173,63 @@ public class JcaExtension implements Extension {
                     writer.writeEmptyElement(Element.CACHED_CONNECTION_MANAGER.getLocalName());
                     JcaCachedConnectionManagerDefinition.CcmParameters.DEBUG.getAttribute().marshallAsAttribute(node, writer);
                     JcaCachedConnectionManagerDefinition.CcmParameters.ERROR.getAttribute().marshallAsAttribute(node, writer);
+                    JcaCachedConnectionManagerDefinition.CcmParameters.IGNORE_UNKNOWN_CONNECTIONS.getAttribute().marshallAsAttribute(node, writer);
+                }
+            }
+        }
+
+        private void writeDistributedWorkManagers(XMLExtendedStreamWriter writer, ModelNode parentNode) throws XMLStreamException {
+            if (parentNode.hasDefined(DISTRIBUTED_WORKMANAGER) && parentNode.get(DISTRIBUTED_WORKMANAGER).asList().size() != 0) {
+                ModelNode channel = null;
+                ModelNode stack = null;
+                ModelNode timeout = null;
+                for (Property property : parentNode.get(DISTRIBUTED_WORKMANAGER).asPropertyList()) {
+
+                    writer.writeStartElement(Element.DISTRIBUTED_WORKMANAGER.getLocalName());
+                    ((SimpleAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.NAME.getAttribute()).marshallAsAttribute(property.getValue(), writer);
+
+                    for (Property prop : property.getValue().asPropertyList()) {
+                        if (WORKMANAGER_LONG_RUNNING.equals(prop.getName()) && prop.getValue().isDefined() && prop.getValue().asPropertyList().size() != 0) {
+                            ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, prop.getValue().asProperty(), Element.LONG_RUNNING_THREADS.getLocalName(), false);
+                        }
+                        if (WORKMANAGER_SHORT_RUNNING.equals(prop.getName()) && prop.getValue().isDefined() && prop.getValue().asPropertyList().size() != 0) {
+                            ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, prop.getValue().asProperty(), Element.SHORT_RUNNING_THREADS.getLocalName(), false);
+                        }
+
+                        if (JcaDistributedWorkManagerDefinition.DWmParameters.POLICY.getAttribute().getName().equals(prop.getName()) && prop.getValue().isDefined()) {
+                            writer.writeStartElement(Element.POLICY.getLocalName());
+                            writer.writeAttribute(JcaDistributedWorkManagerDefinition.DWmParameters.NAME.getAttribute().getXmlName(), prop.getValue().asString());
+                            if (property.getValue().hasDefined(JcaDistributedWorkManagerDefinition.DWmParameters.POLICY_OPTIONS.getAttribute().getName())) {
+                                for (Property option : property.getValue().get(JcaDistributedWorkManagerDefinition.DWmParameters.POLICY_OPTIONS.getAttribute().getName()).asPropertyList()) {
+                                    writeProperty(writer, option.getName(), option
+                                            .getValue().asString(), Element.OPTION.getLocalName());
+                                }
+                            }
+                            writer.writeEndElement();
+                        }
+
+                        if (JcaDistributedWorkManagerDefinition.DWmParameters.SELECTOR.getAttribute().getName().equals(prop.getName()) && prop.getValue().isDefined()) {
+                            writer.writeStartElement(Element.SELECTOR.getLocalName());
+                            writer.writeAttribute(JcaDistributedWorkManagerDefinition.DWmParameters.NAME.getAttribute().getXmlName(), prop.getValue().asString());
+
+                            if (property.getValue().hasDefined(JcaDistributedWorkManagerDefinition.DWmParameters.SELECTOR_OPTIONS.getAttribute().getName())) {
+                                for (Property option : property.getValue().get(JcaDistributedWorkManagerDefinition.DWmParameters.SELECTOR_OPTIONS.getAttribute().getName()).asPropertyList()) {
+                                    writeProperty(writer, option.getName(), option
+                                            .getValue().asString(), Element.OPTION.getLocalName());
+                                }
+                            }
+                            writer.writeEndElement();
+                        }
+
+                    }
+
+                    writer.writeStartElement(Element.TRANSPORT.getLocalName());
+                        ((SimpleAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_JGROPUS_STACK.getAttribute()).marshallAsAttribute(property.getValue(), writer);
+                        ((SimpleAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_JGROPUS_CHANNEL.getAttribute()).marshallAsAttribute(property.getValue(), writer);
+                        ((SimpleAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_REQUEST_TIMEOUT.getAttribute()).marshallAsAttribute(property.getValue(), writer);
+                    writer.writeEndElement();
+
+                    writer.writeEndElement();
                 }
             }
         }
@@ -176,8 +240,9 @@ public class JcaExtension implements Extension {
                     if ("default".equals(property.getValue().get(NAME).asString())) {
                         writer.writeStartElement(Element.DEFAULT_WORKMANAGER.getLocalName());
                     } else {
-                        writer.writeStartElement(Element.WORKMANAGER.getLocalName());
-                        JcaWorkManagerDefinition.WmParameters.NAME.getAttribute().marshallAsAttribute(property.getValue(), writer);
+                            writer.writeStartElement(Element.WORKMANAGER.getLocalName());
+                            JcaWorkManagerDefinition.WmParameters.NAME.getAttribute().marshallAsAttribute(property.getValue(), writer);
+
                     }
                     for (Property prop : property.getValue().asPropertyList()) {
                         if (WORKMANAGER_LONG_RUNNING.equals(prop.getName()) && prop.getValue().isDefined() && prop.getValue().asPropertyList().size() != 0) {
@@ -191,6 +256,8 @@ public class JcaExtension implements Extension {
                 }
             }
         }
+
+
 
 
         private void writeBootstrapContexts(XMLExtendedStreamWriter writer, ModelNode parentNode) throws XMLStreamException {
@@ -237,6 +304,7 @@ public class JcaExtension implements Extension {
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
 
                 switch (Namespace.forUri(reader.getNamespaceURI())) {
+                    case JCA_2_0:
                     case JCA_1_1:
                     case JCA_1_0: {
                         final Element element = Element.forName(reader.getLocalName());
@@ -279,6 +347,12 @@ public class JcaExtension implements Extension {
                                 parseWorkManager(reader, address, list, subsystem, false);
                                 // AS7-4434 Multiple work managers are allowed
                                 visited.remove(Element.WORKMANAGER);
+                                break;
+                            }
+                            case DISTRIBUTED_WORKMANAGER: {
+                                parseDistributedWorkManager(reader, address, list, subsystem, false);
+                                // AS7-4434 Multiple work managers are allowed
+                                visited.remove(Element.DISTRIBUTED_WORKMANAGER);
                                 break;
                             }
                             case BOOTSTRAP_CONTEXTS: {
@@ -438,6 +512,234 @@ public class JcaExtension implements Extension {
 
         }
 
+        private void parseDistributedWorkManager(final XMLExtendedStreamReader reader, final ModelNode parentAddress,
+                                              final List<ModelNode> list, final ModelNode node, boolean defaultWm) throws XMLStreamException {
+
+                    final ModelNode distributedWorkManagerOperation = new ModelNode();
+                    distributedWorkManagerOperation.get(OP).set(ADD);
+
+                    final int cnt = reader.getAttributeCount();
+                    String name = null;
+                    for (int i = 0; i < cnt; i++) {
+                        final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                        switch (attribute) {
+                            case NAME: {
+                                name = rawAttributeText(reader, JcaDistributedWorkManagerDefinition.DWmParameters.NAME.getAttribute().getXmlName());
+                                ((SimpleAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.NAME.getAttribute()).parseAndSetParameter(name, distributedWorkManagerOperation, reader);
+                                break;
+                            }
+                            default: {
+                                throw unexpectedAttribute(reader, i);
+                            }
+                        }
+                    }
+
+                    if (name == null) {
+                        throw MESSAGES.missingRequiredAttributes(new StringBuilder(name), reader.getLocation());
+                    }
+
+                    final ModelNode distributedWorkManagerAddress = parentAddress.clone();
+                    distributedWorkManagerAddress.add(DISTRIBUTED_WORKMANAGER, name);
+                    distributedWorkManagerAddress.protect();
+
+                    distributedWorkManagerOperation.get(OP_ADDR).set(distributedWorkManagerAddress);
+                    list.add(distributedWorkManagerOperation);
+
+
+                    while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+
+                        final Element element = Element.forName(reader.getLocalName());
+                        Namespace readerNS = Namespace.forUri(reader.getNamespaceURI());
+                        switch (element) {
+                            case LONG_RUNNING_THREADS: {
+                                switch (readerNS) {
+                                    case JCA_1_0: {
+                                        org.jboss.as.threads.Namespace ns = org.jboss.as.threads.Namespace.THREADS_1_0;
+                                        ThreadsParser.getInstance().parseBlockingBoundedQueueThreadPool(reader, readerNS.getUriString(),
+                                                ns, distributedWorkManagerAddress, list, WORKMANAGER_LONG_RUNNING, name);
+                                        break;
+                                    }
+                                    default: {
+                                        org.jboss.as.threads.Namespace ns = org.jboss.as.threads.Namespace.THREADS_1_1;
+                                        ThreadsParser.getInstance().parseBlockingBoundedQueueThreadPool(reader, readerNS.getUriString(),
+                                                ns, distributedWorkManagerAddress, list, WORKMANAGER_LONG_RUNNING, name);
+                                    }
+                                }
+                                break;
+                            }
+                            case SHORT_RUNNING_THREADS: {
+                                switch (readerNS) {
+                                    case JCA_1_0: {
+                                        org.jboss.as.threads.Namespace ns = org.jboss.as.threads.Namespace.THREADS_1_0;
+                                        ThreadsParser.getInstance().parseBlockingBoundedQueueThreadPool(reader, readerNS.getUriString(),
+                                                ns, distributedWorkManagerAddress, list, WORKMANAGER_SHORT_RUNNING, name);
+                                        break;
+                                    }
+                                    default: {
+                                        org.jboss.as.threads.Namespace ns = org.jboss.as.threads.Namespace.THREADS_1_1;
+                                        ThreadsParser.getInstance().parseBlockingBoundedQueueThreadPool(reader, readerNS.getUriString(),
+                                                ns, distributedWorkManagerAddress, list, WORKMANAGER_SHORT_RUNNING, name);
+                                        break;
+                                    }
+                                }
+                                break;
+                            }
+                            case POLICY: {
+                                switch (readerNS) {
+                                    case JCA_2_0: {
+                                        parsePolicy(reader, distributedWorkManagerOperation);
+                                        break;
+                                    }
+                                    default: {
+                                        throw unexpectedElement(reader);
+                                    }
+                                }
+                                break;
+                            }
+                            case SELECTOR: {
+                                switch (readerNS) {
+                                    case JCA_2_0: {
+                                        parseSelector(reader, distributedWorkManagerOperation);
+                                        break;
+                                    }
+                                    default: {
+                                        throw unexpectedElement(reader);
+                                    }
+                                }
+                                break;
+                            }
+                            case TRANSPORT: {
+                                switch (readerNS) {
+                                    case JCA_2_0: {
+                                        parseTransport(reader, distributedWorkManagerOperation);
+                                        break;
+                                    }
+                                    default: {
+                                        throw unexpectedElement(reader);
+                                    }
+                                }
+                                break;
+                            }
+                            default:
+                                throw unexpectedElement(reader);
+                        }
+
+
+                    }
+
+                }
+
+
+        private void parsePolicy(final XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException {
+
+
+            final int cnt = reader.getAttributeCount();
+
+            for (int i = 0; i < cnt; i++) {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME: {
+                        String policy = rawAttributeText(reader, attribute.getLocalName());
+                        ((SimpleAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.POLICY.getAttribute()).parseAndSetParameter(policy, operation, reader);
+                        break;
+                    }
+
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+
+                final Element element = Element.forName(reader.getLocalName());
+                Namespace readerNS = Namespace.forUri(reader.getNamespaceURI());
+                switch (element) {
+                    case OPTION: {
+                        requireSingleAttribute(reader, "name");
+                        final String name = rawAttributeText(reader,"name");
+                        String value = rawElementText(reader);
+                        final String trimmed = value == null ? null : value.trim();
+                        ((PropertiesAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.POLICY_OPTIONS.getAttribute()).parseAndAddParameterElement(name, trimmed, operation, reader);
+                        break;
+                    }
+                }
+                // Handle elements
+
+            }
+        }
+
+        private void parseSelector(final XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException {
+
+
+            final int cnt = reader.getAttributeCount();
+
+            for (int i = 0; i < cnt; i++) {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+
+                    case NAME: {
+                        String selector = rawAttributeText(reader, attribute.getLocalName());
+                        ((SimpleAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.SELECTOR.getAttribute()).parseAndSetParameter(selector, operation, reader);
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+
+            // Handle elements
+            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+
+                final Element element = Element.forName(reader.getLocalName());
+                Namespace readerNS = Namespace.forUri(reader.getNamespaceURI());
+                switch (element) {
+                    case OPTION: {
+                        requireSingleAttribute(reader, "name");
+                        final String name = rawAttributeText(reader, "name");
+                        String value = rawElementText(reader);
+                        final String trimmed = value == null ? null : value.trim();
+                        ((PropertiesAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.SELECTOR_OPTIONS.getAttribute()).parseAndAddParameterElement(name, trimmed, operation, reader);
+                        break;
+                    }
+                }
+                // Handle elements
+
+            }
+        }
+
+
+        private void parseTransport(final XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException {
+
+
+                    final int cnt = reader.getAttributeCount();
+                    for (int i = 0; i < cnt; i++) {
+                        final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                        switch (attribute) {
+                            case JGROUPS_STACK: {
+                                String value = rawAttributeText(reader, JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_JGROPUS_STACK.getAttribute().getXmlName() );
+                                ((SimpleAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_JGROPUS_STACK.getAttribute()).parseAndSetParameter(value, operation, reader);
+                                break;
+                            }
+                            case JGROUPS_CHANNEL: {
+                                String value = rawAttributeText(reader, JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_JGROPUS_CHANNEL.getAttribute().getXmlName());
+                                ((SimpleAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_JGROPUS_CHANNEL.getAttribute()).parseAndSetParameter(value, operation, reader);
+                                break;
+                            }
+                            case REQUEST_TIMEOUT: {
+                                String value = rawAttributeText(reader, JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_REQUEST_TIMEOUT.getAttribute().getXmlName());
+                                ((SimpleAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_REQUEST_TIMEOUT.getAttribute()).parseAndSetParameter(value, operation, reader);
+                                break;
+                            }
+                            default: {
+                                throw unexpectedAttribute(reader, i);
+                            }
+                        }
+                    }
+                    // Handle elements
+                    requireNoContent(reader);
+
+                }
 
         private ModelNode parseBeanValidation(final XMLExtendedStreamReader reader, final ModelNode parentOperation) throws XMLStreamException {
             final ModelNode beanValidationOperation = new ModelNode();
@@ -494,6 +796,11 @@ public class JcaExtension implements Extension {
                     case ERROR: {
                         String value = rawAttributeText(reader, JcaCachedConnectionManagerDefinition.CcmParameters.ERROR.getAttribute().getXmlName());
                         JcaCachedConnectionManagerDefinition.CcmParameters.ERROR.getAttribute().parseAndSetParameter(value, ccmOperation, reader);
+                        break;
+                    }
+                    case IGNORE_UNKNOWN_CONNECHIONS: {
+                        String value = rawAttributeText(reader, JcaCachedConnectionManagerDefinition.CcmParameters.IGNORE_UNKNOWN_CONNECTIONS.getAttribute().getXmlName());
+                        JcaCachedConnectionManagerDefinition.CcmParameters.IGNORE_UNKNOWN_CONNECTIONS.getAttribute().parseAndSetParameter(value, ccmOperation, reader);
                         break;
                     }
                     default: {
@@ -575,6 +882,23 @@ public class JcaExtension implements Extension {
                     "", attributeName)
                     .trim();
             return attributeString;
+        }
+
+
+        public String rawElementText(XMLStreamReader reader) throws XMLStreamException {
+            String elementText = reader.getElementText();
+            elementText = elementText == null || elementText.trim().length() == 0 ? null : elementText.trim();
+            return elementText;
+        }
+
+        private void writeProperty(XMLExtendedStreamWriter writer, String name, String value, String localName)
+                throws XMLStreamException {
+
+            writer.writeStartElement(localName);
+            writer.writeAttribute("name", name);
+            writer.writeCharacters(value);
+            writer.writeEndElement();
+
         }
     }
 }

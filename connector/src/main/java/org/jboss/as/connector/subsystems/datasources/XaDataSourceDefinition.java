@@ -24,19 +24,6 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DISABLE;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_ENABLE;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_PROPERTIES_ATTRIBUTES;
-import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_ALL_CONNECTION;
-import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_IDLE_CONNECTION;
-import static org.jboss.as.connector.subsystems.datasources.Constants.READONLY_XA_DATASOURCE_ATTRIBUTE;
-import static org.jboss.as.connector.subsystems.datasources.Constants.TEST_CONNECTION;
-import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE;
-import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE_ATTRIBUTE;
-import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE_PROPERTIES_ATTRIBUTES;
-
-import java.util.List;
-
 import org.jboss.as.connector.subsystems.common.pool.PoolConfigurationRWHandler;
 import org.jboss.as.connector.subsystems.common.pool.PoolOperations;
 import org.jboss.as.controller.PathElement;
@@ -49,8 +36,28 @@ import org.jboss.as.controller.access.constraint.management.AccessConstraintDefi
 import org.jboss.as.controller.access.constraint.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+
+import java.util.List;
+
+import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_LISTENER_CLASS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_LISTENER_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DISABLE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_ENABLE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_PROPERTIES_ATTRIBUTES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_ALL_CONNECTION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_GRACEFULLY_CONNECTION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_IDLE_CONNECTION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_INVALID_CONNECTION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.READONLY_XA_DATASOURCE_ATTRIBUTE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.TEST_CONNECTION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.URL_DELIMITER;
+import static org.jboss.as.connector.subsystems.datasources.Constants.URL_PROPERTY;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE_ATTRIBUTE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE_PROPERTIES_ATTRIBUTES;
 
 /**
  * @author Stefano Maestri
@@ -88,6 +95,8 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
         if (registerRuntimeOnly) {
             resourceRegistration.registerOperationHandler(FLUSH_IDLE_CONNECTION, PoolOperations.FlushIdleConnectionInPool.DS_INSTANCE);
             resourceRegistration.registerOperationHandler(FLUSH_ALL_CONNECTION, PoolOperations.FlushAllConnectionInPool.DS_INSTANCE);
+            resourceRegistration.registerOperationHandler(FLUSH_INVALID_CONNECTION, PoolOperations.FlushInvalidConnectionInPool.DS_INSTANCE);
+            resourceRegistration.registerOperationHandler(FLUSH_GRACEFULLY_CONNECTION, PoolOperations.FlushGracefullyConnectionInPool.DS_INSTANCE);
             resourceRegistration.registerOperationHandler(TEST_CONNECTION, PoolOperations.TestConnectionInPool.DS_INSTANCE);
         }
     }
@@ -141,8 +150,23 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
     }
 
     static void registerTransformers110(ResourceTransformationDescriptionBuilder parentBuilder) {
-            parentBuilder.addChildResource(PATH_XA_DATASOURCE).getAttributeBuilder()
-                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, DATASOURCE_PROPERTIES_ATTRIBUTES)
-                    .end();
-        }
+        parentBuilder.addChildResource(PATH_XA_DATASOURCE)
+                .getAttributeBuilder().setDiscard(DiscardAttributeChecker.UNDEFINED, org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE,
+                URL_DELIMITER, URL_PROPERTY, CONNECTION_LISTENER_CLASS, CONNECTION_LISTENER_PROPERTIES,
+                org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS,
+                org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, DATASOURCE_PROPERTIES_ATTRIBUTES)
+                //.setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode(false)), JTA)
+                .end();
+    }
+
+    static void registerTransformers200(ResourceTransformationDescriptionBuilder parentBuilder) {
+
+        parentBuilder.addChildResource(PATH_XA_DATASOURCE)
+                .getAttributeBuilder().setDiscard(DiscardAttributeChecker.UNDEFINED, org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE,
+                URL_DELIMITER, URL_PROPERTY, CONNECTION_LISTENER_CLASS, CONNECTION_LISTENER_PROPERTIES,
+                org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS,
+                org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES);
+                //.setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode(false)), JTA);
+    }
 }

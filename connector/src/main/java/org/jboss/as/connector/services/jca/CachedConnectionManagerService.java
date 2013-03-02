@@ -48,12 +48,14 @@ public class CachedConnectionManagerService implements Service<CachedConnectionM
 
     private final boolean debug;
     private final boolean error;
+    private final boolean ignoreUnknownConnections;
 
     /** create an instance **/
-    public CachedConnectionManagerService(final boolean debug, final boolean error) {
+    public CachedConnectionManagerService(final boolean debug, final boolean error, boolean ignoreUnknownConnections) {
         super();
         this.debug = debug;
         this.error = error;
+        this.ignoreUnknownConnections = ignoreUnknownConnections;
     }
 
     @Override
@@ -68,6 +70,7 @@ public class CachedConnectionManagerService implements Service<CachedConnectionM
                                                 transactionIntegration.getValue().getUserTransactionRegistry());
         value.setDebug(debug);
         value.setError(error);
+        value.setIgnoreUnknownConnections(ignoreUnknownConnections);
 
         value.start();
         ROOT_LOGGER.debugf("Started CcmService %s", context.getController().getName());
