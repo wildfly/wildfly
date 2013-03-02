@@ -124,8 +124,14 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
 
         ServiceBuilder builder = process(connectorXmlDescriptor, ironJacamarXmlDescriptor, classLoader, serviceTarget, annotationIndexes, deploymentUnit.getServiceName(), null);
         if (builder != null) {
+            String bootstrapCtx = null;
 
-            builder.addListener(new AbstractResourceAdapterDeploymentServiceListener(registration, deploymentUnit.getName(), deploymentResource) {
+            if (ironJacamarXmlDescriptor != null && ironJacamarXmlDescriptor.getIronJacamar() != null && ironJacamarXmlDescriptor.getIronJacamar().getBootstrapContext() != null)
+                bootstrapCtx = ironJacamarXmlDescriptor.getIronJacamar().getBootstrapContext();
+
+            if (bootstrapCtx == null)
+                bootstrapCtx = "default";
+            builder.addListener(new AbstractResourceAdapterDeploymentServiceListener(registration, deploymentUnit.getName(), deploymentResource, bootstrapCtx, deploymentUnit.getName()) {
 
                 @Override
                 protected void registerIronjacamar(final ServiceController<? extends Object> controller, final ManagementResourceRegistration subRegistration, final Resource subsystemResource) {

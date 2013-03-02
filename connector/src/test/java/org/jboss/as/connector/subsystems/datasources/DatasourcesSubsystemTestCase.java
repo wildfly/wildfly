@@ -30,6 +30,7 @@ import java.util.List;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
@@ -110,10 +111,10 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
                 .setSubsystemXmlResource(subsystemXml);
 
         // Add legacy subsystems
-        builder.createLegacyKernelServicesBuilder(null,controllerVersion,  modelVersion)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                   .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
                   .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension")
-                  .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, null);
+                  .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, null).skipReverseControllerCheck();
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
@@ -121,7 +122,16 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
         Assert.assertNotNull(legacyServices);
 
-        checkSubsystemModelTransformation(mainServices, modelVersion);
+        checkSubsystemModelTransformation(mainServices, modelVersion, new ModelFixer() {
+
+                        @Override
+                        public ModelNode fixModel(ModelNode modelNode) {
+                            Assert.assertTrue( modelNode.get(Constants.XA_DATASOURCE).get("complexXaDs_Pool").get(Constants.JTA.getName()).asBoolean());
+                            //Replace the value used in the xml
+                            modelNode.get(Constants.XA_DATASOURCE).get("complexXaDs_Pool").remove(Constants.JTA.getName());
+                            return modelNode;
+                        }
+                    });
     }
 
 

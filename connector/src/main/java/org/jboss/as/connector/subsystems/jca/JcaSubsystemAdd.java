@@ -107,6 +107,8 @@ class JcaSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .setInitialMode(Mode.ACTIVE)
                 .install());
 
+
+
         // TODO does the install of this and the DriverProcessor
         // belong in DataSourcesSubsystemAdd?
         final DriverRegistryService driverRegistryService = new DriverRegistryService();

@@ -22,19 +22,23 @@
 
 package org.jboss.as.connector.subsystems.jca;
 
-import static org.jboss.as.connector.subsystems.jca.Constants.CACHED_CONNECTION_MANAGER;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+
+import static org.jboss.as.connector.subsystems.jca.Constants.CACHED_CONNECTION_MANAGER;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
@@ -65,6 +69,21 @@ public class JcaCachedConnectionManagerDefinition extends SimpleResourceDefiniti
 
     }
 
+    @Override
+    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
+        super.registerOperations(resourceRegistration);
+        resourceRegistration.registerOperationHandler(CcmOperations.GET_NUMBER_OF_CONNECTIONS.getOperation(), GetNumberOfConnectionsHandler.INSTANCE);
+        resourceRegistration.registerOperationHandler(CcmOperations.LIST_CONNECTIONS.getOperation(), ListOfConnectionsHandler.INSTANCE);
+
+    }
+
+    static void registerTransformers110(ResourceTransformationDescriptionBuilder parentBuilder) {
+
+            ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_CACHED_CONNECTION_MANAGER);
+            builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, CcmParameters.IGNORE_UNKNOWN_CONNECTIONS.getAttribute());
+
+        }
+
     public static enum CcmParameters {
         DEBUG(SimpleAttributeDefinitionBuilder.create("debug", ModelType.BOOLEAN)
                 .setAllowExpression(true)
@@ -81,6 +100,14 @@ public class JcaCachedConnectionManagerDefinition extends SimpleResourceDefiniti
                 .setMeasurementUnit(MeasurementUnit.NONE)
                 .setRestartAllServices()
                 .setXmlName("error")
+                .build()),
+        IGNORE_UNKNOWN_CONNECTIONS(SimpleAttributeDefinitionBuilder.create("ignore-unknown-connections", ModelType.BOOLEAN)
+                .setAllowExpression(true)
+                .setAllowNull(true)
+                .setDefaultValue(new ModelNode().set(false))
+                .setMeasurementUnit(MeasurementUnit.NONE)
+                .setRestartAllServices()
+                .setXmlName("ignore-unknown-connections")
                 .build()),
         INSTALL(SimpleAttributeDefinitionBuilder.create("install", ModelType.BOOLEAN)
                 .setAllowExpression(false)
@@ -101,6 +128,28 @@ public class JcaCachedConnectionManagerDefinition extends SimpleResourceDefiniti
 
         private SimpleAttributeDefinition attribute;
     }
+
+
+    public static enum CcmOperations {
+        GET_NUMBER_OF_CONNECTIONS(new SimpleOperationDefinitionBuilder("get-number-of-connections", JcaExtension.getResourceDescriptionResolver(PATH_CACHED_CONNECTION_MANAGER.getKey()))
+                .setRuntimeOnly()
+                .build()),
+        LIST_CONNECTIONS(new SimpleOperationDefinitionBuilder("list-connections", JcaExtension.getResourceDescriptionResolver(PATH_CACHED_CONNECTION_MANAGER.getKey()))
+                .setRuntimeOnly()
+                .build());
+
+
+        private CcmOperations(SimpleOperationDefinition operation) {
+            this.operation = operation;
+        }
+
+        public SimpleOperationDefinition getOperation() {
+            return operation;
+        }
+
+        private SimpleOperationDefinition operation;
+    }
+
 
 
 }

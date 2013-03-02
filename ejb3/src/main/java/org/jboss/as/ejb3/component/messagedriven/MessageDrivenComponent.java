@@ -71,6 +71,7 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
     private volatile boolean deliveryActive;
     private ResourceAdapter resourceAdapter;
     private Endpoint endpoint;
+    private String activationName;
 
     /**
      * Construct a new instance.
@@ -124,6 +125,11 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
                     return false;
                 // an MDB doesn't expose a real view
                 return getTransactionAttributeType(BEAN, method) == REQUIRED;
+            }
+
+            @Override
+            public String getActivationName() {
+                return activationName;
             }
 
             @Override

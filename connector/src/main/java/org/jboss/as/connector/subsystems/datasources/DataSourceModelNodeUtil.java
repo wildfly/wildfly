@@ -25,7 +25,12 @@ package org.jboss.as.connector.subsystems.datasources;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.IDLETIMEOUTMINUTES;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.MAX_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.MIN_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY;
@@ -43,6 +48,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.Defaults;
+import org.jboss.jca.common.api.metadata.common.Capacity;
 import org.jboss.jca.common.api.metadata.common.Credential;
 import org.jboss.jca.common.api.metadata.common.Extension;
 import org.jboss.jca.common.api.metadata.common.FlushStrategy;
@@ -52,16 +58,16 @@ import org.jboss.jca.common.api.metadata.ds.Statement;
 import org.jboss.jca.common.api.metadata.ds.TimeOut;
 import org.jboss.jca.common.api.metadata.ds.TransactionIsolation;
 import org.jboss.jca.common.api.metadata.ds.Validation;
-import org.jboss.jca.common.api.metadata.ds.v11.DsPool;
-import org.jboss.jca.common.api.metadata.ds.v11.DsXaPool;
+import org.jboss.jca.common.api.metadata.ds.v12.DsPool;
+import org.jboss.jca.common.api.metadata.ds.v12.DsXaPool;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.jca.common.metadata.common.CredentialImpl;
 import org.jboss.jca.common.metadata.ds.DsSecurityImpl;
 import org.jboss.jca.common.metadata.ds.StatementImpl;
 import org.jboss.jca.common.metadata.ds.TimeOutImpl;
 import org.jboss.jca.common.metadata.ds.ValidationImpl;
-import org.jboss.jca.common.metadata.ds.v11.DsPoolImpl;
-import org.jboss.jca.common.metadata.ds.v11.DsXaPoolImpl;
+import org.jboss.jca.common.metadata.ds.v12.DsPoolImpl;
+import org.jboss.jca.common.metadata.ds.v12.DsXaPoolImpl;
 
 /**
  * Utility used to help convert between JCA spi data-source instances and model
@@ -88,13 +94,18 @@ class DataSourceModelNodeUtil {
         final boolean jta = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, JTA);
         final Integer maxPoolSize = ModelNodeUtil.getIntIfSetOrGetDefault(operationContext, dataSourceNode, MAX_POOL_SIZE);
         final Integer minPoolSize = ModelNodeUtil.getIntIfSetOrGetDefault(operationContext, dataSourceNode, MIN_POOL_SIZE);
+        final Integer initialPoolSize = ModelNodeUtil.getIntIfSetOrGetDefault(operationContext, dataSourceNode, INITIAL_POOL_SIZE);
         final boolean prefill = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, POOL_PREFILL);
         final boolean useStrictMin = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, POOL_USE_STRICT_MIN);
         final String flushStrategyString = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, POOL_FLUSH_STRATEGY);
         final FlushStrategy flushStrategy = FlushStrategy.forName(flushStrategyString); // TODO relax case sensitivity
         final Boolean allowMultipleUsers = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, ALLOW_MULTIPLE_USERS);
+        Extension incrementer = ModelNodeUtil.extractExtension(operationContext, dataSourceNode, CAPACITY_INCREMENTER_CLASS, CAPACITY_INCREMENTER_PROPERTIES);
+        Extension decrementer = ModelNodeUtil.extractExtension(operationContext, dataSourceNode, CAPACITY_DECREMENTER_CLASS, CAPACITY_DECREMENTER_PROPERTIES);
+        final Capacity capacity = new Capacity(incrementer, decrementer);
+        final Extension connectionListener = ModelNodeUtil.extractExtension(operationContext, dataSourceNode, CONNECTION_LISTENER_CLASS, CONNECTION_LISTENER_PROPERTIES);
 
-           final DsPool pool = new DsPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy, allowMultipleUsers);
+        final DsPool pool = new DsPoolImpl(minPoolSize, initialPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy, allowMultipleUsers, capacity, connectionListener);
 
         final String username = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, USERNAME);
 
@@ -169,6 +180,7 @@ class DataSourceModelNodeUtil {
         final Boolean enabled = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, ENABLED);
         final Integer maxPoolSize = ModelNodeUtil.getIntIfSetOrGetDefault(operationContext, dataSourceNode, MAX_POOL_SIZE);
         final Integer minPoolSize = ModelNodeUtil.getIntIfSetOrGetDefault(operationContext, dataSourceNode, MIN_POOL_SIZE);
+        final Integer initialPoolSize = ModelNodeUtil.getIntIfSetOrGetDefault(operationContext, dataSourceNode, INITIAL_POOL_SIZE);
         final Boolean prefill = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, POOL_PREFILL);
         final Boolean useStrictMin = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, POOL_USE_STRICT_MIN);
         final Boolean interleaving = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, INTERLEAVING);
@@ -180,9 +192,13 @@ class DataSourceModelNodeUtil {
         final FlushStrategy flushStrategy = FlushStrategy.forName(flushStrategyString); // TODO relax case sensitivity
 
         final Boolean allowMultipleUsers = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, ALLOW_MULTIPLE_USERS);
+        Extension incrementer = ModelNodeUtil.extractExtension(operationContext, dataSourceNode, CAPACITY_INCREMENTER_CLASS, CAPACITY_INCREMENTER_PROPERTIES);
+        Extension decrementer = ModelNodeUtil.extractExtension(operationContext, dataSourceNode, CAPACITY_DECREMENTER_CLASS, CAPACITY_DECREMENTER_PROPERTIES);
+        final Capacity capacity = new Capacity(incrementer, decrementer);
+        final Extension connectionListener = ModelNodeUtil.extractExtension(operationContext, dataSourceNode, CONNECTION_LISTENER_CLASS, CONNECTION_LISTENER_PROPERTIES);
 
-        final DsXaPool xaPool = new DsXaPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy,
-                isSameRmOverride, interleaving, padXid, wrapXaDataSource, noTxSeparatePool, allowMultipleUsers);
+        final DsXaPool xaPool = new DsXaPoolImpl(minPoolSize, initialPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy,
+                isSameRmOverride, interleaving, padXid, wrapXaDataSource, noTxSeparatePool, allowMultipleUsers, capacity, connectionListener);
 
         final String username = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, USERNAME);
         final String password = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, PASSWORD);
@@ -238,7 +254,7 @@ class DataSourceModelNodeUtil {
         final String recoveryPassword = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, RECOVERY_PASSWORD);
         final String recoverySecurityDomain = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, RECOVERY_SECURITY_DOMAIN);
         Boolean noRecovery = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, NO_RECOVERY);
-
+        final String urlProperty =   ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, URL_PROPERTY);
         Recovery recovery = null;
         if ((recoveryUsername != null && recoveryPassword != null) || recoverySecurityDomain != null || noRecovery != null) {
             Credential credential = null;
@@ -253,7 +269,7 @@ class DataSourceModelNodeUtil {
 
             recovery = new Recovery(credential, recoverPlugin, noRecovery);
         }
-        return new ModifiableXaDataSource(transactionIsolation, timeOut, security, statement, validation, urlDelimiter,
+        return new ModifiableXaDataSource(transactionIsolation, timeOut, security, statement, validation, urlDelimiter, urlProperty,
                 urlSelectorStrategyClassName, useJavaContext, poolName, enabled, jndiName, spy, useCcm, xaDataSourceProperty,
                 xaDataSourceClass, module, newConnectionSql, xaPool, recovery);
     }

@@ -76,4 +76,14 @@ public class JBossMessageEndpointFactory implements MessageEndpointFactory {
     public boolean isDeliveryTransacted(Method method) throws NoSuchMethodException {
         return service.isDeliveryTransacted(method);
     }
+
+    @Override
+    public String getActivationName() {
+        return service.getActivationName();
+    }
+
+    @Override
+    public Class<?> getEndpointClass() {
+        return MessageEndpointInvocationHandler.class;
+    }
 }

@@ -28,6 +28,7 @@ import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.jca.core.rar.SimpleResourceAdapterRepository;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
+import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -44,6 +45,7 @@ public final class RaRepositoryService implements Service<ResourceAdapterReposit
     private final ResourceAdapterRepository value;
 
     private final InjectedValue<MetadataRepository> mdrValue = new InjectedValue<MetadataRepository>();
+    private final InjectedValue<TransactionIntegration> tiValue = new InjectedValue<TransactionIntegration>();
 
     /**
      * Create instance
@@ -61,6 +63,7 @@ public final class RaRepositoryService implements Service<ResourceAdapterReposit
     @Override
     public void start(StartContext context) throws StartException {
         ((SimpleResourceAdapterRepository) value).setMetadataRepository(mdrValue.getValue());
+        ((SimpleResourceAdapterRepository) value).setTransactionIntegration(tiValue.getValue());
         MDR_LOGGER.debugf("Starting service RaRepositoryService");
     }
 
@@ -71,6 +74,10 @@ public final class RaRepositoryService implements Service<ResourceAdapterReposit
 
     public Injector<MetadataRepository> getMdrInjector() {
         return mdrValue;
+    }
+
+    public Injector<TransactionIntegration> getTransactionIntegrationInjector() {
+        return tiValue;
     }
 
 }

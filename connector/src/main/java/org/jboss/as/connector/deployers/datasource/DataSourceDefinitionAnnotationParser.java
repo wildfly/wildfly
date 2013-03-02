@@ -138,6 +138,7 @@ public class DataSourceDefinitionAnnotationParser implements DeploymentUnitProce
         directDataSourceInjectionSource.setMaxStatements(asInt(datasourceAnnotation, DirectDataSourceInjectionSource.MAX_STATEMENTS_PROP));
         directDataSourceInjectionSource.setMaxPoolSize(asInt(datasourceAnnotation, DirectDataSourceInjectionSource.MAX_POOL_SIZE_PROP));
         directDataSourceInjectionSource.setMinPoolSize(asInt(datasourceAnnotation, DirectDataSourceInjectionSource.MIN_POOL_SIZE_PROP));
+        directDataSourceInjectionSource.setInitialPoolSize(asInt(datasourceAnnotation, DirectDataSourceInjectionSource.INITIAL_POOL_SIZE_PROP));
         directDataSourceInjectionSource.setPassword(asString(datasourceAnnotation, DirectDataSourceInjectionSource.PASSWORD_PROP));
         directDataSourceInjectionSource.setPortNumber(asInt(datasourceAnnotation, DirectDataSourceInjectionSource.PORT_NUMBER_PROP));
         directDataSourceInjectionSource.setProperties(asArray(datasourceAnnotation, DirectDataSourceInjectionSource.PROPERTIES_PROP));

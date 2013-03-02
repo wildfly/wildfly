@@ -21,27 +21,6 @@
  */
 package org.jboss.as.connector.subsystems.datasources;
 
-import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.IDLETIMEOUTMINUTES;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.MAX_POOL_SIZE;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.MIN_POOL_SIZE;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL;
-import static org.jboss.as.connector.subsystems.datasources.Constants.*;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
-
-import java.util.List;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -53,6 +32,7 @@ import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.jca.common.api.metadata.common.Capacity;
 import org.jboss.jca.common.api.metadata.common.Recovery;
 import org.jboss.jca.common.api.metadata.ds.DataSources;
 import org.jboss.jca.common.api.metadata.ds.Driver;
@@ -60,10 +40,101 @@ import org.jboss.jca.common.api.metadata.ds.DsSecurity;
 import org.jboss.jca.common.api.metadata.ds.Validation;
 import org.jboss.jca.common.api.metadata.ds.v11.DataSource;
 import org.jboss.jca.common.api.metadata.ds.v11.XaDataSource;
+import org.jboss.jca.common.api.metadata.ds.v12.DsPool;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import java.util.List;
+
+import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.IDLETIMEOUTMINUTES;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.MAX_POOL_SIZE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.MIN_POOL_SIZE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL;
+import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY;
+import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOW_MULTIPLE_USERS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.CHECK_VALID_CONNECTION_SQL;
+import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_LISTENER_CLASS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_LISTENER_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_URL;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_CLASS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DATA_SOURCE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_DATASOURCE_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJOR_VERSION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MINOR_VERSION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
+import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.INTERLEAVING;
+import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.JNDI_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.JTA;
+import static org.jboss.as.connector.subsystems.datasources.Constants.NEW_CONNECTION_SQL;
+import static org.jboss.as.connector.subsystems.datasources.Constants.NO_RECOVERY;
+import static org.jboss.as.connector.subsystems.datasources.Constants.NO_TX_SEPARATE_POOL;
+import static org.jboss.as.connector.subsystems.datasources.Constants.PAD_XID;
+import static org.jboss.as.connector.subsystems.datasources.Constants.PASSWORD;
+import static org.jboss.as.connector.subsystems.datasources.Constants.PREPARED_STATEMENTS_CACHE_SIZE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.QUERY_TIMEOUT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTHPLUGIN_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTH_PLUGIN_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_PASSWORD;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_SECURITY_DOMAIN;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_USERNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVER_PLUGIN_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVER_PLUGIN_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.SAME_RM_OVERRIDE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.SECURITY_DOMAIN;
+import static org.jboss.as.connector.subsystems.datasources.Constants.SET_TX_QUERY_TIMEOUT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.SHARE_PREPARED_STATEMENTS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.SPY;
+import static org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONNECTION_CHECKER_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONNECTION_CHECKER_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.TRACK_STATEMENTS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.TRANSACTION_ISOLATION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.URL_DELIMITER;
+import static org.jboss.as.connector.subsystems.datasources.Constants.URL_PROPERTY;
+import static org.jboss.as.connector.subsystems.datasources.Constants.URL_SELECTOR_STRATEGY_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.USERNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.USE_CCM;
+import static org.jboss.as.connector.subsystems.datasources.Constants.USE_JAVA_CONTEXT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.USE_TRY_LOCK;
+import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDATE_ON_MATCH;
+import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.WRAP_XA_RESOURCE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCE_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE_CLASS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XA_RESOURCE_TIMEOUT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 
 /**
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
@@ -75,7 +146,7 @@ public class DataSourcesExtension implements Extension {
     public static final String SUBSYSTEM_NAME = Constants.DATASOURCES;
     private static final String RESOURCE_NAME = DataSourcesExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 2;
+    private static final int MANAGEMENT_API_MAJOR_VERSION = 3;
     private static final int MANAGEMENT_API_MINOR_VERSION = 0;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
@@ -117,6 +188,7 @@ public class DataSourcesExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_1_0.getUriString(), DataSourceSubsystemParser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_1_1.getUriString(), DataSourceSubsystemParser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_2_0.getUriString(), DataSourceSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_3_0.getUriString(), DataSourceSubsystemParser.INSTANCE);
     }
 
     public static final class DataSourceSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
@@ -207,6 +279,7 @@ public class DataSourcesExtension implements Extension {
 
                 if (isXADataSource) {
                     URL_DELIMITER.marshallAsElement(dataSourceNode, writer);
+                    URL_PROPERTY.marshallAsElement(dataSourceNode, writer);
                     URL_SELECTOR_STRATEGY_CLASS_NAME.marshallAsElement(dataSourceNode, writer);
                 }
                 NEW_CONNECTION_SQL.marshallAsElement(dataSourceNode, writer);
@@ -216,12 +289,15 @@ public class DataSourcesExtension implements Extension {
                     URL_DELIMITER.marshallAsElement(dataSourceNode, writer);
                     URL_SELECTOR_STRATEGY_CLASS_NAME.marshallAsElement(dataSourceNode, writer);
                 }
-                boolean poolRequired = MIN_POOL_SIZE.isMarshallable(dataSourceNode) ||
+                boolean poolRequired = INITIAL_POOL_SIZE.isMarshallable(dataSourceNode) ||
+                        MIN_POOL_SIZE.isMarshallable(dataSourceNode) ||
                         MAX_POOL_SIZE.isMarshallable(dataSourceNode) ||
                         POOL_PREFILL.isMarshallable(dataSourceNode) ||
                         POOL_USE_STRICT_MIN.isMarshallable(dataSourceNode) ||
                         POOL_FLUSH_STRATEGY.isMarshallable(dataSourceNode) ||
-                        ALLOW_MULTIPLE_USERS.isMarshallable(dataSourceNode);
+                        ALLOW_MULTIPLE_USERS.isMarshallable(dataSourceNode) ||
+                        CONNECTION_LISTENER_CLASS.isMarshallable(dataSourceNode) ||
+                        CONNECTION_LISTENER_PROPERTIES.isMarshallable(dataSourceNode);
                 if (isXADataSource) {
                     poolRequired = poolRequired
                             || SAME_RM_OVERRIDE.isMarshallable(dataSourceNode) ||
@@ -230,15 +306,79 @@ public class DataSourcesExtension implements Extension {
                             PAD_XID.isMarshallable(dataSourceNode) ||
                             WRAP_XA_RESOURCE.isMarshallable(dataSourceNode);
                 }
+                final boolean capacityRequired = CAPACITY_INCREMENTER_CLASS.isMarshallable(dataSourceNode) ||
+                        CAPACITY_INCREMENTER_PROPERTIES.isMarshallable(dataSourceNode) ||
+                        CAPACITY_DECREMENTER_CLASS.isMarshallable(dataSourceNode) ||
+                        CAPACITY_DECREMENTER_PROPERTIES.isMarshallable(dataSourceNode);
+                poolRequired = poolRequired || capacityRequired;
                 if (poolRequired) {
                     writer.writeStartElement(isXADataSource ? XaDataSource.Tag.XA_POOL.getLocalName() : DataSource.Tag.POOL
                             .getLocalName());
                     MIN_POOL_SIZE.marshallAsElement(dataSourceNode, writer);
+                    INITIAL_POOL_SIZE.marshallAsElement(dataSourceNode, writer);
                     MAX_POOL_SIZE.marshallAsElement(dataSourceNode, writer);
                     POOL_PREFILL.marshallAsElement(dataSourceNode, writer);
                     POOL_USE_STRICT_MIN.marshallAsElement(dataSourceNode, writer);
                     POOL_FLUSH_STRATEGY.marshallAsElement(dataSourceNode, writer);
                     ALLOW_MULTIPLE_USERS.marshallAsElement(dataSourceNode, writer);
+
+                    if (dataSourceNode.hasDefined(CONNECTION_LISTENER_CLASS.getName())) {
+                        writer.writeStartElement(DsPool.Tag.CONNECTION_LISTENER.getLocalName());
+                        writer.writeAttribute(org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),
+                                dataSourceNode.get(CONNECTION_LISTENER_CLASS.getName()).asString());
+
+                        if (dataSourceNode.hasDefined(CONNECTION_LISTENER_PROPERTIES.getName())) {
+
+                            for (Property connectionProperty : dataSourceNode.get(CONNECTION_LISTENER_PROPERTIES.getName())
+                                    .asPropertyList()) {
+                                writeProperty(writer, dataSourceNode, connectionProperty.getName(), connectionProperty
+                                        .getValue().asString(),
+                                        org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY
+                                                .getLocalName());
+                            }
+                        }
+                        writer.writeEndElement();
+                    }
+
+
+                    if (capacityRequired) {
+                        writer.writeStartElement(DsPool.Tag.CAPACITY.getLocalName());
+                        if (dataSourceNode.hasDefined(CAPACITY_INCREMENTER_CLASS.getName())) {
+                            writer.writeStartElement(Capacity.Tag.INCREMENTER.getLocalName());
+                            writer.writeAttribute(org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),
+                                    dataSourceNode.get(CAPACITY_INCREMENTER_CLASS.getName()).asString());
+
+                            if (dataSourceNode.hasDefined(CAPACITY_INCREMENTER_PROPERTIES.getName())) {
+
+                                for (Property connectionProperty : dataSourceNode.get(CAPACITY_INCREMENTER_PROPERTIES.getName())
+                                        .asPropertyList()) {
+                                    writeProperty(writer, dataSourceNode, connectionProperty.getName(), connectionProperty
+                                            .getValue().asString(),
+                                            org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY
+                                                    .getLocalName());
+                                }
+                            }
+                            writer.writeEndElement();
+                        }
+                        if (dataSourceNode.hasDefined(CAPACITY_DECREMENTER_CLASS.getName())) {
+                            writer.writeStartElement(Capacity.Tag.DECREMENTER.getLocalName());
+                            writer.writeAttribute(org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),
+                                    dataSourceNode.get(CAPACITY_DECREMENTER_CLASS.getName()).asString());
+
+                            if (dataSourceNode.hasDefined(CAPACITY_DECREMENTER_PROPERTIES.getName())) {
+
+                                for (Property connectionProperty : dataSourceNode.get(CAPACITY_DECREMENTER_PROPERTIES.getName())
+                                        .asPropertyList()) {
+                                    writeProperty(writer, dataSourceNode, connectionProperty.getName(), connectionProperty
+                                            .getValue().asString(),
+                                            org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY
+                                                    .getLocalName());
+                                }
+                            }
+                            writer.writeEndElement();
+                        }
+                        writer.writeEndElement();
+                    }
                     if (isXADataSource) {
                         SAME_RM_OVERRIDE.marshallAsElement(dataSourceNode, writer);
                         INTERLEAVING.marshallAsElement(dataSourceNode, writer);
@@ -498,7 +638,8 @@ public class DataSourcesExtension implements Extension {
                         break;
                     }
                     case DATASOURCES_1_1:
-                    case DATASOURCES_2_0:{
+                    case DATASOURCES_2_0:
+                    case DATASOURCES_3_0:{
                         localName = reader.getLocalName();
                         Element element = Element.forName(reader.getLocalName());
                         SUBSYSTEM_DATASOURCES_LOGGER.tracef("%s -> %s", localName, element);

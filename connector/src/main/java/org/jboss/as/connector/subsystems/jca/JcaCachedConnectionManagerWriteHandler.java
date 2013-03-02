@@ -42,7 +42,8 @@ public class JcaCachedConnectionManagerWriteHandler extends AbstractWriteAttribu
     private JcaCachedConnectionManagerWriteHandler() {
         super(
                 JcaCachedConnectionManagerDefinition.CcmParameters.DEBUG.getAttribute(),
-                JcaCachedConnectionManagerDefinition.CcmParameters.ERROR.getAttribute()
+                JcaCachedConnectionManagerDefinition.CcmParameters.ERROR.getAttribute(),
+                JcaCachedConnectionManagerDefinition.CcmParameters.IGNORE_UNKNOWN_CONNECTIONS.getAttribute()
         );
     }
 
@@ -55,7 +56,10 @@ public class JcaCachedConnectionManagerWriteHandler extends AbstractWriteAttribu
             ccm.setDebug(resolvedValue.asBoolean());
         } else if (attributeName.equals(JcaCachedConnectionManagerDefinition.CcmParameters.ERROR.getAttribute().getName())) {
             ccm.setError(resolvedValue.asBoolean());
+        } else if (attributeName.equals(JcaCachedConnectionManagerDefinition.CcmParameters.IGNORE_UNKNOWN_CONNECTIONS.getAttribute().getName())) {
+            ccm.setIgnoreUnknownConnections(resolvedValue.asBoolean());
         }
+
 
         return false;
 
@@ -70,6 +74,8 @@ public class JcaCachedConnectionManagerWriteHandler extends AbstractWriteAttribu
             ccm.setDebug(valueToRestore.asBoolean());
         } else if (attributeName.equals(JcaCachedConnectionManagerDefinition.CcmParameters.ERROR.getAttribute().getName())) {
             ccm.setError(valueToRestore.asBoolean());
+        } else if (attributeName.equals(JcaCachedConnectionManagerDefinition.CcmParameters.IGNORE_UNKNOWN_CONNECTIONS.getAttribute().getName())) {
+            ccm.setIgnoreUnknownConnections(valueToRestore.asBoolean());
         }
 
     }

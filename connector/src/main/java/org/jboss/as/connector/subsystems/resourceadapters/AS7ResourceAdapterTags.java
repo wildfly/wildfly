@@ -92,7 +92,9 @@ public enum AS7ResourceAdapterTags {
     /**
      * admin-objects tag
      */
-    ADMIN_OBJECT("admin-object");
+    ADMIN_OBJECT("admin-object"),
+
+    WORKMANAGER("workmanager");
 
     private String name;
 

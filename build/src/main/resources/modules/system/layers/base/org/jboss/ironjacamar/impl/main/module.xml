@@ -48,5 +48,7 @@
         <!-- org.jboss.security -->
         <module name="org.picketbox"/>
         <module name="javax.xml.stream.api"/>
+       <!--jgroups -->
+        <module name="org.jgroups"/>
     </dependencies>
 </module>

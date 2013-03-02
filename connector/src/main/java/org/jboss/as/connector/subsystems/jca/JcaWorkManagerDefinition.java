@@ -106,4 +106,5 @@ public class JcaWorkManagerDefinition extends SimpleResourceDefinition {
 
         private SimpleAttributeDefinition attribute;
     }
+
 }

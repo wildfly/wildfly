@@ -22,10 +22,35 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.dmr.ModelNode;
+import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
+import org.jboss.jca.common.api.metadata.common.CommonPool;
+import org.jboss.jca.common.api.metadata.common.CommonSecurity;
+import org.jboss.jca.common.api.metadata.common.CommonTimeOut;
+import org.jboss.jca.common.api.metadata.common.CommonValidation;
+import org.jboss.jca.common.api.metadata.common.CommonXaPool;
+import org.jboss.jca.common.api.metadata.common.Credential;
+import org.jboss.jca.common.api.metadata.common.Extension;
+import org.jboss.jca.common.api.metadata.common.Recovery;
+import org.jboss.jca.common.api.metadata.common.v11.ConnDefPool;
+import org.jboss.jca.common.api.metadata.common.v11.WorkManagerSecurity;
+import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
+
+import java.util.Map;
+
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.IDLETIMEOUTMINUTES;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.MAX_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.MIN_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY;
@@ -37,6 +62,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOC
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CLASS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.INTERLEAVING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDINAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXSEPARATEPOOL;
@@ -50,29 +76,13 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOV
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SAME_RM_OVERRIDE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN_AND_APPLICATION;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SHARABLE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_CCM;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_GROUP;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_USER;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WRAP_XA_RESOURCE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
-
-import java.util.Map;
-
-import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.dmr.ModelNode;
-import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
-import org.jboss.jca.common.api.metadata.common.CommonConnDef;
-import org.jboss.jca.common.api.metadata.common.CommonPool;
-import org.jboss.jca.common.api.metadata.common.CommonSecurity;
-import org.jboss.jca.common.api.metadata.common.CommonTimeOut;
-import org.jboss.jca.common.api.metadata.common.CommonValidation;
-import org.jboss.jca.common.api.metadata.common.CommonXaPool;
-import org.jboss.jca.common.api.metadata.common.Credential;
-import org.jboss.jca.common.api.metadata.common.Extension;
-import org.jboss.jca.common.api.metadata.common.Recovery;
-import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
 
 /**
  * Handler for exposing transaction logs
@@ -120,7 +130,7 @@ public class IronJacamarResourceCreator {
     }
 
 
-    private void addConnectionDefinition(final Resource parent, CommonConnDef connDef) {
+    private void addConnectionDefinition(final Resource parent, org.jboss.jca.common.api.metadata.common.CommonConnDef connDef) {
         final Resource connDefResource = new IronJacamarResource.IronJacamarRuntimeResource();
         final ModelNode model = connDefResource.getModel();
         setAttribute(model, Constants.JNDINAME, connDef.getJndiName());
@@ -134,12 +144,40 @@ public class IronJacamarResourceCreator {
         setAttribute(model, USE_JAVA_CONTEXT, connDef.isUseJavaContext());
         setAttribute(model, ENABLED, connDef.isEnabled());
         setAttribute(model, USE_CCM, connDef.isUseCcm());
+        if (connDef instanceof org.jboss.jca.common.api.metadata.common.v11.CommonConnDef) {
+            setAttribute(model, SHARABLE, ((org.jboss.jca.common.api.metadata.common.v11.CommonConnDef) connDef).isSharable());
+            setAttribute(model, ENLISTMENT, ((org.jboss.jca.common.api.metadata.common.v11.CommonConnDef) connDef).isEnlistment());
+        }
 
         final CommonPool pool = connDef.getPool();
         if (pool != null) {
             setAttribute(model, MAX_POOL_SIZE, pool.getMaxPoolSize());
 
             setAttribute(model, MIN_POOL_SIZE, pool.getMinPoolSize());
+
+            if (pool instanceof ConnDefPool) {
+                setAttribute(model, INITIAL_POOL_SIZE, ((ConnDefPool) pool).getInitialPoolSize());
+                if (((ConnDefPool) pool).getCapacity() != null) {
+                    if (((ConnDefPool) pool).getCapacity().getIncrementer() != null) {
+                        setAttribute(model, CAPACITY_INCREMENTER_CLASS, ((ConnDefPool) pool).getCapacity().getIncrementer().getClassName());
+                        if (((ConnDefPool) pool).getCapacity().getIncrementer().getConfigPropertiesMap() != null) {
+                            for (Map.Entry<String, String> config : ((ConnDefPool) pool).getCapacity().getIncrementer().getConfigPropertiesMap().entrySet()) {
+                                model.get(CAPACITY_INCREMENTER_PROPERTIES.getName(), config.getKey()).set(config.getValue());
+                            }
+                        }
+                    }
+                    if (((ConnDefPool) pool).getCapacity().getDecrementer() != null) {
+                        setAttribute(model, CAPACITY_DECREMENTER_CLASS, ((ConnDefPool) pool).getCapacity().getDecrementer().getClassName());
+                        if (((ConnDefPool) pool).getCapacity().getDecrementer().getConfigPropertiesMap() != null) {
+                            for (Map.Entry<String, String> config : ((ConnDefPool) pool).getCapacity().getDecrementer().getConfigPropertiesMap().entrySet()) {
+                                model.get(CAPACITY_DECREMENTER_PROPERTIES.getName(), config.getKey()).set(config.getValue());
+                            }
+                        }
+
+                    }
+                }
+
+            }
 
             setAttribute(model, POOL_USE_STRICT_MIN, pool.isUseStrictMin());
 
@@ -235,6 +273,35 @@ public class IronJacamarResourceCreator {
         setAttribute(model, Constants.BOOTSTRAP_CONTEXT, ironJacamarMetadata.getBootstrapContext());
         if (ironJacamarMetadata.getTransactionSupport() != null)
             model.get(Constants.TRANSACTION_SUPPORT.getName()).set(ironJacamarMetadata.getTransactionSupport().name());
+        if (ironJacamarMetadata instanceof org.jboss.jca.common.api.metadata.ironjacamar.v11.IronJacamar) {
+            org.jboss.jca.common.api.metadata.ironjacamar.v11.IronJacamar ij11 = (org.jboss.jca.common.api.metadata.ironjacamar.v11.IronJacamar) ironJacamarMetadata;
+            if (ij11.getWorkManager() != null && ij11.getWorkManager().getSecurity() != null) {
+                WorkManagerSecurity security = ij11.getWorkManager().getSecurity();
+                model.get(Constants.WM_SECURITY.getName()).set(true);
+                for (String group : security.getDefaultGroups()) {
+                    model.get(Constants.WM_SECURITY_DEFAULT_GROUPS.getName()).add(group);
+                }
+                model.get(Constants.WM_SECURITY_DEFAULT_PRINCIPAL.getName()).set(security.getDefaultPrincipal());
+                model.get(Constants.WM_SECURITY_MAPPING_REQUIRED.getName()).set(security.isMappingRequired());
+                model.get(Constants.WM_SECURITY_DOMAIN.getName()).set(security.getDomain());
+                for (Map.Entry<String, String> entry : security.getGroupMappings().entrySet()) {
+                    final Resource mapping = new IronJacamarResource.IronJacamarRuntimeResource();
+                    final ModelNode subModel = mapping.getModel();
+                    subModel.get(Constants.WM_SECURITY_MAPPING_FROM.getName()).set(entry.getKey());
+                    subModel.get(Constants.WM_SECURITY_MAPPING_TO.getName()).set(entry.getKey());
+                    final PathElement element = PathElement.pathElement(Constants.WM_SECURITY_MAPPING_GROUPS.getName(), WM_SECURITY_MAPPING_GROUP.getName());
+                    ijResourceAdapter.registerChild(element, mapping);
+                }
+                for (Map.Entry<String, String> entry : security.getUserMappings().entrySet()) {
+                    final Resource mapping = new IronJacamarResource.IronJacamarRuntimeResource();
+                    final ModelNode subModel = mapping.getModel();
+                    subModel.get(Constants.WM_SECURITY_MAPPING_FROM.getName()).set(entry.getKey());
+                    subModel.get(Constants.WM_SECURITY_MAPPING_TO.getName()).set(entry.getKey());
+                    final PathElement element = PathElement.pathElement(Constants.WM_SECURITY_MAPPING_USERS.getName(), WM_SECURITY_MAPPING_USER.getName());
+                    ijResourceAdapter.registerChild(element, mapping);
+                }
+            }
+        }
         if (ironJacamarMetadata.getBeanValidationGroups() != null) {
             for (String bv : ironJacamarMetadata.getBeanValidationGroups()) {
                 model.get(Constants.BEANVALIDATION_GROUPS.getName()).add(new ModelNode().set(bv));
@@ -246,7 +313,7 @@ public class IronJacamarResourceCreator {
             }
         }
         if (ironJacamarMetadata.getConnectionDefinitions() != null) {
-            for (CommonConnDef connDef : ironJacamarMetadata.getConnectionDefinitions()) {
+            for (org.jboss.jca.common.api.metadata.common.CommonConnDef connDef : ironJacamarMetadata.getConnectionDefinitions()) {
                 addConnectionDefinition(ijResourceAdapter, connDef);
             }
         }

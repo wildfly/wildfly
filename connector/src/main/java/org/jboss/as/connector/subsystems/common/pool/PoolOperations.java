@@ -29,6 +29,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.connector.subsystems.datasources.Util;
+import static org.jboss.as.connector.subsystems.datasources.Constants.USERNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.PASSWORD;
+
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -36,6 +39,8 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
+import org.jboss.jca.adapters.jdbc.WrappedConnectionRequestInfo;
+import org.jboss.jca.core.api.connectionmanager.pool.FlushMode;
 import org.jboss.jca.core.api.connectionmanager.pool.Pool;
 import org.jboss.jca.core.api.management.ConnectionFactory;
 import org.jboss.jca.core.api.management.Connector;
@@ -62,7 +67,7 @@ public abstract class PoolOperations implements OperationStepHandler {
         } else {
             jndiName = address.getLastElement().getValue();
         }
-
+        final Object[] parameters = getParameters(context, operation);
         if (context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -79,7 +84,7 @@ public abstract class PoolOperations implements OperationStepHandler {
                             }
 
                             for (Pool pool : pools) {
-                                operationResult = invokeCommandOn(pool);
+                                operationResult = invokeCommandOn(pool, parameters);
                             }
 
                         } catch (Exception e) {
@@ -96,7 +101,8 @@ public abstract class PoolOperations implements OperationStepHandler {
         context.stepCompleted();
     }
 
-    protected abstract ModelNode invokeCommandOn(Pool pool) throws Exception;
+    protected abstract ModelNode invokeCommandOn(Pool pool, Object... parameters) throws Exception;
+    protected abstract Object[] getParameters(OperationContext context, ModelNode operation);
 
     public static class FlushIdleConnectionInPool extends PoolOperations {
         public static final FlushIdleConnectionInPool DS_INSTANCE = new FlushIdleConnectionInPool(new DsPoolMatcher());
@@ -107,8 +113,13 @@ public abstract class PoolOperations implements OperationStepHandler {
         }
 
         @Override
-        protected ModelNode invokeCommandOn(Pool pool) {
-            pool.flush();
+        protected ModelNode invokeCommandOn(Pool pool, Object... parameters) {
+            pool.flush(FlushMode.IDLE);
+            return null;
+        }
+
+        @Override
+        protected Object[] getParameters(OperationContext context, ModelNode operation) {
             return null;
         }
 
@@ -123,8 +134,55 @@ public abstract class PoolOperations implements OperationStepHandler {
         }
 
         @Override
-        protected ModelNode invokeCommandOn(Pool pool) {
-            pool.flush(true);
+        protected ModelNode invokeCommandOn(Pool pool, Object... parameters) {
+            pool.flush(FlushMode.ALL);
+            return null;
+        }
+
+        @Override
+        protected Object[] getParameters(OperationContext context, ModelNode operation) {
+            return null;
+        }
+
+    }
+
+    public static class FlushInvalidConnectionInPool extends PoolOperations {
+        public static final FlushInvalidConnectionInPool DS_INSTANCE = new FlushInvalidConnectionInPool(new DsPoolMatcher());
+        public static final FlushInvalidConnectionInPool RA_INSTANCE = new FlushInvalidConnectionInPool(new RaPoolMatcher());
+
+        protected FlushInvalidConnectionInPool(PoolMatcher matcher) {
+            super(matcher);
+        }
+
+        @Override
+        protected ModelNode invokeCommandOn(Pool pool, Object... parameters) {
+            pool.flush(FlushMode.INVALID);
+            return null;
+        }
+
+        @Override
+        protected Object[] getParameters(OperationContext context, ModelNode operation) {
+            return null;
+        }
+
+    }
+
+    public static class FlushGracefullyConnectionInPool extends PoolOperations {
+        public static final FlushGracefullyConnectionInPool DS_INSTANCE = new FlushGracefullyConnectionInPool(new DsPoolMatcher());
+        public static final FlushGracefullyConnectionInPool RA_INSTANCE = new FlushGracefullyConnectionInPool(new RaPoolMatcher());
+
+        protected FlushGracefullyConnectionInPool(PoolMatcher matcher) {
+            super(matcher);
+        }
+
+        @Override
+        protected ModelNode invokeCommandOn(Pool pool, Object... parameters) {
+            pool.flush(FlushMode.GRACEFULLY);
+            return null;
+        }
+
+        @Override
+        protected Object[] getParameters(OperationContext context, ModelNode operation) {
             return null;
         }
 
@@ -139,8 +197,14 @@ public abstract class PoolOperations implements OperationStepHandler {
         }
 
         @Override
-        protected ModelNode invokeCommandOn(Pool pool) throws Exception {
-            boolean returnedValue = pool.testConnection();
+        protected ModelNode invokeCommandOn(Pool pool, Object... parameters) throws Exception {
+            boolean returnedValue;
+            if (parameters != null) {
+                WrappedConnectionRequestInfo cri = new WrappedConnectionRequestInfo((String) parameters[0], (String) parameters[1]);
+                returnedValue = pool.testConnection(cri, null);
+            } else {
+                returnedValue = pool.testConnection();
+            }
             if (!returnedValue)
                 throw MESSAGES.invalidConnection();
             ModelNode result = new ModelNode();
@@ -148,7 +212,24 @@ public abstract class PoolOperations implements OperationStepHandler {
             return result;
         }
 
+        @Override
+        protected Object[] getParameters(OperationContext context, ModelNode operation) {
+            Object[] parameters = null;
+            try {
+                if (operation.hasDefined(USERNAME.getName()) || operation.hasDefined(PASSWORD.getName())) {
+                    parameters = new Object[2];
+                    parameters[0] = USERNAME.resolveModelAttribute(context, operation).asString();
+                    parameters[1] = PASSWORD.resolveModelAttribute(context, operation).asString();
+                }
+            } catch (OperationFailedException ofe) {
+                //just return null
+            }
+            return parameters;
+        }
+
     }
+
+
 
     private interface PoolMatcher {
         List<Pool> match(String jndiName, ManagementRepository repository);
