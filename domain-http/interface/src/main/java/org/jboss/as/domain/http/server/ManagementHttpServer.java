@@ -62,6 +62,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.domain.http.server.security.AuthenticationMechanismWrapper;
 import org.jboss.as.domain.http.server.security.ConnectionAuthenticationCacheHandler;
 import org.jboss.as.domain.http.server.security.DmrFailureReadinessHandler;
+import org.jboss.as.domain.http.server.security.LogoutHandler;
 import org.jboss.as.domain.http.server.security.RealmIdentityManager;
 import org.jboss.as.domain.http.server.security.RedirectReadinessHandler;
 import org.jboss.as.domain.management.AuthMechanism;
@@ -213,6 +214,10 @@ public class ManagementHttpServer {
 
         HttpHandler readinessHandler = new DmrFailureReadinessHandler(securityRealm, secureDomainAccess(domainApiHandler, securityRealm), ErrorContextHandler.ERROR_CONTEXT);
         pathHandler.addPath(DomainApiCheckHandler.PATH, readinessHandler);
+
+        if (securityRealm != null) {
+            pathHandler.addPath(LogoutHandler.PATH, new LogoutHandler(securityRealm.getName()));
+        }
     }
 
     private static HttpHandler secureDomainAccess(final HttpHandler domainHandler, final SecurityRealm securityRealm) {
