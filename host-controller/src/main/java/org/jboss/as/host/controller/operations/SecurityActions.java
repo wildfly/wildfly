@@ -22,9 +22,9 @@
 
 package org.jboss.as.host.controller.operations;
 
-import org.jboss.as.util.security.GetClassLoaderAction;
 import org.jboss.as.util.security.ReadPropertyAction;
 import org.jboss.as.util.security.SetContextClassLoaderAction;
+import org.jboss.as.util.security.SetContextClassLoaderFromClassAction;
 
 import static java.lang.System.getProperty;
 import static java.lang.System.getSecurityManager;
@@ -48,7 +48,7 @@ class SecurityActions {
                 currentThread().setContextClassLoader(cl.getClassLoader());
             }
         } else {
-            return doPrivileged(new SetContextClassLoaderAction(doPrivileged(new GetClassLoaderAction(cl))));
+            return doPrivileged(new SetContextClassLoaderFromClassAction(cl));
         }
     }
 
