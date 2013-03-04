@@ -170,7 +170,6 @@ class ResourceHandler implements BlockingHttpHandler {
                 OutputStream outputStream = new UndertowOutputStream(exchange);
                 try {
                     fastChannelCopy(inputStream, outputStream);
-                    outputStream.flush();
                 } catch (IOException e) {
                     throw new IllegalStateException(e);
                 } finally {
