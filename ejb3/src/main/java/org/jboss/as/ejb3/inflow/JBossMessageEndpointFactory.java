@@ -42,6 +42,7 @@ public class JBossMessageEndpointFactory implements MessageEndpointFactory {
     private final ProxyFactory<Object> factory;
 
     public JBossMessageEndpointFactory(final ClassLoader classLoader, final MessageEndpointService service, final Class<Object> ejbClass) {
+        // todo: generics bug; only Object.class is a Class<Object>.  Everything else is Class<? extends Object> aka Class<?>
         this.service = service;
         final ProxyConfiguration<Object> configuration = new ProxyConfiguration<Object>()
                 .setClassLoader(classLoader)
