@@ -21,12 +21,6 @@
  */
 package org.jboss.as.ejb3.deployment.processors;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Timer;
-import java.util.concurrent.ExecutorService;
-
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
@@ -34,6 +28,7 @@ import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentStartService;
 import org.jboss.as.ee.component.DependencyConfigurator;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.TimerServiceRegistry;
@@ -53,6 +48,12 @@ import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.concurrent.ExecutorService;
 
 import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 
@@ -102,12 +103,11 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
         }
         final ServiceName finalDefaultTimerPersistenceService = defaultTimerPersistenceService;
 
-        for (final ComponentDescription component : moduleDescription.getComponentDescriptions()) {
+        for (final ComponentDescription componentDescription : moduleDescription.getComponentDescriptions()) {
 
-            if (component.isTimerServiceApplicable()) {
-                if(component.isTimerServiceRequired()) {
+            if (componentDescription.isTimerServiceApplicable()) {
+                if(componentDescription.isTimerServiceRequired()) {
                     //the component has timeout methods, it needs a 'real' timer service
-
                     final String deploymentName;
                     if (moduleDescription.getDistinctName() == null || moduleDescription.getDistinctName().length() == 0) {
                         deploymentName = moduleDescription.getApplicationName() + "." + moduleDescription.getModuleName();
@@ -115,8 +115,8 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
                         deploymentName = moduleDescription.getApplicationName() + "." + moduleDescription.getModuleName() + "." + moduleDescription.getDistinctName();
                     }
 
-                    ROOT_LOGGER.debug("Installing timer service for component " + component.getComponentName());
-                    component.getConfigurators().add(new ComponentConfigurator() {
+                    ROOT_LOGGER.debug("Installing timer service for component " + componentDescription.getComponentName());
+                    componentDescription.getConfigurators().add(new ComponentConfigurator() {
                         @Override
                         public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
                             final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) description;
@@ -124,16 +124,16 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
                             final ServiceName invokerServiceName = ejbComponentDescription.getServiceName().append(TimedObjectInvokerImpl.SERVICE_NAME);
                             final TimedObjectInvokerImpl invoker = new TimedObjectInvokerImpl(deploymentName, module);
                             context.getServiceTarget().addService(invokerServiceName, invoker)
-                                    .addDependency(component.getCreateServiceName(), EJBComponent.class, invoker.getEjbComponent())
+                                    .addDependency(componentDescription.getCreateServiceName(), EJBComponent.class, invoker.getEjbComponent())
                                     .install();
 
 
                             //install the timer create service
-                            final ServiceName serviceName = component.getServiceName().append(TimerServiceImpl.SERVICE_NAME);
+                            final ServiceName serviceName = componentDescription.getServiceName().append(TimerServiceImpl.SERVICE_NAME);
                             final TimerServiceImpl service = new TimerServiceImpl(ejbComponentDescription.getScheduleMethods(), serviceName, timerServiceRegistry);
                             final ServiceBuilder<javax.ejb.TimerService> createBuilder = context.getServiceTarget().addService(serviceName, service);
                             createBuilder.addDependency(TIMER_SERVICE_NAME, Timer.class, service.getTimerInjectedValue());
-                            createBuilder.addDependency(component.getCreateServiceName(), EJBComponent.class, service.getEjbComponentInjectedValue());
+                            createBuilder.addDependency(componentDescription.getCreateServiceName(), EJBComponent.class, service.getEjbComponentInjectedValue());
                             createBuilder.addDependency(timerServiceThreadPool, ExecutorService.class, service.getExecutorServiceInjectedValue());
                             if (timerPersistenceServices.containsKey(ejbComponentDescription.getEJBName())) {
                                 createBuilder.addDependency(timerPersistenceServices.get(ejbComponentDescription.getEJBName()), TimerPersistence.class, service.getTimerPersistence());
@@ -154,19 +154,27 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
                     });
                 } else {
                     //the EJB is of a type that could have a timer service, but has no timer methods.
-                    //just bind a dummy one instead
-                    component.getConfigurators().add(new ComponentConfigurator() {
-
+                    //just bind the non-functional timer service
+                    componentDescription.getConfigurators().add(new ComponentConfigurator() {
                         @Override
                         public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
                             final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) description;
-                            ejbComponentDescription.setTimerService(NonFunctionalTimerService.NO_TIMER_METHODS);
-
+                            final ServiceName nonFunctionalTimerServiceName = NonFunctionalTimerService.serviceNameFor(ejbComponentDescription);
+                            final NonFunctionalTimerService nonFunctionalTimerService = new NonFunctionalTimerService(EjbMessages.MESSAGES.ejbHasNoTimerMethods(), timerServiceRegistry);
+                            // add the non-functional timer service as a MSC service
+                            context.getServiceTarget().addService(nonFunctionalTimerServiceName, nonFunctionalTimerService).install();
+                            // set the timer service in the EJB component
+                            ejbComponentDescription.setTimerService(nonFunctionalTimerService);
+                            // now we want the EJB component to depend on this non-functional timer service to start
+                            configuration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
+                                @Override
+                                public void configureDependency(ServiceBuilder<?> serviceBuilder, ComponentStartService service) throws DeploymentUnitProcessingException {
+                                    serviceBuilder.addDependency(nonFunctionalTimerServiceName);
+                                }
+                            });
                         }
                     });
-
                 }
-
             }
         }
     }
