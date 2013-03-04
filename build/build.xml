@@ -967,11 +967,7 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-security"/>
         </module-def>
 
-        <module-def name="org.jboss.as.security-util">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-security-util"/>
-        </module-def>
-
-    	<module-def name="org.jboss.as.system-jmx">
+      	<module-def name="org.jboss.as.system-jmx">
             <maven-resource group="org.jboss.as" artifact="jboss-as-system-jmx"/>
         </module-def>
 
