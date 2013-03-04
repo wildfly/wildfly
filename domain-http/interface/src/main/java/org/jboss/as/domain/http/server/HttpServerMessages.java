@@ -44,6 +44,16 @@ public interface HttpServerMessages {
     @Message(id = 15127, value = "Invalid operation '%s'")
     IllegalArgumentException invalidOperation(@Cause Throwable cause, String value);
 
+    /**
+     * An error message indicating that the security realm is not ready to process requests and a URL that can be viewed for
+     * additional information.
+     *
+     * @param url - the url clients should visit for further information.
+     * @return the error message.
+     */
+    @Message(id = 15135, value = "The security realm is not ready to process requests, see %s")
+    String realmNotReadyMessage(final String url);
+
     //Messages 15120-15136 were used by the old implementation
 
     @Message(id = 15136, value = "No console module available with module name %s")

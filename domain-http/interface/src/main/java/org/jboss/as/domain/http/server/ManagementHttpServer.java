@@ -61,7 +61,9 @@ import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.domain.http.server.security.AuthenticationMechanismWrapper;
 import org.jboss.as.domain.http.server.security.ConnectionAuthenticationCacheHandler;
+import org.jboss.as.domain.http.server.security.DmrFailureReadinessHandler;
 import org.jboss.as.domain.http.server.security.RealmIdentityManager;
+import org.jboss.as.domain.http.server.security.RedirectReadinessHandler;
 import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.modules.Module;
@@ -204,10 +206,13 @@ public class ManagementHttpServer {
         DomainApiCheckHandler domainApiHandler = new DomainApiCheckHandler(modelControllerClient, controlledProcessStateService);
         pathHandler.setDefaultHandler(rootConsoleRedirectHandler);
         if (consoleHandler != null) {
-            pathHandler.addPath(consoleHandler.getContext(), new BlockingHandler(consoleHandler));
+            HttpHandler readinessHandler = new RedirectReadinessHandler(securityRealm, new BlockingHandler(consoleHandler),
+                    ErrorContextHandler.ERROR_CONTEXT);
+            pathHandler.addPath(consoleHandler.getContext(), readinessHandler);
         }
-        pathHandler.addPath(DomainApiCheckHandler.PATH, secureDomainAccess(domainApiHandler, securityRealm));
 
+        HttpHandler readinessHandler = new DmrFailureReadinessHandler(securityRealm, secureDomainAccess(domainApiHandler, securityRealm), ErrorContextHandler.ERROR_CONTEXT);
+        pathHandler.addPath(DomainApiCheckHandler.PATH, readinessHandler);
     }
 
     private static HttpHandler secureDomainAccess(final HttpHandler domainHandler, final SecurityRealm securityRealm) {
