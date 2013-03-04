@@ -102,8 +102,6 @@ import javax.xml.bind.annotation.adapters.*;
 import javax.xml.bind.attachment.*;
 import javax.xml.bind.helpers.*;
 import javax.xml.bind.util.*;
-import javax.xml.registry.*;
-import javax.xml.registry.infomodel.*;
 import javax.xml.rpc.*;
 import javax.xml.rpc.encoding.*;
 import javax.xml.rpc.handler.*;

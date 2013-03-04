@@ -50,7 +50,6 @@
         <module name="javax.validation.api" export="true"/>
         <module name="javax.ws.rs.api" export="true"  services="export"/>
         <module name="javax.xml.bind.api" export="true"/>
-        <module name="javax.xml.registry.api" export="true"/>
         <module name="javax.xml.soap.api" export="true"/>
         <module name="javax.xml.ws.api" export="true"/>
 

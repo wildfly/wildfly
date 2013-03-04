@@ -519,10 +519,6 @@
             <maven-resource group="org.jboss.spec.javax.xml.bind" artifact="jboss-jaxb-api_2.2_spec"/>
         </module-def>
 
-        <module-def name="javax.xml.registry.api">
-            <maven-resource group="org.jboss.spec.javax.xml.registry" artifact="jboss-jaxr-api_1.0_spec"/>
-        </module-def>
-
         <module-def name="javax.xml.rpc.api">
             <maven-resource group="org.jboss.spec.javax.xml.rpc" artifact="jboss-jaxrpc-api_1.1_spec"/>
         </module-def>
@@ -627,14 +623,6 @@
             <maven-resource group="org.apache.james" artifact="apache-mime4j"/>
         </module-def>
 
-        <module-def name="org.apache.juddi.juddi-client">
-            <maven-resource group="org.apache.juddi" artifact="juddi-client"/>
-        </module-def>
-
-        <module-def name="org.apache.juddi.uddi-ws">
-            <maven-resource group="org.apache.juddi" artifact="uddi-ws"/>
-        </module-def>
-
         <module-def name="org.apache.neethi">
             <maven-resource group="org.apache.neethi" artifact="neethi"/>
         </module-def>
@@ -645,10 +633,6 @@
 
         <module-def name="org.apache.velocity">
             <maven-resource group="org.apache.velocity" artifact="velocity" />
-        </module-def>
-
-        <module-def name="org.apache.juddi.scout">
-            <maven-resource group="org.apache.juddi.scout" artifact="scout"/>
         </module-def>
 
         <module-def name="org.apache.xalan">

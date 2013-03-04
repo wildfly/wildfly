@@ -619,21 +619,6 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.apache.juddi</groupId>
-                    <artifactId>juddi-client</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.apache.juddi.scout</groupId>
-                    <artifactId>scout</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.apache.juddi</groupId>
-                    <artifactId>uddi-ws</artifactId>
-                </dependency>
-
-                <dependency>
                     <groupId>org.apache.ws.xmlschema</groupId>
                     <artifactId>xmlschema-core</artifactId>
                 </dependency>
@@ -1576,11 +1561,6 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.spec.javax.xml.registry</groupId>
-                    <artifactId>jboss-jaxr-api_1.0_spec</artifactId>
-                </dependency>
-
-                <dependency>
                     <groupId>org.jboss.spec.javax.xml.rpc</groupId>
                     <artifactId>jboss-jaxrpc-api_1.1_spec</artifactId>
                 </dependency>
@@ -1916,9 +1896,6 @@
                                         <include>joda-time:joda-time</include>
                                         <include>org.jsoup:jsoup</include>
                                         <include>org.apache.cxf:*</include>
-                                        <include>org.apache.juddi:juddi-client</include>
-                                        <include>org.apache.juddi.scout:scout</include>
-                                        <include>org.apache.juddi:uddi-ws</include>
                                         <include>org.apache.ws.security:wss4j</include>
                                         <include>org.hibernate.common:hibernate-commons-annotations</include>
                                         <include>org.hibernate:hibernate-core</include>
@@ -1976,7 +1953,6 @@
                                         <include>org.jboss.spec.javax.servlet.jstl:jboss-jstl-api_1.2_spec</include>
                                         <include>org.jboss.spec.javax.transaction:jboss-transaction-api_1.1_spec</include>
                                         <include>org.jboss.spec.javax.xml.bind:jboss-jaxb-api_2.2_spec</include>
-                                        <include>org.jboss.spec.javax.xml.registry:jboss-jaxr-api_1.0_spec</include>
                                         <include>org.jboss.spec.javax.xml.rpc:jboss-jaxrpc-api_1.1_spec</include>
                                         <include>org.jboss.spec.javax.xml.soap:jboss-saaj-api_1.3_spec</include>
                                         <include>org.jboss.spec.javax.xml.ws:jboss-jaxws-api_2.2_spec</include>
@@ -2316,10 +2292,6 @@
                                             <packages>javax.xml.bind:javax.xml.bind.annotation:javax.xml.bind.annotation.adapters:javax.xml.bind.attachment:javax.xml.bind.helpers:javax.xml.bind.util</packages>
                                         </group>
                                         <group>
-                                            <title>Module javax.xml.registry.api</title>
-                                            <packages>javax.xml.registry:javax.xml.registry.infomodel</packages>
-                                        </group>
-                                        <group>
                                             <title>Module javax.xml.rpc.api</title>
                                             <packages>javax.xml.rpc:javax.xml.rpc.encoding:javax.xml.rpc.handler:javax.xml.rpc.handler.soap:javax.xml.rpc.holders:javax.xml.rpc.server:javax.xml.rpc.soap</packages>
                                         </group>
@@ -2388,14 +2360,6 @@
                                             <packages>org.apache.james.mime4j:org.apache.james.mime4j.codec:org.apache.james.mime4j.descriptor:org.apache.james.mime4j.field:org.apache.james.mime4j.field.address:org.apache.james.mime4j.field.address.parser:org.apache.james.mime4j.field.contentdisposition.parser:org.apache.james.mime4j.field.contenttype.parser:org.apache.james.mime4j.field.datetime:org.apache.james.mime4j.field.datetime.parser:org.apache.james.mime4j.field.language.parser:org.apache.james.mime4j.field.mimeversion.parser:org.apache.james.mime4j.field.structured.parser:org.apache.james.mime4j.io:org.apache.james.mime4j.message:org.apache.james.mime4j.parser:org.apache.james.mime4j.storage:org.apache.james.mime4j.util</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.apache.juddi.juddi-client</title>
-                                            <packages>org.apache.juddi.v3.annotations:org.apache.juddi.v3.client:org.apache.juddi.v3.client.config:org.apache.juddi.v3.client.embed:org.apache.juddi.v3.client.i18n:org.apache.juddi.v3.client.mapping:org.apache.juddi.v3.client.transport:org.apache.juddi.v3.client.transport.wrapper</packages>
-                                        </group>
-                                        <group>
-                                            <title>Module org.apache.juddi.uddi-ws</title>
-                                            <packages>org.apache.juddi:org.apache.juddi.api_v3:org.apache.juddi.jaxb:org.apache.juddi.v3_service:org.uddi:org.uddi.api_v3:org.uddi.custody_v3:org.uddi.policy_v3:org.uddi.policy_v3_instanceparms:org.uddi.repl_v3:org.uddi.subr_v3:org.uddi.sub_v3:org.uddi.v3_service:org.uddi.vscache_v3:org.uddi.vs_v3:org.w3._2000._09.xmldsig_</packages>
-                                        </group>
-                                        <group>
                                             <title>Module org.apache.neethi</title>
                                             <packages>org.apache.neethi:org.apache.neethi.builders:org.apache.neethi.builders.converters:org.apache.neethi.builders.xml:org.apache.neethi.util</packages>
                                         </group>
@@ -2406,10 +2370,6 @@
                                         <group>
                                             <title>Module org.apache.velocity</title>
                                             <packages>org.apache.velocity:org.apache.velocity.anakia:org.apache.velocity.app:org.apache.velocity.app.event:org.apache.velocity.app.event.implement:org.apache.velocity.app.tools:org.apache.velocity.context:org.apache.velocity.convert:org.apache.velocity.exception:org.apache.velocity.io:org.apache.velocity.runtime:org.apache.velocity.runtime.directive:org.apache.velocity.runtime.log:org.apache.velocity.runtime.parser:org.apache.velocity.runtime.parser.node:org.apache.velocity.runtime.resource:org.apache.velocity.runtime.resource.loader:org.apache.velocity.runtime.resource.util:org.apache.velocity.runtime.visitor:org.apache.velocity.servlet:org.apache.velocity.texen:org.apache.velocity.texen.ant:org.apache.velocity.texen.util:org.apache.velocity.util:org.apache.velocity.util.introspection</packages>
-                                        </group>
-                                        <group>
-                                            <title>Module org.apache.juddi.scout</title>
-                                            <packages>org.apache.ws.scout.model.uddi.v2:org.apache.ws.scout.registry:org.apache.ws.scout.registry.infomodel:org.apache.ws.scout.transport:org.apache.ws.scout.util</packages>
                                         </group>
                                         <group>
                                             <title>Module org.apache.xalan</title>
