@@ -26,6 +26,7 @@ import static org.jboss.as.connector.subsystems.jca.Constants.BOOTSTRAP_CONTEXT;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -55,7 +56,11 @@ public class JcaBootstrapContextDefinition extends SimpleResourceDefinition {
 
         for (final BootstrapCtxParameters parameter : BootstrapCtxParameters.values()) {
             AttributeDefinition ad = parameter.getAttribute();
+            if (parameter == BootstrapCtxParameters.NAME) {
+                resourceRegistration.registerReadOnlyAttribute(ad, ReadResourceNameOperationStepHandler.INSTANCE);
+            } else {
             resourceRegistration.registerReadWriteAttribute(ad, null, new ReloadRequiredWriteAttributeHandler(ad));
+            }
         }
 
     }
