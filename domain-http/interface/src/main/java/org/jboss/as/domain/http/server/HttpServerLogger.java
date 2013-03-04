@@ -31,7 +31,8 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
 /**
- * TODO Give all these message ids
+ * Message IDs 15100 to 15199 Reserved for the HTTP management interface, HttpServerMessages also contains messages in this
+ * range commencing at 15120.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
@@ -40,19 +41,21 @@ public interface HttpServerLogger extends BasicLogger {
     HttpServerLogger ROOT_LOGGER = Logger.getMessageLogger(HttpServerLogger.class, "org.jboss.as.domain.http.api.undertow");
 
     @LogMessage(level = ERROR)
-    @Message(id = Message.NONE, value = "Unexpected error executing model request")
+    @Message(id = 15100, value = "Unexpected error executing model request")
     void modelRequestError(@Cause Throwable cause);
-
-    @LogMessage(level = ERROR)
-    @Message(id = Message.NONE, value = "Unable to load console module for slot %s, disabling console")
-    void consoleModuleNotFound(String slot);
 
     @LogMessage(level = ERROR)
     @Message(id = 15101, value = "Unexpected error executing deployment upload request")
     void uploadError(@Cause Throwable cause);
 
     @LogMessage(level = ERROR)
-    @Message(id = Message.NONE, value = "Unable to load error contest for slot %s, disabling error context.")
+    @Message(id = 15102, value = "Unable to load console module for slot %s, disabling console")
+    void consoleModuleNotFound(String slot);
+
+    //15103 was used before
+
+    @LogMessage(level = ERROR)
+    @Message(id = 15104, value = "Unable to load error contest for slot %s, disabling error context.")
     void errorContextModuleNotFound(String slot);
 
 }

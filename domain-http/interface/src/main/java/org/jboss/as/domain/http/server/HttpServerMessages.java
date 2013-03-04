@@ -29,7 +29,8 @@ import org.jboss.modules.ModuleNotFoundException;
 
 
 /**
- * TODO use proper ids
+ * Message IDs 15120 to 15199 Reserved for the HTTP management interface, HttpServerLogger also contains messages in this
+ * range commencing at 15100-15120.
  *
  * @author kabir
  */
