@@ -51,4 +51,8 @@ public interface HttpServerLogger extends BasicLogger {
     @Message(id = 15101, value = "Unexpected error executing deployment upload request")
     void uploadError(@Cause Throwable cause);
 
+    @LogMessage(level = ERROR)
+    @Message(id = Message.NONE, value = "Unable to load error contest for slot %s, disabling error context.")
+    void errorContextModuleNotFound(String slot);
+
 }
