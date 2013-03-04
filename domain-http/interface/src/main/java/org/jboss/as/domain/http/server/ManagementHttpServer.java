@@ -193,6 +193,13 @@ public class ManagementHttpServer {
         } catch (ModuleLoadException e) {
             ROOT_LOGGER.consoleModuleNotFound(consoleSlot == null ? "main" : consoleSlot);
         }
+
+        try {
+            pathHandler.addPath(ErrorContextHandler.ERROR_CONTEXT, new BlockingHandler(new ErrorContextHandler(consoleSlot)));
+        } catch (ModuleLoadException e) {
+            ROOT_LOGGER.error(consoleSlot == null ? "main" : consoleSlot);
+        }
+
         ManagementRootConsoleRedirectHandler rootConsoleRedirectHandler = new ManagementRootConsoleRedirectHandler(consoleHandler);
         DomainApiCheckHandler domainApiHandler = new DomainApiCheckHandler(modelControllerClient, controlledProcessStateService);
         pathHandler.setDefaultHandler(rootConsoleRedirectHandler);
@@ -200,6 +207,7 @@ public class ManagementHttpServer {
             pathHandler.addPath(consoleHandler.getContext(), new BlockingHandler(consoleHandler));
         }
         pathHandler.addPath(DomainApiCheckHandler.PATH, secureDomainAccess(domainApiHandler, securityRealm));
+
     }
 
     private static HttpHandler secureDomainAccess(final HttpHandler domainHandler, final SecurityRealm securityRealm) {

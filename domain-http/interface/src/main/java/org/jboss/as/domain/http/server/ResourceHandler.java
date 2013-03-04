@@ -63,6 +63,7 @@ import org.xnio.IoUtils;
  */
 class ResourceHandler implements BlockingHttpHandler {
 
+    // TODO - Does this really need to be blocking?
 
     private static Map<String, String> contentTypeMapping = new ConcurrentHashMap<String, String>();
     private static final String FORMAT_STRING = "EEE, dd MMM yyyy HH:mm:ss z";

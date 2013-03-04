@@ -144,7 +144,7 @@ public enum ConsoleMode {
                 }
             }
 
-            // No joy. Fall back to the AS 7.1 approach where the module id is org.jboss.as.console:<sking>
+            // No joy. Fall back to the AS 7.1 approach where the module id is org.jboss.as.console:<skin>
             try {
                 return getClassLoader(moduleLoader, CONSOLE_MODULE, consoleSkin);
             } catch (ModuleLoadException mle) {
