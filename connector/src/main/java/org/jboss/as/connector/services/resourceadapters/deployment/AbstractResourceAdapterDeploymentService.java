@@ -52,8 +52,7 @@ import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.util.security.ClearContextClassLoaderAction;
-import org.jboss.as.util.security.GetClassLoaderAction;
-import org.jboss.as.util.security.SetContextClassLoaderAction;
+import org.jboss.as.util.security.SetContextClassLoaderFromClassAction;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
 import org.jboss.jca.common.api.metadata.ra.ConfigProperty;
 import org.jboss.jca.common.api.metadata.ra.Connector;
@@ -403,7 +402,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
             if (getSecurityManager() == null) {
                 currentThread().setContextClassLoader(TransactionIntegration.class.getClassLoader());
             } else {
-                doPrivileged(new SetContextClassLoaderAction(doPrivileged(new GetClassLoaderAction(TransactionIntegration.class))));
+                doPrivileged(new SetContextClassLoaderFromClassAction(TransactionIntegration.class));
             }
             try {
                 return getTxIntegration().getValue().getTransactionManager();

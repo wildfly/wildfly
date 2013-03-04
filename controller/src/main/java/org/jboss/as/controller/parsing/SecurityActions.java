@@ -22,8 +22,8 @@
 
 package org.jboss.as.controller.parsing;
 
-import org.jboss.as.util.security.GetClassLoaderAction;
 import org.jboss.as.util.security.SetContextClassLoaderAction;
+import org.jboss.as.util.security.SetContextClassLoaderFromClassAction;
 
 import static java.lang.System.getSecurityManager;
 import static java.lang.Thread.currentThread;
@@ -47,7 +47,7 @@ class SecurityActions {
                 thread.setContextClassLoader(cl.getClassLoader());
             }
         } else {
-            return doPrivileged(new SetContextClassLoaderAction(doPrivileged(new GetClassLoaderAction(cl))));
+            return doPrivileged(new SetContextClassLoaderFromClassAction(cl));
         }
     }
 

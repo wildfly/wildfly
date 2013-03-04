@@ -44,7 +44,7 @@ import org.jboss.as.connector.services.driver.registry.DriverRegistry;
 import org.jboss.as.connector.util.Injection;
 import org.jboss.as.util.security.ClearContextClassLoaderAction;
 import org.jboss.as.util.security.GetClassLoaderAction;
-import org.jboss.as.util.security.SetContextClassLoaderAction;
+import org.jboss.as.util.security.SetContextClassLoaderFromClassAction;
 import org.jboss.jca.adapters.jdbc.BaseWrapperManagedConnectionFactory;
 import org.jboss.jca.adapters.jdbc.local.LocalManagedConnectionFactory;
 import org.jboss.jca.adapters.jdbc.spi.ClassLoaderPlugin;
@@ -196,7 +196,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
         if (getSecurityManager() == null) {
             currentThread().setContextClassLoader(TransactionIntegration.class.getClassLoader());
         } else {
-            doPrivileged(new SetContextClassLoaderAction(doPrivileged(new GetClassLoaderAction(TransactionIntegration.class))));
+            doPrivileged(new SetContextClassLoaderFromClassAction(TransactionIntegration.class));
         }
         try {
             return transactionIntegrationValue.getValue();
@@ -369,7 +369,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
             if (getSecurityManager() == null) {
                 currentThread().setContextClassLoader(TransactionIntegration.class.getClassLoader());
             } else {
-                doPrivileged(new SetContextClassLoaderAction(doPrivileged(new GetClassLoaderAction(TransactionIntegration.class))));
+                doPrivileged(new SetContextClassLoaderFromClassAction(TransactionIntegration.class));
             }
             try {
                 return transactionIntegrationValue.getValue();
