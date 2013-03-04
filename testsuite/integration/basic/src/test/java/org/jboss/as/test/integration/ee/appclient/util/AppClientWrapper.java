@@ -205,6 +205,7 @@ public class AppClientWrapper implements Runnable {
                 TestSuiteEnvironment.getIpv6Args() +
                 "-Djboss.bind.address=" + TestSuiteEnvironment.getServerAddress() +
                 " -jar "+ asDist + "/jboss-modules.jar" +
+                " -secmgr" +
                 " -mp "+ asDist + "/modules" +
                 " org.jboss.as.appclient" +
                 " -Djboss.server.base.dir="+ asInst + "/appclient" +

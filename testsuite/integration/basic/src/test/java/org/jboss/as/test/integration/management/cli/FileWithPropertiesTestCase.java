@@ -245,6 +245,7 @@ public class FileWithPropertiesTestCase {
         }
         command.add("-jar");
         command.add(jbossDist + File.separatorChar + "jboss-modules.jar");
+        command.add("-secmgr");
         command.add("-mp");
         command.add(modulePath);
         command.add("org.jboss.as.cli");

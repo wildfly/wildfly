@@ -65,6 +65,7 @@ fi
 eval \"$JAVA\" $JAVA_OPTS \
          -Djboss.home.dir=\"$JBOSS_HOME\" \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
+         -secmgr \
          -mp \"${JBOSS_MODULEPATH}\" \
          org.jboss.as.jdr \
          "$@" 

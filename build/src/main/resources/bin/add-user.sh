@@ -67,6 +67,7 @@ fi
 
 eval \"$JAVA\" $JAVA_OPTS \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
+         -secmgr \
          -mp \"${JBOSS_MODULEPATH}\" \
          org.jboss.as.domain-add-user \
          '"$@"'

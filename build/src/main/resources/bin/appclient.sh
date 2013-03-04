@@ -121,6 +121,7 @@ eval \"$JAVA\" $JAVA_OPTS \
  \"-Dlogging.configuration=file:$JBOSS_HOME/appclient/configuration/logging.properties\" \
  org.jboss.modules.Main \
  -mp \"${JBOSS_MODULEPATH}\" \
+ -secmgr \
  org.jboss.as.appclient \
  -Djboss.home.dir=\"$JBOSS_HOME\" \
  -Djboss.server.base.dir=\"$JBOSS_HOME/appclient\" \
