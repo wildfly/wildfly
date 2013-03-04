@@ -98,10 +98,6 @@
       <artifactId>jboss-jaxb-api_2.2_spec</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.jboss.spec.javax.xml.registry</groupId>
-      <artifactId>jboss-jaxr-api_1.0_spec</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.jboss.spec.javax.xml.rpc</groupId>
       <artifactId>jboss-jaxrpc-api_1.1_spec</artifactId>
     </dependency>
