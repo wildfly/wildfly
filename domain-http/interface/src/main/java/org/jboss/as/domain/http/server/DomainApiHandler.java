@@ -21,31 +21,6 @@
 */
 package org.jboss.as.domain.http.server;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import io.undertow.server.HttpServerExchange;
-import io.undertow.server.handlers.blocking.BlockingHttpHandler;
-import io.undertow.util.HeaderMap;
-import io.undertow.util.Headers;
-import io.undertow.util.Methods;
-import io.undertow.util.StatusCodes;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.dmr.ModelNode;
-import org.xnio.IoUtils;
-import org.xnio.streams.ChannelInputStream;
-import org.xnio.streams.ChannelOutputStream;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -55,9 +30,31 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.domain.http.server.DomainUtil.writeResponse;
 import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
 import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
+import io.undertow.server.HttpServerExchange;
+import io.undertow.server.handlers.blocking.BlockingHttpHandler;
+import io.undertow.util.HeaderMap;
+import io.undertow.util.Headers;
+import io.undertow.util.Methods;
+import io.undertow.util.StatusCodes;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.dmr.ModelNode;
+import org.xnio.IoUtils;
+import org.xnio.streams.ChannelInputStream;
 
 /**
  *
@@ -204,37 +201,5 @@ class DomainApiHandler implements BlockingHttpHandler {
         }
     }
 
-    static void writeResponse(HttpServerExchange exchange, boolean isGet, boolean pretty, ModelNode response, int status, boolean encode) {
-        final String contentType = encode ? Common.APPLICATION_DMR_ENCODED : Common.APPLICATION_JSON;
-        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, contentType  + ";" + Common.UTF_8);
-        exchange.setResponseCode(status);
 
-
-        //TODO Content-Length?
-        if (isGet && status == StatusCodes.CODE_200.getCode()) {
-            response = response.get(RESULT);
-        }
-
-        OutputStream out = new ChannelOutputStream(exchange.getResponseChannel());
-        PrintWriter print = new PrintWriter(out);
-        try {
-            try {
-                if (encode) {
-                    response.writeBase64(out);
-                } else {
-                    response.writeJSONString(print, !pretty);
-                }
-            } finally {
-                print.flush();
-                try {
-                    out.flush();
-                } finally {
-                    IoUtils.safeClose(print);
-                    IoUtils.safeClose(out);
-                }
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
 }
