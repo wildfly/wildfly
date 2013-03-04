@@ -33,11 +33,13 @@ import io.undertow.util.StatusCodes;
  */
 public class Common {
 
-    public static final ResponseCodeHandler METHOD_NOT_ALLOWED_HANDLER = new ResponseCodeHandler(405);
     public static final ResponseCodeHandler MOVED_PERMANENTLY = new ResponseCodeHandler(301);
     public static final ResponseCodeHandler TEMPORARY_REDIRECT = new ResponseCodeHandler(307);
-    public static final ResponseCodeHandler SERVICE_UNAVAIABLE = new ResponseCodeHandler(503);
+    public static final ResponseCodeHandler UNAUTHORIZED = new ResponseCodeHandler(405);
+    public static final ResponseCodeHandler METHOD_NOT_ALLOWED_HANDLER = new ResponseCodeHandler(405);
     public static final ResponseCodeHandler UNSUPPORTED_MEDIA_TYPE = new ResponseCodeHandler(415);
+    public static final ResponseCodeHandler INTERNAL_SERVER_ERROR = new ResponseCodeHandler(500);
+    public static final ResponseCodeHandler SERVICE_UNAVAIABLE = new ResponseCodeHandler(503);
 
     static final String APPLICATION_DMR_ENCODED = "application/dmr-encoded";
     static final String APPLICATION_JSON = "application/json";
