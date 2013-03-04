@@ -124,6 +124,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             cmd.add("-Djboss.bundles.dir=" + bundlesPath);
             cmd.add("-jar");
             cmd.add(modulesJar.getAbsolutePath());
+            cmd.add("-secmgr");
             cmd.add("-mp");
             cmd.add(modulesPath);
             cmd.add("org.jboss.as.standalone");

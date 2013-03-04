@@ -63,6 +63,7 @@ set JAVA_OPTS=%JAVA_OPTS% -Djboss.modules.system.pkgs=com.sun.java.swing
 
 "%JAVA%" %JAVA_OPTS% ^
     -jar "%JBOSS_HOME%\jboss-modules.jar" ^
+    -secmgr ^
     -mp "%JBOSS_HOME%\modules" ^
      org.jboss.as.cli ^
      %*

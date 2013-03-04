@@ -173,6 +173,7 @@ public class DomainLifecycleUtil {
             cmd.add("-Dlogging.configuration=file:" + jbossHomeDir + "/domain/configuration/logging.properties");
             cmd.add("-jar");
             cmd.add(modulesJar.getAbsolutePath());
+            cmd.add("-secmgr");
             cmd.add("-mp");
             cmd.add(modulePath);
             cmd.add("org.jboss.as.process-controller");

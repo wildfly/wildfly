@@ -214,6 +214,7 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
         cmd.add("-Djboss.host.default.config=" + config.getHostConfig());
         cmd.add("-jar");
         cmd.add(modulesJar.getAbsolutePath());
+        cmd.add("-secmgr");
         cmd.add("-mp");
         cmd.add(modulesPath);
         cmd.add("org.jboss.as.process-controller");

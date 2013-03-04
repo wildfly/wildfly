@@ -210,6 +210,7 @@ public final class Main {
         initialCommand.addAll(javaOptions);
         initialCommand.add("-jar");
         initialCommand.add(bootJar);
+        initialCommand.add("-secmgr");
         initialCommand.add("-mp");
         initialCommand.add(modulePath);
         initialCommand.add(bootModule);
