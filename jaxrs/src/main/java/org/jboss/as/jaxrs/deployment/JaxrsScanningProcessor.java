@@ -31,7 +31,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
 import org.jboss.as.jaxrs.JaxrsAnnotations;
@@ -195,23 +194,11 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
         if (!resteasyDeploymentData.isDispatcherCreated()) {
             final Set<ClassInfo> applicationClasses = index.getAllKnownSubclasses(APPLICATION);
             try {
-                Set<Class<? extends Application>> applicationClassSet = new HashSet<Class<? extends Application>>();
                 for (ClassInfo c : applicationClasses) {
                     if (Modifier.isAbstract(c.flags())) continue;
-                    Class<? extends Application> applicationClass = (Class<? extends Application>) classLoader.loadClass(c.name().toString());
-                    if (applicationClass.isAnnotationPresent(ApplicationPath.class))
-                        applicationClassSet.add(applicationClass);
+                    Class<? extends Application> scanned = (Class<? extends Application>) classLoader.loadClass(c.name().toString());
+                    resteasyDeploymentData.getScannedApplicationClasses().add(scanned);
                 }
-
-                // abort if more than one @ApplicationPath annotated class
-                if (applicationClassSet.size() > 1) {
-                    StringBuilder builder = new StringBuilder();
-                    for (Class c : applicationClassSet) {
-                        builder.append(" ").append(c.getName());
-                    }
-                    throw new DeploymentUnitProcessingException(MESSAGES.onlyOneApplicationClassAllowed(builder));
-                }
-                if (applicationClassSet.size() == 1) resteasyDeploymentData.setScannedApplicationClass(applicationClassSet.iterator().next());
             } catch (ClassNotFoundException e) {
                 throw MESSAGES.cannotLoadApplicationClass(e);
             }

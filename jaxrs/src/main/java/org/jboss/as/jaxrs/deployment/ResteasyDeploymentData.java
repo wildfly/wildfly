@@ -22,11 +22,10 @@
 
 package org.jboss.as.jaxrs.deployment;
 
-import static org.jboss.as.jaxrs.JaxrsMessages.MESSAGES;
-
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 
 import javax.ws.rs.core.Application;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -41,7 +40,7 @@ public class ResteasyDeploymentData {
     private boolean dispatcherCreated;
     private final Set<String> scannedResourceClasses = new LinkedHashSet<String>();
     private final Set<String> scannedProviderClasses = new LinkedHashSet<String>();
-    private Class<? extends Application> scannedApplicationClass;
+    private List<Class<? extends Application>> scannedApplicationClasses = new ArrayList<>();
     private boolean bootClasses;
     private boolean unwrappedExceptionsParameterSet;
     private final Set<String> scannedJndiComponentResources = new LinkedHashSet<String>();
@@ -52,16 +51,8 @@ public class ResteasyDeploymentData {
      * @param deploymentData
      */
     public void merge(final List<ResteasyDeploymentData> deploymentData) throws DeploymentUnitProcessingException {
-        Class<? extends Application> application = null;
         for (ResteasyDeploymentData data : deploymentData) {
-            if (!dispatcherCreated && scannedApplicationClass == null) {
-                if (data.getScannedApplicationClass() != null) {
-                    if (application != null) {
-                        throw MESSAGES.moreThanOneApplicationClassFound(application, data.getScannedApplicationClass());
-                    }
-                    application = data.getScannedApplicationClass();
-                }
-            }
+            scannedApplicationClasses.addAll(data.getScannedApplicationClasses());
             if (scanResources) {
                 scannedResourceClasses.addAll(data.getScannedResourceClasses());
                 scannedJndiComponentResources.addAll(data.getScannedJndiComponentResources());
@@ -69,9 +60,6 @@ public class ResteasyDeploymentData {
             if (scanProviders) {
                 scannedProviderClasses.addAll(data.getScannedProviderClasses());
             }
-        }
-        if (scannedApplicationClass == null) {
-            scannedApplicationClass = application;
         }
     }
 
@@ -88,12 +76,8 @@ public class ResteasyDeploymentData {
         this.dispatcherCreated = dispatcherCreated;
     }
 
-    public Class<? extends Application> getScannedApplicationClass() {
-        return scannedApplicationClass;
-    }
-
-    public void setScannedApplicationClass(Class<? extends Application> scannedApplicationClass) {
-        this.scannedApplicationClass = scannedApplicationClass;
+    public List<Class<? extends Application>> getScannedApplicationClasses() {
+        return scannedApplicationClasses;
     }
 
     public boolean hasBootClasses() {
