@@ -43,7 +43,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.ControllerLogger;
-import org.jboss.dmr.ModelNode;
 
 /**
  * {@link InterfaceCriteria} that tests whether a given address is matches
@@ -65,21 +64,6 @@ public class InetAddressMatchInterfaceCriteria extends AbstractInterfaceCriteria
             throw MESSAGES.nullVar("address");
         this.resolved = address;
         this.address = resolved.getHostAddress();
-    }
-
-    /**
-     * Creates a new InetAddressMatchInterfaceCriteria
-     *
-     * @param address a valid value to pass to {@link InetAddress#getByName(String)}
-     *                Cannot be {@code null}
-     *
-     * @throws IllegalArgumentException if <code>network</code> is <code>null</code>
-     *
-     * @deprecated use the variant that takes a string
-     */
-    @Deprecated
-    public InetAddressMatchInterfaceCriteria(final ModelNode address) {
-        this(address.asString());
     }
 
     /**
