@@ -218,11 +218,6 @@ abstract class AbstractOperationContext implements OperationContext {
         return activeStep.response.get(RESPONSE_HEADERS);
     }
 
-    @Override
-    public final ResultAction completeStep() {
-        return completeStepInternal();
-    }
-
     /**
      * Package-protected method used to initiate operation execution.
      * @return the result action

@@ -222,10 +222,6 @@ public abstract class AbstractOperationTestCase {
             return null;
         }
 
-        public OperationContext.ResultAction completeStep() {
-            return null;
-        }
-
         public void completeStep(OperationContext.RollbackHandler rollbackHandler) {
 
         }
