@@ -32,9 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
@@ -53,23 +51,7 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
 
     private final ParametersValidator nameValidator = new ParametersValidator();
 
-    private final ParameterValidator unresolvedValueValidator;
-    private final ParameterValidator resolvedValueValidator;
     private final Map<String, AttributeDefinition> attributeDefinitions;
-
-    /** @deprecated use a variant that takes {@link AttributeDefinition} */
-    @Deprecated
-    @SuppressWarnings("deprecation")
-    protected AbstractWriteAttributeHandler() {
-        this(null, null);
-    }
-
-    /** @deprecated use a variant that takes {@link AttributeDefinition} */
-    @Deprecated
-    @SuppressWarnings("deprecation")
-    protected AbstractWriteAttributeHandler(final ParameterValidator validator) {
-        this(validator, validator);
-    }
 
     protected AbstractWriteAttributeHandler(final AttributeDefinition... definitions) {
         assert definitions != null : MESSAGES.nullVar("definitions").getLocalizedMessage();
@@ -77,22 +59,11 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
         for (AttributeDefinition def : definitions) {
             attributeDefinitions.put(def.getName(), def);
         }
-        this.unresolvedValueValidator = null;
-        this.resolvedValueValidator = null;
+
     }
 
     protected AbstractWriteAttributeHandler(final Collection<AttributeDefinition> definitions) {
         this(definitions.toArray(new AttributeDefinition[definitions.size()]));
-    }
-
-    /** @deprecated use a variant that takes {@link AttributeDefinition} */
-    @Deprecated
-    protected AbstractWriteAttributeHandler(final ParameterValidator unresolvedValidator, final ParameterValidator resolvedValidator) {
-
-        this.nameValidator.registerValidator(NAME, new StringLengthValidator(1));
-        this.unresolvedValueValidator = unresolvedValidator;
-        this.resolvedValueValidator = resolvedValidator;
-        this.attributeDefinitions = null;
     }
 
     @Override
@@ -192,34 +163,28 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
             throws OperationFailedException;
 
     /**
-     * If an unresolved value validator was passed to the constructor, uses it to validate the value.
-     * Subclasses can alter this behavior.
+     * Does nothing. Subclasses can alter this behavior.
      *
      * @param attributeName the name of the attribute being updated
      * @param unresolvedValue the unresolved value
      *
-     * @deprecated provide an {@link AttributeDefinition} to the constructor; it will validate
+     * @deprecated the {@link AttributeDefinition} provided to the constructor will validate
      */
     @Deprecated
     protected void validateUnresolvedValue(final String attributeName, final ModelNode unresolvedValue) throws OperationFailedException {
-        if (unresolvedValueValidator != null) {
-            unresolvedValueValidator.validateParameter(VALUE, unresolvedValue);
-        }
+        // TODO remove
     }
 
     /**
-     * If a resolved value validator was passed to the constructor, uses it to validate the value.
-     * Subclasses can alter this behavior.
+     * Does nothing. Subclasses can alter this behavior.
      *
      * @param attributeName the name of the attribute being updated
      * @param resolvedValue the resolved value
-     * @deprecated provide an {@link AttributeDefinition} to the constructor; it will validate
+     * @deprecated the {@link AttributeDefinition} provided to the constructor will validate
      */
     @Deprecated
     protected void validateResolvedValue(final String attributeName, final ModelNode resolvedValue) throws OperationFailedException {
-        if (resolvedValueValidator != null) {
-            resolvedValueValidator.validateResolvedParameter(VALUE, resolvedValue);
-        }
+        // TODO remove
     }
 
     /**

@@ -70,11 +70,6 @@ public class EJB3SubsystemDefaultCacheWriteHandler extends AbstractWriteAttribut
     }
 
     @Override
-    protected void validateResolvedValue(String attributeName, ModelNode value) throws OperationFailedException {
-        // we're going to validate using the AttributeDefinition in applyModelToRuntime, so don't bother here
-    }
-
-    @Override
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
                                            ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
         final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();

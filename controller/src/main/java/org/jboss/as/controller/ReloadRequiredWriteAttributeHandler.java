@@ -24,7 +24,6 @@ package org.jboss.as.controller;
 
 import java.util.Collection;
 
-import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -34,33 +33,12 @@ import org.jboss.dmr.ModelNode;
  */
 public class ReloadRequiredWriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {
 
-    /** @deprecated use a variant that takes {@link AttributeDefinition} */
-    @Deprecated
-    @SuppressWarnings("deprecation")
-    public ReloadRequiredWriteAttributeHandler() {
-        super();
-    }
-
-    /** @deprecated use a variant that takes {@link AttributeDefinition} */
-    @Deprecated
-    @SuppressWarnings("deprecation")
-    public ReloadRequiredWriteAttributeHandler(final ParameterValidator validator) {
-        super(validator);
-    }
-
     public ReloadRequiredWriteAttributeHandler(final AttributeDefinition... definitions) {
         super(definitions);
     }
 
     public ReloadRequiredWriteAttributeHandler(final Collection<AttributeDefinition> definitions) {
         super(definitions);
-    }
-
-    /** @deprecated use a variant that takes {@link AttributeDefinition} */
-    @Deprecated
-    @SuppressWarnings("deprecation")
-    public ReloadRequiredWriteAttributeHandler(final ParameterValidator unresolvedValidator, final ParameterValidator resolvedValidator) {
-        super(unresolvedValidator, resolvedValidator);
     }
 
     @Override
