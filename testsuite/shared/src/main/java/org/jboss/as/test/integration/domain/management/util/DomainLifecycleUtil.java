@@ -102,6 +102,10 @@ public class DomainLifecycleUtil {
         this.address = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.HOST, configuration.getHostName()));
     }
 
+    public JBossAsManagedConfiguration getConfiguration() {
+        return configuration;
+    }
+
     public PathAddress getAddress() {
         return address;
     }
