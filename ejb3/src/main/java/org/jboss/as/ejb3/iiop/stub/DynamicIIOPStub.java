@@ -23,6 +23,7 @@ package org.jboss.as.ejb3.iiop.stub;
 
 import javax.rmi.CORBA.Util;
 
+import java.security.PrivilegedAction;
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.iiop.LocalIIOPInvoker;
 import org.jboss.as.jacorb.rmi.marshal.strategy.StubStrategy;
@@ -34,6 +35,8 @@ import org.omg.CORBA.portable.ApplicationException;
 import org.omg.CORBA.portable.RemarshalException;
 import org.omg.CORBA_2_3.portable.InputStream;
 import org.omg.CORBA_2_3.portable.OutputStream;
+
+import static java.security.AccessController.doPrivileged;
 
 /**
  * Dynamically generated IIOP stub classes extend this abstract superclass,
@@ -80,7 +83,7 @@ public abstract class DynamicIIOPStub
      * Sends a request message to the server, receives the reply from the
      * server, and returns an <code>Object</code> result to the caller.
      */
-    public Object invoke(String operationName, StubStrategy stubStrategy, Object[] params) throws Throwable {
+    public Object invoke(String operationName, final StubStrategy stubStrategy, Object[] params) throws Throwable {
         if (operationName.equals("_get_handle")
                 && this instanceof javax.ejb.EJBObject) {
             if (handle == null) {
@@ -111,16 +114,24 @@ public abstract class DynamicIIOPStub
                     in = (InputStream) _invoke(out);
                     if (stubStrategy.isNonVoid()) {
                         trace("received reply");
-                        return stubStrategy.readRetval(in);
-                        //Object retval = stubStrategy.readRetval(in);
-                        //trace("retval: " + retval);
-                        //return retval;
-                    } else
+                        final InputStream finalIn = in;
+                        return doPrivileged(new PrivilegedAction<Object>() {
+                            public Object run() {
+                                return stubStrategy.readRetval(finalIn);
+                            }
+                        });
+                    } else {
                         return null;
-                } catch (ApplicationException ex) {
+                    }
+                } catch (final ApplicationException ex) {
                     trace("got application exception");
                     in = (InputStream) ex.getInputStream();
-                    throw stubStrategy.readException(ex.getId(), in);
+                    final InputStream finalIn1 = in;
+                    throw doPrivileged(new PrivilegedAction<Exception>() {
+                        public Exception run() {
+                            return stubStrategy.readException(ex.getId(), finalIn1);
+                        }
+                    });
                 } catch (RemarshalException ex) {
                     trace("got remarshal exception");
                     return invoke(operationName, stubStrategy, params);
