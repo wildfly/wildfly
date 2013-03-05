@@ -49,18 +49,6 @@ import org.jboss.dmr.Property;
  * @since 7.2
  */
 public class SimpleMapAttributeDefinition extends MapAttributeDefinition {
-    /**
-     *
-     * @param name
-     * @param xmlName
-     * @param allowNull
-     * @param expressionAllowed
-     * @deprecated use {@link Builder}
-     */
-    @Deprecated
-    public SimpleMapAttributeDefinition(final String name, final String xmlName, boolean allowNull, boolean expressionAllowed) {
-        super(name, xmlName, allowNull, expressionAllowed, 0, Integer.MAX_VALUE, null, new ModelTypeValidator(ModelType.STRING, allowNull, expressionAllowed), null, null, null, false, null, AttributeAccess.Flag.RESTART_ALL_SERVICES);
-    }
 
     private SimpleMapAttributeDefinition(final String name, final String xmlName, final boolean allowNull, boolean allowExpression,
                                          final int minSize, final int maxSize, final ParameterCorrector corrector, final ParameterValidator elementValidator,

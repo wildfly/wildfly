@@ -141,21 +141,6 @@ public abstract class MapAttributeDefinition extends AttributeDefinition {
         return node;
     }
 
-    /**
-     * parses value from xml and adds it to passed operation
-     * @param key
-     * @param value
-     * @param operation
-     * @param location
-     * @throws XMLStreamException
-     * @deprecated use {@link #parseAndAddParameterElement(String, String, org.jboss.dmr.ModelNode, org.jboss.staxmapper.XMLExtendedStreamReader)} instead
-     */
-    @Deprecated
-    public void parseAndAddParameterElement(final String key, final String value, final ModelNode operation, final Location location) throws XMLStreamException {
-        ModelNode paramVal = parse(value, location);
-        operation.get(getName()).get(key).set(paramVal);
-    }
-
     public void parseAndAddParameterElement(final String key, final String value, final ModelNode operation, final XMLExtendedStreamReader reader) throws XMLStreamException {
         ModelNode paramVal = parse(value, reader.getLocation());
         operation.get(getName()).get(key).set(paramVal);

@@ -230,15 +230,6 @@ public abstract class AttributeDefinition {
     }
 
     /**
-     *
-     * @deprecated Use {@link #resolveModelAttribute(OperationContext, ModelNode)} instead
-     */
-    @Deprecated
-    public ModelNode validateResolvedOperation(final ModelNode operationObject) throws OperationFailedException {
-        return resolveModelAttribute(ExpressionResolver.REJECTING, operationObject);
-    }
-
-    /**
      * Finds a value in the given {@code model} whose key matches this attribute's {@link #getName() name},
      * resolves it and validates it using this attribute's {@link #getValidator() validator}. If the value is
      * undefined and a {@link #getDefaultValue() default value} is available, the default value is used.

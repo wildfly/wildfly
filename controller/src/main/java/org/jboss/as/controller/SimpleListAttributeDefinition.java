@@ -197,15 +197,6 @@ public class SimpleListAttributeDefinition extends ListAttributeDefinition {
             return new Builder(name, valueType);
         }
 
-        /**
-         * Reintroduced since some legacy subsystems require this method, and they now get booted up
-         * for transformers subsystem testing.
-         */
-        @Deprecated
-        public static Builder of(final String name, final SimpleAttributeDefinition valueType) {
-            return new Builder(name, valueType);
-        }
-
         public SimpleListAttributeDefinition build() {
             if (xmlName == null) xmlName = name;
             if (maxSize < 1) maxSize = Integer.MAX_VALUE;
