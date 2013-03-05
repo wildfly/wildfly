@@ -59,7 +59,7 @@ public final class Main {
         return Version.AS_VERSION;
     }
 
-    public static void usage() {
+    private static void usage() {
         CommandLineArgumentUsageImpl.printUsage(System.out);
     }
 
