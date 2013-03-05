@@ -31,6 +31,7 @@ import java.util.concurrent.ExecutorService;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.notification.NotificationSupport;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -172,12 +173,13 @@ public abstract class AbstractControllerService implements Service<ModelControll
         final ServiceContainer container = serviceController.getServiceContainer();
         final ServiceTarget target = context.getChildTarget();
         final ExecutorService executorService = injectedExecutorService.getOptionalValue();
+        final NotificationSupport notificationSupport = NotificationSupport.Factory.create(executorService);
         ManagementResourceRegistration rootResourceRegistration = rootDescriptionProvider != null ? ManagementResourceRegistration.Factory.create(rootDescriptionProvider) : ManagementResourceRegistration.Factory.create(rootResourceDefinition);
         final ModelControllerImpl controller = new ModelControllerImpl(container, target,
                 rootResourceRegistration,
                 new ContainerStateMonitor(container),
                 configurationPersister, processType, runningModeControl, prepareStep,
-                processState, executorService, expressionResolver);
+                processState, executorService, expressionResolver, notificationSupport);
         initModel(controller.getRootResource(), controller.getRootRegistration());
         this.controller = controller;
 

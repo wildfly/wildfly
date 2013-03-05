@@ -54,6 +54,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.NotificationDefinition;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
@@ -75,6 +76,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.NotificationEntry;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
@@ -488,6 +490,7 @@ final class SubsystemTestDelegate {
         op.get("recursive").set(true);
         op.get("inherited").set(false);
         op.get("operations").set(true);
+        op.get("notifications").set(true);
         op.get("include-aliases").set(true);
         ModelNode result = kernelServices.executeOperation(op);
         if (result.hasDefined(FAILURE_DESCRIPTION)) {
@@ -870,6 +873,11 @@ final class SubsystemTestDelegate {
         }
 
         @Override
+        public Map<String, NotificationEntry> getNotificationDescriptions(PathAddress address, boolean inherited) {
+            return null;
+        }
+
+        @Override
         public ProxyController getProxyController(PathAddress address) {
             return null;
         }
@@ -1032,6 +1040,18 @@ final class SubsystemTestDelegate {
         @Override
         public boolean isAlias() {
             return false;
+        }
+
+        @Override
+        public void registerNotification(NotificationDefinition notification, boolean inherited) {
+        }
+
+        @Override
+        public void registerNotification(NotificationDefinition notification) {
+        }
+
+        @Override
+        public void unregisterNotification(String notificationType) {
         }
     };
 
