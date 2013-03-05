@@ -20,7 +20,6 @@ package org.jboss.as.controller.operations.common;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -28,7 +27,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UND
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import org.jboss.as.controller.OperationDefinition;
@@ -132,21 +130,6 @@ public class Util {
 
     public static boolean isExpression(String value) {
         return value != null && value.startsWith("${") && value.endsWith("}");
-    }
-
-    /**
-     * @deprecated Horrible idea, as it promotes copying random stuff from an operation into the model.
-     */
-    @Deprecated
-    public static void copyParamsToModel(final ModelNode operation, final ModelNode model) {
-        Set<String> keys = new HashSet<String>(operation.keys());
-        // Remove general operation params
-        keys.remove(OP);
-        keys.remove(OP_ADDR);
-        keys.remove(OPERATION_HEADERS);
-        for (String key : keys) {
-            model.get(key).set(operation.get(key));
-        }
     }
 
     public static ModelNode getOperation(final String operationName, final PathAddress address, final ModelNode params) {
