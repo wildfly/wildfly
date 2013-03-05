@@ -56,11 +56,13 @@ import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
 import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.as.server.deployment.reflect.ProxyMetadataSource;
+import org.jboss.invocation.ContextClassLoaderInterceptor;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.Interceptors;
+import org.jboss.invocation.PrivilegedInterceptor;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.invocation.proxy.ProxyConfiguration;
 import org.jboss.invocation.proxy.ProxyFactory;
@@ -784,7 +786,9 @@ public class ComponentDescription implements ResourceInjectionTarget {
                 }
             }.run();
 
-            final InterceptorFactory tcclInterceptor = new ImmediateInterceptorFactory(new TCCLInterceptor(module.getClassLoader()));
+            final ClassLoader classLoader = module.getClassLoader();
+            final InterceptorFactory tcclInterceptor = new ImmediateInterceptorFactory(new ContextClassLoaderInterceptor(classLoader));
+            final InterceptorFactory privilegedInterceptor = PrivilegedInterceptor.getFactory();
 
             // Apply post-construct
             if (!injectors.isEmpty()) {
@@ -798,6 +802,7 @@ public class ComponentDescription implements ResourceInjectionTarget {
             }
             configuration.addPostConstructInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ComponentPostConstruct.TERMINAL_INTERCEPTOR);
             configuration.addPostConstructInterceptor(tcclInterceptor, InterceptorOrder.ComponentPostConstruct.TCCL_INTERCEPTOR);
+            configuration.addPostConstructInterceptor(privilegedInterceptor, InterceptorOrder.ComponentPostConstruct.PRIVILEGED_INTERCEPTOR);
 
             // Apply pre-destroy
             if (!uninjectors.isEmpty()) {
@@ -811,6 +816,7 @@ public class ComponentDescription implements ResourceInjectionTarget {
             }
             configuration.addPreDestroyInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ComponentPreDestroy.TERMINAL_INTERCEPTOR);
             configuration.addPreDestroyInterceptor(tcclInterceptor, InterceptorOrder.ComponentPreDestroy.TCCL_INTERCEPTOR);
+            configuration.addPreDestroyInterceptor(privilegedInterceptor, InterceptorOrder.ComponentPreDestroy.PRIVILEGED_INTERCEPTOR);
 
             if (description.isPassivationApplicable()) {
                 if (!userPrePassivate.isEmpty()) {
@@ -818,12 +824,14 @@ public class ComponentDescription implements ResourceInjectionTarget {
                 }
                 configuration.addPrePassivateInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ComponentPassivation.TERMINAL_INTERCEPTOR);
                 configuration.addPrePassivateInterceptor(tcclInterceptor, InterceptorOrder.ComponentPassivation.TCCL_INTERCEPTOR);
+                configuration.addPrePassivateInterceptor(privilegedInterceptor, InterceptorOrder.ComponentPassivation.PRIVILEGED_INTERCEPTOR);
 
                 if (!userPostActivate.isEmpty()) {
                     configuration.addPostActivateInterceptor(weaved(userPostActivate), InterceptorOrder.ComponentPassivation.USER_INTERCEPTORS);
                 }
                 configuration.addPostActivateInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ComponentPassivation.TERMINAL_INTERCEPTOR);
                 configuration.addPostActivateInterceptor(tcclInterceptor, InterceptorOrder.ComponentPassivation.TCCL_INTERCEPTOR);
+                configuration.addPostActivateInterceptor(privilegedInterceptor, InterceptorOrder.ComponentPassivation.PRIVILEGED_INTERCEPTOR);
             }
 
             // @AroundInvoke interceptors
