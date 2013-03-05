@@ -91,7 +91,6 @@ class ParallelBootOperationContext extends AbstractOperationContext {
     public void addStep(ModelNode response, ModelNode operation, OperationStepHandler step, Stage stage) throws IllegalArgumentException {
         switch (stage) {
             case MODEL:
-            case IMMEDIATE:
                 super.addStep(response, operation, step, stage);
                 break;
             case RUNTIME:

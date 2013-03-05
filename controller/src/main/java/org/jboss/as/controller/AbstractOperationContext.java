@@ -175,7 +175,7 @@ abstract class AbstractOperationContext implements OperationContext {
         if (currentStage == Stage.DONE) {
             throw MESSAGES.operationAlreadyComplete();
         }
-        if (stage.compareTo(currentStage) < 0 && (stage != Stage.IMMEDIATE || currentStage == Stage.DONE)) {
+        if (stage.compareTo(currentStage) < 0) {
             throw MESSAGES.stageAlreadyComplete(stage);
         }
         if (stage == Stage.DOMAIN && processType != ProcessType.HOST_CONTROLLER) {
@@ -191,15 +191,12 @@ abstract class AbstractOperationContext implements OperationContext {
                 operation.get(OPERATION_HEADERS, CALLER_TYPE).set(activeStep.operation.get(OPERATION_HEADERS, CALLER_TYPE));
             }
         }
-        if (stage == Stage.IMMEDIATE) {
-            steps.get(currentStage).addFirst(new Step(step, response, operation, address));
+
+        final Deque<Step> deque = steps.get(stage);
+        if (addFirst) {
+            deque.addFirst(new Step(step, response, operation, address));
         } else {
-            final Deque<Step> deque = steps.get(stage);
-            if (addFirst) {
-                deque.addFirst(new Step(step, response, operation, address));
-            } else {
-                deque.addLast(new Step(step, response, operation, address));
-            }
+            deque.addLast(new Step(step, response, operation, address));
         }
     }
 

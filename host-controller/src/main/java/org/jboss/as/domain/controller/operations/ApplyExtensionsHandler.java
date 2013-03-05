@@ -137,7 +137,7 @@ public class ApplyExtensionsHandler implements OperationStepHandler {
                     final ModelNode op = new ModelNode();
                     op.get(OP).set(ServerRestartRequiredHandler.OPERATION_NAME);
                     op.get(OP_ADDR).set(serverAddress.toModelNode());
-                    context.addStep(op, handler, OperationContext.Stage.IMMEDIATE);
+                    context.addStep(op, handler, OperationContext.Stage.MODEL, true);
                 }
             }
         }

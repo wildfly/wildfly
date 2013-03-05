@@ -51,11 +51,10 @@ public class ModClusterRemoveMetric implements OperationStepHandler {
         String name = getMetricName(context, type);
         if (name == null) {
             context.setRollbackOnly();
-            return;
+        } else {
+            ModelNode targetOperation = Util.createRemoveOperation(parent.append(PathElement.pathElement(ModClusterExtension.LOAD_METRIC_PATH.getKey(), name)));
+            context.addStep(targetOperation, new ReloadRequiredRemoveStepHandler(), OperationContext.Stage.MODEL, true);
         }
-        ModelNode targetOperation = Util.createRemoveOperation(parent.append(PathElement.pathElement(ModClusterExtension.LOAD_METRIC_PATH.getKey(), name)));
-
-        context.addStep(targetOperation, new ReloadRequiredRemoveStepHandler(), OperationContext.Stage.IMMEDIATE);
         context.stepCompleted();
     }
 

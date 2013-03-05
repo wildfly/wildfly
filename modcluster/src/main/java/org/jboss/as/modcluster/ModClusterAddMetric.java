@@ -48,7 +48,7 @@ public class ModClusterAddMetric implements OperationStepHandler {
         for (AttributeDefinition def : LoadMetricDefinition.ATTRIBUTES) {
             def.validateAndSet(operation, targetOperation);
         }
-        context.addStep(targetOperation, LoadMetricAdd.INSTANCE, OperationContext.Stage.IMMEDIATE);
+        context.addStep(targetOperation, LoadMetricAdd.INSTANCE, OperationContext.Stage.MODEL,  true);
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 

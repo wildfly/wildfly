@@ -60,7 +60,7 @@ class AliasStepHandler implements OperationStepHandler {
 
         ModelNode copy = operation.clone();
         copy.get(OP_ADDR).set(mapped.toModelNode());
-        context.addStep(copy, targetHandler, Stage.IMMEDIATE);
+        context.addStep(copy, targetHandler, Stage.MODEL, true);
         context.stepCompleted();
     }
 }
