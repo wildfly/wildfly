@@ -26,11 +26,9 @@ import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -85,33 +83,6 @@ public class XmlConfigurationPersister extends AbstractConfigurationPersister {
     @Override
     public PersistenceResource store(final ModelNode model, Set<PathAddress> affectedAddresses) throws ConfigurationPersistenceException {
         return new FilePersistenceResource(model, fileName, this);
-    }
-
-    /**
-     * Unused and deprecated.
-     *
-     * @param model the model to store
-     * @param file the file to store to
-     * @throws ConfigurationPersistenceException
-     *
-     * @deprecated unused
-     */
-    @Deprecated
-    protected void store(final ModelNode model, final File file) throws ConfigurationPersistenceException {
-        try {
-            final FileOutputStream fos = new FileOutputStream(file);
-            try {
-                BufferedOutputStream output = new BufferedOutputStream(fos);
-                marshallAsXml(model, output);
-                output.flush();
-                fos.getFD().sync();
-                output.close();
-            } finally {
-                safeClose(fos);
-            }
-        } catch (Exception e) {
-            throw MESSAGES.failedToStoreConfiguration(e);
-        }
     }
 
     /** {@inheritDoc} */
