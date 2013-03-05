@@ -102,16 +102,6 @@ public final class ParsedInterfaceCriteria {
         return criteria;
     }
 
-    @Deprecated
-    public static ParsedInterfaceCriteria parse(final ModelNode criteria) {
-        return parse(criteria, true, ExpressionResolver.TEST_RESOLVER);
-    }
-
-    @Deprecated
-    public static ParsedInterfaceCriteria parse(final ModelNode criteria, final boolean specified) {
-        return parse(criteria, specified, ExpressionResolver.TEST_RESOLVER);
-    }
-
     public static ParsedInterfaceCriteria parse(final ModelNode model, final boolean specified, final ExpressionResolver expressionResolver) {
         if (model.getType() != ModelType.OBJECT) {
             return new ParsedInterfaceCriteria(MESSAGES.illegalInterfaceCriteria(model.getType(), ModelType.OBJECT));

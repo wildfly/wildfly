@@ -26,8 +26,6 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
-import org.jboss.dmr.ModelNode;
-
 /**
  * A loopback criteria with a specified bind address.
  *
@@ -55,21 +53,6 @@ public class LoopbackAddressInterfaceCriteria extends AbstractInterfaceCriteria 
             throw MESSAGES.nullVar("address");
         this.resolved = address;
         this.address = resolved.getHostAddress();
-    }
-
-    /**
-     * Creates a new LoopbackAddressInterfaceCriteria
-     *
-     * @param address a valid value to pass to {@link InetAddress#getByName(String)}
-     *                Cannot be {@code null}
-     *
-     * @throws IllegalArgumentException if <code>network</code> is <code>null</code>
-     *
-     * @deprecated use the variant that takes a string
-     */
-    @Deprecated
-    public LoopbackAddressInterfaceCriteria(final ModelNode address) {
-        this(address.asString());
     }
 
     /**
