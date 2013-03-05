@@ -47,75 +47,18 @@ class OperationFailedRuntimeException extends RuntimeException implements Operat
      * The cause is not initialized, and may
      * subsequently be initialized by a call to {@link #initCause(Throwable) initCause}.
      *
-     * @param message the description of the failure
+     * @param message the description of the failure. Cannot be {@code null}
      */
     public OperationFailedRuntimeException(final String message) {
-        this(message, new ModelNode(message));
+        super(message);
+        assert message != null : "message is null";
+        failureDescription = new ModelNode(message);
     }
 
     /**
-     * Constructs a {@code OperationFailedException} with the specified cause and message.
-     * The message is also used as the {@link #getFailureDescription() failure description}.
-     *
-     * @param message the description of the failure
-     * @param cause the cause (which is saved for later retrieval by the {@link #getCause()} method)
+     * {@inheritDoc}
      */
-    public OperationFailedRuntimeException(final String message, final Throwable cause) {
-        this(message, cause, new ModelNode(message));
-    }
-
-    /**
-     * Constructs a {@code OperationFailedRuntimeException} with no detail message. The cause is not initialized, and may
-     * subsequently be initialized by a call to {@link #initCause(Throwable) initCause}.
-     *
-     * @param description the description of the failure
-     */
-    public OperationFailedRuntimeException(final ModelNode description) {
-        failureDescription = description;
-    }
-
-    /**
-     * Constructs a {@code OperationFailedRuntimeException} with the specified detail message. The cause is not initialized,
-     * and may subsequently be initialized by a call to {@link #initCause(Throwable) initCause}.
-     *
-     * @param msg the detail message
-     * @param description the description of the failure
-     */
-    public OperationFailedRuntimeException(final String msg, final ModelNode description) {
-        super(msg);
-        failureDescription = description;
-    }
-
-    /**
-     * Constructs a {@code OperationFailedRuntimeException} with the specified cause. The detail message is set to:
-     * <pre>(cause == null ? null : cause.toString())</pre>
-     * (which typically contains the class and detail message of {@code cause}).
-     *
-     * @param cause the cause (which is saved for later retrieval by the {@link #getCause()} method)
-     * @param description the description of the failure
-     */
-    public OperationFailedRuntimeException(final Throwable cause, final ModelNode description) {
-        super(cause);
-        failureDescription = description;
-    }
-
-    /**
-     * Constructs a {@code OperationFailedRuntimeException} with the specified detail message and cause.
-     *
-     * @param msg the detail message
-     * @param cause the cause (which is saved for later retrieval by the {@link #getCause()} method)
-     * @param description the description of the failure
-     */
-    public OperationFailedRuntimeException(final String msg, final Throwable cause, final ModelNode description) {
-        super(msg, cause);
-        failureDescription = description;
-    }
-
-    /**
-     * Get the detyped failure description.
-     *
-     * @return the description
-     */
+    @Override
     public ModelNode getFailureDescription() {
         return failureDescription;
     }

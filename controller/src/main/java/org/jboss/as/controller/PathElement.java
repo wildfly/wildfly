@@ -190,8 +190,11 @@ public class PathElement {
      */
     private static class OperationClientIllegalArgumentException extends IllegalArgumentException implements OperationClientException {
 
+        private static final long serialVersionUID = -9073168544821068948L;
+
         private OperationClientIllegalArgumentException(final String msg) {
             super(msg);
+            assert msg != null : "msg is null";
         }
 
         @Override

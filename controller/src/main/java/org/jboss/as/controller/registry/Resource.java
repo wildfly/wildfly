@@ -280,6 +280,8 @@ public interface Resource extends Cloneable {
      */
     public static class NoSuchResourceException extends NoSuchElementException implements OperationClientException {
 
+        private static final long serialVersionUID = -2409240663987141424L;
+
         public NoSuchResourceException(PathElement childPath) {
             super(ControllerMessages.MESSAGES.childResourceNotFound(childPath));
         }

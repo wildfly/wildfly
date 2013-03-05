@@ -35,7 +35,7 @@ public interface OperationClientException {
     /**
      * Get the detyped failure description.
      *
-     * @return the description
+     * @return the description. Will not be {@code null}
      */
    ModelNode getFailureDescription();
 }
