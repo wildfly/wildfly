@@ -618,7 +618,7 @@ public class GlobalOperationsTestCase extends AbstractGlobalOperationsTestCase {
     public void testReadResourceDescriptionOperation() throws Exception {
         ModelNode operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION);
         ModelNode result = executeForResult(operation);
-        checkRootNodeDescription(result, false, false);
+        checkRootNodeDescription(result, false, false, false);
         assertFalse(result.get(OPERATIONS).isDefined());
 
         operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA");
@@ -656,7 +656,7 @@ public class GlobalOperationsTestCase extends AbstractGlobalOperationsTestCase {
         ModelNode operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION);
         operation.get(RECURSIVE).set(true);
         ModelNode result = executeForResult(operation);
-        checkRootNodeDescription(result, true, false);
+        checkRootNodeDescription(result, true, false, false);
         assertFalse(result.get(OPERATIONS).isDefined());
 
         operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA");
@@ -700,7 +700,7 @@ public class GlobalOperationsTestCase extends AbstractGlobalOperationsTestCase {
         ModelNode operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION);
         operation.get(OPERATIONS).set(true);
         ModelNode result = executeForResult(operation);
-        checkRootNodeDescription(result, false, true);
+        checkRootNodeDescription(result, false, true, false);
         assertTrue(result.require(OPERATIONS).isDefined());
         Set<String> ops = result.require(OPERATIONS).keys();
         assertTrue(ops.contains(READ_ATTRIBUTE_OPERATION));
@@ -741,7 +741,7 @@ public class GlobalOperationsTestCase extends AbstractGlobalOperationsTestCase {
         operation.get(OPERATIONS).set(true);
         operation.get(RECURSIVE).set(true);
         ModelNode result = executeForResult(operation);
-        checkRootNodeDescription(result, true, true);
+        checkRootNodeDescription(result, true, true, false);
 
 
         operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1");

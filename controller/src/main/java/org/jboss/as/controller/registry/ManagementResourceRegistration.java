@@ -27,6 +27,7 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import java.util.EnumSet;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.NotificationDefinition;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
@@ -457,6 +458,38 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
     void unregisterAlias(PathElement address);
 
     /**
+     * Record that the given notification can be emitted by this resource.
+     *
+     * @param notification the definition of the notification. Cannot be {@code null}
+     * @param inherited  {@code true} if the notification is inherited to child nodes, {@code false} otherwise
+     *
+     * @throws IllegalArgumentException if {@code notification} is {@code null}
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
+     */
+    void registerNotification(NotificationDefinition notification, boolean inherited);
+
+    /**
+     * Record that the given notification can be emitted by this resource.
+     *
+     * The notification is not inherited by child nodes.
+     *
+     * @param notification the definition of the notification. Cannot be {@code null}
+     *
+     * @throws IllegalArgumentException if {@code notificationType} or {@code notificationEntry} is {@code null}
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
+     */
+    void registerNotification(NotificationDefinition notification);
+
+    /**
+     * Remove that the given notification can be emitted by this resource.
+     *
+     * @param notificationType the type of the notification. Cannot be {@code null}
+     *
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
+     */
+    void unregisterNotification(String notificationType);
+
+    /**
      * A factory for creating a new, root model node registration.
      */
     class Factory {
@@ -499,6 +532,11 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
                 }
 
                 @Override
+                public void registerNotifications(ManagementResourceRegistration resourceRegistration) {
+                    //  no-op
+                }
+
+                @Override
                 public void registerChildren(ManagementResourceRegistration resourceRegistration) {
                     //  no-op
                 }
@@ -521,6 +559,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
             ConcreteResourceRegistration resourceRegistration = new ConcreteResourceRegistration(null, null, resourceDefinition, false);
             resourceDefinition.registerAttributes(resourceRegistration);
             resourceDefinition.registerOperations(resourceRegistration);
+            resourceDefinition.registerNotifications(resourceRegistration);
             resourceDefinition.registerChildren(resourceRegistration);
             return resourceRegistration;
         }

@@ -41,6 +41,10 @@ public class ListAttributeDefinitionTestCase {
             }
 
             @Override
+            public void registerNotifications(ManagementResourceRegistration resourceRegistration) {
+            }
+
+            @Override
             public void registerChildren(ManagementResourceRegistration resourceRegistration) {
             }
 
@@ -73,6 +77,10 @@ public class ListAttributeDefinitionTestCase {
         ResourceDefinition resource = new ResourceDefinition() {
             @Override
             public void registerOperations(ManagementResourceRegistration resourceRegistration) {
+            }
+
+            @Override
+            public void registerNotifications(ManagementResourceRegistration resourceRegistration) {
             }
 
             @Override
