@@ -137,7 +137,7 @@ public class CollectionsEnterpriseArchiveTestCase {
     @Test
     public void testBundleCollectionsEar() throws Exception {
         String result = performCall("/bundle-collections/servlet");
-        Assert.assertEquals("HashBag loaded from org.apache.commons.collections:3.2.1", result);
+        Assert.assertEquals("HashBag loaded from org.apache.commons.collections:3.2.1.redhat-2", result);
     }
 
     private static File getLibrary(String filename) {
