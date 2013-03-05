@@ -228,10 +228,9 @@ public interface ControllerLogger extends BasicLogger {
      * @param address    the address
      * @deprecated use {@link #noSuchResourceType(PathAddress)} or {@link #noHandlerForOperation(String, PathAddress)}
      */
-    @Deprecated
-    @LogMessage(level = ERROR)
-    @Message(id = 14611, value = "No handler for %s at address %s")
-    void noHandler(String stepOpName, PathAddress address);
+//    @LogMessage(level = ERROR)
+//    @Message(id = 14611, value = "No handler for %s at address %s")
+//    void noHandler(String stepOpName, PathAddress address);
 
     /**
      * Logs an error message indicating operation failed.
