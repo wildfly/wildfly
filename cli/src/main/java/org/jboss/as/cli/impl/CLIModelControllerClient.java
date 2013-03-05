@@ -238,8 +238,8 @@ public class CLIModelControllerClient extends AbstractModelControllerClient {
                 ioe = null;
                 try {
                     Thread.sleep(500);
-                } catch (InterruptedException e1) {
-                    e1.printStackTrace();
+                } catch (InterruptedException e) {
+                    throw new CommandLineException("Interrupted while pausing before reconnecting.", e);
                 }
             }
         }
