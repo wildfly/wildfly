@@ -30,7 +30,6 @@ import java.util.Set;
 import org.jboss.as.clustering.ClassLoaderAwareClassResolver;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentConfiguration;
-import org.jboss.as.ee.component.TCCLInterceptor;
 import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.as.ejb3.cache.CacheInfo;
 import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
@@ -39,6 +38,7 @@ import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextIntercep
 import org.jboss.as.ejb3.component.session.SessionBeanComponentCreateService;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.ejb.client.SessionID;
+import org.jboss.invocation.ContextClassLoaderInterceptor;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
@@ -81,7 +81,8 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         super(componentConfiguration, ejbJarConfiguration);
 
         final StatefulComponentDescription componentDescription = (StatefulComponentDescription) componentConfiguration.getComponentDescription();
-        final InterceptorFactory tcclInterceptorFactory = new ImmediateInterceptorFactory(new TCCLInterceptor(componentConfiguration.getModuleClassLoader()));
+        final ClassLoader classLoader = componentConfiguration.getModuleClassLoader();
+        final InterceptorFactory tcclInterceptorFactory = new ImmediateInterceptorFactory(new ContextClassLoaderInterceptor(classLoader));
         final InterceptorFactory namespaceContextInterceptorFactory = componentConfiguration.getNamespaceContextInterceptorFactory();
 
         this.afterBeginMethod = componentDescription.getAfterBegin();

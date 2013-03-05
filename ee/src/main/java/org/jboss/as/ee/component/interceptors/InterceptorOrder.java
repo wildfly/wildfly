@@ -35,7 +35,6 @@ public class InterceptorOrder {
 
     public static final class Component {
 
-
         public static final int INITIAL_INTERCEPTOR = 0x100;
         public static final int CDI_REQUEST_SCOPE = 0x320;
         public static final int SYNCHRONIZATION_INTERCEPTOR = 0x500;
@@ -70,6 +69,7 @@ public class InterceptorOrder {
 
     public static final class ComponentPostConstruct {
 
+        public static final int PRIVILEGED_INTERCEPTOR = 0;
         public static final int TCCL_INTERCEPTOR = 0x100;
         public static final int EJB_SESSION_CONTEXT_INTERCEPTOR = 0x200;
         public static final int TRANSACTION_INTERCEPTOR = 0x300;
@@ -93,6 +93,7 @@ public class InterceptorOrder {
 
     public static final class ComponentPreDestroy {
 
+        public static final int PRIVILEGED_INTERCEPTOR = 0;
         public static final int TCCL_INTERCEPTOR = 0x100;
         public static final int EJB_SESSION_CONTEXT_INTERCEPTOR = 0x200;
         public static final int TRANSACTION_INTERCEPTOR = 0x300;
@@ -111,6 +112,7 @@ public class InterceptorOrder {
 
     public static final class ComponentPassivation {
 
+        public static final int PRIVILEGED_INTERCEPTOR = 0;
         public static final int TCCL_INTERCEPTOR = 0x100;
         public static final int EJB_SESSION_CONTEXT_INTERCEPTOR = 0x200;
         public static final int TRANSACTION_INTERCEPTOR = 0x300;
@@ -125,6 +127,7 @@ public class InterceptorOrder {
     }
 
     public static final class View {
+        public static final int PRIVILEGED_INTERCEPTOR = 0;
         public static final int TCCL_INTERCEPTOR = 0x001;
         public static final int INVOCATION_TYPE = 0x005;
         public static final int EE_SETUP = 0x010;
