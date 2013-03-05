@@ -428,6 +428,11 @@ public final class ServerService extends AbstractControllerService {
         }
 
         @Override
+        public void registerNotifications(ManagementResourceRegistration resourceRegistration) {
+            delegate.registerNotifications(resourceRegistration);
+        }
+
+        @Override
         public PathElement getPathElement() {
             return delegate.getPathElement();
         }

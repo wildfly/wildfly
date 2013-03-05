@@ -844,6 +844,11 @@ public class DomainModelControllerService extends AbstractControllerService impl
         }
 
         @Override
+        public void registerNotifications(ManagementResourceRegistration resourceRegistration) {
+            //These will be registered later
+        }
+
+        @Override
         public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
             //These will be registered later
         }
