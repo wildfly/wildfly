@@ -97,7 +97,7 @@ public class DsXmlParser extends DsParser {
                     switch (tag) {
                         case PASSWORD: {
                             password = elementAsString(reader);
-                            if (propertyResolver != null && password != null) {
+                            if (propertyResolver != null && password != null && password.trim().length() != 0) {
                                 String resolvedPassword = propertyResolver.resolve(password);
                                 if (resolvedPassword != null)
                                     password = resolvedPassword;
