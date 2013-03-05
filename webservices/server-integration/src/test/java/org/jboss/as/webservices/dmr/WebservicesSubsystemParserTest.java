@@ -167,14 +167,14 @@ public class WebservicesSubsystemParserTest extends AbstractSubsystemBaseTest {
     }
 
 
-   private void testRejectExpressions_1_1_0(String version, ModelTestControllerVersion controllerVersion) throws Exception {
+   private void testRejectExpressions_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
         // create builder for legacy subsystem version
         ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_1_0)
-                .addMavenResourceURL("org.jboss.as:jboss-as-webservices-server-integration:"+version);
+                .addMavenResourceURL("org.jboss.as:jboss-as-webservices-server-integration:" + controllerVersion.getMavenGavVersion());
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(version_1_1_0);
@@ -190,11 +190,11 @@ public class WebservicesSubsystemParserTest extends AbstractSubsystemBaseTest {
 
     @Test
     public void testTransformersAS712() throws Exception {
-    testRejectExpressions_1_1_0("7.1.2.Final", ModelTestControllerVersion.V7_1_2_FINAL);
+    testRejectExpressions_1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
     public void testTransformersAS713() throws Exception {
-        testRejectExpressions_1_1_0("7.1.3.Final", ModelTestControllerVersion.V7_1_3_FINAL);
+        testRejectExpressions_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 }
