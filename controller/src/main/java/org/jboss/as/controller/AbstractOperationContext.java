@@ -574,13 +574,6 @@ abstract class AbstractOperationContext implements OperationContext {
     }
 
     @Override
-    @Deprecated
-    @SuppressWarnings("deprecation")
-    public final Type getType() {
-        return Type.getType(processType, runningMode);
-    }
-
-    @Override
     public final boolean isNormalServer() {
         return processType.isServer() && runningMode == RunningMode.NORMAL;
     }

@@ -231,18 +231,6 @@ public interface OperationContext extends ExpressionResolver {
     RunningMode getRunningMode();
 
     /**
-     * Get the operation context type.  This can be used to determine whether an operation is executing on a
-     * server or on a host controller, etc.
-     *
-     * @return the operation context type
-     *
-     * @deprecated Use {@link OperationContext#getProcessType()} and {@link OperationContext#getRunningMode()} or for the most common usage, {@link OperationContext#isNormalServer()}
-     */
-    @Deprecated
-    @SuppressWarnings("deprecation")
-    Type getType();
-
-    /**
      * Determine whether the controller is currently performing boot tasks.
      *
      * @return whether the controller is currently booting
@@ -708,48 +696,6 @@ public interface OperationContext extends ExpressionResolver {
                 case DOMAIN: return DONE;
                 case DONE:
                 default: throw new IllegalStateException();
-            }
-        }
-    }
-
-    /**
-     * The type of controller this operation is being applied to.
-     *
-     * @deprecated Use {@link OperationContext#getProcessType()} and {@link OperationContext#getRunningMode()}
-     */
-    @Deprecated
-    enum Type {
-        /**
-         * A host controller with an active runtime.
-         */
-        HOST,
-        /**
-         * A running server instance with an active runtime container.
-         */
-        SERVER,
-        /**
-         * A server instance which is in {@link RunningMode#ADMIN_ONLY admin-only} mode.
-         */
-        MANAGEMENT;
-
-        /**
-         * Provides the {@code Type} that matches the given {@code processType} and {@code runningMode}.
-         *
-         * @param processType the process type. Cannot be {@code null}
-         * @param runningMode the running mode. Cannot be {@code null}
-         * @return the type
-         */
-        @Deprecated
-        @SuppressWarnings("deprecation")
-        static Type getType(final ProcessType processType, final RunningMode runningMode) {
-            if (processType.isServer()) {
-                if (runningMode == RunningMode.NORMAL) {
-                    return SERVER;
-                } else {
-                    return MANAGEMENT;
-                }
-            } else {
-                return HOST;
             }
         }
     }
