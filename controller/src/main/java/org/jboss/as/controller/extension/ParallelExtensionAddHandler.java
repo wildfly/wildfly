@@ -61,11 +61,11 @@ public class ParallelExtensionAddHandler implements OperationStepHandler {
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        context.addStep(getParallelExtensionInitializeStep(), OperationContext.Stage.IMMEDIATE);
+        context.addStep(getParallelExtensionInitializeStep(), OperationContext.Stage.MODEL, true);
 
         for (int i = extensionAdds.size() -1; i >= 0; i--) { // Reverse order so they execute in normal order!
             ParsedBootOp op = extensionAdds.get(i);
-            context.addStep(op.response, op.operation, op.handler, OperationContext.Stage.IMMEDIATE);
+            context.addStep(op.response, op.operation, op.handler, OperationContext.Stage.MODEL, true);
         }
 
         context.stepCompleted();

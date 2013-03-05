@@ -100,7 +100,7 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
             addTransport.get(OP_ADDR).set(transportAddress);
 
             // execute the operation using the transport handler
-            context.addStep(addTransport, TransportResource.TRANSPORT_ADD, OperationContext.Stage.IMMEDIATE);
+            context.addStep(addTransport, TransportResource.TRANSPORT_ADD, OperationContext.Stage.MODEL, true);
         }
 
         // add steps to initialize *optional* PROTOCOL parameters
@@ -122,7 +122,7 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
                 addProtocol.get(OP_ADDR).set(protocolAddress);
 
                 // execute the operation using the transport handler
-                context.addStep(addProtocol, ProtocolResource.PROTOCOL_ADD_HANDLER, OperationContext.Stage.IMMEDIATE);
+                context.addStep(addProtocol, ProtocolResource.PROTOCOL_ADD_HANDLER, OperationContext.Stage.MODEL, true);
             }
         }
     }

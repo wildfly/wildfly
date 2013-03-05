@@ -223,7 +223,7 @@ public class DeploymentHandlerUtil {
                                 }
                             });
                         }
-                    }, OperationContext.Stage.IMMEDIATE);
+                    }, OperationContext.Stage.RUNTIME, true);
 
                     context.completeStep(new OperationContext.RollbackHandler() {
                         @Override

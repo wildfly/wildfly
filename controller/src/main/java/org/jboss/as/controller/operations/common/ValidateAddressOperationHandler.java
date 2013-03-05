@@ -98,7 +98,7 @@ public class ValidateAddressOperationHandler implements OperationStepHandler {
                     // Otherwise delegate to the proxy handler
                     final OperationStepHandler proxyHandler = registration.getOperationHandler(PathAddress.EMPTY_ADDRESS, OPERATION_NAME);
                     if(proxyHandler != null) {
-                        context.addStep(newOperation, proxyHandler, OperationContext.Stage.IMMEDIATE);
+                        context.addStep(newOperation, proxyHandler, OperationContext.Stage.MODEL, true);
                         context.stepCompleted();
                         return;
                     }

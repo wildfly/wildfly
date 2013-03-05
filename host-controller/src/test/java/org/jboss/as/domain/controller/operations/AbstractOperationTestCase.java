@@ -182,14 +182,14 @@ public abstract class AbstractOperationTestCase {
         }
 
         public void addStep(ModelNode operation, OperationStepHandler step, OperationContext.Stage stage) throws IllegalArgumentException {
+            addStep(operation, step, stage, false);
+        }
+        public void addStep(ModelNode operation, OperationStepHandler step, OperationContext.Stage stage, boolean addFirst) throws IllegalArgumentException {
             final PathAddress opAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
             if (!expectedSteps.contains(opAddress)) {
                 fail("Should not have added step for: " + opAddress);
             }
             expectedSteps.remove(opAddress);
-        }
-        public void addStep(ModelNode operation, OperationStepHandler step, OperationContext.Stage stage, boolean addFirst) throws IllegalArgumentException {
-            addStep(operation, step, stage, addFirst);
         }
 
         @Override

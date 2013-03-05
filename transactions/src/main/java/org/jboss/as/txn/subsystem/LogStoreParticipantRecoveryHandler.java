@@ -41,6 +41,7 @@ public class LogStoreParticipantRecoveryHandler  implements OperationStepHandler
     }
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+
         MBeanServer mbs = TransactionExtension.getMBeanServer(context);
         final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
 
@@ -56,7 +57,7 @@ public class LogStoreParticipantRecoveryHandler  implements OperationStepHandler
         }
 
         // refresh the attributes of this participant (the status attribute should have changed to PREPARED
-        context.addStep(refreshHandler, OperationContext.Stage.IMMEDIATE);
+        context.addStep(refreshHandler, OperationContext.Stage.MODEL, true);
 
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }

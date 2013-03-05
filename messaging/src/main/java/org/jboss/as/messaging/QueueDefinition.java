@@ -22,7 +22,6 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.controller.OperationContext.Stage.IMMEDIATE;
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.messaging.CommonAttributes.QUEUE;
 import static org.jboss.as.messaging.CommonAttributes.RUNTIME_QUEUE;
@@ -161,7 +160,7 @@ public class QueueDefinition extends SimpleResourceDefinition {
             // there is no registered queue resource, forward to the runtime-queue address instead
             ModelNode forwardOperation = operation.clone();
             forwardOperation.get(ModelDescriptionConstants.OP_ADDR).set(hornetQPathAddress.append(RUNTIME_QUEUE, queueName).toModelNode());
-            context.addStep(forwardOperation, handler, IMMEDIATE);
+            context.addStep(forwardOperation, handler, OperationContext.Stage.RUNTIME, true);
             return true;
         }
     }

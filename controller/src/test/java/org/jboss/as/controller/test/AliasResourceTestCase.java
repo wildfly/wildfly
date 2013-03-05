@@ -854,7 +854,7 @@ public class AliasResourceTestCase extends AbstractControllerTestBase {
             OperationStepHandler step = operation.get(OP).asString().equals(WRITE_ATTRIBUTE_OPERATION) ? WriteAttributeHandler.INSTANCE : ReadAttributeHandler.INSTANCE;
             ModelNode aliasOp = operation.clone();
             aliasOp.get(NAME).set(targetAttribute);
-            context.addStep(aliasOp, step, Stage.IMMEDIATE);
+            context.addStep(aliasOp, step, Stage.MODEL, true);
             context.stepCompleted();
         }
 
