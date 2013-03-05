@@ -103,7 +103,7 @@ public class ProfileDescribeHandler implements OperationStepHandler {
                 }
                 context.stepCompleted();
             }
-        }, OperationContext.Stage.IMMEDIATE);
+        }, OperationContext.Stage.MODEL, true);
 
         if (profile.hasDefined(SUBSYSTEM)) {
             for (final String subsystemName : profile.get(SUBSYSTEM).keys()) {
@@ -141,10 +141,10 @@ public class ProfileDescribeHandler implements OperationStepHandler {
                         }
                         context.stepCompleted();
                     }
-                }, OperationContext.Stage.IMMEDIATE);
+                }, OperationContext.Stage.MODEL, true);
 
                 // Step to determine subsystem ops
-                context.addStep(subsystemRsp, newOp, subsysHandler, OperationContext.Stage.IMMEDIATE);
+                context.addStep(subsystemRsp, newOp, subsysHandler, OperationContext.Stage.MODEL, true);
             }
         }
 
@@ -160,7 +160,7 @@ public class ProfileDescribeHandler implements OperationStepHandler {
                 final ModelNode newOp = operation.clone();
                 newOp.get(OP_ADDR).set(includeAddress);
 
-                context.addStep(includeRsp, newOp, INSTANCE, OperationContext.Stage.IMMEDIATE);
+                context.addStep(includeRsp, newOp, INSTANCE, OperationContext.Stage.MODEL, true);
             }
         }
 

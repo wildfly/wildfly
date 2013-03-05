@@ -112,7 +112,7 @@ public class ValidateOperationHandler implements OperationStepHandler {
             proxyOp.get(VALUE.getName(), OP_ADDR).set(translator.translateAddress(addr).toModelNode());
             final ModelNode result = new ModelNode();
 
-            context.addStep(result, proxyOp, proxyReg.getOperationHandler(PathAddress.EMPTY_ADDRESS, VALIDATE_OPERATION), Stage.IMMEDIATE);
+            context.addStep(result, proxyOp, proxyReg.getOperationHandler(PathAddress.EMPTY_ADDRESS, VALIDATE_OPERATION), Stage.MODEL, true);
             context.completeStep(new OperationContext.RollbackHandler() {
 
                 @Override

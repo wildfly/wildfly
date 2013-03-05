@@ -106,7 +106,7 @@ public class ReadChildrenResourcesHandler implements OperationStepHandler {
 
         // Last to execute is the handler that assembles the overall response from the pieces created by all the other steps
         final ReadChildrenResourcesAssemblyHandler assemblyHandler = new ReadChildrenResourcesAssemblyHandler(resources);
-        context.addStep(assemblyHandler, OperationContext.Stage.IMMEDIATE);
+        context.addStep(assemblyHandler, OperationContext.Stage.MODEL, true);
 
         for (final String key : childNames) {
             final PathElement childPath = PathElement.pathElement(childType, key);
@@ -127,7 +127,7 @@ public class ReadChildrenResourcesHandler implements OperationStepHandler {
             }
             final ModelNode rrRsp = new ModelNode();
             resources.put(childPath, rrRsp);
-            context.addStep(rrRsp, readOp, handler, OperationContext.Stage.IMMEDIATE);
+            context.addStep(rrRsp, readOp, handler, OperationContext.Stage.MODEL, true);
         }
 
         context.stepCompleted();

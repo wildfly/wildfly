@@ -258,7 +258,7 @@ public class GlobalOperationHandlers {
                     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                         doExecute(context, operation);
                     }
-                }), OperationContext.Stage.IMMEDIATE);
+                }), OperationContext.Stage.MODEL, true);
                 context.stepCompleted();
             } else {
                 doExecute(context, operation);
@@ -348,7 +348,7 @@ public class GlobalOperationHandlers {
 
                 final ModelNode result = this.result.add();
                 result.get(OP_ADDR).set(base.toModelNode());
-                context.addStep(result, newOp, handler, OperationContext.Stage.IMMEDIATE);
+                context.addStep(result, newOp, handler, OperationContext.Stage.MODEL, true);
             }
         }
 
@@ -400,7 +400,7 @@ public class GlobalOperationHandlers {
 
                 final ModelNode result = this.result.add();
                 result.get(OP_ADDR).set(base.toModelNode());
-                context.addStep(result, newOp, handler, OperationContext.Stage.IMMEDIATE);
+                context.addStep(result, newOp, handler, OperationContext.Stage.MODEL, true);
             }
         }
     }

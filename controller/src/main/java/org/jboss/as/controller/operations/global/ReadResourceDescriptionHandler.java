@@ -148,7 +148,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
 
         // Last to execute is the handler that assembles the overall response from the pieces created by all the other steps
         final ReadResourceDescriptionAssemblyHandler assemblyHandler = new ReadResourceDescriptionAssemblyHandler(nodeDescription, operations, childResources);
-        context.addStep(assemblyHandler, OperationContext.Stage.IMMEDIATE);
+        context.addStep(assemblyHandler, OperationContext.Stage.MODEL, true);
 
         if (ops) {
             for (final Map.Entry<String, OperationEntry> entry : realRegistry.getOperationDescriptions(PathAddress.EMPTY_ADDRESS, inheritedOps).entrySet()) {
@@ -232,7 +232,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                                     doExecute(context, operation);
                                 }
                             };
-                    context.addStep(rrRsp, rrOp, handler, OperationContext.Stage.IMMEDIATE);
+                    context.addStep(rrRsp, rrOp, handler, OperationContext.Stage.MODEL, true);
                 }
                 //Add a "child" => undefined
                 nodeDescription.get(CHILDREN, element.getKey(), MODEL_DESCRIPTION, element.getValue());
@@ -266,7 +266,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                         // step handler bypassing further wildcard resolution
                         doExecute(context, operation);
                     }
-                }), OperationContext.Stage.IMMEDIATE);
+                }), OperationContext.Stage.MODEL, true);
         context.completeStep(new OperationContext.RollbackHandler() {
             @Override
             public void handleRollback(OperationContext context, ModelNode operation) {
