@@ -183,25 +183,6 @@ public interface OperationContext extends ExpressionResolver {
     ModelNode getResponseHeaders();
 
     /**
-     * Complete a step, returning the overall operation result.  The step handler calling this operation should append
-     * its result status to the operation result before calling this method.  The return value should be checked
-     * to determine whether the operation step should be rolled back.
-     * <p>
-     * <strong>Note:</strong>This {@code completeStep} variant results in a recursive invocation of the next
-     * {@link OperationStepHandler} that has been added (if any). When operations involve a great number of steps that
-     * use this variant (e.g. during server or  Host Controller boot), deep call stacks can result and
-     * {@link StackOverflowError}s are a possibility. For this reason, handlers that are likely to be executed during
-     * boot are encouraged to use the non-recursive {@link #completeStep(RollbackHandler)} variant.
-     * </p>
-     *
-     * @return the operation result action to take
-     *
-     * @deprecated use {@link #completeStep(ResultHandler)}, {@link #completeStep(RollbackHandler)} or {@link #stepCompleted()}
-     */
-    @Deprecated
-    ResultAction completeStep();
-
-    /**
      * Complete a step, while registering for
      * {@link RollbackHandler#handleRollback(OperationContext, ModelNode) a notification} if the work done by the
      * caller needs to be rolled back}.
