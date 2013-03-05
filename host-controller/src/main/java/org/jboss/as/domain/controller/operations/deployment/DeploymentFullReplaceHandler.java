@@ -158,18 +158,26 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
             @Override
             public void handleResult(ResultAction resultAction, OperationContext context, ModelNode operation) {
                 if (resultAction == ResultAction.KEEP) {
-                    if (originalHash != null && contentRepository != null) {
+                    if (originalHash != null) {
                         if (deployNode.get(CONTENT).get(0).hasDefined(HASH)) {
                             byte[] newHash = deployNode.get(CONTENT).get(0).get(HASH).asBytes();
                             if (!Arrays.equals(originalHash, newHash)) {
-                                contentRepository.removeContent(originalHash, name);
+                                if(contentRepository != null) {
+                                    contentRepository.removeContent(originalHash, name);
+                                } else {
+                                    fileRepository.deleteDeployment(originalHash);
+                                }
                             }
                         }
                     }
                 } else {
-                    if (contentRepository != null && operation.get(CONTENT).get(0).hasDefined(HASH)) {
+                    if (operation.get(CONTENT).get(0).hasDefined(HASH)) {
                         byte[] newHash = operation.get(CONTENT).get(0).get(HASH).asBytes();
-                        contentRepository.removeContent(newHash, name);
+                        if(contentRepository != null ) {
+                            contentRepository.removeContent(newHash, name);
+                        } else {
+                            fileRepository.deleteDeployment(newHash);
+                        }
                     }
                 }
             }
