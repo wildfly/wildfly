@@ -94,7 +94,7 @@ public class JMXSubsystemRootResource extends SimpleResourceDefinition {
                     ModelNode addOp = new ModelNode();
                     addOp.get(OP).set(ADD);
                     addOp.get(OP_ADDR).set(PathAddress.pathAddress(operation.get(OP_ADDR)).append(RESOLVED_PATH).toModelNode());
-                    context.addStep(addOp, handler, Stage.IMMEDIATE);
+                    context.addStep(addOp, handler, Stage.MODEL, true);
                 }
             } else {
                 if (hasResource) {
@@ -102,7 +102,7 @@ public class JMXSubsystemRootResource extends SimpleResourceDefinition {
                     ModelNode addOp = new ModelNode();
                     addOp.get(OP).set(REMOVE);
                     addOp.get(OP_ADDR).set(PathAddress.pathAddress(operation.get(OP_ADDR)).append(RESOLVED_PATH).toModelNode());
-                    context.addStep(addOp, handler, Stage.IMMEDIATE);
+                    context.addStep(addOp, handler, Stage.MODEL, true);
                 }
             }
             context.stepCompleted();

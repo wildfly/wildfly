@@ -151,7 +151,7 @@ public class ReadResourceHandler extends GlobalOperationHandlers.AbstractMultiTa
 
         // Last to execute is the handler that assembles the overall response from the pieces created by all the other steps
         final ReadResourceAssemblyHandler assemblyHandler = new ReadResourceAssemblyHandler(directAttributes, metrics, otherAttributes, directChildren, childResources);
-        context.addStep(assemblyHandler, queryRuntime ? OperationContext.Stage.VERIFY : OperationContext.Stage.IMMEDIATE, queryRuntime);
+        context.addStep(assemblyHandler, queryRuntime ? OperationContext.Stage.VERIFY : OperationContext.Stage.MODEL, true);
         final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
 
         // Get the model for this resource.
@@ -228,7 +228,7 @@ public class ReadResourceHandler extends GlobalOperationHandlers.AbstractMultiTa
                                 childResources.put(childPE, rrRsp);
 
                                 OperationStepHandler rrHandler = childReg.getOperationHandler(PathAddress.EMPTY_ADDRESS, opName);
-                                context.addStep(rrRsp, rrOp, rrHandler, OperationContext.Stage.IMMEDIATE);
+                                context.addStep(rrRsp, rrOp, rrHandler, OperationContext.Stage.MODEL, true);
                             }
                         } else {
                             ModelNode childMap = directChildren.get(childType);
@@ -274,7 +274,7 @@ public class ReadResourceHandler extends GlobalOperationHandlers.AbstractMultiTa
                     } else {
                         otherAttributes.put(attributeName, attrResponse);
                     }
-                    context.addStep(attrResponse, attributeOperation, handler, OperationContext.Stage.IMMEDIATE);
+                    context.addStep(attrResponse, attributeOperation, handler, OperationContext.Stage.MODEL, true);
                 }
             }
         }

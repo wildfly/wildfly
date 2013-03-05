@@ -96,14 +96,14 @@ class ReadTransformedResourceOperation implements OperationStepHandler {
                 context.getResult().set(transformed);
                 context.stepCompleted();
             }
-        }, OperationContext.Stage.IMMEDIATE);
+        }, OperationContext.Stage.MODEL, true);
 
         // Now add a step to do the READ_RESOURCE, also IMMEDIATE. This will execute *before* the one ^^^
         final ModelNode op = new ModelNode();
         op.get(OP).set(READ_RESOURCE_OPERATION);
         op.get(OP_ADDR).set(PathAddress.EMPTY_ADDRESS.toModelNode());
         op.get(RECURSIVE).set(true);
-        context.addStep(readResourceResult, op, ReadResourceHandler.INSTANCE, OperationContext.Stage.IMMEDIATE);
+        context.addStep(readResourceResult, op, ReadResourceHandler.INSTANCE, OperationContext.Stage.MODEL, true);
         context.stepCompleted();
     }
 }

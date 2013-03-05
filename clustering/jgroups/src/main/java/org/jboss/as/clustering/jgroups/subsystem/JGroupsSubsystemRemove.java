@@ -48,7 +48,7 @@ public class JGroupsSubsystemRemove extends AbstractRemoveStepHandler {
 
         // remove the subsystem first
         ModelNode removeSubsystem = Util.createOperation(REMOVE, PathAddress.pathAddress(JGroupsExtension.SUBSYSTEM_PATH));
-        context.addStep(removeSubsystem, new OriginalSubsystemRemoveHandler(), OperationContext.Stage.IMMEDIATE);
+        context.addStep(removeSubsystem, new OriginalSubsystemRemoveHandler(), OperationContext.Stage.MODEL, true);
 
         // now remove any existing child stacks
         if (model.hasDefined(ModelKeys.STACK)) {
@@ -57,7 +57,7 @@ public class JGroupsSubsystemRemove extends AbstractRemoveStepHandler {
                 PathAddress address = PathAddress.pathAddress(JGroupsExtension.SUBSYSTEM_PATH).append(ModelKeys.STACK, stack.getName());
                 ModelNode removeStack = Util.createOperation(REMOVE, address);
                 // remove the stack
-                context.addStep(removeStack, ProtocolStackRemove.INSTANCE, OperationContext.Stage.IMMEDIATE);
+                context.addStep(removeStack, ProtocolStackRemove.INSTANCE, OperationContext.Stage.MODEL, true);
             }
         }
 
