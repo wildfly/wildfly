@@ -41,6 +41,7 @@ import java.util.Properties;
 
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.interfaces.InetAddressUtil;
+import org.jboss.as.process.CommandLineArgumentUsageImpl;
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.process.ExitCodes;
 import org.jboss.as.process.protocol.StreamUtils;
@@ -118,6 +119,7 @@ public final class Main {
         try {
             final HostControllerEnvironment config = determineEnvironment(args);
             if (config == null) {
+                usage(); // In case there was an error determining the environment print the usage
                 abort();
                 return null;
             } else {
@@ -167,6 +169,10 @@ public final class Main {
      */
     private static void fail(){
         SystemExiter.exit(ExitCodes.FAILED);
+    }
+
+    private static void usage() {
+        CommandLineArgumentUsageImpl.printUsage(System.out);
     }
 
     /**

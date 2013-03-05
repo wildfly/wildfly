@@ -62,7 +62,7 @@ import org.jboss.stdio.StdioContext;
 public final class Main {
 
 
-    public static void usage() {
+    private static void usage() {
         CommandLineArgumentUsageImpl.printUsage(System.out);
     }
 

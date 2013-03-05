@@ -53,7 +53,7 @@ import org.jboss.stdio.StdioContext;
  */
 public final class Main {
 
-    public static void usage() {
+    private static void usage() {
         CommandLineArgumentUsageImpl.printUsage(System.out);
     }
 
@@ -188,7 +188,7 @@ public final class Main {
 
                     int idx = arg.indexOf('=');
                     if (idx == arg.length() - 1) {
-                        System.err.printf(ServerMessages.MESSAGES.noArgValue(arg));
+                        System.err.println(ServerMessages.MESSAGES.noArgValue(arg));
                         usage();
                         return null;
                     }
@@ -210,8 +210,7 @@ public final class Main {
 
                     int idx = arg.indexOf('=');
                     if (idx == arg.length() - 1) {
-                        System.err.printf(ServerMessages.MESSAGES.valueExpectedForCommandLineOption(arg));
-                        System.err.println();
+                        System.err.println(ServerMessages.MESSAGES.valueExpectedForCommandLineOption(arg));
                         usage();
                         return null;
                     }
@@ -239,12 +238,12 @@ public final class Main {
                         }
                     }
                 } else {
-                    System.err.printf(ServerMessages.MESSAGES.invalidCommandLineOption(arg));
+                    System.err.println(ServerMessages.MESSAGES.invalidCommandLineOption(arg));
                     usage();
                     return null;
                 }
             } catch (IndexOutOfBoundsException e) {
-                System.err.printf(ServerMessages.MESSAGES.valueExpectedForCommandLineOption(arg));
+                System.err.println(ServerMessages.MESSAGES.valueExpectedForCommandLineOption(arg));
                 usage();
                 return null;
             }
@@ -276,13 +275,11 @@ public final class Main {
              systemProperties.load(url.openConnection().getInputStream());
              return true;
          } catch (MalformedURLException e) {
-             System.err.printf(ServerMessages.MESSAGES.malformedCommandLineURL(urlSpec, arg));
-             System.err.println();
+             System.err.println(ServerMessages.MESSAGES.malformedCommandLineURL(urlSpec, arg));
              usage();
              return false;
          } catch (IOException e) {
-             System.err.printf(ServerMessages.MESSAGES.unableToLoadProperties(url));
-             System.err.println();
+             System.err.println(ServerMessages.MESSAGES.unableToLoadProperties(url));
              usage();
              return false;
          }
@@ -320,8 +317,7 @@ public final class Main {
 
             int idx = token.indexOf('=');
             if (idx == token.length() - 1) {
-                System.err.printf(ServerMessages.MESSAGES.valueExpectedForCommandLineOption(secProperties));
-                System.err.println();
+                System.err.println(ServerMessages.MESSAGES.valueExpectedForCommandLineOption(secProperties));
                 usage();
                 return;
             }
