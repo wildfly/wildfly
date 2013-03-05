@@ -42,7 +42,7 @@ public class OperationFailedException extends Exception implements OperationClie
      * The cause is not initialized, and may
      * subsequently be initialized by a call to {@link #initCause(Throwable) initCause}.
      *
-     * @param message the description of the failure
+     * @param message the description of the failure. Cannot be {@code null}
      */
     public OperationFailedException(final String message) {
         this(message, new ModelNode(message));
@@ -52,7 +52,7 @@ public class OperationFailedException extends Exception implements OperationClie
      * Constructs a {@code OperationFailedException} with the specified cause and message.
      * The message is also used as the {@link #getFailureDescription() failure description}.
      *
-     * @param message the description of the failure
+     * @param message the description of the failure. Cannot be {@code null}
      * @param cause the cause (which is saved for later retrieval by the {@link #getCause()} method)
      */
     public OperationFailedException(final String message, final Throwable cause) {
@@ -63,9 +63,10 @@ public class OperationFailedException extends Exception implements OperationClie
      * Constructs a {@code OperationFailedException} with no detail message. The cause is not initialized, and may
      * subsequently be initialized by a call to {@link #initCause(Throwable) initCause}.
      *
-     * @param description the description of the failure
+     * @param description the description of the failure. Cannot be {@code null}
      */
     public OperationFailedException(final ModelNode description) {
+        assert description != null : "description is null";
         failureDescription = description;
     }
 
@@ -74,11 +75,23 @@ public class OperationFailedException extends Exception implements OperationClie
      * and may subsequently be initialized by a call to {@link #initCause(Throwable) initCause}.
      *
      * @param msg the detail message
-     * @param description the description of the failure
+     * @param description the description of the failure. Cannot be {@code null}
      */
     public OperationFailedException(final String msg, final ModelNode description) {
         super(msg);
+        assert description != null : "description is null";
         failureDescription = description;
+    }
+
+    /**
+     * Constructs a {@code OperationFailedException} with the specified cause.
+     * The {@link Throwable#getMessage() cause's message} is also used as the
+     * {@link #getFailureDescription() failure description}.
+     *
+     * @param cause the cause (which is saved for later retrieval by the {@link #getCause()} method). Cannot be {@code null}
+     */
+    public OperationFailedException(final Throwable cause) {
+        this(cause.getMessage(), cause);
     }
 
     /**
@@ -87,10 +100,11 @@ public class OperationFailedException extends Exception implements OperationClie
      * (which typically contains the class and detail message of {@code cause}).
      *
      * @param cause the cause (which is saved for later retrieval by the {@link #getCause()} method)
-     * @param description the description of the failure
+     * @param description the description of the failure. Cannot be {@code null}
      */
     public OperationFailedException(final Throwable cause, final ModelNode description) {
         super(cause);
+        assert description != null : "description is null";
         failureDescription = description;
     }
 
@@ -99,18 +113,18 @@ public class OperationFailedException extends Exception implements OperationClie
      *
      * @param msg the detail message
      * @param cause the cause (which is saved for later retrieval by the {@link #getCause()} method)
-     * @param description the description of the failure
+     * @param description the description of the failure. Cannot be {@code null}
      */
     public OperationFailedException(final String msg, final Throwable cause, final ModelNode description) {
         super(msg, cause);
+        assert description != null : "description is null";
         failureDescription = description;
     }
 
     /**
-     * Get the detyped failure description.
-     *
-     * @return the description
+     * {@inheritDoc}
      */
+    @Override
     public ModelNode getFailureDescription() {
         return failureDescription;
     }
