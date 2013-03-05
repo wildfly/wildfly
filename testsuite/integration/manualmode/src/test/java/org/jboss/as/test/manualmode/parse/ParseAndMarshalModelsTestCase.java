@@ -289,35 +289,6 @@ public class ParseAndMarshalModelsTestCase {
         standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-2-ha.xml"));
     }
 
-    @Test
-    public void test700StandalonePreviewXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-0-preview.xml"));
-    }
-
-    @Test
-    public void test701StandalonePreviewXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-1-preview.xml"));
-    }
-
-    @Test
-    public void test702StandalonePreviewXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-2-preview.xml"));
-    }
-
-    @Test
-    public void test700StandalonePreviewHAXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-0-preview.xml"));
-    }
-
-    @Test
-    public void test701StandalonePreviewHAXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-1-preview-ha.xml"));
-    }
-
-    @Test
-    public void test702StandalonePreviewHAXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-2-preview-ha.xml"));
-    }
 
     @Test
     public void test701StandaloneXtsXml() throws Exception {
@@ -599,24 +570,6 @@ public class ParseAndMarshalModelsTestCase {
     @TargetsContainer("class-jbossas")
     public void test702DomainXml() throws Exception {
         domainXmlTest(getLegacyConfigFile("domain", "7-0-2.xml"));
-    }
-
-    @Test
-    @TargetsContainer("class-jbossas")
-    public void test700DomainPreviewXml() throws Exception {
-        domainXmlTest(getLegacyConfigFile("domain", "7-0-0-preview.xml"));
-    }
-
-    @Test
-    @TargetsContainer("class-jbossas")
-    public void test701DomainPreviewXml() throws Exception {
-        domainXmlTest(getLegacyConfigFile("domain", "7-0-1-preview.xml"));
-    }
-
-    @Test
-    @TargetsContainer("class-jbossas")
-    public void test702DomainPreviewXml() throws Exception {
-        domainXmlTest(getLegacyConfigFile("domain", "7-0-2-preview.xml"));
     }
 
     @Test
