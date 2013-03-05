@@ -250,6 +250,32 @@ final class ManagedProcess {
         }
     }
 
+    public void destroy() {
+        synchronized (lock) {
+            if(state != State.STOPPING) {
+                // Try to stop before destroying the process
+                stop();
+            } else {
+                log.debugf("Destroying process '%s'", processName);
+                process.destroy();
+            }
+        }
+    }
+
+    public void kill() {
+        synchronized (lock) {
+            if(state != State.STOPPING) {
+                stop(); // Try to stop before killing the process
+            } else {
+                log.debugf("Attempting to kill -KILL process '%s'", processName);
+                if(! ProcessUtils.killProcess(processName)) {
+                    // Fallback to destroy if kill is not available
+                    process.destroy();
+                }
+            }
+        }
+    }
+
     public void shutdown() {
         synchronized (lock) {
             if(shutdown) {
