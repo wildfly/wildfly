@@ -26,9 +26,19 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import io.undertow.predicate.Predicates;
+import io.undertow.server.HttpServerExchange;
+import io.undertow.server.handlers.PredicateHandler;
+import io.undertow.server.handlers.RedirectHandler;
+import io.undertow.server.handlers.resource.ClassPathResourceManager;
 import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
+
+import static io.undertow.predicate.Predicates.not;
+import static io.undertow.predicate.Predicates.path;
+import static io.undertow.predicate.Predicates.suffixs;
 
 
 /**
@@ -43,9 +53,10 @@ public enum ConsoleMode {
      */
     CONSOLE {
         @Override
-        ResourceHandler createConsoleHandler(String slot) throws ModuleLoadException {
-            return new ConsoleHandler(slot);
+        ResourceHandlerDefinition createConsoleHandler(String slot) throws ModuleLoadException {
+            return ConsoleHandler.createConsoleHandler(slot);
         }
+
         @Override
         public boolean hasConsole() {
             return true;
@@ -56,9 +67,10 @@ public enum ConsoleMode {
      */
     SLAVE_HC {
         @Override
-        ResourceHandler createConsoleHandler(String slot) throws ModuleLoadException {
+        ResourceHandlerDefinition createConsoleHandler(String slot) throws ModuleLoadException {
             return DisabledConsoleHandler.createNoConsoleForSlave(slot);
         }
+
         @Override
         public boolean hasConsole() {
             return false;
@@ -67,11 +79,12 @@ public enum ConsoleMode {
     /**
      * If an attempt is made to go to the console show an error saying the server/host is in admin-only mode
      */
-    ADMIN_ONLY{
+    ADMIN_ONLY {
         @Override
-        ResourceHandler createConsoleHandler(String slot) throws ModuleLoadException {
+        ResourceHandlerDefinition createConsoleHandler(String slot) throws ModuleLoadException {
             return DisabledConsoleHandler.createNoConsoleForAdminMode(slot);
         }
+
         @Override
         public boolean hasConsole() {
             return false;
@@ -80,11 +93,12 @@ public enum ConsoleMode {
     /**
      * If an attempt is made to go to the console a 404 is shown
      */
-    NO_CONSOLE{
+    NO_CONSOLE {
         @Override
-        ResourceHandler createConsoleHandler(String slot) throws ModuleLoadException {
+        ResourceHandlerDefinition createConsoleHandler(String slot) throws ModuleLoadException {
             return null;
         }
+
         @Override
         public boolean hasConsole() {
             return false;
@@ -96,7 +110,7 @@ public enum ConsoleMode {
      *
      * @return the console handler, may be {@code null}
      */
-    ResourceHandler createConsoleHandler(String slot) throws ModuleLoadException {
+    ResourceHandlerDefinition createConsoleHandler(String slot) throws ModuleLoadException {
         throw new IllegalStateException("Not overridden for " + this);
     }
 
@@ -107,12 +121,13 @@ public enum ConsoleMode {
         throw new IllegalStateException("Not overridden for " + this);
     }
 
+
     /**
      * An extension of the ResourceHandler to configure the handler to server up resources from the console module only.
      *
      * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
      */
-    static class ConsoleHandler extends ResourceHandler {
+    static class ConsoleHandler {
 
         private static final String NOCACHE_JS = ".nocache.js";
         private static final String INDEX_HTML = "index.html";
@@ -122,13 +137,19 @@ public enum ConsoleMode {
         private static final String CONTEXT = "/console";
         private static final String DEFAULT_RESOURCE = "/" + INDEX_HTML;
 
-        ConsoleHandler(String skin) throws ModuleLoadException {
-            super(CONTEXT, DEFAULT_RESOURCE, findConsoleClassLoader(Module.getCallerModuleLoader(), skin));
-        }
+        static ResourceHandlerDefinition createConsoleHandler(String skin) throws ModuleLoadException {
+            final ClassPathResourceManager resource = new ClassPathResourceManager(findConsoleClassLoader(Module.getCallerModuleLoader(), skin), "");
+            final io.undertow.server.handlers.resource.ResourceHandler handler = new io.undertow.server.handlers.resource.ResourceHandler()
+                    .setCacheTime(60 * 60 * 24 * 31)
+                    .setAllowed(not(path("META-INF")))
+                    .setResourceManager(resource)
+                    .setDirectoryListingEnabled(false)
+                    .setCachable(not(suffixs(NOCACHE_JS, APP_HTML, INDEX_HTML)));
 
-        @Override
-        protected boolean skipCache(String resource) {
-            return resource.endsWith(NOCACHE_JS) || resource.endsWith(APP_HTML) || resource.endsWith(INDEX_HTML);
+            //we also need to setup the default resource redirect
+            PredicateHandler predicateHandler = new PredicateHandler(path(""), new RedirectHandler(CONTEXT + DEFAULT_RESOURCE), handler);
+            return new ResourceHandlerDefinition(CONTEXT, DEFAULT_RESOURCE, predicateHandler);
+
         }
 
         static ClassLoader findConsoleClassLoader(ModuleLoader moduleLoader, String consoleSkin) throws ModuleLoadException {
@@ -158,34 +179,35 @@ public enum ConsoleMode {
     /**
      * An extension of the ResourceHandler to configure the handler to show an error page when the console has been turned off.
      */
-    static class DisabledConsoleHandler extends ResourceHandler {
+    static class DisabledConsoleHandler {
 
         private static final String ERROR_MODULE = "org.jboss.as.domain-http-error-context";
         private static final String CONTEXT = "/consoleerror";
         private static final String NO_CONSOLE_FOR_SLAVE = "/noConsoleForSlaveDcError.html";
         private static final String NO_CONSOLE_FOR_ADMIN_MODE = "/noConsoleForAdminModeError.html";
 
-        private DisabledConsoleHandler(String slot, String resource) throws ModuleLoadException {
-            super(CONTEXT, resource, getClassLoader(Module.getCallerModuleLoader(), ERROR_MODULE, slot));
+        static ResourceHandlerDefinition createConsoleHandler(String slot, String resource) throws ModuleLoadException {
+            final ClassPathResourceManager cpresource = new ClassPathResourceManager(getClassLoader(Module.getCallerModuleLoader(), ERROR_MODULE, slot), "");
+            final io.undertow.server.handlers.resource.ResourceHandler handler = new io.undertow.server.handlers.resource.ResourceHandler()
+                    .setAllowed(not(path("META-INF")))
+                    .setResourceManager(cpresource)
+                    .setDirectoryListingEnabled(false)
+                    .setCachable(Predicates.<HttpServerExchange>falsePredicate());
+
+            //we also need to setup the default resource redirect
+            PredicateHandler predicateHandler = new PredicateHandler(path(""), new RedirectHandler(CONTEXT + resource), handler);
+            return new ResourceHandlerDefinition(CONTEXT, resource, predicateHandler);
         }
 
-        static DisabledConsoleHandler createNoConsoleForSlave(String slot) throws ModuleLoadException {
-            return new DisabledConsoleHandler(slot, NO_CONSOLE_FOR_SLAVE);
+
+        static ResourceHandlerDefinition createNoConsoleForSlave(String slot) throws ModuleLoadException {
+            return createConsoleHandler(slot, NO_CONSOLE_FOR_SLAVE);
         }
 
-        static DisabledConsoleHandler createNoConsoleForAdminMode(String slot) throws ModuleLoadException {
-            return new DisabledConsoleHandler(slot, NO_CONSOLE_FOR_ADMIN_MODE);
+        static ResourceHandlerDefinition createNoConsoleForAdminMode(String slot) throws ModuleLoadException {
+            return createConsoleHandler(slot, NO_CONSOLE_FOR_ADMIN_MODE);
         }
 
-        @Override
-        protected boolean skipCache(String resource) {
-            /*
-             * This context is not expected to be used a lot, however if the pages can
-             * be cached this can cause problems with new installations that may
-             * have different content.
-             */
-            return true;
-        }
     }
 
 
@@ -194,11 +216,10 @@ public enum ConsoleMode {
      * Package protected to allow unit testing.
      *
      * @param moduleName the name portion of the target module's {@code ModuleIdentifier}
-     *
      * @return set of console versions, sorted from highest version to lowest
      */
     static SortedSet<ConsoleVersion> findConsoleVersions(String moduleName) {
-        String path = moduleName.replace('.', '/') ;
+        String path = moduleName.replace('.', '/');
 
         final String modulePath = SecurityActions.getProperty("module.path");
         File[] moduleRoots = getFiles(modulePath, 0, 0);
@@ -244,5 +265,13 @@ public enum ConsoleMode {
             files[arrayIdx] = new File(modulePath.substring(stringIdx, i)).getAbsoluteFile();
         }
         return files;
+    }
+
+
+    protected static ClassLoader getClassLoader(final ModuleLoader moduleLoader, final String module, final String slot) throws ModuleLoadException {
+        ModuleIdentifier id = ModuleIdentifier.create(module, slot);
+        ClassLoader cl = moduleLoader.loadModule(id).getClassLoader();
+
+        return cl;
     }
 }
