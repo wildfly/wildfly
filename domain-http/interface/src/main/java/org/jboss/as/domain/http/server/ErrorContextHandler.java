@@ -23,15 +23,26 @@ package org.jboss.as.domain.http.server;
 
 import java.util.Locale;
 
+import io.undertow.predicate.Predicates;
+import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpServerExchange;
+import io.undertow.server.handlers.PredicateHandler;
+import io.undertow.server.handlers.RedirectHandler;
+import io.undertow.server.handlers.resource.ClassPathResourceManager;
 import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
+import org.jboss.modules.ModuleLoader;
+
+import static io.undertow.predicate.Predicates.not;
+import static io.undertow.predicate.Predicates.path;
 
 /**
  * ResourceHandler for the error context.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-class ErrorContextHandler extends ResourceHandler {
+class ErrorContextHandler {
 
     private static final String INDEX_HTML = "index.html";
     private static final String INDEX_WIN_HTML = "index_win.html";
@@ -50,23 +61,27 @@ class ErrorContextHandler extends ResourceHandler {
         }
     }
 
-    ErrorContextHandler(final String slot) throws ModuleLoadException {
-        super(ERROR_CONTEXT, DEFAULT_RESOURCE, getClassLoader(Module.getCallerModuleLoader(), ERROR_MODULE, slot));
+    private ErrorContextHandler() {
+
     }
 
+    public static HttpHandler createErrorContext(final String slot) throws ModuleLoadException {
+        final ClassPathResourceManager cpresource = new ClassPathResourceManager(getClassLoader(Module.getCallerModuleLoader(), ERROR_MODULE, slot), "");
+        final io.undertow.server.handlers.resource.ResourceHandler handler = new io.undertow.server.handlers.resource.ResourceHandler()
+                .setAllowed(not(path("META-INF")))
+                .setResourceManager(cpresource)
+                .setDirectoryListingEnabled(false)
+                .setCachable(Predicates.<HttpServerExchange>falsePredicate());
 
-    @Override
-    protected boolean skipCache(String resource) {
-        /*
-         * This context is not expected to be used a lot, however if the pages can
-         * be cached this can cause problems with new installations that may
-         * have different content.
-         */
-        return true;
+        //we also need to setup the default resource redirect
+        PredicateHandler predicateHandler = new PredicateHandler(path(""), new RedirectHandler(ERROR_CONTEXT + DEFAULT_RESOURCE), handler);
+        return predicateHandler;
     }
 
-    public static String getRealmRedirect() {
-        return ERROR_CONTEXT + DEFAULT_RESOURCE;
-    }
+    private static ClassLoader getClassLoader(final ModuleLoader moduleLoader, final String module, final String slot) throws ModuleLoadException {
+        ModuleIdentifier id = ModuleIdentifier.create(module, slot);
+        ClassLoader cl = moduleLoader.loadModule(id).getClassLoader();
 
+        return cl;
+    }
 }

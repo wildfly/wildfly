@@ -35,9 +35,9 @@ import io.undertow.util.HttpString;
 class ManagementRootConsoleRedirectHandler implements HttpHandler {
 
     private static HttpString HTTP_GET = new HttpString("GET");
-    private final ResourceHandler consoleHandler;
+    private final ResourceHandlerDefinition consoleHandler;
 
-    ManagementRootConsoleRedirectHandler(ResourceHandler consoleHandler) {
+    ManagementRootConsoleRedirectHandler(ResourceHandlerDefinition consoleHandler) {
         this.consoleHandler = consoleHandler;
     }
 
@@ -54,7 +54,7 @@ class ManagementRootConsoleRedirectHandler implements HttpHandler {
                 requestUrl = requestUrl.substring(0, requestUrl.length() - 1);
             }
             StringBuilder redirect = new StringBuilder(requestUrl);
-            redirect.append(consoleHandler.getDefaultPath());
+            redirect.append(consoleHandler.getContext() + consoleHandler.getDefaultPath());
             exchange.getResponseHeaders().add(Headers.LOCATION, redirect.toString());
 
             HttpHandlers.executeHandler(Common.MOVED_PERMANENTLY, exchange);

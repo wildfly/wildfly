@@ -21,11 +21,17 @@
  */
 package org.jboss.as.domain.http.server;
 
-import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
-import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
-import static org.xnio.Options.SSL_CLIENT_AUTH_MODE;
-import static org.xnio.SslClientAuthMode.REQUESTED;
-import static org.xnio.SslClientAuthMode.REQUIRED;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+
+import javax.net.ssl.SSLContext;
+
 import io.undertow.security.api.AuthenticationMechanism;
 import io.undertow.security.api.AuthenticationMode;
 import io.undertow.security.handlers.AuthenticationCallHandler;
@@ -44,19 +50,9 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpOpenListener;
 import io.undertow.server.handlers.CanonicalPathHandler;
 import io.undertow.server.handlers.PathHandler;
-import io.undertow.server.handlers.blocking.BlockingHandler;
-
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-
-import javax.net.ssl.SSLContext;
-
+import io.undertow.server.handlers.cache.CacheHandler;
+import io.undertow.server.handlers.cache.CachedHttpRequest;
+import io.undertow.server.handlers.cache.DirectBufferCache;
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.domain.http.server.security.AuthenticationMechanismWrapper;
@@ -84,6 +80,12 @@ import org.xnio.channels.AcceptingChannel;
 import org.xnio.channels.ConnectedStreamChannel;
 import org.xnio.ssl.JsseXnioSsl;
 import org.xnio.ssl.XnioSsl;
+
+import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
+import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
+import static org.xnio.Options.SSL_CLIENT_AUTH_MODE;
+import static org.xnio.SslClientAuthMode.REQUESTED;
+import static org.xnio.SslClientAuthMode.REQUIRED;
 
 /**
  * The general HTTP server for handling management API requests.
@@ -167,8 +169,8 @@ public class ManagementHttpServer {
     }
 
     public static ManagementHttpServer create(InetSocketAddress bindAddress, InetSocketAddress secureBindAddress, int backlog,
-            ModelControllerClient modelControllerClient, ExecutorService executorService, SecurityRealm securityRealm, ControlledProcessStateService controlledProcessStateService,
-            ConsoleMode consoleMode, String consoleSlot)
+                                              ModelControllerClient modelControllerClient, ExecutorService executorService, SecurityRealm securityRealm, ControlledProcessStateService controlledProcessStateService,
+                                              ConsoleMode consoleMode, String consoleSlot)
             throws IOException {
 
         HttpOpenListener openListener = new HttpOpenListener(new ByteBufferSlicePool(BufferAllocator.DIRECT_BYTE_BUFFER_ALLOCATOR, 4096, 10 * 4096), 4096);
@@ -188,9 +190,11 @@ public class ManagementHttpServer {
         if (securePort > 0) {
             current = new SinglePortConfidentialityHandler(current, securePort);
         }
+        //caching handler, used for static resources
+        current = new CacheHandler(new DirectBufferCache<CachedHttpRequest>(1024, 1024 * 1024, BufferAllocator.BYTE_BUFFER_ALLOCATOR), current);
         canonicalPathHandler.setNext(current);
 
-        ResourceHandler consoleHandler = null;
+        ResourceHandlerDefinition consoleHandler = null;
         try {
             consoleHandler = consoleMode.createConsoleHandler(consoleSlot);
         } catch (ModuleLoadException e) {
@@ -198,7 +202,7 @@ public class ManagementHttpServer {
         }
 
         try {
-            pathHandler.addPath(ErrorContextHandler.ERROR_CONTEXT, new BlockingHandler(new ErrorContextHandler(consoleSlot)));
+            pathHandler.addPath(ErrorContextHandler.ERROR_CONTEXT, ErrorContextHandler.createErrorContext(consoleSlot));
         } catch (ModuleLoadException e) {
             ROOT_LOGGER.error(consoleSlot == null ? "main" : consoleSlot);
         }
@@ -207,7 +211,7 @@ public class ManagementHttpServer {
         DomainApiCheckHandler domainApiHandler = new DomainApiCheckHandler(modelControllerClient, controlledProcessStateService);
         pathHandler.setDefaultHandler(rootConsoleRedirectHandler);
         if (consoleHandler != null) {
-            HttpHandler readinessHandler = new RedirectReadinessHandler(securityRealm, new BlockingHandler(consoleHandler),
+            HttpHandler readinessHandler = new RedirectReadinessHandler(securityRealm, consoleHandler.getHandler(),
                     ErrorContextHandler.ERROR_CONTEXT);
             pathHandler.addPath(consoleHandler.getContext(), readinessHandler);
         }
