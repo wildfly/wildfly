@@ -21,6 +21,8 @@
 */
 package org.jboss.as.controller.test;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NOTIFICATION_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
@@ -32,6 +34,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NOTIFICATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
@@ -47,6 +50,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_ADDED_NOTIFICATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_REMOVED_NOTIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
@@ -394,7 +399,7 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
 
     }
 
-    protected void checkRootNodeDescription(ModelNode result, boolean recursive, boolean operations) {
+    protected void checkRootNodeDescription(ModelNode result, boolean recursive, boolean operations, boolean notifications) {
         assertEquals("description", result.require(DESCRIPTION).asString());
         assertEquals("profile", result.require(CHILDREN).require(PROFILE).require(DESCRIPTION).asString());
 
@@ -416,6 +421,16 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
             assertFalse(result.get(OPERATIONS).isDefined());
         }
 
+        if (notifications) {
+            assertTrue(result.require(NOTIFICATIONS).isDefined());
+            Set<String> notifs = result.require(NOTIFICATIONS).keys();
+            assertTrue(notifs.contains(RESOURCE_ADDED_NOTIFICATION));
+            assertTrue(notifs.contains(RESOURCE_REMOVED_NOTIFICATION));
+            assertEquals(processType != ProcessType.DOMAIN_SERVER, notifs.contains(ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION));
+            for (String notif : notifs) {
+                assertEquals(notif, result.require(NOTIFICATIONS).require(notif).require(NOTIFICATION_TYPE).asString());
+            }
+        }
 
         if (!recursive) {
             assertFalse(result.require(CHILDREN).require(PROFILE).require(MODEL_DESCRIPTION).isDefined());
