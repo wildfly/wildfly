@@ -146,7 +146,12 @@ public class LegacyKernelServicesImpl extends AbstractKernelServicesImpl {
                         resource.writeModel(resourceDescription.get("domain-resource-model"));
                     }
 
-                    context.completeStep();
+                    context.completeStep(new OperationContext.RollbackHandler() {
+                        @Override
+                        public void handleRollback(OperationContext context, ModelNode operation) {
+                            // no-op
+                        }
+                    });
                 }catch (Exception e) {
                     throw new OperationFailedException(e.getMessage());
                 }
