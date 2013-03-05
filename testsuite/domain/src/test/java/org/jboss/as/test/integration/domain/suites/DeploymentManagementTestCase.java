@@ -33,6 +33,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLACE_DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
@@ -59,8 +61,11 @@ import java.net.URLConnection;
 import java.util.Collections;
 import java.util.List;
 
+import org.jboss.as.controller.HashUtil;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
@@ -70,6 +75,7 @@ import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -233,7 +239,6 @@ public class DeploymentManagementTestCase {
         performHttpCall(DomainTestSupport.slaveAddress, 8630);
     }
 
-
     @Test
     public void testDeploymentViaStream() throws Exception {
         ModelNode content = new ModelNode();
@@ -246,7 +251,6 @@ public class DeploymentManagementTestCase {
 
         performHttpCall(DomainTestSupport.masterAddress, 8080);
         performHttpCall(DomainTestSupport.slaveAddress, 8630);
-
     }
 
 
@@ -545,6 +549,7 @@ public class DeploymentManagementTestCase {
     public void testFullReplaceViaHash() throws Exception {
         // Establish the deployment
         testDeploymentViaStream();
+        byte[] original = getHash(ROOT_DEPLOYMENT_ADDRESS);
 
         String url = new File(tmpDir, "archives/" + TEST).toURI().toURL().toString();
         ModelNode op = getEmptyOperation(UPLOAD_DEPLOYMENT_URL, ROOT_ADDRESS);
@@ -557,6 +562,10 @@ public class DeploymentManagementTestCase {
         op = createDeploymentFullReplaceOperation(content);
 
         executeOnMaster(op);
+
+        // Check that the original content got removed!
+        testRemovedContent(testSupport.getDomainMasterLifecycleUtil(), original);
+        testRemovedContent(testSupport.getDomainSlaveLifecycleUtil(), original);
 
         //Thread.sleep(1000);
 
@@ -884,6 +893,19 @@ public class DeploymentManagementTestCase {
         return op;
     }
 
+    static byte[] getHash(final ModelNode address) throws IOException {
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
+        operation.get(OP_ADDR).set(address);
+        operation.get(NAME).set(CONTENT);
+
+        final ModelNode result = executeOnMaster(operation);
+        System.out.println(result);
+
+        return executeOnMaster(operation).get(0).get("hash").asBytes();
+    }
+
     private static void performHttpCall(String host, int port) throws IOException {
         performHttpCall(host, port, "test");
     }
@@ -910,4 +932,33 @@ public class DeploymentManagementTestCase {
             safeClose(writer);
         }
     }
+
+    static void testRemovedContent(final DomainLifecycleUtil util, final byte[] hash) {
+
+        final File home = new File(util.getConfiguration().getDomainDirectory());
+        // Domain contents
+        final File data = new File(home, "data");
+        final File contents = new File(data, "content");
+        checkRemoved(contents, hash);
+
+    }
+
+    static void checkRemoved(final File root, final byte[] hash) {
+
+        final String sha1 = HashUtil.bytesToHexString(hash);
+        final String partA = sha1.substring(0,2);
+        final String partB = sha1.substring(2);
+
+        final File da = new File(root, partA);
+        final File db = new File(da, partB);
+        final File content = new File(db, "content");
+
+        System.out.println("xx " + content.getAbsolutePath());
+
+        Assert.assertFalse(content.getAbsolutePath(), content.exists());
+        Assert.assertFalse(db.getAbsolutePath(), db.exists());
+        Assert.assertFalse(da.getAbsolutePath(), da.exists());
+
+    }
+
 }
