@@ -48,6 +48,7 @@ public class JBossMessageEndpointFactory implements MessageEndpointFactory {
                 .setClassLoader(classLoader)
                 .setProxyName(ejbClass.getName() + "$$$endpoint" + PROXY_ID.incrementAndGet())
                 .setSuperClass(ejbClass)
+                .setProtectionDomain(ejbClass.getProtectionDomain())
                 .addAdditionalInterface(MessageEndpoint.class);
         this.factory = new ProxyFactory<Object>(configuration);
     }
