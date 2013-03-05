@@ -64,6 +64,9 @@ import org.jboss.stdio.StdioContext;
  * @author Brian Stansberry
  */
 public final class Main {
+
+    private static final String PROCESS_NAME = "-D[Host Controller]";
+
     /**
      * The main method.
      *
@@ -205,7 +208,9 @@ public final class Main {
             final String arg = args[i];
 
             try {
-                if (CommandLineConstants.PROPERTIES.equals(arg) || CommandLineConstants.OLD_PROPERTIES.equals(arg)
+                if(PROCESS_NAME.equals(arg)) {
+                    // Skip the process name
+                } else if (CommandLineConstants.PROPERTIES.equals(arg) || CommandLineConstants.OLD_PROPERTIES.equals(arg)
                         || CommandLineConstants.SHORT_PROPERTIES.equals(arg)) {
                     // Set system properties from url/file
                     if (!processProperties(arg, args[++i], hostSystemProperties)) {
