@@ -156,13 +156,8 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         // in reverse order of how they should execute, as that is the way adding a Stage.IMMEDIATE step works
 
         // Last to execute is the handler that assembles the overall response from the pieces created by all the other steps
-<<<<<<< HEAD
-        final ReadResourceDescriptionAssemblyHandler assemblyHandler = new ReadResourceDescriptionAssemblyHandler(nodeDescription, operations, childResources);
-        context.addStep(assemblyHandler, OperationContext.Stage.MODEL, true);
-=======
         final ReadResourceDescriptionAssemblyHandler assemblyHandler = new ReadResourceDescriptionAssemblyHandler(nodeDescription, operations, notifications, childResources);
-        context.addStep(assemblyHandler, OperationContext.Stage.IMMEDIATE);
->>>>>>> [AS7-370] Notification Support
+        context.addStep(assemblyHandler, OperationContext.Stage.MODEL, true);
 
         if (ops) {
             for (final Map.Entry<String, OperationEntry> entry : realRegistry.getOperationDescriptions(PathAddress.EMPTY_ADDRESS, inherited).entrySet()) {
