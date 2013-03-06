@@ -28,7 +28,6 @@
     </resources>
 
     <dependencies>
-        <module name="org.jboss.classfilewriter"/>
         <module name="org.jboss.xnio"/>
         <module name="org.jboss.xnio.nio"/>
         <module name="org.jboss.logging"/>
