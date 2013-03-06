@@ -21,6 +21,8 @@
  */
 package org.jboss.as.server.deployment.module;
 
+import java.security.Permission;
+import java.security.Permissions;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -103,11 +105,13 @@ public class ModuleSpecification extends SimpleAttachable {
     /**
      * JBoss modules system dependencies, which allow you to specify dependencies on the app class loader
      * to get access to JDK classes.
-     *
-     * This is not
-     *
      */
     private final List<DependencySpec> moduleSystemDependencies = new ArrayList<DependencySpec>();
+
+    /**
+     * The minimum permission set for this module.
+     */
+    private final Permissions permissions = new Permissions();
 
     public void addSystemDependency(final ModuleDependency dependency) {
         if (!exclusions.contains(dependency.getIdentifier()) && !systemDependenciesSet.contains(dependency.getIdentifier())) {
@@ -308,5 +312,25 @@ public class ModuleSpecification extends SimpleAttachable {
 
     public List<DependencySpec> getModuleSystemDependencies() {
         return Collections.unmodifiableList(moduleSystemDependencies);
+    }
+
+    /**
+     * Add a permission to this deployment.  This may include permissions not explicitly specified
+     * in the domain configuration; such permissions must be validated before being added.
+     *
+     * @param permission the permission to add
+     */
+    public void addPermission(final Permission permission) {
+        permissions.add(permission);
+    }
+
+    /**
+     * Get the permission set for this deployment.  This may include permissions not explicitly specified
+     * in the domain configuration; such permissions must be validated before being added.
+     *
+     * @return the permission set for this deployment
+     */
+    public Permissions getPermissions() {
+        return permissions;
     }
 }

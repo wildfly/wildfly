@@ -23,11 +23,15 @@
 package org.jboss.as.server.deployment.module;
 
 import java.io.IOException;
+import java.security.Permission;
+import java.security.Permissions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Enumeration;
 import java.util.List;
 
+import java.util.PropertyPermission;
 import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.deployment.Attachments;
@@ -147,6 +151,30 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         module.addSystemDependencies(moduleSpecification.getSystemDependencies());
     }
 
+    private static final Permissions DEFAULT_PERMISSIONS;
+
+    static {
+        final Permissions permissions = new Permissions();
+        permissions.add(new PropertyPermission("file.encoding", "read"));
+        permissions.add(new PropertyPermission("file.separator", "read"));
+        permissions.add(new PropertyPermission("java.class.version", "read"));
+        permissions.add(new PropertyPermission("java.specification.version", "read"));
+        permissions.add(new PropertyPermission("java.specification.vendor", "read"));
+        permissions.add(new PropertyPermission("java.specification.name", "read"));
+        permissions.add(new PropertyPermission("java.vendor", "read"));
+        permissions.add(new PropertyPermission("java.vendor.url", "read"));
+        permissions.add(new PropertyPermission("java.version", "read"));
+        permissions.add(new PropertyPermission("java.vm.name", "read"));
+        permissions.add(new PropertyPermission("java.vm.vendor", "read"));
+        permissions.add(new PropertyPermission("java.vm.version", "read"));
+        permissions.add(new PropertyPermission("line.separator", "read"));
+        permissions.add(new PropertyPermission("os.name", "read"));
+        permissions.add(new PropertyPermission("os.version", "read"));
+        permissions.add(new PropertyPermission("os.arch", "read"));
+        permissions.add(new PropertyPermission("path.separator", "read"));
+        permissions.setReadOnly();
+        DEFAULT_PERMISSIONS = permissions;
+    }
 
     private ServiceName createModuleService(final DeploymentPhaseContext phaseContext, final DeploymentUnit deploymentUnit,
                                             final List<ResourceRoot> resourceRoots, final ModuleSpecification moduleSpecification,
@@ -183,6 +211,15 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
             specBuilder.addDependency(DependencySpec.createLocalDependencySpec());
             createDependencies(specBuilder, localDependencies, moduleSpecification.isLocalDependenciesTransitive());
         }
+
+        final Permissions permissions = moduleSpecification.getPermissions();
+        final Enumeration<Permission> e = DEFAULT_PERMISSIONS.elements();
+        while (e.hasMoreElements()) {
+            permissions.add(e.nextElement());
+        }
+        // TODO: servlet context temp dir FilePermission
+
+        specBuilder.setPermissionCollection(permissions);
 
         final DelegatingClassFileTransformer delegatingClassFileTransformer = new DelegatingClassFileTransformer();
         specBuilder.setClassFileTransformer(delegatingClassFileTransformer);
