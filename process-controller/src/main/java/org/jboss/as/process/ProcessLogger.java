@@ -260,7 +260,7 @@ interface ProcessLogger extends BasicLogger {
     void waitingToRestart(int seconds, String processName);
 
     @LogMessage(level = WARN)
-    @Message(id = 12021, value = "Failed to kill process, trying to destroy the process instead.")
+    @Message(id = 12021, value = "Failed to kill process '%s', trying to destroy the process instead.")
     void failedToKillProcess(String process);
 
 }
