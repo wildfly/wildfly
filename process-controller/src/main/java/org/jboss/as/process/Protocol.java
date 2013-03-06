@@ -42,6 +42,8 @@ public final class Protocol {
     public static final int REQUEST_PROCESS_INVENTORY = 0x15;
     public static final int RECONNECT_PROCESS = 0x16;
     public static final int SHUTDOWN = 0x17;
+    public static final int DESTROY_PROECESS = 0x18;
+    public static final int KILL_PROCESS = 0x19;
 
     // outbound messages
 

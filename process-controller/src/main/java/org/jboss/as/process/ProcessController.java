@@ -151,6 +151,30 @@ public final class ProcessController {
         }
     }
 
+    public void destroyProcess(final String processName) {
+        synchronized (lock) {
+            final Map<String, ManagedProcess> processes = this.processes;
+            final ManagedProcess process = processes.get(processName);
+            if (process == null) {
+                // ignore
+                return;
+            }
+            process.destroy();
+        }
+    }
+
+    public void killProcess(final String processName) {
+        synchronized (lock) {
+            final Map<String, ManagedProcess> processes = this.processes;
+            final ManagedProcess process = processes.get(processName);
+            if (process == null) {
+                // ignore
+                return;
+            }
+            process.kill();
+        }
+    }
+
     public void removeProcess(final String processName) {
         synchronized (lock) {
             final Map<String, ManagedProcess> processes = this.processes;
