@@ -60,7 +60,6 @@
    <subsystems name="full">
       <!-- Each subsystem to be included relative to the src/main/resources directory -->
       <subsystem>configuration/subsystems/logging.xml</subsystem>
-      <subsystem>configuration/subsystems/cmp.xml</subsystem>
       <subsystem>configuration/subsystems/configadmin.xml</subsystem>
       <subsystem>configuration/subsystems/datasources.xml</subsystem>
       <subsystem>configuration/subsystems/ee.xml</subsystem>
@@ -91,7 +90,6 @@
    <subsystems name="full-ha">
       <!-- Each subsystem to be included relative to the src/main/resources directory -->
       <subsystem>configuration/subsystems/logging.xml</subsystem>
-      <subsystem>configuration/subsystems/cmp.xml</subsystem>
       <subsystem>configuration/subsystems/configadmin.xml</subsystem>
       <subsystem>configuration/subsystems/datasources.xml</subsystem>
       <subsystem>configuration/subsystems/ee.xml</subsystem>

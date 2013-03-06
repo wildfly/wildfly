@@ -22,8 +22,6 @@
 
 package org.jboss.as.test.integration.ejb.security.callerprincipal;
 
-import javax.ejb.EJBHome;
-import javax.ejb.ObjectNotFoundException;
 import javax.jms.DeliveryMode;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
@@ -56,8 +54,6 @@ import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.dmr.ModelNode;
-import org.jboss.ejb.client.EJBClient;
-import org.jboss.ejb.client.EJBHomeLocator;
 import org.jboss.logging.Logger;
 import org.jboss.security.client.SecurityClient;
 import org.jboss.security.client.SecurityClientFactory;
@@ -185,20 +181,6 @@ public class GetCallerPrincipalTestCase {
         return jar;
     }
 
-    @Deployment(managed=false, testable = false, name = "eb", order = 103)
-    public static Archive<?> deploymentEntityBean()  {
-        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "eb.jar")
-                .addClass(EntityBeanBean.class)
-                .addClass(EntityBeanHome.class)
-                .addClass(EntityBean.class)
-                .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-bean", "MANIFEST.MF")
-                .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
-                .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
-        jar.addPackage(CommonCriteria.class.getPackage());
-        log.info(jar.toString(true));
-        return jar;
-    }
-
     @Deployment(managed = true, testable = true, name="test", order = 3)
     public static Archive<?> deployment()  {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "callerprincipal-test.jar")
@@ -207,7 +189,6 @@ public class GetCallerPrincipalTestCase {
                 .addClass(SLSBWithoutSecurityDomain.class)
                 .addClass(ISLSBWithoutSecurityDomain.class)
                 .addClass(PollingUtils.class)
-                .addClass(EntityBean.class)
                 .addClasses(JmsQueueSetup.class, EjbSecurityDomainSetup.class, AbstractSecurityDomainSetup.class, AbstractMgmtTestBase.class)
                 .addPackage(AbstractMgmtTestBase.class.getPackage()).addClasses(MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class)
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "users.properties", "users.properties")
@@ -337,48 +318,4 @@ public class GetCallerPrincipalTestCase {
         }
     }
 
-    @Test
-    public void testEBActivate() throws Exception {
-        deployer.deploy("eb");
-
-        final ITestResultsSingleton results = this.getResultsSingleton();
-
-        EntityBeanHome ebHome = getHome(EntityBeanHome.class, "EntityBeanCallerPrincipal");
-        EntityBean entityBean = null;
-
-        try {
-            entityBean = ebHome.findByPrimaryKey("test");
-        } catch (ObjectNotFoundException e) {
-            entityBean = ebHome.create("test");
-        }
-        Assert.assertNotNull("EntityBean was not created or found!", entityBean);
-
-        SecurityClient client = this.login();
-
-        try {
-            Assert.assertNull("ejbActivate was called after create/findByPrimaryKey which is a spec violation!", results.getEb("ejbactivate"));
-            Assert.assertEquals("EntityBean does not have the correct id", "test", entityBean.getId());
-            Assert.assertEquals("ejbActivate was NOT called after invoke a business method which is a spec violation!", OK, results.getEb("ejbactivate"));
-        } finally {
-            tearDownEB(entityBean);
-            client.logout();
-        }
-        deployer.undeploy("eb");
-    }
-
-
-    // app name: simple jar - empty app name
-    // module name: name of jar = eb
-    private <T extends EJBHome> T getHome(final Class<T> homeClass, final String beanName) {
-        final EJBHomeLocator<T> locator = new EJBHomeLocator<T>(homeClass, "", "eb", beanName, "");
-        return EJBClient.createProxy(locator);
-    }
-
-    private void tearDownEB(EntityBean eb) throws Exception {
-        try {
-            eb.remove();
-        } catch(Exception e) {
-            // ;)
-        }
-    }
 }
