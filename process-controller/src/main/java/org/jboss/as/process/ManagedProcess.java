@@ -253,8 +253,7 @@ final class ManagedProcess {
     public void destroy() {
         synchronized (lock) {
             if(state != State.STOPPING) {
-                // Try to stop before destroying the process
-                stop();
+                stop(); // Try to stop before destroying the process
             } else {
                 log.debugf("Destroying process '%s'", processName);
                 process.destroy();
@@ -270,6 +269,7 @@ final class ManagedProcess {
                 log.debugf("Attempting to kill -KILL process '%s'", processName);
                 if(! ProcessUtils.killProcess(processName)) {
                     // Fallback to destroy if kill is not available
+                    log.failedToKillProcess(processName);
                     process.destroy();
                 }
             }

@@ -243,6 +243,28 @@ public final class ProcessControllerServerHandler implements ConnectionHandler {
                             }
                             break;
                         }
+                        case Protocol.DESTROY_PROECESS: {
+                            if (isPrivileged) {
+                                operationType = ProcessMessageHandler.OperationType.STOP;
+                                processName = readUTFZBytes(dataStream);
+                                processController.destroyProcess(processName);
+                            } else {
+                                SERVER_LOGGER.tracef("Ignoring destroy_process message from untrusted source");
+                            }
+                            dataStream.close();
+                            break;
+                        }
+                        case Protocol.KILL_PROCESS: {
+                            if (isPrivileged) {
+                                operationType = ProcessMessageHandler.OperationType.STOP;
+                                processName = readUTFZBytes(dataStream);
+                                processController.killProcess(processName);
+                            } else {
+                                SERVER_LOGGER.tracef("Ignoring destroy_process message from untrusted source");
+                            }
+                            dataStream.close();
+                            break;
+                        }
                         default: {
                             SERVER_LOGGER.receivedUnknownMessageCode(Integer.valueOf(cmd));
                             // unknown
