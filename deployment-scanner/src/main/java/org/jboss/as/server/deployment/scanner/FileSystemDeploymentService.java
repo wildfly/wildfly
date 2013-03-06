@@ -42,9 +42,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.server.deployment.DeploymentAddHandler;
 import org.jboss.as.server.deployment.DeploymentDeployHandler;
@@ -56,7 +54,6 @@ import org.jboss.as.server.deployment.scanner.ZipCompletionScanner.NonScannableZ
 import org.jboss.as.server.deployment.scanner.api.DeploymentScanner;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.msc.service.ServiceController;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
@@ -243,11 +240,6 @@ class FileSystemDeploymentService implements DeploymentScanner {
     @Override
     public void setDeploymentTimeout(long deploymentTimeout) {
         this.deploymentTimeout = deploymentTimeout;
-    }
-
-    @Override
-    public void bootTimeScan(final OperationContext context, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) {
-
     }
 
     @Override
