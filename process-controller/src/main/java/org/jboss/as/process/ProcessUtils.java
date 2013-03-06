@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Process utilities.
+ * Process utilities to kill a process.
  */
 abstract class ProcessUtils {
 
@@ -110,7 +110,7 @@ abstract class ProcessUtils {
         if(processes.isEmpty()) {
             ProcessLogger.ROOT_LOGGER.debugf("process not found '%s'", processName);
         } else {
-            ProcessLogger.ROOT_LOGGER.debugf("ambiguous result. multiple processes available for '%s'", processName);
+            ProcessLogger.ROOT_LOGGER.debugf("ambiguous result. multiple processes found for '%s'", processName);
         }
         return -1;
     }

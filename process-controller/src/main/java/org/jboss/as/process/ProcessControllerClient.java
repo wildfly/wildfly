@@ -323,6 +323,34 @@ public final class ProcessControllerClient implements Closeable {
         }
     }
 
+    public void destroyProcess(String processName) throws IOException {
+        if (processName == null) {
+            throw MESSAGES.nullVar("processName");
+        }
+        final OutputStream os = connection.writeMessage();
+        try {
+            os.write(Protocol.DESTROY_PROECESS);
+            writeUTFZBytes(os, processName);
+            os.close();
+        } finally {
+            safeClose(os);
+        }
+    }
+
+    public void killProcess(String processName) throws IOException {
+        if (processName == null) {
+            throw MESSAGES.nullVar("processName");
+        }
+        final OutputStream os = connection.writeMessage();
+        try {
+            os.write(Protocol.KILL_PROCESS);
+            writeUTFZBytes(os, processName);
+            os.close();
+        } finally {
+            safeClose(os);
+        }
+    }
+
     public void close() throws IOException {
         connection.close();
     }
