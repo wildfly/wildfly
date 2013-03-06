@@ -23,7 +23,6 @@
 package org.jboss.as.patching.metadata;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * The patch metadata.

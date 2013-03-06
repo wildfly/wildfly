@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Arrays;
-import java.util.Collection;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
@@ -40,7 +39,6 @@ import org.jboss.as.cli.handlers.SimpleTabCompleter;
 import org.jboss.as.cli.handlers.WindowsFilenameTabCompleter;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
-import org.jboss.as.cli.impl.CommaSeparatedCompleter;
 import org.jboss.as.cli.impl.DefaultCompleter;
 import org.jboss.as.cli.impl.FileSystemPathArgument;
 import org.jboss.as.cli.operation.ParsedCommandLine;

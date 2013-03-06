@@ -27,7 +27,6 @@ import org.jboss.as.patching.runner.PatchingException;
 import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Param;
 
 import java.io.IOException;

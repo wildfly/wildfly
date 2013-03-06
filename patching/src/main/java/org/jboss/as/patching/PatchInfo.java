@@ -22,8 +22,6 @@
 
 package org.jboss.as.patching;
 
-import org.jboss.as.boot.DirectoryStructure;
-
 import java.io.File;
 import java.util.List;
 
