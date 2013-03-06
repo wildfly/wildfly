@@ -70,10 +70,6 @@
             <artifactId>jboss-as-domain-management</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-remoting</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging</artifactId>
             <scope>provided</scope>
@@ -90,7 +86,7 @@
             <groupId>org.jboss.sasl</groupId>
             <artifactId>jboss-sasl</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

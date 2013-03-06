@@ -44,12 +44,6 @@ public class Common {
     static final String APPLICATION_DMR_ENCODED = "application/dmr-encoded";
     static final String APPLICATION_JSON = "application/json";
     static final String TEXT_PLAIN = "text/plain";
-    static final String APPLICATION_JAVASCRIPT = "application/javascript";
-    static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
-    static final String IMAGE_GIF = "image/gif";
-    static final String IMAGE_JPEG = "image/jpeg";
-    static final String IMAGE_PNG = "image/png";
-    static final String TEXT_CSS = "text/css";
     static final String TEXT_HTML = "text/html";
 
 
