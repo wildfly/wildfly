@@ -72,38 +72,38 @@ public class ValidateAddressOperationHandler implements OperationStepHandler {
         final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
         Resource model = resource;
         final Iterator<PathElement> iterator = pathAddr.iterator();
-        int index = 0;
+        PathAddress current = PathAddress.EMPTY_ADDRESS;
         out: while(iterator.hasNext()) {
             final PathElement next = iterator.next();
-            index++;
-            if(model.hasChild(next)) {
-                model = model.getChild(next);
-            } else {
-                final PathAddress subAddress = pathAddr.subAddress(0, index);
-                final ImmutableManagementResourceRegistration registration = context.getResourceRegistration().getSubModel(subAddress);
+            current = current.append(next);
 
-                if(registration != null) {
-                    // If the target is a registered proxy return immediately
-                    boolean remote = registration.isRemote();
-                    if(remote && ! iterator.hasNext()) {
-                        break out;
-                    }
-                    // Create the proxy op
-                    final PathAddress newAddress = pathAddr.subAddress(index);
-                    final ModelNode newOperation = operation.clone();
-                    newOperation.get(OP_ADDR).set(subAddress.toModelNode());
-                    newOperation.get(VALUE).set(newAddress.toModelNode());
+            // Check if the registration is a proxy and dispatch directly
+            final ImmutableManagementResourceRegistration registration = context.getResourceRegistration().getSubModel(current);
+            if(registration != null && registration.isRemote()) {
 
-                    // On the DC the host=master is not a proxy but the validate-address is registered at the root
-                    // Otherwise delegate to the proxy handler
-                    final OperationStepHandler proxyHandler = registration.getOperationHandler(PathAddress.EMPTY_ADDRESS, OPERATION_NAME);
-                    if(proxyHandler != null) {
-                        context.addStep(newOperation, proxyHandler, OperationContext.Stage.MODEL, true);
-                        context.stepCompleted();
-                        return;
-                    }
+                // If the target is a registered proxy return immediately
+                if(! iterator.hasNext()) {
+                    break out;
                 }
 
+                // Create the proxy op
+                final PathAddress newAddress = pathAddr.subAddress(current.size());
+                final ModelNode newOperation = operation.clone();
+                newOperation.get(OP_ADDR).set(current.toModelNode());
+                newOperation.get(VALUE).set(newAddress.toModelNode());
+
+                // On the DC the host=master is not a proxy but the validate-address is registered at the root
+                // Otherwise delegate to the proxy handler
+                final OperationStepHandler proxyHandler = registration.getOperationHandler(PathAddress.EMPTY_ADDRESS, OPERATION_NAME);
+                if(proxyHandler != null) {
+                    context.addStep(newOperation, proxyHandler, OperationContext.Stage.MODEL, true);
+                    context.stepCompleted();
+                    return;
+                }
+
+            } else if (model.hasChild(next)) {
+                model = model.getChild(next);
+            } else {
                 // Invalid
                 context.getResult().get(VALID).set(false);
                 context.getResult().get(PROBLEM).set(ControllerMessages.MESSAGES.childResourceNotFound(next));
