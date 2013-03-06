@@ -45,6 +45,8 @@ import org.xnio.IoUtils;
  */
 public class ChildFirstClassLoaderBuilder {
 
+    //Use this property on the lightning runs to make sure that people have set the root and cache properties
+    private static final String STRICT_PROPERTY = "org.jboss.model.test.cache.strict";
     private static final String ROOT_PROPERTY = "org.jboss.model.test.root";
     private static final String CACHE_FOLDER_PROPERTY = "org.jboss.model.test.classpath.cache";
 
@@ -59,13 +61,15 @@ public class ChildFirstClassLoaderBuilder {
         String root = System.getProperty(ROOT_PROPERTY);
         String cacheFolderName = System.getProperty(CACHE_FOLDER_PROPERTY);
         if (root == null && cacheFolderName == null) {
+            if (System.getProperty(STRICT_PROPERTY) != null) {
+                throw new IllegalStateException("Please use the " + ROOT_PROPERTY + " and " + CACHE_FOLDER_PROPERTY + " system properties to take advantage of cached classpaths");
+            }
             cache = new File("target", "cached-classloader");
             cache.mkdirs();
             if (!cache.exists()) {
                 throw new IllegalStateException("Could not create cache file");
             }
-            //TODO Get rid of this
-            throw new IllegalStateException("TODO use the project target directory");
+            System.out.println("To optimize this test use the " + ROOT_PROPERTY + " and " + CACHE_FOLDER_PROPERTY + " system properties to take advantage of cached classpaths");
         } else if (root != null && cacheFolderName != null){
             if (cacheFolderName.indexOf('/') != -1 && cacheFolderName.indexOf('\\') != -1){
                 throw new IllegalStateException("Please use either '/' or '\\' as a file separator");
