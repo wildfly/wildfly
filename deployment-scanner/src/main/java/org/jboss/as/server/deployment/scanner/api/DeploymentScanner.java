@@ -22,12 +22,7 @@
 
 package org.jboss.as.server.deployment.scanner.api;
 
-import java.util.List;
-
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.server.deployment.scanner.DeploymentOperations;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -138,15 +133,4 @@ public interface DeploymentScanner {
      */
     void setDeploymentTimeout(long timeout);
 
-    /**
-     * Unused legacy method only retained to avoid breaking any custom implementations of this interface.
-     *
-     * @param context usage unspecified
-     * @param verificationHandler usage unspecified
-     * @param newControllers usage unspecified
-     *
-     * @deprecated not implemented in the standard implementation of this interface and not used in the server boot
-     */
-    @Deprecated
-    void bootTimeScan(OperationContext context, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers);
 }
