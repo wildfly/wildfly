@@ -62,6 +62,7 @@ import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.host.controller.model.host.HostResourceDefinition;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.as.model.test.ModelTestModelControllerService;
+import org.jboss.as.model.test.ModelTestOperationValidatorFilter;
 import org.jboss.as.model.test.StringConfigurationPersister;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.repository.ContentRepository;
@@ -96,9 +97,9 @@ class TestModelControllerService extends ModelTestModelControllerService {
     private final ExtensionRegistry extensionRegistry;
     private volatile Initializer initializer;
 
-    TestModelControllerService(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, boolean validateOps,
+    TestModelControllerService(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, ModelTestOperationValidatorFilter validateOpsFilter,
             TestModelType type, ModelInitializer modelInitializer, DelegatingResourceDefinition rootResourceDefinition, ControlledProcessState processState, ExtensionRegistry extensionRegistry) {
-        super(processType, runningModeControl, null, persister, validateOps, rootResourceDefinition, processState);
+        super(processType, runningModeControl, null, persister, validateOpsFilter, rootResourceDefinition, processState);
         this.type = type;
         this.runningModeControl = runningModeControl;
         this.pathManagerService = type == TestModelType.STANDALONE ? new ServerPathManagerService() : new HostPathManagerService();
@@ -126,9 +127,9 @@ class TestModelControllerService extends ModelTestModelControllerService {
         }
     }
 
-    static TestModelControllerService create(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, boolean validateOps,
+    static TestModelControllerService create(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, ModelTestOperationValidatorFilter validateOpsFilter,
             TestModelType type, ModelInitializer modelInitializer, ExtensionRegistry extensionRegistry) {
-        return new TestModelControllerService(processType, runningModeControl, persister, validateOps, type, modelInitializer, new DelegatingResourceDefinition(type), new ControlledProcessState(true), extensionRegistry);
+        return new TestModelControllerService(processType, runningModeControl, persister, validateOpsFilter, type, modelInitializer, new DelegatingResourceDefinition(type), new ControlledProcessState(true), extensionRegistry);
     }
 
     InjectedValue<ContentRepository> getContentRepositoryInjector(){

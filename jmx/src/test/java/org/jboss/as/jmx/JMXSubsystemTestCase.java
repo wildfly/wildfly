@@ -34,12 +34,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UND
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.xml.stream.XMLStreamException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -57,6 +58,7 @@ import org.jboss.as.controller.transform.OperationTransformer.TransformedOperati
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.AttributesPathAddressConfig;
 import org.jboss.as.model.test.ModelFixer;
+import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.remoting.EndpointService;
@@ -470,15 +472,15 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
 
     @Test
     public void testTransformationAS712() throws Exception {
-        testTransformation_1_0_0("org.jboss.as:jboss-as-jmx:7.1.2.Final");
+        testTransformation_1_0_0(ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
     public void testTransformationAS713() throws Exception {
-        testTransformation_1_0_0("org.jboss.as:jboss-as-jmx:7.1.3.Final");
+        testTransformation_1_0_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
-    private void testTransformation_1_0_0(String mavenGAV) throws Exception {
+    private void testTransformation_1_0_0(ModelTestControllerVersion controllerVersion) throws Exception {
         String subsystemXml =
                 "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
                 "   <expose-resolved-model domain-name=\"jboss.as\" proper-property-format=\"false\"/>" +
@@ -488,9 +490,9 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         ModelVersion oldVersion = ModelVersion.create(1, 0, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(new BaseAdditionalInitalization())
                 .setSubsystemXml(subsystemXml);
-        builder.createLegacyKernelServicesBuilder(null, oldVersion)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, oldVersion)
                 .setExtensionClassName(JMXExtension.class.getName())
-                .addMavenResourceURL(mavenGAV)
+                .addMavenResourceURL("org.jboss.as:jboss-as-jmx:" + controllerVersion.getMavenGavVersion())
                 .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, new ModelFixer() {
                     @Override
                     public ModelNode fixModel(ModelNode modelNode) {
@@ -506,8 +508,21 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         KernelServices legacyServices = mainServices.getLegacyServices(oldVersion);
         Assert.assertNotNull(legacyServices);
 
+        ModelFixer modelFixer7_1_x = new ModelFixer() {
+            public ModelNode fixModel(ModelNode modelNode) {
+                if (modelNode.hasDefined("remoting-connector")) {
+                    if (modelNode.get("remoting-connector").hasDefined("jmx")) {
+                        if (modelNode.get("remoting-connector", "jmx").keys().size() == 0) {
+                            //The default is true, 7.1.x does not include the default for this value
+                            modelNode.get("remoting-connector", "jmx", "use-management-endpoint").set(true);
+                        }
+                    }
+                }
+                return modelNode;
+            }
+        };
 
-        ModelNode legacyModel = checkSubsystemModelTransformation(mainServices, oldVersion);
+        ModelNode legacyModel = checkSubsystemModelTransformation(mainServices, oldVersion, modelFixer7_1_x);
         check_1_0_0_Model(legacyModel.get(SUBSYSTEM, JMXExtension.SUBSYSTEM_NAME), true, true);
 
         //Test that show-model=>expression is ignored
@@ -559,7 +574,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         transformedOp = mainServices.transformOperation(oldVersion, op);
         checkOutcome(mainServices.executeOperation(op));
         checkOutcome(mainServices.executeOperation(oldVersion, transformedOp));
-        legacyModel = checkSubsystemModelTransformation(mainServices, oldVersion);
+        legacyModel = checkSubsystemModelTransformation(mainServices, oldVersion, modelFixer7_1_x);
         check_1_0_0_Model(legacyModel.get(SUBSYSTEM, getMainSubsystemName()), true, false);
 
         op = createOperation(ADD, CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED);
@@ -567,18 +582,31 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         transformedOp = mainServices.transformOperation(oldVersion, op);
         checkOutcome(mainServices.executeOperation(op));
         checkOutcome(mainServices.executeOperation(oldVersion, transformedOp));
-        legacyModel = checkSubsystemModelTransformation(mainServices, oldVersion);
+        legacyModel = checkSubsystemModelTransformation(mainServices, oldVersion, modelFixer7_1_x);
         check_1_0_0_Model(legacyModel.get(SUBSYSTEM, getMainSubsystemName()), true, true);
+
+        op = Util.getWriteAttributeOperation(PathAddress.pathAddress(
+                    PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()),
+                    PathElement.pathElement(CommonAttributes.REMOTING_CONNECTOR, CommonAttributes.JMX)),
+                CommonAttributes.USE_MANAGEMENT_ENDPOINT, false);
+        ModelTestUtils.checkOutcome(mainServices.executeOperation(oldVersion, mainServices.transformOperation(oldVersion, op)));
+        transformedOp = mainServices.transformOperation(oldVersion, op);
+        checkOutcome(mainServices.executeOperation(op));
+        checkOutcome(mainServices.executeOperation(oldVersion, transformedOp));
+        legacyModel = checkSubsystemModelTransformation(mainServices, oldVersion, modelFixer7_1_x);
+        check_1_0_0_Model(legacyModel.get(SUBSYSTEM, getMainSubsystemName()), true, true);
+        Assert.assertFalse(legacyModel.get(SUBSYSTEM, getMainSubsystemName(), CommonAttributes.REMOTING_CONNECTOR, CommonAttributes.JMX, CommonAttributes.USE_MANAGEMENT_ENDPOINT).asBoolean());
     }
+
 
     @Test
     public void testRejectExpressionsAS712() throws Exception {
-        testRejectExpressions_1_0_0("org.jboss.as:jboss-as-jmx:7.1.2.Final");
+        testRejectExpressions_1_0_0(ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
     public void testRejectExpressionsAS713() throws Exception {
-        testRejectExpressions_1_0_0("org.jboss.as:jboss-as-jmx:7.1.3.Final");
+        testRejectExpressions_1_0_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
     /**
@@ -586,7 +614,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
      *
      * @throws Exception
      */
-    private void testRejectExpressions_1_0_0(String mavenGAV) throws Exception {
+    private void testRejectExpressions_1_0_0(ModelTestControllerVersion controllerVersion) throws Exception {
         String subsystemXml =
             "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
                     "   <expose-resolved-model domain-name=\"${test.domain-name:non-standard}\" proper-property-format=\"${test.proper-property-format:true}\"/>" +
@@ -599,8 +627,8 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
 
         // create builder for legacy subsystem version
         ModelVersion version_1_0_0 = ModelVersion.create(1, 0, 0);
-        builder.createLegacyKernelServicesBuilder(null, version_1_0_0)
-                .addMavenResourceURL(mavenGAV);
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_0_0)
+                .addMavenResourceURL("org.jboss.as:jboss-as-jmx:" + controllerVersion.getMavenGavVersion());
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());

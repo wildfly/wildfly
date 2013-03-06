@@ -37,6 +37,7 @@ class OperationCancellationException extends CancellationException implements Op
 
     public OperationCancellationException(String message) {
         super(message);
+        assert message != null : "message is null";
     }
 
     @Override

@@ -27,7 +27,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import java.util.NoSuchElementException;
 
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -42,32 +41,8 @@ import org.jboss.msc.service.ServiceName;
 public abstract class RestartParentWriteAttributeHandler extends AbstractWriteAttributeHandler<ModelNode> {
     private final String parentKeyName;
 
-    /** @deprecated use a variant that takes {@link AttributeDefinition} */
-    @Deprecated
-    @SuppressWarnings("deprecation")
-    public RestartParentWriteAttributeHandler(String parentKeyName) {
-        this.parentKeyName = parentKeyName;
-    }
-
-    /** @deprecated use a variant that takes {@link AttributeDefinition} */
-    @Deprecated
-    @SuppressWarnings("deprecation")
-    public RestartParentWriteAttributeHandler(String parentKeyName, ParameterValidator validator) {
-        super(validator);
-        this.parentKeyName = parentKeyName;
-
-    }
-
     public RestartParentWriteAttributeHandler(String parentKeyName, AttributeDefinition... definitions) {
         super(definitions);
-        this.parentKeyName = parentKeyName;
-    }
-
-    /** @deprecated use a variant that takes {@link AttributeDefinition} */
-    @Deprecated
-    @SuppressWarnings("deprecation")
-    public RestartParentWriteAttributeHandler(String parentKeyName, ParameterValidator unresolvedValidator, ParameterValidator resolvedValidator) {
-        super(unresolvedValidator, resolvedValidator);
         this.parentKeyName = parentKeyName;
     }
 

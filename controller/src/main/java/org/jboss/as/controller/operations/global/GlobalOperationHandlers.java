@@ -34,7 +34,6 @@ import java.util.Set;
 
 import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
@@ -111,53 +110,6 @@ public class GlobalOperationHandlers {
             .setAllowNull(true)
             .build();
 
-    /*
-    ************** Operation definitions ***************
-     */
-
-    @Deprecated
-    public static final OperationDefinition READ_RESOURCE_DEFINITION = org.jboss.as.controller.operations.global.ReadResourceHandler.DEFINITION;
-
-    @Deprecated
-    public static final OperationDefinition READ_ATTRIBUTE_DEFINITION = org.jboss.as.controller.operations.global.ReadAttributeHandler.DEFINITION;
-
-    @Deprecated
-    public static final OperationDefinition READ_RESOURCE_DESCRIPTION_DEFINITION = ReadResourceDescriptionHandler.DEFINITION;
-
-    @Deprecated
-    public static final OperationDefinition READ_CHILDREN_NAMES_DEFINITION = ReadChildrenNamesHandler.DEFINITION;
-
-    @Deprecated
-    public static final OperationDefinition READ_CHILDREN_TYPES_DEFINITION = ReadChildrenTypesHandler.DEFINITION;
-
-    @Deprecated
-    public static final OperationDefinition READ_CHILDREN_RESOURCES_DEFINITION = ReadChildrenResourcesHandler.DEFINITION;
-
-    @Deprecated
-    public static final OperationDefinition READ_OPERATION_NAMES_DEFINITION = ReadOperationNamesHandler.DEFINITION;
-
-    @Deprecated
-    public static final OperationDefinition READ_OPERATION_DESCRIPTION_DEFINITION = ReadOperationDescriptionHandler.DEFINITION;
-
-    @Deprecated
-    public static final OperationDefinition UNDEFINE_ATTRIBUTE_DEFINITION = org.jboss.as.controller.operations.global.UndefineAttributeHandler.DEFINITION;
-
-    @Deprecated
-    public static final OperationDefinition WRITE_ATTRIBUTE_DEFINITION = org.jboss.as.controller.operations.global.WriteAttributeHandler.DEFINITION;
-
-    @Deprecated
-    public static final OperationStepHandler READ_RESOURCE = org.jboss.as.controller.operations.global.ReadResourceHandler.INSTANCE;
-    @Deprecated
-    public static final OperationStepHandler READ_ATTRIBUTE = org.jboss.as.controller.operations.global.ReadAttributeHandler.INSTANCE;
-    @Deprecated
-    public static final OperationStepHandler READ_CHILDREN_NAMES = ReadChildrenNamesHandler.INSTANCE;
-    @Deprecated
-    public static final OperationStepHandler READ_CHILDREN_RESOURCES = ReadChildrenResourcesHandler.INSTANCE;
-    @Deprecated
-    public static final OperationStepHandler UNDEFINE_ATTRIBUTE = org.jboss.as.controller.operations.global.UndefineAttributeHandler.INSTANCE;
-    @Deprecated
-    public static final OperationStepHandler WRITE_ATTRIBUTE = org.jboss.as.controller.operations.global.WriteAttributeHandler.INSTANCE;
-
 
     public static void registerGlobalOperations(ManagementResourceRegistration root, ProcessType processType) {
         root.registerOperationHandler(org.jboss.as.controller.operations.global.ReadResourceHandler.DEFINITION,
@@ -180,56 +132,6 @@ public class GlobalOperationHandlers {
 
     private GlobalOperationHandlers() {
         //
-    }
-
-
-    /**
-     * {@link org.jboss.as.controller.OperationStepHandler} querying the child types of a given node.
-     */
-    @Deprecated
-    public static final OperationStepHandler READ_CHILDREN_TYPES = ReadChildrenTypesHandler.INSTANCE;
-
-    /**
-     * {@link org.jboss.as.controller.OperationStepHandler} returning the names of the defined operations at a given model address.
-     */
-    @Deprecated
-    public static final OperationStepHandler READ_OPERATION_NAMES = ReadOperationNamesHandler.INSTANCE;
-
-    /**
-     * {@link org.jboss.as.controller.OperationStepHandler} returning the type description of a single operation description.
-     */
-    @Deprecated
-    public static final OperationStepHandler READ_OPERATION_DESCRIPTION = ReadOperationDescriptionHandler.INSTANCE;
-
-    /**
-     * {@link org.jboss.as.controller.OperationStepHandler} querying the complete type description of a given model node.
-     */
-    @Deprecated
-    public static final OperationStepHandler READ_RESOURCE_DESCRIPTION = ReadResourceDescriptionHandler.INSTANCE;
-
-
-    @Deprecated
-    public static class ReadResourceHandler extends org.jboss.as.controller.operations.global.ReadResourceHandler {
-    }
-
-    @Deprecated
-    public static class WriteAttributeHandler extends org.jboss.as.controller.operations.global.WriteAttributeHandler {
-    }
-
-    @Deprecated
-    public static class ReadAttributeHandler extends org.jboss.as.controller.operations.global.ReadAttributeHandler {
-    }
-
-    @Deprecated
-    public static class UndefineAttributeHandler extends org.jboss.as.controller.operations.global.UndefineAttributeHandler {
-    }
-
-    @Deprecated
-    public static class ReadChildrenNamesOperationHandler extends org.jboss.as.controller.operations.global.ReadChildrenNamesHandler {
-    }
-
-    @Deprecated
-    public static class ReadChildrenResourcesOperationHandler extends org.jboss.as.controller.operations.global.ReadChildrenResourcesHandler {
     }
 
     public abstract static class AbstractMultiTargetHandler implements OperationStepHandler {
@@ -258,7 +160,7 @@ public class GlobalOperationHandlers {
                     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                         doExecute(context, operation);
                     }
-                }), OperationContext.Stage.IMMEDIATE);
+                }), OperationContext.Stage.MODEL, true);
                 context.stepCompleted();
             } else {
                 doExecute(context, operation);
@@ -348,7 +250,7 @@ public class GlobalOperationHandlers {
 
                 final ModelNode result = this.result.add();
                 result.get(OP_ADDR).set(base.toModelNode());
-                context.addStep(result, newOp, handler, OperationContext.Stage.IMMEDIATE);
+                context.addStep(result, newOp, handler, OperationContext.Stage.MODEL, true);
             }
         }
 
@@ -400,7 +302,7 @@ public class GlobalOperationHandlers {
 
                 final ModelNode result = this.result.add();
                 result.get(OP_ADDR).set(base.toModelNode());
-                context.addStep(result, newOp, handler, OperationContext.Stage.IMMEDIATE);
+                context.addStep(result, newOp, handler, OperationContext.Stage.MODEL, true);
             }
         }
     }

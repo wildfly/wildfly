@@ -1313,9 +1313,8 @@ public interface ControllerMessages {
      *
      * @deprecated use {@link #noSuchResourceType(PathAddress)} or {@link #noHandlerForOperation(String, PathAddress)}
      */
-    @Deprecated
-    @Message(id = 14739, value = "No handler for %s at address %s")
-    String noHandler(String stepOpName, PathAddress address);
+//    @Message(id = 14739, value = "No handler for %s at address %s")
+//    String noHandler(String stepOpName, PathAddress address);
 
     /**
      * A message indicating that no interface criteria was provided.

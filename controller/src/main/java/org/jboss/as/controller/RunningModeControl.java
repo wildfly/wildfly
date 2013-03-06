@@ -49,11 +49,6 @@ public class RunningModeControl {
         return reloaded;
     }
 
-    @Deprecated
-    public void setReloaded(boolean reloaded) {
-        setReloaded();
-    }
-
     public void setReloaded() {
         this.reloaded = true;
     }
