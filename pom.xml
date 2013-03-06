@@ -283,10 +283,15 @@
         <!-- tools.jar location, this needs to be overriden on OSX -->
         <com.sun.tools.path>${java.home}/../lib/tools.jar</com.sun.tools.path>
         
+        <!--  
+            See ChildFirstClassLoaderBuilder in model-test for the explanation of the org.jboss.model.test.cache.root and org.jboss.model.test.classpath.cache properties.
+            If used in conjunction with org.jboss.model.test.classpath.cache -Dorg.jboss.model.test.cache.strict on the command line, transformers tests must 
+            propagate these to the test when run
+         -->
         <!-- The name of the root checkout folder to create org.jboss.model.test.classpath.cache under for subsystem-test and core-model-test -->
-        <org.jboss.model.test.root>jboss-as</org.jboss.model.test.root>
+        <org.jboss.model.test.cache.root>jboss-as</org.jboss.model.test.cache.root>
         <!-- Location relative to root that will be used for the cached legacy classpaths used by subsystem-test and core-model-test-->
-        <org.jboss.model.test.classpath.cache>target/classpath</org.jboss.model.test.classpath.cache>
+        <org.jboss.model.test.classpath.cache>target/model-test-classpath-cache</org.jboss.model.test.classpath.cache>
     </properties>
 
     <modules>

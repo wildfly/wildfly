@@ -47,7 +47,7 @@ public class ChildFirstClassLoaderBuilder {
 
     //Use this property on the lightning runs to make sure that people have set the root and cache properties
     private static final String STRICT_PROPERTY = "org.jboss.model.test.cache.strict";
-    private static final String ROOT_PROPERTY = "org.jboss.model.test.root";
+    private static final String ROOT_PROPERTY = "org.jboss.model.test.cache.root";
     private static final String CACHE_FOLDER_PROPERTY = "org.jboss.model.test.classpath.cache";
 
 

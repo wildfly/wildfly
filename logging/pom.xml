@@ -65,7 +65,9 @@
                         <jboss.server.config.dir>${project.build.directory}${file.separator}config</jboss.server.config.dir>
                         <org.jboss.byteman.contrib.bmunit.agent.inhibit>true</org.jboss.byteman.contrib.bmunit.agent.inhibit>
                         <org.jboss.byteman.contrib.bmunit.agent.port>9091</org.jboss.byteman.contrib.bmunit.agent.port>
-                    </systemPropertyVariables>
+                        <org.jboss.model.test.cache.root>${org.jboss.model.test.cache.root}</org.jboss.model.test.cache.root>
+                        <org.jboss.model.test.classpath.cache>${org.jboss.model.test.classpath.cache}</org.jboss.model.test.classpath.cache>
+                  </systemPropertyVariables>
                 </configuration>
             </plugin>
         </plugins>

@@ -62,6 +62,10 @@
                             <value>${test.level}</value>
                         </property>
                     </systemProperties>
+                    <systemPropertyVariables>
+                        <org.jboss.model.test.cache.root>${org.jboss.model.test.cache.root}</org.jboss.model.test.cache.root>
+	                      <org.jboss.model.test.classpath.cache>${org.jboss.model.test.classpath.cache}</org.jboss.model.test.classpath.cache>
+		                </systemPropertyVariables>
                 </configuration>
             </plugin>
         </plugins>

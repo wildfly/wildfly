@@ -101,6 +101,7 @@ public class JPA11SubsystemTestCase extends AbstractSubsystemBaseTest {
 
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, oldVersion)
                 .setExtensionClassName(JPAExtension.class.getName())
+                .addMavenResourceURL("org.jboss.as:jboss-as-jpa-spi:" + controllerVersion.getMavenGavVersion())
                 .addMavenResourceURL("org.jboss.as:jboss-as-jpa:" + controllerVersion.getMavenGavVersion());
 
         KernelServices mainServices = builder.build();
