@@ -21,6 +21,7 @@
 */
 package org.jboss.as.subsystem.test;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -81,12 +82,13 @@ public interface LegacyKernelServicesInitializer {
      *
      * @param artifactGav a maven GAV, e.g.: {@code org.sonatype.aether:aether-api:1.13.1}
      * @return this initializer
-     * @throws MalformedURLException if the URL format is bad
+     * @throws IOException if something went wrong with the caching of the url
+     * @throws ClassNotFoundException if something went wrong with the caching of the url
      * @throws IllegalArgumentException if the {@code artifactGav} is null
      * @throws IllegalArgumentException if the resolved {@code artifactGav} does not exist
      * @throws IllegalArgumentException if the resolved {@code artifactGav} does not contain a version
      */
-    LegacyKernelServicesInitializer addMavenResourceURL(String artifactGav) throws MalformedURLException;
+    LegacyKernelServicesInitializer addMavenResourceURL(String artifactGav) throws ClassNotFoundException, IOException;
 
     /**
      * Add a class name pattern that should be loaded from the parent classloader

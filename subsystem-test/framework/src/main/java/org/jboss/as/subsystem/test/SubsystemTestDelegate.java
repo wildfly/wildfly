@@ -687,7 +687,7 @@ final class SubsystemTestDelegate {
         }
 
         @Override
-        public LegacyKernelServicesInitializer addMavenResourceURL(String artifactGav) throws MalformedURLException {
+        public LegacyKernelServicesInitializer addMavenResourceURL(String artifactGav) throws IOException, ClassNotFoundException {
             classLoaderBuilder.addMavenResourceURL(artifactGav);
             return this;
         }
@@ -711,29 +711,21 @@ final class SubsystemTestDelegate {
 
             classLoaderBuilder.addParentFirstClassPattern("org.jboss.as.subsystem.bridge.shared.*");
 
-            File file = new File("target", "cached-classloader" + modelVersion + "_" + testControllerVersion);
-            boolean cached = file.exists();
-            ClassLoader legacyCl;
-            if (cached) {
-                classLoaderBuilder.createFromFile(file);
-                legacyCl = classLoaderBuilder.build();
-            } else {
-                classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-subsystem-test-framework:" + ModelTestControllerVersion.CurrentVersion.VERSION);
-                classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-model-test:" + ModelTestControllerVersion.CurrentVersion.VERSION);
+            classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-subsystem-test-framework:" + ModelTestControllerVersion.CurrentVersion.VERSION);
+            classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-model-test:" + ModelTestControllerVersion.CurrentVersion.VERSION);
 
-                if (testControllerVersion != ModelTestControllerVersion.MASTER) {
-                    classLoaderBuilder.addRecursiveMavenResourceURL("org.jboss.as:jboss-as-server:" + testControllerVersion.getMavenGavVersion());
+            if (testControllerVersion != ModelTestControllerVersion.MASTER) {
+                classLoaderBuilder.addRecursiveMavenResourceURL("org.jboss.as:jboss-as-server:" + testControllerVersion.getMavenGavVersion());
 
-                    //TODO Even with this there are some workarounds needed in JGroupsSubsystemTransformerTestCase, InfinispanSubsystemTransformersTestCase and LoggingSubsystemTestCase
-                    //Don't load modules from the scoped classloader to avoid some funky stuff going on when initializing the JAXP redirect
-                    //The mentioned funky stuff works fine when running in Eclipse but fails when running the tests on the command-line
-                    classLoaderBuilder.addParentFirstClassPattern("__redirected.*");
-                    classLoaderBuilder.addParentFirstClassPattern("org.jboss.modules.*");
+                //TODO Even with this there are some workarounds needed in JGroupsSubsystemTransformerTestCase, InfinispanSubsystemTransformersTestCase and LoggingSubsystemTestCase
+                //Don't load modules from the scoped classloader to avoid some funky stuff going on when initializing the JAXP redirect
+                //The mentioned funky stuff works fine when running in Eclipse but fails when running the tests on the command-line
+                classLoaderBuilder.addParentFirstClassPattern("__redirected.*");
+                classLoaderBuilder.addParentFirstClassPattern("org.jboss.modules.*");
 
-                    classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-subsystem-test-controller-" + testControllerVersion.getTestControllerVersion() + ":" + ModelTestControllerVersion.CurrentVersion.VERSION);
-                }
-                legacyCl = classLoaderBuilder.build(file);
+                classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-subsystem-test-controller-" + testControllerVersion.getTestControllerVersion() + ":" + ModelTestControllerVersion.CurrentVersion.VERSION);
             }
+            ClassLoader legacyCl = classLoaderBuilder.build();
 
             ScopedKernelServicesBootstrap scopedBootstrap = new ScopedKernelServicesBootstrap(legacyCl);
             return scopedBootstrap.createKernelServices(mainSubsystemName, extensionClassName != null ? extensionClassName : mainExtension.getClass().getName(), additionalInit,
