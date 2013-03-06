@@ -280,6 +280,24 @@ public class ServerInventoryImpl implements ServerInventory {
     }
 
     @Override
+    public void destroyServer(String serverName) {
+        final ManagedServer server = servers.get(serverName);
+        if(server == null) {
+            return;
+        }
+        server.destroy();
+    }
+
+    @Override
+    public void killServer(String serverName) {
+        final ManagedServer server = servers.get(serverName);
+        if(server == null) {
+            return;
+        }
+        server.kill();
+    }
+
+    @Override
     public void stopServers(final int gracefulTimeout) {
         stopServers(gracefulTimeout, false);
     }

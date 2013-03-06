@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -247,6 +248,36 @@ class ManagedServer {
             ROOT_LOGGER.stoppingServer(serverName);
             // Transition, but don't wait for async notifications to complete
             transition(false);
+        }
+    }
+
+    protected synchronized void destroy() {
+        final InternalState required = this.requiredState;
+        if(required == InternalState.STOPPED) {
+            if(internalState != InternalState.STOPPED) {
+                try {
+                    processControllerClient.destroyProcess(serverProcessName);
+                } catch (IOException e) {
+                    ROOT_LOGGER.debugf(e, "failed to send destroy_process message to %s", serverName);
+                }
+            }
+        } else {
+            stop();
+        }
+    }
+
+    protected synchronized void kill() {
+        final InternalState required = this.requiredState;
+        if(required == InternalState.STOPPED) {
+            if(internalState != InternalState.STOPPED) {
+                try {
+                    processControllerClient.killProcess(serverProcessName);
+                } catch (IOException e) {
+                    ROOT_LOGGER.debugf(e, "failed to send kill_process message to %s", serverName);
+                }
+            }
+        } else {
+            stop();
         }
     }
 

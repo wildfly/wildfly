@@ -831,6 +831,16 @@ public class DomainModelControllerService extends AbstractControllerService impl
         public void operationFailed(String processName, ProcessMessageHandler.OperationType type) {
             serverInventory.operationFailed(processName, type);
         }
+
+        @Override
+        public void destroyServer(String serverName) {
+            serverInventory.destroyServer(serverName);
+        }
+
+        @Override
+        public void killServer(String serverName) {
+            serverInventory.killServer(serverName);
+        }
     }
 
     private static <S> S service(final Class<S> service) {

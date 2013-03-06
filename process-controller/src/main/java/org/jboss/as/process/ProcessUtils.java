@@ -88,7 +88,7 @@ abstract class ProcessUtils {
             return -1;
         }
         final Process p = Runtime.getRuntime().exec(jpsCommand);
-        final List<String> processes = new ArrayList<>();
+        final List<String> processes = new ArrayList<String>();
         final BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
         try {
             String line;

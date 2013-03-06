@@ -166,6 +166,22 @@ public interface ServerInventory {
     void reconnectServer(String serverName, ModelNode domainModel, byte[] authKey, boolean running, boolean stopping);
 
     /**
+     * Destroy a stopping server process. In case the the server is not stopping, this will attempt to stop the server
+     * and this method has to be called again.
+     *
+     * @param serverName the server name
+     */
+    void destroyServer(String serverName);
+
+    /**
+     * Try to kill a server process. In case the server is not stopping, this will attempt to stop the server and this
+     * method has to be called again.
+     *
+     * @param serverName the server name
+     */
+    void killServer(String serverName);
+
+    /**
      * Gets a callback handler security services can use for handling authentication data provided by
      * a server attempting to connect with this host controller.
      *

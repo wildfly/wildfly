@@ -51,6 +51,7 @@ import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.as.host.controller.descriptions.HostResolver;
 import org.jboss.as.host.controller.model.jvm.JvmResourceDefinition;
 import org.jboss.as.host.controller.operations.ServerAddHandler;
+import org.jboss.as.host.controller.operations.ServerProcessHandlers;
 import org.jboss.as.host.controller.operations.ServerRemoveHandler;
 import org.jboss.as.host.controller.operations.ServerRestartHandler;
 import org.jboss.as.host.controller.operations.ServerRestartRequiredServerConfigWriteAttributeHandler;
@@ -164,6 +165,10 @@ public class ServerConfigResourceDefinition extends SimpleResourceDefinition {
             resourceRegistration.registerOperationHandler(ServerRestartHandler.DEFINITION, restartHandler);
             ServerStopHandler stopHandler = new ServerStopHandler(serverInventory);
             resourceRegistration.registerOperationHandler(ServerStopHandler.DEFINITION, stopHandler);
+            ServerProcessHandlers.ServerDestroyHandler destroyHandler = new ServerProcessHandlers.ServerDestroyHandler(serverInventory);
+            resourceRegistration.registerOperationHandler(ServerProcessHandlers.DESTROY_OPERATION, destroyHandler);
+            ServerProcessHandlers.ServerKillHandler killHandler = new ServerProcessHandlers.ServerKillHandler(serverInventory);
+            resourceRegistration.registerOperationHandler(ServerProcessHandlers.KILL_OPERATION, killHandler);
         }
     }
 
