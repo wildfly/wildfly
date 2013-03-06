@@ -162,6 +162,9 @@ public class CLIModelControllerClient extends AbstractModelControllerClient {
 
     @Override
     public void close() throws IOException {
+        if(closed) {
+            return;
+        }
         synchronized (lock) {
             if(closed) {
                 return;
@@ -271,6 +274,9 @@ public class CLIModelControllerClient extends AbstractModelControllerClient {
 
         @Override
         public void handleClose(final Channel closed, final IOException exception) {
+            if(CLIModelControllerClient.this.closed) {
+                return;
+            }
             synchronized(lock) {
                 if (strategy != null) {
                     if(strategy != originalStrategy) {
