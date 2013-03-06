@@ -45,9 +45,13 @@ import org.xnio.IoUtils;
  */
 public class ChildFirstClassLoaderBuilder {
 
-    //Use this property on the lightning runs to make sure that people have set the root and cache properties
+    /** Use this property on the lightning runs to make sure that people have set the root and cache properties */
     private static final String STRICT_PROPERTY = "org.jboss.model.test.cache.strict";
+
+    /** Either the name of a parent directory e.g. "jboss-as", or a list of directories/files known to exist within that directory e.g. "[pom.xml, testsuite]"*/
     private static final String ROOT_PROPERTY = "org.jboss.model.test.cache.root";
+
+    /** The relative location of the cache directory to the directory indicated by {@link #ROOT_PROPERTY} */
     private static final String CACHE_FOLDER_PROPERTY = "org.jboss.model.test.classpath.cache";
 
 
@@ -58,8 +62,8 @@ public class ChildFirstClassLoaderBuilder {
 
 
     public ChildFirstClassLoaderBuilder() {
-        String root = System.getProperty(ROOT_PROPERTY);
-        String cacheFolderName = System.getProperty(CACHE_FOLDER_PROPERTY);
+        final String root = System.getProperty(ROOT_PROPERTY);
+        final String cacheFolderName = System.getProperty(CACHE_FOLDER_PROPERTY);
         if (root == null && cacheFolderName == null) {
             if (System.getProperty(STRICT_PROPERTY) != null) {
                 throw new IllegalStateException("Please use the " + ROOT_PROPERTY + " and " + CACHE_FOLDER_PROPERTY + " system properties to take advantage of cached classpaths");
@@ -74,8 +78,34 @@ public class ChildFirstClassLoaderBuilder {
             if (cacheFolderName.indexOf('/') != -1 && cacheFolderName.indexOf('\\') != -1){
                 throw new IllegalStateException("Please use either '/' or '\\' as a file separator");
             }
+
             File file = new File(".").getAbsoluteFile();
-            while (file != null && !file.getName().equals(root)) {
+            final String[] rootChildren = root.startsWith("[") && root.endsWith("]") ? root.substring(1, root.length() - 1).split(",") : null;
+            if (rootChildren.length > 1) {
+                for (int i = 0 ; i < rootChildren.length ; i++) {
+                    if (rootChildren[i].indexOf("/") != -1 || rootChildren[i].indexOf("\\") != -1) {
+                        throw new IllegalStateException("Children must be direct children");
+                    }
+                    rootChildren[i] = rootChildren[i].trim();
+                }
+            }
+            while (file != null) {
+                if (rootChildren == null) {
+                    if (file.getName().equals(root)) {
+                        break;
+                    }
+                } else {
+                    boolean hasAllChildren = true;
+                    for (String child : rootChildren) {
+                        if (!new File(file, child).exists()) {
+                            hasAllChildren = false;
+                            break;
+                        }
+                    }
+                    if (hasAllChildren) {
+                        break;
+                    }
+                }
                 file = file.getParentFile();
             }
             if (file == null) {
