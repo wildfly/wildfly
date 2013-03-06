@@ -22,12 +22,14 @@
 
 package org.jboss.as.host.controller;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
@@ -77,6 +79,7 @@ class ManagedServerProxy implements TransactionalProtocolClient {
     public <T extends Operation> AsyncFuture<ModelNode> execute(final TransactionalOperationListener<T> listener, final T operation) throws IOException {
         final TransactionalProtocolClient remoteClient = this.remoteClient;
         final ModelNode op = operation.getOperation();
+
         if(remoteClient == DISCONNECTED) {
             // Handle the restartRequired operation also when disconnected
             if(ServerRestartRequiredHandler.OPERATION_NAME.equals(op.get(OP).asString())) {
