@@ -35,7 +35,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.PatchInfo;
-import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.metadata.Patch.PatchType;
 import org.jboss.as.patching.runner.PatchUtils;
 import org.jboss.dmr.ModelNode;

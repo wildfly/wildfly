@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -26,83 +26,76 @@ import static org.jboss.as.process.ProcessMessages.MESSAGES;
 
 import java.io.PrintStream;
 
-import org.jboss.as.version.Usage;
+public class CommandLineArgumentUsageImpl extends CommandLineArgumentUsage {
 
-public class CommandLineArgumentUsageImpl {
+    public static void init(){
 
-    private static Usage getUsage() {
+        addArguments(CommandLineConstants.ADMIN_ONLY);
+        instructions.add(MESSAGES.argAdminOnly());
 
-        final Usage usage = new Usage();
+        addArguments(CommandLineConstants.PUBLIC_BIND_ADDRESS + " <value>", CommandLineConstants.PUBLIC_BIND_ADDRESS + "=<value>" );
+        instructions.add(MESSAGES.argPublicBindAddress());
 
-        usage.addArguments(CommandLineConstants.ADMIN_ONLY);
-        usage.addInstruction(MESSAGES.argAdminOnly());
+        addArguments(CommandLineConstants.PUBLIC_BIND_ADDRESS + "<interface>=<value>" );
+        instructions.add(MESSAGES.argInterfaceBindAddress());
 
-        usage.addArguments(CommandLineConstants.PUBLIC_BIND_ADDRESS + " <value>", CommandLineConstants.PUBLIC_BIND_ADDRESS + "=<value>");
-        usage.addInstruction(MESSAGES.argPublicBindAddress());
+        addArguments(CommandLineConstants.BACKUP_DC);
+        instructions.add(MESSAGES.argBackup());
 
-        usage.addArguments(CommandLineConstants.PUBLIC_BIND_ADDRESS + "<interface>=<value>");
-        usage.addInstruction(MESSAGES.argInterfaceBindAddress());
+        addArguments(CommandLineConstants.SHORT_DOMAIN_CONFIG + " <config>", CommandLineConstants.SHORT_DOMAIN_CONFIG + "=<config>");
+        instructions.add(MESSAGES.argShortDomainConfig());
 
-        usage.addArguments(CommandLineConstants.BACKUP_DC);
-        usage.addInstruction(MESSAGES.argBackup());
+        addArguments(CommandLineConstants.CACHED_DC);
+        instructions.add(MESSAGES.argCachedDc());
 
-        usage.addArguments(CommandLineConstants.SHORT_DOMAIN_CONFIG + " <config>", CommandLineConstants.SHORT_DOMAIN_CONFIG + "=<config>");
-        usage.addInstruction(MESSAGES.argShortDomainConfig());
+        addArguments(CommandLineConstants.SYS_PROP + "<name>[=<value>]");
+        instructions.add(MESSAGES.argSystem());
 
-        usage.addArguments(CommandLineConstants.CACHED_DC);
-        usage.addInstruction(MESSAGES.argCachedDc());
+        addArguments(CommandLineConstants.DOMAIN_CONFIG + "=<config>");
+        instructions.add(MESSAGES.argDomainConfig());
 
-        usage.addArguments(CommandLineConstants.SYS_PROP + "<name>[=<value>]");
-        usage.addInstruction(MESSAGES.argSystem());
+        addArguments(CommandLineConstants.SHORT_HELP, CommandLineConstants.HELP);
+        instructions.add(MESSAGES.argHelp());
 
-        usage.addArguments(CommandLineConstants.DOMAIN_CONFIG + "=<config>");
-        usage.addInstruction(MESSAGES.argDomainConfig());
+        addArguments(CommandLineConstants.HOST_CONFIG + "=<config>");
+        instructions.add(MESSAGES.argHostConfig());
 
-        usage.addArguments(CommandLineConstants.SHORT_HELP, CommandLineConstants.HELP);
-        usage.addInstruction(MESSAGES.argHelp());
+        addArguments(CommandLineConstants.INTERPROCESS_HC_ADDRESS + "=<address>");
+        instructions.add(MESSAGES.argInterProcessHcAddress());
 
-        usage.addArguments(CommandLineConstants.HOST_CONFIG + "=<config>");
-        usage.addInstruction(MESSAGES.argHostConfig());
+        addArguments(CommandLineConstants.INTERPROCESS_HC_PORT + "=<port>");
+        instructions.add(MESSAGES.argInterProcessHcPort());
 
-        usage.addArguments(CommandLineConstants.INTERPROCESS_HC_ADDRESS + "=<address>");
-        usage.addInstruction(MESSAGES.argInterProcessHcAddress());
+        addArguments(CommandLineConstants.MASTER_ADDRESS +"=<address>");
+        instructions.add(MESSAGES.argMasterAddress());
 
-        usage.addArguments(CommandLineConstants.INTERPROCESS_HC_PORT + "=<port>");
-        usage.addInstruction(MESSAGES.argInterProcessHcPort());
+        addArguments(CommandLineConstants.MASTER_PORT + "=<port>");
+        instructions.add(MESSAGES.argMasterPort());
 
-        usage.addArguments(CommandLineConstants.MASTER_ADDRESS + "=<address>");
-        usage.addInstruction(MESSAGES.argMasterAddress());
+        addArguments(CommandLineConstants.READ_ONLY_DOMAIN_CONFIG + "=<config>");
+        instructions.add(MESSAGES.argReadOnlyDomainConfig());
 
-        usage.addArguments(CommandLineConstants.MASTER_PORT + "=<port>");
-        usage.addInstruction(MESSAGES.argMasterPort());
+        addArguments(CommandLineConstants.READ_ONLY_HOST_CONFIG + "=<config>");
+        instructions.add(MESSAGES.argReadOnlyHostConfig());
 
-        usage.addArguments(CommandLineConstants.READ_ONLY_DOMAIN_CONFIG + "=<config>");
-        usage.addInstruction(MESSAGES.argReadOnlyDomainConfig());
+        addArguments(CommandLineConstants.SHORT_PROPERTIES + " <url>", CommandLineConstants.SHORT_PROPERTIES + "=<url>", CommandLineConstants.PROPERTIES + "=<url>");
+        instructions.add(MESSAGES.argProperties());
 
-        usage.addArguments(CommandLineConstants.READ_ONLY_HOST_CONFIG + "=<config>");
-        usage.addInstruction(MESSAGES.argReadOnlyHostConfig());
+        addArguments(CommandLineConstants.PROCESS_CONTROLLER_BIND_ADDR + "=<address>");
+        instructions.add(MESSAGES.argPcAddress());
 
-        usage.addArguments(CommandLineConstants.SHORT_PROPERTIES + " <url>", CommandLineConstants.SHORT_PROPERTIES + "=<url>", CommandLineConstants.PROPERTIES + "=<url>");
-        usage.addInstruction(MESSAGES.argProperties());
+        addArguments(CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT + "=<port>");
+        instructions.add(MESSAGES.argPcPort());
 
-        usage.addArguments(CommandLineConstants.PROCESS_CONTROLLER_BIND_ADDR + "=<address>");
-        usage.addInstruction(MESSAGES.argPcAddress());
+        addArguments(CommandLineConstants.DEFAULT_MULTICAST_ADDRESS + " <value>", CommandLineConstants.DEFAULT_MULTICAST_ADDRESS + "=<value>");
+        instructions.add(MESSAGES.argDefaultMulticastAddress());
 
-        usage.addArguments(CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT + "=<port>");
-        usage.addInstruction(MESSAGES.argPcPort());
-
-        usage.addArguments(CommandLineConstants.DEFAULT_MULTICAST_ADDRESS + " <value>", CommandLineConstants.DEFAULT_MULTICAST_ADDRESS + "=<value>");
-        usage.addInstruction(MESSAGES.argDefaultMulticastAddress());
-
-        usage.addArguments(CommandLineConstants.OLD_SHORT_VERSION, CommandLineConstants.SHORT_VERSION, CommandLineConstants.VERSION);
-        usage.addInstruction(MESSAGES.argVersion());
-
-        return usage;
+        addArguments(CommandLineConstants.OLD_SHORT_VERSION, CommandLineConstants.SHORT_VERSION, CommandLineConstants.VERSION);
+        instructions.add(MESSAGES.argVersion());
     }
 
     public static void printUsage(final PrintStream out) {
-        final Usage usage = getUsage();
-        final String headline = usage.getDefaultUsageHeadline("domain");
-        out.print(usage.usage(headline));
+        init();
+        out.print(usage("domain"));
     }
 }

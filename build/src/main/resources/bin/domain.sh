@@ -201,9 +201,7 @@ while true; do
       eval \"$JAVA\" -D\"[Process Controller]\" $PROCESS_CONTROLLER_JAVA_OPTS \
          \"-Dorg.jboss.boot.log.file=$JBOSS_LOG_DIR/process-controller.log\" \
          \"-Dlogging.configuration=file:$JBOSS_CONFIG_DIR/logging.properties\" \
-         \"-Dboot.module.loader=org.jboss.as.boot.BootModuleLoader\" \
-         -cp \"$JBOSS_HOME/jboss-modules.jar:$JBOSS_HOME/loader.jar\" \
-         org.jboss.modules.Main \
+         -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"${JBOSS_MODULEPATH}\" \
          org.jboss.as.process-controller \
          -jboss-home \"$JBOSS_HOME\" \
@@ -222,9 +220,7 @@ while true; do
       eval \"$JAVA\" -D\"[Process Controller]\" $PROCESS_CONTROLLER_JAVA_OPTS \
          \"-Dorg.jboss.boot.log.file=$JBOSS_LOG_DIR/process-controller.log\" \
          \"-Dlogging.configuration=file:$JBOSS_CONFIG_DIR/logging.properties\" \
-         \"-Dboot.module.loader=org.jboss.as.boot.BootModuleLoader\" \
-         -cp \"$JBOSS_HOME/jboss-modules.jar:$JBOSS_HOME/loader.jar\" \
-         org.jboss.modules.Main \
+         -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"${JBOSS_MODULEPATH}\" \
          org.jboss.as.process-controller \
          -jboss-home \"$JBOSS_HOME\" \

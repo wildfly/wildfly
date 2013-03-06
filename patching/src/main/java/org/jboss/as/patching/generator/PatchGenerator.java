@@ -791,7 +791,7 @@ public class PatchGenerator {
             try {
                 if ("--version".equals(arg) || "-v".equals(arg)
                         || "-version".equals(arg) || "-V".equals(arg)) {
-                    ProductConfig productConfig = new ProductConfig(Module.getBootModuleLoader(), SecurityActions.getSystemProperty("jboss.home.dir"));
+                    ProductConfig productConfig = new ProductConfig(Module.getBootModuleLoader(), SecurityActions.getSystemProperty("jboss.home.dir"), Collections.emptyMap());
                     System.out.println(productConfig.getPrettyVersionString());
                     return null;
                 } else if ("--help".equals(arg) || "-h".equals(arg) || "-H".equals(arg)) {
