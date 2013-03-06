@@ -114,7 +114,7 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler {
             for (AttributeDefinition def : ModClusterConfigResourceDefinition.ATTRIBUTES) {
                 def.validateAndSet(operation, targetOperation);
             }
-            context.addStep(targetOperation, ModClusterConfigAdd.INSTANCE, OperationContext.Stage.IMMEDIATE);
+            context.addStep(targetOperation, ModClusterConfigAdd.INSTANCE, OperationContext.Stage.MODEL, true);
         }
     }
 

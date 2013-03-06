@@ -46,16 +46,6 @@ import org.jboss.dmr.Property;
  */
 //todo maybe replace with SimpleMapAttributeDefinition?
 public final class PropertiesAttributeDefinition extends MapAttributeDefinition {
-    /**
-     * @param name
-     * @param xmlName
-     * @param allowNull
-     * @deprecated use {@link Builder}
-     */
-    @Deprecated
-    public PropertiesAttributeDefinition(final String name, final String xmlName, boolean allowNull) {
-        super(name, xmlName, allowNull, 0, Integer.MAX_VALUE, new ModelTypeValidator(ModelType.STRING));
-    }
 
     private PropertiesAttributeDefinition(final String name, final String xmlName, final boolean allowNull, boolean allowExpression,
                                           final int minSize, final int maxSize, final ParameterCorrector corrector, final ParameterValidator elementValidator,

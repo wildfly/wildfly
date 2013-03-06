@@ -230,15 +230,6 @@ public abstract class AttributeDefinition {
     }
 
     /**
-     *
-     * @deprecated Use {@link #resolveModelAttribute(OperationContext, ModelNode)} instead
-     */
-    @Deprecated
-    public ModelNode validateResolvedOperation(final ModelNode operationObject) throws OperationFailedException {
-        return resolveModelAttribute(ExpressionResolver.REJECTING, operationObject);
-    }
-
-    /**
      * Finds a value in the given {@code model} whose key matches this attribute's {@link #getName() name},
      * resolves it and validates it using this attribute's {@link #getValidator() validator}. If the value is
      * undefined and a {@link #getDefaultValue() default value} is available, the default value is used.
@@ -555,9 +546,7 @@ public abstract class AttributeDefinition {
     protected ModelNode convertParameterExpressions(final ModelNode parameter) {
         if (isAllowExpression() && COMPLEX_TYPES.contains(type)) {
             // They need to subclass and override
-            if (!Boolean.getBoolean("jboss.as.test.transformation.hack")) {
-                throw new IllegalStateException();
-            }
+            throw new IllegalStateException();
         }
         return isAllowExpression() ? convertStringExpression(parameter) : parameter;
     }

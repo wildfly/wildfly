@@ -30,6 +30,7 @@ import org.jboss.as.core.model.test.TestModelControllerFactory;
 import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
 import org.jboss.as.model.test.ModelTestModelControllerService;
+import org.jboss.as.model.test.ModelTestOperationValidatorFilter;
 import org.jboss.as.model.test.StringConfigurationPersister;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.msc.value.InjectedValue;
@@ -41,10 +42,10 @@ import org.jboss.msc.value.InjectedValue;
 public class TestModelControllerFactory7_1_2 implements TestModelControllerFactory {
     @Override
     public ModelTestModelControllerService create(ProcessType processType, RunningModeControl runningModeControl,
-            StringConfigurationPersister persister, boolean validateOperations, TestModelType type,
+            StringConfigurationPersister persister, ModelTestOperationValidatorFilter validateOpsFilter, TestModelType type,
             ModelInitializer modelInitializer, ExtensionRegistry extensionRegistry) {
         ControlledProcessState processState = new ControlledProcessState(true);
-        return new TestModelControllerService7_1_2(processType, runningModeControl, persister, validateOperations, type, modelInitializer, DomainDescriptionProviders.ROOT_PROVIDER, processState, extensionRegistry);
+        return new TestModelControllerService7_1_2(processType, runningModeControl, persister, validateOpsFilter, type, modelInitializer, DomainDescriptionProviders.ROOT_PROVIDER, processState, extensionRegistry);
     }
 
     @Override

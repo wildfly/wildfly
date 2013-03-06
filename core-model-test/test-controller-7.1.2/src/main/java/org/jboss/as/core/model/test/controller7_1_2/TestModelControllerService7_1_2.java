@@ -52,6 +52,7 @@ import org.jboss.as.host.controller.HostModelUtil.HostModelRegistrar;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.as.model.test.ModelTestModelControllerService;
+import org.jboss.as.model.test.ModelTestOperationValidatorFilter;
 import org.jboss.as.model.test.StringConfigurationPersister;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
@@ -71,9 +72,9 @@ class TestModelControllerService7_1_2 extends ModelTestModelControllerService {
     private final PathManagerService pathManagerService;
     private final ModelInitializer modelInitializer;
     private final ExtensionRegistry extensionRegistry;
-    TestModelControllerService7_1_2(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, boolean validateOps,
+    TestModelControllerService7_1_2(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, ModelTestOperationValidatorFilter validateOpsFilter,
             TestModelType type, ModelInitializer modelInitializer, DescriptionProvider rootDescriptionProvider, ControlledProcessState processState, ExtensionRegistry extensionRegistry) {
-        super(processType, runningModeControl, null, persister, validateOps, rootDescriptionProvider, processState);
+        super(processType, runningModeControl, null, persister, validateOpsFilter, rootDescriptionProvider, processState);
         this.type = type;
         this.runningModeControl = runningModeControl;
         //this.pathManagerService = type == TestModelType.STANDALONE ? new ServerPathManagerService() : new HostPathManagerService();

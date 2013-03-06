@@ -47,6 +47,10 @@
                     <includes>
                         <include>org/jboss/as/ejb3/**/*TestCase.java</include>
                     </includes>
+                    <systemPropertyVariables>
+                      <org.jboss.model.test.cache.root>${org.jboss.model.test.cache.root}</org.jboss.model.test.cache.root>
+                      <org.jboss.model.test.classpath.cache>${org.jboss.model.test.classpath.cache}</org.jboss.model.test.classpath.cache>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
         </plugins>
@@ -176,6 +180,7 @@
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-subsystem-test</artifactId>
+						<type>pom</type>
             <scope>test</scope>
         </dependency>
     </dependencies>

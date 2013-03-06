@@ -55,6 +55,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -122,15 +123,8 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         KernelServicesBuilder builder = createKernelServicesBuilder(null)
                 .setSubsystemXml(subsystemXml);
 
-        //This legacy subsystem references classes in the removed org.jboss.as.controller.alias package,
-        //which is why we need to include the jboss-as-controller artifact.
-        builder.createLegacyKernelServicesBuilder(null, modelVersion)
+        builder.createLegacyKernelServicesBuilder(null, ModelTestControllerVersion.V7_1_2_FINAL, modelVersion)
             .addMavenResourceURL("org.jboss.as:jboss-as-web:7.1.2.Final")
-            .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.2.Final")
-            .addParentFirstClassPattern("org.jboss.as.controller.*")
-            .addChildFirstClassPattern("org.jboss.as.controller.alias.*")
-            // AS7-6537 the transformer is going to reject a connector add operation
-            // leading to a model difference, so we can't compare
             .skipReverseControllerCheck();
 
         KernelServices mainServices = builder.build();
@@ -149,26 +143,23 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testRejectExpressionsAS712() throws Exception {
-        testRejectExpressions("7.1.2.Final");
+        testRejectExpressions(ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
     public void testRejectExpressionsAS713() throws Exception {
-        testRejectExpressions("7.1.3.Final");
+        testRejectExpressions(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
-    private void testRejectExpressions(String mavenVersion) throws Exception {
+    private void testRejectExpressions(ModelTestControllerVersion controllerVersion) throws Exception {
 
         ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
         //This legacy subsystem references classes in the removed org.jboss.as.controller.alias package,
         //which is why we need to include the jboss-as-controller artifact.
-        builder.createLegacyKernelServicesBuilder(null, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-web:" + mavenVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-controller:" + mavenVersion)
-                .addParentFirstClassPattern("org.jboss.as.controller.*")
-                .addChildFirstClassPattern("org.jboss.as.controller.alias.*");
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-web:" + controllerVersion.getMavenGavVersion());
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
@@ -229,15 +220,15 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testTransformationAS712() throws Exception {
-        testTransformation_1_1_0("7.1.2.Final");
+        testTransformation_1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
     public void testTransformationAS713() throws Exception {
-        testTransformation_1_1_0("7.1.3.Final");
+        testTransformation_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
-    private void testTransformation_1_1_0(String mavenVersion) throws Exception {
+    private void testTransformation_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
         String subsystemXml = readResource("subsystem-1.1.0.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
@@ -245,11 +236,8 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         //This legacy subsystem references classes in the removed org.jboss.as.controller.alias package,
         //which is why we need to include the jboss-as-controller artifact.
-        builder.createLegacyKernelServicesBuilder(null, modelVersion)
-            .addMavenResourceURL("org.jboss.as:jboss-as-web:" + mavenVersion)
-            .addMavenResourceURL("org.jboss.as:jboss-as-controller:" + mavenVersion)
-            .addParentFirstClassPattern("org.jboss.as.controller.*")
-            .addChildFirstClassPattern("org.jboss.as.controller.alias.*");
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+            .addMavenResourceURL("org.jboss.as:jboss-as-web:" + controllerVersion.getMavenGavVersion());
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);

@@ -31,6 +31,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -131,21 +132,21 @@ public class ConfigAdminSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testTransformersAS712() throws Exception {
-        testTransformers1_0_0("7.1.2.Final");
+        testTransformers1_0_0(ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
     public void testTransformersAS713() throws Exception {
-        testTransformers1_0_0("7.1.3.Final");
+        testTransformers1_0_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
-    private void testTransformers1_0_0(String mavenVersion) throws Exception {
+    private void testTransformers1_0_0(ModelTestControllerVersion controllerVersion) throws Exception {
         ModelVersion oldVersion = ModelVersion.create(1, 0, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(null)
                 .setSubsystemXml(SUBSYSTEM_XML_1_0_1);
-        builder.createLegacyKernelServicesBuilder(null, oldVersion)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, oldVersion)
                 .setExtensionClassName(ConfigAdminExtension.class.getName())
-                .addMavenResourceURL("org.jboss.as:jboss-as-configadmin:" + mavenVersion);
+                .addMavenResourceURL("org.jboss.as:jboss-as-configadmin:" + controllerVersion.getMavenGavVersion());
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(oldVersion);
         Assert.assertNotNull(legacyServices);
@@ -173,22 +174,22 @@ public class ConfigAdminSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testRejectExpressionsAS712() throws Exception {
-        testRejectExpressions1_0_0("org.jboss.as:jboss-as-configadmin:7.1.2.Final");
+        testRejectExpressions1_0_0(ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
     public void testRejectExpressionsAS713() throws Exception {
-        testRejectExpressions1_0_0("org.jboss.as:jboss-as-configadmin:7.1.3.Final");
+        testRejectExpressions1_0_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
-    private void testRejectExpressions1_0_0(String mavenGAV) throws Exception {
+    private void testRejectExpressions1_0_0(ModelTestControllerVersion controllerVersion) throws Exception {
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
         // create builder for legacy subsystem version
         ModelVersion version_1_0_0 = ModelVersion.create(1, 0, 0);
-        builder.createLegacyKernelServicesBuilder(null, version_1_0_0)
-                .addMavenResourceURL(mavenGAV)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_0_0)
+                .addMavenResourceURL("org.jboss.as:jboss-as-configadmin:" + controllerVersion.getMavenGavVersion())
                 .setExtensionClassName("org.jboss.as.configadmin.parser.ConfigAdminExtension");
 
         KernelServices mainServices = builder.build();

@@ -47,10 +47,6 @@ class EJBDefaultSecurityDomainWriteHandler extends AbstractWriteAttributeHandler
     }
 
     @Override
-    protected void validateResolvedValue(String attributeName, ModelNode value) throws OperationFailedException {
-    }
-
-    @Override
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
                                            ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
         final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();

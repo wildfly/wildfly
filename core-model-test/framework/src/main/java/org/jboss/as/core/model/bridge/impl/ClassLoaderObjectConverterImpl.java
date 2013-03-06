@@ -28,6 +28,7 @@ import org.jboss.as.core.model.bridge.local.ClassLoaderObjectConverter;
 import org.jboss.as.core.model.bridge.shared.ObjectSerializer;
 import org.jboss.as.core.model.test.LegacyModelInitializerEntry;
 import org.jboss.as.host.controller.ignored.IgnoreDomainResourceTypeResource;
+import org.jboss.as.model.test.ModelTestOperationValidatorFilter;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -97,6 +98,17 @@ public class ClassLoaderObjectConverterImpl implements ClassLoaderObjectConverte
         try {
             return remote.deserializeIgnoreDomainTypeResource(local.serializeIgnoreDomainTypeResource(resource));
         } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public Object convertValidateOperationsFilterToChildCl(ModelTestOperationValidatorFilter validateOpsFilter) {
+        try {
+            return remote.deserializeModelTestOperationValidatorFilter(local.serializeModelTestOperationValidatorFilter(validateOpsFilter));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
