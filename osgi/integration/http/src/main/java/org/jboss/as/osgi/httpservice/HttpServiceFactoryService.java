@@ -32,7 +32,7 @@ import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
-import org.jboss.as.server.mgmt.HttpManagementService;
+import org.jboss.as.server.mgmt._UndertowHttpManagementService;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
 import org.jboss.as.web.VirtualHost;
 import org.jboss.as.web.WebServer;
@@ -82,7 +82,7 @@ final class HttpServiceFactoryService implements Service<StandardContext> {
         builder.addDependency(PathManagerService.SERVICE_NAME, PathManager.class, service.injectedPathManager);
         builder.addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(VIRTUAL_HOST), VirtualHost.class, service.injectedVirtualHost);
         builder.addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.injectedWebServer);
-        builder.addDependency(DependencyType.OPTIONAL, HttpManagementService.SERVICE_NAME, HttpManagement.class, service.injectedHttpManagement);
+        builder.addDependency(DependencyType.OPTIONAL, _UndertowHttpManagementService.SERVICE_NAME, HttpManagement.class, service.injectedHttpManagement);
         builder.addDependency(Services.FRAMEWORK_CREATE, BundleContext.class, service.injectedSystemContext);
         return builder.install();
     }

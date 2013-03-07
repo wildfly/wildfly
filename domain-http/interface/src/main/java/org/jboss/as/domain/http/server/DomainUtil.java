@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,88 +19,61 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.domain.http.server;
 
-import static org.jboss.as.domain.http.server.Constants.APPLICATION_DMR_ENCODED;
-import static org.jboss.as.domain.http.server.Constants.APPLICATION_JSON;
-import static org.jboss.as.domain.http.server.Constants.CONTENT_TYPE;
-import static org.jboss.as.domain.http.server.Constants.HOST;
-import static org.jboss.as.domain.http.server.Constants.HTTP;
-import static org.jboss.as.domain.http.server.Constants.HTTPS;
-import static org.jboss.as.domain.http.server.Constants.OK;
+import static io.undertow.util.Headers.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import io.undertow.server.HttpServerExchange;
+import io.undertow.util.HeaderMap;
+import io.undertow.util.Headers;
+import io.undertow.util.StatusCodes;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 
-import org.jboss.com.sun.net.httpserver.Headers;
-import org.jboss.com.sun.net.httpserver.HttpExchange;
-import org.jboss.com.sun.net.httpserver.HttpsServer;
 import org.jboss.dmr.ModelNode;
+import org.xnio.IoUtils;
+import org.xnio.streams.ChannelOutputStream;
 
 /**
- * A utility class to hold common functionality for handling the DMR HTTP exchanges.
+ * Utility methods used for HTTP based domain management.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-class DomainUtil {
+public class DomainUtil {
 
-    // Prevent Instantiation
-    private DomainUtil() {
-    }
+    public static void writeResponse(HttpServerExchange exchange, boolean isGet, boolean pretty, ModelNode response, int status, boolean encode) {
+        final String contentType = encode ? Common.APPLICATION_DMR_ENCODED : Common.APPLICATION_JSON;
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, contentType  + ";" + Common.UTF_8);
+        exchange.setResponseCode(status);
 
-    /**
-     * Writes the HTTP response to the output stream.
-     *
-     * @param http The HttpExchange object that allows access to the request and response.
-     * @param isGet Flag indicating whether or not the request was a GET request or POST request.
-     * @param pretty Flag indicating whether or not the output, if JSON, should be pretty printed or not.
-     * @param response The DMR response from the operation.
-     * @param status The HTTP status code to be included in the response.
-     * @param encode Flag indicating whether or not to Base64 encode the response payload.
-     * @throws IOException if an error occurs while attempting to generate the HTTP response.
-     */
-    static void writeResponse(final HttpExchange http, boolean isGet, boolean pretty, ModelNode response, int status,
-            boolean encode, String contentType) throws IOException {
-        final Headers responseHeaders = http.getResponseHeaders();
-        responseHeaders.add(CONTENT_TYPE, contentType);
-        http.sendResponseHeaders(status, 0);
 
-        // GET (read) operations will never have a compensating update, and the status is already
-        // available via the http response status code, so unwrap them.
-        if (isGet && status == OK) {
-            response = response.get("result");
+        //TODO Content-Length?
+        if (isGet && status == StatusCodes.CODE_200.getCode()) {
+            response = response.get(RESULT);
         }
 
-        final OutputStream out = http.getResponseBody();
-        final PrintWriter print = new PrintWriter(out);
-
+        OutputStream out = new ChannelOutputStream(exchange.getResponseChannel());
+        PrintWriter print = new PrintWriter(out);
         try {
-            if (encode) {
-                response.writeBase64(out);
-            } else {
-                response.writeJSONString(print, !pretty);
+            try {
+                if (encode) {
+                    response.writeBase64(out);
+                } else {
+                    response.writeJSONString(print, !pretty);
+                }
+            } finally {
+                print.flush();
+                try {
+                    out.flush();
+                } finally {
+                    IoUtils.safeClose(print);
+                    IoUtils.safeClose(out);
+                }
             }
-        } finally {
-            print.flush();
-            out.flush();
-            safeClose(print);
-            safeClose(out);
-        }
-    }
-
-    static void writeResponse(final HttpExchange http, boolean isGet, boolean pretty, ModelNode response, int status,
-            boolean encode) throws IOException {
-         String contentType = encode ? APPLICATION_DMR_ENCODED : APPLICATION_JSON;
-         writeResponse(http, isGet, pretty, response, status, encode, contentType);
-     }
-
-    static void safeClose(Closeable close) {
-        try {
-            close.close();
-        } catch (Throwable eat) {
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -111,10 +84,10 @@ class DomainUtil {
      * @param path - The path to include in the constructed URL
      * @return The constructed URL
      */
-    static String constructUrl(final HttpExchange exchange, final String path) {
-        final Headers headers = exchange.getRequestHeaders();
+    public static String constructUrl(final HttpServerExchange exchange, final String path) {
+        final HeaderMap headers = exchange.getRequestHeaders();
         String host = headers.getFirst(HOST);
-        String protocol = exchange.getHttpContext().getServer() instanceof HttpsServer ? HTTPS : HTTP;
+        String protocol = exchange.getConnection().getSslSession() != null ? "https" : "http";
 
         return protocol + "://" + host + path;
     }

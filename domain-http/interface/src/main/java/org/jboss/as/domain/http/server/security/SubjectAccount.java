@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,24 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.domain.http.server.security;
 
-import static org.jboss.as.domain.http.server.Constants.FORBIDDEN;
-import org.jboss.com.sun.net.httpserver.Authenticator;
-import org.jboss.com.sun.net.httpserver.HttpExchange;
+import javax.security.auth.Subject;
+
+import io.undertow.security.idm.Account;
 
 /**
- * A special authenticator that prevents all access. This is used where the management http interface is associated with an
- * authentication capable security realm but not http compatible mechanisms are identified.
+ * An extension to the Undertow {@link Account} interface to also make available a Subject.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class FourZeroThreeAuthenticator extends Authenticator {
+public interface SubjectAccount extends Account {
 
-    @Override
-    public Result authenticate(HttpExchange exchange) {
-        return new Authenticator.Failure(FORBIDDEN);
-    }
+    Subject getSubject();
 
 }

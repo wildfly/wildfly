@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,47 +20,39 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.http.server;
+package org.jboss.as.domain.http.server.security;
 
-import static org.jboss.as.domain.http.server.Constants.LOCATION;
-import static org.jboss.as.domain.http.server.Constants.TEMPORARY_REDIRECT;
-import static org.jboss.as.domain.http.server.DomainUtil.constructUrl;
-import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
+import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpServerExchange;
+import io.undertow.server.handlers.HttpHandlers;
+import io.undertow.util.Headers;
 
 import java.io.IOException;
 
+import org.jboss.as.domain.http.server.Common;
 import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.com.sun.net.httpserver.Headers;
-import org.jboss.com.sun.net.httpserver.HttpExchange;
 
 /**
  * A readiness filter to redirect users to an error page if the realm is not ready to handle authentication requests.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class RedirectReadinessFilter extends RealmReadinessFilter {
+public class RedirectReadinessHandler extends RealmReadinessHandler {
 
     private final String redirectTo;
 
-    RedirectReadinessFilter(final SecurityRealm securityRealm, final String redirectTo) {
-        super(securityRealm);
+    public RedirectReadinessHandler(final SecurityRealm securityRealm, final HttpHandler next, final String redirectTo) {
+        super(securityRealm, next);
         this.redirectTo = redirectTo;
     }
 
     /**
-     * @see org.jboss.as.domain.http.server.RealmReadinessFilter#rejectRequest(org.jboss.com.sun.net.httpserver.HttpExchange)
+     * @see org.jboss.as.domain.http.server.RealmReadinessHandler#rejectRequest(org.jboss.com.sun.net.httpserver.HttpExchange)
      */
     @Override
-    void rejectRequest(HttpExchange exchange) throws IOException {
-        Headers responseHeaders = exchange.getResponseHeaders();
-        responseHeaders.add(LOCATION, constructUrl(exchange, redirectTo));
-        exchange.sendResponseHeaders(TEMPORARY_REDIRECT, 0);
-        exchange.close();
-    }
+    void rejectRequest(HttpServerExchange exchange) throws IOException {
+        exchange.getResponseHeaders().add(Headers.LOCATION, redirectTo);
 
-    @Override
-    public String description() {
-        return MESSAGES.redirectReadinessFilter();
+        HttpHandlers.executeHandler(Common.TEMPORARY_REDIRECT, exchange);
     }
-
 }

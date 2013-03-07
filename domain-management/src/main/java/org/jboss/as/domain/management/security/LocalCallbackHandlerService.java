@@ -37,7 +37,7 @@ import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.AuthorizeCallback;
 
-import org.jboss.as.domain.management.AuthenticationMechanism;
+import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -66,11 +66,11 @@ class LocalCallbackHandlerService implements Service<CallbackHandlerService>, Ca
      * CallbackHandlerService Methods
      */
 
-    public AuthenticationMechanism getPreferredMechanism() {
-        return AuthenticationMechanism.LOCAL;
+    public AuthMechanism getPreferredMechanism() {
+        return AuthMechanism.LOCAL;
     }
 
-    public Set<AuthenticationMechanism> getSupplementaryMechanisms() {
+    public Set<AuthMechanism> getSupplementaryMechanisms() {
         return Collections.emptySet();
     }
 

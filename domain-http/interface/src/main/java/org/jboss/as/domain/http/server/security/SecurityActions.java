@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,16 +22,13 @@
 
 package org.jboss.as.domain.http.server.security;
 
+import static java.security.AccessController.doPrivileged;
+
 import java.security.PrivilegedAction;
 
 import javax.security.auth.Subject;
 
 import org.jboss.as.controller.security.SecurityContext;
-import org.jboss.as.util.security.ReadPropertyAction;
-
-import static java.lang.System.getProperty;
-import static java.lang.System.getSecurityManager;
-import static java.security.AccessController.doPrivileged;
 
 /**
  * Security Actions for classes in the org.jboss.as.domain.http.server.security package.
@@ -41,23 +38,6 @@ import static java.security.AccessController.doPrivileged;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 class SecurityActions {
-
-    static String getStringProperty(final String key) {
-        return getSecurityManager() == null ? getProperty(key) : doPrivileged(new ReadPropertyAction(key));
-    }
-
-    static boolean getBoolean(final String key) {
-        return Boolean.parseBoolean(getStringProperty(key));
-    }
-
-    static int getInt(final String key, final int def) {
-        try {
-            final String value = getStringProperty(key);
-            return value == null ? def : Integer.parseInt(value);
-        } catch (NumberFormatException ignored) {
-            return def;
-        }
-    }
 
     static void setSecurityContextSubject(final Subject subject) {
         doPrivileged(new PrivilegedAction<Void>() {

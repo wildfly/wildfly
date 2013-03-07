@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,33 +20,44 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.http.server;
+package org.jboss.as.domain.http.server.security;
+
+import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
+import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpServerExchange;
+import io.undertow.server.handlers.HttpHandlers;
 
 import java.io.IOException;
 
 import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.com.sun.net.httpserver.Filter;
-import org.jboss.com.sun.net.httpserver.HttpExchange;
 
 /**
  * Filter to redirect to the error context while the security realm is not ready.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-abstract class RealmReadinessFilter extends Filter {
+abstract class RealmReadinessHandler implements HttpHandler {
 
     private final SecurityRealm securityRealm;
+    private final HttpHandler next;
 
-    RealmReadinessFilter(final SecurityRealm securityRealm) {
+    RealmReadinessHandler(final SecurityRealm securityRealm, final HttpHandler next) {
         this.securityRealm = securityRealm;
+        this.next = next;
     }
 
     @Override
-    public void doFilter(HttpExchange exchange, Chain chain) throws IOException {
-        if (securityRealm.isReady()) {
-            chain.doFilter(exchange);
+    public void handleRequest(HttpServerExchange exchange) {
+        if (securityRealm == null || securityRealm.isReady()) {
+            HttpHandlers.executeHandler(next, exchange);
         } else {
-            rejectRequest(exchange);
+            try {
+                rejectRequest(exchange);
+            } catch (IOException e) {
+                ROOT_LOGGER.error(e);
+                exchange.setResponseCode(500);
+                exchange.endExchange();
+            }
         }
     }
 
@@ -60,6 +71,6 @@ abstract class RealmReadinessFilter extends Filter {
      * @param exchange
      * @throws IOException
      */
-    abstract void rejectRequest(HttpExchange exchange) throws IOException;
+    abstract void rejectRequest(HttpServerExchange exchange) throws IOException;
 
 }

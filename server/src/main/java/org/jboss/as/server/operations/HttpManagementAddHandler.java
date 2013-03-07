@@ -55,7 +55,7 @@ import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.mgmt.HttpManagementResourceDefinition;
-import org.jboss.as.server.mgmt.HttpManagementService;
+import org.jboss.as.server.mgmt._UndertowHttpManagementService;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.dmr.ModelNode;
@@ -221,34 +221,34 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
         }
 
         ServerEnvironment environment = (ServerEnvironment) context.getServiceRegistry(false).getRequiredService(ServerEnvironmentService.SERVICE_NAME).getValue();
-        final HttpManagementService service = new HttpManagementService(consoleMode, environment.getProductConfig().getConsoleSlot());
-        ServiceBuilder<HttpManagement> builder = serviceTarget.addService(HttpManagementService.SERVICE_NAME, service)
-                .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, service.getModelControllerInjector())
-                .addDependency(SocketBindingManagerImpl.SOCKET_BINDING_MANAGER, SocketBindingManager.class, service.getSocketBindingManagerInjector())
-                .addDependency(ControlledProcessStateService.SERVICE_NAME, ControlledProcessStateService.class, service.getControlledProcessStateServiceInjector())
-                .addInjection(service.getExecutorServiceInjector(), Executors.newCachedThreadPool(new JBossThreadFactory(new ThreadGroup("HttpManagementService-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext())));
+        final _UndertowHttpManagementService undertowService = new _UndertowHttpManagementService(consoleMode, environment.getProductConfig().getConsoleSlot());
+        ServiceBuilder<HttpManagement> undertowBuilder = serviceTarget.addService(_UndertowHttpManagementService.SERVICE_NAME, undertowService)
+                .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, undertowService.getModelControllerInjector())
+                .addDependency(SocketBindingManagerImpl.SOCKET_BINDING_MANAGER, SocketBindingManager.class, undertowService.getSocketBindingManagerInjector())
+                .addDependency(ControlledProcessStateService.SERVICE_NAME, ControlledProcessStateService.class, undertowService.getControlledProcessStateServiceInjector())
+                .addInjection(undertowService.getExecutorServiceInjector(), Executors.newCachedThreadPool(new JBossThreadFactory(new ThreadGroup("HttpManagementService-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext())));
 
         if (interfaceSvcName != null) {
-            builder.addDependency(interfaceSvcName, NetworkInterfaceBinding.class, service.getInterfaceInjector())
-                .addInjection(service.getPortInjector(), port)
-                .addInjection(service.getSecurePortInjector(), securePort);
+            undertowBuilder.addDependency(interfaceSvcName, NetworkInterfaceBinding.class, undertowService.getInterfaceInjector())
+            .addInjection(undertowService.getPortInjector(), port)
+            .addInjection(undertowService.getSecurePortInjector(), securePort);
         } else {
             if (socketBindingServiceName != null) {
-                builder.addDependency(socketBindingServiceName, SocketBinding.class, service.getSocketBindingInjector());
+                undertowBuilder.addDependency(socketBindingServiceName, SocketBinding.class, undertowService.getSocketBindingInjector());
             }
             if (secureSocketBindingServiceName != null) {
-                builder.addDependency(secureSocketBindingServiceName, SocketBinding.class, service.getSecureSocketBindingInjector());
+                undertowBuilder.addDependency(secureSocketBindingServiceName, SocketBinding.class, undertowService.getSecureSocketBindingInjector());
             }
         }
 
         if (realmSvcName != null) {
-            builder.addDependency(realmSvcName, SecurityRealmService.class, service.getSecurityRealmInjector());
+            undertowBuilder.addDependency(realmSvcName, SecurityRealmService.class, undertowService.getSecurityRealmInjector());
         }
 
         if (verificationHandler != null) {
-            builder.addListener(verificationHandler);
+            undertowBuilder.addListener(verificationHandler);
         }
-        ServiceController<?> controller = builder.install();
+        ServiceController<?> controller = undertowBuilder.install();
         if (newControllers != null) {
             newControllers.add(controller);
         }

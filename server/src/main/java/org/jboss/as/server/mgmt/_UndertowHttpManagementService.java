@@ -1,25 +1,24 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */
-
+* JBoss, Home of Professional Open Source.
+* Copyright 2012, Red Hat Middleware LLC, and individual contributors
+* as indicated by the @author tags. See the copyright.txt file in the
+* distribution for a full listing of individual contributors.
+*
+* This is free software; you can redistribute it and/or modify it
+* under the terms of the GNU Lesser General Public License as
+* published by the Free Software Foundation; either version 2.1 of
+* the License, or (at your option) any later version.
+*
+* This software is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+* Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public
+* License along with this software; if not, write to the Free
+* Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+* 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+*/
 package org.jboss.as.server.mgmt;
 
 import java.net.BindException;
@@ -48,12 +47,12 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 /**
- * A service which launches the domain HTTP API and serverManagement.
  *
- * @author Jason T. Greene
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class HttpManagementService implements Service<HttpManagement> {
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("serverManagement", "controller", "management", "http");
+public class _UndertowHttpManagementService implements Service<HttpManagement>{
+    //TODO get rid of "undertow" when we make the switch
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("serverManagement", "controller", "management", "http", "undertow");
 
     private final InjectedValue<ModelController> modelControllerValue = new InjectedValue<ModelController>();
     private final InjectedValue<SocketBinding> injectedSocketBindingValue = new InjectedValue<SocketBinding>();
@@ -66,7 +65,7 @@ public class HttpManagementService implements Service<HttpManagement> {
     private final InjectedValue<SecurityRealmService> securityRealmServiceValue = new InjectedValue<SecurityRealmService>();
     private final InjectedValue<ControlledProcessStateService> controlledProcessStateServiceValue = new InjectedValue<ControlledProcessStateService>();
     private final ConsoleMode consoleMode;
-    private final String consoleSkin;
+    private final String consoleSlot;
     private ManagementHttpServer serverManagement;
     private SocketBindingManager socketBindingManager;
     private boolean useUnmanagedBindings = false;
@@ -113,7 +112,7 @@ public class HttpManagementService implements Service<HttpManagement> {
             }
             Integer securePort = securePortValue.getOptionalValue();
             if (securePort != null) {
-                return securePort;
+//                return securePort;
             }
             return -1;
         }
@@ -135,15 +134,9 @@ public class HttpManagementService implements Service<HttpManagement> {
         }
     };
 
-    /**
-     * Create a new {@code HttpManagementService}
-     *
-     * @param consoleMode mode in which the console should operate
-     * @param consoleSkin the console look and feel to use.
-     */
-    public HttpManagementService(ConsoleMode consoleMode, String consoleSkin) {
+    public _UndertowHttpManagementService(ConsoleMode consoleMode, String consoleSlot) {
         this.consoleMode = consoleMode;
-        this.consoleSkin = consoleSkin;
+        this.consoleSlot = consoleSlot;
     }
 
     /**
@@ -187,8 +180,9 @@ public class HttpManagementService implements Service<HttpManagement> {
         }
 
         try {
+
             serverManagement = ManagementHttpServer.create(bindAddress, secureBindAddress, 50, modelControllerClient,
-                    executorService, securityRealmService, controlledProcessStateService, consoleMode, consoleSkin);
+                    executorService, securityRealmService, controlledProcessStateService, consoleMode, consoleSlot);
             serverManagement.start();
 
             // Register the now-created sockets with the SBM

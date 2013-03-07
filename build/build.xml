@@ -177,6 +177,10 @@
           ~ +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
           -->
 
+    	<module-def name="io.undertow">
+            <maven-resource group="io.undertow" artifact="undertow-core"/>
+        </module-def>
+
         <module-def name="javax.api"/>
 
         <module-def name="javax.xml.stream.api"/>

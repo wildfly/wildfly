@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,21 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.http.server;
+package org.jboss.as.domain.http.server.security;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLED_BACK;
-import static org.jboss.as.domain.http.server.Constants.FORBIDDEN;
 import static org.jboss.as.domain.http.server.DomainUtil.constructUrl;
 import static org.jboss.as.domain.http.server.DomainUtil.writeResponse;
 import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
+import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpServerExchange;
 
 import java.io.IOException;
 
 import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.com.sun.net.httpserver.HttpExchange;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -42,35 +42,27 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class DmrFailureReadinessFilter extends RealmReadinessFilter {
+public class DmrFailureReadinessHandler extends RealmReadinessHandler {
 
     private final String redirectTo;
 
-    DmrFailureReadinessFilter(final SecurityRealm securityRealm, final String redirectTo) {
-        super(securityRealm);
+    public DmrFailureReadinessHandler(final SecurityRealm securityRealm, final HttpHandler next, final String redirectTo) {
+        super(securityRealm, next);
         this.redirectTo = redirectTo;
     }
 
     /**
-     * @see org.jboss.as.domain.http.server.RealmReadinessFilter#rejectRequest(org.jboss.com.sun.net.httpserver.HttpExchange)
+     * @see org.jboss.as.domain.http.server.RealmReadinessHandler#rejectRequest(org.jboss.com.sun.net.httpserver.HttpExchange)
      */
     @Override
-    void rejectRequest(HttpExchange exchange) throws IOException {
+    void rejectRequest(HttpServerExchange exchange) throws IOException {
         ModelNode rejection = new ModelNode();
         rejection.get(OUTCOME).set(FAILED);
         rejection.get(FAILURE_DESCRIPTION).set(MESSAGES.realmNotReadyMessage(constructUrl(exchange, redirectTo)));
         rejection.get(ROLLED_BACK).set(Boolean.TRUE.toString());
 
         // Keep the response visible so it can easily be seen in network traces.
-        writeResponse(exchange, false, true, rejection, FORBIDDEN, false);
-    }
-
-    /**
-     * @see org.jboss.com.sun.net.httpserver.Filter#description()
-     */
-    @Override
-    public String description() {
-        return MESSAGES.dmrFailureReadinessFilter();
+        writeResponse(exchange, false, true, rejection, 403, false);
     }
 
 }

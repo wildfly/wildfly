@@ -32,7 +32,7 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.AuthorizeCallback;
 
-import org.jboss.as.domain.management.AuthenticationMechanism;
+import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -69,11 +69,11 @@ public class ClientCertCallbackHandler implements Service<CallbackHandlerService
      * CallbackHandlerService Methods
      */
 
-    public AuthenticationMechanism getPreferredMechanism() {
-        return AuthenticationMechanism.CLIENT_CERT;
+    public AuthMechanism getPreferredMechanism() {
+        return AuthMechanism.CLIENT_CERT;
     }
 
-    public Set<AuthenticationMechanism> getSupplementaryMechanisms() {
+    public Set<AuthMechanism> getSupplementaryMechanisms() {
         return Collections.emptySet();
     }
 
