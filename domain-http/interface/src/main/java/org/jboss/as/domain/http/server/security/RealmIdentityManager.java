@@ -127,6 +127,7 @@ public class RealmIdentityManager implements IdentityManager {
         if (account instanceof PlainDigestAccount) {
             return ((PlainDigestAccount) account).getPassword();
         }
+        //This is impossible, only here for testing if someone messed up a change
         throw new IllegalArgumentException("Account not instanceof 'PlainDigestAccount'.");
     }
 
@@ -135,6 +136,7 @@ public class RealmIdentityManager implements IdentityManager {
         if (account instanceof HashedDigestAccount) {
             return ((HashedDigestAccount) account).getHash();
         }
+        //This is impossible, only here for testing if someone messed up a change
         throw new IllegalArgumentException("Account not instanceof 'HashedDigestAccount'.");
     }
 
@@ -220,6 +222,7 @@ public class RealmIdentityManager implements IdentityManager {
 
     private static void assertMechanism(final AuthMechanism mechanism) {
         if (mechanism != currentMechanism.get()) {
+            //This is impossible, only here for testing if someone messed up a change
             throw new IllegalStateException("Unexpected authentication mechanism executing.");
         }
     }
