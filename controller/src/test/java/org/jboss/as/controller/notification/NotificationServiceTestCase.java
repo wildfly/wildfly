@@ -37,6 +37,8 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
+import org.jboss.as.controller.operations.global.GlobalNotifications;
+import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.test.AbstractControllerTestBase;
@@ -61,9 +63,10 @@ public class NotificationServiceTestCase extends AbstractControllerTestBase {
     public static final AtomicReference<CountDownLatch> notificationHandlerUnregisteredLatch = new AtomicReference<>();
     public static final AtomicReference<NotificationHandler> notificationHandler = new AtomicReference<>();
     public static final AtomicReference<NotificationFilter> notificationFilter = new AtomicReference<>();
+    public static final String MY_TYPE = "MYTYPE";
 
-    @Before
-    public void setUp() {
+    @Override
+    protected void initModel(Resource rootResource, ManagementResourceRegistration registration) {
         notificationEmittedLatch.set(new CountDownLatch(1));
         notificationHandlerRegisteredLatch.set(new CountDownLatch(1));
         notificationHandlerUnregisteredLatch.set(new CountDownLatch(1));
@@ -71,14 +74,12 @@ public class NotificationServiceTestCase extends AbstractControllerTestBase {
         notificationHandler.set(new NotificationHandler() {
             @Override
             public void handleNotification(Notification notification) {
-                notificationEmittedLatch.get().countDown();
+                if (MY_TYPE.equals(notification.getType())) {
+                    notificationEmittedLatch.get().countDown();
+                }
             }
         });
         notificationFilter.set(NotificationFilter.ALL);
-    }
-
-    @Override
-    protected void initModel(Resource rootResource, ManagementResourceRegistration registration) {
 
         registration.registerOperationHandler(new SimpleOperationDefinitionBuilder(OPERATION_THAT_EMITS_A_NOTIFICATION, new NonResolvingResourceDescriptionResolver())
                 .setPrivateEntry()
@@ -86,7 +87,7 @@ public class NotificationServiceTestCase extends AbstractControllerTestBase {
                 new OperationStepHandler() {
                     @Override
                     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        Notification notification = new Notification("MYTYPE", pathAddress(operation.get(OP_ADDR)), "notification message");
+                        Notification notification = new Notification(MY_TYPE, pathAddress(operation.get(OP_ADDR)), "notification message");
                         NotificationService.emitNotification(context, notification);
                         context.stepCompleted();
                     }
@@ -122,12 +123,12 @@ public class NotificationServiceTestCase extends AbstractControllerTestBase {
                     }
                 }
         );
+
+        NotificationService.installNotificationService(getContainer().subTarget());
     }
 
     @Test
     public void testSendNotification() throws Exception {
-        NotificationService.installNotificationService(getContainer().subTarget());
-
         executeForResult(createOperation(OPERATION_THAT_REGISTERS_A_NOTIFICATION_HANDLER));
         assertTrue("the notification handler was not registered", notificationHandlerRegisteredLatch.get().await(1, SECONDS));
 
@@ -140,8 +141,6 @@ public class NotificationServiceTestCase extends AbstractControllerTestBase {
 
     @Test
     public void testSendNotificationWithFilter() throws Exception {
-        NotificationService.installNotificationService(getContainer().subTarget());
-
         notificationFilter.set(new NotificationFilter() {
             @Override
             public boolean isNotificationEnabled(Notification notification) {
@@ -160,8 +159,6 @@ public class NotificationServiceTestCase extends AbstractControllerTestBase {
 
     @Test
     public void testSendNotificationToFailingHandler() throws Exception {
-        NotificationService.installNotificationService(getContainer().subTarget());
-
         notificationHandler.set(new NotificationHandler() {
             @Override
             public void handleNotification(Notification notification) {
