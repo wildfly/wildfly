@@ -26,6 +26,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.as.controller.PathAddress.pathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.notification.NotificationFilter.ALL;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -63,7 +64,7 @@ public class NotificationServiceTestCase extends AbstractControllerTestBase {
     public static final AtomicReference<CountDownLatch> notificationHandlerUnregisteredLatch = new AtomicReference<>();
     public static final AtomicReference<NotificationHandler> notificationHandler = new AtomicReference<>();
     public static final AtomicReference<NotificationFilter> notificationFilter = new AtomicReference<>();
-    public static final String MY_TYPE = "MYTYPE";
+    public static final String MY_TYPE = "my-notification-type";
 
     @Override
     protected void initModel(Resource rootResource, ManagementResourceRegistration registration) {
@@ -79,7 +80,7 @@ public class NotificationServiceTestCase extends AbstractControllerTestBase {
                 }
             }
         });
-        notificationFilter.set(NotificationFilter.ALL);
+        notificationFilter.set(ALL);
 
         registration.registerOperationHandler(new SimpleOperationDefinitionBuilder(OPERATION_THAT_EMITS_A_NOTIFICATION, new NonResolvingResourceDescriptionResolver())
                 .setPrivateEntry()
@@ -103,8 +104,8 @@ public class NotificationServiceTestCase extends AbstractControllerTestBase {
                         NotificationSupport notificationSupport = NotificationSupport.class.cast(notificationService.getValue());
                         PathAddress source = pathAddress(operation.get(OP_ADDR));
                         notificationSupport.registerNotificationHandler(source, notificationHandler.get(), notificationFilter.get());
-                        notificationHandlerRegisteredLatch.get().countDown();
                         context.stepCompleted();
+                        notificationHandlerRegisteredLatch.get().countDown();
                     }
                 }
         );
@@ -118,8 +119,8 @@ public class NotificationServiceTestCase extends AbstractControllerTestBase {
                         NotificationSupport notificationSupport = NotificationSupport.class.cast(notificationService.getValue());
                         PathAddress source = pathAddress(operation.get(OP_ADDR));
                         notificationSupport.unregisterNotificationHandler(source, notificationHandler.get(), notificationFilter.get());
-                        notificationHandlerUnregisteredLatch.get().countDown();
                         context.stepCompleted();
+                        notificationHandlerUnregisteredLatch.get().countDown();
                     }
                 }
         );
