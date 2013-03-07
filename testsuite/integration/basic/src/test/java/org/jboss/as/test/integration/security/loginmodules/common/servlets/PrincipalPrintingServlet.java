@@ -33,7 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * A servlet which reports the name of the callers principal.
- * 
+ *
  * @author JanLanik
  */
 @WebServlet(name = "PrincipalPrintingServlet", urlPatterns = { PrincipalPrintingServlet.SERVLET_PATH })
@@ -49,7 +49,7 @@ public class PrincipalPrintingServlet extends HttpServlet {
         final PrintWriter writer = resp.getWriter();
         final Principal principal = req.getUserPrincipal();
         if (null == principal) {
-            resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Principal name is printed only for the authenticated users.");
+            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Principal name is printed only for the authenticated users.");
         } else {
             writer.write(req.getUserPrincipal().getName());
         }
