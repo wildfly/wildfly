@@ -24,6 +24,7 @@ package org.jboss.as.controller.operations.global;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_ADDED_NOTIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_REMOVED_NOTIFICATION;
 
@@ -46,15 +47,19 @@ public class GlobalNotifications {
             .build();
     private static final NotificationDefinition RESOURCE_REMOVED = NotificationDefinition.Builder.create(RESOURCE_REMOVED_NOTIFICATION, ControllerResolver.getResolver("global"))
             .build();
+
+    public static final String OLD_VALUE = "old-value";
+    public static final String NEW_VALUE = "new-value";
+
     private static final NotificationDefinition ATTRIBUTE_VALUE_WRITTEN = NotificationDefinition.Builder.create(ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION, ControllerResolver.getResolver("global"))
             .setDataValueDescriptor(new NotificationDefinition.DataValueDescriptor() {
                 @Override
                 public ModelNode describe(ResourceBundle bundle) {
-                    String prefix = "global." + ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION;
+                    String prefix = "global." + ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION + ".";
                     final ModelNode desc = new ModelNode();
-                    desc.get("name", DESCRIPTION).set(bundle.getString(prefix + ".name"));
-                    desc.get("old-value", DESCRIPTION).set(bundle.getString(prefix + ".old-value"));
-                    desc.get("new-value", DESCRIPTION).set(bundle.getString(prefix + ".new-value"));
+                    desc.get(NAME, DESCRIPTION).set(bundle.getString(prefix + NAME));
+                    desc.get(OLD_VALUE, DESCRIPTION).set(bundle.getString(prefix + OLD_VALUE));
+                    desc.get(NEW_VALUE, DESCRIPTION).set(bundle.getString(prefix + NEW_VALUE));
                     return desc;
                 }
             })

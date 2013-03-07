@@ -101,4 +101,15 @@ public class Notification {
         ModelNode data = node.hasDefined(DATA)? node.get(DATA): null;
         return new Notification(type, resource, message, timestamp, data);
     }
+
+    @Override
+    public String toString() {
+        return "Notification{" +
+                "type='" + type + '\'' +
+                ", resource=" + resource +
+                ", message='" + message + '\'' +
+                ", timestamp=" + timestamp +
+                ", data=" + data +
+                '}';
+    }
 }

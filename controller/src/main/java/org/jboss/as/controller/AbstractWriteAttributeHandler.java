@@ -24,14 +24,22 @@ package org.jboss.as.controller;
 
 import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.operations.global.GlobalNotifications.NEW_VALUE;
+import static org.jboss.as.controller.operations.global.GlobalNotifications.OLD_VALUE;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.notification.Notification;
+import org.jboss.as.controller.notification.NotificationService;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -88,6 +96,8 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
             submodel.get(attributeName).set(newValue);
         }
 
+        final AtomicReference<ModelNode> newVal = new AtomicReference<>(newValue);
+
         finishModelStage(context, operation, attributeName, newValue, currentValue, resource);
 
         if (requiresRuntime(context)) {
@@ -97,6 +107,7 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     final ModelNode resolvedValue = attributeDefinition != null ? attributeDefinition.resolveModelAttribute(context, submodel) : updatedValue.resolve();
                     validateResolvedValue(attributeName, updatedValue);
+                    newVal.set(resolvedValue);
                     final HandbackHolder<T> handback = new HandbackHolder<T>();
                     final boolean reloadRequired = applyUpdateToRuntime(context, operation, attributeName, resolvedValue, currentValue, handback);
                     if (reloadRequired) {
@@ -122,6 +133,29 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
                 }
             }, OperationContext.Stage.RUNTIME);
         }
+        context.addStep(new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                try {
+                    if (FAILED.equals(context.getResult().get(OUTCOME).asString())) {
+                        return;
+                    }
+
+                    PathAddress sourceAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
+                    ModelNode data = new ModelNode();
+                    data.get(NAME).set(attributeName);
+                    data.get(OLD_VALUE).set(currentValue);
+                    data.get(NEW_VALUE).set(newVal.get());
+                    Notification notification = new Notification(ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION,
+                            sourceAddress,
+                            MESSAGES.attributeValueWritten(attributeName, currentValue, newVal.get()),
+                            data);
+                    NotificationService.emitNotification(context, notification);
+                } finally {
+                    context.stepCompleted();
+                }
+            }
+        }, OperationContext.Stage.VERIFY);
 
         context.stepCompleted();
     }
