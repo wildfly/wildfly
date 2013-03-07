@@ -91,12 +91,13 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
     /**
      * Register the existence of an addressable sub-resource of this resource. Before this method returns the provided
      * {@code resourceDefinition} will be given the opportunity to
-     * {@link ResourceDefinition#registerAttributes(ManagementResourceRegistration) register attributes}
-     * and {@link ResourceDefinition#registerOperations(ManagementResourceRegistration) register operations}.
+     * {@link ResourceDefinition#registerAttributes(ManagementResourceRegistration) register attributes},
+     * {@link ResourceDefinition#registerOperations(ManagementResourceRegistration) register operations}
+     * and {@link ResourceDefinition#registerNotifications(ManagementResourceRegistration) register operations}
      *
      * @param resourceDefinition source for descriptive information describing this
      *                            portion of the model (must not be {@code null})
-     * @return a resource registration which may be used to add attributes, operations and sub-models
+     * @return a resource registration which may be used to add attributes, operations, notifications and sub-models
      *
      * @throws IllegalArgumentException if a submodel is already registered at {@code address}
      * @throws IllegalStateException if {@link #isRuntimeOnly()} returns {@code true}
