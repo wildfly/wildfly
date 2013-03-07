@@ -31,7 +31,7 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * Adding or updating a module will add a module in the patch overlay directory {@linkplain org.jboss.as.boot.DirectoryStructure#getModulePatchDirectory(String)}.
+ * Adding or updating a module will add a module in the patch overlay directory {@linkplain org.jboss.as.patching.DirectoryStructure#getModulePatchDirectory(String)}.
  *
  * @author Emanuel Muckenhuber
  */

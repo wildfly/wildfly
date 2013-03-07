@@ -22,7 +22,7 @@
 
 package org.jboss.as.patching.runner;
 
-import org.jboss.as.boot.DirectoryStructure;
+import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.PatchLogger;

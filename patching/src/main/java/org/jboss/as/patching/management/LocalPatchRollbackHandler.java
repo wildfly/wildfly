@@ -24,7 +24,7 @@ package org.jboss.as.patching.management;
 
 import static org.jboss.as.patching.PatchMessages.MESSAGES;
 
-import org.jboss.as.boot.DirectoryStructure;
+import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;

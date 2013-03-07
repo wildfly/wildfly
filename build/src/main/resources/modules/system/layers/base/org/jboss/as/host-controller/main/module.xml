@@ -40,7 +40,6 @@
         <module name="org.codehaus.woodstox" services="import"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.vfs"/>
-        <module name="org.jboss.as.boot"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.common-core"/>
         <module name="org.jboss.as.deployment-repository"/>

@@ -22,7 +22,6 @@
 
 package org.jboss.as.patching.management;
 
-import org.jboss.as.boot.DirectoryStructure;
 import org.jboss.as.controller.ModelControllerServiceInitialization;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -37,7 +36,7 @@ import org.jboss.msc.service.ServiceTarget;
 public final class PatchIntegrationFactory implements ModelControllerServiceInitialization {
 
     static final ServiceName JBOSS_AS = ServiceName.JBOSS.append("as");
-    static final ServiceName JBOSS_DIRECTORY_STRUCTURE_SERVICE = JBOSS_AS.append("directory-structure");
+    // static final ServiceName JBOSS_DIRECTORY_STRUCTURE_SERVICE = JBOSS_AS.append("directory-structure");
     static final ServiceName JBOSS_PRODUCT_CONFIG_SERVICE = JBOSS_AS.append("product-config");
 
     @Override
@@ -55,7 +54,6 @@ public final class PatchIntegrationFactory implements ModelControllerServiceInit
         // Install the patch service
         final PatchInfoService service = new PatchInfoService();
         serviceTarget.addService(PatchInfoService.NAME, service)
-                .addDependency(JBOSS_DIRECTORY_STRUCTURE_SERVICE, DirectoryStructure.class, service.getDirectoryStructure())
                 .addDependency(JBOSS_PRODUCT_CONFIG_SERVICE, ProductConfig.class, service.getProductConfig())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();

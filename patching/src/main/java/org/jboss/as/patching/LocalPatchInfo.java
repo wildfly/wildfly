@@ -22,7 +22,6 @@
 
 package org.jboss.as.patching;
 
-import org.jboss.as.boot.DirectoryStructure;
 import org.jboss.as.patching.runner.PatchUtils;
 import org.jboss.as.version.ProductConfig;
 

@@ -37,7 +37,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
-import org.jboss.as.boot.DirectoryStructure;
+import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.Patch;

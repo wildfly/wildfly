@@ -22,7 +22,7 @@
 
 package org.jboss.as.patching.tool;
 
-import org.jboss.as.boot.DirectoryStructure;
+import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.LocalPatchInfo;
 import org.jboss.as.patching.PatchInfo;
