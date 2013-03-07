@@ -22,7 +22,7 @@
 
 package org.jboss.as.patching.management;
 
-import org.jboss.as.boot.DirectoryStructure;
+import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;

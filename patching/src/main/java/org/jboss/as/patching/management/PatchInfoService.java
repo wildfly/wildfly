@@ -25,10 +25,11 @@ package org.jboss.as.patching.management;
 import static java.util.Arrays.asList;
 import static org.jboss.as.patching.management.PatchManagementLogger.ROOT_LOGGER;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.jboss.as.boot.DirectoryStructure;
+import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.LocalPatchInfo;
 import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.version.ProductConfig;
@@ -47,8 +48,8 @@ public class PatchInfoService implements Service<PatchInfoService> {
     public static ServiceName NAME = ServiceName.JBOSS.append("patch").append("info");
 
     private final InjectedValue<ProductConfig> productConfig = new InjectedValue<ProductConfig>();
-    private final InjectedValue<DirectoryStructure> directoryStructure = new InjectedValue<DirectoryStructure>();
 
+    private volatile DirectoryStructure directoryStructure;
     private volatile PatchInfo patchInfo;
 
     /**
@@ -67,7 +68,8 @@ public class PatchInfoService implements Service<PatchInfoService> {
     @Override
     public synchronized void start(StartContext context) throws StartException {
         final ProductConfig config = productConfig.getValue();
-        final DirectoryStructure structure = directoryStructure.getValue();
+        final File file = new File(System.getProperty("jboss.home.dir"));
+        final DirectoryStructure structure = DirectoryStructure.createDefault(file);
         try {
             this.patchInfo = LocalPatchInfo.load(config, structure);
             ROOT_LOGGER.usingModulePath(asList(patchInfo.getModulePath()));
@@ -86,16 +88,12 @@ public class PatchInfoService implements Service<PatchInfoService> {
         return this;
     }
 
-    InjectedValue<DirectoryStructure> getDirectoryStructure() {
-        return directoryStructure;
-    }
-
     InjectedValue<ProductConfig> getProductConfig() {
         return productConfig;
     }
 
     public DirectoryStructure getStructure() {
-        return directoryStructure.getValue();
+        return directoryStructure;
     }
 
     public PatchInfo getPatchInfo() {

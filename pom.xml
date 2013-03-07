@@ -290,7 +290,6 @@
     </properties>
 
     <modules>
-        <module>boot</module>
         <module>build</module>
         <module>build-config</module>
         <module>build-modular</module>
@@ -803,12 +802,6 @@
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-arquillian-testenricher-msc</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-boot</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

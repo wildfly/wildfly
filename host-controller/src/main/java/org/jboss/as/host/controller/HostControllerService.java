@@ -23,7 +23,6 @@
 package org.jboss.as.host.controller;
 
 import static java.security.AccessController.doPrivileged;
-import org.jboss.as.boot.DirectoryStructure;
 import static org.jboss.as.server.ServerLogger.AS_ROOT_LOGGER;
 import static org.jboss.as.server.ServerLogger.CONFIG_LOGGER;
 
@@ -149,11 +148,7 @@ public class HostControllerService implements Service<AsyncFuture<ServiceContain
 
         HttpListenerRegistryService.install(serviceTarget);
 
-        // Add directory and product config services
-        final Value<DirectoryStructure> directoryStructure = new ImmediateValue<DirectoryStructure>(DirectoryStructure.createDefault(environment.getHomeDir()));
-        serviceTarget.addService(Services.JBOSS_DIRECTORY_STRUCTURE_SERVICE, new ValueService<DirectoryStructure>(directoryStructure))
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
+        // Add product config service
         final Value<ProductConfig> productConfigValue = new ImmediateValue<ProductConfig>(config);
         serviceTarget.addService(Services.JBOSS_PRODUCT_CONFIG_SERVICE, new ValueService<ProductConfig>(productConfigValue))
                 .setInitialMode(ServiceController.Mode.ACTIVE)

@@ -29,7 +29,7 @@ import static org.jboss.as.patching.metadata.Patch.PatchType.ONE_OFF;
 import java.io.File;
 import java.util.List;
 
-import org.jboss.as.boot.DirectoryStructure;
+import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;

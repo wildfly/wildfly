@@ -34,7 +34,6 @@ import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.TreeSet;
 
-import org.jboss.as.boot.DirectoryStructure;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.repository.ContentRepository;
@@ -169,11 +168,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         ServerPathManagerService serverPathManagerService = new ServerPathManagerService();
         ServerPathManagerService.addService(serviceTarget, serverPathManagerService, serverEnvironment);
 
-        // Add directory and product config services
-        final Value<DirectoryStructure> directoryStructure = new ImmediateValue<DirectoryStructure>(DirectoryStructure.createDefault(serverEnvironment.getHomeDir()));
-        serviceTarget.addService(Services.JBOSS_DIRECTORY_STRUCTURE_SERVICE, new ValueService<DirectoryStructure>(directoryStructure))
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
+        // Add product config service
         final Value<ProductConfig> productConfigValue = new ImmediateValue<ProductConfig>(config);
         serviceTarget.addService(Services.JBOSS_PRODUCT_CONFIG_SERVICE, new ValueService<ProductConfig>(productConfigValue))
                 .setInitialMode(ServiceController.Mode.ACTIVE)
