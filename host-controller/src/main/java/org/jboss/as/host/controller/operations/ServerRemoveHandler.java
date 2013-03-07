@@ -72,7 +72,7 @@ public class ServerRemoveHandler extends AbstractRemoveStepHandler {
                 context.removeResource(PathAddress.EMPTY_ADDRESS);
                 context.stepCompleted();
             }
-        }, OperationContext.Stage.IMMEDIATE);
+        }, OperationContext.Stage.MODEL, true);
 
         // Verify that the server is stopped
         final ModelNode verifyOp = new ModelNode();

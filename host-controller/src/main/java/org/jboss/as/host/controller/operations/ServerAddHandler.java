@@ -73,7 +73,7 @@ public class ServerAddHandler extends AbstractAddStepHandler {
                 context.createResource(PathAddress.EMPTY_ADDRESS);
                 context.stepCompleted();
             }
-        }, OperationContext.Stage.IMMEDIATE);
+        }, OperationContext.Stage.MODEL, true);
 
     }
 

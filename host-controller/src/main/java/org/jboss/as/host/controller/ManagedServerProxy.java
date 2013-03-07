@@ -22,14 +22,12 @@
 
 package org.jboss.as.host.controller;
 
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
