@@ -33,13 +33,10 @@ import java.util.Map;
 import java.util.logging.Level;
 
 import org.apache.commons.io.FileUtils;
-import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
-import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.SubsystemOperations;
@@ -47,7 +44,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.LogContext;
 import org.jboss.logmanager.Logger;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -471,6 +467,11 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
                                      : SubsystemOperations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, false);
         executeOperation(kernelServices, disableOp);
 
+        // The operation should set the enabled attribute to false
+        final ModelNode readOp = SubsystemOperations.createReadAttributeOperation(handlerAddress, CommonAttributes.ENABLED);
+        ModelNode result = executeOperation(kernelServices, readOp);
+        assertFalse("enabled attribute should be false when the disable operation is invoked", SubsystemOperations.readResult(result).asBoolean());
+
         // Log 3 more lines
         logger.info("Test message 4");
         logger.info("Test message 5");
@@ -484,6 +485,10 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
         ModelNode enableOp = legacy ? Util.getEmptyOperation(AbstractHandlerDefinition.ENABLE_HANDLER.getName(), handlerAddress)
                 : SubsystemOperations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, true);
         executeOperation(kernelServices, enableOp);
+
+        // The operation should set the enabled attribute to true
+        result = executeOperation(kernelServices, readOp);
+        assertTrue("enabled attribute should be true when the enable operation is invoked", SubsystemOperations.readResult(result).asBoolean());
 
         // Log 3 more lines
         logger.info("Test message 7");
@@ -505,6 +510,7 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
         op.get(CommonAttributes.NAME.getName()).set(name);
         op.get(CommonAttributes.LEVEL.getName()).set(level.getName());
         op.get(CommonAttributes.FILE.getName()).get(PathResourceDefinition.PATH.getName()).set(file.getAbsolutePath());
+        op.get(CommonAttributes.AUTOFLUSH.getName()).set(true);
         executeOperation(kernelServices, op);
 
         if (!assign) return;
@@ -537,13 +543,6 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
     private ModelNode executeOperation(final KernelServices kernelServices, final ModelNode op, final boolean validateResult) {
         final ModelNode result = kernelServices.executeOperation(op);
         if (validateResult) assertTrue(SubsystemOperations.getFailureDescriptionAsString(result), SubsystemOperations.isSuccessfulOutcome(result));
-        return result;
-    }
-
-    private static ModelNode executeTransformOperation(final KernelServices kernelServices, final ModelVersion modelVersion, final ModelNode op) throws OperationFailedException {
-        TransformedOperation transformedOp = kernelServices.transformOperation(modelVersion, op);
-        ModelNode result = kernelServices.executeOperation(modelVersion, transformedOp);
-        Assert.assertTrue(result.asString(), SubsystemOperations.isSuccessfulOutcome(result));
         return result;
     }
 
