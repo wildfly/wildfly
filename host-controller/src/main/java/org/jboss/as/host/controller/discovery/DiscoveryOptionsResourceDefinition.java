@@ -23,11 +23,17 @@
 package org.jboss.as.host.controller.discovery;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISCOVERY_OPTIONS;
 
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.validation.PropertyValidator;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.host.controller.descriptions.HostResolver;
+import org.jboss.as.host.controller.operations.DiscoveryOptionsWriteAttributeHandler;
+import org.jboss.dmr.ModelType;
 
 /**
  * {@link org.jboss.as.controller.ResourceDefinition} for a resource representing discovery options.
@@ -38,7 +44,18 @@ public class DiscoveryOptionsResourceDefinition extends SimpleResourceDefinition
 
     public static DiscoveryOptionsResourceDefinition INSTANCE = new DiscoveryOptionsResourceDefinition();
 
+    public static final PrimitiveListAttributeDefinition DISCOVERY_OPTIONS = new PrimitiveListAttributeDefinition.Builder(ModelDescriptionConstants.DISCOVERY_OPTIONS, ModelType.PROPERTY)
+        .setAllowNull(true)
+        .setValidator(new PropertyValidator(false, new StringLengthValidator(1)))
+        .build();
+
     private DiscoveryOptionsResourceDefinition() {
-        super(PathElement.pathElement(CORE_SERVICE, DISCOVERY_OPTIONS), HostResolver.getResolver(DISCOVERY_OPTIONS));
+        super(PathElement.pathElement(CORE_SERVICE, ModelDescriptionConstants.DISCOVERY_OPTIONS), HostResolver.getResolver(ModelDescriptionConstants.DISCOVERY_OPTIONS));
+    }
+
+    @Override
+    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+        super.registerAttributes(resourceRegistration);
+        resourceRegistration.registerReadWriteAttribute(DISCOVERY_OPTIONS, null, new DiscoveryOptionsWriteAttributeHandler());
     }
 }

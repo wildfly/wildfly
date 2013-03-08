@@ -21,18 +21,18 @@
  */
 package org.jboss.as.host.controller.operations;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STATIC_DISCOVERY;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.host.controller.discovery.StaticDiscovery;
 import org.jboss.as.host.controller.discovery.StaticDiscoveryResourceDefinition;
 import org.jboss.dmr.ModelNode;
@@ -43,9 +43,8 @@ import org.jboss.msc.service.ServiceController;
  *
  * @author Farah Juma
  */
-public class StaticDiscoveryAddHandler extends AbstractAddStepHandler {
+public class StaticDiscoveryAddHandler extends AbstractDiscoveryOptionAddHandler {
 
-    public static final String OPERATION_NAME = ADD;
     private final LocalHostControllerInfoImpl hostControllerInfo;
 
     /**
@@ -75,9 +74,18 @@ public class StaticDiscoveryAddHandler extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        // no-op
+    }
+
+    @Override
+    protected void populateModel(final OperationContext context, final ModelNode operation,
+            final Resource resource) throws  OperationFailedException {
+        final ModelNode model = resource.getModel();
         for (final SimpleAttributeDefinition attribute : StaticDiscoveryResourceDefinition.STATIC_DISCOVERY_ATTRIBUTES) {
             attribute.validateAndSet(operation, model);
         }
+
+        updateDiscoveryOptionsOrdering(context, operation, STATIC_DISCOVERY);
     }
 
     protected void populateHostControllerInfo(LocalHostControllerInfoImpl hostControllerInfo, OperationContext context,
