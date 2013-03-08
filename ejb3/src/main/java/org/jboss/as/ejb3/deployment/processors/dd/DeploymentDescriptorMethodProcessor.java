@@ -76,7 +76,7 @@ public class DeploymentDescriptorMethodProcessor implements DeploymentUnitProces
                             handleStatelessSessionBean((EJBComponentDescription) component, classIndex, reflectionIndex);
                         }
                     } catch (ClassNotFoundException e) {
-                        throw MESSAGES.failToLoadComponentClass(e);
+                        throw MESSAGES.failToLoadComponentClass(e, component.getComponentName());
                     }
                 }
             }
