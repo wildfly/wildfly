@@ -70,6 +70,7 @@
                    <entries>
                        <entry name="java:jboss/exported/jms/RemoteConnectionFactory"/>
                    </entries>
+                   <?HA-REMOTE-CONNECTION-FACTORY?>
                </connection-factory>
                <pooled-connection-factory name="hornetq-ra">
                    <transaction mode="xa"/>
@@ -115,6 +116,13 @@
        </replacement>
        <replacement placeholder="REDISTRIBUTION-DELAY">
            <redistribution-delay>1000</redistribution-delay>
+       </replacement>
+       <replacement placeholder="HA-REMOTE-CONNECTION-FACTORY">
+           <ha>true</ha>
+           <block-on-acknowledge>true</block-on-acknowledge>
+           <retry-interval>1000</retry-interval>
+           <retry-interval-multiplier>1.0</retry-interval-multiplier>
+           <reconnect-attempts>-1</reconnect-attempts>
        </replacement>
    </supplement>
 
