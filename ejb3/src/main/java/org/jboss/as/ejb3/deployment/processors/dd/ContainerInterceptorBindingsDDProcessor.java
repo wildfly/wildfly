@@ -136,7 +136,7 @@ public class ContainerInterceptorBindingsDDProcessor implements DeploymentUnitPr
             try {
                 componentClass = module.getClassLoader().loadClass(ejbComponentDescription.getComponentClassName());
             } catch (ClassNotFoundException e) {
-                throw MESSAGES.failToLoadComponentClass(ejbComponentDescription.getComponentClassName());
+                throw MESSAGES.failToLoadComponentClass(e, ejbComponentDescription.getComponentClassName());
             }
             final List<InterceptorBindingMetaData> bindingsApplicableForCurrentEJB = bindingsPerEJB.get(ejbComponentDescription.getComponentName());
             final Map<Method, List<InterceptorBindingMetaData>> methodInterceptors = new HashMap<Method, List<InterceptorBindingMetaData>>();

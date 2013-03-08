@@ -1197,8 +1197,8 @@ public interface EjbMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 14395, value = "Could not load component class %s")
-    DeploymentUnitProcessingException failToLoadComponentClass(String componentClassName);
+    //@Message(id = 14395, value = "Could not load component class %s")
+    //DeploymentUnitProcessingException failToLoadComponentClass(String componentClassName);
 
     /**
      * Creates an exception indicating Two ejb-jar.xml bindings for %s specify an absolute order

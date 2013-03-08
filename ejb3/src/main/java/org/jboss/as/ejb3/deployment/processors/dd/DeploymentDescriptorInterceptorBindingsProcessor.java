@@ -132,7 +132,7 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
             try {
                 componentClass = module.getClassLoader().loadClass(componentDescription.getComponentClassName());
             } catch (ClassNotFoundException e) {
-                throw MESSAGES.failToLoadComponentClass(componentDescription.getComponentClassName());
+                throw MESSAGES.failToLoadComponentClass(e, componentDescription.getComponentClassName());
             }
 
             final List<InterceptorBindingMetaData> bindings = bindingsPerComponent.get(componentDescription.getComponentName());
