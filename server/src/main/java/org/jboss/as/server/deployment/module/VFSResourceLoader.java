@@ -26,9 +26,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.CodeSource;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -46,8 +49,11 @@ import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilter;
+import org.jboss.vfs.VirtualFilePermission;
 import org.jboss.vfs.VisitorAttributes;
 import org.jboss.vfs.util.FilterVirtualFileVisitor;
+
+import static java.security.AccessController.doPrivileged;
 
 /**
  * Resource loader capable of loading resources from VFS archives.
@@ -81,39 +87,71 @@ public class VFSResourceLoader extends AbstractResourceLoader {
      * @throws IOException if the manifest could not be read or the root URL is invalid
      */
     public VFSResourceLoader(final String rootName, final VirtualFile root, final boolean usePhysicalCodeSource) throws IOException {
+        final SecurityManager sm = System.getSecurityManager();
+        if (sm != null) {
+            sm.checkPermission(new VirtualFilePermission(root.getPathName(), "read"));
+        }
         this.root = root;
         this.rootName = rootName;
-        manifest = VFSUtils.getManifest(root);
+        try {
+            manifest = doPrivileged(new PrivilegedExceptionAction<Manifest>() {
+                public Manifest run() throws IOException {
+                    return VFSUtils.getManifest(root);
+                }
+            });
+        } catch (PrivilegedActionException pe) {
+            try {
+                throw pe.getException();
+            } catch (IOException | RuntimeException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new UndeclaredThrowableException(e);
+            }
+        }
         rootUrl = usePhysicalCodeSource ? VFSUtils.getRootURL(root) : root.asFileURL();
     }
 
     /** {@inheritDoc} */
     public ClassSpec getClassSpec(final String name) throws IOException {
-        final VirtualFile file = root.getChild(name);
-        if (!file.exists()) {
-            return null;
-        }
-        final long size = file.getSize();
-        final ClassSpec spec = new ClassSpec();
-        final InputStream is = file.openStream();
         try {
-            if (size <= (long) Integer.MAX_VALUE) {
-                final int castSize = (int) size;
-                byte[] bytes = new byte[castSize];
-                int a = 0, res;
-                while ((res = is.read(bytes, a, castSize - a)) > 0) {
-                    a += res;
+            return doPrivileged(new PrivilegedExceptionAction<ClassSpec>() {
+                public ClassSpec run() throws Exception {
+                    final VirtualFile file = root.getChild(name);
+                    if (!file.exists()) {
+                        return null;
+                    }
+                    final long size = file.getSize();
+                    final ClassSpec spec = new ClassSpec();
+                    final InputStream is = file.openStream();
+                    try {
+                        if (size <= (long) Integer.MAX_VALUE) {
+                            final int castSize = (int) size;
+                            byte[] bytes = new byte[castSize];
+                            int a = 0, res;
+                            while ((res = is.read(bytes, a, castSize - a)) > 0) {
+                                a += res;
+                            }
+                            // done
+                            is.close();
+                            spec.setBytes(bytes);
+                            spec.setCodeSource(new CodeSource(rootUrl, file.getCodeSigners()));
+                            return spec;
+                        } else {
+                            throw ServerMessages.MESSAGES.resourceTooLarge();
+                        }
+                    } finally {
+                        VFSUtils.safeClose(is);
+                    }
                 }
-                // done
-                is.close();
-                spec.setBytes(bytes);
-                spec.setCodeSource(new CodeSource(rootUrl, file.getCodeSigners()));
-                return spec;
-            } else {
-                throw ServerMessages.MESSAGES.resourceTooLarge();
+            });
+        } catch (PrivilegedActionException pe) {
+            try {
+                throw pe.getException();
+            } catch (IOException | Error | RuntimeException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new UndeclaredThrowableException(e);
             }
-        } finally {
-            VFSUtils.safeClose(is);
         }
     }
 
