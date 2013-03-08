@@ -210,6 +210,7 @@ public class SingletonService<T extends Serializable> implements Service<T>, Ser
 
     @Override
     public T getValue() {
+        if (!this.started) throw new IllegalStateException();
         AtomicReference<T> ref = this.getValueRef();
         if (ref == null) {
             ref = this.handler.getValueRef();
