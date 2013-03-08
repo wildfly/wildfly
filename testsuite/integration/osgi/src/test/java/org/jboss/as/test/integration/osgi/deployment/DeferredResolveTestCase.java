@@ -17,6 +17,7 @@
 package org.jboss.as.test.integration.osgi.deployment;
 
 import java.io.InputStream;
+import java.util.Arrays;
 
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -43,8 +44,9 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
-import org.osgi.service.packageadmin.PackageAdmin;
-import org.osgi.service.startlevel.StartLevel;
+import org.osgi.framework.startlevel.BundleStartLevel;
+import org.osgi.framework.startlevel.FrameworkStartLevel;
+import org.osgi.framework.wiring.FrameworkWiring;
 import org.osgi.util.tracker.ServiceTracker;
 
 /**
@@ -74,12 +76,6 @@ public class DeferredResolveTestCase {
     @ArquillianResource
     BundleContext context;
 
-    @ArquillianResource
-    StartLevel startLevel;
-
-    @ArquillianResource
-    PackageAdmin packageAdmin;
-
     @Deployment
     public static Archive<?> getDeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "deferred-resolve-tests");
@@ -91,7 +87,7 @@ public class DeferredResolveTestCase {
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(ModelControllerClient.class, ModelNode.class, ManagementClient.class);
-                builder.addImportPackages(PackageAdmin.class, StartLevel.class, ServiceTracker.class);
+                builder.addImportPackages(ServiceTracker.class);
                 builder.addImportPackages(XBundle.class);
                 return builder.openStream();
             }
@@ -114,18 +110,18 @@ public class DeferredResolveTestCase {
 
     @Test
     public void testResolveStartLevel() throws Exception {
-        int orglevel = startLevel.getStartLevel();
+        int orglevel = context.getBundle().adapt(FrameworkStartLevel.class).getStartLevel();
         InputStream input = deployer.getDeployment(GOOD_BUNDLE);
         Bundle bundle = context.installBundle(GOOD_BUNDLE, input);
         try {
             Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
-            startLevel.setBundleStartLevel(bundle, 2);
+            bundle.adapt(BundleStartLevel.class).setStartLevel(2);
             bundle.start();
             Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
-            FrameworkUtils.changeStartLevel(context, 2);
+            FrameworkUtils.setFrameworkStartLevel(context, 2);
             Assert.assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
         } finally {
-            FrameworkUtils.changeStartLevel(context, orglevel);
+            FrameworkUtils.setFrameworkStartLevel(context, orglevel);
             bundle.uninstall();
         }
     }
@@ -180,22 +176,22 @@ public class DeferredResolveTestCase {
     @Test
     @org.junit.Ignore("AS7-6511")
     public void testFailStartLevel() throws Exception {
-        int orglevel = startLevel.getStartLevel();
+        int orglevel = FrameworkUtils.getFrameworkStartLevel(context);
         InputStream input = deployer.getDeployment(BAD_BUNDLE);
         Bundle bundle = context.installBundle(BAD_BUNDLE, input);
         try {
             Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
-            startLevel.setBundleStartLevel(bundle, 2);
+            bundle.adapt(BundleStartLevel.class).setStartLevel(2);
             bundle.start();
             Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
-            FrameworkUtils.changeStartLevel(context, 2);
+            FrameworkUtils.setFrameworkStartLevel(context, 2);
             Assert.assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
 
             // Attempt restarting after failure
             bundle.start();
             Assert.assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
         } finally {
-            FrameworkUtils.changeStartLevel(context, orglevel);
+            FrameworkUtils.setFrameworkStartLevel(context, orglevel);
             bundle.uninstall();
         }
     }
@@ -226,15 +222,16 @@ public class DeferredResolveTestCase {
     public void testUnresolvedRequirement() throws Exception {
         deployer.deploy(DEFERRED_BUNDLE_A);
         try {
-            Bundle bundleA = packageAdmin.getBundles(DEFERRED_BUNDLE_A, null)[0];
+            Bundle bundleA = context.getBundle(DEFERRED_BUNDLE_A);
             Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundleA.getState());
             deployer.deploy(DEFERRED_BUNDLE_B);
             try {
-                Bundle bundleB = packageAdmin.getBundles(DEFERRED_BUNDLE_B, null)[0];
+                Bundle bundleB = context.getBundle(DEFERRED_BUNDLE_B);
                 Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundleA.getState());
                 Assert.assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundleB.getState());
 
-                packageAdmin.resolveBundles(new Bundle[] { bundleA });
+                FrameworkWiring frameworkWiring = context.getBundle().adapt(FrameworkWiring.class);
+                frameworkWiring.resolveBundles(Arrays.asList(bundleA));
 
                 Assert.assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundleA.getState());
                 Assert.assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundleB.getState());
@@ -253,9 +250,9 @@ public class DeferredResolveTestCase {
     public void testSimpleAggregate() throws Exception {
         deployer.deploy(SIMPLE_AGGREGATE);
         try {
-            Bundle bundleA = packageAdmin.getBundles(DEFERRED_BUNDLE_A, null)[0];
+            Bundle bundleA = context.getBundle(DEFERRED_BUNDLE_A);
             Assert.assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundleA.getState());
-            Bundle bundleB = packageAdmin.getBundles(DEFERRED_BUNDLE_B, null)[0];
+            Bundle bundleB = context.getBundle(DEFERRED_BUNDLE_B);
             Assert.assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundleB.getState());
         } finally {
             deployer.undeploy(SIMPLE_AGGREGATE);
@@ -266,15 +263,16 @@ public class DeferredResolveTestCase {
     public void testAggregateWithDeferredModule() throws Exception {
         deployer.deploy(DEFERRED_AGGREGATE_A);
         try {
-            Bundle bundleA = packageAdmin.getBundles(DEFERRED_BUNDLE_A, null)[0];
+            Bundle bundleA = context.getBundle(DEFERRED_BUNDLE_A);
             Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundleA.getState());
             deployer.deploy(DEFERRED_BUNDLE_B);
             try {
-                Bundle bundleB = packageAdmin.getBundles(DEFERRED_BUNDLE_B, null)[0];
+                Bundle bundleB = context.getBundle(DEFERRED_BUNDLE_B);
                 Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundleA.getState());
                 Assert.assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundleB.getState());
 
-                packageAdmin.resolveBundles(new Bundle[] { bundleA });
+                FrameworkWiring frameworkWiring = context.getBundle().adapt(FrameworkWiring.class);
+                frameworkWiring.resolveBundles(Arrays.asList(bundleA));
 
                 Assert.assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundleA.getState());
                 Assert.assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundleB.getState());
@@ -293,15 +291,16 @@ public class DeferredResolveTestCase {
     public void testAggregateWithUndeferredModule() throws Exception {
         deployer.deploy(DEFERRED_AGGREGATE_B);
         try {
-            Bundle bundleA = packageAdmin.getBundles(DEFERRED_BUNDLE_A, null)[0];
+            Bundle bundleA = context.getBundle(DEFERRED_BUNDLE_A);
             Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundleA.getState());
             deployer.deploy(DEFERRED_BUNDLE_B);
             try {
-                Bundle bundleB = packageAdmin.getBundles(DEFERRED_BUNDLE_B, null)[0];
+                Bundle bundleB = context.getBundle(DEFERRED_BUNDLE_B);
                 Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundleA.getState());
                 Assert.assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundleB.getState());
 
-                packageAdmin.resolveBundles(new Bundle[] { bundleA });
+                FrameworkWiring frameworkWiring = context.getBundle().adapt(FrameworkWiring.class);
+                frameworkWiring.resolveBundles(Arrays.asList(bundleA));
 
                 Assert.assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundleA.getState());
                 Assert.assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundleB.getState());

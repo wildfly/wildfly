@@ -39,7 +39,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.service.packageadmin.PackageAdmin;
 
 /**
  * Test optional imports
@@ -60,9 +59,6 @@ public class OptionalImportTestCase {
     @ArquillianResource
     BundleContext context;
 
-    @ArquillianResource
-    PackageAdmin packageAdmin;
-
     @Deployment
     public static JavaArchive deployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "optional-import-tests");
@@ -73,7 +69,7 @@ public class OptionalImportTestCase {
     @Test
     public void testUnresolvedOptionalImport() throws Exception {
         deployer.deploy(BUNDLE_A);
-        Bundle bundleA = packageAdmin.getBundles(BUNDLE_A, null)[0];
+        Bundle bundleA = context.getBundle(BUNDLE_A);
         try {
             Assert.assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundleA.getState());
             try {
@@ -90,11 +86,11 @@ public class OptionalImportTestCase {
     @Test
     public void testResolvedOptionalImport() throws Exception {
         deployer.deploy(BUNDLE_B);
-        Bundle bundleB = packageAdmin.getBundles(BUNDLE_B, null)[0];
+        Bundle bundleB = context.getBundle(BUNDLE_B);
         try {
             Assert.assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundleB.getState());
             deployer.deploy(BUNDLE_A);
-            Bundle bundleA = packageAdmin.getBundles(BUNDLE_A, null)[0];
+            Bundle bundleA = context.getBundle(BUNDLE_A);
             try {
                 Assert.assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundleA.getState());
                 bundleA.loadClass(TestBA.class.getName()).newInstance();

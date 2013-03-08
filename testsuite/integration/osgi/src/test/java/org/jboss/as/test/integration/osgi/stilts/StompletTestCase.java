@@ -52,7 +52,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.BundleActivator;
 import org.osgi.resource.Requirement;
-import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.service.repository.Repository;
 import org.projectodd.stilts.stomp.StompMessage;
 import org.projectodd.stilts.stomp.StompMessages;
@@ -109,7 +108,7 @@ public class StompletTestCase {
                     builder.addBundleManifestVersion(2);
                     builder.addBundleActivator(StompletServerActivator.class);
                     builder.addImportPackages(XRequirementBuilder.class, XRequirement.class, Requirement.class, Repository.class);
-                    builder.addImportPackages(BundleActivator.class, PackageAdmin.class, ModuleIdentifier.class);
+                    builder.addImportPackages(BundleActivator.class, ModuleIdentifier.class);
                     return builder.openStream();
                 }
             });

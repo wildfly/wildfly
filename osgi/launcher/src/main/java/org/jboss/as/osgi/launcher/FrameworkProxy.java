@@ -16,11 +16,14 @@
  */
 package org.jboss.as.osgi.launcher;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.security.cert.X509Certificate;
 import java.util.Dictionary;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -96,7 +99,7 @@ final class FrameworkProxy implements Framework {
      * - Be at start level 0.
      * - Have event handling enabled.
      * - Have reified Bundle objects for all installed bundles.
-     * - Have registered any framework services (e.g. PackageAdmin, ConditionalPermissionAdmin, StartLevel)
+     * - Have registered any framework services
      *
      * This Framework will not actually be started until start is called.
      *
@@ -230,20 +233,19 @@ final class FrameworkProxy implements Framework {
     }
 
     @Override
-    @SuppressWarnings("rawtypes")
-    public Dictionary getHeaders() {
+    public Dictionary<String, String> getHeaders() {
         assertValidBundleContext();
         return bundleContext.getBundle().getHeaders();
     }
 
     @Override
-    public ServiceReference[] getRegisteredServices() {
+    public ServiceReference<?>[] getRegisteredServices() {
         assertValidBundleContext();
         return bundleContext.getBundle().getRegisteredServices();
     }
 
     @Override
-    public ServiceReference[] getServicesInUse() {
+    public ServiceReference<?>[] getServicesInUse() {
         assertValidBundleContext();
         return bundleContext.getBundle().getServicesInUse();
     }
@@ -261,8 +263,7 @@ final class FrameworkProxy implements Framework {
     }
 
     @Override
-    @SuppressWarnings("rawtypes")
-    public Dictionary getHeaders(String locale) {
+    public Dictionary<String, String> getHeaders(String locale) {
         assertValidBundleContext();
         return bundleContext.getBundle().getHeaders(locale);
     }
@@ -274,15 +275,13 @@ final class FrameworkProxy implements Framework {
     }
 
     @Override
-    @SuppressWarnings("rawtypes")
-    public Enumeration getResources(String name) throws IOException {
+    public Enumeration<URL> getResources(String name) throws IOException {
         assertValidBundleContext();
         return bundleContext.getBundle().getResources(name);
     }
 
     @Override
-    @SuppressWarnings("rawtypes")
-    public Enumeration getEntryPaths(String path) {
+    public Enumeration<String> getEntryPaths(String path) {
         assertValidBundleContext();
         return bundleContext.getBundle().getEntryPaths(path);
     }
@@ -300,17 +299,33 @@ final class FrameworkProxy implements Framework {
     }
 
     @Override
-    @SuppressWarnings("rawtypes")
-    public Enumeration findEntries(String path, String filePattern, boolean recurse) {
+    public Enumeration<URL> findEntries(String path, String filePattern, boolean recurse) {
         assertValidBundleContext();
         return bundleContext.getBundle().findEntries(path, filePattern, recurse);
     }
 
     @Override
-    @SuppressWarnings("rawtypes")
-    public Map getSignerCertificates(int signersType) {
+    public Map<X509Certificate, List<X509Certificate>> getSignerCertificates(int signersType) {
         assertValidBundleContext();
         return bundleContext.getBundle().getSignerCertificates(signersType);
+    }
+
+    @Override
+    public int compareTo(Bundle other) {
+        assertValidBundleContext();
+        return bundleContext.getBundle().compareTo(other);
+    }
+
+    @Override
+    public <A> A adapt(Class<A> type) {
+        assertValidBundleContext();
+        return bundleContext.getBundle().adapt(type);
+    }
+
+    @Override
+    public File getDataFile(String filename) {
+        assertValidBundleContext();
+        return bundleContext.getBundle().getDataFile(filename);
     }
 
     private void assertValidBundleContext() {

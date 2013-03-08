@@ -76,10 +76,10 @@ public class FrameworkActivateProcessor implements DeploymentUnitProcessor {
             phaseContext.addDeploymentDependency(Services.FRAMEWORK_ACTIVE, AttachmentKey.create(Object.class));
         } else {
             phaseContext.addDeploymentDependency(MODULE_REGISTRATION_COMPLETE, AttachmentKey.create(Object.class));
-            phaseContext.addDeploymentDependency(Services.FRAMEWORK_CREATE, OSGiConstants.SYSTEM_CONTEXT_KEY);
         }
 
         // Make these services available for a bundle deployment only
+        phaseContext.addDeploymentDependency(Services.FRAMEWORK_CREATE, OSGiConstants.SYSTEM_CONTEXT_KEY);
         phaseContext.addDeploymentDependency(Services.BUNDLE_MANAGER, OSGiConstants.BUNDLE_MANAGER_KEY);
         phaseContext.addDeploymentDependency(Services.RESOLVER, OSGiConstants.RESOLVER_KEY);
         phaseContext.addDeploymentDependency(Services.ENVIRONMENT, OSGiConstants.ENVIRONMENT_KEY);

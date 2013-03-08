@@ -35,8 +35,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
-import org.osgi.service.packageadmin.PackageAdmin;
-import org.osgi.service.startlevel.StartLevel;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.startlevel.BundleStartLevel;
 
 /**
  * Test bundle deployment using the {@link DeploymentMarker}
@@ -56,10 +56,7 @@ public class DeploymentMarkerTestCase {
     public Deployer deployer;
 
     @ArquillianResource
-    StartLevel startLevel;
-
-    @ArquillianResource
-    PackageAdmin packageAdmin;
+    BundleContext context;
 
     @Deployment
     public static JavaArchive createdeployment() {
@@ -70,7 +67,6 @@ public class DeploymentMarkerTestCase {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(PackageAdmin.class, StartLevel.class);
                 return builder.openStream();
             }
         });
@@ -81,7 +77,7 @@ public class DeploymentMarkerTestCase {
     public void testAutoStart() throws Exception {
         deployer.deploy(BUNDLE_A);
         try {
-            Bundle bundle = packageAdmin.getBundles(BUNDLE_A, null)[0];
+            Bundle bundle = context.getBundle(BUNDLE_A);
             Assert.assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
         } finally {
             deployer.undeploy(BUNDLE_A);
@@ -92,7 +88,7 @@ public class DeploymentMarkerTestCase {
     public void testAutoStartDisabled() throws Exception {
         deployer.deploy(BUNDLE_B);
         try {
-            Bundle bundle = packageAdmin.getBundles(BUNDLE_B, null)[0];
+            Bundle bundle = context.getBundle(BUNDLE_B);
             Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
             bundle.start();
             Assert.assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
@@ -105,11 +101,11 @@ public class DeploymentMarkerTestCase {
     public void testStartLevel() throws Exception {
         deployer.deploy(BUNDLE_C);
         try {
-            Bundle bundle = packageAdmin.getBundles(BUNDLE_C, null)[0];
+            Bundle bundle = context.getBundle(BUNDLE_C);
             Assert.assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
             bundle.start();
             Assert.assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
-            Assert.assertEquals(2, startLevel.getBundleStartLevel(bundle));
+            Assert.assertEquals(2, bundle.adapt(BundleStartLevel.class).getStartLevel());
         } finally {
             deployer.undeploy(BUNDLE_C);
         }

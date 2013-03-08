@@ -68,7 +68,7 @@ class WebContextLifecycleInterceptor extends AbstractLifecycleInterceptor implem
     static final ServiceName SERVICE_NAME = JBOSS_WEB.append(WebContextLifecycleInterceptor.class.getSimpleName());
 
     private final InjectedValue<BundleContext> injectedSystemContext = new InjectedValue<BundleContext>();
-    private ServiceRegistration registration;
+    private ServiceRegistration<LifecycleInterceptor> registration;
 
     static ServiceController<LifecycleInterceptor> addService(ServiceTarget serviceTarget, ServiceVerificationHandler verificationHandler) {
         WebContextLifecycleInterceptor service = new WebContextLifecycleInterceptor();
@@ -82,7 +82,7 @@ class WebContextLifecycleInterceptor extends AbstractLifecycleInterceptor implem
     @Override
     public void start(StartContext context) throws StartException {
         BundleContext syscontext = injectedSystemContext.getValue();
-        registration = syscontext.registerService(LifecycleInterceptor.class.getName(), this, null);
+        registration = syscontext.registerService(LifecycleInterceptor.class, this, null);
     }
 
     @Override

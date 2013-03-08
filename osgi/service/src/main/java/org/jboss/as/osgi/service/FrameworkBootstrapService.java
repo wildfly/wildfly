@@ -107,7 +107,7 @@ public class FrameworkBootstrapService implements Service<Void> {
 
             // Setup the OSGi {@link Framework} properties
             SubsystemState subsystemState = injectedSubsystemState.getValue();
-            Map<String, Object> props = new HashMap<String, Object>(subsystemState.getProperties());
+            Map<String, String> props = new HashMap<String, String>(subsystemState.getProperties());
             setupIntegrationProperties(context, props);
 
             // Register the URLStreamHandlerFactory
@@ -163,7 +163,7 @@ public class FrameworkBootstrapService implements Service<Void> {
         return null;
     }
 
-    private void setupIntegrationProperties(StartContext context, Map<String, Object> props) {
+    private void setupIntegrationProperties(StartContext context, Map<String, String> props) {
 
         // Setup the Framework's storage area.
         String storage = (String) props.get(Constants.FRAMEWORK_STORAGE);
@@ -208,7 +208,7 @@ public class FrameworkBootstrapService implements Service<Void> {
     }
 
     // [TODO] Remove this hack when the TCK setup can configure the subsystem properly
-    Object getPropertyWithSystemFallback(Map<String, Object> props, String key) {
+    Object getPropertyWithSystemFallback(Map<String, String> props, String key) {
         Object value = props.get(key);
         if (value == null) {
             value = SecurityActions.getSystemProperty(key);

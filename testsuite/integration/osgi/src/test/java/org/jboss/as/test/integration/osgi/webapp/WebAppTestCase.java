@@ -55,7 +55,6 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
-import org.osgi.service.packageadmin.PackageAdmin;
 
 /**
  * Test webapp deployemnts as OSGi bundles
@@ -84,13 +83,10 @@ public class WebAppTestCase {
     Deployer deployer;
 
     @ArquillianResource
-    ManagementClient managementClient;
-
-    @ArquillianResource
-    PackageAdmin packageAdmin;
-
-    @ArquillianResource
     BundleContext context;
+
+    @ArquillianResource
+    ManagementClient managementClient;
 
     @Deployment
     public static Archive<?> deployment() {
@@ -102,7 +98,7 @@ public class WebAppTestCase {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(jar.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(PackageAdmin.class, ManagementClient.class);
+                builder.addImportPackages(ManagementClient.class);
                 return builder.openStream();
             }
         });
@@ -193,7 +189,7 @@ public class WebAppTestCase {
     public void testBundleWithWebContextPath() throws Exception {
         deployer.deploy(BUNDLE_D_WAB);
         try {
-            Bundle bundle = packageAdmin.getBundles(BUNDLE_D_WAB, null)[0];
+            Bundle bundle = context.getBundle(BUNDLE_D_WAB);
 
             String result = performCall("/bundle-d/servlet?input=Hello");
             Assert.assertEquals("Simple Servlet called with input=Hello", result);
