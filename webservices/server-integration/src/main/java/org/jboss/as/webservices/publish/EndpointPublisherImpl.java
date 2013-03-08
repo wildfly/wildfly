@@ -29,9 +29,6 @@ import java.util.List;
 import java.util.Map;
 
 
-import org.apache.catalina.Container;
-import org.apache.catalina.LifecycleException;
-import org.apache.catalina.core.StandardContext;
 import org.jboss.as.web.host.CommonServletBuilder;
 import org.jboss.as.web.host.CommonWebDeployment;
 import org.jboss.as.web.host.CommonWebDeploymentBuilder;
@@ -157,7 +154,7 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
         }
         try {
             handle.start();
-        } catch (LifecycleException e) {
+        } catch (Exception e) {
             throw MESSAGES.startContextPhaseFailed(e);
         }
         return handle;
@@ -201,7 +198,7 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
         Deployment deployment = eps.get(0).getService().getDeployment();
         List<DeploymentAspect> aspects = getDeploymentAspects();
         try {
-            stopWebApp(deployment.getAttachment(StandardContext.class));
+            stopWebApp(deployment.getAttachment(CommonWebDeployment.class));
         } finally {
             ClassLoader origClassLoader = SecurityActions.getContextClassLoader();
             try {
@@ -215,12 +212,10 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
         }
     }
 
-    private static void stopWebApp(StandardContext context) throws Exception {
+    private static void stopWebApp(CommonWebDeployment context) throws Exception {
         try {
-            Container container = context.getParent();
-            container.removeChild(context);
             context.stop();
-        } catch (LifecycleException e) {
+        } catch (Exception e) {
             throw MESSAGES.stopContextPhaseFailed(e);
         }
         try {

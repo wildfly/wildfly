@@ -24,13 +24,8 @@ package org.jboss.as.webservices.util;
 import static org.jboss.as.webservices.WSMessages.MESSAGES;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-
-import javax.naming.NamingException;
 import javax.servlet.Servlet;
 
-import org.apache.catalina.LifecycleException;
-import org.apache.tomcat.InstanceManager;
 import org.jboss.as.web.host.CommonServletBuilder;
 import org.jboss.as.web.host.CommonWebDeployment;
 import org.jboss.as.web.host.CommonWebDeploymentBuilder;
@@ -121,7 +116,7 @@ public class WebAppController {
         }
         try {
             deployment.start();
-        } catch (LifecycleException e) {
+        } catch (Exception e) {
             throw MESSAGES.startContextPhaseFailed(e);
         }
         return deployment;
@@ -130,45 +125,13 @@ public class WebAppController {
     private void stopWebApp(CommonWebDeployment context) throws Exception {
         try {
             context.stop();
-        } catch (LifecycleException e) {
+        } catch (Exception e) {
             throw MESSAGES.stopContextPhaseFailed(e);
         }
         try {
             context.destroy();
         } catch (Exception e) {
             throw MESSAGES.destroyContextPhaseFailed(e);
-        }
-    }
-
-    private static class LocalInstanceManager implements InstanceManager {
-        LocalInstanceManager() {
-        }
-
-        @Override
-        public Object newInstance(String className) throws IllegalAccessException, InvocationTargetException, NamingException,
-                InstantiationException, ClassNotFoundException {
-            return Class.forName(className).newInstance();
-        }
-
-        @Override
-        public Object newInstance(String fqcn, ClassLoader classLoader) throws IllegalAccessException,
-                InvocationTargetException, NamingException, InstantiationException, ClassNotFoundException {
-            return Class.forName(fqcn, false, classLoader).newInstance();
-        }
-
-        @Override
-        public Object newInstance(Class<?> c) throws IllegalAccessException, InvocationTargetException, NamingException,
-                InstantiationException {
-            return c.newInstance();
-        }
-
-        @Override
-        public void newInstance(Object o) throws IllegalAccessException, InvocationTargetException, NamingException {
-            throw new IllegalStateException();
-        }
-
-        @Override
-        public void destroyInstance(Object o) throws IllegalAccessException, InvocationTargetException {
         }
     }
 }
