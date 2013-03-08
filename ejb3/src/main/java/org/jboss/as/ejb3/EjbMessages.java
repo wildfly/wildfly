@@ -1233,12 +1233,12 @@ public interface EjbMessages {
     DeploymentUnitProcessingException failToFindMethodWithParameterTypes(String name, String methodName, MethodParametersMetaData methodParams);
 
     /**
-     * Creates an exception indicating Could not load component class
+     * Creates an exception indicating could not load component class
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 14400, value = "Could not load component class")
-    DeploymentUnitProcessingException failToLoadComponentClass(@Cause Throwable t);
+    @Message(id = 14400, value = "Could not load component class for component %s")
+    DeploymentUnitProcessingException failToLoadComponentClass(@Cause Throwable t, String componentName);
 
     /**
      * Creates an exception indicating Could not load EJB view class
