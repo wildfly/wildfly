@@ -55,6 +55,8 @@ import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
+import org.jboss.vfs.VirtualFile;
+import org.jboss.vfs.VirtualFilePermission;
 
 /**
  * Processor responsible for creating the module spec service for this deployment. Once the module spec service is created the
@@ -188,6 +190,8 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         final List<ModuleDependency> localDependencies = moduleSpecification.getLocalDependencies();
         final List<ModuleDependency> userDependencies = moduleSpecification.getUserDependencies();
 
+        final Permissions permissions = moduleSpecification.getPermissions();
+
         installAliases(moduleSpecification, moduleIdentifier, deploymentUnit, phaseContext);
 
         // add additional resource loaders first
@@ -198,7 +202,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
 
         for (final ResourceRoot resourceRoot : resourceRoots) {
             logger.debug("Adding resource " + resourceRoot.getRoot() + " to module " + moduleIdentifier);
-            addResourceRoot(specBuilder, resourceRoot);
+            addResourceRoot(specBuilder, resourceRoot, permissions);
         }
 
         createDependencies(specBuilder, dependencies, false);
@@ -212,7 +216,6 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
             createDependencies(specBuilder, localDependencies, moduleSpecification.isLocalDependenciesTransitive());
         }
 
-        final Permissions permissions = moduleSpecification.getPermissions();
         final Enumeration<Permission> e = DEFAULT_PERMISSIONS.elements();
         while (e.hasMoreElements()) {
             permissions.add(e.nextElement());
@@ -302,20 +305,22 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    private void addResourceRoot(final ModuleSpec.Builder specBuilder, final ResourceRoot resource)
+    private void addResourceRoot(final ModuleSpec.Builder specBuilder, final ResourceRoot resource, final Permissions permissions)
             throws DeploymentUnitProcessingException {
         try {
+            final VirtualFile root = resource.getRoot();
             if (resource.getExportFilters().isEmpty()) {
                 specBuilder.addResourceRoot(ResourceLoaderSpec.createResourceLoaderSpec(new VFSResourceLoader(resource
-                        .getRootName(), resource.getRoot(), resource.isUsePhysicalCodeSource())));
+                        .getRootName(), root, resource.isUsePhysicalCodeSource())));
             } else {
                 final MultiplePathFilterBuilder filterBuilder = PathFilters.multiplePathFilterBuilder(true);
                 for (final FilterSpecification filter : resource.getExportFilters()) {
                     filterBuilder.addFilter(filter.getPathFilter(), filter.isInclude());
                 }
                 specBuilder.addResourceRoot(ResourceLoaderSpec.createResourceLoaderSpec(new VFSResourceLoader(resource
-                        .getRootName(), resource.getRoot(), resource.isUsePhysicalCodeSource()), filterBuilder.create()));
+                        .getRootName(), root, resource.isUsePhysicalCodeSource()), filterBuilder.create()));
             }
+            permissions.add(new VirtualFilePermission(root.getChild("-").getPathName(), VirtualFilePermission.FLAG_READ));
         } catch (IOException e) {
             throw ServerMessages.MESSAGES.failedToCreateVFSResourceLoader(resource.getRootName(), e);
         }
