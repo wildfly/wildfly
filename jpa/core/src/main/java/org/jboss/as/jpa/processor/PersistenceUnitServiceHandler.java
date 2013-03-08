@@ -170,7 +170,9 @@ public class PersistenceUnitServiceHandler {
                 }
             }
 
-            deploymentUnit.addToAttachmentList(org.jboss.as.ee.component.Attachments.WEB_SETUP_ACTIONS, new WebNonTxEmCloserAction());
+            if (startEarly) { // only add the WebNonTxEmCloserAction valve on the earlier invocation (AS7-6690).
+                deploymentUnit.addToAttachmentList(org.jboss.as.ee.component.Attachments.WEB_SETUP_ACTIONS, new WebNonTxEmCloserAction());
+            }
 
             JPA_LOGGER.tracef("install persistence unit definitions for war %s", deploymentRoot.getRootName());
             addPuService(phaseContext, puList, startEarly);
