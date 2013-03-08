@@ -34,6 +34,7 @@ public class SecurityRealm {
 
     private final String name;
     private final ServerIdentity serverIdentity;
+    private final Authentication authentication;
 
     //    private final RealmAuthentication;
 
@@ -42,6 +43,7 @@ public class SecurityRealm {
     private SecurityRealm(Builder builder) {
         this.name = builder.name;
         this.serverIdentity = builder.serverIdentity;
+        this.authentication = builder.authentication;
     }
 
     // Public methods --------------------------------------------------------
@@ -64,9 +66,19 @@ public class SecurityRealm {
         return serverIdentity;
     }
 
+    /**
+     * Get the authentication.
+     * 
+     * @return the authentication.
+     */
+    public Authentication getAuthentication() {
+        return authentication;
+    }
+
     @Override
     public String toString() {
-        return "SecurityRealm [name=" + name + ", serverIdentity=" + serverIdentity + "]";
+        return "SecurityRealm [name=" + name + ", serverIdentity=" + serverIdentity + ", authentication=" + authentication
+                + "]";
     }
 
     // Embedded classes ------------------------------------------------------
@@ -74,6 +86,7 @@ public class SecurityRealm {
     public static class Builder {
         private String name;
         private ServerIdentity serverIdentity;
+        private Authentication authentication;
 
         public Builder name(String name) {
             this.name = name;
@@ -82,6 +95,11 @@ public class SecurityRealm {
 
         public Builder serverIdentity(ServerIdentity serverIdentity) {
             this.serverIdentity = serverIdentity;
+            return this;
+        }
+
+        public Builder authentication(Authentication authentication) {
+            this.authentication = authentication;
             return this;
         }
 

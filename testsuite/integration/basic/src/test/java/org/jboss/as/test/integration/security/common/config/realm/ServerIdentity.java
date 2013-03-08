@@ -34,11 +34,13 @@ public class ServerIdentity {
 
     //Configuration of the secret/password-based identity of a server or host controller.
     private final String secret;
+    private final RealmKeystore ssl;
 
     // Constructors ----------------------------------------------------------
 
     private ServerIdentity(Builder builder) {
         this.secret = builder.secret;
+        this.ssl = builder.ssl;
     }
 
     // Public methods --------------------------------------------------------
@@ -52,18 +54,33 @@ public class ServerIdentity {
         return secret;
     }
 
+    /**
+     * Get the serverIdentitySSL.
+     * 
+     * @return the serverIdentitySSL.
+     */
+    public RealmKeystore getSsl() {
+        return ssl;
+    }
+
     @Override
     public String toString() {
-        return "ServerIdentity [secret=" + secret + "]";
+        return "ServerIdentity [secret=" + secret + ", ssl=" + ssl + "]";
     }
 
     // Embedded classes ------------------------------------------------------
 
     public static class Builder {
         private String secret;
+        private RealmKeystore ssl;
 
         public Builder secretBase64(String base64secret) {
             this.secret = base64secret;
+            return this;
+        }
+
+        public Builder ssl(RealmKeystore ssl) {
+            this.ssl = ssl;
             return this;
         }
 

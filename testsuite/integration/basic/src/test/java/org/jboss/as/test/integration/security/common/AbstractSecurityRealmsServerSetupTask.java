@@ -33,6 +33,8 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.security.Constants;
+import org.jboss.as.test.integration.security.common.config.realm.Authentication;
+import org.jboss.as.test.integration.security.common.config.realm.RealmKeystore;
 import org.jboss.as.test.integration.security.common.config.realm.SecurityRealm;
 import org.jboss.as.test.integration.security.common.config.realm.ServerIdentity;
 import org.jboss.dmr.ModelNode;
@@ -47,6 +49,7 @@ import org.jboss.logging.Logger;
 public abstract class AbstractSecurityRealmsServerSetupTask implements ServerSetupTask {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractSecurityRealmsServerSetupTask.class);
+    private static final String KEYSTORE_PATH = "keystore-path";
 
     protected ManagementClient managementClient;
 
@@ -87,14 +90,37 @@ public abstract class AbstractSecurityRealmsServerSetupTask implements ServerSet
             ModelNode op = Util.createAddOperation(realmAddr);
             steps.add(op);
 
-            // /core-service=management/security-realm=foo/server-identity=secret:add(value="Q29ubmVjdGlvblBhc3N3b3JkMSE=")
             final ServerIdentity serverIdentity = securityRealm.getServerIdentity();
-            if (serverIdentity != null && StringUtils.isNotEmpty(serverIdentity.getSecret())) {
-                final ModelNode secretModuleNode = Util.createAddOperation(realmAddr.append(SERVER_IDENTITY, SECRET));
-                secretModuleNode.get(Constants.VALUE).set(serverIdentity.getSecret());
-                secretModuleNode.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-                steps.add(secretModuleNode);
+            if (serverIdentity != null) {
+                // /core-service=management/security-realm=foo/server-identity=secret:add(value="Q29ubmVjdGlvblBhc3N3b3JkMSE=")
+                if (StringUtils.isNotEmpty(serverIdentity.getSecret())) {
+                    final ModelNode secretModuleNode = Util.createAddOperation(realmAddr.append(SERVER_IDENTITY, SECRET));
+                    secretModuleNode.get(Constants.VALUE).set(serverIdentity.getSecret());
+                    secretModuleNode.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+                    steps.add(secretModuleNode);
+                }
+                // /core-service=management/security-realm=JBossTest/server-identity=ssl:add(keystore-path=server.keystore, keystore-password=123456)
+                final RealmKeystore ssl = serverIdentity.getSsl();
+                if (ssl != null) {
+                    final ModelNode sslModuleNode = Util.createAddOperation(realmAddr.append(SERVER_IDENTITY, SSL));
+                    sslModuleNode.get(KEYSTORE_PATH).set(ssl.getKeystorePath());
+                    sslModuleNode.get(Constants.KEYSTORE_PASSWORD).set(ssl.getKeystorePassword());
+                    sslModuleNode.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+                    steps.add(sslModuleNode);
+                }
             }
+            final Authentication authentication = securityRealm.getAuthentication();
+            if (authentication != null) {
+                final RealmKeystore truststore = authentication.getTruststore();
+                if (truststore != null) {
+                    final ModelNode sslModuleNode = Util.createAddOperation(realmAddr.append(AUTHENTICATION, TRUSTSTORE));
+                    sslModuleNode.get(KEYSTORE_PATH).set(truststore.getKeystorePath());
+                    sslModuleNode.get(Constants.KEYSTORE_PASSWORD).set(truststore.getKeystorePassword());
+                    sslModuleNode.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+                    steps.add(sslModuleNode);
+                }
+            }
+
             updates.add(compositeOp);
         }
         Utils.applyUpdates(updates, managementClient.getControllerClient());
