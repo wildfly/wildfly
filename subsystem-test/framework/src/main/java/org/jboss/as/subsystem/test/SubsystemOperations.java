@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -133,6 +134,19 @@ public class SubsystemOperations extends Operations {
      *
      * @return the operation
      */
+    public static ModelNode createWriteAttributeOperation(final ModelNode address, final AttributeDefinition attribute, final int value) {
+        return createWriteAttributeOperation(address, attribute.getName(), value);
+    }
+
+    /**
+     * Creates an operation to write an attribute value represented by the {@code attributeName} parameter.
+     *
+     * @param address   the address to create the write attribute for
+     * @param attribute the attribute to write
+     * @param value     the value to set the attribute to
+     *
+     * @return the operation
+     */
     public static ModelNode createWriteAttributeOperation(final ModelNode address, final AttributeDefinition attribute, final ModelNode value) {
         return createWriteAttributeOperation(address, attribute.getName(), value);
     }
@@ -164,5 +178,62 @@ public class SubsystemOperations extends Operations {
             return list;
         }
         return Collections.emptyList();
+    }
+
+    public static class OperationBuilder {
+        private final ModelNode op;
+
+        private OperationBuilder(final ModelNode op) {
+            this.op = op;
+        }
+
+        public static OperationBuilder create(final String operation) {
+            return new OperationBuilder(createOperation(operation));
+        }
+
+        public static OperationBuilder create(final OperationDefinition operationDefinition) {
+            return new OperationBuilder(createOperation(operationDefinition.getName()));
+        }
+
+        public static OperationBuilder create(final String operation, final ModelNode address) {
+            return new OperationBuilder(createOperation(operation, address));
+        }
+
+        public static OperationBuilder create(final OperationDefinition operationDefinition, final ModelNode address) {
+            return new OperationBuilder(createOperation(operationDefinition.getName(), address));
+        }
+
+        public static OperationBuilder createAddOperation(final ModelNode address) {
+            return new OperationBuilder(SubsystemOperations.createAddOperation(address));
+        }
+
+        public ModelNode build() {
+            return op.clone();
+        }
+
+        public OperationBuilder addAttribute(final AttributeDefinition attribute, final String value) {
+            op.get(attribute.getName()).set(value);
+            return this;
+        }
+
+        public OperationBuilder addAttribute(final AttributeDefinition attribute, final boolean value) {
+            op.get(attribute.getName()).set(value);
+            return this;
+        }
+
+        public OperationBuilder addAttribute(final AttributeDefinition attribute, final int value) {
+            op.get(attribute.getName()).set(value);
+            return this;
+        }
+
+        public OperationBuilder addAttribute(final AttributeDefinition attribute, final long value) {
+            op.get(attribute.getName()).set(value);
+            return this;
+        }
+
+        public OperationBuilder addAttribute(final AttributeDefinition attribute, final ModelNode value) {
+            op.get(attribute.getName()).set(value);
+            return this;
+        }
     }
 }

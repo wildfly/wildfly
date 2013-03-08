@@ -22,6 +22,7 @@
 
 package org.jboss.as.logging;
 
+import static org.jboss.as.logging.AsyncHandlerResourceDefinition.QUEUE_LENGTH;
 import static org.jboss.as.logging.AsyncHandlerResourceDefinition.SUBHANDLERS;
 import static org.jboss.as.logging.CommonAttributes.ENABLED;
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
@@ -49,7 +50,9 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.logging.logmanager.Log4jAppenderHandler;
+import org.jboss.as.logging.resolvers.ModelNodeResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.logmanager.LogContext;
@@ -100,7 +103,10 @@ final class HandlerOperations {
                         model.get(CommonAttributes.FILTER_SPEC.getName()).set(value);
                     }
                 } else {
-                    attribute.validateAndSet(operation, model);
+                    // Only update the model for attributes that are defined in the operation
+                    if (operation.has(attribute.getName())) {
+                        attribute.validateAndSet(operation, model);
+                    }
                 }
             }
         }
@@ -115,9 +121,12 @@ final class HandlerOperations {
                 boolean restartRequired = false;
                 boolean reloadRequired = false;
                 for (AttributeDefinition attribute : attributes) {
-                    handleProperty(attribute, context, model, logContextConfiguration, configuration);
-                    restartRequired = restartRequired || Logging.requiresRestart(attribute.getFlags());
-                    reloadRequired = reloadRequired || Logging.requiresReload(attribute.getFlags());
+                    // Only update values for attributes defined in the operation
+                    if (operation.has(attribute.getName())) {
+                        handleProperty(attribute, context, model, logContextConfiguration, configuration);
+                        restartRequired = restartRequired || Logging.requiresRestart(attribute.getFlags());
+                        reloadRequired = reloadRequired || Logging.requiresReload(attribute.getFlags());
+                    }
                 }
                 if (restartRequired) {
                     context.restartRequired();
@@ -284,6 +293,7 @@ final class HandlerOperations {
                 final HandlerConfiguration configuration = logContextConfiguration.getHandlerConfiguration(addressName);
                 if (LEVEL.getName().equals(attributeName)) {
                     handleProperty(LEVEL, context, value, logContextConfiguration, configuration, false);
+                    handleProperty(LEVEL, context, value, logContextConfiguration, configuration, false);
                 } else if (FILTER.getName().equals(attributeName)) {
                     // Filter should be replaced by the filter-spec in the super class
                     handleProperty(FILTER_SPEC, context, value, logContextConfiguration, configuration, false);
@@ -296,9 +306,31 @@ final class HandlerOperations {
                 } else if (SUBHANDLERS.getName().equals(attributeName)) {
                     handleProperty(SUBHANDLERS, context, value, logContextConfiguration, configuration, false);
                 } else if (PROPERTIES.getName().equals(attributeName)) {
-                    for (Property property : value.asPropertyList()) {
-                        configuration.setPropertyValueString(property.getName(), property.getValue().asString());
+                    final PropertyConfigurable propertyConfigurable;
+                    // A POJO configuration will have the same name as the handler
+                    final PojoConfiguration pojoConfiguration = logContextConfiguration.getPojoConfiguration(configuration.getName());
+                    if (pojoConfiguration == null) {
+                        propertyConfigurable = configuration;
+                    } else {
+                        propertyConfigurable = pojoConfiguration;
                     }
+                    if (value.isDefined()) {
+                        for (Property property : value.asPropertyList()) {
+                            propertyConfigurable.setPropertyValueString(property.getName(), property.getValue().asString());
+                        }
+                    } else {
+                        final List<String> propertyNames = propertyConfigurable.getPropertyNames();
+                        for (String propertyName : propertyNames) {
+                            // Ignore the enable attribute if found
+                            if (propertyName.equals("enabled")) continue;
+                            propertyConfigurable.removeProperty(propertyName);
+                            // Set to restart required if undefining properties
+                            restartRequired = true;
+                        }
+                    }
+                } else if (QUEUE_LENGTH.getName().equals(attributeName)) {
+                    // queue-length is a construction parameter, runtime changes are not allowed
+                    restartRequired = true;
                 } else {
                     for (AttributeDefinition attribute : getAttributes()) {
                         if (attribute.getName().equals(attributeName)) {
@@ -310,6 +342,19 @@ final class HandlerOperations {
                 }
             }
             return restartRequired;
+        }
+
+        @Override
+        protected void finishModelStage(final OperationContext context, final ModelNode operation, final String attributeName,
+                                        final ModelNode newValue, final ModelNode oldValue, final Resource model) throws OperationFailedException {
+            super.finishModelStage(context, operation, attributeName, newValue, oldValue, model);
+            // If a filter attribute, update the filter-spec attribute
+            if (CommonAttributes.FILTER.getName().equals(attributeName)) {
+                final String filterSpec = Filters.filterToFilterSpec(newValue);
+                final ModelNode filterSpecValue = (filterSpec == null ? new ModelNode() : new ModelNode(filterSpec));
+                // Undefine the filter-spec
+                model.getModel().get(CommonAttributes.FILTER_SPEC.getName()).set(filterSpecValue);
+            }
         }
     }
 
@@ -408,7 +453,8 @@ final class HandlerOperations {
     public static LoggingOperations.LoggingUpdateOperationStepHandler ENABLE_HANDLER = new LoggingOperations.LoggingUpdateOperationStepHandler() {
         @Override
         public void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-            // Nothing to do
+            // Set the enable attribute to true
+            model.get(CommonAttributes.ENABLED.getName()).set(true);
         }
 
         @Override
@@ -420,7 +466,8 @@ final class HandlerOperations {
     public static LoggingOperations.LoggingUpdateOperationStepHandler DISABLE_HANDLER = new LoggingOperations.LoggingUpdateOperationStepHandler() {
         @Override
         public void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-            // Nothing to do
+            // Set the enable attribute to false
+            model.get(CommonAttributes.ENABLED.getName()).set(false);
         }
 
         @Override
@@ -470,7 +517,7 @@ final class HandlerOperations {
                 disableHandler(logContextConfiguration, configuration.getName());
             }
         } else if (attribute.getName().equals(ENCODING.getName())) {
-            final String resolvedValue = (resolveValue ? ENCODING.resolvePropertyValue(context, model) : model.asString());
+            final String resolvedValue = (resolveValue ? ENCODING.resolvePropertyValue(context, model) : model.isDefined() ? model.asString() : null);
             configuration.setEncoding(resolvedValue);
         } else if (attribute.getName().equals(FORMATTER.getName())) {
             final String formatterName = configuration.getName();
@@ -507,14 +554,29 @@ final class HandlerOperations {
             } else {
                 propertyConfigurable = pojoConfiguration;
             }
+            // Should be safe here to only process defined properties. The write-attribute handler handles removing
+            // undefined properties
             if (model.hasDefined(PROPERTIES.getName())) {
-                for (Property property : PROPERTIES.resolveModelAttribute(context, model).asPropertyList()) {
+                final ModelNode resolvedValue = (resolveValue ? PROPERTIES.resolveModelAttribute(context, model) : model);
+                for (Property property : resolvedValue.asPropertyList()) {
                     propertyConfigurable.setPropertyValueString(property.getName(), property.getValue().asString());
                 }
             }
         } else {
-            if (attribute instanceof ConfigurationProperty<?>) {
-                ((ConfigurationProperty<?>) attribute).setPropertyValue(context, model, configuration);
+            if (attribute instanceof ConfigurationProperty) {
+                @SuppressWarnings("unchecked")
+                final ConfigurationProperty<String> configurationProperty = (ConfigurationProperty<String>) attribute;
+                if (resolveValue) {
+                    configurationProperty.setPropertyValue(context, model, configuration);
+                } else {
+                    // Get the resolver
+                    final ModelNodeResolver<String> resolver = configurationProperty.resolver();
+                    // Resolve the value
+                    final String resolvedValue = (resolver == null ? model.asString() : resolver.resolveValue(context, model));
+                    // Set the string value
+                    configuration.setPropertyValueString(configurationProperty.getPropertyName(),
+                            (resolvedValue == null ? null : resolvedValue));
+                }
             } else {
                 LoggingLogger.ROOT_LOGGER.invalidPropertyAttribute(attribute.getName());
             }
@@ -578,11 +640,27 @@ final class HandlerOperations {
             result = (resolvedValue == null ? currentValue == null : resolvedValue.containsAll(currentValue));
         } else if (attribute.getName().equals(PROPERTIES.getName())) {
             result = true;
+            final PropertyConfigurable propertyConfigurable;
+            // A POJO configuration will have the same name as the handler
+            final PojoConfiguration pojoConfiguration = logContextConfiguration.getPojoConfiguration(configuration.getName());
+            if (pojoConfiguration == null) {
+                propertyConfigurable = configuration;
+            } else {
+                propertyConfigurable = pojoConfiguration;
+            }
             if (model.hasDefined(PROPERTIES.getName())) {
                 for (Property property : PROPERTIES.resolveModelAttribute(context, model).asPropertyList()) {
                     final String resolvedValue = property.getValue().asString();
-                    final String currentValue = configuration.getPropertyValueString(property.getName());
+                    final String currentValue = propertyConfigurable.getPropertyValueString(property.getName());
                     if (!(resolvedValue == null ? currentValue == null : resolvedValue.equals(currentValue))) {
+                        return false;
+                    }
+                }
+            } else if (model.has(PROPERTIES.getName())) {
+                final List<String> propertyNames = propertyConfigurable.getPropertyNames();
+                for (String propertyName : propertyNames) {
+                    final String propertyValue = propertyConfigurable.getPropertyValueString(propertyName);
+                    if (propertyValue != null) {
                         return false;
                     }
                 }
