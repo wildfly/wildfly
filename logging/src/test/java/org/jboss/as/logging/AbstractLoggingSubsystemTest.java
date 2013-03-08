@@ -188,6 +188,30 @@ public abstract class AbstractLoggingSubsystemTest extends AbstractSubsystemBase
         return createAddress(profileName, FileHandlerResourceDefinition.FILE_HANDLER, name);
     }
 
+    static PathAddress createPeriodicRotatingFileHandlerAddress(final String name) {
+        return createAddress(PeriodicHandlerResourceDefinition.PERIODIC_ROTATING_FILE_HANDLER, name);
+    }
+
+    static PathAddress createPeriodicRotatingFileHandlerAddress(final String profileName, final String name) {
+        return createAddress(profileName, PeriodicHandlerResourceDefinition.PERIODIC_ROTATING_FILE_HANDLER, name);
+    }
+
+    static PathAddress createSizeRotatingFileHandlerAddress(final String name) {
+        return createAddress(SizeRotatingHandlerResourceDefinition.SIZE_ROTATING_FILE_HANDLER, name);
+    }
+
+    static PathAddress createSizeRotatingFileHandlerAddress(final String profileName, final String name) {
+        return createAddress(profileName, SizeRotatingHandlerResourceDefinition.SIZE_ROTATING_FILE_HANDLER, name);
+    }
+
+    static PathAddress createSyslogHandlerAddress(final String name) {
+        return createAddress(SyslogHandlerResourceDefinition.SYSLOG_HANDLER, name);
+    }
+
+    static PathAddress createSyslogHandlerAddress(final String profileName, final String name) {
+        return createAddress(profileName, SyslogHandlerResourceDefinition.SYSLOG_HANDLER, name);
+    }
+
     protected KernelServices boot() throws Exception {
         final KernelServices kernelServices = createKernelServicesBuilder(createAdditionalInitialization()).setSubsystemXml(getSubsystemXml()).build();
         final Throwable bootError = kernelServices.getBootError();

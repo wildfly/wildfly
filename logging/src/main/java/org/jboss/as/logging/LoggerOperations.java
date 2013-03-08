@@ -40,6 +40,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.config.LogContextConfiguration;
 import org.jboss.logmanager.config.LoggerConfiguration;
@@ -153,6 +154,19 @@ final class LoggerOperations {
                 }
             }
             return false;
+        }
+
+        @Override
+        protected void finishModelStage(final OperationContext context, final ModelNode operation, final String attributeName,
+                                        final ModelNode newValue, final ModelNode oldValue, final Resource model) throws OperationFailedException {
+            super.finishModelStage(context, operation, attributeName, newValue, oldValue, model);
+            // If a filter attribute, update the filter-spec attribute
+            if (CommonAttributes.FILTER.getName().equals(attributeName)) {
+                final String filterSpec = Filters.filterToFilterSpec(newValue);
+                final ModelNode filterSpecValue = (filterSpec == null ? new ModelNode() : new ModelNode(filterSpec));
+                // Undefine the filter-spec
+                model.getModel().get(CommonAttributes.FILTER_SPEC.getName()).set(filterSpecValue);
+            }
         }
     }
 
