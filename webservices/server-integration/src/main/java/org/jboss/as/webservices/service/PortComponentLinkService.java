@@ -23,8 +23,7 @@ package org.jboss.as.webservices.service;
 
 import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 
-import org.jboss.as.web.VirtualHost;
-import org.jboss.as.web.WebSubsystemServices;
+import org.jboss.as.web.host.CommonWebHost;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.as.webservices.util.WebAppController;
 import org.jboss.msc.inject.Injector;
@@ -52,7 +51,7 @@ import org.jboss.wsf.spi.management.ServerConfig;
 public final class PortComponentLinkService implements Service<WebAppController> {
 
     private final ServiceName name;
-    private final InjectedValue<VirtualHost> hostInjector = new InjectedValue<VirtualHost>();
+    private final InjectedValue<CommonWebHost> hostInjector = new InjectedValue<CommonWebHost>();
     private volatile WebAppController pclwa;
     private final InjectedValue<ServerConfig> serverConfigInjectorValue = new InjectedValue<ServerConfig>();
     private static final String DEFAULT_HOST_NAME = "default-host";
@@ -70,7 +69,7 @@ public final class PortComponentLinkService implements Service<WebAppController>
         return name;
     }
 
-    public InjectedValue<VirtualHost> getHostInjector() {
+    public InjectedValue<CommonWebHost> getHostInjector() {
         return hostInjector;
     }
 
@@ -79,7 +78,7 @@ public final class PortComponentLinkService implements Service<WebAppController>
         ROOT_LOGGER.starting(name);
         String serverTempDir = serverConfigInjectorValue.getValue().getServerTempDir().getAbsolutePath();
         ClassLoader cl = ClassLoaderProvider.getDefaultProvider().getServerJAXRPCIntegrationClassLoader();
-        pclwa = new WebAppController(hostInjector.getValue().getHost(), "org.jboss.ws.core.server.PortComponentLinkServlet",
+        pclwa = new WebAppController(hostInjector.getValue(), "org.jboss.ws.core.server.PortComponentLinkServlet",
                 cl, "/jbossws", "/pclink", serverTempDir);
     }
 
@@ -98,7 +97,7 @@ public final class PortComponentLinkService implements Service<WebAppController>
         final ServiceBuilder<WebAppController> builder = serviceTarget.addService(service.getName(), service);
         builder.addDependency(DependencyType.REQUIRED, WSServices.REGISTRY_SERVICE);
         builder.addDependency(DependencyType.REQUIRED, WSServices.CONFIG_SERVICE, ServerConfig.class, service.getServerConfigInjector());
-        builder.addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName), VirtualHost.class, service.getHostInjector());
+        builder.addDependency(CommonWebHost.SERVICE_NAME.append(hostName), CommonWebHost.class, service.getHostInjector());
         return builder;
     }
 

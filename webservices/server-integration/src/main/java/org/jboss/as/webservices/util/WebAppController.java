@@ -29,15 +29,12 @@ import java.lang.reflect.InvocationTargetException;
 import javax.naming.NamingException;
 import javax.servlet.Servlet;
 
-import org.apache.catalina.Container;
-import org.apache.catalina.Host;
 import org.apache.catalina.LifecycleException;
-import org.apache.catalina.Loader;
-import org.apache.catalina.Wrapper;
-import org.apache.catalina.core.StandardContext;
-import org.apache.catalina.startup.ContextConfig;
 import org.apache.tomcat.InstanceManager;
-import org.jboss.as.web.deployment.WebCtxLoader;
+import org.jboss.as.web.host.CommonServletBuilder;
+import org.jboss.as.web.host.CommonWebDeployment;
+import org.jboss.as.web.host.CommonWebDeploymentBuilder;
+import org.jboss.as.web.host.CommonWebHost;
 import org.jboss.msc.service.StartException;
 
 /**
@@ -49,16 +46,16 @@ import org.jboss.msc.service.StartException;
  */
 public class WebAppController {
 
-    private Host host;
+    private CommonWebHost host;
     private String contextRoot;
     private String urlPattern;
     private String serverTempDir;
     private String servletClass;
     private ClassLoader classloader;
-    private volatile StandardContext ctx;
+    private volatile CommonWebDeployment ctx;
     private int count = 0;
 
-    public WebAppController(Host host, String servletClass, ClassLoader classloader, String contextRoot, String urlPattern,
+    public WebAppController(CommonWebHost host, String servletClass, ClassLoader classloader, String contextRoot, String urlPattern,
             String serverTempDir) {
         this.host = host;
         this.contextRoot = contextRoot;
@@ -94,49 +91,44 @@ public class WebAppController {
         return count;
     }
 
-    private StandardContext startWebApp(Host host) throws Exception {
-        StandardContext context = new StandardContext();
+    private CommonWebDeployment startWebApp(CommonWebHost host) throws Exception {
+        CommonWebDeploymentBuilder builder = new CommonWebDeploymentBuilder();
+        CommonWebDeployment deployment;
         try {
-            context.setPath(contextRoot);
-            context.addLifecycleListener(new ContextConfig());
+            builder.setContextRoot(contextRoot);
             File docBase = new File(serverTempDir, contextRoot);
             if (!docBase.exists()) {
                 docBase.mkdirs();
             }
-            context.setDocBase(docBase.getPath());
-
-            final Loader loader = new WebCtxLoader(classloader);
-            loader.setContainer(host);
-            context.setLoader(loader);
-            context.setInstanceManager(new LocalInstanceManager());
+            builder.setDocumentRoot(docBase);
+            builder.setClassLoader(classloader);
 
             final int j = servletClass.indexOf(".");
             final String servletName = j < 0 ? servletClass : servletClass.substring(j + 1);
             final Class<?> clazz = classloader.loadClass(servletClass);
-            final Wrapper wsfsWrapper = context.createWrapper();
-            wsfsWrapper.setName(servletName);
-            wsfsWrapper.setServlet((Servlet) clazz.newInstance());
-            wsfsWrapper.setServletClass(servletClass);
-            context.addChild(wsfsWrapper);
-            context.addServletMapping(urlPattern, servletName);
+            CommonServletBuilder servlet = new CommonServletBuilder();
+            servlet.setServletName(servletName);
+            servlet.setServlet((Servlet) clazz.newInstance());
+            servlet.setServletClass(clazz);
+            servlet.getUrlMappings().add(urlPattern);
+            builder.addServlet(servlet);
 
-            host.addChild(context);
-            context.create();
+            deployment = host.addWebDeployment(builder);
+            deployment.create();
+
         } catch (Exception e) {
             throw MESSAGES.createContextPhaseFailed(e);
         }
         try {
-            context.start();
+            deployment.start();
         } catch (LifecycleException e) {
             throw MESSAGES.startContextPhaseFailed(e);
         }
-        return context;
+        return deployment;
     }
 
-    private void stopWebApp(StandardContext context) throws Exception {
+    private void stopWebApp(CommonWebDeployment context) throws Exception {
         try {
-            Container container = context.getParent();
-            container.removeChild(context);
             context.stop();
         } catch (LifecycleException e) {
             throw MESSAGES.stopContextPhaseFailed(e);

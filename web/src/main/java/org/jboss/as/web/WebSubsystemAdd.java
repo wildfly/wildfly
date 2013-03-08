@@ -56,7 +56,9 @@ import org.jboss.as.web.deployment.WarStructureDeploymentProcessor;
 import org.jboss.as.web.deployment.WebFragmentParsingDeploymentProcessor;
 import org.jboss.as.web.deployment.WebJBossAllParser;
 import org.jboss.as.web.deployment.WebParsingDeploymentProcessor;
+import org.jboss.as.web.deployment.common.JbossCommonWebServer;
 import org.jboss.as.web.deployment.component.WebComponentProcessor;
+import org.jboss.as.web.host.CommonWebServer;
 import org.jboss.dmr.ModelNode;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
@@ -103,6 +105,7 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final String instanceId = instanceIdModel.isDefined() ? instanceIdModel.asString() : null;
 
         final WebServerService service = new WebServerService(defaultVirtualServer, useNative, instanceId, TEMP_DIR);
+        final JbossCommonWebServer commonWebServer = new JbossCommonWebServer();
 
         context.addStep(new AbstractDeploymentChainStep() {
             @Override
@@ -138,6 +141,10 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, service.getMbeanServer())
                 .setInitialMode(Mode.ON_DEMAND)
                 .install());
+        newControllers.add(target.addService(CommonWebServer.SERVICE_NAME, commonWebServer)
+                        .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, commonWebServer.getWebServer())
+                        .setInitialMode(Mode.PASSIVE)
+                        .install());
 
         final DistributedCacheManagerFactory factory = new DistributedCacheManagerFactoryService().getValue();
         if (factory != null) {

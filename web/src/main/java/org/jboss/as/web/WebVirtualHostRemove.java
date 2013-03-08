@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.web.host.CommonWebHost;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -46,6 +47,7 @@ class WebVirtualHostRemove extends AbstractRemoveStepHandler{
 
         context.removeService(WebSubsystemServices.JBOSS_WEB_HOST.append(name));
         context.removeService(WebSubsystemServices.JBOSS_WEB_HOST.append(name).append("welcome"));
+        context.removeService(CommonWebHost.SERVICE_NAME.append(name));
     }
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {

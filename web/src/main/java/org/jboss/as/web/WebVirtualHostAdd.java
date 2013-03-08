@@ -43,6 +43,8 @@ import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.server.mgmt._UndertowHttpManagementService;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
+import org.jboss.as.web.deployment.common.JBossCommonWebHost;
+import org.jboss.as.web.host.CommonWebHost;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
@@ -92,6 +94,14 @@ class WebVirtualHostAdd extends AbstractAddStepHandler {
         final ServiceBuilder<?> serviceBuilder = serviceTarget.addService(WebSubsystemServices.JBOSS_WEB_HOST.append(name), service)
                 .addDependency(PathManagerService.SERVICE_NAME, PathManager.class, service.getPathManagerInjector())
                 .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getWebServer());
+
+        final JBossCommonWebHost commonWebHost = new JBossCommonWebHost();
+        ServiceController<CommonWebHost> commonBuilder = serviceTarget.addService(CommonWebHost.SERVICE_NAME.append(name), commonWebHost)
+                .addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(name), VirtualHost.class, commonWebHost.getInjectedHost())
+                .install();
+        if(newControllers != null) {
+            newControllers.add(commonBuilder);
+        }
 
         if (fullModel.get(ACCESS_LOG_PATH.getKey(), ACCESS_LOG_PATH.getValue()).isDefined()) {
             final ModelNode unresolved = fullModel.get(ACCESS_LOG_PATH.getKey(), ACCESS_LOG_PATH.getValue());

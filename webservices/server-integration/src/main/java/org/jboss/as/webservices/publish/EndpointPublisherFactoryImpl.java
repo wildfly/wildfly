@@ -18,8 +18,7 @@
  */
 package org.jboss.as.webservices.publish;
 
-import org.jboss.as.web.VirtualHost;
-import org.jboss.as.web.WebSubsystemServices;
+import org.jboss.as.web.host.CommonWebHost;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.wsf.spi.publish.EndpointPublisher;
 import org.jboss.wsf.spi.publish.EndpointPublisherFactory;
@@ -32,9 +31,9 @@ import org.jboss.wsf.spi.publish.EndpointPublisherFactory;
 public class EndpointPublisherFactoryImpl implements EndpointPublisherFactory {
 
     public EndpointPublisher newEndpointPublisher(String hostname) throws Exception {
-        VirtualHost virtualHost = ASHelper.getMSCService(WebSubsystemServices.JBOSS_WEB_HOST.append(hostname),
-                VirtualHost.class);
-        return new EndpointPublisherImpl(virtualHost.getHost());
+        CommonWebHost virtualHost = ASHelper.getMSCService(CommonWebHost.SERVICE_NAME.append(hostname),
+                CommonWebHost.class);
+        return new EndpointPublisherImpl(virtualHost);
     }
 
 }
