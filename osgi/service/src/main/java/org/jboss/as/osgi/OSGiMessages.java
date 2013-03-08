@@ -121,4 +121,7 @@ public interface OSGiMessages {
 
     @Message(id = 11973, value = "Cannot find layer %s under directory %s")
     IllegalStateException illegalStateCannotFindLayer(String layer, File dir);
+
+    @Message(id = 11974, value = "Starting web context failed")
+    String startContextFailed();
 }

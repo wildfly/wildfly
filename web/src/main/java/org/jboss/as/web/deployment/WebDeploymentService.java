@@ -36,6 +36,7 @@ import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.web.ThreadSetupBindingListener;
 import org.jboss.as.web.common.WebInjectionContainer;
+import org.jboss.as.web.host.ContextActivator;
 import org.jboss.msc.inject.Injector;
 import org.jboss.as.web.common.ServletContextAttribute;
 import org.jboss.as.web.common.StartupContext;
@@ -185,13 +186,11 @@ public class WebDeploymentService implements Service<StandardContext> {
      * Provides an API to start/stop the {@link WebDeploymentService}.
      * This should register/deregister the web context.
      */
-    public static class ContextActivator {
-
-        public static final AttachmentKey<ContextActivator> ATTACHMENT_KEY = AttachmentKey.create(ContextActivator.class);
+    public static class ContextActivatorImpl implements ContextActivator {
 
         private final ServiceController<StandardContext> controller;
 
-        ContextActivator(ServiceController<StandardContext> controller) {
+        ContextActivatorImpl(ServiceController<StandardContext> controller) {
             this.controller = controller;
         }
 
@@ -259,6 +258,11 @@ public class WebDeploymentService implements Service<StandardContext> {
                 }
             }
             return result;
+        }
+
+        @Override
+        public ServletContext getServletContext() {
+            return getContext().getServletContext();
         }
     }
 }
