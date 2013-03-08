@@ -29,7 +29,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.web.deployment.WebDeploymentService.ContextActivator;
+import org.jboss.as.web.host.ContextActivator;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.resolver.XBundle;
 import org.jboss.osgi.resolver.XBundleRevision;
