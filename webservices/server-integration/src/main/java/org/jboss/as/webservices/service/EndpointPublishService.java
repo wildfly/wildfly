@@ -25,7 +25,7 @@ import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 
 import java.util.Map;
 
-import org.jboss.as.web.host.CommonWebHost;
+import org.jboss.as.web.host.WebHost;
 import org.jboss.as.webservices.publish.EndpointPublisherImpl;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
@@ -59,7 +59,7 @@ public final class EndpointPublishService implements Service<Context> {
     private final JBossWebMetaData jbwmd;
     private final WebservicesMetaData wsmd;
 
-    private final InjectedValue<CommonWebHost> hostInjector = new InjectedValue<CommonWebHost>();
+    private final InjectedValue<WebHost> hostInjector = new InjectedValue<WebHost>();
 
     private EndpointPublishService(final String context, final ClassLoader loader,
             final Map<String,String> urlPatternToClassName, JBossWebMetaData jbwmd, WebservicesMetaData wsmd) {
@@ -80,7 +80,7 @@ public final class EndpointPublishService implements Service<Context> {
         return name;
     }
 
-    public InjectedValue<CommonWebHost> getHostInjector() {
+    public InjectedValue<WebHost> getHostInjector() {
         return hostInjector;
     }
 
@@ -118,7 +118,7 @@ public final class EndpointPublishService implements Service<Context> {
         final ServiceBuilder<Context> builder = serviceTarget.addService(service.getName(), service);
         builder.addDependency(DependencyType.REQUIRED, WSServices.CONFIG_SERVICE);
         builder.addDependency(DependencyType.REQUIRED, WSServices.REGISTRY_SERVICE);
-        builder.addDependency(CommonWebHost.SERVICE_NAME.append(hostName), CommonWebHost.class,
+        builder.addDependency(WebHost.SERVICE_NAME.append(hostName), WebHost.class,
                 service.getHostInjector());
         return builder;
     }

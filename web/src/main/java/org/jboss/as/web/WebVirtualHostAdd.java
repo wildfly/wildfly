@@ -43,8 +43,8 @@ import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.server.mgmt._UndertowHttpManagementService;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
-import org.jboss.as.web.deployment.common.JBossCommonWebHost;
-import org.jboss.as.web.host.CommonWebHost;
+import org.jboss.as.web.deployment.common.JBossWebHost;
+import org.jboss.as.web.host.WebHost;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
@@ -95,8 +95,8 @@ class WebVirtualHostAdd extends AbstractAddStepHandler {
                 .addDependency(PathManagerService.SERVICE_NAME, PathManager.class, service.getPathManagerInjector())
                 .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getWebServer());
 
-        final JBossCommonWebHost commonWebHost = new JBossCommonWebHost();
-        ServiceController<CommonWebHost> commonBuilder = serviceTarget.addService(CommonWebHost.SERVICE_NAME.append(name), commonWebHost)
+        final JBossWebHost commonWebHost = new JBossWebHost();
+        ServiceController<WebHost> commonBuilder = serviceTarget.addService(WebHost.SERVICE_NAME.append(name), commonWebHost)
                 .addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(name), VirtualHost.class, commonWebHost.getInjectedHost())
                 .install();
         if(newControllers != null) {

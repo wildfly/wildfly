@@ -2,7 +2,6 @@ package org.jboss.as.web.deployment.common;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -16,10 +15,10 @@ import org.apache.catalina.startup.ContextConfig;
 import org.apache.tomcat.InstanceManager;
 import org.jboss.as.web.VirtualHost;
 import org.jboss.as.web.deployment.WebCtxLoader;
-import org.jboss.as.web.host.CommonServletBuilder;
-import org.jboss.as.web.host.CommonWebDeployment;
-import org.jboss.as.web.host.CommonWebDeploymentBuilder;
-import org.jboss.as.web.host.CommonWebHost;
+import org.jboss.as.web.host.ServletBuilder;
+import org.jboss.as.web.host.WebDeploymentController;
+import org.jboss.as.web.host.WebDeploymentBuilder;
+import org.jboss.as.web.host.WebHost;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -29,35 +28,35 @@ import org.jboss.msc.value.InjectedValue;
 /**
  * @author Stuart Douglas
  */
-public class JBossCommonWebHost implements CommonWebHost, Service<CommonWebHost> {
+public class JBossWebHost implements WebHost, Service<WebHost> {
 
     private final InjectedValue<VirtualHost> injectedHost = new InjectedValue<>();
 
 
     @Override
-    public CommonWebDeployment addWebDeployment(final CommonWebDeploymentBuilder commonWebDeploymentBuilder) throws Exception {
+    public WebDeploymentController addWebDeployment(final WebDeploymentBuilder webDeploymentBuilder) throws Exception {
         final Host host = injectedHost.getValue().getHost();
         final StandardContext context = new StandardContext();
 
 
-        context.setPath(commonWebDeploymentBuilder.getContextRoot());
+        context.setPath(webDeploymentBuilder.getContextRoot());
         context.addLifecycleListener(new ContextConfig());
-        File docBase = commonWebDeploymentBuilder.getDocumentRoot();
+        File docBase = webDeploymentBuilder.getDocumentRoot();
         if (!docBase.exists()) {
             docBase.mkdirs();
         }
         context.setDocBase(docBase.getPath());
 
-        final Loader loader = new WebCtxLoader(commonWebDeploymentBuilder.getClassLoader());
+        final Loader loader = new WebCtxLoader(webDeploymentBuilder.getClassLoader());
         loader.setContainer(host);
         context.setLoader(loader);
         context.setInstanceManager(new LocalInstanceManager());
 
 
-        for (CommonServletBuilder servlet : commonWebDeploymentBuilder.getServlets()) {
+        for (ServletBuilder servlet : webDeploymentBuilder.getServlets()) {
             final String servletName = servlet.getServletName();
             Map<String, String> params = servlet.getInitParams();
-            List<String> urlPatterns = new ArrayList<>(servlet.getUrlMappings());
+            List<String> urlPatterns = servlet.getUrlMappings();
 
             Wrapper wsfsWrapper = context.createWrapper();
             wsfsWrapper.setName(servletName);
@@ -71,7 +70,7 @@ public class JBossCommonWebHost implements CommonWebHost, Service<CommonWebHost>
                 context.addServletMapping(urlPattern, servletName);
             }
         }
-        return new WebDeploymentImpl(context, host);
+        return new WebDeploymentControllerImpl(context, host);
     }
 
     public InjectedValue<VirtualHost> getInjectedHost() {
@@ -89,7 +88,7 @@ public class JBossCommonWebHost implements CommonWebHost, Service<CommonWebHost>
     }
 
     @Override
-    public CommonWebHost getValue() throws IllegalStateException, IllegalArgumentException {
+    public WebHost getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
 
@@ -123,12 +122,12 @@ public class JBossCommonWebHost implements CommonWebHost, Service<CommonWebHost>
     }
 
 
-    private static class WebDeploymentImpl implements CommonWebDeployment {
+    private static class WebDeploymentControllerImpl implements WebDeploymentController {
 
         private final StandardContext context;
         private final Host host;
 
-        private WebDeploymentImpl(final StandardContext context, final Host host) {
+        private WebDeploymentControllerImpl(final StandardContext context, final Host host) {
             this.context = context;
             this.host = host;
         }

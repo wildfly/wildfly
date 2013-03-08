@@ -26,10 +26,10 @@ import static org.jboss.as.webservices.WSMessages.MESSAGES;
 import java.io.File;
 import javax.servlet.Servlet;
 
-import org.jboss.as.web.host.CommonServletBuilder;
-import org.jboss.as.web.host.CommonWebDeployment;
-import org.jboss.as.web.host.CommonWebDeploymentBuilder;
-import org.jboss.as.web.host.CommonWebHost;
+import org.jboss.as.web.host.ServletBuilder;
+import org.jboss.as.web.host.WebDeploymentController;
+import org.jboss.as.web.host.WebDeploymentBuilder;
+import org.jboss.as.web.host.WebHost;
 import org.jboss.msc.service.StartException;
 
 /**
@@ -41,16 +41,16 @@ import org.jboss.msc.service.StartException;
  */
 public class WebAppController {
 
-    private CommonWebHost host;
+    private WebHost host;
     private String contextRoot;
     private String urlPattern;
     private String serverTempDir;
     private String servletClass;
     private ClassLoader classloader;
-    private volatile CommonWebDeployment ctx;
+    private volatile WebDeploymentController ctx;
     private int count = 0;
 
-    public WebAppController(CommonWebHost host, String servletClass, ClassLoader classloader, String contextRoot, String urlPattern,
+    public WebAppController(WebHost host, String servletClass, ClassLoader classloader, String contextRoot, String urlPattern,
             String serverTempDir) {
         this.host = host;
         this.contextRoot = contextRoot;
@@ -86,9 +86,9 @@ public class WebAppController {
         return count;
     }
 
-    private CommonWebDeployment startWebApp(CommonWebHost host) throws Exception {
-        CommonWebDeploymentBuilder builder = new CommonWebDeploymentBuilder();
-        CommonWebDeployment deployment;
+    private WebDeploymentController startWebApp(WebHost host) throws Exception {
+        WebDeploymentBuilder builder = new WebDeploymentBuilder();
+        WebDeploymentController deployment;
         try {
             builder.setContextRoot(contextRoot);
             File docBase = new File(serverTempDir, contextRoot);
@@ -101,11 +101,11 @@ public class WebAppController {
             final int j = servletClass.indexOf(".");
             final String servletName = j < 0 ? servletClass : servletClass.substring(j + 1);
             final Class<?> clazz = classloader.loadClass(servletClass);
-            CommonServletBuilder servlet = new CommonServletBuilder();
+            ServletBuilder servlet = new ServletBuilder();
             servlet.setServletName(servletName);
             servlet.setServlet((Servlet) clazz.newInstance());
             servlet.setServletClass(clazz);
-            servlet.getUrlMappings().add(urlPattern);
+            servlet.addUrlMapping(urlPattern);
             builder.addServlet(servlet);
 
             deployment = host.addWebDeployment(builder);
@@ -122,7 +122,7 @@ public class WebAppController {
         return deployment;
     }
 
-    private void stopWebApp(CommonWebDeployment context) throws Exception {
+    private void stopWebApp(WebDeploymentController context) throws Exception {
         try {
             context.stop();
         } catch (Exception e) {

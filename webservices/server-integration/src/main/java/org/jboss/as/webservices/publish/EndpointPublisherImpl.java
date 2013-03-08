@@ -29,10 +29,10 @@ import java.util.List;
 import java.util.Map;
 
 
-import org.jboss.as.web.host.CommonServletBuilder;
-import org.jboss.as.web.host.CommonWebDeployment;
-import org.jboss.as.web.host.CommonWebDeploymentBuilder;
-import org.jboss.as.web.host.CommonWebHost;
+import org.jboss.as.web.host.ServletBuilder;
+import org.jboss.as.web.host.WebDeploymentController;
+import org.jboss.as.web.host.WebDeploymentBuilder;
+import org.jboss.as.web.host.WebHost;
 import org.jboss.as.webservices.deployers.EndpointServiceDeploymentAspect;
 import org.jboss.as.webservices.deployers.deployment.DeploymentAspectsProvider;
 import org.jboss.as.webservices.deployers.deployment.WSDeploymentBuilder;
@@ -65,15 +65,15 @@ import org.jboss.wsf.spi.publish.EndpointPublisher;
  */
 public final class EndpointPublisherImpl implements EndpointPublisher {
 
-   private CommonWebHost host;
+   private WebHost host;
     private boolean runningInService = false;
     private static List<DeploymentAspect> depAspects = null;
 
-    public EndpointPublisherImpl(CommonWebHost host) {
+    public EndpointPublisherImpl(WebHost host) {
         this.host = host;
     }
 
-    public EndpointPublisherImpl(CommonWebHost host, boolean runningInService) {
+    public EndpointPublisherImpl(WebHost host, boolean runningInService) {
         this(host);
         this.runningInService = runningInService;
     }
@@ -127,13 +127,13 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
             SecurityActions.setContextClassLoader(origClassLoader);
         }
         Deployment deployment = unit.getAttachment(WSAttachmentKeys.DEPLOYMENT_KEY);
-        deployment.addAttachment(CommonWebDeployment.class, startWebApp(host, unit)); //TODO simplify and use findChild later in destroy()/stopWebApp()
+        deployment.addAttachment(WebDeploymentController.class, startWebApp(host, unit)); //TODO simplify and use findChild later in destroy()/stopWebApp()
         return deployment.getService().getEndpoints();
     }
 
-    private static CommonWebDeployment startWebApp(CommonWebHost host, WSEndpointDeploymentUnit unit) throws Exception {
-        CommonWebDeploymentBuilder deployment = new CommonWebDeploymentBuilder();
-        CommonWebDeployment handle;
+    private static WebDeploymentController startWebApp(WebHost host, WSEndpointDeploymentUnit unit) throws Exception {
+        WebDeploymentBuilder deployment = new WebDeploymentBuilder();
+        WebDeploymentController handle;
         try {
             JBossWebMetaData jbwebMD = unit.getAttachment(WSAttachmentKeys.JBOSSWEB_METADATA_KEY);
             deployment.setContextRoot(jbwebMD.getContextRoot());
@@ -160,11 +160,11 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
         return handle;
     }
 
-    private static void addServlets(JBossWebMetaData jbwebMD, CommonWebDeploymentBuilder deployment) {
+    private static void addServlets(JBossWebMetaData jbwebMD, WebDeploymentBuilder deployment) {
         for (JBossServletMetaData smd : jbwebMD.getServlets()) {
             final String sc = smd.getServletClass();
             if (sc.equals(WSFServlet.class.getName())) {
-                CommonServletBuilder servletBuilder = new CommonServletBuilder();
+                ServletBuilder servletBuilder = new ServletBuilder();
                 final String servletName = smd.getServletName();
 
                 List<ParamValueMetaData> params = smd.getInitParam();
@@ -172,7 +172,7 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
                 for (ServletMappingMetaData smmd : jbwebMD.getServletMappings()) {
                     if (smmd.getServletName().equals(servletName)) {
                         urlPatterns = smmd.getUrlPatterns();
-                        servletBuilder.getUrlMappings().addAll(urlPatterns);
+                        servletBuilder.addUrlMappings(urlPatterns);
                         break;
                     }
                 }
@@ -182,7 +182,7 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
                 servletBuilder.setServlet(wsfs);
                 servletBuilder.setServletClass(WSFServlet.class);
                 for (ParamValueMetaData param : params) {
-                    servletBuilder.getInitParams().put(param.getParamName(), param.getParamValue());
+                    servletBuilder.addInitParam(param.getParamName(), param.getParamValue());
                 }
                 deployment.addServlet(servletBuilder);
             }
@@ -198,7 +198,7 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
         Deployment deployment = eps.get(0).getService().getDeployment();
         List<DeploymentAspect> aspects = getDeploymentAspects();
         try {
-            stopWebApp(deployment.getAttachment(CommonWebDeployment.class));
+            stopWebApp(deployment.getAttachment(WebDeploymentController.class));
         } finally {
             ClassLoader origClassLoader = SecurityActions.getContextClassLoader();
             try {
@@ -212,7 +212,7 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
         }
     }
 
-    private static void stopWebApp(CommonWebDeployment context) throws Exception {
+    private static void stopWebApp(WebDeploymentController context) throws Exception {
         try {
             context.stop();
         } catch (Exception e) {
