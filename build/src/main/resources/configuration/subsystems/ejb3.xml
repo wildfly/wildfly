@@ -45,7 +45,7 @@
    </subsystem>
    <supplement name="default">
       <replacement placeholder="STATEFUL-BEAN">
-         <stateful default-access-timeout="5000" cache-ref="simple"/>
+         <stateful default-access-timeout="5000" cache-ref="simple" passivation-disabled-cache-ref="simple"/>
       </replacement>
    </supplement>
    <supplement name="full" includes="default">
@@ -61,7 +61,7 @@
    </supplement>
    <supplement name="ha">
       <replacement placeholder="STATEFUL-BEAN">
-         <stateful default-access-timeout="5000" cache-ref="simple" clustered-cache-ref="clustered"/>
+         <stateful default-access-timeout="5000" cache-ref="simple" clustered-cache-ref="clustered" passivation-disabled-cache-ref="simple"/>
       </replacement>
       <replacement placeholder="CLUSTERED-CACHE">
          <cache name="clustered" passivation-store-ref="infinispan" aliases="StatefulTreeCache"/>

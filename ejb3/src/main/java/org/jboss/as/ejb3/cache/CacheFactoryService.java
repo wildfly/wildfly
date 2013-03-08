@@ -22,15 +22,15 @@
 
 package org.jboss.as.ejb3.cache;
 
-import java.io.Serializable;
-import java.util.Set;
-
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
+
+import java.io.Serializable;
+import java.util.Set;
 
 /**
  * @author Paul Ferraro
@@ -39,6 +39,7 @@ public abstract class CacheFactoryService<K extends Serializable, V extends Iden
 
     public static final ServiceName BASE_CACHE_SERVICE_NAME = ServiceName.JBOSS.append("ejb", "cache");
     public static final ServiceName DEFAULT_SFSB_CACHE_SERVICE_NAME = BASE_CACHE_SERVICE_NAME.append("sfsb-default");
+    public static final ServiceName DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE_SERVICE_NAME = BASE_CACHE_SERVICE_NAME.append("sfsb-default-passivation-disabled");
     public static final ServiceName DEFAULT_CLUSTERED_SFSB_CACHE_SERVICE_NAME = BASE_CACHE_SERVICE_NAME.append("clustered-sfsb-default");
 
     private static final ServiceName BASE_CACHE_FACTORY_SERVICE_NAME = BASE_CACHE_SERVICE_NAME.append("factory");

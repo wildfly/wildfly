@@ -64,6 +64,10 @@ public class StatefulComponentCreateServiceFactory extends EJBComponentCreateSer
                 if (cache != null) {
                     return CacheFactoryService.getServiceName(cache.getName());
                 }
+                if (!service.isPassivationCapable()) {
+                    // use the default passivation disabled cache
+                    return CacheFactoryService.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE_SERVICE_NAME;
+                }
                 return (service.getClustering() == null) ? CacheFactoryService.DEFAULT_SFSB_CACHE_SERVICE_NAME : CacheFactoryService.DEFAULT_CLUSTERED_SFSB_CACHE_SERVICE_NAME;
             }
         });

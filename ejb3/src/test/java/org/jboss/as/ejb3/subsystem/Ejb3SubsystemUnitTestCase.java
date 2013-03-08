@@ -45,6 +45,9 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.util.List;
+
 /**
  * @author Emanuel Muckenhuber
  */
@@ -87,8 +90,8 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
                 .addMavenResourceURL("org.jboss.as:jboss-as-ejb3:" + controllerVersion.getMavenGavVersion())
                 .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + controllerVersion.getMavenGavVersion())
                 .skipReverseControllerCheck()
-                .addOperationValidationResolve("add", PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, mainSubsystemName)))
-                .addOperationValidationResolve("add", PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, mainSubsystemName), PathElement.pathElement("strict-max-bean-instance-pool")));
+                .addOperationValidationResolve("add", PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, getMainSubsystemName())))
+                .addOperationValidationResolve("add", PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()), PathElement.pathElement("strict-max-bean-instance-pool")));
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
@@ -174,7 +177,8 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
                                 EJB3SubsystemRootResourceDefinition.ENABLE_STATISTICS,
                                 EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN)
                                 .addConfig(new FailedOperationTransformationConfig.RejectExpressionsConfig(EJB3SubsystemRootResourceDefinition.ENABLE_STATISTICS))
-                                .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN)).build())
+                                .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN))
+                                .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE)).build())
                 .addFailedAttribute(subsystemAddress.append(PathElement.pathElement(EJB3SubsystemModel.THREAD_POOL)),
                         keepaliveOnly)
                 .addFailedAttribute(subsystemAddress.append(StrictMaxPoolResourceDefinition.INSTANCE.getPathElement()),
@@ -194,6 +198,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
     private FailedOperationTransformationConfig getFileStorePathConfig() {
         return new FailedOperationTransformationConfig()
+                .addFailedAttribute(PathAddress.pathAddress(EJB3Extension.SUBSYSTEM_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(EJB3SubsystemModel.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE))
                 .addFailedAttribute(PathAddress.pathAddress(EJB3Extension.SUBSYSTEM_PATH, EJB3SubsystemModel.TIMER_SERVICE_PATH,
                         PathElement.pathElement(EJB3SubsystemModel.FILE_DATA_STORE, "file-data-store")),
                         new FailedOperationTransformationConfig.RejectExpressionsConfig(FileDataStoreResourceDefinition.PATH));

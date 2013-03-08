@@ -63,6 +63,7 @@ import org.jboss.as.ee.component.ComponentCreateServiceFactory;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ResourceInjectionTarget;
+import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
@@ -2461,6 +2462,9 @@ public interface EjbMessages {
 
     @Message(id = 14582, value = "Timer service resource %s is not suitable for the target. Only a configuration with a single file-store and no other configured data-store is supported on target")
     String untransformableTimerService(PathAddress address);
+
+    @Message(id = 14583, value = "Stateful bean %s is disabled for passivation, but the cache factory %s has passivation enabled")
+    IllegalStateException requiresNonPassivatingCacheFactory(String ejbName, CacheFactory cacheFactory);
 
     // STOP!!! Don't add message ids greater that 14599!!! If you need more first check what EjbLogger is
     // using and take more (lower) numbers from the available range for this module. If the range for the module is

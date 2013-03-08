@@ -22,8 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import java.util.List;
-
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -39,6 +37,8 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.InjectedValue;
 
+import java.util.List;
+
 /**
  * @author Paul Ferraro
  */
@@ -49,6 +49,12 @@ public class EJB3SubsystemDefaultCacheWriteHandler extends AbstractWriteAttribut
                     null,
                     null,
                     EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_CACHE);
+
+    public static final EJB3SubsystemDefaultCacheWriteHandler SFSB_PASSIVATION_DISABLED_CACHE =
+            new EJB3SubsystemDefaultCacheWriteHandler(CacheFactoryService.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE_SERVICE_NAME,
+                    null,
+                    null,
+                    EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE);
 
     public static final EJB3SubsystemDefaultCacheWriteHandler CLUSTERED_SFSB_CACHE =
             new EJB3SubsystemDefaultCacheWriteHandler(CacheFactoryService.DEFAULT_CLUSTERED_SFSB_CACHE_SERVICE_NAME,

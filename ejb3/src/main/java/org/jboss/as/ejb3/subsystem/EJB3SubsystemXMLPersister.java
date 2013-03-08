@@ -22,10 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import java.util.List;
-
-import javax.xml.stream.XMLStreamException;
-
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.remoting.Attribute;
 import org.jboss.as.threads.ThreadsParser;
@@ -34,8 +30,26 @@ import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.*;
+import javax.xml.stream.XMLStreamException;
+import java.util.List;
+
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ASYNC;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_CLUSTERED_SFSB_CACHE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_DISTINCT_NAME;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SECURITY_DOMAIN;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SFSB_CACHE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ENABLE_STATISTICS;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.IIOP;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.IN_VM_REMOTE_INTERFACE_INVOCATION_PASS_BY_VALUE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.THREAD_POOL;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TIMER_SERVICE;
 
 /**
  * The {@link XMLElementWriter} that handles the EJB subsystem. As we only write out the most recent version of
@@ -82,7 +96,8 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
         // <stateful> element
         if (model.hasDefined(EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT)
                 || model.hasDefined(EJB3SubsystemModel.DEFAULT_SFSB_CACHE)
-                || model.hasDefined(EJB3SubsystemModel.DEFAULT_CLUSTERED_SFSB_CACHE)) {
+                || model.hasDefined(EJB3SubsystemModel.DEFAULT_CLUSTERED_SFSB_CACHE)
+                || model.hasDefined(EJB3SubsystemModel.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE)) {
             // <stateful>
             writer.writeStartElement(EJB3SubsystemXMLElement.STATEFUL.getLocalName());
             // write out the <stateful> element contents
@@ -341,6 +356,10 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
         if (statefulBeanModel.hasDefined(DEFAULT_CLUSTERED_SFSB_CACHE)) {
             String cache = statefulBeanModel.get(DEFAULT_CLUSTERED_SFSB_CACHE).asString();
             writer.writeAttribute(EJB3SubsystemXMLAttribute.CLUSTERED_CACHE_REF.getLocalName(), cache);
+        }
+        if (statefulBeanModel.hasDefined(DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE)) {
+            final String cacheRef = statefulBeanModel.get(DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE).asString();
+            writer.writeAttribute(EJB3SubsystemXMLAttribute.PASSIVATION_DISABLED_CACHE_REF.getLocalName(), cacheRef);
         }
     }
 

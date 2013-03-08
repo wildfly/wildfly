@@ -117,6 +117,16 @@
         </xs:attribute>
         <xs:attribute name="cache-ref" type="xs:string"/>
         <xs:attribute name="clustered-cache-ref" type="xs:string" use="optional"/>
+        <xs:attribute name="passivation-disabled-cache-ref" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    EJB 3.2 spec allows individual stateful EJBs to declare whether they want to disable passivation for those beans.
+                    The EJB3 subsystem as a result is expected to have a passivation disabled cache factory, which it can use as a default
+                    for such EJBs.
+                    This passivation-disabled-cache-ref attribute points to such a cache configuration in the EJB3 subsystem
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="singleton-beanType">
