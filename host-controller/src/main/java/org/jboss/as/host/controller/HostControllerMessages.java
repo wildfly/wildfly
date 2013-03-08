@@ -725,4 +725,7 @@ public interface HostControllerMessages {
 
     @Message(id=16533, value="Cannot instantiate discovery option class '%s': %s")
     IllegalStateException cannotInstantiateDiscoveryOptionClass(String className, String message);
+
+    @Message(id=16538, value="Invalid value for %s. Must only contain all of the existing discovery options")
+    String invalidDiscoveryOptionsOrdering(String name);
 }

@@ -187,11 +187,17 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
 
         if (modelNode.hasDefined(DOMAIN_CONTROLLER)) {
             ModelNode ignoredResources = null;
+            ModelNode discoveryOptionsOrdering = null;
             ModelNode staticDiscoveryOptions = null;
             ModelNode discoveryOptions = null;
             if (hasCoreServices && modelNode.get(CORE_SERVICE).hasDefined(IGNORED_RESOURCES)
                     && modelNode.get(CORE_SERVICE, IGNORED_RESOURCES).hasDefined(IGNORED_RESOURCE_TYPE)) {
                 ignoredResources = modelNode.get(CORE_SERVICE, IGNORED_RESOURCES, IGNORED_RESOURCE_TYPE);
+            }
+            if (hasCoreServices && modelNode.get(CORE_SERVICE).hasDefined(DISCOVERY_OPTIONS)
+                    && modelNode.get(CORE_SERVICE, DISCOVERY_OPTIONS).hasDefined(DISCOVERY_OPTIONS)) {
+                // List of discovery option types and names, in the order they were provided
+                discoveryOptionsOrdering = modelNode.get(CORE_SERVICE, DISCOVERY_OPTIONS, DISCOVERY_OPTIONS);
             }
             if (hasCoreServices && modelNode.get(CORE_SERVICE).hasDefined(DISCOVERY_OPTIONS)
                     && modelNode.get(CORE_SERVICE, DISCOVERY_OPTIONS).hasDefined(STATIC_DISCOVERY)) {
@@ -201,7 +207,8 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
                     && modelNode.get(CORE_SERVICE, DISCOVERY_OPTIONS).hasDefined(DISCOVERY_OPTION)) {
                 discoveryOptions = modelNode.get(CORE_SERVICE, DISCOVERY_OPTIONS, DISCOVERY_OPTION);
             }
-            writeDomainController(writer, modelNode.get(DOMAIN_CONTROLLER), ignoredResources, staticDiscoveryOptions, discoveryOptions);
+            writeDomainController(writer, modelNode.get(DOMAIN_CONTROLLER), ignoredResources,
+                    discoveryOptionsOrdering, staticDiscoveryOptions, discoveryOptions);
             writeNewLine(writer);
         }
 
@@ -1653,12 +1660,12 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
     }
 
     private void writeDomainController(final XMLExtendedStreamWriter writer, final ModelNode modelNode, ModelNode ignoredResources,
-            ModelNode staticDiscoveryOptions, ModelNode discoveryOptions) throws XMLStreamException {
+            ModelNode discoveryOptionsOrdering, ModelNode staticDiscoveryOptions, ModelNode discoveryOptions) throws XMLStreamException {
         writer.writeStartElement(Element.DOMAIN_CONTROLLER.getLocalName());
         if (modelNode.hasDefined(LOCAL)) {
-            if ((staticDiscoveryOptions != null) || (discoveryOptions != null)) {
+            if (discoveryOptionsOrdering != null) {
                 writer.writeStartElement(Element.LOCAL.getLocalName());
-                writeDiscoveryOptions(writer, staticDiscoveryOptions, discoveryOptions);
+                writeDiscoveryOptions(writer, discoveryOptionsOrdering, staticDiscoveryOptions, discoveryOptions);
                 writer.writeEndElement();
             } else {
                 writer.writeEmptyElement(Element.LOCAL.getLocalName());
@@ -1681,8 +1688,8 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
             if (ignoredResources != null) {
                 writeIgnoredResources(writer, ignoredResources);
             }
-            if ((staticDiscoveryOptions != null) || (discoveryOptions != null)) {
-                writeDiscoveryOptions(writer, staticDiscoveryOptions, discoveryOptions);
+            if (discoveryOptionsOrdering != null) {
+                writeDiscoveryOptions(writer, discoveryOptionsOrdering, staticDiscoveryOptions, discoveryOptions);
             }
             writer.writeEndElement();
         }
@@ -1715,32 +1722,37 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
         }
     }
 
-    private void writeDiscoveryOptions(XMLExtendedStreamWriter writer, ModelNode staticDiscoveryOptions,
-            ModelNode discoveryOptions) throws XMLStreamException {
+    private void writeDiscoveryOptions(XMLExtendedStreamWriter writer, ModelNode discoveryOptionsOrdering,
+            ModelNode staticDiscoveryOptions, ModelNode discoveryOptions) throws XMLStreamException {
         writer.writeStartElement(Element.DISCOVERY_OPTIONS.getLocalName());
-        if (staticDiscoveryOptions != null) {
-            for (Property property : staticDiscoveryOptions.asPropertyList()) {
-                final ModelNode staticDiscoveryOption = property.getValue();
-                writer.writeStartElement(Element.STATIC_DISCOVERY.getLocalName());
-                writeAttribute(writer, Attribute.NAME, property.getName());
-                StaticDiscoveryResourceDefinition.HOST.marshallAsAttribute(staticDiscoveryOption, writer);
-                StaticDiscoveryResourceDefinition.PORT.marshallAsAttribute(staticDiscoveryOption, writer);
-                writer.writeEndElement();
-            }
-        }
+        for (Property property : discoveryOptionsOrdering.asPropertyList()) {
+            final Element element = Element.forName(property.getName());
+            final String optionName = property.getValue().asString();
 
-        if (discoveryOptions != null) {
-            for (Property property : discoveryOptions.asPropertyList()) {
-                final ModelNode discoveryOption = property.getValue();
-                writer.writeStartElement(Element.DISCOVERY_OPTION.getLocalName());
-
-                writeAttribute(writer, Attribute.NAME, property.getName());
-                DiscoveryOptionResourceDefinition.CODE.marshallAsAttribute(discoveryOption, writer);
-                DiscoveryOptionResourceDefinition.MODULE.marshallAsAttribute(discoveryOption, writer);
-                if (discoveryOption.hasDefined(PROPERTIES)) {
-                    writeDiscoveryOptionProperties(writer, discoveryOption.get(PROPERTIES));
+            switch (element) {
+                case STATIC_DISCOVERY: {
+                    final ModelNode staticDiscoveryOption = staticDiscoveryOptions.get(optionName);
+                    writer.writeStartElement(element.getLocalName());
+                    writeAttribute(writer, Attribute.NAME, optionName);
+                    StaticDiscoveryResourceDefinition.HOST.marshallAsAttribute(staticDiscoveryOption, writer);
+                    StaticDiscoveryResourceDefinition.PORT.marshallAsAttribute(staticDiscoveryOption, writer);
+                    writer.writeEndElement();
+                    break;
                 }
-                writer.writeEndElement();
+                case DISCOVERY_OPTION: {
+                    final ModelNode discoveryOption = discoveryOptions.get(optionName);
+                    writer.writeStartElement(element.getLocalName());
+                    writeAttribute(writer, Attribute.NAME, optionName);
+                    DiscoveryOptionResourceDefinition.CODE.marshallAsAttribute(discoveryOption, writer);
+                    DiscoveryOptionResourceDefinition.MODULE.marshallAsAttribute(discoveryOption, writer);
+                    if (discoveryOption.hasDefined(PROPERTIES)) {
+                        writeDiscoveryOptionProperties(writer, discoveryOption.get(PROPERTIES));
+                    }
+                    writer.writeEndElement();
+                    break;
+                }
+                default:
+                    throw new RuntimeException(MESSAGES.unknownChildType(element.getLocalName()));
             }
         }
         writer.writeEndElement();

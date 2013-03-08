@@ -21,18 +21,18 @@
  */
 package org.jboss.as.host.controller.operations;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISCOVERY_OPTION;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.host.controller.discovery.DiscoveryOption;
 import org.jboss.as.host.controller.discovery.DiscoveryOptionResourceDefinition;
 import org.jboss.dmr.ModelNode;
@@ -45,9 +45,8 @@ import org.jboss.msc.service.ServiceController;
  *
  * @author Farah Juma
  */
-public class DiscoveryOptionAddHandler extends AbstractAddStepHandler {
+public class DiscoveryOptionAddHandler extends AbstractDiscoveryOptionAddHandler {
 
-    public static final String OPERATION_NAME = ADD;
     private final LocalHostControllerInfoImpl hostControllerInfo;
 
     /**
@@ -77,9 +76,18 @@ public class DiscoveryOptionAddHandler extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        // no-op
+    }
+
+    @Override
+    protected void populateModel(final OperationContext context, final ModelNode operation,
+            final Resource resource) throws  OperationFailedException {
+        final ModelNode model = resource.getModel();
         for (final AttributeDefinition attribute : DiscoveryOptionResourceDefinition.DISCOVERY_ATTRIBUTES) {
             attribute.validateAndSet(operation, model);
         }
+
+        updateDiscoveryOptionsOrdering(context, operation, DISCOVERY_OPTION);
     }
 
     protected void populateHostControllerInfo(LocalHostControllerInfoImpl hostControllerInfo, OperationContext context,
