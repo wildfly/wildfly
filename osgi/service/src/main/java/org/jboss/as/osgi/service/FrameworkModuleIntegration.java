@@ -43,7 +43,7 @@ import org.jboss.osgi.framework.spi.BundleManager;
 import org.jboss.osgi.framework.spi.BundleReferenceClassLoader;
 import org.jboss.osgi.framework.spi.FrameworkModuleProvider;
 import org.jboss.osgi.framework.spi.FrameworkModuleProviderPlugin;
-import org.osgi.framework.Bundle;
+import org.jboss.osgi.resolver.XBundle;
 
 /**
  * An {@link org.jboss.osgi.framework.spi.IntegrationService} that provides the Framework module.
@@ -54,9 +54,9 @@ import org.osgi.framework.Bundle;
 final class FrameworkModuleIntegration extends FrameworkModuleProviderPlugin {
 
     private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
-    private final Map<String, Object> props;
+    private final Map<String, String> props;
 
-    FrameworkModuleIntegration(Map<String, Object> props) {
+    FrameworkModuleIntegration(Map<String, String> props) {
         this.props = props;
     }
 
@@ -109,8 +109,8 @@ final class FrameworkModuleIntegration extends FrameworkModuleProviderPlugin {
                 }
             }
 
-            Bundle systemBundle = injectedBundleManager.getValue().getSystemBundle();
-            specBuilder.setModuleClassLoaderFactory(new BundleReferenceClassLoader.Factory<Bundle>(systemBundle));
+            XBundle systemBundle = injectedBundleManager.getValue().getSystemBundle();
+            specBuilder.setModuleClassLoaderFactory(new BundleReferenceClassLoader.Factory<XBundle>(systemBundle));
 
             try {
                 final ModuleSpec moduleSpec = specBuilder.create();

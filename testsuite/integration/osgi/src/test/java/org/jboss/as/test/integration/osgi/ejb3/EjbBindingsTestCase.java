@@ -52,7 +52,6 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.ServiceReference;
-import org.osgi.service.packageadmin.PackageAdmin;
 
 /**
  * Tests EJB deployments with OSGi metadata
@@ -70,9 +69,6 @@ public class EjbBindingsTestCase {
     Deployer deployer;
 
     @ArquillianResource
-    PackageAdmin packageAdmin;
-
-    @ArquillianResource
     BundleContext context;
 
     @Deployment
@@ -84,7 +80,6 @@ public class EjbBindingsTestCase {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(jar.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(PackageAdmin.class);
                 return builder.openStream();
             }
         });
@@ -96,7 +91,7 @@ public class EjbBindingsTestCase {
     public void testBindings() throws Exception {
         deployer.deploy(EJB3_BUNDLE_A_JAR);
         try {
-            Bundle bundle = packageAdmin.getBundles(EJB3_BUNDLE_A_JAR, null)[0];
+            Bundle bundle = context.getBundle(EJB3_BUNDLE_A_JAR);
             Assert.assertEquals("ACTIVE", Bundle.ACTIVE, bundle.getState());
 
             // This service is registered by the {@link BeansActivatorA}

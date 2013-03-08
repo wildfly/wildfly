@@ -27,16 +27,13 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.resource.Capability;
-import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.service.repository.RepositoryContent;
 
 public class StompletServerActivator implements BundleActivator {
 
     @Override
     public void start(BundleContext context) throws Exception {
-        ServiceReference sref = context.getServiceReference(PackageAdmin.class.getName());
-        PackageAdmin padmin = (PackageAdmin) context.getService(sref);
-        if (padmin.getBundles("stilts-stomplet-server-bundle", null) == null) {
+        if (context.getBundle("stilts-stomplet-server-bundle") == null) {
             installSupportBundle(context, ModuleIdentifier.create("org.jboss.netty"));
             installSupportBundle(context, ModuleIdentifier.create("org.projectodd.stilts")).start();
         }
@@ -51,8 +48,8 @@ public class StompletServerActivator implements BundleActivator {
     }
 
     private XRepository getRepository(BundleContext context) {
-        ServiceReference sref = context.getServiceReference(XRepository.class.getName());
-        return (XRepository) context.getService(sref);
+        ServiceReference<XRepository> sref = context.getServiceReference(XRepository.class);
+        return context.getService(sref);
     }
 
     @Override

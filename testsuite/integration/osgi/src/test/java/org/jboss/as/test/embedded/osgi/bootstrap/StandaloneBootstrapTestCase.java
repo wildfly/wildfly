@@ -35,11 +35,8 @@ import org.junit.Test;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
-import org.osgi.framework.Constants;
-import org.osgi.framework.ServiceReference;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
-import org.osgi.service.packageadmin.PackageAdmin;
 
 /**
  * Tests {@link FrameworkFactory}
@@ -83,10 +80,9 @@ public class StandaloneBootstrapTestCase {
             framework.start();
 
             syscontext = framework.getBundleContext();
-            PackageAdmin packageAdmin = getPackageAdmin(syscontext);
-            hostA = packageAdmin.getBundles(BUNDLE_A, null)[0];
-            fragA = packageAdmin.getBundles(FRAGMENT_A, null)[0];
-            hostB = packageAdmin.getBundles(BUNDLE_B, null)[0];
+            hostA = syscontext.getBundle(BUNDLE_A);
+            fragA = syscontext.getBundle(FRAGMENT_A);
+            hostB = syscontext.getBundle(BUNDLE_B);
 
             Assert.assertEquals(Bundle.INSTALLED, hostA.getState());
             Assert.assertEquals(Bundle.INSTALLED, fragA.getState());
@@ -104,14 +100,8 @@ public class StandaloneBootstrapTestCase {
 
     private Map<String, String> getFrameworkProperties() {
         Map<String, String> props = new HashMap<String, String>();
-        props.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, "org.osgi.service.packageadmin");
         //props.put(Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT, Constants.FRAMEWORK_STORAGE_CLEAN);
         return props;
-    }
-
-    private PackageAdmin getPackageAdmin(BundleContext syscontext) {
-        ServiceReference sref = syscontext.getServiceReference(PackageAdmin.class.getName());
-        return (PackageAdmin) syscontext.getService(sref);
     }
 
     private Bundle installBundle(BundleContext context, JavaArchive archive) throws BundleException {

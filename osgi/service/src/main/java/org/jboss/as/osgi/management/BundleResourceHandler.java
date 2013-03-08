@@ -37,7 +37,7 @@ import org.jboss.osgi.framework.spi.BundleManager;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
-import org.osgi.service.startlevel.StartLevel;
+import org.osgi.framework.startlevel.BundleStartLevel;
 
 /**
  * @author David Bosschaert
@@ -65,15 +65,10 @@ public class BundleResourceHandler extends AbstractRuntimeOnlyHandler {
             Bundle bundle = getTargetBundle(context, operation);
             context.getResult().set(bundle.getBundleId());
         } else if (ModelConstants.STARTLEVEL.equals(name)) {
-            StartLevel startLevel = getStartLevel(context);
-            if (startLevel == null) {
-                ModelNode failureDescription = context.getFailureDescription();
-                failureDescription.set(MESSAGES.startLevelServiceNotAvailable());
-            } else {
-                Bundle bundle = getTargetBundle(context, operation);
-                Integer level = startLevel.getBundleStartLevel(bundle);
-                context.getResult().set(level);
-            }
+            Bundle bundle = getTargetBundle(context, operation);
+            BundleStartLevel bundleStartLevel = bundle.adapt(BundleStartLevel.class);
+            int startlevel = bundleStartLevel.getStartLevel();
+            context.getResult().set(startlevel);
         } else if (ModelConstants.STATE.equals(name)) {
             Bundle bundle = getTargetBundle(context, operation);
             context.getResult().set(getBundleState(bundle));
@@ -162,10 +157,5 @@ public class BundleResourceHandler extends AbstractRuntimeOnlyHandler {
     private BundleContext getSystemContext(OperationContext context) {
         ServiceController<?> controller = context.getServiceRegistry(false).getService(Services.FRAMEWORK_CREATE);
         return controller != null ? (BundleContext)controller.getValue() : null;
-    }
-
-    private StartLevel getStartLevel(OperationContext context) {
-        ServiceController<?> controller = context.getServiceRegistry(false).getService(Services.START_LEVEL);
-        return controller != null ? (StartLevel)controller.getValue() : null;
     }
 }

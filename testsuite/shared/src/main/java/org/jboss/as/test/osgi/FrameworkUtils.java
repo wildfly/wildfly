@@ -30,7 +30,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.ServiceReference;
-import org.osgi.service.startlevel.StartLevel;
+import org.osgi.framework.startlevel.FrameworkStartLevel;
 import org.osgi.util.tracker.ServiceTracker;
 
 
@@ -46,27 +46,30 @@ public final class FrameworkUtils {
     private FrameworkUtils() {
     }
 
-    public static void changeStartLevel(final BundleContext context, final int level) throws InterruptedException, TimeoutException {
-        changeStartLevel(context, level, 10, TimeUnit.SECONDS);
+    public static int getFrameworkStartLevel(final BundleContext context)  {
+        return context.getBundle().adapt(FrameworkStartLevel.class).getStartLevel();
+    }
+
+    public static void setFrameworkStartLevel(final BundleContext context, final int level) throws InterruptedException, TimeoutException {
+        setFrameworkStartLevel(context, level, 10, TimeUnit.SECONDS);
     }
 
     /**
      * Changes the framework start level and waits for the STARTLEVEL_CHANGED event
      * Note, changing the framework start level is an asynchronous operation.
      */
-    public static void changeStartLevel(final BundleContext context, final int level, final long timeout, final TimeUnit units) throws InterruptedException, TimeoutException {
-        final ServiceReference sref = context.getServiceReference(StartLevel.class.getName());
-        final StartLevel startLevel = (StartLevel) context.getService(sref);
+    public static void setFrameworkStartLevel(final BundleContext context, final int level, final long timeout, final TimeUnit units) throws InterruptedException, TimeoutException {
+        final FrameworkStartLevel startLevel = context.getBundle().adapt(FrameworkStartLevel.class);
         if (level != startLevel.getStartLevel()) {
             final CountDownLatch latch = new CountDownLatch(1);
-            context.addFrameworkListener(new FrameworkListener() {
+            FrameworkListener listener = new FrameworkListener() {
                 public void frameworkEvent(FrameworkEvent event) {
                     if (event.getType() == FrameworkEvent.STARTLEVEL_CHANGED && level == startLevel.getStartLevel()) {
                         latch.countDown();
                     }
                 }
-            });
-            startLevel.setStartLevel(level);
+            };
+            startLevel.setStartLevel(level, listener);
             if (latch.await(timeout, units) == false)
                 throw new TimeoutException("Timeout changing start level");
         }
@@ -76,26 +79,25 @@ public final class FrameworkUtils {
         return waitForService(context, clazz, 10, TimeUnit.SECONDS);
     }
 
-    @SuppressWarnings("unchecked")
     public static <T> T waitForService(BundleContext context, Class<T> clazz, long timeout, TimeUnit unit) {
-        ServiceReference sref = waitForServiceReference(context, clazz, timeout, unit);
-        T service = sref != null ? (T) context.getService(sref) : null;
+        ServiceReference<T> sref = waitForServiceReference(context, clazz, timeout, unit);
+        T service = sref != null ? context.getService(sref) : null;
         Assert.assertNotNull("Service registered: " + clazz.getName(), service);
         return service;
     }
 
-    public static ServiceReference waitForServiceReference(BundleContext context, Class<?> clazz) {
+    public static <T> ServiceReference<T> waitForServiceReference(BundleContext context, Class<T> clazz) {
         return waitForServiceReference(context, clazz, 10, TimeUnit.SECONDS);
     }
 
-    public static ServiceReference waitForServiceReference(BundleContext context, Class<?> clazz, long timeout, TimeUnit unit) {
+    public static <T> ServiceReference<T> waitForServiceReference(BundleContext context, Class<T> clazz, long timeout, TimeUnit unit) {
         ServiceTracker tracker = new ServiceTracker(context, clazz.getName(), null);
         tracker.open();
 
-        ServiceReference sref = null;
+        ServiceReference<T> sref = null;
         try {
             if (tracker.waitForService(unit.toMillis(timeout)) != null) {
-                sref = context.getServiceReference(clazz.getName());
+                sref = context.getServiceReference(clazz);
             }
         } catch (InterruptedException e) {
             // service will be null

@@ -72,9 +72,10 @@ import org.jboss.osgi.resolver.XEnvironment;
 import org.jboss.osgi.resolver.XResolveContext;
 import org.jboss.osgi.resolver.XResolver;
 import org.jboss.vfs.VFSUtils;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
+import org.osgi.framework.startlevel.BundleStartLevel;
 import org.osgi.service.resolver.ResolutionException;
-import org.osgi.service.startlevel.StartLevel;
 
 /**
  * An {@link org.jboss.osgi.framework.spi.IntegrationService} that that handles the bundle lifecycle.
@@ -90,7 +91,6 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
     private final InjectedValue<ModelController> injectedController = new InjectedValue<ModelController>();
     private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
     private final InjectedValue<XEnvironment> injectedEnvironment = new InjectedValue<XEnvironment>();
-    private final InjectedValue<StartLevel> injectedStartLevel = new InjectedValue<StartLevel>();
     private final InjectedValue<XResolver> injectedResolver = new InjectedValue<XResolver>();
     private ServerDeploymentManager deploymentManager;
 
@@ -101,7 +101,6 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManager.class, injectedBundleManager);
         builder.addDependency(Services.ENVIRONMENT, XEnvironment.class, injectedEnvironment);
         builder.addDependency(Services.RESOLVER, XResolver.class, injectedResolver);
-        builder.addDependency(Services.START_LEVEL, StartLevel.class, injectedStartLevel);
         builder.addDependency(Services.FRAMEWORK_CREATE);
         builder.setInitialMode(Mode.ON_DEMAND);
     }
@@ -145,13 +144,13 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
         }
 
         @Override
-        public void install(Deployment dep) throws BundleException {
+        public void install(BundleContext context, Deployment dep) throws BundleException {
             // Do the install directly if we have a running management op
             // https://issues.jboss.org/browse/AS7-5642
             if (OperationAssociation.INSTANCE.getAssociation() != null) {
                 LOGGER.warnCannotDeployBundleFromManagementOperation(dep);
                 BundleManager bundleManager = injectedBundleManager.getValue();
-                bundleManager.installBundle(dep, null, null);
+                bundleManager.installBundle(context, dep, null, null);
             } else {
                 LOGGER.debugf("Install deployment: %s", dep);
                 String runtimeName = getRuntimeName(dep);
@@ -254,10 +253,10 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
         private void activateDeferredPhase(XBundle bundle, int options, DeploymentUnit depUnit, ServiceController<Phase> phaseService) throws BundleException {
 
             // If the Framework's current start level is less than this bundle's start level
-            StartLevel startLevel = injectedStartLevel.getValue();
-            int bundleStartLevel = startLevel.getBundleStartLevel(bundle);
-            if (bundleStartLevel > startLevel.getStartLevel()) {
-                LOGGER.debugf("Start level [%d] not valid for: %s", bundleStartLevel, bundle);
+            BundleStartLevel bundleStartLevel = bundle.adapt(BundleStartLevel.class);
+            int startlevel = bundleStartLevel.getStartLevel();
+            if (startlevel > bundleStartLevel.getStartLevel()) {
+                LOGGER.debugf("Start level [%d] not valid for: %s", startlevel, bundle);
                 return;
             }
 
@@ -270,7 +269,7 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
                 try {
                     resolver.resolveAndApply(context);
                 } catch (ResolutionException ex) {
-                    throw FrameworkMessages.MESSAGES.cannotResolveBundle(ex, bundle);
+                    throw new BundleException(FrameworkMessages.MESSAGES.cannotResolveBundle(bundle), BundleException.RESOLVE_ERROR, ex);
                 }
             }
 

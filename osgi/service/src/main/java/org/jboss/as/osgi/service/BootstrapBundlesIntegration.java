@@ -84,11 +84,10 @@ import org.jboss.osgi.vfs.AbstractVFS;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
+import org.osgi.framework.startlevel.BundleStartLevel;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
-import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.service.repository.ContentNamespace;
-import org.osgi.service.startlevel.StartLevel;
 
 /**
  * An {@link org.jboss.osgi.framework.spi.IntegrationService} to install the configured capability bundles.
@@ -102,8 +101,6 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
     private final InjectedValue<BundleStorage> injectedStorageProvider = new InjectedValue<BundleStorage>();
     private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<ServerEnvironment>();
     private final InjectedValue<BundleContext> injectedSystemContext = new InjectedValue<BundleContext>();
-    private final InjectedValue<PackageAdmin> injectedPackageAdmin = new InjectedValue<PackageAdmin>();
-    private final InjectedValue<StartLevel> injectedStartLevel = new InjectedValue<StartLevel>();
     private final InjectedValue<SubsystemState> injectedSubsystemState = new InjectedValue<SubsystemState>();
     private final InjectedValue<XEnvironment> injectedEnvironment = new InjectedValue<XEnvironment>();
     private final InjectedValue<XRepository> injectedRepository = new InjectedValue<XRepository>();
@@ -121,10 +118,8 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
         builder.addDependency(OSGiConstants.SUBSYSTEM_STATE_SERVICE_NAME, SubsystemState.class, injectedSubsystemState);
         builder.addDependency(OSGiConstants.REPOSITORY_SERVICE_NAME, XRepository.class, injectedRepository);
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManager.class, injectedBundleManager);
-        builder.addDependency(Services.PACKAGE_ADMIN, PackageAdmin.class, injectedPackageAdmin);
         builder.addDependency(IntegrationServices.BUNDLE_STORAGE, BundleStorage.class, injectedStorageProvider);
         builder.addDependency(Services.FRAMEWORK_CREATE, BundleContext.class, injectedSystemContext);
-        builder.addDependency(Services.START_LEVEL, StartLevel.class, injectedStartLevel);
         builder.addDependency(Services.ENVIRONMENT, XEnvironment.class, injectedEnvironment);
     }
 
@@ -209,12 +204,12 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
                 injectedEnvironment.getValue().installResources(resource);
 
                 // Set the start level of the adapted bundle
-                Integer bundleStartLevel = configcap.getStartLevel();
-                if (bundleStartLevel != null && bundleStartLevel > 0) {
-                    StartLevel plugin = injectedStartLevel.getValue();
+                Integer startlevel = configcap.getStartLevel();
+                if (startlevel != null && startlevel > 0) {
                     Long bundleId = resource.getAttachment(Long.class);
                     XBundle bundle = getBundleManager().getBundleById(bundleId);
-                    plugin.setBundleStartLevel(bundle, bundleStartLevel);
+                    BundleStartLevel bundleStartLevel = bundle.adapt(BundleStartLevel.class);
+                    bundleStartLevel.setStartLevel(startlevel);
                 }
                 return true;
             }

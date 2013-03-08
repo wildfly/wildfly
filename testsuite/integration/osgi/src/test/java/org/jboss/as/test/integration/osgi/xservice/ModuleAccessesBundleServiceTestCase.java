@@ -50,7 +50,6 @@ import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.service.packageadmin.PackageAdmin;
 
 /**
  * A test that shows how a module can access another module's service.
@@ -73,9 +72,6 @@ public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCas
     @ArquillianResource
     BundleContext context;
 
-    @ArquillianResource
-    PackageAdmin packageAdmin;
-
     @Deployment
     public static JavaArchive createdeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "xservice-module-access");
@@ -85,7 +81,7 @@ public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCas
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(Logger.class, PackageAdmin.class, Module.class, ServiceContainer.class);
+                builder.addImportPackages(Logger.class, Module.class, ServiceContainer.class);
                 return builder.openStream();
             }
         });
@@ -99,7 +95,7 @@ public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCas
         deployer.deploy(TARGET_BUNDLE_NAME);
         try {
             // Find the deployed bundle
-            Bundle targetBundle = packageAdmin.getBundles(TARGET_BUNDLE_NAME, null)[0];
+            Bundle targetBundle = context.getBundle(TARGET_BUNDLE_NAME);
             targetBundle.start();
 
             // Install the client module

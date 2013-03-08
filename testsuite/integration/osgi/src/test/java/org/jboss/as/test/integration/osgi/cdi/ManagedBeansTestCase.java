@@ -53,7 +53,6 @@ import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.util.tracker.ServiceTracker;
 
 /**
@@ -76,7 +75,7 @@ public class ManagedBeansTestCase {
     private static final String PAYPAL_PROVIDER_BUNDLE = "paypal-bundle.jar";
 
     @ArquillianResource
-    PackageAdmin packageAdmin;
+    BundleContext context;
 
     @ArquillianResource
     ManagementClient managementClient;
@@ -91,7 +90,7 @@ public class ManagedBeansTestCase {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(jar.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(PackageAdmin.class, ManagementClient.class);
+                builder.addImportPackages(ManagementClient.class);
                 return builder.openStream();
             }
         });
@@ -174,8 +173,8 @@ public class ManagedBeansTestCase {
     public void testComplexEar() throws Exception {
         Assert.assertEquals("[Paypal, Visa]", performCall("/complex/servlet"));
 
-        Bundle visaBundle = packageAdmin.getBundles(VISA_PROVIDER_BUNDLE, null)[0];
-        Bundle paypalBundle = packageAdmin.getBundles(PAYPAL_PROVIDER_BUNDLE, null)[0];
+        Bundle visaBundle = context.getBundle(VISA_PROVIDER_BUNDLE);
+        Bundle paypalBundle = context.getBundle(PAYPAL_PROVIDER_BUNDLE);
 
         visaBundle.stop();
         Assert.assertEquals("[Paypal]", performCall("/complex/servlet"));

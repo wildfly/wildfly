@@ -41,7 +41,6 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleListener;
-import org.osgi.service.packageadmin.PackageAdmin;
 
 /**
  * Bundle gets installed/uninstalled through the deployment API.
@@ -60,9 +59,6 @@ public class BundleDeploymentCaseTwoTestCase {
     @ArquillianResource
     BundleContext context;
 
-    @ArquillianResource
-    PackageAdmin packageAdmin;
-
     @Deployment
     public static JavaArchive createdeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "bundle-deployment-casetwo");
@@ -72,7 +68,6 @@ public class BundleDeploymentCaseTwoTestCase {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(PackageAdmin.class);
                 return builder.openStream();
             }
         });
@@ -85,7 +80,7 @@ public class BundleDeploymentCaseTwoTestCase {
         deployer.deploy(BUNDLE_DEPLOYMENT_NAME);
 
         // Find the deployed bundle
-        Bundle bundle = packageAdmin.getBundles(BUNDLE_DEPLOYMENT_NAME, null)[0];
+        Bundle bundle = context.getBundle(BUNDLE_DEPLOYMENT_NAME);
 
         // Start the bundle. Note, it may have started already
         bundle.start();
