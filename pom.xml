@@ -176,7 +176,7 @@
         <version.org.jboss.jbossts.jbossjts>5.0.0.M2</version.org.jboss.jbossts.jbossjts>
         <version.org.jboss.jbossts.jbossjts-integration>5.0.0.M2</version.org.jboss.jbossts.jbossjts-integration>
         <version.org.jboss.jbossts.jbossxts>5.0.0.M2</version.org.jboss.jbossts.jbossxts>
-        <version.org.jboss.jboss-vfs>3.1.0.Final</version.org.jboss.jboss-vfs>
+        <version.org.jboss.jboss-vfs>3.2.0.Beta1</version.org.jboss.jboss-vfs>
         <version.org.jboss.jbossts.narayana>5.0.0.M2</version.org.jboss.jbossts.narayana>
         <version.org.jboss.jsfunit>2.0.0.Beta1</version.org.jboss.jsfunit>
         <version.org.jboss.logging.jboss-logging>3.1.3.GA</version.org.jboss.logging.jboss-logging>
