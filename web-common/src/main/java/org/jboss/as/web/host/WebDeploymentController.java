@@ -3,7 +3,7 @@ package org.jboss.as.web.host;
 /**
  * @author Stuart Douglas
  */
-public interface CommonWebDeployment {
+public interface WebDeploymentController {
 
     void create() throws Exception;
 

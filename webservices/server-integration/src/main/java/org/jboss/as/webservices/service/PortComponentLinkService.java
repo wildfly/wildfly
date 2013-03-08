@@ -23,7 +23,7 @@ package org.jboss.as.webservices.service;
 
 import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 
-import org.jboss.as.web.host.CommonWebHost;
+import org.jboss.as.web.host.WebHost;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.as.webservices.util.WebAppController;
 import org.jboss.msc.inject.Injector;
@@ -51,7 +51,7 @@ import org.jboss.wsf.spi.management.ServerConfig;
 public final class PortComponentLinkService implements Service<WebAppController> {
 
     private final ServiceName name;
-    private final InjectedValue<CommonWebHost> hostInjector = new InjectedValue<CommonWebHost>();
+    private final InjectedValue<WebHost> hostInjector = new InjectedValue<WebHost>();
     private volatile WebAppController pclwa;
     private final InjectedValue<ServerConfig> serverConfigInjectorValue = new InjectedValue<ServerConfig>();
     private static final String DEFAULT_HOST_NAME = "default-host";
@@ -69,7 +69,7 @@ public final class PortComponentLinkService implements Service<WebAppController>
         return name;
     }
 
-    public InjectedValue<CommonWebHost> getHostInjector() {
+    public InjectedValue<WebHost> getHostInjector() {
         return hostInjector;
     }
 
@@ -97,7 +97,7 @@ public final class PortComponentLinkService implements Service<WebAppController>
         final ServiceBuilder<WebAppController> builder = serviceTarget.addService(service.getName(), service);
         builder.addDependency(DependencyType.REQUIRED, WSServices.REGISTRY_SERVICE);
         builder.addDependency(DependencyType.REQUIRED, WSServices.CONFIG_SERVICE, ServerConfig.class, service.getServerConfigInjector());
-        builder.addDependency(CommonWebHost.SERVICE_NAME.append(hostName), CommonWebHost.class, service.getHostInjector());
+        builder.addDependency(WebHost.SERVICE_NAME.append(hostName), WebHost.class, service.getHostInjector());
         return builder;
     }
 
