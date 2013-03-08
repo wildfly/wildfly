@@ -25,8 +25,7 @@ import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 
 import java.util.Map;
 
-import org.jboss.as.web.VirtualHost;
-import org.jboss.as.web.WebSubsystemServices;
+import org.jboss.as.web.host.CommonWebHost;
 import org.jboss.as.webservices.publish.EndpointPublisherImpl;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
@@ -60,7 +59,7 @@ public final class EndpointPublishService implements Service<Context> {
     private final JBossWebMetaData jbwmd;
     private final WebservicesMetaData wsmd;
 
-    private final InjectedValue<VirtualHost> hostInjector = new InjectedValue<VirtualHost>();
+    private final InjectedValue<CommonWebHost> hostInjector = new InjectedValue<CommonWebHost>();
 
     private EndpointPublishService(final String context, final ClassLoader loader,
             final Map<String,String> urlPatternToClassName, JBossWebMetaData jbwmd, WebservicesMetaData wsmd) {
@@ -81,7 +80,7 @@ public final class EndpointPublishService implements Service<Context> {
         return name;
     }
 
-    public InjectedValue<VirtualHost> getHostInjector() {
+    public InjectedValue<CommonWebHost> getHostInjector() {
         return hostInjector;
     }
 
@@ -89,7 +88,7 @@ public final class EndpointPublishService implements Service<Context> {
     public void start(final StartContext ctx) throws StartException {
         ROOT_LOGGER.starting(name);
         try {
-            EndpointPublisherImpl publisher = new EndpointPublisherImpl(hostInjector.getValue().getHost(), true);
+            EndpointPublisherImpl publisher = new EndpointPublisherImpl(hostInjector.getValue(), true);
             wsctx = publisher.publish(ctx.getChildTarget(), context, loader, urlPatternToClassName, jbwmd, wsmd);
         } catch (Exception e) {
             throw new StartException(e);
@@ -100,7 +99,7 @@ public final class EndpointPublishService implements Service<Context> {
     public void stop(final StopContext ctx) {
         ROOT_LOGGER.stopping(name);
         try {
-            EndpointPublisherImpl publisher = new EndpointPublisherImpl(hostInjector.getValue().getHost(), true);
+            EndpointPublisherImpl publisher = new EndpointPublisherImpl(hostInjector.getValue(), true);
             publisher.destroy(wsctx);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -119,7 +118,7 @@ public final class EndpointPublishService implements Service<Context> {
         final ServiceBuilder<Context> builder = serviceTarget.addService(service.getName(), service);
         builder.addDependency(DependencyType.REQUIRED, WSServices.CONFIG_SERVICE);
         builder.addDependency(DependencyType.REQUIRED, WSServices.REGISTRY_SERVICE);
-        builder.addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName), VirtualHost.class,
+        builder.addDependency(CommonWebHost.SERVICE_NAME.append(hostName), CommonWebHost.class,
                 service.getHostInjector());
         return builder;
     }

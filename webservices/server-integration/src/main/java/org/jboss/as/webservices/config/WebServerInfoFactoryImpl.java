@@ -21,15 +21,14 @@
  */
 package org.jboss.as.webservices.config;
 
-import org.jboss.as.web.WebServer;
-import org.jboss.as.web.WebSubsystemServices;
+import org.jboss.as.web.host.CommonWebServer;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.wsf.spi.management.WebServerInfo;
 import org.jboss.wsf.spi.management.WebServerInfoFactory;
 
 public class WebServerInfoFactoryImpl extends WebServerInfoFactory {
     public WebServerInfo newWebServerInfo() {
-        return new WebServerInfoImpl(ASHelper.getMSCService(WebSubsystemServices.JBOSS_WEB, WebServer.class));
+        return new WebServerInfoImpl(ASHelper.getMSCService(CommonWebServer.SERVICE_NAME, CommonWebServer.class));
     }
 
 }

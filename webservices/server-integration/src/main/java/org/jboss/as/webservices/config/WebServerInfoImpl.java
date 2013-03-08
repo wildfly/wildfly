@@ -21,25 +21,18 @@
  */
 package org.jboss.as.webservices.config;
 
-import org.apache.catalina.connector.Connector;
-import org.jboss.as.web.WebServer;
+import org.jboss.as.web.host.CommonWebServer;
 import org.jboss.wsf.spi.management.WebServerInfo;
 
 public class WebServerInfoImpl implements WebServerInfo {
 
-    private WebServer webserver;
+    private CommonWebServer webServer;
 
-    public WebServerInfoImpl(WebServer webServer) {
-        webserver = webServer;
+    public WebServerInfoImpl(CommonWebServer webServer) {
+        this.webServer = webServer;
     }
 
     public int getPort(String protocol, boolean secure) {
-        int result = -1;
-        for (Connector connector : webserver.getService().findConnectors()) {
-            if (connector.getProtocol().equals(protocol) && connector.getSecure() == secure) {
-                return connector.getPort();
-            }
-        }
-        return result;
+        return webServer.getPort(protocol, secure);
     }
 }
