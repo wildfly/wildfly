@@ -32,7 +32,6 @@ import javax.servlet.ServletContext;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Realm;
 import org.apache.catalina.core.StandardContext;
-import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.web.ThreadSetupBindingListener;
 import org.jboss.as.web.common.WebInjectionContainer;

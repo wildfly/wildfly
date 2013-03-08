@@ -66,8 +66,8 @@ import org.jboss.as.web.common.ServletContextAttribute;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.as.web.common.WebComponentDescription;
 import org.jboss.as.web.common.WebInjectionContainer;
-import org.jboss.as.web.deployment.WebDeploymentService.ContextActivator;
 import org.jboss.as.web.ext.WebContextFactory;
+import org.jboss.as.web.host.ContextActivator;
 import org.jboss.as.web.security.JBossWebRealmService;
 import org.jboss.as.web.security.SecurityContextAssociationValve;
 import org.jboss.as.web.security.WarJaccService;
@@ -341,7 +341,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
             // OSGi web applications are activated in {@link WebContextActivationProcessor} according to bundle lifecycle changes
             if (deploymentUnit.hasAttachment(Attachments.OSGI_MANIFEST)) {
                 webappBuilder.setInitialMode(Mode.NEVER);
-                ContextActivator activator = new ContextActivator(webappBuilder.install());
+                WebDeploymentService.ContextActivatorImpl activator = new WebDeploymentService.ContextActivatorImpl(webappBuilder.install());
                 deploymentUnit.putAttachment(ContextActivator.ATTACHMENT_KEY, activator);
             } else {
                 webappBuilder.setInitialMode(Mode.ACTIVE);
