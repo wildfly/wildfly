@@ -13,17 +13,22 @@ And of course Java EE!
 Building
 -------------------
 
-If you already have Maven 3.0.3 or newer installed
+Ensure you have JDK 7 (or newer) installed
 
-> mvn install
+> java -version
 
-If you don't have Maven 3
+On *nix-like system use the prepared script
 
 > ./build.sh
 
-If you use Windows and don't have Maven 3
+On Windows use the corresponding batch script
 
 > build.bat
+
+If you already have Maven 3.0.4 (or newer) installed you can use it directly
+
+> mvn install
+
 
 Starting and Stopping JBoss
 ------------------------------------------
