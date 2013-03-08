@@ -28,7 +28,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.integration.ejb.stateful.passivation.PassivationSucceedsUnitTestCaseSetup;
+import org.jboss.as.test.integration.ejb.stateful.passivation.PassivationTestCaseSetup;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -40,12 +40,12 @@ import org.junit.runner.RunWith;
 
 /**
  * Tests that passivation succeeds for ejb2 beans.
- * @see org.jboss.as.test.integration.ejb.stateful.passivation.PassivationSucceedsUnitTestCase
+ * @see org.jboss.as.test.integration.ejb.stateful.passivation.PassivationTestCase
  *
  * @author Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
-@ServerSetup(PassivationSucceedsUnitTestCaseSetup.class)
+@ServerSetup(PassivationTestCaseSetup.class)
 public class PassivationSucceedsEJB2TestCase {
     private static final Logger log = Logger.getLogger(PassivationSucceedsEJB2TestCase.class);
     private static String jndi;
@@ -61,7 +61,7 @@ public class PassivationSucceedsEJB2TestCase {
     public static Archive<?> deploy() throws Exception {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "passivation-ejb2-test.jar");
         jar.addPackage(PassivationSucceedsEJB2TestCase.class.getPackage());
-        jar.addClasses(PassivationSucceedsUnitTestCaseSetup.class);
+        jar.addClasses(PassivationTestCaseSetup.class);
         jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"),
                 "MANIFEST.MF");
         log.info(jar.toString(true));

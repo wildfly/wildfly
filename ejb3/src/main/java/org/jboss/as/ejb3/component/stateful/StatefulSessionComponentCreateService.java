@@ -22,16 +22,13 @@
 
 package org.jboss.as.ejb3.component.stateful;
 
-import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-
 import org.jboss.as.clustering.ClassLoaderAwareClassResolver;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.as.ejb3.cache.CacheInfo;
+import org.jboss.as.ejb3.cache.impl.factory.NonPassivatingCacheFactory;
 import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
 import org.jboss.as.ejb3.component.InvokeMethodOnTargetInterceptor;
 import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextInterceptor;
@@ -46,8 +43,15 @@ import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.marshalling.reflect.ReflectiveCreator;
 import org.jboss.marshalling.reflect.SunReflectiveCreator;
+import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Value;
+
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Stuart Douglas
@@ -69,8 +73,9 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
     private final InjectedValue<DefaultAccessTimeoutService> defaultAccessTimeoutService = new InjectedValue<DefaultAccessTimeoutService>();
     private final InterceptorFactory ejb2XRemoveMethod;
     @SuppressWarnings("rawtypes")
-    private final InjectedValue<CacheFactory> cacheFactory = new InjectedValue<CacheFactory>();
+    private final PassivationCheckInjectedValue cacheFactory = new PassivationCheckInjectedValue(new InjectedValue<CacheFactory>());
     private final Set<Object> serializableInterceptorContextKeys;
+    private final boolean passivationCapable;
 
     /**
      * Construct a new instance.
@@ -107,6 +112,7 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         marshallingConfiguration.setObjectTable(new EJBClientContextIdentifierObjectTable());
         this.marshallingConfigurations = Collections.singletonMap(CURRENT_MARSHALLING_VERSION, marshallingConfiguration);
         this.serializableInterceptorContextKeys = componentConfiguration.getInterceptorContextKeys();
+        this.passivationCapable = componentDescription.isPassivationApplicable();
     }
 
     private static InterceptorFactory invokeMethodOnTarget(final Method method) {
@@ -191,5 +197,44 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
     @SuppressWarnings("rawtypes")
     Injector<CacheFactory> getCacheFactoryInjector() {
         return this.cacheFactory;
+    }
+
+    boolean isPassivationCapable() {
+        return this.passivationCapable;
+    }
+
+    /**
+     * An {@link Injector} and a {@link Value} which is used to check if the stateful bean component is disabled for passivation
+     * and if it is then the cache factory being injected doesn't have a passivation store associated with it.
+     */
+    private class PassivationCheckInjectedValue implements Injector<CacheFactory>, Value<CacheFactory> {
+
+        private final InjectedValue<CacheFactory> delegate;
+
+        PassivationCheckInjectedValue(final InjectedValue<CacheFactory> delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public void inject(CacheFactory value) throws InjectionException {
+            // if the SFSB is disabled for passivation then the backing cache factory isn't allowed to have a passivation store.
+            // For now we rely on the CacheFactory class type to see if the cache factory is enabled/disabled for passivation,
+            // since there are only a couple of cache factory types (NonPassivatingCacheFactory is one of them) and there isn't
+            // a specific, straightforward API for getting that information from the cache factory
+            if (!passivationCapable && !(value instanceof NonPassivatingCacheFactory)) {
+                throw EjbMessages.MESSAGES.requiresNonPassivatingCacheFactory(getComponentName(), value);
+            }
+            this.delegate.inject(value);
+        }
+
+        @Override
+        public void uninject() {
+            this.delegate.uninject();
+        }
+
+        @Override
+        public CacheFactory getValue() throws IllegalStateException, IllegalArgumentException {
+            return this.delegate.getValue();
+        }
     }
 }

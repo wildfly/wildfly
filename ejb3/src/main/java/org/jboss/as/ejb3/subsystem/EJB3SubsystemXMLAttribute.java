@@ -65,6 +65,7 @@ public enum EJB3SubsystemXMLAttribute {
 
     PASS_BY_VALUE("pass-by-value"),
     PASSIVATE_EVENTS_ON_REPLICATE("passivate-events-on-replicate"),
+    PASSIVATION_DISABLED_CACHE_REF("passivation-disabled-cache-ref"),
     PASSIVATION_STORE_REF("passivation-store-ref"),
     PATH("path"),
     POOL_NAME("pool-name"),

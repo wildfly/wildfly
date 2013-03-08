@@ -28,6 +28,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -39,14 +40,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests that passivation succeeds, and invocation is possible upon reactivation
+ * Tests various scenarios for stateful bean passivation
  *
- * @author ALR, Stuart Douglas, Ondrej Chaloupka
+ * @author ALR, Stuart Douglas, Ondrej Chaloupka, Jaikiran Pai
  */
 @RunWith(Arquillian.class)
-@ServerSetup(PassivationSucceedsUnitTestCaseSetup.class)
-public class PassivationSucceedsUnitTestCase {
-    private static final Logger log = Logger.getLogger(PassivationSucceedsUnitTestCase.class);
+@ServerSetup(PassivationTestCaseSetup.class)
+public class PassivationTestCase {
+    private static final Logger log = Logger.getLogger(PassivationTestCase.class);
 
     @ArquillianResource
     private InitialContext ctx;
@@ -54,11 +55,12 @@ public class PassivationSucceedsUnitTestCase {
     @Deployment
     public static Archive<?> deploy() throws Exception {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "passivation-test.jar");
-        jar.addPackage(PassivationSucceedsUnitTestCase.class.getPackage());
+        jar.addPackage(PassivationTestCase.class.getPackage());
+        jar.addClass(TimeoutUtil.class);
         jar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
         jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"),
                 "MANIFEST.MF");
-        jar.addAsManifestResource(PassivationSucceedsUnitTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
+        jar.addAsManifestResource(PassivationTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         log.info(jar.toString(true));
         return jar;
     }
@@ -121,5 +123,51 @@ public class PassivationSucceedsUnitTestCase {
         remote.remove();
         Assert.assertTrue(PassivationInterceptor.getPostActivateTarget() instanceof TestPassivationBean);
         Assert.assertTrue(PassivationInterceptor.getPrePassivateTarget() instanceof TestPassivationBean);
+    }
+
+    /**
+     * Tests that a EJB 3.2 stateful bean which is marked as <code>passivationCapable=false</code> isn't passivated or activated
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testPassivationDisabledBean() throws Exception {
+        final PassivationDisabledBean bean = (PassivationDisabledBean) ctx.lookup("java:module/" + PassivationDisabledBean.class.getSimpleName() + "!" + PassivationDisabledBean.class.getName());
+        // make an invocation
+        bean.doNothing();
+        // now wait for the passivation timeout to come into picture. Our test setup is configured to setup a passivating store with
+        // idle timeout = 1 second
+        final int sleepTime = TimeoutUtil.adjust(2000);
+        Thread.sleep(sleepTime);
+        // now invoke on the bean again
+        bean.doNothing();
+
+        // make sure bean's passivation and activation callbacks weren't invoked
+        Assert.assertFalse("Stateful bean marked as passivation disabled was incorrectly passivated", bean.wasPassivated());
+        Assert.assertFalse("Stateful bean marked as passivation disabled was incorrectly activated", bean.wasActivated());
+
+    }
+
+    /**
+     * Tests that a EJB 3.2 stateful bean which is marked as <code>passivationCapable=true</code> is passivated or activated
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testPassivationEnabledBean() throws Exception {
+        final PassivationEnabledBean bean = (PassivationEnabledBean) ctx.lookup("java:module/" + PassivationEnabledBean.class.getSimpleName() + "!" + PassivationEnabledBean.class.getName());
+        // make an invocation
+        bean.doNothing();
+        // now wait for the passivation timeout to come into picture. Our test setup is configured to setup a passivating store with
+        // idle timeout = 1 second
+        final int sleepTime = TimeoutUtil.adjust(2000);
+        Thread.sleep(sleepTime);
+        // now invoke on the bean again
+        bean.doNothing();
+
+        // make sure bean's passivation and activation callbacks were invoked
+        Assert.assertTrue("Stateful bean marked as passivation enabled was not passivated", bean.wasPassivated());
+        Assert.assertTrue("Stateful bean marked as passivation enabled was not activated", bean.wasActivated());
+
     }
 }

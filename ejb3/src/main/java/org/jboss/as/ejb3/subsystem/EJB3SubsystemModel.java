@@ -47,6 +47,7 @@ public interface EJB3SubsystemModel {
     String DEFAULT_RESOURCE_ADAPTER_NAME = "default-resource-adapter-name";
     String DEFAULT_SFSB_CACHE = "default-sfsb-cache";
     String DEFAULT_CLUSTERED_SFSB_CACHE = "default-clustered-sfsb-cache";
+    String DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE = "default-sfsb-passivation-disabled-cache";
     String DEFAULT_SLSB_INSTANCE_POOL = "default-slsb-instance-pool";
     String INSTANCE_ACQUISITION_TIMEOUT = "timeout";
     String INSTANCE_ACQUISITION_TIMEOUT_UNIT = "timeout-unit";

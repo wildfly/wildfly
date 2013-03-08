@@ -144,6 +144,12 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
                     break;
                 case STATEFUL:
                     sessionBeanDescription = new StatefulComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnitServiceName, beanMetaData);
+                    // If passivation is disabled for the SFSB, either via annotation or via DD, then setup the component
+                    // description appropriately
+                    final boolean passivationCapableAnnotationValue = sessionBeanAnnotation.value("passivationCapable") == null ? true : sessionBeanAnnotation.value("passivationCapable").asBoolean();
+                    // TODO: Pass the DD value as first param for override
+                    final boolean passivationApplicable = override(null, passivationCapableAnnotationValue);
+                    ((StatefulComponentDescription) sessionBeanDescription).setPassivationApplicable(passivationApplicable);
                     break;
                 case SINGLETON:
                     sessionBeanDescription = new SingletonComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnitServiceName, beanMetaData);
@@ -231,6 +237,7 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
                 break;
             case Stateful:
                 sessionBeanDescription = new StatefulComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName(), sessionBean);
+                // TODO: Handle passivation capable for stateful beans in EJB3.2
                 break;
             case Singleton:
                 sessionBeanDescription = new SingletonComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName(), sessionBean);
